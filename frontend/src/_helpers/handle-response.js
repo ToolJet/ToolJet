@@ -6,6 +6,7 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -66,12 +67,14 @@ export function handleResponse(response, avoidRedirection = false, queryParamToU
           }
         }
         const darkMode = localStorage.getItem('darkMode') === 'true';
+        const edition = fetchEdition();
         const modalEl = React.createElement(LegalReasonsErrorModal, {
           showModal: true,
           message,
           body: message.includes('apps') && modalBody,
           feature,
           darkMode,
+          edition: edition,
         });
 
         if (!message?.includes('expired')) {

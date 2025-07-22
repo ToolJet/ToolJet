@@ -45,12 +45,14 @@ export const PagesSidebarNavigation = ({
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const getPagesVisibility = useStore((state) => state.getPagesVisibility);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
     }),
     shallow
   );
+  const { appMode } = useStore((state) => state.globalSettings, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -405,7 +407,7 @@ export const PagesSidebarNavigation = ({
   const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
 
-  if (hideHeader && hideLogo && !isPagesSidebarVisible) {
+  if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
 
@@ -472,8 +474,8 @@ export const PagesSidebarNavigation = ({
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             style === 'icon' ||
-            (style === 'texticon' && !isSidebarPinned && position === 'side' && isPagesSidebarVisible),
-          'position-top': position === 'top' || !isPagesSidebarVisible,
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
+          'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
           // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
           // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
@@ -514,7 +516,7 @@ export const PagesSidebarNavigation = ({
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
               )}
-              {!headerHidden && (!labelHidden || !isPagesSidebarVisible) && (
+              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
                 <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
                   {name?.trim() ? name : appName}
                 </div>
@@ -523,7 +525,7 @@ export const PagesSidebarNavigation = ({
                 !isTopPositioned &&
                 style == 'texticon' &&
                 position === 'side' &&
-                isPagesSidebarVisible && (
+                !isPagesSidebarHidden && (
                   <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
                     <SolidIcon
                       className="cursor-pointer"
@@ -535,7 +537,7 @@ export const PagesSidebarNavigation = ({
                 )}
             </div>
           )}
-          {isLicensed && isPagesSidebarVisible ? (
+          {isLicensed && !isPagesSidebarHidden ? (
             <RenderPageAndPageGroup
               switchPageWrapper={switchPageWrapper}
               pages={pages}
@@ -553,7 +555,7 @@ export const PagesSidebarNavigation = ({
               currentMode={currentMode}
             />
           ) : (
-            isPagesSidebarVisible && (
+            !isPagesSidebarHidden && (
               <RenderPagesWithoutGroup
                 darkMode={darkMode}
                 homePageId={homePageId}
@@ -572,14 +574,16 @@ export const PagesSidebarNavigation = ({
             )
           )}
         </div>
-        <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-          <DarkModeToggle
-            toggleForCanvas={true}
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            tooltipPlacement="right"
-          />
-        </div>
+        {appMode === 'auto' && (
+          <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+            <DarkModeToggle
+              toggleForCanvas={true}
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              tooltipPlacement="right"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

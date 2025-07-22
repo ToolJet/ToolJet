@@ -289,7 +289,7 @@ const useAppData = (
                     slug,
                     viewerEnvironment?.environment?.id
                   )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
           }

@@ -509,6 +509,13 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
+      this.eventEmitter.emit('CRM.Push', {
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        isInvited: true,
+      });
 
       const groupsArray = [];
       if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {

@@ -46,6 +46,9 @@ const AccordionItem = ({ open = true, index, title, isTitleCase = true, children
           <span
             className={`${isTitleCase ? 'text-capitalize' : ''} accordion-title-text tw-text-sm tw-text-text-default`}
             data-cy={`label-${String(title).toLowerCase().replace(/\s+/g, '-')}`}
+            style={{
+              fontSize: '12px',
+            }}
           >
             {title}
           </span>
@@ -74,7 +77,9 @@ const AccordionItem = ({ open = true, index, title, isTitleCase = true, children
         className={cx('accordion-collapse collapse', { show })}
         data-bs-parent="#accordion-example"
       >
-        <div className="accordion-body">{newChildren}</div>
+        <div className="accordion-body accordion-body-custom" style={{ padding: '0rem 1rem 1rem 1rem' }}>
+          {newChildren}
+        </div>
       </div>
     </div>
   );
