@@ -97,7 +97,7 @@ export async function fetchAndSetWindowTitle(pageDetails, organizationId = null)
   let isPreview = !pageDetails?.isReleased || false;
   const license = pageDetails?.licenseStatus;
   let appName = pageDetails?.appName;
-  if (appName === undefined) {
+  if (appName === undefined || appName === null) {
     appName = 'Loading...';
   }
   switch (pageTitleKey) {
