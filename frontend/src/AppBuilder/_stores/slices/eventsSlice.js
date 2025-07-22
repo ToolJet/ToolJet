@@ -442,9 +442,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -604,7 +603,7 @@ export const createEventsSlice = (set, get) => ({
             //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
             const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
             // const url = resolveReferences(event.url, undefined, customVariables);
-            window.open(resolvedValue, event?.windowTarget === 'newTab' ? '_blank' : '_self');
+            window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
             return Promise.resolve();
           }
           case 'go-to-app': {

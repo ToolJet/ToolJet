@@ -19,6 +19,7 @@ export const buildTableColumn = (
   tableBodyRef,
   t
 ) => {
+  console.log('columnSizes', columnSizes);
   return [
     {
       id: 'selection',
