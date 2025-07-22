@@ -55,6 +55,9 @@ export const ChatInput = ({
             borderColor: isFocused ? computedStyles.chatInput.accentColor : computedStyles.chatInput.borderColor,
             outline: 'none',
             boxShadow: isFocused ? `0 0 0 1px ${computedStyles.chatInput.accentColor}` : `0 0 0 1px transparent`,
+            '::placeholder': {
+              color: 'var(--cc-placeholder-text)',
+            },
           }}
           disabled={disabled || newMessageDisabled}
         />
@@ -69,6 +72,7 @@ export const ChatInput = ({
           style={{
             width: '36px',
             height: '36px',
+            backgroundColor: computedStyles.chatInput.backgroundColor,
           }}
         >
           <SolidIcon

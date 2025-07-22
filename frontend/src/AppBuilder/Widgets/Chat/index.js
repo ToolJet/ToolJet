@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { validateMessageHistory, validateSingleMessageObject } from './utils/helpers';
 
 import toast from 'react-hot-toast';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
     const darkTheme = localStorage.getItem('darkMode') === 'true';
@@ -41,6 +42,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     const [placeholder, setPlaceholder] = useState(properties.placeholder);
 
     const computedStyles = useComputedStyles(styles);
+    const hoverBgColorValue = getModifiedColor('var(--cc-surface1-surface)', 'hover');
 
     // Add a ref to track pending message events
     const pendingMessageEventRef = useRef(false);
@@ -315,7 +317,11 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     if (!visibility) return null;
 
     return (
-        <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`} style={computedStyles.container}>
+        <div
+            id={id}
+            className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}
+            style={{ ...computedStyles.container, '--cc-chat-hover-bg-color': hoverBgColorValue }}
+        >
             <ChatHeader
                 title={chatTitle}
                 onDownload={downloadChatHistory}

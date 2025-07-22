@@ -26,7 +26,13 @@ export const MessageHeader = ({ type, userName, respondentName, timestamp, onCop
         label="Copy"
         size="small"
         leadingIcon="copy"
-        fill="var(--borders-weak-disabled)"
+        fill="var(--cc-default-icon)"
+        style={{
+          ':hover': {
+            backgroundColor: 'var(--cc-chat-hover-bg-color)',
+          },
+          color: 'var(--cc-primary-text)',
+        }}
       >
         Copy
       </Button>

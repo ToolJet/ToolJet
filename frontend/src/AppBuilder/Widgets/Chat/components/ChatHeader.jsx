@@ -14,7 +14,13 @@ export const ChatHeader = ({ title, onDownload, onClear, enableDownloadHistoryBu
           title="Download chat history"
           disabled={!enableDownloadHistoryButton}
           leadingIcon="pagedownload"
-          fill={enableDownloadHistoryButton ? 'var(--icons-strong)' : 'var(--icons-disabled)'}
+          fill={enableDownloadHistoryButton ? 'var(--cc-default-icon)' : 'var(--icons-disabled)'}
+          style={{
+            // Add hover effect
+            ':hover': {
+              backgroundColor: 'var(--cc-chat-hover-bg-color)',
+            },
+          }}
         />
       </ToolTip>
 
@@ -25,7 +31,13 @@ export const ChatHeader = ({ title, onDownload, onClear, enableDownloadHistoryBu
           iconOnly
           disabled={!enableClearHistoryButton}
           leadingIcon="clearhistory"
-          fill={enableClearHistoryButton ? 'var(--icons-strong)' : 'var(--icons-disabled)'}
+          fill={enableClearHistoryButton ? 'var(--cc-default-icon)' : 'var(--icons-disabled)'}
+          style={{
+            // Add hover effect
+            ':hover': {
+              backgroundColor: 'var(--cc-chat-hover-bg-color)',
+            },
+          }}
         />
       </ToolTip>
     </div>
