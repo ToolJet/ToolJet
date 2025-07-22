@@ -3,10 +3,10 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
 const useAppDarkMode = () => {
-  const { appMode, updateAppMode, isTJDarkMode } = useStore(
+  const { appMode, globalSettingsChanged, isTJDarkMode } = useStore(
     (state) => ({
       appMode: state.globalSettings.appMode,
-      updateAppMode: state.updateAppMode,
+      globalSettingsChanged: state.globalSettingsChanged,
       isTJDarkMode: state.isTJDarkMode,
     }),
     shallow
@@ -23,7 +23,7 @@ const useAppDarkMode = () => {
   }, [appMode, isTJDarkMode]);
 
   return {
-    onAppModeChange: updateAppMode,
+    onAppModeChange: globalSettingsChanged,
     appMode,
     isAppDarkMode,
   };
