@@ -19,6 +19,7 @@ export const TableExposedVariables = ({
   componentName,
   pageIndex = 1,
   lastClickedRow,
+  hasDataChanged,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -213,6 +214,7 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
+    if (!hasDataChanged) return;
     resetRowSelection();
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
@@ -237,7 +239,7 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection]);
+  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection, hasDataChanged]);
 
   useEffect(() => {
     if (lastClickedRow) {
