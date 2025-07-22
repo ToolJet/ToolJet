@@ -212,7 +212,7 @@ function fetchEnvVariables(pluginKind, keyAppend) {
   return key;
 }
 
-export function getAuthUrl(sourceOptions: any, additionalOptions): string {
+export function getAuthUrl(sourceOptions: any, additionalOptions?): string {
   const customQueryParams = sanitizeParams(sourceOptions['custom_query_params']);
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
