@@ -168,14 +168,13 @@ export const createGridSlice = (set, get) => ({
           }
           const sum = layout.top + layout.height;
           return Math.max(max, sum);
-        }, 300);
+        }, 0);
 
         let extraHeight = 0;
 
         if (componentType === 'Container') {
-          const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { showHeader } = properties;
-          const { headerHeight } = styles;
+          const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
+          const { showHeader, headerHeight } = properties;
           if (showHeader && isProperNumber(headerHeight)) {
             extraHeight += headerHeight;
           }
@@ -203,7 +202,10 @@ export const createGridSlice = (set, get) => ({
         } else if (componentType === 'Tabs') {
           extraHeight = 20;
         }
-        maxHeight = currentMax + 50 + extraHeight;
+        maxHeight = currentMax + 40 + extraHeight;
+        if (currentMax === 0) {
+          maxHeight = 300;
+        }
       }
 
       const boxList = Object.keys(currentPageComponents)

@@ -43,6 +43,7 @@ export const Container = ({
     currentLayout,
     isContainer: true,
     componentCount,
+    value: properties.headerHeight,
   });
 
   const isWidgetInContainerDragging = useStore(
@@ -105,7 +106,7 @@ export const Container = ({
     const _height = parseInt(newHeight, 10);
     setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
   };
-
+  
   return (
     <div
       className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
