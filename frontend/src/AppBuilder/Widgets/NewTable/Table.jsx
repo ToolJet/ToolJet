@@ -11,6 +11,7 @@ import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Table = memo(
@@ -78,6 +79,10 @@ export const Table = memo(
     const allAppEvents = useEvents();
 
     const shouldAutogenerateColumns = useRef(false);
+
+    // Create ref for height observation
+    const tableRef = useRef(null);
+    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -147,7 +152,7 @@ export const Table = memo(
       dynamicHeight: properties.dynamicHeight,
       id: id,
       height,
-      value: JSON.stringify(tableData),
+      value: heightChangeValue,
       adjustComponentPositions,
       currentLayout,
       width,
@@ -155,6 +160,7 @@ export const Table = memo(
 
     return (
       <div
+        ref={tableRef}
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
