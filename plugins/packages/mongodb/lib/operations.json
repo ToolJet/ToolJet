@@ -18,6 +18,10 @@
           "value": "list_collections"
         },
         {
+          "name": "Create a collection",
+          "value": "create_collection"
+        },
+        {
           "name": "Find One",
           "value": "find_one"
         },
@@ -681,6 +685,28 @@
         "height": "150px",
         "editorType": "extendedSingleLine"
       }
-    }
+    },
+    "create_collection": {
+  "collection": {
+    "label": "Name",
+    "key": "collection",
+    "type": "codehinter",
+    "lineNumbers": false,
+    "description": "Enter the name of the new collection",
+    "height": "36px",
+    "className": "codehinter-plugins",
+    "placeholder": "sensorData"
+  },
+  "options": {
+    "label": "Options",
+    "key": "options",
+    "type": "codehinter",
+    "mode": "javascript",
+    "placeholder": "{\n  \"capped\": true,\n  \"timeseries\": {\n    \"timeField\": \"timestamp\",\n    \"metaField\": \"sensorInfo\",\n    \"granularity\": \"seconds\",\n    \"bucketMaxSpanSeconds\": 3600,\n    \"bucketRoundingSeconds\": 60\n  },\n  \"expireAfterSeconds\": 86400,\n  \"clusteredIndex\": {\n    \"key\": { \"_id\": 1 },\n    \"unique\": true\n  },\n  \"changeStreamPreAndPostImages\": {\n    \"enabled\": true\n  },\n  \"size\": 10485760,\n  \"max\": 1000,\n  \"storageEngine\": {\n    \"wiredTiger\": {}\n  },\n  \"validator\": {\n    \"$jsonSchema\": {\n      \"bsonType\": \"object\",\n      \"required\": [\"timestamp\", \"sensorInfo\", \"reading\"],\n      \"properties\": {\n        \"timestamp\": { \"bsonType\": \"date\" },\n        \"sensorInfo\": { \"bsonType\": \"object\" },\n        \"reading\": { \"bsonType\": \"number\", \"minimum\": 0 }\n      }\n    }\n  },\n  \"validationLevel\": \"moderate\",\n  \"validationAction\": \"warn\",\n  \"indexOptionDefaults\": {\n    \"storageEngine\": {\n      \"wiredTiger\": {\n        \"configString\": \"block_compressor=zlib\"\n      }\n    }\n  },\n  \"viewOn\": \"rawSensorData\",\n  \"pipeline\": [\n    { \"$match\": { \"sensorInfo.location\": { \"$exists\": true } } },\n    { \"$project\": { \"timestamp\": 1, \"reading\": 1 } }\n  ],\n  \"collation\": {\n    \"locale\": \"en\",\n    \"strength\": 2\n  },\n  \"writeConcern\": {\n    \"w\": \"majority\",\n    \"j\": true,\n    \"wtimeout\": 5000\n  }\n}",
+    "description": "Enter collection options (e.g., capped, size, max)",
+    "height": "150px",
+    "editorType": "extendedSingleLine"
   }
+}
+ }
 }
