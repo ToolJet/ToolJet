@@ -65,7 +65,7 @@ const WidgetWrapper = memo(
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
     const styles = {
       width: width + 'px',
-      height: visibility === false ? '10px' : `${temporaryLayouts?.height ?? height}px`,
+      height: visibility === false ? '10px' : `${height}px`,
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
