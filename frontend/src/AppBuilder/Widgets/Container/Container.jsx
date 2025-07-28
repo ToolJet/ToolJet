@@ -33,7 +33,7 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-  const { dynamicHeight, headerHeight = 80 } = properties;
+  const { dynamicHeight, headerHeight = 80, showHeader } = properties;
 
   useDynamicHeight({
     dynamicHeight: properties.dynamicHeight,
@@ -43,7 +43,7 @@ export const Container = ({
     currentLayout,
     isContainer: true,
     componentCount,
-    value: headerHeight,
+    value: JSON.stringify({ headerHeight, showHeader }),
   });
 
   const isWidgetInContainerDragging = useStore(

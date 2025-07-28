@@ -19,13 +19,13 @@ export const TextArea = (props) => {
 
   useEffect(() => {
     resizeTextArea();
-  }, [width, height, properties.dynamicHeight, value]);
+  }, [width, height, properties.dynamicHeight,properties.placeholder, value]);
 
   useDynamicHeight({
     dynamicHeight: properties.dynamicHeight,
     id,
     height,
-    value,
+    value: JSON.stringify({ value, placeholder: properties.placeholder }),
     adjustComponentPositions,
     currentLayout,
     width,
