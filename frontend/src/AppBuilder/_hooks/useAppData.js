@@ -289,7 +289,7 @@ const useAppData = (
                     slug,
                     viewerEnvironment?.environment?.id
                   )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
           }
@@ -397,7 +397,7 @@ const useAppData = (
           const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
           if (page) {
             // if page is disabled, and not editing redirect to home page
-            const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+            const shouldRedirect = mode !== 'edit' && (page?.restricted || page?.disabled);
 
             if (shouldRedirect) {
               const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);

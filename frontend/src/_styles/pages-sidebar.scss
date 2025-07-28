@@ -140,10 +140,6 @@
         float: right;
     }
 
-    .form-check-input:not(:checked) {
-        background-color: unset !important;
-    }
-
     .accordion-header {
         height: 32px;
 
@@ -593,19 +589,15 @@
 
         .right-sidebar-open {
             width: calc(100% + 300px) !important;
-            position: sticky !important;
-
         }
 
         .left-sidebar-open {
             width: calc(100% + 350px) !important;
-            position: sticky !important;
 
         }
 
         .right-sidebar-open.left-sidebar-open {
             width: calc(100% + 650px) !important;
-            position: sticky !important;
         }
 }
 

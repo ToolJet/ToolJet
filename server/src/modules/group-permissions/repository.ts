@@ -60,7 +60,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
       return manager
         .createQueryBuilder(GroupPermissions, 'group')
         .innerJoin('granular_permissions', 'gp', 'gp.group_id = group.id')
-        .innerJoin('apps_group_permissions', 'agp', 'agp.granular_permission_id = gp.id')
+        .innerJoin('apps_group_permissions', 'agp', "agp.granular_permission_id = gp.id AND agp.app_type = 'front-end'")
         .leftJoin('group_apps', 'ga', 'ga.apps_group_permissions_id = agp.id')
         .leftJoin('group_users', 'gu', 'gu.group_id = group.id')
         .where('group.organization_id = :organizationId', { organizationId })

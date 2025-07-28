@@ -78,7 +78,9 @@ type NewRevampedComponent =
   | 'Tabs'
   | 'Form'
   | 'Image'
-  | 'FilePicker';
+  | 'FilePicker'
+  | 'Icon'
+  | 'Steps';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -105,6 +107,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Form',
   'Image',
   'FilePicker',
+  'Icon',
+  'Steps',
 ];
 
 @Injectable()
@@ -2481,6 +2485,7 @@ function migrateProperties(
       properties.label = '';
     }
 
+    // NumberInput
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
         if (validation.minValue === undefined) {
@@ -2496,15 +2501,19 @@ function migrateProperties(
         delete properties.maxValue;
       }
     }
+
+    // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
     }
 
+    // Form
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
 
+    // Tabs
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
@@ -2521,23 +2530,62 @@ function migrateProperties(
       }
     }
 
+    // Image
     if (componentType === 'Image') {
       if (styles.padding) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }
+    }
 
-      const borderTypeMapping: Record<string, string> = {
-        'rounded-circle': 'circle',
-        rounded: 'rounded',
-        'img-thumbnail': 'thumbnail',
-        none: 'none',
-      };
+    // FilePicker
+    if (componentType === 'FilePicker') {
+      if (properties.enableDropzone) {
+        properties.enableDropzone = {
+          ...properties.enableDropzone,
+          fxActive: properties?.enableDropzone?.fxActive ?? true,
+        };
+      }
+      if (properties.enablePicker) {
+        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+      }
+      if (properties.enableMultiple) {
+        properties.enableMultiple = {
+          ...properties.enableMultiple,
+          fxActive: properties?.enableMultiple?.fxActive ?? true,
+        };
+      }
+      if (properties.fileType && !validation.fileType) {
+        validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.fileType;
+      }
 
-      const mappedShape = borderTypeMapping[styles.borderType?.value];
-      if (mappedShape) {
-        styles.imageShape = { value: mappedShape };
-        delete styles.borderType;
+      if (properties.maxFileCount && !validation.maxFileCount) {
+        validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.maxFileCount;
+      }
+      if (properties.maxSize && !validation.maxSize) {
+        validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+        delete properties.maxSize;
+      }
+      if (properties.minSize && !validation.minSize) {
+        validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+        delete properties.minSize;
+      }
+
+      if (!validation.minFileCount) {
+        validation.minFileCount = { value: '{{0}}' };
+      }
+    }
+
+    // Steps
+    if (componentType === 'Steps') {
+      if (!properties.advanced) {
+        properties.advanced = { value: '{{true}}' };
+      }
+      if (properties.steps && !properties.schema) {
+        properties.schema = properties.steps;
+        delete properties.steps;
       }
     }
   }

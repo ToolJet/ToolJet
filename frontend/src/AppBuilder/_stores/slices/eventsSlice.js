@@ -872,8 +872,14 @@ export const createEventsSlice = (set, get) => ({
             }
           }
           case 'toggle-app-mode': {
-            const { updateAppMode } = get();
-            updateAppMode(event.appMode);
+            const {
+              updateIsTJDarkMode,
+              globalSettings: { appMode },
+            } = get();
+            if (appMode !== 'auto') return;
+            const value = event.appMode === 'dark' ? true : false;
+            localStorage.setItem('darkMode', `${value}`);
+            updateIsTJDarkMode(value);
             return Promise.resolve();
           }
           case 'switch-page': {
@@ -936,6 +942,7 @@ export const createEventsSlice = (set, get) => ({
         eventsSlice,
         queryPanel,
         modules,
+        isTJDarkMode,
         globalSettings: { appMode },
       } = get();
       const { previewQuery } = queryPanel;
@@ -1212,12 +1219,16 @@ export const createEventsSlice = (set, get) => ({
       };
 
       const toggleAppMode = (value) => {
-        if (value && value !== 'light' && value !== 'dark' && value !== 'auto') {
+        if (appMode !== 'auto') {
+          return;
+        }
+        if (value && value !== 'light' && value !== 'dark') {
           return;
         }
         if (!value) {
-          value = appMode === 'dark' ? 'light' : 'dark';
+          value = isTJDarkMode ? 'light' : 'dark';
         }
+
         const event = {
           actionId: 'toggle-app-mode',
           appMode: value,

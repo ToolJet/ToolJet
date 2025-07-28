@@ -35,6 +35,7 @@ export class EmailService implements IEmailService {
   protected WHITE_LABEL_LOGO;
   protected SUB_PATH;
   protected defaultWhiteLabelState: boolean;
+  protected tooljetEdition: string;
 
   constructor(
     protected readonly emailUtilService: EmailUtilService,
@@ -43,6 +44,7 @@ export class EmailService implements IEmailService {
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
+    this.tooljetEdition = getTooljetEdition();
   }
 
   protected registerPartials() {
@@ -98,6 +100,7 @@ export class EmailService implements IEmailService {
       organizationName,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = isOrgInvite
       ? this.defaultWhiteLabelState
@@ -130,6 +133,7 @@ export class EmailService implements IEmailService {
       organizationName,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_invite_user.hbs' : 'invite_user.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -149,13 +153,12 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const subject = 'Reset your password';
     const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
-    const tooljetEdition = getTooljetEdition();
     const templateData = {
       name: firstName || '',
       resetLink: url,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
-      tooljetEdition, // Pass edition to template
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_reset_password.hbs' : 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -183,6 +186,7 @@ export class EmailService implements IEmailService {
       fromAvatar,
       companyName: this.WHITE_LABEL_TEXT,
       companyLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const htmlEmailContent = this.compileTemplate('mention.hbs', templateData);
 

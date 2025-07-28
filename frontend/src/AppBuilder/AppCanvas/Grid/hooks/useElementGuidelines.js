@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { findHighestLevelofSelection } from '../gridUtils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const useElementGuidelines = (boxList, selectedComponents, getResolvedValue, virtualTarget) => {
   const [elementGuidelines, setElementGuidelines] = useState([]);
+  // const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -21,11 +24,14 @@ export const useElementGuidelines = (boxList, selectedComponents, getResolvedVal
         // Early return for non-visible elements
         if (!isVisible) return false;
 
-        // If component is selected, don't show its guidelines
-        if (selectedSet.has(box.id)) return false;
+        // // If component is selected, don't show its guidelines
+        if (!virtualTarget && selectedSet.has(box.id)) return false;
+
+        // If component is a child of the dragging component, don't show its guidelines
+        // if (box.parent?.slice(0, 36) === draggingComponentId?.slice(0, 36)) return false;
 
         // Don't show guidelines for components which are outside the modal specially on main canvas
-        if (virtualTarget && isAnyModalOpen) {
+        if (isAnyModalOpen) {
           if (box.parent === 'canvas' || !box.parent) return false;
         }
 

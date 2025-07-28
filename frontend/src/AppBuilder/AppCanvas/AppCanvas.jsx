@@ -72,7 +72,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
-  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -155,30 +155,30 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     if (!shouldAdjust) return '';
     let offset;
-    if (isViewerSidebarPinned && isPagesSidebarVisible) {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && isPagesSidebarVisible) {
+    if (isViewerSidebarPinned && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && isPagesSidebarVisible) {
+      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && isPagesSidebarVisible) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       }
     } else {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && isPagesSidebarVisible) {
+      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && isPagesSidebarVisible) {
+      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && isPagesSidebarVisible) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       }
     }
 
     if (currentMode === 'edit') {
-      if ((position === 'top' || !isPagesSidebarVisible) && isSidebarOpen && isRightSidebarOpen) {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || !isPagesSidebarVisible) && isSidebarOpen && !isRightSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || !isPagesSidebarVisible) && isRightSidebarOpen && !isSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
         offset = `${RIGHT_SIDEBAR_WIDTH}px`;
       }
     }
@@ -200,7 +200,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             'canvas-container d-flex page-container',
             { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
             { 'overflow-x-auto': currentMode === 'edit' },
-            { 'position-top': position === 'top' || !isPagesSidebarVisible },
+            { 'position-top': position === 'top' || isPagesSidebarHidden },
             { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
           )}
           style={canvasContainerStyles}
