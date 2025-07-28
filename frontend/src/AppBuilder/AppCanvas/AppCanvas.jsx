@@ -174,11 +174,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     }
 
     if (currentMode === 'edit') {
-      if ((position === 'top' || !isPagesSidebarVisible) && isSidebarOpen && isRightSidebarOpen) {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || !isPagesSidebarVisible) && isSidebarOpen && !isRightSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || !isPagesSidebarVisible) && isRightSidebarOpen && !isSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
         offset = `${RIGHT_SIDEBAR_WIDTH}px`;
       }
     }
