@@ -188,7 +188,7 @@ const RenderPageGroup = ({
           position: 'relative',
           ...{ ...computedStyles.pill },
         }}
-        onClick={isSidebarPinned && handleToggle}
+        onClick={handleToggle}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
