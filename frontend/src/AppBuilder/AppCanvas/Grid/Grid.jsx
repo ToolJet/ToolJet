@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -79,13 +79,20 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   // const [isGroupDragging, setIsGroupDragging] = useState(false);
-  const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
+  // const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
+
+  const isWidgetResizable = useMemo(() => {
+    if (virtualTarget) {
+      return false;
+    }
+    return isVerticalExpansionRestricted ? HORIZONTAL_CONFIG : RESIZABLE_CONFIG;
+  }, [isVerticalExpansionRestricted, virtualTarget]);
 
   const getMoveableTarget = useCallback(() => {
     if (virtualTarget) {
@@ -586,7 +593,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-
   if (mode !== 'edit') return null;
 
   return (
@@ -605,13 +611,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={
-          !shouldFreeze
-            ? isVerticalExpansionRestricted
-              ? HORIZONTAL_CONFIG
-              : RESIZABLE_CONFIG
-            : false && mode !== 'view'
-        }
+        resizable={!shouldFreeze ? isWidgetResizable : false && mode !== 'view'}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
