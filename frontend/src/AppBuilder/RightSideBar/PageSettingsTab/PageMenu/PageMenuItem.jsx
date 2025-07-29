@@ -305,7 +305,6 @@ export const PageMenuItem = withRouter(
               </>
             ) : (
               <>
-                {' '}
                 <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
                   <div className="main-page-icon-wrapper">{icon()}</div>
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>

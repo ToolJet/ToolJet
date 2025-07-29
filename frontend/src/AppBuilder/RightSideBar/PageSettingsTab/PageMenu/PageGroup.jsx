@@ -128,7 +128,11 @@ const RenderPageGroup = ({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
-        onToggle(pageGroup.id);
+        // Check if the click is on another accordion item
+        const isClickOnAccordion = event.target.closest('.accordion-item');
+        if (!isClickOnAccordion) {
+          onToggle(pageGroup.id);
+        }
       }
     };
 
@@ -268,7 +272,12 @@ export const RenderPageAndPageGroup = ({
   const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
   const handleAccordionToggle = (groupId) => {
-    setExpandedPageGroupId((prevId) => (prevId === groupId ? null : groupId));
+    setExpandedPageGroupId((prevId) => {
+      if (prevId === groupId) {
+        return null;
+      }
+      return groupId;
+    });
   };
 
   const closeAllAccordions = () => {
