@@ -155,6 +155,7 @@ export default class PostgresqlQueryService implements QueryService {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
         ssl: this.getSslConfig(sourceOptions),
+        statement_timeout: this.STATEMENT_TIMEOUT,
       };
     }
     const connectionOptions: Knex.Config = {
