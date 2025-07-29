@@ -79,6 +79,15 @@ export const Table = memo(
     const allAppEvents = useEvents();
 
     const shouldAutogenerateColumns = useRef(false);
+    const hasDataChanged = useRef(false);
+
+    useEffect(() => {
+      hasDataChanged.current = false;
+    }, [shouldRender]);
+
+    useEffect(() => {
+      hasDataChanged.current = true;
+    }, [restOfProperties.data]);
 
     // Create ref for height observation
     const tableRef = useRef(null);
@@ -188,6 +197,7 @@ export const Table = memo(
           componentName={componentName}
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
+          hasDataChanged={hasDataChanged.current}
         />
       </div>
     );

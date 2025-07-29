@@ -90,3 +90,11 @@
 
     }
 }
+
+.inspector-node-tooltip { 
+    .tooltip-inner {
+        max-height: 110px;
+        max-width: 200px !important;
+        overflow: hidden;
+    }
+}
