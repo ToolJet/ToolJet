@@ -922,9 +922,9 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
-
-            const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
             const componentParentType = target?.widget?.componentType;
+
+            const isModalToCanvas = source.isModal && source.id !== target.id;
             // For now, only doing it for container and form, we need to check it for other components later
             let scrollDelta =
               componentParentType === 'Form' || componentParentType === 'Container'
@@ -1026,7 +1026,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const mainRect = mainCanvas.getBoundingClientRect();
             const modalRect = modalContainer.getBoundingClientRect();
             const relativePosition = {
-              top: modalRect.top - mainRect.top,
+              top: modalRect.top - mainRect.top + (isParentLegacyModal ? 56 : 0), // 56 is the height of the legacy modal header
               right: mainRect.right - modalRect.right + modalContainer.offsetWidth,
               bottom: modalRect.height + (modalRect.top - mainRect.top),
               left: modalRect.left - mainRect.left,
