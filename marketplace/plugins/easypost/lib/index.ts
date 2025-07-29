@@ -1,5 +1,5 @@
 import { QueryError, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions, ErrorResponse, StandardError,EasyPostClient } from './types';
+import { SourceOptions, QueryOptions, ErrorResponse, StandardError, EasyPostClient } from './types';
 import EasyPost from '@easypost/api';
 import * as operations from './query_operations';
 
@@ -10,7 +10,7 @@ export default class EasyPostPlugin {
     }
 
     if (error instanceof Error) {
-      return { 
+      return {
         message: error.message,
         ...(error.stack && { details: { stack: error.stack } })
       };
@@ -36,19 +36,27 @@ export default class EasyPostPlugin {
   async getConnection(sourceOptions: SourceOptions): Promise<EasyPostClient> {
     try {
       const { api_key } = sourceOptions;
-      if (!api_key) {
+
+      if (!api_key?.trim()) {
         throw new Error('API key is required');
       }
-      if (!api_key.startsWith('EZTEST_') && !api_key.startsWith('EZPROD_')) {
-        throw new Error('Invalid API key format. Must start with EZTEST_ or EZPROD_');
-      }
-      return new EasyPost(api_key);
+
+      const client = new EasyPost(api_key.trim());
+
+      await client.Address.all({ page_size: 1 });
+
+      return client;
     } catch (error) {
-      const standardized = this.standardizeError(error);
       throw new QueryError(
-        'Failed to create EasyPost connection',
-        standardized.message,
-        standardized.details
+        'Connection failed',
+        error instanceof Error ? error.message : 'Invalid API key',
+        {
+          code: 'EASYPOST_CONNECTION_ERROR',
+          details: {
+            suggestion: 'Verify your key is active at easypost.com/dashboard',
+            rawError: error instanceof Error ? error.stack : null
+          }
+        }
       );
     }
   }
@@ -56,14 +64,22 @@ export default class EasyPostPlugin {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       const client = await this.getConnection(sourceOptions);
-      await client.User.retrieve('me', '');
-      return { status: 'ok' };
+      await client.Address.all({
+        page_size: 1
+      });
+      return {
+        status: 'ok',
+        message: 'Successfully connected to EasyPost API'
+      };
     } catch (error) {
-      const standardized = this.standardizeError(error);
+      console.error('Connection test failed:', error);
       throw new QueryError(
         'EasyPost connection test failed',
-        standardized.message,
-        standardized.details
+        error instanceof Error ? error.message : 'Invalid API key',
+        {
+          code: 'CONNECTION_FAILED',
+          details: error instanceof Error ? { stack: error.stack } : {}
+        }
       );
     }
   }

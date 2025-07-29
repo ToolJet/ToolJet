@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Easypost datasource",
@@ -33,8 +32,13 @@
         "label": "API Key",
         "key": "api_key",
         "type": "password",
-        "description": "Your EasyPost API key (starts with EZTEST_ or EZPROD_)",
-        "hint": "Get your API key from EasyPost dashboard"
+        "description": "Your EasyPost API key (starts with EZAK)",
+        "hint": "Copy exactly from EasyPost dashboard",
+        "validate": {
+          "required": true,
+          "pattern": "^EZAK",
+          "patternError": "Key must start with EZAK"
+        }
       }
     }
   },

@@ -17,16 +17,18 @@ export async function createAddress(client: EasyPostClient, options: QueryOption
       throw new EasyPostOperationError('create_address', {}, 'Address is required');
     }
 
-    const address = typeof options.address === 'string' 
+    const address = typeof options.address === 'string'
       ? JSON.parse(options.address) as AddressData
       : options.address;
 
-    const verification = options.verify === 'none' 
-      ? undefined 
-      : [options.verify as 'delivery' | 'zip4'];
+    // Handle verification options correctly
+    const createParams: any = { ...address };
 
-    const addressWithVerification = verification ? { ...address, verify: verification } : address;
-    return await client.Address.create(addressWithVerification);
+    if (options.verify && options.verify !== 'none') {
+      createParams.verify = [options.verify];
+    }
+
+    return await client.Address.create(createParams);
   } catch (error) {
     if (error instanceof SyntaxError) {
       throw new EasyPostOperationError(
@@ -35,10 +37,25 @@ export async function createAddress(client: EasyPostClient, options: QueryOption
         'Invalid JSON format for address'
       );
     }
+
+    // Handle EasyPost API errors specifically
+    if (error instanceof Error) {
+      const details = {
+        operation: 'create_address',
+        address: options.address,
+        verify: options.verify
+      };
+
+      throw new EasyPostOperationError(
+        'create_address',
+        details,
+        `EasyPost API error: ${error.message}`
+      );
+    }
+
     throw error;
   }
 }
-
 export async function createShipment(client: EasyPostClient, options: QueryOptions): Promise<object> {
   try {
     if (!options.shipment) {
