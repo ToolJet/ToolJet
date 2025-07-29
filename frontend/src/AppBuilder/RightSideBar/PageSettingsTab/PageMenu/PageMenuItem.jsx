@@ -279,7 +279,7 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme'} ${
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
               (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
             }`}
             style={{
@@ -398,7 +398,11 @@ export const PageMenuItem = withRouter(
                           toggleShowPageOptions(false);
                         }}
                       >
-                        <Popover style={{ zIndex: '99999', position: 'absolute' }} id="edit-page-popover">
+                        <Popover
+                          style={{ zIndex: '99999', position: 'absolute' }}
+                          id="edit-page-popover"
+                          className={`${darkMode && 'dark-theme theme-dark'}`}
+                        >
                           <div className="menu-options mb-0">
                             <PageOptions
                               text="Edit page details"

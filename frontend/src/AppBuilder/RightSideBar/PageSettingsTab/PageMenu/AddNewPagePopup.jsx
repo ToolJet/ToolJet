@@ -249,7 +249,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   };
 
   return (
-    <Popover id="add-new-page-popup" ref={ref} {...props} className={`add-new-page-popup ${darkMode && 'dark-theme'}`}>
+    <Popover
+      id="add-new-page-popup"
+      ref={ref}
+      {...props}
+      className={`add-new-page-popup ${darkMode && 'dark-theme theme-dark'}`}
+    >
       <Popover.Header>
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
@@ -615,7 +620,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
               </div>
             )}
             {!forceCodeBox && (
-              <div className="form-check form-switch m-0">
+              <div className="form-switch m-0">
                 <input
                   className="form-check-input"
                   type="checkbox"

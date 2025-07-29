@@ -541,7 +541,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             </div>
 
             {!forceCodeBox && (
-              <div className="form-check form-switch m-0">
+              <div className="form-switch m-0">
                 <input
                   className="form-check-input"
                   type="checkbox"
