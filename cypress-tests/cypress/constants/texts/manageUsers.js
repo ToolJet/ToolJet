@@ -7,7 +7,7 @@ export const usersText = {
     usersFilterLabel: "Showing",
   },
   usersPageTitle: "users",
-  breadcrumbUsersPageTitle: " Users",
+  breadcrumbUsersPageTitle: "Users",
   adminUserName: "The Developer",
   adminUserEmail: "dev@tooljet.io",
   adminUserState: "Archive",
