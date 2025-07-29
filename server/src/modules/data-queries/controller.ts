@@ -29,7 +29,12 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
-  index(@User() user: UserEntity, @AppDecorator() app: App, @Param('versionId') versionId: string, @Query('mode') mode?: string) {
+  index(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('versionId') versionId: string,
+    @Query('mode') mode?: string
+  ) {
     return this.dataQueriesService.getAll(user, app, versionId, mode);
   }
 
