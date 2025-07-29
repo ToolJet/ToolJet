@@ -245,5 +245,13 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "xero",
+    "description": "api plugin from xero",
+    "version": "1.0.0",
+    "id": "xero",
+    "author": "Tooljet",
+    "timestamp": "Mon, 21 Jul 2025 06:07:06 GMT"
   }
 ]

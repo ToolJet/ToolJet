@@ -1,0 +1,85 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Xero Datasource",
+  "description": "Integrate with Xero Accounting API",
+  "type": "api",
+  "source": {
+    "name": "Xero",
+    "kind": "xero",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {},
+    "customTesting": true
+  },
+  "defaults": {
+    "access_token_custom_headers": {
+      "value": [["Content-Type", "application/x-www-form-urlencoded"]]
+    },
+    "redirect_url": {
+      "value": "http://localhost:8082/oauth2/authorize",
+      "encrypted": false
+    },
+    "auth_url": {
+      "value": "https://login.xero.com/identity/connect/authorize",
+      "encrypted": false
+    },
+    "allowed_auth_types": {
+      "value": "oauth2",
+      "encrypted": false
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "openid profile email offline_access accounting.transactions accounting.contacts accounting.reports.read accounting.settings"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://identity.xero.com/connect/token"
+    },
+    "tenant_id": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "tenant_id": {
+    "key": "tenant_id",
+    "type": "text",
+    "label": "Tenant ID",
+    "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
+    },
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for Xero integration",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ],
+          "basic": [
+            "password",
+            "username"
+          ]
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": false
+      }
+    }
+  },
+  "required": ["client_id", "client_secret", "tenant_id"]
+}
