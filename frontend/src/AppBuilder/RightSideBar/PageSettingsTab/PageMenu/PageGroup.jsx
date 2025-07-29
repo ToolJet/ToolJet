@@ -263,7 +263,6 @@ const RenderPageGroup = ({
 
       <div
         style={{
-          position: 'fixed',
           top: accordionPosition.top,
           left: accordionPosition.left,
           zIndex: 1060,
@@ -428,7 +427,7 @@ export const RenderPageAndPageGroup = ({
             onHide={() => setShowPopover(false)}
             rootClose
           >
-            <Popover id="more-nav-btns">
+            <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
               <Popover.Body>
                 {overflowLinks.map((page, index) => {
                   if (
