@@ -748,6 +748,10 @@
 }
 
 // hidecolumn popover in table footer
+.popover.dropdown-table-column-hide-common-popover {
+  overflow-y: auto !important;
+}
+
 .dropdown-table-column-hide-common {
   width: 100%;
   color: var(--slate12) !important;

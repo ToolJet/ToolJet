@@ -17,7 +17,8 @@ const NEW_WIDGETS = [
   'EmailInput',
   'PhoneInput',
   'CurrencyInput',
-  'RangeSliderV2'
+  'RangeSliderV2',
+  'Chat',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {
