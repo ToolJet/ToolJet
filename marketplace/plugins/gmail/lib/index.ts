@@ -1,3 +1,5 @@
+import got, { OptionsOfTextResponseBody } from "got";
+
 import {
   QueryError,
   QueryResult,
@@ -6,18 +8,16 @@ import {
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from "@tooljet-marketplace/common";
+
 import {
   SourceOptions,
   QueryOptions,
   ConvertedFormat,
   AccessDetailsFromParams,
 } from "./types";
-import got, { OptionsOfTextResponseBody } from "got";
 
 export default class Gmail implements QueryService {
   authUrl(sourceOptions: SourceOptions): string {
-    console.log("Generating auth URL for Gmail with options:", sourceOptions);
-
     const { client_id, oauth_type } = sourceOptions;
 
     const clientId =
@@ -48,13 +48,6 @@ export default class Gmail implements QueryService {
     sourceOptions: AccessDetailsFromParams["sourceOptions"],
     resetSecureData?: AccessDetailsFromParams["resetSecureData"]
   ) {
-    console.log(
-      "Fetching access details from Gmail with auth code:",
-      authCode,
-      "and source options:",
-      sourceOptions
-    );
-
     if (resetSecureData) {
       return [
         ["access_token", ""],
@@ -62,7 +55,6 @@ export default class Gmail implements QueryService {
       ];
     }
 
-    // ToDo: Better type annotation for sourceOptions
     let clientId: string | undefined, clientSecret: string | undefined;
 
     for (const item of sourceOptions) {
@@ -77,8 +69,10 @@ export default class Gmail implements QueryService {
     const accessTokenUrl = "https://oauth2.googleapis.com/token";
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
+
     const fullUrl = `${host}${subpath ? subpath : "/"}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
+
     const grantType = "authorization_code";
     const customParams = { prompt: "consent", access_type: "offline" };
 
@@ -106,10 +100,6 @@ export default class Gmail implements QueryService {
         throw Error("Could not connect to Gmail");
       }
 
-      // ToDo: Remove debug logs
-
-      console.log("Received access details:", result);
-
       if (result["access_token"]) {
         authDetails.push(["access_token", result["access_token"]]);
       }
@@ -132,8 +122,6 @@ export default class Gmail implements QueryService {
   }
 
   async refreshToken(sourceOptions: any) {
-    console.log("Refreshing token for Gmail with options:", sourceOptions);
-
     if (!sourceOptions["refresh_token"]) {
       throw new QueryError(
         "Query could not be completed",
@@ -141,16 +129,19 @@ export default class Gmail implements QueryService {
         {}
       );
     }
+
     const accessTokenUrl = "https://oauth2.googleapis.com/token";
+    const grantType = "refresh_token";
+
     const clientId = sourceOptions.client_id;
     const clientSecret = sourceOptions.client_secret;
-    const grantType = "refresh_token";
+    const refreshToken = sourceOptions.refresh_token;
 
     const data = {
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: grantType,
-      refresh_token: sourceOptions["refresh_token"],
+      refresh_token: refreshToken,
     };
 
     const accessTokenDetails = {};
@@ -161,6 +152,7 @@ export default class Gmail implements QueryService {
         json: data,
         headers: { "Content-Type": "application/json" },
       });
+
       const result = JSON.parse(response.body);
 
       if (!(response.statusCode >= 200 || response.statusCode < 300)) {
@@ -191,9 +183,6 @@ export default class Gmail implements QueryService {
         );
       }
     } catch (error) {
-      console.error(
-        `Error while REST API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
-      );
       throw new QueryError(
         "Could not connect to Gmail",
         JSON.stringify({
@@ -203,6 +192,7 @@ export default class Gmail implements QueryService {
         {}
       );
     }
+
     return accessTokenDetails;
   }
 
@@ -213,66 +203,59 @@ export default class Gmail implements QueryService {
     dataSourceUpdatedAt: string,
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
-    console.log(
-      "Running query for Gmail with source options:",
-      sourceOptions,
-      "and query options:",
-      queryOptions,
-      "context:",
-      context
-    );
-
     let result = {};
+
     if (sourceOptions["oauth_type"] === "tooljet_app") {
       sourceOptions["client_id"] = process.env.GOOGLE_CLIENT_ID;
       sourceOptions["client_secret"] = process.env.GOOGLE_CLIENT_SECRET;
     }
 
-    const operation = queryOptions.operation;
+    const { operation, path, params } = queryOptions;
+
     const accessToken = sourceOptions["access_token"];
 
     const baseUrl = "https://gmail.googleapis.com";
-    const path = queryOptions["path"];
     let url = `${baseUrl}${path}`;
 
-    const pathParams = queryOptions["params"]["path"];
-    const queryParams = queryOptions["params"]["query"];
-    const bodyParams = queryOptions["params"]["request"];
+    const pathParams = params.path || {};
+    const queryParams = params.query || {};
+    const bodyParams = params.request || {};
 
     for (const param of Object.keys(pathParams)) {
       url = url.replace(`{${param}}`, pathParams[param]);
     }
 
     let requestOptions;
+
     if (sourceOptions["multiple_auth_enabled"]) {
       const customHeaders = { "tj-x-forwarded-for": "::1" };
-      const newSourcOptions = this.constructSourceOptions(sourceOptions);
+
+      const newSourceOptions = this.constructSourceOptions(sourceOptions);
+
       const authValidatedRequestOptions = this.convertQueryOptions(
         queryOptions,
         customHeaders
       );
 
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
-        newSourcOptions,
+        newSourceOptions,
         context,
         authValidatedRequestOptions as any
       );
+
       if (_requestOptions.status === "needs_oauth") return _requestOptions;
+
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
     } else {
-      requestOptions =
-        operation === "get" || operation === "delete"
-          ? {
-              method: operation,
-              headers: this.getAuthHeader(accessToken),
-              searchParams: queryParams,
-            }
-          : {
-              method: operation,
-              headers: this.getAuthHeader(accessToken),
-              json: bodyParams,
-              searchParams: queryParams,
-            };
+      requestOptions = {
+        method: operation,
+        headers: this.getAuthHeader(accessToken),
+        searchParams: queryParams,
+        json:
+          operation === "get" || operation === "delete"
+            ? undefined
+            : bodyParams,
+      };
     }
     try {
       const response = await got(url, requestOptions);
@@ -368,11 +351,11 @@ export default class Gmail implements QueryService {
       scopes: encodeURIComponent(scope),
     };
 
-    const newSourcOptions = {
+    const newSourceOptions = {
       ...sourceOptions,
       ...addSourceOptions,
     };
 
-    return newSourcOptions;
+    return newSourceOptions;
   }
 }
