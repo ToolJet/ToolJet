@@ -285,24 +285,28 @@ export const RenderPageAndPageGroup = ({
           page.isPageGroup &&
           page.children?.length === 0 &&
           labelStyle?.label?.hidden &&
-          (currentMode === 'view'
-            ? page.children.some((child) => {
-                const pageVisibility = getPagesVisibility('canvas', child?.id);
-                return pageVisibility === false && child?.restricted === false && !child?.disabled;
-              })
-            : true)
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return (
+              pageVisibility === false &&
+              !child?.disabled &&
+              (currentMode === 'view' ? child?.restricted === false : true)
+            );
+          })
         ) {
           return null;
         }
         if (
           page.children &&
           page.isPageGroup &&
-          (currentMode === 'view'
-            ? page.children.some((child) => {
-                const pageVisibility = getPagesVisibility('canvas', child?.id);
-                return pageVisibility === false && child?.restricted === false && !child?.disabled;
-              })
-            : true)
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return (
+              pageVisibility === false &&
+              !child?.disabled &&
+              (currentMode === 'view' ? child?.restricted === false : true)
+            );
+          })
         ) {
           return (
             <>
@@ -374,24 +378,28 @@ export const RenderPageAndPageGroup = ({
                     page.isPageGroup &&
                     page.children.length === 0 &&
                     labelStyle?.label?.hidden &&
-                    (currentMode === 'view'
-                      ? page.children.some((child) => {
-                          const pageVisibility = getPagesVisibility('canvas', child?.id);
-                          return pageVisibility === false && child?.restricted === false && !child?.disabled;
-                        })
-                      : true)
+                    page.children.some((child) => {
+                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+                      return (
+                        pageVisibility === false &&
+                        !child?.disabled &&
+                        (currentMode === 'view' ? child?.restricted === false : true)
+                      );
+                    })
                   ) {
                     return null;
                   }
                   if (
                     page.children &&
                     page.isPageGroup &&
-                    (currentMode === 'view'
-                      ? page.children.some((child) => {
-                          const pageVisibility = getPagesVisibility('canvas', child?.id);
-                          return pageVisibility === false && child?.restricted === false && !child?.disabled;
-                        })
-                      : true)
+                    page.children.some((child) => {
+                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+                      return (
+                        pageVisibility === false &&
+                        !child?.disabled &&
+                        (currentMode === 'view' ? child?.restricted === false : true)
+                      );
+                    })
                   ) {
                     return (
                       <>
