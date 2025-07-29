@@ -16,6 +16,34 @@ and component-level issues.
 
 <img className="screenshot-full img-s" src="/img/app-builder/debugging/error-logs/debugger.png" alt="Events Architecture Diagram"/>
 
+## Custom Logs
+
+In ToolJet, you can use custom log methods to capture errors, debug info, and runtime events in your app. These functions work similarly to JavaScript’s console.log() but offer clearer intent and structured logging.
+
+### Log Errors
+
+Logs an error. Useful for failed API calls, exceptions, or critical issues.
+
+```js
+actions.logError("API failed");
+```
+
+### Log Information
+
+Logs informational messages. Use for successful actions or state changes.
+
+```js
+actions.logInfo("User logged in");
+```
+
+### Log Messages
+
+Generic log for debugging or checkpoints.
+
+```js
+actions.log("Reached step 2");
+```
+
 ## Use Case
  
 ### Debugging Queries
