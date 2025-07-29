@@ -245,5 +245,13 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "Gmail",
+    "description": "Integrate with Gmail API to organise and manage emails",
+    "version": "1.0.0",
+    "id": "gmail",
+    "author": "Tooljet",
+    "timestamp": "Mon, 21 Jul 2025 07:17:51 GMT"
   }
 ]
