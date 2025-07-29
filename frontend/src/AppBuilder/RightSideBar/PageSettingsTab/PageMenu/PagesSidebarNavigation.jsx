@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import _ from 'lodash';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import _, { set } from 'lodash';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
@@ -44,7 +44,7 @@ export const PagesSidebarNavigation = ({
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
-  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
+  const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -71,22 +71,40 @@ export const PagesSidebarNavigation = ({
   const [measuredMoreButtonWidth, setMeasuredMoreButtonWidth] = useState(0);
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
-  const pagesTree = buildTree(pages, !!labelStyle?.label?.hidden);
-  const mainNavBarPages = pagesTree.filter((page) => {
-    const pageVisibility = getPagesVisibility('canvas', page?.id);
-    return (
-      (!page?.restricted || currentMode !== 'view') &&
-      !pageVisibility &&
-      !page?.disabled &&
-      (!page?.isPageGroup ||
-        (page.children?.length > 0 &&
-          page.children.some((child) => !child?.disabled) &&
-          page.children.some((child) => {
-            const pageVisibility = getPagesVisibility('canvas', child?.id);
-            return pageVisibility === false;
-          })))
-    );
-  });
+
+  const labelStyle = useMemo(
+    () => ({
+      icon: {
+        hidden: properties?.style === 'text',
+      },
+      label: {
+        hidden:
+          properties?.style === 'icon' ||
+          (style === 'texticon' && collapsable && !isSidebarPinned && properties?.position != 'top'),
+      },
+    }),
+    [properties?.style, style, collapsable, isSidebarPinned, properties?.position]
+  );
+
+  const pagesTree = useMemo(() => buildTree(pages, !!labelStyle?.label?.hidden), [pages, labelStyle]);
+
+  const mainNavBarPages = useMemo(() => {
+    return pagesTree.filter((page) => {
+      const pageVisibility = pagesVisibilityState[page?.id]?.hidden ?? false;
+      return (
+        (!page?.restricted || currentMode !== 'view') &&
+        !pageVisibility &&
+        !page?.disabled &&
+        (!page?.isPageGroup ||
+          (page.children?.length > 0 &&
+            page.children.some((child) => !child?.disabled) &&
+            page.children.some((child) => {
+              const pageVisibility = pagesVisibilityState[child?.id]?.hidden ?? false;
+              return pageVisibility === false;
+            })))
+      );
+    });
+  }, [pagesTree, pagesVisibilityState, currentMode]);
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
@@ -240,7 +258,14 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(finalVisible);
     setOverflowLinks(finalOverflow);
-  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth, canvasMaxWidth]);
+  }, [
+    mainNavBarPages,
+    position,
+    measuredHeaderWidth,
+    measuredDarkModeToggleWidth,
+    measuredMoreButtonWidth,
+    canvasMaxWidth,
+  ]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -256,7 +281,7 @@ export const PagesSidebarNavigation = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [pages, calculateOverflow, position, hideHeader, hideLogo, collapsable, isSidebarPinned, style]);
+  }, [calculateOverflow]);
 
   if (isMobileDevice) {
     return null;
@@ -311,16 +336,6 @@ export const PagesSidebarNavigation = ({
         };
       }
     }
-  };
-
-  const labelStyle = {
-    icon: {
-      hidden: properties?.style === 'text',
-    },
-    label: {
-      hidden:
-        properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && properties?.position != 'top'),
-    },
   };
 
   const getAbsoluteUrl = (url) => {
@@ -473,8 +488,11 @@ export const PagesSidebarNavigation = ({
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
-            style === 'icon' ||
-            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
+            (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
+            (style === 'texticon' &&
+              (collapsable ? !isSidebarPinned : false) &&
+              position === 'side' &&
+              !isPagesSidebarHidden),
           'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
           // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
