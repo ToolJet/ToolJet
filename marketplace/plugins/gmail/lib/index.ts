@@ -6,16 +6,24 @@ import {
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from "@tooljet-marketplace/common";
-import { SourceOptions, QueryOptions, ConvertedFormat } from "./types";
+import {
+  SourceOptions,
+  QueryOptions,
+  ConvertedFormat,
+  AccessDetailsFromParams,
+} from "./types";
 import got, { OptionsOfTextResponseBody } from "got";
 
 export default class Gmail implements QueryService {
   authUrl(sourceOptions: SourceOptions): string {
     console.log("Generating auth URL for Gmail with options:", sourceOptions);
 
-    const {
-      client_id: { value: clientId },
-    } = sourceOptions;
+    const { client_id, oauth_type } = sourceOptions;
+
+    const clientId =
+      oauth_type?.value === "tooljet_app"
+        ? process.env.GOOGLE_CLIENT_ID
+        : client_id?.value;
 
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -36,9 +44,9 @@ export default class Gmail implements QueryService {
   }
 
   async accessDetailsFrom(
-    authCode: string,
-    sourceOptions: any, // ToDo: Better type annotation for sourceOptions
-    resetSecureData = false
+    authCode: AccessDetailsFromParams["authCode"],
+    sourceOptions: AccessDetailsFromParams["sourceOptions"],
+    resetSecureData?: AccessDetailsFromParams["resetSecureData"]
   ) {
     console.log(
       "Fetching access details from Gmail with auth code:",
@@ -200,7 +208,7 @@ export default class Gmail implements QueryService {
 
   async run(
     sourceOptions: any,
-    queryOptions: any,
+    queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
     context?: { user?: User; app?: App }
