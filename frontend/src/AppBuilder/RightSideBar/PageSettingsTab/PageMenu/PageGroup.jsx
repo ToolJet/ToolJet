@@ -102,6 +102,7 @@ const RenderPageGroup = ({
   currentMode,
 }) => {
   const [hovered, setHovered] = useState(false);
+  const [accordionPosition, setAccordionPosition] = useState({ top: 0, left: 0, width: 0 });
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
   const computedStyles = computeStyles('', hovered);
@@ -126,9 +127,44 @@ const RenderPageGroup = ({
   };
 
   useEffect(() => {
+    const updatePosition = () => {
+      if (isExpanded && groupItemRootRef.current) {
+        const rect = groupItemRootRef.current.getBoundingClientRect();
+        setAccordionPosition({
+          top: rect.bottom,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    if (isExpanded) {
+      updatePosition();
+
+      let ticking = false;
+      const handleScroll = () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            updatePosition();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+      window.addEventListener('resize', handleScroll, { passive: true });
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll, { passive: true, capture: true });
+        window.removeEventListener('resize', handleScroll, { passive: true });
+      };
+    }
+  }, [isExpanded]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
-        // Check if the click is on another accordion item
         const isClickOnAccordion = event.target.closest('.accordion-item');
         if (!isClickOnAccordion) {
           onToggle(pageGroup.id);
@@ -185,6 +221,10 @@ const RenderPageGroup = ({
         groupItemRootRef.current = el;
       }}
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
+      style={{
+        position: 'relative',
+        zIndex: isExpanded ? 1000 : 'auto',
+      }}
     >
       <div
         className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
@@ -221,7 +261,15 @@ const RenderPageGroup = ({
         </div>
       </div>
 
-      <div className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}>
+      <div
+        style={{
+          position: 'fixed',
+          top: accordionPosition.top,
+          left: accordionPosition.left,
+          zIndex: 1060,
+        }}
+        className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}
+      >
         <div ref={contentRef} className="accordion-content">
           {pages.map((page) => (
             <RenderPage

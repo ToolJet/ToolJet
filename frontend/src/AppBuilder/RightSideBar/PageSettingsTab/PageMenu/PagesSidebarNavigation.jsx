@@ -425,6 +425,7 @@ export const PagesSidebarNavigation = ({
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
+  console.log({ isPagesSidebarVisible, position, currentMode, isSidebarOpen, isRightSidebarOpen });
 
   return (
     <div
@@ -438,8 +439,8 @@ export const PagesSidebarNavigation = ({
       }}
       className={cx({
         'right-sidebar-open':
-          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || !isPagesSidebarVisible),
-        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || !isPagesSidebarVisible),
+          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
+        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
       })}
     >
       <button
