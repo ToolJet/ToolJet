@@ -316,6 +316,7 @@
                 padding-right: 0px !important;
                 flex-shrink: 1;
                 min-width: 0;
+                background-color: unset;
             }
             &.tj-list-item-selected {
                 border-radius: 6px;
@@ -363,6 +364,7 @@
                 flex-direction: column-reverse;
                 margin-bottom: 0px;
                 gap: 0px;
+                align-items: center;
                 .cursor-pointer {
                    img {
                         margin-bottom: 20px;
@@ -585,9 +587,23 @@
             position: sticky !important;
         }
     }
+
+        .right-sidebar-open {
+            width: calc(100% + 300px) !important;
+        }
+
+        .left-sidebar-open {
+            width: calc(100% + 350px) !important;
+
+        }
+
+        .right-sidebar-open.left-sidebar-open {
+            width: calc(100% + 650px) !important;
+        }
 }
 
 #more-nav-btns {
+    background: var(--background-surface-layer-01);
     .popover-body{
         padding: 4px;
         width: fit-content;

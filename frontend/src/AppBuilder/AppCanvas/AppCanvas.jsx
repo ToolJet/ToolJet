@@ -173,12 +173,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       }
     }
 
-    if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
-      offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+    if (currentMode === 'edit') {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
+        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
+        offset = `${LEFT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
+        offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+      }
     }
 
     return `calc(100% + ${offset})`;
@@ -214,6 +216,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               isSidebarPinned={isViewerSidebarPinned}
               toggleSidebarPinned={toggleSidebarPinned}
               darkMode={darkMode}
+              canvasMaxWidth={canvasMaxWidth}
             />
           )}
           <div

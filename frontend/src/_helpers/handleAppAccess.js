@@ -63,7 +63,7 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
             switchOrganization(componentType, errorObj?.organizationId, redirectPath);
             return;
           }
-          if (errorObj?.type === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
+          if (error?.data?.message === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
             redirectToErrorPage(ERROR_TYPES.NO_ACCESSIBLE_PAGES);
             return;
           }

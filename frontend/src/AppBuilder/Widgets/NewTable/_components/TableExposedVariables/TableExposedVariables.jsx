@@ -242,6 +242,15 @@ export const TableExposedVariables = ({
   }, [lastClickedRow, setExposedVariables]);
 
   useEffect(() => {
+    if (selectedRows.length === 0) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    }
+  }, [selectedRows, setExposedVariables]);
+
+  useEffect(() => {
     if (allowSelection) {
       fireEvent('onRowClicked');
     }
