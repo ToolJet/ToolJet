@@ -442,8 +442,12 @@ export default function Grid({ gridWidth, currentLayout }) {
       useStore.getState().setHoveredComponentBoundaryId(targetId);
       const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
       const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
-      if (moveableControlBox && isHorizontallyExpandable) {
-        moveableControlBox.classList.add('moveable-horizontal-only');
+      if (moveableControlBox) {
+        if (isHorizontallyExpandable) {
+          moveableControlBox.classList.add('moveable-horizontal-only');
+        } else {
+          moveableControlBox.classList.remove('moveable-horizontal-only');
+        }
       }
       setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
@@ -458,7 +462,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       moveableBox.removeEventListener('mouseover', showConfigHandle);
       moveableBox.removeEventListener('mouseout', hideConfigHandle);
     };
-  }, []);
+  }, [moveableRef?.current?._elementTargets?.length]);
 
   const handleDragGroupEnd = (e) => {
     try {
@@ -586,7 +590,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-
+  console.log('moveableRef', moveableRef);
   if (mode !== 'edit') return null;
 
   return (
