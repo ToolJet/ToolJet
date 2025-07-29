@@ -139,9 +139,9 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
         style={{ position: 'relative', width: '100%' }}
       >
         <div
-          className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme' : ''} ${
-            (showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''
-          }`}
+          className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
+            darkMode ? 'dark-theme theme-dark' : ''
+          } ${(showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''}`}
           onClick={() => {
             handleOpenPopup('group', page);
           }}
@@ -198,7 +198,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                       toggleShowPageOptions(false);
                     }}
                   >
-                    <Popover id="edit-page-popover">
+                    <Popover id="edit-page-popover" className={`${darkMode && 'dark-theme theme-dark'}`}>
                       <div className="menu-options mb-0">
                         <PageOptions
                           text="Edit group details"

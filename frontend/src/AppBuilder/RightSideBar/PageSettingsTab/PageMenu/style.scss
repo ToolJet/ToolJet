@@ -421,3 +421,11 @@
     fill: var(--indigo1) !important;
 }
 }
+
+.page-options-dark {
+    background-color: var(--base) !important;
+
+    &:hover {
+        background-color: var(--slate3) !important;
+    }
+}
