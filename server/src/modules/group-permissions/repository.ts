@@ -55,7 +55,12 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
-  async getAllUserGroupsAndRoles(userId: string, appId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions[]> {
+  async getAllUserGroupsAndRoles(
+    userId: string,
+    appId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<GroupPermissions[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return manager
         .createQueryBuilder(GroupPermissions, 'group')
@@ -78,7 +83,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         .select(['group.id AS id'])
         .groupBy('group.id')
         .distinct(true)
-        .getRawMany()
+        .getRawMany();
     }, manager);
   }
 
