@@ -249,6 +249,15 @@ export const TableExposedVariables = ({
   }, [lastClickedRow, setExposedVariables]);
 
   useEffect(() => {
+    if (selectedRows.length === 0) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    }
+  }, [selectedRows, setExposedVariables]);
+
+  useEffect(() => {
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
