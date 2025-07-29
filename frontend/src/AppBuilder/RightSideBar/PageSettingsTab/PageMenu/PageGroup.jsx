@@ -265,6 +265,7 @@ export const RenderPageAndPageGroup = ({
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
   const handleAccordionToggle = (groupId) => {
     setExpandedPageGroupId((prevId) => (prevId === groupId ? null : groupId));
@@ -285,7 +286,10 @@ export const RenderPageAndPageGroup = ({
           page.children?.length === 0 &&
           labelStyle?.label?.hidden &&
           (currentMode === 'view'
-            ? page.children.some((child) => child?.restricted === false && !child?.disabled)
+            ? page.children.some((child) => {
+                const pageVisibility = getPagesVisibility('canvas', child?.id);
+                return pageVisibility === false && child?.restricted === false && !child?.disabled;
+              })
             : true)
         ) {
           return null;
@@ -294,7 +298,10 @@ export const RenderPageAndPageGroup = ({
           page.children &&
           page.isPageGroup &&
           (currentMode === 'view'
-            ? page.children.some((child) => child?.restricted === false && !child?.disabled)
+            ? page.children.some((child) => {
+                const pageVisibility = getPagesVisibility('canvas', child?.id);
+                return pageVisibility === false && child?.restricted === false && !child?.disabled;
+              })
             : true)
         ) {
           return (
@@ -368,7 +375,10 @@ export const RenderPageAndPageGroup = ({
                     page.children.length === 0 &&
                     labelStyle?.label?.hidden &&
                     (currentMode === 'view'
-                      ? page.children.some((child) => child?.restricted === false && !child?.disabled)
+                      ? page.children.some((child) => {
+                          const pageVisibility = getPagesVisibility('canvas', child?.id);
+                          return pageVisibility === false && child?.restricted === false && !child?.disabled;
+                        })
                       : true)
                   ) {
                     return null;
@@ -377,7 +387,10 @@ export const RenderPageAndPageGroup = ({
                     page.children &&
                     page.isPageGroup &&
                     (currentMode === 'view'
-                      ? page.children.some((child) => child?.restricted === false && !child?.disabled)
+                      ? page.children.some((child) => {
+                          const pageVisibility = getPagesVisibility('canvas', child?.id);
+                          return pageVisibility === false && child?.restricted === false && !child?.disabled;
+                        })
                       : true)
                   ) {
                     return (
