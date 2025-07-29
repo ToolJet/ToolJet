@@ -13,7 +13,6 @@ const NEW_WIDGETS = [
   'DatePickerV2',
   'TimePicker',
   'ModalV2',
-  'TextArea',
   'EmailInput',
   'PhoneInput',
   'CurrencyInput',
