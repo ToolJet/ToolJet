@@ -345,6 +345,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   setExposedValues: (id, type, values, moduleId = 'canvas') => {
+    const skipKeys = new Set();
     set(
       (state) => {
         Object.entries(values).forEach(([key, value]) => {
@@ -352,7 +353,13 @@ export const createResolvedSlice = (set, get) => ({
             state.resolvedStore.modules[moduleId].exposedValues[type][id] = {
               [key]: value,
             };
-          else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          else {
+            // If the value is equal to the existing value, add the key to the skipKeys set and do not update it
+            // using lodash's isEqual as the state is immer proxy and cannot be compared directly
+            if (_.isEqual(value, state.resolvedStore.modules[moduleId].exposedValues[type][id][key])) {
+              skipKeys.add(key);
+            } else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          }
         });
       },
       false,
@@ -362,7 +369,8 @@ export const createResolvedSlice = (set, get) => ({
       }
     );
     Object.entries(values).forEach(([key, value]) => {
-      if (typeof value !== 'function') get().updateDependencyValues(`components.${id}.${key}`, moduleId);
+      if (typeof value !== 'function' && !skipKeys.has(key))
+        get().updateDependencyValues(`components.${id}.${key}`, moduleId);
     });
   },
 

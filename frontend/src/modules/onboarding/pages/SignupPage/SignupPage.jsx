@@ -9,6 +9,7 @@ import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import * as envConfigs from 'config';
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 
 const SignupPage = ({ configs, organizationId }) => {
   const edition = fetchEdition();
@@ -31,6 +32,7 @@ const SignupPage = ({ configs, organizationId }) => {
     window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup';
   }
   useEffect(() => {
+    fetchWhiteLabelDetails(organizationId);
     const errorMessage = location?.state?.errorMessage;
     if (errorMessage) {
       toast.error(errorMessage);

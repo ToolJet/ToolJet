@@ -78,6 +78,15 @@ export const Table = memo(
     const allAppEvents = useEvents();
 
     const shouldAutogenerateColumns = useRef(false);
+    const hasDataChanged = useRef(false);
+
+    useEffect(() => {
+      hasDataChanged.current = false;
+    }, [shouldRender]);
+
+    useEffect(() => {
+      hasDataChanged.current = true;
+    }, [restOfProperties.data]);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -182,6 +191,7 @@ export const Table = memo(
           componentName={componentName}
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
+          hasDataChanged={hasDataChanged.current}
         />
       </div>
     );
