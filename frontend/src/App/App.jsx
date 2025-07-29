@@ -352,7 +352,7 @@ class AppComponent extends React.Component {
                   }
                 />
 
-                {getAuditLogsRoutes(this.props)}
+                {getAuditLogsRoutes({ switchDarkMode: this.switchDarkMode, ...this.props })}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"
