@@ -1,0 +1,148 @@
+import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+import { deleteDatasource } from "Support/utils/dataSource";
+
+Cypress.Commands.add("createWorkflowApp", (appName) => {
+  cy.get(commonSelectors.globalWorkFlowsIcon).click();
+  cy.get(commonSelectors.appCreateButton).click();
+  cy.get(commonSelectors.workFlowNameInputField).type(appName);
+  cy.get(commonSelectors.createWorkFlowsButton).click();
+});
+
+Cypress.Commands.add("fillStartNodeInput", () => {
+  cy.contains("span", "Start", { timeout: 5000 })
+    .parents(".react-flow__node")
+    .click({ force: true });
+
+  cy.get('[data-cy="-input-field"]')
+    .click()
+    .realType("{")
+    .realType('"')
+    .realType("key")
+    .realType('"')
+    .realType(":")
+    .realType('"')
+    .realType("your value")
+    .realType('"')
+    .realType("}");
+
+  cy.wait(500);
+  cy.get("body").click(50, 50);
+  cy.wait(500);
+});
+
+Cypress.Commands.add("dataSourceNode", (nodeType) => {
+  cy.get('[data-cy="start-node-handle-right"]').trigger("mousedown", {
+    button: 0,
+    force: true,
+  });
+
+  cy.get(".react-flow__pane")
+    .trigger("mousemove", {
+      clientX: 600,
+      clientY: 300,
+      force: true,
+    })
+    .wait(500)
+    .trigger("mouseup", { force: true });
+
+  cy.contains(nodeType, { timeout: 5000 })
+    .scrollIntoView()
+    .click({ force: true });
+});
+
+Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
+  cy.contains("button", "Run").click();
+  cy.get('[data-cy="Logs"] .text span').should(
+    "have.text",
+    "A few seconds ago"
+  );
+
+  cy.contains('[data-cy="node-name"]', "response1").click();
+  cy.wait(500);
+  cy.get('[data-cy="options-column"]').contains("Output").click();
+
+  cy.wait(500);
+  cy.get("body").then(($body) => {
+    if (
+      $body.find("span.node-key").filter((_, el) => el.innerText === "data")
+        .length
+    ) {
+      cy.contains("span.node-key", "data", { timeout: 3000 })
+        .click({ force: true })
+        .wait(300);
+    }
+  });
+
+  cy.get("body").then(($body) => {
+    const icons = $body.find("span.json-tree-node-icon");
+    if (icons.length > 0) {
+      cy.wrap(icons).each(($el) => {
+        if ($el[0].style.transform === "rotate(0deg)") {
+          cy.wrap($el).click({ force: true }).wait(200);
+        }
+      });
+    }
+  });
+
+  cy.get(".json-tree-valuetype", { timeout: 3000 }).then(($vals) => {
+    const texts = [...$vals].map((el) => el.innerText.trim());
+    const match = texts.some((txt) => txt.includes(expectedText));
+    expect(
+      match,
+      `Expected some value to include "${expectedText}", but got:\n\n${texts.join(
+        "\n"
+      )}`
+    ).to.be.true;
+  });
+});
+
+Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
+  cy.contains(".title", nodeTitle)
+    .parents(".react-flow__node")
+    .as("sourceNode");
+
+  cy.get("@sourceNode")
+    .find(".react-flow__handle-right.source")
+    .trigger("mousedown", { button: 0, force: true });
+
+  cy.get(".react-flow__pane")
+    .trigger("mousemove", { clientX: 800, clientY: 400, force: true })
+    .trigger("mouseup", { force: true });
+
+  cy.wait(500);
+
+  cy.contains("Response", { timeout: 5000 }).click({ force: true });
+  cy.wait(500);
+
+  cy.get(".react-flow__node-output")
+    .contains("response1")
+    .parents(".react-flow__node")
+    .click({ force: true });
+
+  cy.get('.cm-content[contenteditable="true"]')
+    .clearAndTypeOnCodeMirror("")
+    .clearAndTypeOnCodeMirror("")
+    .clearAndTypeOnCodeMirror(returnStatement);
+
+  cy.get("body").click(50, 50);
+  cy.wait(500);
+});
+
+Cypress.Commands.add("deleteWorkflow", (appName) => {
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.backToWorkFlows();
+  cy.get(commonSelectors.appCard(appName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
+    .click();
+  cy.get(commonSelectors.deleteWorkFlowOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
+});
+
+Cypress.Commands.add("backToWorkFlows", () => {
+  cy.get(commonSelectors.pageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+});
