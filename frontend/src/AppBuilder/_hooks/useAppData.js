@@ -387,7 +387,7 @@ const useAppData = (
 
         //no access to homepage, set to the next available page
         if (startingPage?.restricted && mode === 'view') {
-          startingPage = appData.pages.find((page) => !page?.restricted);
+          startingPage = appData.pages.find((page) => !page?.restricted && !page?.isPageGroup && !page?.disabled);
         }
 
         if (initialLoadRef.current && !moduleMode) {
