@@ -18,6 +18,7 @@ export const TableContainer = ({
   componentName,
   fireEvent,
   setExposedVariables,
+  hasDataChanged,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -149,6 +150,7 @@ export const TableContainer = ({
         componentName={componentName}
         pageIndex={pagination.pageIndex + 1}
         lastClickedRow={lastClickedRowRef.current}
+        hasDataChanged={hasDataChanged}
       />
       <Header
         id={id}

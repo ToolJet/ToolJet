@@ -18801,6 +18801,11 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.scrollbar-tranck-transparent {
+  scrollbar-width: 8px;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
 .accordion-body-custom {
   padding: 0rem 1rem 1rem 1rem !important;
 }

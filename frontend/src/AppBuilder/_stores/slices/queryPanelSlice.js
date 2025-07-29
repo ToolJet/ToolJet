@@ -1466,7 +1466,7 @@ export const createQueryPanelSlice = (set, get) => ({
     runQueryOnShortcut: () => {
       const { queryPanel } = get();
       const { runQuery, selectedQuery } = queryPanel;
-      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true);
     },
     previewQueryOnShortcut: (moduleId = 'canvas') => {
       const { queryPanel } = get();
