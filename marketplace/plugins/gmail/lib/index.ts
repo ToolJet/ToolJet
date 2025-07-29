@@ -29,9 +29,7 @@ export default class Gmail implements QueryService {
     const subpath = process.env.SUB_PATH;
     const redirectBaseUrl = `${host}${subpath ? subpath : "/"}`;
 
-    const scope = encodeURIComponent(
-      "https://www.googleapis.com/auth/gmail.readonly"
-    );
+    const scope = encodeURIComponent("https://mail.google.com");
 
     const baseUrl =
       "https://accounts.google.com/o/oauth2/v2/auth" +
@@ -325,7 +323,7 @@ export default class Gmail implements QueryService {
   private constructSourceOptions(sourceOptions) {
     const baseUrl = "https://gmail.googleapis.com";
     const authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-    const scope = "https://www.googleapis.com/auth/gmail.readonly";
+    const scope = "https://mail.google.com";
 
     const addSourceOptions = {
       url: baseUrl,
