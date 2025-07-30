@@ -174,7 +174,6 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
           label: {
             value: updatedField.label || componentToUpdate.component.definition.properties.label?.value,
           },
-          ...(addOptions && { options: componentToUpdate.component.definition.properties.options }),
         },
         styles: {
           alignment: { value: 'top' },
@@ -193,6 +192,14 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
       [nonActiveLayout]: existingLayouts[nonActiveLayout] || { top: 0, left: 3, width: 37, height: 30 },
     },
   };
+
+  if (addOptions) {
+    set(
+      newComponent.component.definition.properties,
+      'options',
+      componentToUpdate.component.definition.properties.options
+    );
+  }
 
   setValuesBasedOnType(updatedField, updatedField.componentType, newComponent, true);
 
