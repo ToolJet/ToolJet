@@ -94,6 +94,11 @@ export abstract class AbilityGuard implements CanActivate {
         // No need to do validations if app is public
         return true;
       }
+
+      if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
+        // App is public and feature should not skip public app check and user is not available
+        return false;
+      }
     }
 
     if (!user && !app?.isPublic) {
