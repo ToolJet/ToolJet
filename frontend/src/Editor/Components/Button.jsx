@@ -74,8 +74,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -96,10 +96,12 @@ export const Button = function Button(props) {
     alignItems: 'center',
   };
 
+  const canClick = !disable && !loading;
+
   useEffect(() => {
     const exposedVariables = {
       click: async function () {
-        if (!disable && !loading) {
+        if (canClick) {
           fireEvent('onClick');
         }
       },
