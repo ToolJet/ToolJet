@@ -251,7 +251,7 @@ export const TableExposedVariables = ({
   }, [selectedRows, setExposedVariables]);
 
   useEffect(() => {
-    if (allowSelection) {
+    if (allowSelection && Object.keys(lastClickedRow).length > 0) {
       fireEvent('onRowClicked');
     }
   }, [lastClickedRow, fireEvent, allowSelection]);
