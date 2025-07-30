@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
-import { CustomSelect } from './CustomSelect';
+import { CustomSelect } from '../CustomSelect';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './style.scss';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',

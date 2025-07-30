@@ -5,7 +5,9 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage } from './routes';
+import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { ERROR_TYPES } from './constants';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -34,6 +36,8 @@ export function handleResponse(response, avoidRedirection = false, queryParamToU
         const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
         const workspaceId = errorMessageJson?.organizationId;
         avoidRedirection ? sessionService.logout(false, workspaceId) : location.reload(true);
+      } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
+        handleError('', { data });
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
         const url = response.url;
