@@ -7,13 +7,8 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 
 export default class Aftership implements QueryService {
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions,
-    dataSourceId: string
-  ): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions,queryOptions: QueryOptions,dataSourceId: string): Promise<QueryResult> {
 
-    
     const specType = queryOptions?.specType?.toLowerCase();
     const apiKey = sourceOptions?.['as-api-key'];
     const method = queryOptions.operation?.toUpperCase();
@@ -81,8 +76,8 @@ export default class Aftership implements QueryService {
         raw: err,
       };
       if (err?.response) {
-        errorDetails.status = err.response.status;
-        errorDetails.response = err.response.data;
+        errorDetails.status = err?.response?.status;
+        errorDetails.response = err?.response?.data;
       }
 
       throw new QueryError('API call error', errorMessage, errorDetails);
@@ -126,16 +121,17 @@ export default class Aftership implements QueryService {
         status: 'ok',
         message: 'Connection successful',
       };
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Unknown error';
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Unknown error';
       const errorDetails: any = {
-        message: error?.message,
-        name: error?.name,
-        code: error?.code,
+        message: errorMessage,
+        name: err?.name,
+        code: err?.code,
+        raw: err,
       };
-      if (error?.response) {
-        errorDetails.status = error.response.status;
-        errorDetails.response = error.response.data;
+      if (err?.response) {
+        errorDetails.status = err?.response?.status;
+        errorDetails.response = err?.response?.data;
       }
       throw new QueryError('Connection failed', errorMessage, errorDetails);
     }
