@@ -425,7 +425,6 @@ export const PagesSidebarNavigation = ({
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
-  console.log({ isPagesSidebarVisible, position, currentMode, isSidebarOpen, isRightSidebarOpen });
 
   return (
     <div
