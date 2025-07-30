@@ -15,7 +15,6 @@ import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
-import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
@@ -210,8 +209,6 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
-      case 'react-component-salesforce':
-        return Salesforce;
       case 'react-component-sharepoint':
         return Sharepoint;
       case 'react-component-oauth':
@@ -391,7 +388,6 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-      case 'react-component-salesforce':
       case 'react-component-sharepoint':
       case 'react-component-oauth':
         return {

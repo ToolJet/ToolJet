@@ -87,7 +87,7 @@ export const selectAndAddDataSource = (
 
 export const fillConnectionForm = (data, toggle = "") => {
   cy.get("body").then(($body) => {
-    const editButton = $body.find(".tj-btn");
+    const editButton = $body.find('.datasource-edit-btn');
     if (editButton.length > 0) {
       editButton.click();
     }

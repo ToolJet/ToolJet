@@ -33,7 +33,7 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-  const { dynamicHeight } = properties;
+  const { dynamicHeight, headerHeight = 80, showHeader } = properties;
 
   useDynamicHeight({
     dynamicHeight: properties.dynamicHeight,
@@ -43,6 +43,7 @@ export const Container = ({
     currentLayout,
     isContainer: true,
     componentCount,
+    value: JSON.stringify({ headerHeight, showHeader }),
   });
 
   const isWidgetInContainerDragging = useStore(
@@ -53,8 +54,7 @@ export const Container = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
-  const { headerHeight = 80 } = properties;
-  const headerMaxHeight = parseInt(height, 10) - 100 - 10;
+  const headerMaxHeight = dynamicHeight ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
