@@ -1001,7 +1001,7 @@ export class AppImportExportService {
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
           index: page.index,
-          pageGroupIndex: page.pageGroupIndex || null,
+          pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
