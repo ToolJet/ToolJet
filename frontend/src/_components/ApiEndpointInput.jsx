@@ -324,7 +324,7 @@ const ApiEndpointInput = (props) => {
       {isMultiSpec && (
         <div className="d-flex g-2 mb-3">
           <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
           </div>
           <div className="col flex-grow-1">
             <Select
