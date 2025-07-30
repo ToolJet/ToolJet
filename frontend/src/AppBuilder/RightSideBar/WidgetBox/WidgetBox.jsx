@@ -13,11 +13,11 @@ const NEW_WIDGETS = [
   'DatePickerV2',
   'TimePicker',
   'ModalV2',
-  'TextArea',
   'EmailInput',
   'PhoneInput',
   'CurrencyInput',
-  'RangeSliderV2'
+  'RangeSliderV2',
+  'Chat',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

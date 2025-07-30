@@ -186,7 +186,11 @@ const Container = React.memo(
               if (currentLayout === 'mobile') {
                 return CANVAS_WIDTHS.deviceWindowWidth;
               }
-              return canvasMaxWidth;
+              if (currentMode === 'view') {
+                return '100%';
+              } else {
+                return canvasMaxWidth;
+              }
             }
             // For Subcontainers
             return canvasWidth;

@@ -72,8 +72,8 @@ import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
-
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
+import { Chat } from '@/AppBuilder/Widgets/Chat';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -157,6 +157,7 @@ export const AllComponents = {
   Form,
   BoundedBox,
   ToggleSwitchV2,
+  Chat,
   ModuleContainer,
   ModuleViewer,
 };

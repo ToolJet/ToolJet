@@ -494,7 +494,7 @@ export const createQueryPanelSlice = (set, get) => ({
           message: errorData?.description,
           errorTarget: 'Queries',
           error:
-            query.kind === 'restapi'
+            query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
                   substitutedVariables: options,
                   request: errorData?.requestObject,
@@ -508,7 +508,10 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
-            ...(query.kind === 'restapi' || errorData?.type === 'tj-401'
+            ...(errorData?.data?.type === 'tj-401' ? {
+              metadata: errorData?.metadata,
+              response: errorData?.data?.responseObject,
+            } : query.kind === 'restapi'
               ? {
                   metadata: errorData?.metadata,
                   request: errorData?.requestObject,
@@ -559,6 +562,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
+            query,
             query.options?.workflowId,
             query.options?.blocking,
             query.options?.params,
@@ -599,7 +603,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
             // async queries in the future
-            if (query.kind === 'workflows') {
+            if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
               const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
                 data,
                 queryId,
@@ -662,7 +666,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   break;
               }
 
-              errorData = query.kind === 'runpy' || query.kind === 'runjs' ? data?.data : data;
+              errorData = (query.kind === 'runpy' || query.kind === 'runjs') && (data?.data?.type !== 'tj-401') ? data?.data : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
@@ -1180,10 +1184,22 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId = 'canvas', query, workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId = 'canvas', workflowId, _blocking = false, params = {}, appEnvId) => {
       const { getAppId, getAllExposedValues } = get();
       const appId = getAppId('canvas');
       const currentState = getAllExposedValues(moduleId);
+      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      try {
+        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+        return { data: response.result, status: 'ok' };
+      } catch (e) {
+        return { data: undefined, status: 'failed' };
+      }
+    },
+    triggerWorkflow: async (moduleId, query, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+      const { getAllExposedValues } = get();
+      const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
       if (query.restricted) {
@@ -1206,18 +1222,6 @@ export const createQueryPanelSlice = (set, get) => ({
           },
         };
       }
-
-      try {
-        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
-        return { data: response.result, status: 'ok' };
-      } catch (e) {
-        return { data: undefined, status: 'failed' };
-      }
-    },
-    triggerWorkflow: async (moduleId, workflowAppId, _blocking = false, params = {}, appEnvId) => {
-      const { getAllExposedValues } = get();
-      const currentState = getAllExposedValues();
-      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
       try {
         const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
@@ -1462,7 +1466,7 @@ export const createQueryPanelSlice = (set, get) => ({
     runQueryOnShortcut: () => {
       const { queryPanel } = get();
       const { runQuery, selectedQuery } = queryPanel;
-      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true);
     },
     previewQueryOnShortcut: (moduleId = 'canvas') => {
       const { queryPanel } = get();
