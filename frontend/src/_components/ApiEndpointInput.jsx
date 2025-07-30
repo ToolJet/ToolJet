@@ -92,10 +92,19 @@ const ApiEndpointInput = (props) => {
             let newPath = null;
             let newSelectedOperation = null;
 
+            // Check if current operation exists in new spec
             if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
               newOperation = options.operation;
               newPath = options.path;
               newSelectedOperation = data.paths[options.path][options.operation];
+            } else {
+              // Auto-select first operation if current doesn't exist or is not set
+              const firstOperation = getFirstOperation(data);
+              if (firstOperation) {
+                newOperation = firstOperation.operation;
+                newPath = firstOperation.path;
+                newSelectedOperation = firstOperation.selectedOperation;
+              }
             }
 
             const newOptions = {
@@ -109,11 +118,55 @@ const ApiEndpointInput = (props) => {
 
             setOptions(newOptions);
             props.optionsChanged(newOptions);
+          } else {
+            // For single spec, auto-select first operation if no operation is currently selected
+            if (!options?.operation || !options?.path) {
+              const firstOperation = getFirstOperation(data);
+              if (firstOperation) {
+                const newOptions = {
+                  ...options,
+                  operation: firstOperation.operation,
+                  path: firstOperation.path,
+                  selectedOperation: firstOperation.selectedOperation,
+                  params: {
+                    path: {},
+                    query: {},
+                    request: {},
+                  },
+                };
+                setOptions(newOptions);
+                props.optionsChanged(newOptions);
+              }
+            }
           }
 
           setLoadingSpec(false);
         });
       });
+  };
+
+  // Helper function to get the first available operation
+  const getFirstOperation = (specData) => {
+    if (!specData?.paths) return null;
+
+    const paths = Object.keys(specData.paths);
+    if (paths.length === 0) return null;
+
+    // Get the first path
+    const firstPath = paths[0];
+    const operations = Object.keys(specData.paths[firstPath]);
+    
+    if (operations.length === 0) return null;
+
+    // Get the first operation
+    const firstOperation = operations[0];
+    const selectedOperation = specData.paths[firstPath][firstOperation];
+
+    return {
+      operation: firstOperation,
+      path: firstPath,
+      selectedOperation: selectedOperation,
+    };
   };
 
   const changeOperation = (value) => {
@@ -293,7 +346,7 @@ const ApiEndpointInput = (props) => {
 
   const handleSpecTypeChange = (val) => {
     setSelectedSpecType(val);
-    // When spec type changes, immediately update options with new specType
+    // When spec type changes, clear current operation and let fetchOpenApiSpec handle auto-selection
     const newOptions = {
       ...options,
       specType: val,
