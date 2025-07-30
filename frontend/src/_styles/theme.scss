@@ -3774,8 +3774,7 @@ input:focus-visible {
 
 input[type="text"] {
   outline-color: var(--border-default) !important;
-  border-color: var(--border-default) !important;
-
+  // border-color: var(--border-default) !important;
 }
 
 .widget-header {
