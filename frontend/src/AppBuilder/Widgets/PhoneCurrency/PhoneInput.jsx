@@ -108,7 +108,9 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (!isInitialRender.current) {
-      setCountry(defaultCountry);
+      if (getCountryCallingCodeSafe(defaultCountry)) {
+        setCountry(defaultCountry);
+      }
     }
   }, [defaultCountry]);
 
@@ -220,7 +222,7 @@ export const PhoneInput = (props) => {
           <Input
             ref={inputRef}
             country={country}
-            international={false}
+            international={true}
             value={value}
             onChange={onInputValueChange}
             placeholder={placeholder}
