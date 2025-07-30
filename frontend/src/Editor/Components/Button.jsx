@@ -4,7 +4,7 @@ const tinycolor = require('tinycolor2');
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
-import { getModifiedColor } from './utils';
+import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Button = function Button(props) {
@@ -222,7 +222,7 @@ export const Button = function Button(props) {
                   className="tj-text-sm"
                   style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
                 >
-                  {label}
+                  {getSafeRenderableValue(label)}
                 </p>
               </span>
             </div>
