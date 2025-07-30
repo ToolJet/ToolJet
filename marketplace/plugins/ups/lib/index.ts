@@ -4,7 +4,7 @@ import {
   QueryService,
   ConnectionTestResult,
 } from "@tooljet-marketplace/common";
-import { SourceOptions, QueryOptions, Environment } from "./types";
+import { SourceOptions, QueryOptions, BaseUrl } from "./types";
 
 export default class Ups implements QueryService {
   async run(
@@ -28,10 +28,7 @@ export default class Ups implements QueryService {
       }
 
       // Determine base URL
-      const baseUrl =
-        sourceOptions.environment === Environment.PRODUCTION
-          ? "https://onlinetools.ups.com/api"
-          : "https://wwwcie.ups.com/api";
+      const baseUrl = sourceOptions.base_url + "/api";
 
       const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
 
@@ -115,7 +112,7 @@ export default class Ups implements QueryService {
   }
 
   private async generateOAuthToken(sourceOptions: SourceOptions) {
-    const { client_id, client_secret, environment, shipper_number } =
+    const { client_id, client_secret, base_url, shipper_number } =
       sourceOptions;
 
     const headers = new Headers();
@@ -137,11 +134,7 @@ export default class Ups implements QueryService {
       body: body,
     };
 
-    const baseUrl =
-      environment === Environment.PRODUCTION
-        ? "https://onlinetools.ups.com"
-        : "https://wwwcie.ups.com";
-
+    const baseUrl = base_url;
     const url = `${baseUrl}/security/v1/oauth/token`;
 
     const response = await fetch(url, requestOptions);
@@ -181,10 +174,10 @@ export default class Ups implements QueryService {
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
-    const { client_id, client_secret, shipper_number, environment } =
+    const { client_id, client_secret, shipper_number, base_url } =
       sourceOptions;
 
-    if (!client_id || !client_secret || !shipper_number || !environment) {
+    if (!client_id || !client_secret || !shipper_number || !base_url) {
       throw new QueryError(
         "Query could not be completed",
         "Missing required source options",
@@ -192,17 +185,17 @@ export default class Ups implements QueryService {
           client_id: !!client_id,
           client_secret: !!client_secret,
           shipper_number: !!shipper_number,
-          environment: !!environment,
+          base_url: !!base_url,
         }
       );
     }
 
-    if (!Object.values(Environment).includes(environment)) {
+    if (!Object.values(BaseUrl).includes(base_url)) {
       throw new QueryError(
         "Query could not be completed",
         "Invalid environment, expected 'production' or 'cie'",
         {
-          environment,
+          base_url: base_url,
         }
       );
     }

@@ -28,24 +28,24 @@
     }
   },
   "defaults": {
-    "environment": {
-      "value": "cie"
+    "base_url": {
+      "value": "https://wwwcie.ups.com"
     }
   },
   "properties": {
-    "environment": {
-      "label": "Environment",
-      "key": "environment",
+    "base_url": {
+      "label": "Base url",
+      "key": "base_url",
       "type": "dropdown-component-flip",
       "description": "Select the UPS environment",
       "list": [
         {
-          "value": "production",
-          "name": "Production"
+          "value": "https://onlinetools.ups.com",
+          "name": "[https://onlinetools.ups.com] To be used in production"
         },
         {
-          "value": "cie",
-          "name": "Customer Integration Environment (CIE)"
+          "value": "https://wwwcie.ups.com",
+          "name": "[https://wwwcie.ups.com] Recommended for testing"
         }
       ]
     },

@@ -2,12 +2,12 @@ export type SourceOptions = {
   client_id?: string;
   client_secret?: string;
   shipper_number?: string;
-  environment?: Environment;
+  base_url?: BaseUrl;
 };
 
-export enum Environment {
-  PRODUCTION = "production",
-  CIE = "cie", // Customer Integration Environment
+export enum BaseUrl {
+  PRODUCTION = "https://onlinetools.ups.com",
+  CIE = "https://wwwcie.ups.com",
 }
 
 export enum SpecType {
