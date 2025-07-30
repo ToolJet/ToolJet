@@ -7,6 +7,7 @@ import { buildTableColumn } from '../../_utils/buildTableColumn';
 import { useTable } from '../../_hooks/useTable';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
+import { useTranslation } from 'react-i18next';
 
 export const TableContainer = ({
   id,
@@ -17,10 +18,11 @@ export const TableContainer = ({
   componentName,
   fireEvent,
   setExposedVariables,
+  hasDataChanged,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
-
+  const { t } = useTranslation();
   const columnProperties = getColumnProperties(id);
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
@@ -64,7 +66,8 @@ export const TableContainer = ({
       handleCellValueChange,
       globalFilter,
       serverSideSearch,
-      tableBodyRef
+      tableBodyRef,
+      t
     );
   }, [
     actions,
@@ -147,6 +150,7 @@ export const TableContainer = ({
         componentName={componentName}
         pageIndex={pagination.pageIndex + 1}
         lastClickedRow={lastClickedRowRef.current}
+        hasDataChanged={hasDataChanged}
       />
       <Header
         id={id}

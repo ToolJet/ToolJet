@@ -130,16 +130,16 @@ export const Checkbox = ({
       setChecked: setCheckedAndNotify,
       setValue: setCheckedAndNotify,
       setLoading: async function (loading) {
-        setLoading(loading);
-        setExposedVariable('isLoading', loading);
+        setLoading(!!loading);
+        setExposedVariable('isLoading', !!loading);
       },
       setVisibility: async function (visibility) {
-        setVisibility(visibility);
-        setExposedVariable('isVisible', visibility);
+        setVisibility(!!visibility);
+        setExposedVariable('isVisible', !!visibility);
       },
       setDisable: async function (disable) {
-        setDisable(disable);
-        setExposedVariable('isDisabled', disable);
+        setDisable(!!disable);
+        setExposedVariable('isDisabled', !!disable);
       },
       toggle: () => {
         setInputValue(!checked);

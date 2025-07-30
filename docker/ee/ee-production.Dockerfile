@@ -89,6 +89,7 @@ RUN apt-get update && \
         redis \
         libaio1 \
         git \
+        openssh-client \
         freetds-dev \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \

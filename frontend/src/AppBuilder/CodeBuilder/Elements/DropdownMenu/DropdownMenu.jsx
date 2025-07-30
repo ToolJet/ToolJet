@@ -134,14 +134,14 @@ export const DropdownMenu = (props) => {
 
         {/* Dropdown menu */}
         {isOpen && (
-          <div className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-bg-white tw-border tw-border-gray-300 tw-rounded-md tw-shadow-lg tw-p-2">
+          <div className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-rounded-md tw-shadow-lg tw-p-2 dropdown-menu-container">
             {/* Source options section */}
             <div className="tw-py-1 dropdown-menu-items">
               {sourceOptions.map((option) => (
                 <div
                   key={option.id}
                   onClick={() => selectSource(option)}
-                  className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left tw-hover:bg-gray-100"
+                  className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left dropdown-menu-item"
                 >
                   {renderCheckIcon(option)}
                   <span className="icon-image">{option.icon}</span>
@@ -161,7 +161,7 @@ export const DropdownMenu = (props) => {
                     <div
                       key={option.id}
                       onClick={() => selectSource(option)}
-                      className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left tw-hover:bg-gray-100"
+                      className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left dropdown-menu-item"
                     >
                       {renderCheckIcon(option)}
                       <span className="icon-image">{option.icon}</span>

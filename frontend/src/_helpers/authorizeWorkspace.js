@@ -45,6 +45,7 @@ export const authorizeWorkspace = () => {
           is_onboarding_completed: isOnboardingCompleted,
           is_first_user_onboarding_completed: isFirstUserOnboardingCompleted,
           consulation_banner_date,
+          ...data
         }) => {
           if (!isFirstUserOnboardingCompleted) {
             const subpath = getSubpath();
@@ -65,6 +66,8 @@ export const authorizeWorkspace = () => {
                 noWorkspaceAttachedInTheSession,
                 authentication_status: true,
                 consulation_banner_date,
+                ...(data?.tj_api_source && { tj_api_source: data.tj_api_source }),
+                ...(data?.ai_cookies && { ai_cookies: data.ai_cookies }),
               });
               if (noWorkspaceAttachedInTheSession) {
                 /*
@@ -81,11 +84,11 @@ export const authorizeWorkspace = () => {
               current_organization_id,
             });
           }
-          fetchWhiteLabelDetails();
+          fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
       .catch((error) => {
-        fetchWhiteLabelDetails();
+        fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
         if (isDesiredStatusCode) {
@@ -162,7 +165,6 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
 
 export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
-  // console.log('currentSession', currentSession);
 
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };

@@ -3,7 +3,6 @@ import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
 interface Features {
-  [FEATURE_KEY.GET]: FeatureConfig;
   [FEATURE_KEY.GET_PUBLIC]: FeatureConfig;
   [FEATURE_KEY.GET_FROM_APP]: FeatureConfig;
   [FEATURE_KEY.GET_FROM_ENVIRONMENT]: FeatureConfig;

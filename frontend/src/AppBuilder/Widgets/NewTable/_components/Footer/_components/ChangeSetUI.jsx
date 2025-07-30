@@ -21,7 +21,11 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
         data-cy={`table-button-save-changes`}
         size="md"
         // isLoading={tableDetails.isSavingChanges ? true : false}
-        customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+        customStyles={{
+          minWidth: '32px',
+          padding: width > 650 ? '6px 16px' : 0,
+          backgroundColor: 'var(--cc-primary-brand)',
+        }}
         leftIcon={width > 650 ? '' : 'save'}
         fill="#FDFDFE"
         iconWidth="16"

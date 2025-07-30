@@ -10,6 +10,7 @@ const initialState = {
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
   draggingComponentId: null,
+  resizingComponentId: null,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
@@ -21,10 +22,10 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
-  checkHoveredComponentDynamicHeight: () => {
-    const { hoveredComponentForGrid, getResolvedComponent } = get();
-    const resolvedProperties = getResolvedComponent(hoveredComponentForGrid, null)?.properties;
-    const { dynamicHeight } = resolvedProperties;
+  checkHoveredComponentDynamicHeight: (id) => {
+    const { getResolvedComponent } = get();
+    const resolvedProperties = getResolvedComponent(id)?.properties;
+    const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
   setHoveredComponentBoundaryId: (id) =>
@@ -35,6 +36,7 @@ export const createGridSlice = (set, get) => ({
     get().toggleCanvasUpdater();
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
+  setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -116,6 +118,7 @@ export const createGridSlice = (set, get) => ({
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
+      getComponentDefinition
     } = get();
 
     try {
@@ -127,68 +130,85 @@ export const createGridSlice = (set, get) => ({
 
       if (isContainer) {
         const componentType = getComponentTypeFromId(componentId);
-
+        if (componentType === 'Listview') return;
         const element = document.querySelector(`.dynamic-${componentId}`);
         if (!element) {
-          deleteContainerTemporaryLayouts(componentId);
-          return;
-        }
-        let modifiedComponentId = componentId;
-        if (componentType === 'Tabs') {
-          const activeTab = element?.getAttribute('activetab');
-          modifiedComponentId = `${componentId}-${activeTab}`;
-        }
-        const componentLayouts = get()
-          .getContainerChildrenMapping(modifiedComponentId)
-          .reduce((acc, id) => {
-            const component = currentPageComponents[id];
-            if (!component) return acc;
+          maxHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
+          // deleteContainerTemporaryLayouts(componentId);
+          // return;
+        } else {
+          let modifiedComponentId = componentId;
+          if (componentType === 'Tabs') {
+            const activeTab = element?.getAttribute('activetab');
+            modifiedComponentId = `${componentId}-${activeTab}`;
+          }
+          const componentLayouts = get()
+            .getContainerChildrenMapping(modifiedComponentId)
+            .reduce((acc, id) => {
+              const component = currentPageComponents[id];
+              if (!component) return acc;
+              return {
+                ...acc,
+                [id]: component.layouts[currentLayout],
+              };
+            }, {});
+
+          const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
             return {
               ...acc,
-              [id]: component.layouts[currentLayout],
+              ...(temporaryLayouts[id] && { [id]: temporaryLayouts[id] }),
             };
           }, {});
 
-        const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
-          return {
-            ...acc,
-            ...(temporaryLayouts[id] && { [id]: temporaryLayouts[id] }),
-          };
-        }, {});
+          const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
 
-        const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
+          // Calculate the maximum height of the container
+          let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
+            if (!layout) {
+              return max;
+            }
+            const sum = layout.top + layout.height;
+            return Math.max(max, sum);
+          }, 0);
 
-        // Calculate the maximum height of the container
-        const currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
-          if (!layout) {
-            return max;
-          }
-          const sum = layout.top + layout.height;
-          return Math.max(max, sum);
-        }, 300);
+          let extraHeight = 0;
 
-        let extraHeight = 0;
-
-        if (componentType === 'Container') {
-          const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { showHeader } = properties;
-          const { headerHeight } = styles;
-          if (showHeader && isProperNumber(headerHeight)) {
-            extraHeight += headerHeight;
+          if (componentType === 'Container') {
+            const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
+            const { showHeader, headerHeight } = properties;
+            if (showHeader && isProperNumber(headerHeight)) {
+              extraHeight += headerHeight - 10;
+            }
+          } else if (componentType === 'Form') {
+            const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
+            const { component } = getComponentDefinition(modifiedComponentId);
+            const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
+            const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
+            const { showHeader, showFooter, headerHeight, footerHeight } = properties;
+            if (resolvedGenerateFormFrom === 'jsonSchema') {
+              //Inside element go inside fieldset and then find the last element and get the height
+              const lastElement = element.querySelector('fieldset:last-child');
+              if (lastElement) {
+                currentMax = lastElement.offsetHeight;
+              }
+            } else {
+              if (showHeader && isProperNumber(headerHeight)) {
+                extraHeight += headerHeight;
+              }
+              if (showFooter && isProperNumber(footerHeight)) {
+                extraHeight += footerHeight;
+              }
+              extraHeight += 20;
+            }
+          } else if (componentType === 'Tabs') {
+            extraHeight = 20;
           }
-        } else if (componentType === 'Form') {
-          const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-          const { showHeader, showFooter, headerHeight, footerHeight } = properties;
-          if (showHeader && isProperNumber(headerHeight)) {
-            extraHeight += headerHeight;
+          if (Object.keys(mergedLayouts).length === 0) {
+            maxHeight = 250;
+          } else {
+            maxHeight = currentMax + 50 + extraHeight;
           }
-          if (showFooter && isProperNumber(footerHeight)) {
-            extraHeight += footerHeight;
-          }
-        } else if (componentType === 'Tabs') {
-          extraHeight = 20;
         }
-        maxHeight = currentMax + 50 + extraHeight;
       }
 
       const boxList = Object.keys(currentPageComponents)
@@ -302,11 +322,11 @@ export const createGridSlice = (set, get) => ({
           const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
           if (hasHorizontalOverlap) {
             const newTop = (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + realDiff;
-            const currentTransform = window.getComputedStyle(element).transform;
+            // const currentTransform = window.getComputedStyle(element).transform;
 
-            const matrix = new DOMMatrix(currentTransform);
-            const currentX = matrix.m41;
-            element.style.transform = `translate(${currentX}px, ${newTop}px)`;
+            // const matrix = new DOMMatrix(currentTransform);
+            // const currentX = matrix.m41;
+            // element.style.transform = `translate(${currentX}px, ${newTop}px)`;
 
             updatedLayouts[component.id] = {
               ...component.layouts[currentLayout],

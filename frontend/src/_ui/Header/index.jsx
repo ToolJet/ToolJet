@@ -49,6 +49,8 @@ function Header({
         return 'Workflows';
       case 'workspace-constants':
         return 'Workspace constants';
+      case 'modules':
+        return 'Modules';
       default:
         return 'Applications';
     }
@@ -65,7 +67,6 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -154,7 +155,9 @@ function Header({
               })}
               data-cy="version-label"
             >
-              <LicenseBanner limits={featureAccess} showNavBarActions={true} />
+              {Object.keys(featureAccess).length > 0 && (
+                <LicenseBanner limits={featureAccess} showNavBarActions={true} />
+              )}
               Version {currentVersion}
             </div>
           </div>

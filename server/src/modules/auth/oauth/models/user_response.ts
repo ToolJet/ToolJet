@@ -10,5 +10,5 @@ export default interface UserResponse {
   profilePhoto?: any;
   enableGroupSync?: boolean;
   userinfoResponse?: UserinfoResponse;
-  instaceLevelGroupSyncs?: any[];
+  instanceLevelGroupSyncs?: any[];
 }

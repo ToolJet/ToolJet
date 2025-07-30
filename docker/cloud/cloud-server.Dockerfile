@@ -117,6 +117,10 @@ COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/a
 
 COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
+
+# Installing git for simple git commands
+RUN apt-get update && apt-get install -y git openssh-client && apt-get clean
+
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /app \
@@ -140,6 +144,7 @@ ENV HOME=/home/appuser
 USER appuser
 
 WORKDIR /app
+
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 

@@ -13,7 +13,10 @@
       "rawData": {}
     },
     "options": {
-
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
     },
     "customTesting": true
   },

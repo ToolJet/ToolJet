@@ -828,6 +828,7 @@ button {
     :hover {
       .canvas-container {
         scrollbar-width: thin;
+
         &::-webkit-scrollbar-track {
           background: transparent !important;
         }
@@ -852,7 +853,7 @@ button {
         background: transparent;
       }
 
-       &::-webkit-scrollbar-thumb {
+      &::-webkit-scrollbar-thumb {
         background: var(--interactive-default) !important;
         border-radius: 3px;
       }
@@ -918,7 +919,7 @@ button {
     padding: 0px 10px;
 
     .canvas-container {
-      scrollbar-width: auto;
+      scrollbar-width: thin;
       width: 100%;
     }
 
@@ -1665,7 +1666,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--cc-primary-brand);
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 }
@@ -3500,7 +3501,7 @@ input:focus-visible {
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border-width: 0px 0px 1px 0px !important;
+    border-width: 3px 0px 1px 0px !important;
 
     .text-muted {
       color: #ffffff !important;
@@ -3684,7 +3685,7 @@ input:focus-visible {
 
   .page-item {
     a.page-link {
-      color: white;
+      background-color: var(--cc-primary-brand, --primary-brand);
     }
   }
 
@@ -4138,7 +4139,7 @@ input[type="text"] {
 .calendar-widget {
   padding: 10px;
   background-color: white;
-  background-color: var(--cc-primary-brand) !important;
+  background-color: var(--cc-surface1-surface) !important;
   border: transparent;
 
   .rbc-day-slot .rbc-event,
@@ -4180,7 +4181,7 @@ input[type="text"] {
   border-left: none !important;
 
   .rbc-timeslot-group {
-    border-left: 2.5px solid #dadcde !important;
+    border-left: 2.5px solid var(--cc-weak-border) !important;
   }
 }
 
@@ -4188,8 +4189,8 @@ input[type="text"] {
   border: none !important;
 
   .rbc-row {
-    border-left: 1.5px solid #dadcde;
-    border-right: 1.5px solid #dadcde;
+    border-left: 1.5px solid var(--cc-weak-border);
+    border-right: 1.5px solid var(--cc-weak-border);
   }
 }
 
@@ -4198,8 +4199,8 @@ input[type="text"] {
 }
 
 .resources-week-cls .rbc-time-view-resources .rbc-header {
-  border-left: 1.5px solid #dadcde !important;
-  border-right: 1.5px solid #dadcde !important;
+  border-left: 1.5px solid var(--cc-weak-border) !important;
+  border-right: 1.5px solid var(--cc-weak-border) !important;
 }
 
 .calendar-widget.hide-view-switcher {
@@ -4265,6 +4266,7 @@ input[type="text"] {
 
 .code-editor-widget {
   border-radius: 0;
+  border: 1px solid var(--cc-default-border);
 
   .CodeMirror {
     border-radius: 0 !important;
@@ -5443,6 +5445,8 @@ div#driver-page-overlay {
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
+  max-width: var(--org-name-max-width, 160px);
+  margin-right: 2px;
 }
 
 
@@ -5463,8 +5467,10 @@ div#driver-page-overlay {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    width: 100%;
+    margin-right: 2px;
     font-weight: bold;
+    width: 70%;
+    max-width: var(--org-name-max-width, 160px);
   }
 
   .org-actions div {
@@ -6123,7 +6129,7 @@ div#driver-page-overlay {
 .widget-buttongroup-label {
   font-weight: 600;
   margin-right: 10px;
-  color: #3e525b;
+  color: var(--cc-primary-text);
 }
 
 .editor-actions {
@@ -6626,7 +6632,7 @@ input.hide-input-arrows {
 
 
 .custom-checkbox-tree {
-  overflow-y: scroll;
+  overflow-y: auto;
   color: #3e525b;
 
   .react-checkbox-tree label:hover {
@@ -7897,7 +7903,7 @@ tbody {
 .workspace-variable-table-card,
 .org-wrapper {
   margin: 0 auto;
-  width: 880px;
+  width: 930px;
 }
 
 .organization-page-sidebar {
@@ -8702,12 +8708,6 @@ tbody {
   @media screen and (max-width: 767px) {
     width: 100%;
   }
-}
-
-.app-version-list-item {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .app-version-name,
@@ -9624,6 +9624,10 @@ tbody {
           max-width: 108px !important;
         }
 
+        &[data-name="type-header"] {
+          max-width: 108px !important;
+        }
+
         span,
         a {
           white-space: nowrap;
@@ -9637,7 +9641,7 @@ tbody {
 
   thead {
     tr {
-      padding: 6px 24px 0px 24px;
+      padding: 6px 18px 0px 18px;
       gap: 8px;
       height: 40px;
       display: flex;
@@ -9658,6 +9662,10 @@ tbody {
         width: 80px !important;
       }
 
+      &[data-name="type-header"] {
+        max-width: 108px !important;
+      }
+
       &[data-name="role-header"] {
         width: 108px !important;
       }
@@ -9671,7 +9679,7 @@ tbody {
   tr {
     background: var(--page-weak);
     height: 66px;
-    padding: 13px 24px;
+    padding: 13px 18px;
     border-bottom: 1px solid var(--border-weak);
     display: flex;
     justify-content: space-between;
@@ -9740,7 +9748,7 @@ tbody {
 }
 
 .workspace-settings-table-wrap {
-  max-width: 880px;
+  min-width: 930px;
   margin: 0 auto;
 
   &:hover {
@@ -9973,12 +9981,12 @@ tbody {
 }
 
 .workspace-page-header {
-  width: 880px;
+  width: 930px;
   margin: 0 auto !important;
 
   div:first-child {
     margin: 10px auto !important;
-    width: 880px;
+    width: 930px;
 
   }
 
@@ -11568,7 +11576,9 @@ tbody {
     }
   }
 }
-
+.org-name.license-info-tooltip {
+  --org-name-max-width: 113px;
+}
 .tj-org-dropdown {
   .dashboard-org-avatar {
     margin-right: 11px;
@@ -11578,7 +11588,7 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 24px;
+    width: 34px;
     height: 24px;
     background: var(--slate4) !important;
     color: var(--slate9);
@@ -11593,15 +11603,15 @@ tbody {
     align-items: center;
     padding: 7px 8px;
     gap: 10px;
-    width: 24px;
+    width: 34px;
     height: 24px;
     border-radius: 6px;
   }
 
   .current-org-indicator {
-    padding: 0px 8px 0px 8px;
+    padding: 0px 3px 0px 3px;
     margin-left: auto;
-    margin-right: 5px;
+    margin-right: 2px;
   }
 
   .current-org-indicator {
@@ -11617,6 +11627,8 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-right: 2px;
+    max-width: var(--org-name-max-width, 160px);
   }
 }
 
@@ -12933,7 +12945,7 @@ tbody {
       }
 
       tr>th {
-        min-width: 203px;
+        min-width: 108px;
       }
     }
 
@@ -15253,6 +15265,7 @@ tbody {
   button {
     color: var(--slate12);
     border: none !important;
+    background-color: var(--surfaces-surface-01) !important;
 
     &:hover {
       background: none !important;
@@ -15949,20 +15962,37 @@ fieldset:disabled {
 }
 
 
+#component-portal {
+  .datepicker-component {
+    .react-datepicker {
+      .react-datepicker__month-container {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+        border-bottom-left-radius: 5px !important;
+      }
+    }
+  }
+}
 
 .datetimepicker-component,
 #component-portal,
 .custom-inspector-validation-time-picker {
 
+  .react-datepicker__month-container:first-of-type {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 5px !important;
+  }
 
-
-
+  .react-datepicker__month-container:last-of-type {
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+  }
 
   .react-datepicker__month-container {
     background-color: var(--cc-surface1-surface) !important;
-    border-top-left-radius: 10px !important;
-    border-bottom-left-radius: 10px !important;
   }
+
+
 
   .custom-time-input {
     background-color: var(--cc-surface1-surface) !important;
@@ -18087,12 +18117,16 @@ section.ai-message-prompt-input-wrapper {
   height: 48px;
   padding: 8px;
   border-bottom: 1px solid var(--border-weak, #E4E7EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
 
   .codebuilder-color-swatches {
     display: flex;
     padding: 2px;
     flex-wrap: wrap;
+    width: 215px;
 
     .ToggleGroup {
       width: 100%;
@@ -18398,12 +18432,10 @@ section.ai-message-prompt-input-wrapper {
 
 .canvas-component,
 .workspace-theme-container {
-
-  .tabs-component {
-    .real-canvas {
-      background-color: var(--cc-surface1-surface) !important;
-    }
+  .spinner-border {
+    color: var(--cc-primary-brand);
   }
+
 
   .kanban-container {
     background-color: var(--cc-surface1-surface);
@@ -18445,10 +18477,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--cc-primary-text);
         }
       }
-    }
-
-    .rbc-day-bg {
-      border: 1px solid var(--cc-weak-border) !important;
     }
 
     .rbc-button-link {
@@ -18517,9 +18545,6 @@ section.ai-message-prompt-input-wrapper {
   }
 
   .codehinter-multi-line-input {
-    .cm-content {
-      background-color: var(--cc-surface1-surface);
-    }
 
     .cm-gutters {
       background-color: var(--cc-surface3-surface) !important;
@@ -18739,10 +18764,48 @@ section.ai-message-prompt-input-wrapper {
   border-bottom: 2px solid var(--indigo9) !important;
 }
 
+.custom_fc_frame {
+  left: 40px !important;
+}
+
 .min-width-0 {
   min-width: 0 !important;
 }
 
 .width-unset {
   width: unset !important;
+}
+
+.scrollbar-container {
+  scrollbar-width: 8px;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    width: 16px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    width: 16px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    width: 8px;
+    margin: 0 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+.scrollbar-tranck-transparent {
+  scrollbar-width: 8px;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.accordion-body-custom {
+  padding: 0rem 1rem 1rem 1rem !important;
 }

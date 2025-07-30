@@ -5,6 +5,7 @@ import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -56,6 +57,11 @@ export const Text = function Text({
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   count = count + 1;
+
+  // Create ref for height observation
+  const textRef = useRef(null);
+  const heightChangeValue = useHeightObserver(textRef, dynamicHeight);
+
   // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -65,7 +71,15 @@ export const Text = function Text({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
-  useDynamicHeight({ dynamicHeight, id, height, value: text, adjustComponentPositions, currentLayout, width });
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+  });
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -104,20 +118,20 @@ export const Text = function Text({
       isLoading: loadingState,
       isDisabled: disabledState,
       visibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        setLoading(value);
+        setExposedVariable('isLoading', !!value);
+        setLoading(!!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        setIsDisabled(value);
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
       },
     };
     setExposedVariables(exposedVariables);
@@ -174,6 +188,7 @@ export const Text = function Text({
 
   return (
     <div
+      ref={textRef}
       data-disabled={isDisabled}
       className="text-widget"
       style={computedStyles}

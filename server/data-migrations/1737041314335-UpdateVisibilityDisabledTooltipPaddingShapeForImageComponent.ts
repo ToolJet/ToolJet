@@ -53,26 +53,6 @@ export class UpdateVisibilityDisabledTooltipPaddingShapeForImageComponent1737041
         styles.padding = { value: 'custom' };
       }
 
-      if (styles.borderType?.value === 'none') {
-        styles.imageShape = { value: 'none' };
-        delete styles.borderType;
-      }
-
-      if (styles.borderType?.value === 'rounded-circle') {
-        styles.imageShape = { value: 'circle' };
-        delete styles.borderType;
-      }
-
-      if (styles.borderType?.value === 'rounded') {
-        styles.imageShape = { value: 'rounded' };
-        delete styles.borderType;
-      }
-
-      if (styles.borderType?.value === 'img-thumbnail') {
-        styles.imageShape = { value: 'thumbnail' };
-        delete styles.borderType;
-      }
-
       if (generalStyles?.boxShadow) {
         styles.boxShadow = generalStyles?.boxShadow;
         delete generalStyles?.boxShadow;

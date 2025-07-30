@@ -4,16 +4,16 @@ export const listviewConfig = {
   description: 'List multiple items',
   defaultSize: {
     width: 30,
-    height: 300,
+    height: 320,
   },
   defaultChildren: [
     {
       componentName: 'Image',
       layout: {
-        top: 15,
+        top: 0,
         left: 3,
         height: 100,
-        width: 4,
+        width: 7,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
@@ -24,7 +24,7 @@ export const listviewConfig = {
         top: 50,
         left: 11,
         height: 30,
-        width: 4,
+        width: 14
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -173,7 +173,7 @@ export const listviewConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: 6,
       },
     },
   },
@@ -210,7 +210,7 @@ export const listviewConfig = {
       borderColor: { value: 'var(--cc-default-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
     },
   },
 };

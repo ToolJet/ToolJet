@@ -3,14 +3,16 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
 import { FeatureAbility } from './index';
+import { MODULES } from '@modules/app/constants/modules';
 
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
   resourceId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission, resource } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[resource[0].resourceType];
+  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (isAdmin || superAdmin) {
     can(
@@ -100,7 +102,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.DELETE_COMPONENTS,
         FEATURE_KEY.CREATE_PAGES,
         FEATURE_KEY.CLONE_PAGES,
-         FEATURE_KEY.CLONE_GROUP,
+        FEATURE_KEY.CLONE_GROUP,
         FEATURE_KEY.UPDATE_PAGES,
         FEATURE_KEY.DELETE_PAGE,
         FEATURE_KEY.REORDER_PAGES,
@@ -124,5 +126,22 @@ export function defineAppVersionAbility(
     userAppPermissions.viewableAppsId.includes(resourceId)
   ) {
     can([FEATURE_KEY.GET_EVENTS], App);
+  }
+
+  if (isBuilder && resourceType === MODULES.MODULES) {
+    //For Modules
+    can(
+      [
+        FEATURE_KEY.UPDATE_COMPONENTS,
+        FEATURE_KEY.CREATE_COMPONENTS,
+        FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
+        FEATURE_KEY.DELETE_COMPONENTS,
+        FEATURE_KEY.GET_EVENTS,
+        FEATURE_KEY.CREATE_EVENT,
+        FEATURE_KEY.UPDATE_EVENT,
+        FEATURE_KEY.DELETE_EVENT,
+      ],
+      App
+    );
   }
 }

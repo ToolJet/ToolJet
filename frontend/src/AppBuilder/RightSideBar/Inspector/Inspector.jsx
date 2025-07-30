@@ -47,6 +47,7 @@ import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import { Chat } from './Components/Chat.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -112,10 +113,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'VerticalDivider',
   'ModalV2',
   'Tabs',
-  'RangeSlider',
+  'RangeSliderV2',
   'Link',
   'Steps',
   'FilePicker',
+  'Chat',
 ];
 
 export const Inspector = ({
@@ -624,7 +626,9 @@ export const Inspector = ({
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`}>{renderTabs()}</div>
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+          {renderTabs()}
+        </div>
       </div>
       <span className="widget-documentation-link">
         <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
@@ -834,6 +838,9 @@ const GetAccordion = React.memo(
       case 'MultiselectV2':
       case 'RadioButtonV2':
         return <Select {...restProps} />;
+
+      case 'Chat':
+        return <Chat {...restProps} />;
 
       case 'DatetimePickerV2':
       case 'DaterangePicker':

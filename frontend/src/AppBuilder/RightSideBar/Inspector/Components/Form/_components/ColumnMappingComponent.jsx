@@ -13,6 +13,9 @@ import { shallow } from 'zustand/shallow';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useColumnBuilder, useGroupedColumns, useCheckboxStates } from './hooks/useColumnMapping';
+import { DropdownProvider } from '@/components/ui/Dropdown/DropdownProvider';
+// eslint-disable-next-line import/no-unresolved
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 // Constants for section display names
 const SECTION_DISPLAY_NAMES = {
@@ -27,7 +30,7 @@ const SECTION_DISPLAY_NAMES = {
  */
 const EditableIcon = ({ darkMode }) => (
   <div className="tw-mr-2 editable-icon">
-    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} viewBox="0 0 12 12" />
+    <SolidIcon name="editable" width="12" height="12" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
   </div>
 );
 
@@ -87,122 +90,119 @@ const LoaderComponent = () => (
  * Disable the checkbox if the property is fx controlled and it will not be included while selectAll is called.
  * This is to prevent users from changing the state of fx controlled properties directly.
  * Instead, they should use the fx editor to manage these properties.
+ *
+ * Memoized for performance optimization when dealing with large datasets.
  */
+const ColumnMappingRow = React.memo(
+  ({ column, onChange, onCheckboxChange, index, darkMode = false, disabled = false, sectionType }) => {
+    if (!column) return null;
 
-const ColumnMappingRow = ({
-  column,
-  onChange,
-  onCheckboxChange,
-  index,
-  darkMode = false,
-  disabled = false,
-  sectionType,
-}) => {
-  if (!column) return null;
+    const inputTypeOptions = getInputTypeOptions(darkMode);
 
-  const inputTypeOptions = getInputTypeOptions(darkMode);
+    const isMandatoryFxControlled = isPropertyFxControlled(column.mandatory);
 
-  const isMandatoryFxControlled = isPropertyFxControlled(column.mandatory);
-
-  const handleLabelChange = (e) => {
-    onChange?.({
-      ...column,
-      label: e.target.value,
-    });
-  };
-
-  const handleMandatoryChange = (checked) => {
-    if (typeof column.mandatory === 'object') {
+    const handleLabelChange = (e) => {
       onChange?.({
         ...column,
-        mandatory: {
-          ...column.mandatory,
-          value: checked,
-        },
+        label: e.target.value,
       });
-    } else {
+    };
+
+    const handleMandatoryChange = (checked) => {
+      if (typeof column.mandatory === 'object') {
+        onChange?.({
+          ...column,
+          mandatory: {
+            ...column.mandatory,
+            value: checked,
+          },
+        });
+      } else {
+        onChange?.({
+          ...column,
+          mandatory: checked,
+        });
+      }
+    };
+
+    const handleInputTypeChange = (value) => {
       onChange?.({
         ...column,
-        mandatory: checked,
+        componentType: value,
       });
-    }
-  };
+    };
 
-  const handleInputTypeChange = (value) => {
-    onChange?.({
-      ...column,
-      componentType: value,
-    });
-  };
+    const shouldHideCheckbox = sectionType === 'isCustomField';
 
-  const shouldHideCheckbox = sectionType === 'isCustomField';
+    return (
+      <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
+        {/* Checkbox */}
+        <div className={cx(`tw-w-6`, { 'tw-invisible': disabled || shouldHideCheckbox })}>
+          <Checkbox checked={column.selected} onCheckedChange={onCheckboxChange} />
+        </div>
 
-  return (
-    <div className="tw-flex tw-items-center tw-w-full tw-py-3 tw-px-2 tw-border-b tw-border-border-lighter column-mapping-row">
-      {/* Checkbox */}
-      <div className={cx(`tw-w-6`, { 'tw-invisible': disabled || shouldHideCheckbox })}>
-        <Checkbox checked={column.selected} onCheckedChange={onCheckboxChange} />
+        {/* Column Name and Type */}
+        <div className="name-column tw-flex tw-items-center base-regular tw-justify-between">
+          {column.key ? (
+            <>
+              <span className="base-regular">{column.key}</span>
+              <span className="tw-ml-2 data-type">{column.dataType}</span>
+            </>
+          ) : (
+            <span className="no-mapped-column small-medium">No mapped columns</span>
+          )}
+        </div>
+
+        {/* Mapped To */}
+        <div
+          className={cx('arrow-column tw-flex tw-justify-center', {
+            'tw-invisible': column.key === undefined,
+          })}
+        >
+          <SolidIcon name="arrowright" width="24" height="24" fill="#CCD1D5" />
+        </div>
+
+        {/* Input Type Selector */}
+        <div className="mapped-column tw-relative hide-border">
+          <Dropdown
+            options={inputTypeOptions}
+            name={`dropdown-${index}`}
+            id={`dropdown-${index}`}
+            size="small"
+            zIndex={9999}
+            value={column.componentType || 'TextInput'}
+            leadingIcon={inputTypeOptions[column.componentType || 'TextInput'].leadingIcon}
+            onChange={handleInputTypeChange}
+            width="140px"
+            disabled={disabled}
+          />
+        </div>
+
+        {/* Input Label */}
+        <div className="type-column rows tw-flex-1 hide-border">
+          <Input
+            value={column.label}
+            onChange={handleLabelChange}
+            placeholder="Input label"
+            size="small"
+            disabled={disabled}
+          />
+        </div>
+
+        {/* Mandatory Checkbox */}
+        <div className={cx(`mandatory-column rows tw-flex tw-justify-end`, { 'tw-invisible': disabled })}>
+          <Checkbox
+            checked={isTrueValue(column.mandatory.value)}
+            onCheckedChange={handleMandatoryChange}
+            disabled={isMandatoryFxControlled} // Disable if fx controlled
+          />
+        </div>
       </div>
+    );
+  }
+);
 
-      {/* Column Name and Type */}
-      <div className="name-column tw-flex tw-items-center base-regular tw-justify-between">
-        {column.key ? (
-          <>
-            <span className="base-regular">{column.key}</span>
-            <span className="tw-ml-2 data-type">{column.dataType}</span>
-          </>
-        ) : (
-          <span className="no-mapped-column small-medium">No mapped columns</span>
-        )}
-      </div>
-
-      {/* Mapped To */}
-      <div
-        className={cx('arrow-column tw-flex tw-justify-center', {
-          'tw-invisible': column.key === undefined,
-        })}
-      >
-        <SolidIcon name="arrowright" width="24" height="24" fill="#CCD1D5" />
-      </div>
-
-      {/* Input Type Selector */}
-      <div className="mapped-column tw-relative hide-border">
-        <Dropdown
-          options={inputTypeOptions}
-          name={`dropdown-${index}`}
-          id={`dropdown-${index}`}
-          size="small"
-          zIndex={9999}
-          value={column.componentType || 'TextInput'}
-          leadingIcon={inputTypeOptions[column.componentType || 'TextInput'].leadingIcon}
-          onChange={handleInputTypeChange}
-          width="140px"
-          disabled={disabled}
-        />
-      </div>
-
-      {/* Input Label */}
-      <div className="type-column rows tw-flex-1 hide-border">
-        <Input
-          value={column.label}
-          onChange={handleLabelChange}
-          placeholder="Input label"
-          size="small"
-          disabled={disabled}
-        />
-      </div>
-
-      {/* Mandatory Checkbox */}
-      <div className={cx(`mandatory-column rows tw-flex tw-justify-end`, { 'tw-invisible': disabled })}>
-        <Checkbox
-          checked={isTrueValue(column.mandatory.value)}
-          onCheckedChange={handleMandatoryChange}
-          disabled={isMandatoryFxControlled} // Disable if fx controlled
-        />
-      </div>
-    </div>
-  );
-};
+ColumnMappingRow.displayName = 'ColumnMappingRow';
 
 const RenderSection = ({
   mappedColumns = [],
@@ -217,8 +217,17 @@ const RenderSection = ({
   }, [mappedColumns]);
 
   const checkboxStates = useCheckboxStates(columnsArray);
+  const parentRef = useRef(null);
 
   const { isAllSelected, isIntermediateSelected, isAllSelectedMandatory, isIntermediateMandatory } = checkboxStates;
+
+  // Setup virtualizer for performance with large datasets
+  const rowVirtualizer = useVirtualizer({
+    count: columnsArray.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 40, // Estimated row height in pixels
+    overscan: 10, // Render 10 items outside viewport for smooth scrolling
+  });
 
   const handleSelectAll = useCallback(
     (checked) => {
@@ -338,18 +347,70 @@ const RenderSection = ({
 
       <div>
         {columnsArray.length > 0 ? (
-          columnsArray.map((column, index) => (
-            <ColumnMappingRow
-              key={column.name}
-              column={columnsArray.find((c) => c.name === column.name)}
-              onCheckboxChange={(checked) => handleColumnSelect(column.name, checked)}
-              onChange={(changes) => handleColumnChange(column.name, changes)}
-              index={index}
-              darkMode={darkMode}
-              disabled={disabled}
-              sectionType={sectionType}
-            />
-          ))
+          // Use virtualization for large datasets (lowered threshold to 20 for testing)
+          columnsArray.length > 20 ? (
+            <div
+              ref={parentRef}
+              className="tw-max-h-[300px] tw-overflow-y-auto tw-w-full"
+              style={{
+                contain: 'strict',
+                height: '300px', // Fixed height for virtualization
+              }}
+            >
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  position: 'relative',
+                  width: '100%',
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const column = columnsArray[virtualItem.index];
+                  if (!column) return null;
+
+                  return (
+                    <div
+                      key={`${column.name}-${virtualItem.index}`}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      data-index={virtualItem.index}
+                      ref={rowVirtualizer.measureElement}
+                    >
+                      <ColumnMappingRow
+                        column={column}
+                        onCheckboxChange={(checked) => handleColumnSelect(column.name, checked)}
+                        onChange={(changes) => handleColumnChange(column.name, changes)}
+                        index={virtualItem.index}
+                        darkMode={darkMode}
+                        disabled={disabled}
+                        sectionType={sectionType}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            // For smaller datasets, use regular rendering
+            columnsArray.map((column, index) => (
+              <ColumnMappingRow
+                key={column.name}
+                column={column}
+                onCheckboxChange={(checked) => handleColumnSelect(column.name, checked)}
+                onChange={(changes) => handleColumnChange(column.name, changes)}
+                index={index}
+                darkMode={darkMode}
+                disabled={disabled}
+                sectionType={sectionType}
+              />
+            ))
+          )
         ) : (
           <div className="tw-py-4 tw-text-center tw-text-gray-500">No {sectionDisplayName.toLowerCase()} available</div>
         )}
@@ -399,7 +460,7 @@ const ColumnMappingComponent = ({
       // Use setTimeout to ensure DOM is fully rendered
       setTimeout(() => {
         if (bodyContainerRef.current) {
-          const height = bodyContainerRef.current.scrollHeight;
+          const height = Math.min(bodyContainerRef.current.scrollHeight, 500);
           if (height > 0) {
             lastBodyHeightRef.current = height;
           }
@@ -409,8 +470,6 @@ const ColumnMappingComponent = ({
   }, [showLoader, groupedColumns]);
 
   const currentStatus = currentStatusRef.current;
-
-  console.log('here--- existingResolvedJsonData--- ', existingResolvedJsonData);
 
   const columnsToUse = useColumnBuilder(
     component,
@@ -521,8 +580,10 @@ const ColumnMappingComponent = ({
 
   return (
     <Modal show={isOpen} onHide={onClose} size="lg">
-      <ModalHeader currentStatus={currentStatus} onClose={onClose} />
-      <div className="column-mapping-modal-body">{modalBody}</div>
+      <DropdownProvider>
+        <ModalHeader currentStatus={currentStatus} onClose={onClose} />
+        <div className="column-mapping-modal-body">{modalBody}</div>
+      </DropdownProvider>
     </Modal>
   );
 };

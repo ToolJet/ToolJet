@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as MobileMenu } from 'react-burger-menu';
@@ -15,12 +15,13 @@ import { Link } from 'react-router-dom';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon }) => {
+const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, currentPageId, icon, pages }) => {
   const { moduleId } = useModuleContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const groupActive = currentPage.pageGroupId === pageGroup?.id;
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
+
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-  const pages = useStore((state) => state.modules[moduleId].pages);
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
@@ -63,7 +64,9 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
               const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
               // eslint-disable-next-line import/namespace
               const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
-              return page?.hidden || page?.disabled ? null : (
+              const pageVisibility = getPagesVisibility('canvas', page?.id);
+
+              return pageVisibility || page?.disabled ? null : (
                 <div
                   key={page.handle}
                   onClick={() => handlepageSwitch(page?.id)}
@@ -88,11 +91,37 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
 const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, currentPage }) => {
   const { moduleId } = useModuleContext();
   const tree = buildTree(pages);
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
+
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const filteredTree = tree.filter((page) => {
+    const pageVisibility = getPagesVisibility('canvas', page?.id);
+
+    return (
+      (!page?.restricted || currentMode !== 'view') &&
+      !pageVisibility &&
+      !page?.disabled &&
+      (!page?.isPageGroup ||
+        (page.children?.length > 0 &&
+          page.children.some((child) => !child?.disabled) &&
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return pageVisibility === false;
+          })))
+    );
+  });
   return (
     <div className="w-100">
       <div className={`pages-container ${darkMode && 'dark'}`}>
-        {tree.map((page) => {
+        {filteredTree.map((page) => {
+          if (
+            page.isPageGroup &&
+            page.children?.length === 0 &&
+            (currentMode === 'view' ? !page.children.some((child) => child?.restricted === true) : true)
+          ) {
+            return null;
+          }
           if (page.isPageGroup) {
             return (
               <RenderGroup
@@ -107,10 +136,12 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
             );
           } else {
             const isHomePage = page.id === homePageId;
+            const pageVisibility = getPagesVisibility('canvas', page?.id);
             const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
             // eslint-disable-next-line import/namespace
             const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
-            return page?.hidden || page?.disabled ? null : (
+
+            return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : (
               <div
                 key={page.handle}
                 onClick={() => handlepageSwitch(page?.id)}
@@ -139,13 +170,24 @@ const MobileNavigationMenu = ({
   changeToDarkMode,
   showDarkModeToggle,
   appName,
+  viewerWrapperRef,
 }) => {
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const license = useStore((state) => state.license);
-
+  const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewerWrapperRef.current) {
+      viewerWrapperRef.current.offsetWidth > 450 ? setIsViewportNarrow(false) : setIsViewportNarrow(true);
+    }
+  }, []);
+
+  const dynamicMenuWrapClass = isViewportNarrow ? 'bm-menu-wrap--viewport-narrow' : '';
+  const dynamicOverlayClass = isViewportNarrow ? 'bm-overlay--viewport-narrow' : '';
+
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
     const queryParams = {
@@ -198,6 +240,7 @@ const MobileNavigationMenu = ({
   };
 
   const currentPage = pages?.find((page) => page.id === currentPageId);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -215,6 +258,8 @@ const MobileNavigationMenu = ({
         pageWrapId={'page-wrap'}
         outerContainerId={'outer-container'}
         onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
+        className={dynamicMenuWrapClass}
+        overlayClassName={dynamicOverlayClass}
         customBurgerIcon={
           <div className="icon-btn">
             <SolidIcon fill="var(--icon-strong)" name="menu" />
@@ -269,7 +314,9 @@ const MobileNavigationMenu = ({
                   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
                   // eslint-disable-next-line import/namespace
                   const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
-                  return page?.hidden || page?.disabled ? null : (
+                  const pageVisibility = getPagesVisibility('canvas', page?.id);
+
+                  return pageVisibility || page?.disabled ? null : (
                     <div
                       key={page.handle}
                       onClick={() => handlepageSwitch(page?.id)}

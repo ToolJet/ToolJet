@@ -35,7 +35,7 @@ export const PageMenuItem = withRouter(
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const isSelected = page.id === currentPageId;
-    const isHidden = resolveReferences(page?.hidden?.value) ?? false;
+    const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -279,7 +279,7 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme'} ${
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
               (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
             }`}
             style={{
@@ -305,7 +305,6 @@ export const PageMenuItem = withRouter(
               </>
             ) : (
               <>
-                {' '}
                 <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
                   <div className="main-page-icon-wrapper">{icon()}</div>
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
@@ -385,6 +384,7 @@ export const PageMenuItem = withRouter(
                         show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
+                        transition={false}
                         modifiers={[
                           {
                             name: 'preventOverflow',
@@ -398,7 +398,11 @@ export const PageMenuItem = withRouter(
                           toggleShowPageOptions(false);
                         }}
                       >
-                        <Popover style={{ zIndex: '99999', position: 'absolute' }} id="edit-page-popover">
+                        <Popover
+                          style={{ zIndex: '99999', position: 'absolute' }}
+                          id="edit-page-popover"
+                          className={`${darkMode && 'dark-theme theme-dark'}`}
+                        >
                           <div className="menu-options mb-0">
                             <PageOptions
                               text="Edit page details"
