@@ -1,4 +1,4 @@
-import got, { OptionsOfTextResponseBody } from "got";
+import got, { HTTPError, OptionsOfTextResponseBody } from "got";
 
 import {
   QueryError,
@@ -17,7 +17,21 @@ import {
 } from "./types";
 
 export default class Gmail implements QueryService {
+  private validateSourceOptions(sourceOptions: SourceOptions) {
+    const { client_id, client_secret } = sourceOptions;
+
+    if (!client_id?.value || !client_secret?.value) {
+      const error = new Error(
+        "Missing required source options: client_id and client_secret."
+      );
+
+      throw error;
+    }
+  }
+
   authUrl(sourceOptions: SourceOptions): string {
+    this.validateSourceOptions(sourceOptions);
+
     const { client_id, oauth_type } = sourceOptions;
 
     const clientId =
@@ -63,6 +77,11 @@ export default class Gmail implements QueryService {
         clientSecret = item.value;
       }
     }
+
+    this.validateSourceOptions({
+      client_id: { value: clientId },
+      client_secret: { value: clientSecret },
+    } as SourceOptions);
 
     const accessTokenUrl = "https://oauth2.googleapis.com/token";
     const host = process.env.TOOLJET_HOST;
@@ -123,8 +142,10 @@ export default class Gmail implements QueryService {
     if (!sourceOptions["refresh_token"]) {
       throw new QueryError(
         "Query could not be completed",
-        "Refresh token empty",
-        {}
+        "Refresh token not found in source options",
+        {
+          error: "Refresh token is required to refresh the access token.",
+        }
       );
     }
 
@@ -153,14 +174,15 @@ export default class Gmail implements QueryService {
 
       const result = JSON.parse(response.body);
 
-      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
         throw new QueryError(
+          "Query could not be completed",
           "Could not connect to Gmail",
-          JSON.stringify({
-            statusCode: response?.statusCode,
-            message: response?.body,
-          }),
-          {}
+          {
+            statusCode: response.statusCode,
+            statusText: response.statusMessage,
+            error: response.body,
+          }
         );
       }
 
@@ -169,29 +191,41 @@ export default class Gmail implements QueryService {
         accessTokenDetails["refresh_token"] = result["refresh_token"];
       } else {
         throw new QueryError(
-          "access_token not found in the response",
-          {},
+          "Query could not be completed",
+          "Access token not found in the response",
           {
-            responseObject: {
-              statusCode: response.statusCode,
-              responseBody: response.body,
-            },
-            responseHeaders: response.headers,
+            statusCode: response.statusCode,
+            statusText: response.statusMessage,
+            error: response.body,
           }
         );
       }
     } catch (error) {
       throw new QueryError(
-        "Could not connect to Gmail",
-        JSON.stringify({
-          statusCode: error.response?.statusCode,
-          message: error.response?.body,
-        }),
-        {}
+        "Query could not be completed",
+        error.message || "An unexpected error occurred",
+        {
+          error: error instanceof Error ? error.message : error,
+        }
       );
     }
 
     return accessTokenDetails;
+  }
+
+  private validateQueryOptions(queryOptions: QueryOptions) {
+    const { operation, path } = queryOptions;
+
+    if (!operation || !path) {
+      throw new QueryError(
+        "Query could not be completed",
+        "Missing required query options",
+        {
+          operation: !!operation,
+          path: !!path,
+        }
+      );
+    }
   }
 
   async run(
@@ -208,55 +242,60 @@ export default class Gmail implements QueryService {
       sourceOptions["client_secret"] = process.env.GOOGLE_CLIENT_SECRET;
     }
 
-    const { operation, path, params } = queryOptions;
-
-    const accessToken = sourceOptions["access_token"];
-
-    const baseUrl = "https://gmail.googleapis.com";
-    let url = `${baseUrl}${path}`;
-
-    const pathParams = params.path || {};
-    const queryParams = params.query || {};
-    const bodyParams = params.request || {};
-
-    for (const param of Object.keys(pathParams)) {
-      url = url.replace(`{${param}}`, pathParams[param]);
-    }
-
-    let requestOptions;
-
-    if (sourceOptions["multiple_auth_enabled"]) {
-      const customHeaders = { "tj-x-forwarded-for": "::1" };
-
-      const newSourceOptions = this.constructSourceOptions(sourceOptions);
-
-      const authValidatedRequestOptions = this.convertQueryOptions(
-        queryOptions,
-        customHeaders
-      );
-
-      const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
-        newSourceOptions,
-        context,
-        authValidatedRequestOptions as any
-      );
-
-      if (_requestOptions.status === "needs_oauth") return _requestOptions;
-
-      requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
-    } else {
-      requestOptions = {
-        method: operation,
-        headers: this.getAuthHeader(accessToken),
-        searchParams: queryParams,
-        json:
-          operation === "get" || operation === "delete"
-            ? undefined
-            : bodyParams,
-      };
-    }
     try {
+      this.validateQueryOptions(queryOptions);
+
+      const { operation, path, params } = queryOptions;
+
+      const accessToken = sourceOptions["access_token"];
+
+      const baseUrl = "https://gmail.googleapis.com";
+      let url = `${baseUrl}${path}`;
+
+      const pathParams = params.path || {};
+      const queryParams = params.query || {};
+      const bodyParams = params.request || {};
+
+      for (const param of Object.keys(pathParams)) {
+        url = url.replace(`{${param}}`, pathParams[param]);
+      }
+
+      let requestOptions;
+
+      if (sourceOptions["multiple_auth_enabled"]) {
+        const customHeaders = { "tj-x-forwarded-for": "::1" };
+
+        const newSourceOptions = this.constructSourceOptions(sourceOptions);
+
+        const authValidatedRequestOptions = this.convertQueryOptions(
+          queryOptions,
+          customHeaders
+        );
+
+        const _requestOptions =
+          await validateAndSetRequestOptionsBasedOnAuthType(
+            newSourceOptions,
+            context,
+            authValidatedRequestOptions as any
+          );
+
+        if (_requestOptions.status === "needs_oauth") return _requestOptions;
+
+        requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
+      } else {
+        requestOptions = {
+          method: operation,
+          headers: this.getAuthHeader(accessToken),
+          searchParams: queryParams,
+          json:
+            operation === "get" || operation === "delete"
+              ? undefined
+              : bodyParams,
+        };
+      }
+
       const response = await got(url, requestOptions);
+
       if (response && response.body) {
         try {
           result = JSON.parse(response.body);
@@ -267,16 +306,39 @@ export default class Gmail implements QueryService {
         result = "Query Success";
       }
     } catch (error) {
-      const errorMessage =
-        error?.message === "Query could not be completed"
-          ? error?.description
-          : error?.message;
-      throw new QueryError(
+      if (error instanceof QueryError) {
+        throw error;
+      }
+
+      // Handle http errors from got
+      if (error instanceof HTTPError && error.response) {
+        const errorText = error.response.body || "No response body";
+        const statusCode = error.response.statusCode || 500;
+
+        const queryError = new QueryError(
+          "Query could not be completed",
+          `Failed to fetch data: ${statusCode} ${error.response.statusMessage}`,
+          {
+            status: statusCode,
+            statusText: error.response.statusMessage,
+            errors: errorText,
+          }
+        );
+
+        throw queryError;
+      }
+
+      const queryError = new QueryError(
         "Query could not be completed",
-        errorMessage,
-        error?.data || {}
+        error.message || "An unexpected error occurred",
+        {
+          error: error,
+        }
       );
+
+      throw queryError;
     }
+
     return {
       status: "ok",
       data: result,
