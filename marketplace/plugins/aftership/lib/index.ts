@@ -16,14 +16,20 @@ export default class Aftership implements QueryService {
     const { query = {}, path: pathParams = {}, request: body = {} } = queryOptions.params || {};
 
     if (!apiKey || !method || !path) {
-      throw new QueryError('Invalid configuration', 'Missing API key or selected operation details.', {
+      const errorMessage = 'Missing API key or selected operation details.';
+      const errorDetails = {
+        message: errorMessage,
+        name: 'InvalidConfigurationError',
+        code: 'MISSING_FIELDS',
         missing: {
           apiKey: !apiKey,
           method: !method,
           path: !path,
         },
-      });
+      };
+      throw new QueryError('Invalid configuration', errorMessage, errorDetails);
     }
+
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -41,10 +47,17 @@ export default class Aftership implements QueryService {
       case 'returns':
         baseUrl = 'https://api.aftership.com/returns/2025-07';
         break;
-      default:
-        throw new QueryError('Invalid Spec Type', `Unsupported specType: ${specType}`, {
-          allowed: ['shipping', 'tracking', 'returns'],
-        });
+      default: {
+        const errorMessage = `Unsupported specType: ${specType}`;
+        const errorDetails = {
+        message: errorMessage,
+        name: 'InvalidSpecTypeError',
+        code: 'INVALID_SPEC_TYPE',
+        raw: specType,
+        allowed: ['shipping', 'tracking', 'returns'],
+        };
+        throw new QueryError('Invalid Spec Type', errorMessage, errorDetails);
+      }
     }
 
     let finalPath = path;
@@ -79,7 +92,6 @@ export default class Aftership implements QueryService {
         errorDetails.status = err?.response?.status;
         errorDetails.response = err?.response?.data;
       }
-
       throw new QueryError('API call error', errorMessage, errorDetails);
     }
   }
@@ -101,20 +113,20 @@ export default class Aftership implements QueryService {
           'as-api-key': apiKey,
         },
       });
-
       const result = await response.json();
-      if (result?.meta?.code !== 200) {
-        throw new QueryError(
-          'Failed to verify connection',
-          result?.meta?.message || 'Unexpected response during connection test',
-          {
-            message : result?.meta?.message || 'Unknown error',
-            status: response.status,
-            statusText: response.statusText,
-            errorCode: result?.meta?.code,
-            errorType: result?.meta?.type,
-          }
-        );
+
+      if(result?.meta?.code !== 200) {
+          const errorMessage = result?.meta?.message || 'Unexpected response during connection test';
+          const errorDetails: any = {
+          message: errorMessage,
+          name: 'AfterShipAPIError',
+          code: result?.meta?.code,
+          raw: result,
+          status: response.status,
+          statusText: response.statusText,
+          errorType: result?.meta?.type,
+        };
+       throw new QueryError('Failed to verify connection', errorMessage, errorDetails);
       }
 
       return {
