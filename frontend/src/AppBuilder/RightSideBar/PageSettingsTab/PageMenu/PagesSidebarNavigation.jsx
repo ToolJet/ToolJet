@@ -265,6 +265,7 @@ export const PagesSidebarNavigation = ({
     measuredDarkModeToggleWidth,
     measuredMoreButtonWidth,
     canvasMaxWidth,
+    isPagesSidebarHidden,
   ]);
 
   useLayoutEffect(() => {
@@ -425,7 +426,6 @@ export const PagesSidebarNavigation = ({
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
-  console.log({ isPagesSidebarVisible, position, currentMode, isSidebarOpen, isRightSidebarOpen });
 
   return (
     <div
