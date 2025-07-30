@@ -1,6 +1,8 @@
 import { QueryError } from './query.error';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
+import { AuthSourceDetails } from './types';
+import { ConvertedFormat } from './types';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -252,4 +254,78 @@ export const fetchHttpsCertsForCustomCA = () => {
       certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
     },
   };
+};
+
+export const constructSourceOptions = (sourceOptions, props: AuthSourceDetails) => {
+  const baseUrl = props.baseUrl;
+  const authUrl = props.baseUrl;
+  const scope = props.scope;
+  const accessToken = props.accessTokenUrl;
+  const headerPrefix = props.headerPrefix ? props.headerPrefix : 'Bearer ';
+  const addSourceOptions = {
+    url: baseUrl,
+    auth_url: authUrl,
+    add_token_to: 'header',
+    header_prefix: headerPrefix,
+    access_token_url: accessToken,
+    audience: '',
+    username: '',
+    password: '',
+    bearer_token: '',
+    client_auth: 'header',
+    headers: [
+      ['', ''],
+      ['tj-x-forwarded-for', '::1'],
+    ],
+    custom_query_params: [['', '']],
+    custom_auth_params: [['', '']],
+    access_token_custom_headers: [['', '']],
+    ssl_certificate: 'none',
+    retry_network_errors: true,
+
+    scopes: encodeOAuthScope(scope),
+  };
+  const newSourcOptions = {
+    ...sourceOptions,
+    ...addSourceOptions,
+  };
+  return newSourcOptions;
+};
+
+export const encodeOAuthScope = (scope: string): string => {
+  return encodeURIComponent(scope);
+};
+
+export const convertQueryOptions = (queryOptions: any, customHeaders?: Record<string, string>): any => {
+  // Extract operation and params
+  const { operation, params } = queryOptions;
+
+  // Start building the result
+  const result: ConvertedFormat = {
+    method: operation.toLowerCase(),
+    headers: customHeaders || {},
+  };
+
+  // Convert query params to URLSearchParams if they exist
+  if (params.query && Object.keys(params.query).length > 0) {
+    const urlParams = new URLSearchParams();
+
+    Object.entries(params.query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach((v) => urlParams.append(key, String(v)));
+        } else {
+          urlParams.append(key, String(value));
+        }
+      }
+    });
+
+    result.searchParams = urlParams;
+  }
+
+  if (!['get', 'delete'].includes(result.method) && params.request) {
+    result.json = params.request;
+  }
+
+  return result;
 };

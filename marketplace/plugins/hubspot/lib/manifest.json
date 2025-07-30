@@ -13,63 +13,68 @@
       "rawData": {}
     },
     "options": {
-      "username": {
-        "value": ""
-      },
-      "account": {
-        "value": ""
-      },
-      "password": {
-        "value": ""
-      },
-      "database": {
-        "value": ""
-      },
-      "schema": {
-        "value": ""
-      },
-      "warehouse": {
-        "value": ""
-      },
-      "role": {
-        "value": ""
-      },
-      "oauth_type": {
-        "value": "custom_app"
-      },
-      "access_token_url": {
-        "value": "https://api.hubapi.com/oauth/v1/token"
-      },
-      "redirect_url": {
-          "value": "http://localhost:8082/oauth2/authorize",
-          "encrypted": false
-      },
-      "auth_url": {
-          "value": "https://app.hubspot.com/oauth/authorize",
-          "encrypted": false
-      },
-      "allowed_auth_types": {
-          "value": "oauth2",
-          "encrypted": false
-      },
-      "auth_type": {
-          "value": "oauth2"
-      },
-      "grant_type": {
-          "value": "authorization_code"
-      },
-      "scopes": {
-          "value": ""
-      }
+      
     },
     "customTesting": true
   },
-  "defaults": {},
+  "defaults": {
+    "client_id": {
+      "value": "2d018ce0-462b-48e4-942f-635a980e83aa"
+    },
+    "client_secret": {
+      "value": "b52d32b8-746b-433e-b629-7b91e861825a"
+    },
+    "username": {
+      "value": ""
+    },
+    "account": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "schema": {
+      "value": ""
+    },
+    "warehouse": {
+      "value": ""
+    },
+    "role": {
+      "value": ""
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://api.hubapi.com/oauth/v1/token"
+    },
+    "redirect_url": {
+      "value": "http://localhost:8082/oauth2/authorize"
+    },
+    "auth_url": {
+      "value": "https://app.hubspot.com/oauth/authorize"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "oauth cms.domains.read content cms.domains.write cms.knowledge_base.settings.write cms.knowledge_base.settings.read"
+    }
+  },
   "properties": {
     "oauth": {
       "key": "oauth",
       "type": "react-component-oauth",
-      "description": "A component for Google Calendar",
+      "description": "A component for Hubspot",
       "oauth_configs": {
         "allowed_field_groups": {
           "authorization_code": [
@@ -87,7 +92,7 @@
         "allowed_grant_types": [
           "authorization_code"
         ],
-        "allowed_scope_field": false
+        "allowed_scope_field": true
       }
     }
   },
