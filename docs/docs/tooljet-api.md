@@ -48,19 +48,11 @@ By default, the ToolJet API is disabled. To enable the API, add these variables 
 
 The ToolJet API is secured with an access token created by you in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be sent in the format `Basic <access_token>`.
 
-<details id="tj-dropdown">
-
-<summary>cURL Request Example</summary>
-
-```bash
-
+```bash title="cURL Request Example"
 curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
--H 'Authorization: Basic <access_token>' \
--H 'Content-Type: application/json'
-
+  -H 'Authorization: Basic <access_token>' \
+  -H 'Content-Type: application/json'
 ```
-
-</details>
 
 ## API Endpoints
 
@@ -72,6 +64,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Response:** Array of User objects.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -151,6 +149,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Content-Type:** `application/json`
     - **Response:** Array of Workspace objects.
 
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
+
 <details id="tj-dropdown">
 <summary>Response Example</summary>
 
@@ -201,6 +205,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
       - **workspace_id**: The ID of the workspace.
     - **Response:** Array of app details for all the applications in the workspace.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/workspace/<workspace_id>/apps \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -258,6 +268,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
         - id (string): The ID of the user.
     - **Response:** User object.
+
+    ```bash title="cURL Request"
+    curl -X GET https://<your-domain>/api/ext/user/<id> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -324,6 +340,32 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
             - `name` (string, optional): The name of the group.
             - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
 
+    ```bash title="cURL Request"
+    curl -X POST https://<your-domain>/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>",
+        "workspaces": [
+          {
+            "id": "<workspace_id>",
+            "name": "<workspace_name>",
+            "status": "<active|archived>",
+            "groups": [
+              {
+                "id": "<group_id>",
+                "name": "<group_name>",
+                "status": "<active|archived>"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+
   <details id="tj-dropdown">
   <summary>**Request Body Example**</summary>
 ```json
@@ -363,6 +405,17 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
 
+    ```bash title="cURL Request"
+    curl -X PATCH https://<your-domain>/api/ext/user/<id> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>"
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -394,6 +447,15 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `newRole` (string, required): The updated user role of the user.
         - `userId` (string, required): The unique identifier of the user.
 
+    ```bash title="cURL Request"
+    curl -X PUT https://<your-domain>/api/ext/update-user-role/workspace/<workspaceId> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "newRole": "<new_role>",
+        "userId": "<user_id>"
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -430,7 +492,25 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Note:** If the array is empty, it will remove all existing workspace relations.
     - **Response:** `200 OK`
 
-
+    ```bash title="cURL Request"
+    curl -X PUT https://<your-domain>/api/ext/user/<id>/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '[
+        {
+          "id": "<workspace_id>",
+          "name": "<workspace_name>",
+          "status": "<active|archived>",
+          "groups": [
+            {
+              "id": "<group_id>",
+              "name": "<group_name>",
+              "status": "<active|archived>"
+            }
+          ]
+        }
+      ]'
+    ```
 
 ### Replace User Workspace
 
@@ -449,6 +529,23 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The ID of the group.
           - `name` (string, optional): The name of the group.
+
+    ```bash title="cURL Request"
+    curl -X PATCH https://<your-domain>/api/ext/user/<id>/workspaces/<workspaceId> \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "id": "<workspace_id>",
+        "name": "<workspace_name>",
+        "status": "<active|archived>",
+        "groups": [
+          {
+            "id": "<group_id>",
+            "name": "<group_name>"
+          }
+        ]
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -471,7 +568,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ### Export Application
 
-From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
+You can use ToolJet API to export application.
 
     - **Description:** Export a ToolJet Application from a specified workspace.
     - **URL:** `/api/ext/export/workspace/:workspace_id/apps/:app_id`
@@ -486,6 +583,12 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
       - **appVersion** (string): Accepts a specific version of the application that is to be exported.
       - **exportAllVersions** (boolean): Defines whether to export all the available versions. By default it exports the latest version of the app.
     - **Response:** Exported application json.
+
+    ```bash title="cURL Request"
+    curl -X POST "https://<your-domain>/api/ext/export/workspace/<workspace_id>/apps/<app_id>?exportTJDB=<true|false>&appVersion=<version>&exportAllVersions=<true|false>" \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
 <details id="tj-dropdown">
 <summary>Response Example</summary>
@@ -921,7 +1024,7 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
 
 ### Import Application
 
-From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
+You can use ToolJet API to import application.
 
     - **Description:** Import a Application in ToolJet Workspace.
     - **URL:** `/api/ext/import/workspace/:workspace_id/apps`
@@ -933,6 +1036,16 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
     - **Body:** The body object will contain following fields:
       - Application JSON
       - `appName` (string, optional): Defines the application name. If not defined then the app will be imported with the existing app name.
+
+    ```bash title="cURL Request"
+    curl -X POST https://<your-domain>/api/ext/import/workspace/<workspace_id>/apps \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "appName": "<app_name>",
+        <application_json>
+      }'
+    ```
 
 :::info
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
