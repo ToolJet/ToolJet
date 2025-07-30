@@ -1666,7 +1666,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: var(--cc-primary-brand, --primary-brand);
+      background-color: var(--cc-primary-brand, rgb(77, 94, 240));
     }
   }
 }
@@ -3685,7 +3685,7 @@ input:focus-visible {
 
   .page-item {
     a.page-link {
-      background-color: var(--cc-primary-brand, --primary-brand);
+      background-color: var(--cc-primary-brand, rgb(77, 94, 240));
     }
   }
 
@@ -11575,9 +11575,11 @@ tbody {
     }
   }
 }
+
 .org-name.license-info-tooltip {
   --org-name-max-width: 113px;
 }
+
 .tj-org-dropdown {
   .dashboard-org-avatar {
     margin-right: 11px;
