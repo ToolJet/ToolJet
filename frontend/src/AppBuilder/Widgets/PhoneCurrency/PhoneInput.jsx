@@ -100,6 +100,11 @@ export const PhoneInput = (props) => {
             value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
             setCountry(value ? value : '');
           }
+          setExposedVariables({
+            country: country,
+            countryCode: `+${getCountryCallingCodeSafe(country)}`,
+            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
+          });
         },
       });
       isInitialRender.current = false;

@@ -203,6 +203,11 @@ export const useInput = ({
     let validationStatus;
     if (inputType === 'phone') {
       const countryCode = getCountryCallingCodeSafe(country);
+      setExposedVariables({
+        country: country,
+        countryCode: `+${countryCode}`,
+        formattedValue: `${value}`,
+      });
       validationStatus = validate(value?.replace(`+${countryCode}`, ''));
     } else {
       validationStatus = validate(value);
