@@ -66,10 +66,8 @@ export default class Aftership implements QueryService {
         headers,
         body: ['POST', 'PUT', 'PATCH'].includes(method) ? JSON.stringify(body) : undefined,
       });
-
       const result = await response.json();
-
-
+      
       return {
         status: 'ok',
         data: result,
@@ -82,7 +80,6 @@ export default class Aftership implements QueryService {
         code: err?.code,
         raw: err,
       };
-
       if (err?.response) {
         errorDetails.status = err.response.status;
         errorDetails.response = err.response.data;
@@ -111,7 +108,6 @@ export default class Aftership implements QueryService {
       });
 
       const result = await response.json();
-
       if (result?.meta?.code !== 200) {
         throw new QueryError(
           'Failed to verify connection',
@@ -122,7 +118,6 @@ export default class Aftership implements QueryService {
             statusText: response.statusText,
             errorCode: result?.meta?.code,
             errorType: result?.meta?.type,
-            raw: result,
           }
         );
       }
@@ -138,7 +133,6 @@ export default class Aftership implements QueryService {
         name: error?.name,
         code: error?.code,
       };
-
       if (error?.response) {
         errorDetails.status = error.response.status;
         errorDetails.response = error.response.data;

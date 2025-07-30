@@ -12,9 +12,9 @@
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
       "specUrl": {
-        "Shipping": "https://stoplight.io/api/v1/projects/automizely/docs-core-postmenapi-com/nodes/reference/api.v3.json?branch=master&deref=optimizedBundle",
-        "Tracking": "https://stoplight.io/api/v1/projects/automizely/docs-api-aftership-com/nodes/reference/api.json?branch=production%252F2024-07&deref=optimizedBundle",
-        "Returns": "https://stoplight.io/api/v1/projects/automizely/docs-api-returnscenter-com-public/nodes/reference/api.json?branch=production/2025-07&deref=optimizedBundle"
+        "Shipping": "https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/aftership/shipping.json",
+        "Tracking": "https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/aftership/tracking.json",
+        "Returns": "https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/aftership/return.json"
     }
   }
 }
