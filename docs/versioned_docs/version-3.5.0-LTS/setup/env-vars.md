@@ -61,6 +61,7 @@ ToolJet uses **PostgREST (v12.2.0)** for API access. The following environment v
 - `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
 - `PGRST_DB_URI`: Database connection string
 - `PGRST_LOG_LEVEL=info`
+- `PGRST_DB_PRE_CONFIG=postgrest.pre_config`
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
