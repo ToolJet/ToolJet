@@ -7,6 +7,7 @@ import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty } from 'lodash';
+import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
   isSaving: false,
@@ -217,18 +218,20 @@ export const createAppSlice = (set, get) => ({
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().appStore.modules[moduleId].app.slug;
+    const subpath = getSubpath();
+    let toNavigate = '';
 
     if (!isBackOrForward) {
-      navigate(
-        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-        {
-          state: {
-            isSwitchingPage: true,
-            id: pageId,
-            handle: handle,
-          },
-        }
-      );
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
+      navigate(toNavigate, {
+        state: {
+          isSwitchingPage: true,
+          id: pageId,
+          handle: handle,
+        },
+      });
     }
 
     const newPage = pages.find((p) => p.id === pageId);
