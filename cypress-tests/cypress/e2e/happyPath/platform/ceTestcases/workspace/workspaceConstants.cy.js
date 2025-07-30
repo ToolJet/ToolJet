@@ -120,6 +120,7 @@ describe("Workspace constants", () => {
     }
 
     //Verify secret constant value is not resolved in component and verify error message
+    cy.openComponentSidebar();
     cy.get(commonWidgetSelector.draggableWidget('textinput2'))
       .verifyVisibleElement("have.value", "").click();
     cy.get(commonWidgetSelector.defaultValueInputField).click();
@@ -190,7 +191,7 @@ describe("Workspace constants", () => {
     verifyConstantValueVisibility(dataSourceSelector.baseUrlTextField, workspaceConstantsText.secretsHiddenText);
 
 
-    cy.visitSlug({ actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`});
+    cy.visitSlug({ actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}` });
     cy.wait(8000);
     cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
     for (let i = 16; i >= 3; i--) {
