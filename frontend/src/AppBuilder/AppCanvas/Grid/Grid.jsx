@@ -111,7 +111,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     };
   }, []);
 
-  const { elementGuidelines } = useElementGuidelines(boxList, selectedComponents, getResolvedValue, virtualTarget);
+  const elementGuidelines = useElementGuidelines(boxList, selectedComponents, getResolvedValue, virtualTarget);
 
   useEffect(() => {
     setBoxList(
@@ -434,7 +434,6 @@ export default function Grid({ gridWidth, currentLayout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
-
   // Add event listeners for config handle visibility when hovering over widget boundary
   // This is needed even though we have hovered widget state because when hovered on boundary,
   // the hovered widget state is empty, hence created a separate state for boundary
@@ -996,7 +995,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           // Snap to grid
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-
           const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
@@ -1022,7 +1020,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (isParentModal) {
             const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
-
             const mainRect = mainCanvas.getBoundingClientRect();
             const modalRect = modalContainer.getBoundingClientRect();
             const relativePosition = {
