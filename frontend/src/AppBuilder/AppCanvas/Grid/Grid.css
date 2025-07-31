@@ -205,3 +205,11 @@
   /* Creates space between element and outline */
   z-index: 999 !important;
 }
+
+.disable-moveable-line .moveable-control-box {
+  width: 0px !important;
+  height: 0px !important;
+}
+.disable-moveable-line .moveable-line.moveable-direction {
+  display: none !important;
+}
