@@ -241,6 +241,7 @@
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
+    "render-build" : "webpack && cp -a ./assets/. ./build/assets/",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",
