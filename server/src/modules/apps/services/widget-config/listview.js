@@ -4,13 +4,13 @@ export const listviewConfig = {
   description: 'List multiple items',
   defaultSize: {
     width: 30,
-    height: 300,
+    height: 320,
   },
   defaultChildren: [
     {
       componentName: 'Image',
       layout: {
-        top: 15,
+        top: 0,
         left: 3,
         height: 100,
         width: 7,

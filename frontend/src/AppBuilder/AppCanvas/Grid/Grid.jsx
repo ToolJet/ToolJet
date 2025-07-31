@@ -131,6 +131,14 @@ export default function Grid({ gridWidth, currentLayout }) {
     );
   }, [currentPageComponents, setBoxList, currentLayout]);
 
+  const safeUpdateMoveable = () => {
+    if (!isDraggingRef.current && moveableRef.current) {
+      moveableRef.current.updateTarget();
+      moveableRef.current.updateRect();
+      moveableRef.current.updateSelectors();
+    }
+  };
+
   const noOfBoxs = Object.values(boxList || []).length;
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
@@ -262,6 +270,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     },
   };
 
+  // This is to hide the control box/selectors of the other element which are not children of the modal
   useEffect(() => {
     const controlBoxes = document.querySelectorAll('.moveable-control-box[target-id]');
     controlBoxes.forEach((box) => {
@@ -283,11 +292,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   /* Added to avoid blocking the main thread */
   const reloadGrid = useCallback(async () => {
     window.requestIdleCallback(() => {
-      if (moveableRef.current) {
-        moveableRef.current.updateRect();
-        moveableRef.current.updateTarget();
-        moveableRef.current.updateSelectors();
-      }
+      safeUpdateMoveable();
       Array.isArray(moveableRef.current?.moveable?.moveables) &&
         moveableRef.current?.moveable?.moveables.forEach((moveable) => {
           const {
@@ -323,14 +328,14 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   useEffect(() => {
     if (moveableRef.current) {
-      moveableRef.current.updateTarget();
+      safeUpdateMoveable();
     }
-  }, [temporaryHeight]);
+  }, [temporaryHeight, boxList]);
 
   useEffect(() => {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedComponents, openModalWidgetId, boxList, currentLayout, checkIfAnyWidgetVisibilityChanged]);
+  }, [selectedComponents, openModalWidgetId, boxList, currentLayout]);
 
   const updateNewPosition = (events, parent = null) => {
     const posWithParent = {
@@ -437,8 +442,12 @@ export default function Grid({ gridWidth, currentLayout }) {
       useStore.getState().setHoveredComponentBoundaryId(targetId);
       const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
       const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
-      if (moveableControlBox && isHorizontallyExpandable) {
-        moveableControlBox.classList.add('moveable-horizontal-only');
+      if (moveableControlBox) {
+        if (isHorizontallyExpandable) {
+          moveableControlBox.classList.add('moveable-horizontal-only');
+        } else {
+          moveableControlBox.classList.remove('moveable-horizontal-only');
+        }
       }
       setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
@@ -453,7 +462,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       moveableBox.removeEventListener('mouseover', showConfigHandle);
       moveableBox.removeEventListener('mouseout', hideConfigHandle);
     };
-  }, []);
+  }, [moveableRef?.current?._elementTargets?.length]);
 
   const handleDragGroupEnd = (e) => {
     try {
@@ -581,7 +590,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-
+  console.log('moveableRef', moveableRef);
   if (mode !== 'edit') return null;
 
   return (
@@ -947,7 +956,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
 
             // Select the dragged component after drop
-            setTimeout(() => setSelectedComponents([dragged.id]));
+            setTimeout(() => setSelectedComponents([dragged.id]), 100);
           } catch (error) {
             console.error('Error in onDragEnd:', error);
           }
@@ -969,6 +978,9 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
 
             useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
+            const draggingWidgetWidth = getDraggingWidgetWidth(currentDragCanvasId, e.target.clientWidth);
+            e.target.style.width = `${draggingWidgetWidth}px`;
+
             e.target.style.transform = `translate(${left}px, ${top}px)`;
             return false;
           }

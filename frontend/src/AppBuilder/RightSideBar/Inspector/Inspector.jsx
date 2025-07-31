@@ -47,6 +47,7 @@ import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import { Chat } from './Components/Chat.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -116,6 +117,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'Chat',
 ];
 
 export const Inspector = ({
@@ -638,8 +640,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -836,6 +838,9 @@ const GetAccordion = React.memo(
       case 'MultiselectV2':
       case 'RadioButtonV2':
         return <Select {...restProps} />;
+
+      case 'Chat':
+        return <Chat {...restProps} />;
 
       case 'DatetimePickerV2':
       case 'DaterangePicker':

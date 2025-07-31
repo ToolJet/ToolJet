@@ -48,17 +48,22 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
-  const { updateIsTJDarkMode } = useStore(
+  const { updateIsTJDarkMode, isTJDarkMode } = useStore(
     (state) => ({
       updateIsTJDarkMode: state.updateIsTJDarkMode,
+      isTJDarkMode: state.isTJDarkMode,
     }),
     shallow
   );
-
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} updateIsTJDarkMode={updateIsTJDarkMode} />
+        <AppWithRouter
+          props={props}
+          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+          darkMode={isTJDarkMode} // This is the dark mode of entire platform
+          updateIsTJDarkMode={updateIsTJDarkMode}
+        />
       </BrowserRouter>
     </Suspense>
   );
@@ -155,17 +160,17 @@ class AppComponent extends React.Component {
     // Update margin when showBanner changes
     this.updateMargin();
     // Update color scheme if darkMode changed
-    if (prevState.darkMode !== this.state.darkMode) {
+    if (prevProps.darkMode !== this.props.darkMode) {
       this.updateColorScheme();
     }
   }
 
   switchDarkMode = (newMode) => {
-    this.setState({ darkMode: newMode });
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
     this.updateColorScheme(newMode);
   };
+
   isEditorOrViewerFromPath = () => {
     const pathname = this.props.location.pathname;
     if (pathname.includes('/apps/')) {
@@ -183,7 +188,7 @@ class AppComponent extends React.Component {
     return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
   };
   updateColorScheme = (darkModeValue) => {
-    const isDark = darkModeValue !== undefined ? darkModeValue : this.state.darkMode;
+    const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
     if (isDark) {
       document.documentElement.style.setProperty('color-scheme', 'dark');
     } else {
@@ -191,7 +196,8 @@ class AppComponent extends React.Component {
     }
   };
   render() {
-    const { updateAvailable, darkMode, isEditorOrViewer, showBanner } = this.state;
+    const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
+    const { darkMode } = this.props;
     const mergedProps = {
       ...this.props,
       switchDarkMode: this.switchDarkMode,
@@ -346,7 +352,7 @@ class AppComponent extends React.Component {
                   }
                 />
 
-                {getAuditLogsRoutes(this.props)}
+                {getAuditLogsRoutes(mergedProps)}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"

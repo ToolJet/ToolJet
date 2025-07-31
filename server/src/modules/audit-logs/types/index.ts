@@ -22,6 +22,7 @@ export interface AuditLogFields {
   actionType: string;
   resourceName?: string;
   ipAddress?: string;
+  userAgent?: string;
   metadata?: object;
   organizationIds?: Array<string>;
 }

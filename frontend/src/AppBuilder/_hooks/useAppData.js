@@ -289,7 +289,7 @@ const useAppData = (
                     slug,
                     viewerEnvironment?.environment?.id
                   )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
           }
@@ -350,7 +350,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
-            isReleasedApp: isReleasedApp
+            isReleasedApp: isReleasedApp,
           },
           moduleId
         );
@@ -386,8 +386,8 @@ const useAppData = (
         let startingPage = appData.pages.find((page) => page.id === homePageId);
 
         //no access to homepage, set to the next available page
-        if (startingPage?.restricted) {
-          startingPage = appData.pages.find((page) => !page?.restricted);
+        if (startingPage?.restricted && mode === 'view') {
+          startingPage = appData.pages.find((page) => !page?.restricted && !page?.isPageGroup && !page?.disabled);
         }
 
         if (initialLoadRef.current && !moduleMode) {
@@ -397,7 +397,7 @@ const useAppData = (
           const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
           if (page) {
             // if page is disabled, and not editing redirect to home page
-            const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+            const shouldRedirect = mode !== 'edit' && (page?.restricted || page?.disabled);
 
             if (shouldRedirect) {
               const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
@@ -449,7 +449,7 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
+            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
         const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
