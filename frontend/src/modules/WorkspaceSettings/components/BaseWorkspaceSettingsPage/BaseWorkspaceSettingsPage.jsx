@@ -128,7 +128,7 @@ function constructWorkspaceSettingsLinks(extraLinks) {
     { id: 'users', name: 'Users', route: 'users', conditions: ['admin'] },
     { id: 'groups', name: 'Groups', route: 'groups', conditions: ['admin'] },
     {
-      id: 'workspacelogin',
+      id: 'workspace-login',
       name: 'Workspace login',
       route: 'workspace-login',
       conditions: ['admin', 'wsLoginEnabled'],

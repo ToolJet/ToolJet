@@ -105,7 +105,7 @@ export class DataSourcesController implements IDataSourcesController {
     return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId);
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB)
   @UseGuards(FeatureAbilityGuard)
   @Post('sample-db/test-connection')
   testConnectionSampleDb(@User() user, @Body() testDataSourceDto: TestSampleDataSourceDto) {

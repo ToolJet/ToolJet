@@ -71,17 +71,15 @@ const LegalReasonsErrorModal = ({
             </Button>
             {actionButtonAdmin &&
               (edition === 'ee' ? (
-                <Button>
-                  <a
-                    className="upgrade-btn"
-                    style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
-                    href="https://www.tooljet.com/pricing"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-cy="upgrade-button"
-                  >
-                    Upgrade
-                  </a>
+                <Button
+                  className="upgrade-btn"
+                  style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
+                  href="https://www.tooljet.com/pricing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cy="upgrade-button"
+                >
+                  Upgrade
                 </Button>
               ) : (
                 <Button
