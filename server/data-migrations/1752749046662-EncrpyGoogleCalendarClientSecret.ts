@@ -12,10 +12,6 @@ export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationI
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    if (edition !== TOOLJET_EDITIONS.EE) {
-      console.log('Skipping migration for edition other than EE');
-      return;
-    }
 
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const { CredentialsService } = await import(
