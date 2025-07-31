@@ -21,7 +21,7 @@ export const listviewConfig = {
     {
       componentName: 'Text',
       layout: {
-        top: 50,
+        top: 30,
         left: 11,
         height: 30,
         width: 14,
@@ -32,7 +32,7 @@ export const listviewConfig = {
     {
       componentName: 'Button',
       layout: {
-        top: 50,
+        top: 30,
         left: 26,
         height: 30,
         width: 18,
