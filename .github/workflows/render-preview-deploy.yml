@@ -176,7 +176,7 @@ jobs:
             "serviceDetails": {
               "env": "node",
               "envSpecificDetails": {
-                "buildCommand": "npm run --prefix frontend build",
+                "buildCommand": "npm install --prefix frontend webpack-cli && NODE_ENV=production npm run --prefix frontend build",
                 "startCommand": "npm run --prefix server start"
               },
                 "healthCheckPath": "/api/health",
@@ -310,7 +310,7 @@ jobs:
       #       echo "Database $PGTJBDATABASE exists, deleting..."
       #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
       #     else
-      #       echo "Database $PGTJBDATABASE does not exist."
+      #       echo "Database $PGTJBDATABASE does not exist." sdvdf
       #     fi
 
   suspend-ce-review-app:
