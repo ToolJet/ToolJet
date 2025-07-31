@@ -25,6 +25,8 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
   const componentData = deepClone(componentMeta);
   const componentName = useStore.getState().generateUniqueComponentNameFromBaseName(column.name);
 
+  const addOptions = COMPONENT_WITH_OPTIONS.includes(componentType);
+
   const formField = {
     id: fieldId,
     name: componentName,
@@ -38,6 +40,7 @@ export const createNewComponentFromMeta = (column, parentId, nextTop) => {
           label: {
             value: column.label,
           },
+          ...(addOptions && { options: componentData.definition.properties.options }),
         },
         styles: {
           alignment: { value: 'top' },
@@ -171,7 +174,6 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
           label: {
             value: updatedField.label || componentToUpdate.component.definition.properties.label?.value,
           },
-          ...(addOptions && { options: componentToUpdate.component.definition.properties.options }),
         },
         styles: {
           alignment: { value: 'top' },
@@ -190,6 +192,14 @@ const handleComponentTypeChange = (componentToUpdate, updatedField) => {
       [nonActiveLayout]: existingLayouts[nonActiveLayout] || { top: 0, left: 3, width: 37, height: 30 },
     },
   };
+
+  if (addOptions) {
+    set(
+      newComponent.component.definition.properties,
+      'options',
+      componentToUpdate.component.definition.properties.options
+    );
+  }
 
   setValuesBasedOnType(updatedField, updatedField.componentType, newComponent, true);
 
@@ -218,7 +228,11 @@ const setValuesBasedOnType = (column, componentType, formField, isTypeChange = f
       componentType === 'RadioButtonV2'
     ) {
       if (!isTypeChange) {
-        set(formField.component.definition.properties, 'options.value', buildOptions(column.value));
+        const generatedOptions = buildOptions(column.value);
+        const val = Array.isArray(generatedOptions)
+          ? generatedOptions
+          : formField.component.definition.properties?.options.value;
+        set(formField.component.definition.properties, 'options.value', val);
       } else if (Array.isArray(formField.component.definition.properties?.options)) {
         set(
           formField.component.definition.properties,
