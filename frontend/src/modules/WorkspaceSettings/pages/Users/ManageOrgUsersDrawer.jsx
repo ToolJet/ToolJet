@@ -49,11 +49,12 @@ const ManageOrgUsersDrawer = ({
       .then(({ groupPermissions }) => {
         const orgGroups = groupPermissions
           .filter((group) => group.organizationId === current_organization_id)
-          .map(({ name, type, id }) => ({
+          .map(({ name, type, id, disabled }) => ({
             label: humanizeifDefaultGroupName(name),
             name: humanizeifDefaultGroupName(name),
             value: name,
             groupType: type,
+            disabled: disabled,
             id: id,
           }));
         setGroups(orgGroups);

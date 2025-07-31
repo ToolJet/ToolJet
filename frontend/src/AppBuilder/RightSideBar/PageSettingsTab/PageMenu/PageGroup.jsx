@@ -26,6 +26,7 @@ export const RenderPage = ({
   callback,
   position,
   onPageClick,
+  currentMode,
 }) => {
   const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const isHomePage = page.id === homePageId;
@@ -43,7 +44,7 @@ export const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return pageVisibility || page.disabled || page?.restricted ? null : (
+  return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : (
     <div
       key={page.name}
       data-id={page.id}
@@ -98,12 +99,14 @@ const RenderPageGroup = ({
   isExpanded,
   onToggle,
   onPageClick,
+  currentMode,
 }) => {
-  const currentMode = useStore((state) => state.currentMode);
-
   const [hovered, setHovered] = useState(false);
+  const [accordionPosition, setAccordionPosition] = useState({ top: 0, left: 0, width: 0 });
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
+  const computedStyles = computeStyles('', hovered);
+  const pageGroupVisibility = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
   const IconElement = (props) => {
     const Icon = Icons?.[pageGroup.icon] ?? Icons?.['IconHome2'];
@@ -124,9 +127,48 @@ const RenderPageGroup = ({
   };
 
   useEffect(() => {
+    const updatePosition = () => {
+      if (isExpanded && groupItemRootRef.current) {
+        const rect = groupItemRootRef.current.getBoundingClientRect();
+        setAccordionPosition({
+          top: rect.bottom,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    if (isExpanded) {
+      updatePosition();
+
+      let ticking = false;
+      const handleScroll = () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            updatePosition();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+      window.addEventListener('resize', handleScroll, { passive: true });
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll, { passive: true, capture: true });
+        window.removeEventListener('resize', handleScroll, { passive: true });
+      };
+    }
+  }, [isExpanded]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
-        onToggle(pageGroup.id);
+        const isClickOnAccordion = event.target.closest('.accordion-item');
+        if (!isClickOnAccordion) {
+          onToggle(pageGroup.id);
+        }
       }
     };
 
@@ -138,6 +180,10 @@ const RenderPageGroup = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isExpanded, onToggle, pageGroup.id]);
+
+  if (pageGroupVisibility) {
+    return null;
+  }
 
   if (labelStyle?.label?.hidden) {
     return (
@@ -155,6 +201,7 @@ const RenderPageGroup = ({
             position={position}
             callback={handleToggle}
             onPageClick={onPageClick}
+            currentMode={currentMode}
           />
         ))}
       </>
@@ -174,20 +221,26 @@ const RenderPageGroup = ({
         groupItemRootRef.current = el;
       }}
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
+      style={{
+        position: 'relative',
+        zIndex: isExpanded ? 1000 : 'auto',
+      }}
     >
       <div
         className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
           position: 'relative',
+          ...{ ...computedStyles.pill },
         }}
-        onClick={isSidebarPinned && handleToggle}
+        onClick={handleToggle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         <FolderList
           key={pageGroup.id}
           CustomIcon={!labelStyle?.icon?.hidden && IconElement}
           customStyles={computeStyles}
           darkMode={darkMode}
-          hovered={hovered}
         >
           {!labelStyle?.label?.hidden && (
             <div
@@ -208,7 +261,14 @@ const RenderPageGroup = ({
         </div>
       </div>
 
-      <div className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}>
+      <div
+        style={{
+          top: accordionPosition.top,
+          left: accordionPosition.left,
+          zIndex: 1060,
+        }}
+        className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}
+      >
         <div ref={contentRef} className="accordion-content">
           {pages.map((page) => (
             <RenderPage
@@ -224,6 +284,7 @@ const RenderPageGroup = ({
               callback={handleToggle}
               position={position}
               onPageClick={onPageClick}
+              currentMode={currentMode}
             />
           ))}
         </div>
@@ -245,6 +306,7 @@ export const RenderPageAndPageGroup = ({
   position,
   style,
   isSidebarPinned,
+  currentMode,
 }) => {
   const { moduleId } = useModuleContext();
   const [expandedPageGroupId, setExpandedPageGroupId] = useState(null);
@@ -254,9 +316,15 @@ export const RenderPageAndPageGroup = ({
   const currentPage = pages.find((page) => page.id === currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
+  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
   const handleAccordionToggle = (groupId) => {
-    setExpandedPageGroupId((prevId) => (prevId === groupId ? null : groupId));
+    setExpandedPageGroupId((prevId) => {
+      if (prevId === groupId) {
+        return null;
+      }
+      return groupId;
+    });
   };
 
   const closeAllAccordions = () => {
@@ -273,13 +341,29 @@ export const RenderPageAndPageGroup = ({
           page.isPageGroup &&
           page.children?.length === 0 &&
           labelStyle?.label?.hidden &&
-          !page.children.some((child) => child?.restricted === true)
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return (
+              pageVisibility === false &&
+              !child?.disabled &&
+              (currentMode === 'view' ? child?.restricted === false : true)
+            );
+          })
         ) {
           return null;
         }
-        if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
-          // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
-          const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
+        if (
+          page.children &&
+          page.isPageGroup &&
+          page.children.some((child) => {
+            const pageVisibility = getPagesVisibility('canvas', child?.id);
+            return (
+              pageVisibility === false &&
+              !child?.disabled &&
+              (currentMode === 'view' ? child?.restricted === false : true)
+            );
+          })
+        ) {
           return (
             <>
               <RenderPageGroup
@@ -299,6 +383,7 @@ export const RenderPageAndPageGroup = ({
                 isExpanded={expandedPageGroupId === page.id}
                 onToggle={handleAccordionToggle}
                 onPageClick={closeAllAccordions}
+                currentMode={currentMode}
               />
             </>
           );
@@ -317,6 +402,7 @@ export const RenderPageAndPageGroup = ({
               isSidebarPinned={isSidebarPinned}
               position={position}
               onPageClick={closeAllAccordions}
+              currentMode={currentMode}
             />
           );
         }
@@ -341,21 +427,36 @@ export const RenderPageAndPageGroup = ({
             onHide={() => setShowPopover(false)}
             rootClose
           >
-            <Popover id="more-nav-btns">
+            <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
               <Popover.Body>
                 {overflowLinks.map((page, index) => {
                   if (
                     page.isPageGroup &&
                     page.children.length === 0 &&
                     labelStyle?.label?.hidden &&
-                    !page.children.some((child) => child?.restricted === true)
+                    page.children.some((child) => {
+                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+                      return (
+                        pageVisibility === false &&
+                        !child?.disabled &&
+                        (currentMode === 'view' ? child?.restricted === false : true)
+                      );
+                    })
                   ) {
                     return null;
                   }
-                  if (page.children && page.isPageGroup && !page.children.some((child) => child?.restricted === true)) {
-                    // if we are only displaying icons, we don't display the groups instead display separator to separate a page groups
-                    const renderSeparatorTop = index !== 0 && labelStyle?.label?.hidden;
-                    const renderSeparatorBottom = !overflowLinks[index + 1]?.isPageGroup && labelStyle?.label?.hidden;
+                  if (
+                    page.children &&
+                    page.isPageGroup &&
+                    page.children.some((child) => {
+                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+                      return (
+                        pageVisibility === false &&
+                        !child?.disabled &&
+                        (currentMode === 'view' ? child?.restricted === false : true)
+                      );
+                    })
+                  ) {
                     return (
                       <>
                         <RenderPageGroup
@@ -391,6 +492,7 @@ export const RenderPageAndPageGroup = ({
                         linkRefs={linkRefs}
                         isSidebarPinned={isSidebarPinned}
                         onPageClick={closeAllAccordions}
+                        currentMode={currentMode}
                       />
                     );
                   }

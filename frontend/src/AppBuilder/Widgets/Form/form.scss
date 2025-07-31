@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  scrollbar-color: var(--cc-form-scroll-bar-color) transparent;
 }
 
 .wj-form-header {
@@ -126,27 +125,32 @@
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  &:hover {
+    scrollbar-color: var(--cc-form-scroll-bar-color) transparent;
+    scrollbar-width: auto;
+  }
 }
 
-/* Show scrollbar on hover for Chrome, Safari and Opera */
-.show-scrollbar-on-hover:hover::-webkit-scrollbar {
-  display: block;
-  width: 6px;
-}
+// /* Show scrollbar on hover for Chrome, Safari and Opera */
+// .show-scrollbar-on-hover:hover::-webkit-scrollbar {
+//   display: block;
+//   width: 6px;
+// }
 
-/* Scrollbar styling when visible on hover */
-.show-scrollbar-on-hover:hover::-webkit-scrollbar-track {
-  background: #e7eaef;
-  border-radius: 4px;
-}
+// /* Scrollbar styling when visible on hover */
+// .show-scrollbar-on-hover:hover::-webkit-scrollbar-track {
+//   background: #e7eaef;
+//   border-radius: 4px;
+// }
 
-.show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb {
-  background: #a0a6ae;
-  border-radius: 4px;
-}
+// .show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb {
+//   background: #a0a6ae;
+//   border-radius: 4px;
+// }
 
-.show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
+// .show-scrollbar-on-hover:hover::-webkit-scrollbar-thumb:hover {
+//   background: rgba(0, 0, 0, 0.3);
+// }

@@ -64,6 +64,7 @@ import {
   emailinputConfig,
   phoneinputConfig,
   currencyinputConfig,
+  chatConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -146,6 +147,7 @@ export const widgets = [
   colorPickerConfig,
   boundedBoxConfig,
   qrscannerConfig,
+  chatConfig,
 
   //Legacy
   modalConfig,

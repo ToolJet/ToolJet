@@ -440,6 +440,12 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         manager,
         !isPersonalWorkspaceEnabled
       );
+      this.eventEmitter.emit('CRM.Push', {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
 
       if (personalWorkspace) {
         await this.organizationUserRepository.createOne(user, personalWorkspace, true, manager);

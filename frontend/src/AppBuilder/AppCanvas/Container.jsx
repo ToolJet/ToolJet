@@ -99,13 +99,6 @@ const Container = React.memo(
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-      // TODO: Remove this- Drop is handled in the DragLayer since drop was not always triggered after
-      // integration with react-moveable for the guidelines.
-      // drop: (item, monitor) => {
-      //   console.log('DROP');
-      //   item.dropHandled = true;
-      //   handleDrop(item, id);
-      // },
     });
 
     const showEmptyContainer =
@@ -186,7 +179,11 @@ const Container = React.memo(
               if (currentLayout === 'mobile') {
                 return CANVAS_WIDTHS.deviceWindowWidth;
               }
-              return canvasMaxWidth;
+              if (currentMode === 'view') {
+                return '100%';
+              } else {
+                return canvasMaxWidth;
+              }
             }
             // For Subcontainers
             return canvasWidth;

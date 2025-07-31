@@ -119,6 +119,36 @@ async function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers):
   return { status: 'ok', data: headers };
 }
 
+/* Method to be used with datasources using third party library for oauth */
+export function initializeOAuth(sourceOptions, context, authUrlFn?) {
+  const authType = sourceOptions['auth_type'];
+  const requiresOauth = authType === 'oauth2' || authType === 'oauth';
+
+  if (requiresOauth) {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const grantType = sourceOptions['grant_type'];
+    const tokenData = sourceOptions['tokenData'];
+    const isAppPublic = context?.app.isPublic;
+    const userData = context?.user;
+    const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
+
+    if (!currentToken && !userData?.id && isAppPublic) {
+      throw new QueryError('Missing access token', {}, {});
+    }
+
+    if (!currentToken) {
+      if (grantType === 'authorization_code') {
+        return {
+          status: 'needs_oauth',
+          data: { auth_url: authUrlFn(sourceOptions) },
+        };
+      }
+    }
+
+    return { status: 'ok', data: sourceOptions };
+  }
+}
+
 async function handleClientCredentialsGrant(sourceOptions: any, headers: any): Promise<QueryResult> {
   try {
     const data = await getTokenForClientCredentialsGrant(sourceOptions);
