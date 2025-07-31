@@ -31,6 +31,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const dataSourceId = request?.tj_resource_id;
 
+    // For all users who has app access can run query
+    can([FEATURE_KEY.RUN_EDITOR, FEATURE_KEY.RUN_VIEWER], DataSource);
+
     // Define permissions for data queries
     if (isAdmin || superAdmin || isAllEditable || isCanCreate || isCanDelete) {
       can(
@@ -39,11 +42,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.DELETE,
-          FEATURE_KEY.RUN_VIEWER,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.UPDATE_ONE,
-          FEATURE_KEY.RUN_EDITOR,
         ],
         DataSource
       );
@@ -61,11 +62,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.DELETE,
-          FEATURE_KEY.RUN_VIEWER,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.UPDATE_ONE,
-          FEATURE_KEY.RUN_EDITOR,
         ],
         DataSource
       );
@@ -76,8 +75,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.UPDATE_ONE,
-          FEATURE_KEY.RUN_EDITOR,
-          FEATURE_KEY.RUN_VIEWER,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.DELETE,
           FEATURE_KEY.CREATE,
@@ -97,10 +94,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.DELETE,
-          FEATURE_KEY.RUN_VIEWER,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_ONE,
-          FEATURE_KEY.RUN_EDITOR,
         ],
         DataSource
       );

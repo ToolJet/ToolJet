@@ -144,6 +144,9 @@ ENV HOME=/home/appuser
 # Installing git for simple git commands
 RUN apt-get update && apt-get install -y git && apt-get clean
 
+#Installing open ssh client for ssh 
+RUN apt-get update && apt-get install -y openssh-client
+
 USER appuser
 
 WORKDIR /app

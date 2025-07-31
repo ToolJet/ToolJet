@@ -7,6 +7,7 @@ import classnames from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -26,9 +27,10 @@ export const DarkModeToggle = function DarkModeToggle({
     if (toggleForCanvas) {
       const exposedTheme = !appLevelDarkMode ? 'dark' : 'light';
       setResolvedGlobals('theme', { name: exposedTheme });
-      setGlobalSettings({ ...globalSettings, appMode: exposedTheme });
       setAppLevelDarkMode(!appLevelDarkMode);
+      switchDarkMode(!darkMode);
     } else {
+      posthogHelper.captureEvent('darkMode', { mode: !darkMode ? 'dark' : 'white' });
       switchDarkMode(!darkMode);
       if (appMode === 'auto') {
         setResolvedGlobals('theme', { name: !darkMode ? 'dark' : 'light' });

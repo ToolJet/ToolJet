@@ -784,7 +784,7 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarVisible: get().pageSettings?.definition?.properties?.showMenu?.value,
+      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
       pages: get().modules[moduleId].pages.reduce((accumulator, currentObject) => {
         if (currentObject && currentObject.id) {
           accumulator[currentObject.id] = { hidden: currentObject.hidden };
@@ -1289,10 +1289,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1305,6 +1305,10 @@ export const createComponentsSlice = (set, get) => ({
 
     Object.keys(componentLayouts).forEach((componentId) => {
       deleteTemporaryLayouts(componentId);
+      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamic) {
+        adjustComponentPositions(componentId, currentLayout, false, false);
+      }
     });
 
     if (saveAfterAction) {

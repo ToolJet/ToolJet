@@ -36,6 +36,7 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { APP_MODES } from '@/AppBuilder/LeftSidebar/GlobalSettings/AppModeToggle';
 
 export const EventManager = ({
@@ -412,6 +413,28 @@ export const EventManager = ({
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
+    //----------------- Posthog Analytics for event handlers -----------------//
+    let postHogEventType = 'Event Handler';
+
+    switch (eventSourceType) {
+      case 'component':
+        postHogEventType = components[sourceId]['component']['component'];
+        break;
+
+      case 'page':
+        postHogEventType = `Page - ${sourceId}`;
+        break;
+
+      case 'data_query':
+        postHogEventType = `Query - ${sourceId}`;
+        break;
+
+      default:
+        break;
+    }
+
+    posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
+    //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
       event: {
         eventId: Object.keys(eventMetaDefinition?.events)[0],
@@ -1051,7 +1074,10 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={APP_MODES}
+                      options={[
+                        { label: 'Light', value: 'light' },
+                        { label: 'Dark', value: 'dark' },
+                      ]}
                       value={event?.appMode}
                       search={true}
                       onChange={(value) => {

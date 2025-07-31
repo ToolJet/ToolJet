@@ -19,10 +19,11 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   const [extraProps, setExtraProps] = useState({});
   const searchParams = new URLSearchParams(location?.search);
   const redirectTo = searchParams.get('redirectTo');
+  const organizationId = new URL(window.location).searchParams.get('oid') || '';
 
   useEffect(() => {
     getInvitedUserSession();
-    fetchWhiteLabelDetails();
+    fetchWhiteLabelDetails(organizationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

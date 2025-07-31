@@ -107,6 +107,10 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         manager
       );
 
+      if (!group) {
+        throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
+      }
+
       if (!isLicenseValid) {
         if (group.name !== USER_ROLE.END_USER) {
           for (const key in group) {

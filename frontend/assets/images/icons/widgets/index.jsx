@@ -60,6 +60,7 @@ import DatepickerV2 from './datepickerv2.jsx';
 import HorizontalDivider from './horizontalDivider.jsx';
 import PhoneInput from './phoneinput.jsx';
 import EmailInput from './emailinput.jsx';
+import Chat from './chat.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -163,6 +164,7 @@ const WidgetIcon = (props) => {
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
     case 'rangeslider':
+    case 'rangesliderv2':
       return <Rangeslider {...props} />;
     case 'rating':
       return <Rating {...props} />;
@@ -206,7 +208,8 @@ const WidgetIcon = (props) => {
       return <Upstatistics {...props} />;
     case 'verticaldivider':
       return <Verticaldivider {...props} />;
-
+    case 'chat':
+      return <Chat {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

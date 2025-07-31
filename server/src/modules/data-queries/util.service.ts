@@ -63,7 +63,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     response: Response,
-    environmentId?: string,
+    envId?: string,
     mode?: string
   ): Promise<object> {
     let result;
@@ -79,11 +79,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : app.organizationId;
 
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
-        dataSource.id,
-        organizationId,
-        environmentId
-      );
+      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
+      const environmentId = dataSourceOptions.environmentId;
+
       dataSource.options = dataSourceOptions.options;
 
       let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(

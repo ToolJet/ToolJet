@@ -272,6 +272,7 @@ export const DaterangePicker = ({
     onCalendarOpen: () => {
       setIsCalendarOpen(true);
     },
+    shouldCloseOnSelect: true
   };
 
   const customDateInputProps = {

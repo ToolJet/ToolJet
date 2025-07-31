@@ -99,9 +99,6 @@ const Container = React.memo(
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-      drop: (item, monitor) => {
-        handleDrop(item, id);
-      },
     });
 
     const showEmptyContainer =
@@ -173,8 +170,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -182,7 +179,11 @@ const Container = React.memo(
               if (currentLayout === 'mobile') {
                 return CANVAS_WIDTHS.deviceWindowWidth;
               }
-              return canvasMaxWidth;
+              if (currentMode === 'view') {
+                return '100%';
+              } else {
+                return canvasMaxWidth;
+              }
             }
             // For Subcontainers
             return canvasWidth;

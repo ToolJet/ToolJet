@@ -8,6 +8,7 @@ const PageOptions = ({ type, text, icon, onClick, darkMode, disabled }) => {
         disabled={disabled}
         onClick={onClick}
         style={{ height: '30px', fontWeight: '400' }}
+        className={`${darkMode ? 'page-options-dark' : ''}`}
         leadingIcon={icon}
         variant="secondary"
       >

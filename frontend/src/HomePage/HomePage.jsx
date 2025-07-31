@@ -9,6 +9,7 @@ import {
   gitSyncService,
   licenseService,
   pluginsService,
+  aiOnboardingService,
 } from '@/_services';
 import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
@@ -50,8 +51,12 @@ import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPro
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-
+import { v4 as uuidv4 } from 'uuid';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
+import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -65,6 +70,7 @@ class HomePageComponent extends React.Component {
         id: currentSession?.current_user?.id,
         organization_id: currentSession?.current_organization_id,
       },
+      tj_api_source: currentSession?.tj_api_source,
       shouldRedirect: false,
       users: null,
       isLoading: true,
@@ -124,6 +130,8 @@ class HomePageComponent extends React.Component {
       showMissingGroupsModal: false,
       missingGroups: [],
       missingGroupsExpanded: false,
+      showAIOnboardingLoadingScreen: false,
+      showInsufficentPermissionModal: false,
     };
   }
 
@@ -134,7 +142,52 @@ class HomePageComponent extends React.Component {
     });
   };
 
+  checkIfUserHasBuilderAccess = () => {
+    const role = authenticationService.currentSessionValue?.role.name;
+    const hasBuilderAccess = role === 'admin' || role === 'builder';
+    return hasBuilderAccess;
+  };
+
+  /* For cloud ai onboarding */
+  handleAiOnboarding = () => {
+    const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
+    const latestPrompt = aiCookies?.tj_ai_prompt;
+    const templateId = aiCookies?.tj_template_id;
+
+    /* First check the user permission */
+    if (latestPrompt || templateId) {
+      if (!this.checkIfUserHasBuilderAccess()) {
+        this.setState({ showInsufficentPermissionModal: true });
+        return;
+      }
+    }
+
+    switch (true) {
+      case !!latestPrompt:
+        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
+        //   duration: 10000,
+        // });
+        // Optional: Clear the cookie after showing toast
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        break;
+      case !!templateId: {
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        if (templateId) {
+          /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
+          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
+            id: templateId,
+          });
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   componentDidMount() {
+    this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
         toast.error('You do not have permission to view workflows');
@@ -279,15 +332,25 @@ class HomePageComponent extends React.Component {
         type: this.props.appType,
         prompt,
       });
+      /* Posthog Event */
+      posthogHelper.captureEvent('click_new_app', {
+        workspace_id:
+          authenticationService?.currentUserValue?.organization_id ||
+          authenticationService?.currentSessionValue?.current_organization_id,
+        app_id: data?.id,
+        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
+      });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
       });
+      this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
-      _self.setState({ creatingApp: false });
+      _self.setState({ creatingApp: false, posthog_from: null, showAIOnboardingLoadingScreen: false });
       return true;
     } catch (errorResponse) {
-      _self.setState({ creatingApp: false });
+      this.eraseAIOnboardingRelatedCookies();
+      _self.setState({ creatingApp: false, showAIOnboardingLoadingScreen: false });
       if (errorResponse.statusCode === 409) {
         return false;
       } else if (errorResponse.statusCode !== 451) {
@@ -538,20 +601,41 @@ class HomePageComponent extends React.Component {
         this.state.dependentPlugins,
         this.state.shouldAutoImportPlugin
       );
-      this.setState({ deploying: false });
+      this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
+      this.eraseAIOnboardingRelatedCookies();
     } catch (e) {
-      this.setState({ deploying: false });
+      this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.error(e.error);
+      this.eraseAIOnboardingRelatedCookies();
       if (e.statusCode === 409) {
         return false;
       } else {
         return e;
       }
     }
+  };
+
+  eraseAIOnboardingRelatedCookies = () => {
+    aiOnboardingService
+      .deleteAiCookies()
+      .then(() => {
+        console.log('AI onboarding server side cookies deleted successfully');
+      })
+      .catch((error) => {
+        console.error('Deleting AI onboarding server side cookies failed', error);
+      })
+      .finally(() => {
+        updateCurrentSession({
+          ai_cookies: {
+            tj_api_source: null,
+            tj_template_id: null,
+          },
+        });
+      });
   };
 
   canViewWorkflow = () => {
@@ -775,6 +859,13 @@ class HomePageComponent extends React.Component {
         toast.success('Added to folder.');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
+        posthogHelper.captureEvent('click_add_to_folder_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: appOperations?.selectedApp?.id,
+          folder_id: appOperations?.selectedFolder,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -905,6 +996,12 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
+    posthogHelper.captureEvent('click_import_from_template', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_from_template',
+    });
     this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
@@ -962,6 +1059,13 @@ class HomePageComponent extends React.Component {
   };
 
   openImportAppModal = async () => {
+    /* Posthog Events */
+    posthogHelper.captureEvent('click_import_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      button_name: 'click_import_dropdown_button',
+    });
     this.setState({ showImportAppModal: true });
   };
 
@@ -1070,6 +1174,11 @@ class HomePageComponent extends React.Component {
       : this.state.workflowWorkspaceLevelLimit;
   };
 
+  onPermissionDeniedModalHide = () => {
+    this.setState({ showInsufficentPermissionModal: false });
+    this.eraseAIOnboardingRelatedCookies();
+  };
+
   render() {
     const {
       apps,
@@ -1117,7 +1226,13 @@ class HomePageComponent extends React.Component {
       showMissingGroupsModal,
       missingGroups,
       missingGroupsExpanded,
+      showAIOnboardingLoadingScreen,
+      showInsufficentPermissionModal,
     } = this.state;
+
+    if (showAIOnboardingLoadingScreen) {
+      return <TJLoader />;
+    }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
     const deleteModuleText =
@@ -1193,6 +1308,14 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          {/* this needs more revamp and conditions---> currently added this for testing*/}
+          {showInsufficentPermissionModal && (
+            <PermissionDeniedModal
+              show={showInsufficentPermissionModal}
+              onHide={this.onPermissionDeniedModalHide}
+              darkMode={this.props.darkMode}
+            />
+          )}
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1750,7 +1873,21 @@ class HomePageComponent extends React.Component {
                   ) : (
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
-                      <p className="empty-title mt-3">Create a module to reuse on the applications.</p>
+                      <div className="empty-title mt-3" style={{ display: 'block' }}>
+                        <div>Create reusable groups of components and queries via modules.</div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <a
+                            href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
+                            target="_blank"
+                            className="docs-link"
+                            rel="noreferrer"
+                          >
+                            Check out our guide
+                          </a>
+                          &nbsp;on creating modules.
+                        </div>
+                      </div>
+
                       <ButtonSolid
                         disabled={invalidLicense}
                         leftIcon="folderdownload"

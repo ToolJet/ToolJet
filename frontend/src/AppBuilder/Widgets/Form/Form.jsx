@@ -50,6 +50,7 @@ const FormComponent = (props) => {
   const { moduleId } = useModuleContext();
   const childComponents = useStore((state) => state.getChildComponents(id, moduleId), checkDiff);
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
+  const themeChanged = useStore((state) => state.themeChanged);
 
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
 
@@ -106,6 +107,7 @@ const FormComponent = (props) => {
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    borderRadius: 'inherit',
   };
 
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
@@ -118,6 +120,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${footerMaxHeight}px`,
+    borderBottomLeftRadius: `${borderRadius}px`,
+    borderBottomRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
@@ -128,6 +132,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
@@ -139,6 +145,7 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
+    value: isJSONSchema,
   });
 
   const parentRef = useRef(null);
@@ -230,8 +237,8 @@ const FormComponent = (props) => {
       childValidation = checkJsonChildrenValidtion();
     } else {
       Object.keys(childComponents ?? {}).forEach((childId) => {
-        if (childrenData?.[childId]?.name) {
-          const componentName = childComponents?.[childId]?.component?.component?.name;
+        const componentName = childComponents?.[childId]?.component?.component?.name;
+        if (childrenData?.[childId]?.name || componentName) {
           const componentValue = (() => {
             const childData = childrenData[childId];
             if (!childData) return null; // Default to null if childData is undefined
@@ -267,7 +274,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
-  }, [childrenData, advanced]);
+  }, [childrenData, advanced, childComponents]);
 
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);
@@ -354,10 +361,7 @@ const FormComponent = (props) => {
     [childComponents]
   );
 
-  const mode = useStore((state) => state.currentMode, shallow);
-  const isEditing = mode === 'edit';
-
-  const activeSlot = useActiveSlot(isEditing ? id : null); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -431,7 +435,7 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    overflow: 'hidden auto',
+                    // overflow: 'hidden auto',
                     height: '100%',
                   }}
                   darkMode={darkMode}

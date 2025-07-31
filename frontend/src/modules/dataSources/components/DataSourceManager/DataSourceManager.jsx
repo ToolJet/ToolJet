@@ -37,6 +37,7 @@ import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -77,7 +78,7 @@ class DataSourceManagerComponent extends React.Component {
       showBackButton: props?.showBackButton ?? true,
       defaultOptions: {},
       pluginsLoaded: false,
-      dataSourceConfirmModalProps: { isOpen: false, dataSource: null },
+      dataSourceConfirmModalProps: { isOpen: false, dataSource: null, category: null },
       addingDataSource: false,
       createdDataSource: null,
       unsavedChangesModal: false,
@@ -137,7 +138,12 @@ class DataSourceManagerComponent extends React.Component {
     return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
   };
 
-  selectDataSource = (source) => {
+  selectDataSource = (source, category) => {
+    posthogHelper.captureEvent('choose_datasource', {
+      dataSource: source?.kind,
+      category,
+      appId: this.state.appId,
+    });
     this.hideModal();
     this.setState(
       {
@@ -214,6 +220,7 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceConfirmModalProps: {
         isOpen: false,
         dataSource: null,
+        category: null,
       },
     });
   };
@@ -253,6 +260,8 @@ class DataSourceManagerComponent extends React.Component {
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
+
+    posthogHelper.captureEvent('save_connection_datasource', { dataSource: kind, appId }); //posthog event
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
       let keyMeta = dataSourceMeta.options[key];
@@ -710,6 +719,7 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceConfirmModalProps: {
           isOpen: true,
           dataSource,
+          category: type,
         },
       });
 
@@ -938,8 +948,8 @@ class DataSourceManagerComponent extends React.Component {
       validationMessages,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
-    const createSelectedDataSource = (dataSource) => {
-      this.selectDataSource(dataSource);
+    const createSelectedDataSource = (dataSource, category) => {
+      this.selectDataSource(dataSource, category);
     };
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
@@ -955,7 +965,7 @@ class DataSourceManagerComponent extends React.Component {
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
       ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'snowflake'];
     return (
       pluginsLoaded && (
         <div>
@@ -1086,9 +1096,11 @@ class DataSourceManagerComponent extends React.Component {
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    (OAuthDs.includes(selectedDataSource?.kind) &&
-                      (options?.grant_type?.value !== 'authorization_code' ||
-                        options?.multiple_auth_enabled?.value === true))) && (
+                    !(
+                      options?.auth_type?.value === 'oauth2' &&
+                      options?.grant_type?.value === 'authorization_code' &&
+                      options?.multiple_auth_enabled?.value !== true
+                    )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
                         <div className="row w-100">
@@ -1190,6 +1202,7 @@ class DataSourceManagerComponent extends React.Component {
                           environmentId={this.props.currentEnvironment?.id}
                           dataSourceId={selectedDataSource?.id}
                           dataSourceType={selectedDataSource?.type}
+                          appId={this.state.appId}
                         />
                       </div>
                       {!isSampleDb && (
@@ -1214,8 +1227,11 @@ class DataSourceManagerComponent extends React.Component {
                   selectedDataSource &&
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    options?.grant_type?.value !== 'authorization_code' ||
-                    options?.multiple_auth_enabled?.value === true) && (
+                    !(
+                      options?.auth_type?.value === 'oauth2' &&
+                      options?.grant_type?.value === 'authorization_code' &&
+                      options?.multiple_auth_enabled?.value !== true
+                    )) && (
                     <Modal.Footer>
                       <div className="col">
                         <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
@@ -1256,7 +1272,9 @@ class DataSourceManagerComponent extends React.Component {
             title={'Add datasource'}
             show={dataSourceConfirmModalProps.isOpen}
             message={`Do you want to add ${dataSourceConfirmModalProps?.dataSource?.name}`}
-            onConfirm={() => createSelectedDataSource(dataSourceConfirmModalProps.dataSource)}
+            onConfirm={() =>
+              createSelectedDataSource(dataSourceConfirmModalProps.dataSource, dataSourceConfirmModalProps?.category)
+            }
             onCancel={this.resetDataSourceConfirmModal}
             confirmButtonText={'Add datasource'}
             confirmButtonType="primary"

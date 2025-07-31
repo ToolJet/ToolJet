@@ -206,4 +206,5 @@ export class User extends BaseEntity {
   isSSOLogin: boolean;
   sessionId: string;
   roleGroup: USER_ROLE;
+  tjApiSource?: string;
 }

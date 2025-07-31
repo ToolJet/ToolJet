@@ -14,6 +14,7 @@ import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 
 function Layout({
   children,
@@ -80,6 +81,7 @@ function Layout({
 
   useEffect(() => {
     useLicenseStore.getState().actions.fetchFeatureAccess();
+    fetchWhiteLabelDetails(authenticationService?.currentSessionValue?.organization_id);
   }, []);
 
   useEffect(() => {
@@ -99,7 +101,6 @@ function Layout({
     admin ||
     super_admin;
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
-
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
   const {
@@ -125,7 +126,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {logo ? <img src={logo} /> : <Logo />}
+                {logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}
               </Link>
             </div>
             <LeftNavSideBar

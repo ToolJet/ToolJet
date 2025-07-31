@@ -11,7 +11,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import * as csv from 'fast-csv';
 import { EMAIL_EVENTS } from '@modules/email/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';

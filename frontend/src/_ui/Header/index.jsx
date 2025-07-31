@@ -155,7 +155,9 @@ function Header({
               })}
               data-cy="version-label"
             >
-              <LicenseBanner limits={featureAccess} showNavBarActions={true} />
+              {Object.keys(featureAccess).length > 0 && (
+                <LicenseBanner limits={featureAccess} showNavBarActions={true} />
+              )}
               Version {currentVersion}
             </div>
           </div>
