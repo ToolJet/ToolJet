@@ -3,6 +3,21 @@ import { findHighestLevelofSelection } from '../gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
+function isInViewport(el, root = window) {
+  if (!el) return false;
+
+  const elementRect = el.getBoundingClientRect();
+
+  // For scrollable container, check if element is within container's visible area
+  const containerRect = root.getBoundingClientRect();
+
+  return (
+    elementRect.bottom > containerRect.top && // element bottom below container's visible top
+    elementRect.top < containerRect.bottom && // element top above container's visible bottom
+    elementRect.right > containerRect.left && // element right right-of container's visible left
+    elementRect.left < containerRect.right // element left left-of container's visible right
+  );
+}
 export const useElementGuidelines = (boxList, selectedComponents, getResolvedValue, virtualTarget) => {
   const [elementGuidelines, setElementGuidelines] = useState([]);
   // const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
@@ -41,11 +56,14 @@ export const useElementGuidelines = (boxList, selectedComponents, getResolvedVal
           return selectedParent ? box.parent === selectedParent : !box.parent;
         }
 
-        return true;
+        const element = document.querySelector(`.ele-${box.id}`);
+        const container = document.getElementsByClassName('canvas-content')?.[0];
+        if (!element) return false;
+        return isInViewport(element, container);
       })
       .map((box) => `.ele-${box.id}`);
     setElementGuidelines(guidelines);
   }, [boxList, selectedComponents, getResolvedValue, virtualTarget]);
 
-  return { elementGuidelines };
+  return elementGuidelines;
 };
