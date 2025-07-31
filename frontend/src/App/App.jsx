@@ -45,8 +45,8 @@ import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
-import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
