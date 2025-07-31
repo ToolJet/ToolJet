@@ -269,7 +269,7 @@ export const DropdownV2 = ({
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
+  }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
