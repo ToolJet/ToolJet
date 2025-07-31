@@ -329,12 +329,9 @@ export class ComponentsService implements IComponentsService {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
                 return srcValue;
               } else if (
-                (componentData.type === 'DropdownV2' ||
-                  componentData.type === 'MultiselectV2' ||
-                  componentData.type === 'ModuleContainer' ||
-                  componentData.type === 'Tabs' ||
-                  componentData.type === 'Steps' ||
-                  componentData.type === 'RadioButtonV2') &&
+                ['DropdownV2', 'MultiselectV2', 'ModuleContainer', 'Tabs', 'Steps', 'RadioButtonV2'].includes(
+                  componentData.type
+                ) &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
