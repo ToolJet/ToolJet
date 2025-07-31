@@ -72,6 +72,10 @@ export const PagesSidebarNavigation = ({
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
   const labelStyle = useMemo(
     () => ({
       icon: {
@@ -86,7 +90,10 @@ export const PagesSidebarNavigation = ({
     [properties?.style, style, collapsable, isSidebarPinned, properties?.position]
   );
 
-  const pagesTree = useMemo(() => buildTree(pages, !!labelStyle?.label?.hidden), [pages, labelStyle]);
+  const pagesTree = useMemo(
+    () => (isLicensed ? buildTree(pages, !!labelStyle?.label?.hidden) : pages),
+    [isLicensed, pages, labelStyle?.label?.hidden]
+  );
 
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
@@ -411,10 +418,6 @@ export const PagesSidebarNavigation = ({
       currentMode === 'view' ? Object.entries(queryParams) : []
     );
   };
-
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const isPinnedWithLabel = isSidebarPinned && !labelStyle?.label?.hidden;
   const isUnpinnedInEdit = !isSidebarPinned && currentMode !== 'view';
