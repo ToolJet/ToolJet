@@ -10,7 +10,7 @@
       "key": "gmail_operation",
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
-      "spec_url": "https://raw.githubusercontent.com/priyxansh/gmail-openapi-test/refs/heads/main/gmail_openapi_spec.yaml"
+      "spec_url": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/gmail_openapi_spec.yaml"
     }
   }
 }
