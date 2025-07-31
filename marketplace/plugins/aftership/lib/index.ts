@@ -75,6 +75,19 @@ export default class Aftership implements QueryService {
         body: ['POST', 'PUT', 'PATCH'].includes(method) ? JSON.stringify(body) : undefined,
       });
       const result = await response.json();
+      if(result?.meta?.code !== 200) {
+          const errorMessage = result?.meta?.message || 'Unexpected response during api call';
+          const errorDetails: any = {
+          message: errorMessage,
+          code: result?.meta?.code,
+          details: result?.meta?.details,
+          raw: result,
+          status: response.status,
+          statusText: response.statusText,
+          errorType: result?.meta?.type,
+        };
+       throw new QueryError('Failed to run Query', errorMessage, errorDetails);
+      }
       
       return {
         status: 'ok',
@@ -119,8 +132,8 @@ export default class Aftership implements QueryService {
           const errorMessage = result?.meta?.message || 'Unexpected response during connection test';
           const errorDetails: any = {
           message: errorMessage,
-          name: 'AfterShipAPIError',
           code: result?.meta?.code,
+          details: result?.meta?.details,
           raw: result,
           status: response.status,
           statusText: response.statusText,
