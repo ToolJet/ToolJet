@@ -170,10 +170,10 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "disk": {
-                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
-                "mountPath": "/var/lib/postgresql/13/main",
-                "sizeGB": 10
+              "env": "node",
+              "envSpecificDetails": {
+                "buildCommand": "NODE_ENV=production npm run --prefix frontend build",
+                "startCommand": "npm run --prefix server start"
               },
               "env": "docker",
               "envSpecificDetails": {
