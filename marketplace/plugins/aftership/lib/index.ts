@@ -81,10 +81,6 @@ export default class Aftership implements QueryService {
           message: errorMessage,
           code: result?.meta?.code,
           details: result?.meta?.details,
-          raw: result,
-          status: response.status,
-          statusText: response.statusText,
-          errorType: result?.meta?.type,
         };
        throw new QueryError('Failed to run Query', errorMessage, errorDetails);
       }
@@ -99,7 +95,7 @@ export default class Aftership implements QueryService {
         message: errorMessage,
         name: err?.name,
         code: err?.code,
-        raw: err,
+        details:err?.data?.details
       };
       if (err?.response) {
         errorDetails.status = err?.response?.status;
@@ -134,10 +130,6 @@ export default class Aftership implements QueryService {
           message: errorMessage,
           code: result?.meta?.code,
           details: result?.meta?.details,
-          raw: result,
-          status: response.status,
-          statusText: response.statusText,
-          errorType: result?.meta?.type,
         };
        throw new QueryError('Failed to verify connection', errorMessage, errorDetails);
       }
