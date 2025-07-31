@@ -10,6 +10,7 @@ const BaseLeftNavSideBar = ({
   checkForUnsavedChanges,
   router,
   workflowsEnabled,
+  showNewHomePage,
   darkMode,
   switchDarkMode,
   admin,
@@ -21,20 +22,25 @@ const BaseLeftNavSideBar = ({
   return (
     <div>
       <ul className="sidebar-inner nav nav-vertical">
-        <li className="text-center cursor-pointer">
-          <ToolTip message="Home" placement="right">
-            <Link
-              to={getPrivateRoute('home')}
-              onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
-              className={`tj-leftsidebar-icon-items  ${
-                router.pathname === getPrivateRoute('home') && `current-seleted-route`
-              }`}
-              data-cy="icon-home"
-            >
-              <SolidIcon name="home" fill={router.pathname === getPrivateRoute('home') ? '#3E63DD' : 'var(--slate8)'} />
-            </Link>
-          </ToolTip>
-        </li>
+        {showNewHomePage && (
+          <li className="text-center cursor-pointer">
+            <ToolTip message="Home" placement="right">
+              <Link
+                to={getPrivateRoute('home')}
+                onClick={(event) => checkForUnsavedChanges(getPrivateRoute('home'), event)}
+                className={`tj-leftsidebar-icon-items  ${
+                  router.pathname === getPrivateRoute('home') && `current-seleted-route`
+                }`}
+                data-cy="icon-home"
+              >
+                <SolidIcon
+                  name="home"
+                  fill={router.pathname === getPrivateRoute('home') ? '#3E63DD' : 'var(--slate8)'}
+                />
+              </Link>
+            </ToolTip>
+          </li>
+        )}
         <li className="text-center cursor-pointer">
           <ToolTip message="Apps" placement="right">
             <Link

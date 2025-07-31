@@ -1,6 +1,7 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/TextArea/Textarea.jsx';
 import Dropdown from '@/components/ui/Dropdown/Index.jsx';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button.jsx';
 
 const AiBuilder = ({ onSubmit }) => {
@@ -16,12 +17,6 @@ const AiBuilder = ({ onSubmit }) => {
   const handleDropDownChange = async (value) => {
     setIsValid(!!value);
     setMessage(value);
-    setIsSubmitting(true);
-    try {
-      await onSubmit(value);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleSubmit = async () => {
@@ -64,7 +59,7 @@ const AiBuilder = ({ onSubmit }) => {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setPromptIndex((prev) => (prev + 1) % prompts.length);
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -122,13 +117,9 @@ const AiBuilder = ({ onSubmit }) => {
               message ? 'tw-opacity-100 tw-translate-y-0' : 'tw-opacity-0 tw-translate-y-4'
             }`}
           >
-            <Button
-              variant="primary"
-              leadingIcon="arrowreturn"
-              iconOnly
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            />
+            <Button variant="primary" iconOnly onClick={handleSubmit} disabled={isSubmitting} className="tw-shrink-0">
+              <SolidIcon width="14" name="arrowreturn01" fill="#fff" />
+            </Button>
           </div>
           <div
             className={`tw-flex tw-items-center tw-justify-end tw-absolute tw-w-full tw-transition-all tw-duration-300 tw-ease-in-out ${
@@ -137,6 +128,7 @@ const AiBuilder = ({ onSubmit }) => {
           >
             <Dropdown
               options={options}
+              value=""
               placeholder="Example prompts"
               onChange={handleDropDownChange}
               className="example-prompts-dropdown"

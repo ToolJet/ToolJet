@@ -384,6 +384,19 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
+                <Route
+                  exact
+                  path="/:workspaceId/home"
+                  element={
+                    <PrivateRoute>
+                      <GuardedHomePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        version={this.state.tooljetVersion}
+                      />
+                    </PrivateRoute>
+                  }
+                />
 
                 <Route
                   exact
