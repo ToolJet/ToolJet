@@ -5,6 +5,7 @@ import {
   ConnectionTestResult,
 } from "@tooljet-marketplace/common";
 import { SourceOptions, QueryOptions, BaseUrl } from "./types";
+import got, { HTTPError, Method } from "got";
 
 export default class Ups implements QueryService {
   async run(
@@ -50,37 +51,43 @@ export default class Ups implements QueryService {
       const method = operation.toUpperCase();
       const hasBody = ["POST", "PUT", "PATCH"].includes(method);
 
-      const requestOptions: RequestInit = {
-        method,
-        headers,
-        body: hasBody ? JSON.stringify(params.request) : undefined,
-      };
+      try {
+        const response = await got(fullUrl.toString(), {
+          method: method.toLowerCase() as Method,
+          headers,
+          json: hasBody ? params.request : undefined,
+        });
 
-      const response = await fetch(fullUrl.toString(), requestOptions);
+        const responseData = JSON.parse(response.body);
 
-      if (!response.ok) {
-        const errorText = await response.text();
+        return {
+          status: "ok",
+          data: responseData,
+        };
+      } catch (error) {
+        let errorMessage = "Failed to fetch data";
+        let errorDetails = {};
 
-        const error = new QueryError(
+        if (error instanceof HTTPError && error.response) {
+          errorMessage = `HTTP ${error.response.statusCode}: ${
+            error.response.statusMessage || "Request failed"
+          }`;
+          errorDetails = {
+            status: error.response.statusCode,
+            statusText: error.response.statusMessage,
+            errors: error.response.body,
+          };
+        } else {
+          errorMessage = error.message || "An unexpected error occurred";
+          errorDetails = { cause: error };
+        }
+
+        throw new QueryError(
           "Query could not be completed",
-          `Failed to fetch data: ${response.status} ${response.statusText}`,
-          {
-            status: response.status,
-            statusText: response.statusText,
-            errors: errorText,
-          }
+          errorMessage,
+          errorDetails
         );
-
-        error.name = "QueryError";
-        throw error;
       }
-
-      const responseData = await response.json();
-
-      return {
-        status: "ok",
-        data: responseData,
-      };
     } catch (error) {
       if (error instanceof QueryError) {
         throw error;
@@ -115,62 +122,79 @@ export default class Ups implements QueryService {
     const { client_id, client_secret, base_url, shipper_number } =
       sourceOptions;
 
-    const headers = new Headers();
-
-    headers.append("x-merchant-id", shipper_number);
-    headers.append("Content-Type", "application/x-www-form-urlencoded");
-
-    // Basic authorization header
-    const base64Credentials = btoa(`${client_id}:${client_secret}`);
-    headers.append("Authorization", `Basic ${base64Credentials}`);
+    const headers = {
+      "x-merchant-id": shipper_number,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${client_id}:${client_secret}`)}`,
+    };
 
     const body = new URLSearchParams();
-
     body.append("grant_type", "client_credentials");
 
-    const requestOptions = {
-      method: "POST",
-      headers: headers,
-      body: body,
-    };
+    const url = `${base_url}/security/v1/oauth/token`;
 
-    const baseUrl = base_url;
-    const url = `${baseUrl}/security/v1/oauth/token`;
-
-    const response = await fetch(url, requestOptions);
-
-    if (!response.ok) {
-      const {
-        response: { errors },
-      } = await response.json();
-
-      const errorMessage = errors?.[0]?.message || "Unknown error occurred";
-
-      throw new QueryError("Query could not be completed", errorMessage, {
-        status: response.status,
-        statusText: response.statusText,
-        errors: errors,
+    try {
+      const response = await got(url, {
+        method: "post",
+        headers,
+        body: body.toString(),
       });
-    }
 
-    const data = await response.json();
+      const data = JSON.parse(response.body);
 
-    if (!data.access_token || !data.expires_in) {
+      if (!data.access_token || !data.expires_in) {
+        throw new QueryError(
+          "Query could not be completed",
+          "Access token or expiration time is missing",
+          {
+            status: response.statusCode,
+            statusText: response.statusMessage,
+            errors: data,
+          }
+        );
+      }
+
+      return {
+        accessToken: data.access_token,
+        expiresIn: data.expires_in,
+      };
+    } catch (error) {
+      let errorMessage = "Failed to authenticate with UPS";
+      let errorDetails: Record<string, any> = {};
+
+      if (error instanceof HTTPError && error.response) {
+        errorMessage = `HTTP ${error.response.statusCode}: Authentication failed`;
+        errorDetails = {
+          status: error.response.statusCode,
+          statusText: error.response.statusMessage,
+          errors: error.response.body,
+        };
+
+        // Try to parse UPS-specific error format
+        try {
+          const errorBody =
+            typeof error.response.body === "string"
+              ? JSON.parse(error.response.body)
+              : error.response.body;
+          if (errorBody.response && errorBody.response.errors) {
+            errorMessage =
+              errorBody.response.errors[0]?.message || errorMessage;
+            errorDetails.errors = errorBody.response.errors;
+          }
+        } catch (parseError) {
+          // Keep the raw response body if parsing fails
+        }
+      } else {
+        errorMessage = error.message || "An unexpected error occurred";
+        errorDetails = { cause: error };
+      }
+
       throw new QueryError(
         "Query could not be completed",
-        "Access token or expiration time is missing",
-        {
-          status: response.status,
-          statusText: response.statusText,
-          errors: data,
-        }
+        errorMessage,
+        errorDetails
       );
     }
-
-    return {
-      accessToken: data.access_token,
-      expiresIn: data.expires_in,
-    };
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
@@ -211,6 +235,16 @@ export default class Ups implements QueryService {
         {
           operation: !!operation,
           specType: !!specType,
+        }
+      );
+    }
+
+    if (!["get", "post", "put", "patch", "delete"].includes(operation.toLowerCase())) {
+      throw new QueryError(
+        "Query could not be completed",
+        "Invalid operation, expected 'get', 'post', 'put', 'patch', or 'delete'",
+        {
+          operation: operation,
         }
       );
     }
