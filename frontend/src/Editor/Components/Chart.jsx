@@ -38,7 +38,7 @@ export const Chart = function Chart({
     properties;
 
   const modifiedBackgroundColor = getModifiedColor(backgroundColor, 0);
-  const modifiedMarkerColor = getCssVarValue(document.documentElement, markerColor);
+  const modifiedMarkerColor = getModifiedColor(markerColor, 0);
   const modifiedGridLines = getCssVarValue(document.documentElement, 'var(--cc-weak-border)');
   const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
   const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
