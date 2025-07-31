@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Microsoft_graph datasource",
+  "description": "A schema defining Microsoft_graph datasource",
+  "type": "api",
+  "source": {
+    "name": "Microsoft_graph",
+    "kind": "microsoft_graph",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}
