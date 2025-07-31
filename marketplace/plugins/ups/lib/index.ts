@@ -51,85 +51,50 @@ export default class Ups implements QueryService {
       const method = operation.toUpperCase();
       const hasBody = ["POST", "PUT", "PATCH"].includes(method);
 
-      try {
-        const response = await got(fullUrl.toString(), {
-          method: method.toLowerCase() as Method,
-          headers,
-          json: hasBody ? params.request : undefined,
-        });
+      const response = await got(fullUrl.toString(), {
+        method: method.toLowerCase() as Method,
+        headers,
+        json: hasBody ? params.request : undefined,
+      });
 
-        const responseData = JSON.parse(response.body);
+      const responseData = JSON.parse(response.body);
 
-        return {
-          status: "ok",
-          data: responseData,
-        };
-      } catch (error) {
-        let errorMessage = "Failed to fetch data";
-        let errorDetails = {};
-
-        if (error instanceof HTTPError && error.response) {
-          errorMessage = `HTTP ${error.response.statusCode}: ${
-            error.response.statusMessage || "Request failed"
-          }`;
-          errorDetails = {
-            status: error.response.statusCode,
-            statusText: error.response.statusMessage,
-            errors: error.response.body,
-          };
-        } else {
-          errorMessage = error.message || "An unexpected error occurred";
-          errorDetails = { cause: error };
-        }
-
-        throw new QueryError(
-          "Query could not be completed",
-          errorMessage,
-          errorDetails
-        );
-      }
+      return {
+        status: "ok",
+        data: responseData,
+      };
     } catch (error) {
       if (error instanceof QueryError) {
         throw error;
       }
-
-      const queryError = new QueryError(
-        "Query could not be completed",
-        error.message || "An unexpected error occurred",
-        {
-          cause: error,
-        }
-      );
-      queryError.name = "QueryError";
-      throw queryError;
+      
+      throw this.parseHttpError(error, "Failed to fetch data");
     }
   }
 
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    this.validateSourceOptions(sourceOptions);
-    const { accessToken } = await this.generateOAuthToken(sourceOptions);
-
-    // Use a simple endpoint to test the connection
-    const baseUrl = sourceOptions.base_url + "/api";
-    const resolvedPath = "/track/v1/details/testing"; // Example path for testing
-    const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      "x-merchant-id": sourceOptions.shipper_number!,
-      Accept: "application/json",
-      transID: "testing",
-      transactionSrc: "testing",
-    };
-
-    const method = "GET"; // Use GET for testing
-
     try {
+      this.validateSourceOptions(sourceOptions);
+      const { accessToken } = await this.generateOAuthToken(sourceOptions);
+
+      // Use a simple endpoint to test the connection
+      const baseUrl = sourceOptions.base_url + "/api";
+      const resolvedPath = "/track/v1/details/testing"; // Example path for testing
+      const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "x-merchant-id": sourceOptions.shipper_number!,
+        Accept: "application/json",
+        transID: "testing",
+        transactionSrc: "testing",
+      };
+
       await got(fullUrl.toString(), {
-        method: method.toLowerCase() as Method,
+        method: "get",
         headers,
       });
 
@@ -138,28 +103,10 @@ export default class Ups implements QueryService {
         message: "Connection successful",
       };
     } catch (error) {
-      let errorMessage = "Failed to fetch data";
-      let errorDetails = {};
-
-      if (error instanceof HTTPError && error.response) {
-        errorMessage = `HTTP ${error.response.statusCode}: ${
-          error.response.statusMessage || "Request failed"
-        }`;
-        errorDetails = {
-          status: error.response.statusCode,
-          statusText: error.response.statusMessage,
-          errors: error.response.body,
-        };
-      } else {
-        errorMessage = error.message || "An unexpected error occurred";
-        errorDetails = { cause: error };
+      if (error instanceof QueryError) {
+        throw error;
       }
-
-      throw new QueryError(
-        "Query could not be completed",
-        errorMessage,
-        errorDetails
-      );
+      throw this.parseHttpError(error, "Failed to test connection");
     }
   }
 
@@ -206,42 +153,46 @@ export default class Ups implements QueryService {
         expiresIn: data.expires_in,
       };
     } catch (error) {
-      let errorMessage = "Failed to authenticate with UPS";
-      let errorDetails: Record<string, any> = {};
-
-      if (error instanceof HTTPError && error.response) {
-        errorMessage = `HTTP ${error.response.statusCode}: Authentication failed`;
-        errorDetails = {
-          status: error.response.statusCode,
-          statusText: error.response.statusMessage,
-          errors: error.response.body,
-        };
-
-        // Try to parse UPS-specific error format
-        try {
-          const errorBody =
-            typeof error.response.body === "string"
-              ? JSON.parse(error.response.body)
-              : error.response.body;
-          if (errorBody.response && errorBody.response.errors) {
-            errorMessage =
-              errorBody.response.errors[0]?.message || errorMessage;
-            errorDetails.errors = errorBody.response.errors;
-          }
-        } catch (parseError) {
-          // Keep the raw response body if parsing fails
-        }
-      } else {
-        errorMessage = error.message || "An unexpected error occurred";
-        errorDetails = { cause: error };
+      if (error instanceof QueryError) {
+        throw error;
       }
-
-      throw new QueryError(
-        "Query could not be completed",
-        errorMessage,
-        errorDetails
-      );
+      throw this.parseHttpError(error, "Failed to authenticate with UPS");
     }
+  }
+
+  private parseHttpError(error: any, defaultMessage: string): QueryError {
+    let errorMessage = defaultMessage;
+    let errorDetails: Record<string, any> = {};
+
+    if (error instanceof HTTPError && error.response) {
+      errorMessage = `HTTP ${error.response.statusCode}: ${
+        error.response.statusMessage || "Request failed"
+      }`;
+      errorDetails = {
+        status: error.response.statusCode,
+        statusText: error.response.statusMessage,
+        errors: error.response.body,
+      };
+
+      // Try to parse UPS-specific error format
+      try {
+        const errorBody =
+          typeof error.response.body === "string"
+            ? JSON.parse(error.response.body)
+            : error.response.body;
+        if (errorBody.response && errorBody.response.errors) {
+          errorMessage = errorBody.response.errors[0]?.message || errorMessage;
+          errorDetails.errors = errorBody.response.errors;
+        }
+      } catch (parseError) {
+        // Keep the raw response body if parsing fails
+      }
+    } else {
+      errorMessage = error.message || "An unexpected error occurred";
+      errorDetails = { cause: error };
+    }
+
+    return new QueryError("Query could not be completed", errorMessage, errorDetails);
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
