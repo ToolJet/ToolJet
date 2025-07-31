@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
+import { getSafeRenderableValue } from '../utils';
 
 export const Card = ({
   item,
@@ -80,7 +81,7 @@ export const Card = ({
         >
           <div className="card-body d-flex">
             <span ref={target} onClick={handleCardClick} className="text-muted flex-grow-1 cursor-pointer fw-bold">
-              {item.title}
+              {getSafeRenderableValue(item.title)}
             </span>
             {isHovered && !item.isEditing && (
               <span

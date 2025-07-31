@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSafeRenderableValue } from './utils';
 
 const DASH_WIDTH = 4;
 const DASH_GAP = 4;
@@ -68,7 +69,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     >
       {labelAlignment === 'left' && (
         <>
-          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px' }}>{label}</span>
+          <span style={{ ...labelStyles, paddingLeft: '0px', paddingRight: '8px' }}>{getSafeRenderableValue(label)}</span>
           <div style={dividerLineStyle}></div>
         </>
       )}
@@ -83,7 +84,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
           }}
         >
           <div style={{ ...dividerLineStyle }}></div>
-          <span style={{ ...labelStyles, padding: '0px 8px' }}>{label}</span>
+          <span style={{ ...labelStyles, padding: '0px 8px' }}>{getSafeRenderableValue(label)}</span>
           <div style={{ ...dividerLineStyle }}></div>
         </div>
       )}
@@ -91,7 +92,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
       {labelAlignment === 'right' && (
         <>
           <div style={dividerLineStyle}></div>
-          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px' }}>{label}</span>
+          <span style={{ ...labelStyles, paddingRight: '0px', paddingLeft: '8px' }}>{getSafeRenderableValue(label)}</span>
         </>
       )}
     </div>

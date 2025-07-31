@@ -6,6 +6,7 @@ import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { getSafeRenderableValue } from './utils';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -200,7 +201,7 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{getSafeRenderableValue(text)}</div>}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'}>{text}</Markdown>

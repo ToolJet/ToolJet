@@ -1,5 +1,6 @@
 import React from 'react';
 import { isArray } from 'lodash';
+import { getSafeRenderableValue } from './utils';
 
 export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy }) {
   const { visibility, boxShadow } = styles;
@@ -26,9 +27,9 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
             <li key={index}>
               <div className="list-timeline-icon" style={{ backgroundColor: item.iconBackgroundColor }}></div>
               <div className="list-timeline-content">
-                {!hideDate && <div className={`list-timeline-time ${darkModeStyle}`}>{item.date}</div>}
-                <p className="list-timeline-title">{item.title}</p>
-                <p className={`${darkModeStyle || 'text-muted'}`}>{item.subTitle}</p>
+                {!hideDate && <div className={`list-timeline-time ${darkModeStyle}`}>{getSafeRenderableValue(item.date)}</div>}
+                <p className="list-timeline-title">{getSafeRenderableValue(item.title)}</p>
+                <p className={`${darkModeStyle || 'text-muted'}`}>{getSafeRenderableValue(item.subTitle)}</p>
               </div>
             </li>
           ))}

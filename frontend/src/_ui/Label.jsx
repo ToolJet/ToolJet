@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSafeRenderableValue } from '../Editor/Components/utils';
 function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width, top }) {
   return (
     <>
@@ -34,7 +35,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
               ...(top && { top }),
             }}
           >
-            {label}
+            {getSafeRenderableValue(label)}
             {isMandatory && (
               <span
                 style={{

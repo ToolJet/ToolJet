@@ -3,6 +3,7 @@ import { components } from 'react-select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import './dropdownV2.scss';
 import { highlightText } from './utils';
+import { getSafeRenderableValue } from '../utils';
 
 const CustomOption = (props) => {
   return (
@@ -24,7 +25,7 @@ const CustomOption = (props) => {
           </span>
         )}
         <span style={{ color: 'unset', wordBreak: 'break-all' }}>
-          {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+          {highlightText(getSafeRenderableValue(props.label), props.selectProps.inputValue)}
         </span>
       </div>
     </components.Option>

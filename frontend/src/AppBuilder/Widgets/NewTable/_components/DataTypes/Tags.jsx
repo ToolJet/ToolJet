@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export const TagsColumn = ({ value: initialValue, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);
@@ -51,7 +52,7 @@ export const TagsColumn = ({ value: initialValue, onChange, readOnly, containerW
   const renderTag = useCallback(
     (text) => (
       <span className="col-auto badge bg-blue-lt p-2 mx-1 tag" role="listitem">
-        {String(text)}
+        {getSafeRenderableValue(text)}
         {!readOnly && (
           <span
             className="badge badge-pill bg-red-lt remove-tag-button cursor-pointer"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { getSafeRenderableValue } from '../utils';
 
 export const Radio = ({ options, value, onChange, readOnly, containerWidth, darkMode }) => {
   value = value === undefined ? [] : value;
@@ -33,7 +34,7 @@ export const Radio = ({ options, value, onChange, readOnly, containerWidth, dark
           checked={option.value === value}
           disabled={readOnly && option.value !== value}
         />
-        <span className="form-check-label">{option.name}</span>
+        <span className="form-check-label">{getSafeRenderableValue(option.name)}</span>
       </label>
     ));
   };

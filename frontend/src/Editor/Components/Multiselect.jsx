@@ -6,11 +6,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import './multiselect.scss';
+import { getSafeRenderableValue } from './utils';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
     <FormCheck checked={checked} disabled={disabled} tabIndex={-1} onClick={onClick} />
-    <span>{option.label}</span>
+    <span>{getSafeRenderableValue(option.label)}</span>
   </div>
 );
 const DropdownIndicator = ({ isOpen, toggleDropdown }) => {

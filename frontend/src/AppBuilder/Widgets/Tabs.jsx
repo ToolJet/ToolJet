@@ -8,6 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
 import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -445,13 +446,13 @@ export const Tabs = function Tabs({
                       <>
                         <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
                         <OverflowTooltip boxWidth={width}>
-                          <>{tab.title}</>
+                          <>{getSafeRenderableValue(tab.title)}</>
                         </OverflowTooltip>
                       </>
                     ) : (
                       <span>
                         <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
-                        {tab.title}
+                        {getSafeRenderableValue(tab.title)}
                       </span>
                     )}
                   </div>

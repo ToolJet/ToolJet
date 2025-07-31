@@ -1,5 +1,6 @@
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import React from 'react';
+import { getSafeRenderableValue } from './utils';
 export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
   const {
     primaryValueLabel,
@@ -89,9 +90,9 @@ export const Statistics = function Statistics({ width, height, properties, style
               color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
             }}
           >
-            {primaryValueLabel}
+            {getSafeRenderableValue(primaryValueLabel)}
           </p>
-          <h2 style={primaryStyle}>{String(primaryValue)}</h2>
+          <h2 style={primaryStyle}>{getSafeRenderableValue(primaryValue)}</h2>
           {hideSecondary ? (
             ''
           ) : (
@@ -106,7 +107,7 @@ export const Statistics = function Statistics({ width, height, properties, style
                     <WidgetIcon name={'downstatistics'} />
                   </span>
                 )}
-                <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
+                <p style={{ ...secondaryContainerStyle }}>{getSafeRenderableValue(secondaryValue)}</p>
               </div>
               <p
                 style={{
@@ -116,7 +117,7 @@ export const Statistics = function Statistics({ width, height, properties, style
                   marginBottom: '0px',
                 }}
               >
-                {secondaryValueLabel}
+                {getSafeRenderableValue(secondaryValueLabel)}
               </p>
             </div>
           )}

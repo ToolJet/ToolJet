@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSafeRenderableValue } from './utils';
 
 export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
   const { data } = properties;
@@ -22,7 +23,7 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
 
     return (
       <span className="badge mx-1 mb-1" style={tagComputedStyles} key={index}>
-        {item.title}
+        {getSafeRenderableValue(item.title)}
       </span>
     );
   }

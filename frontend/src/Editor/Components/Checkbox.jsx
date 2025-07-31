@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { getSafeRenderableValue } from './utils';
 
 export const Checkbox = ({
   height,
@@ -247,7 +248,7 @@ export const Checkbox = ({
               whiteSpace="normal"
               width={width - 20}
             >
-              {label}
+              {getSafeRenderableValue(label)}
               {isMandatory && !checked && (
                 <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
               )}

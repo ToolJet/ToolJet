@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { getSafeRenderableValue } from './utils';
 
 export const RadioButton = function RadioButton({
   id,
@@ -56,7 +57,7 @@ export const RadioButton = function RadioButton({
       data-cy={dataCy}
     >
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
-        {label}
+        {getSafeRenderableValue(label)}
       </span>
       <div className="col px-1 py-0 mt-0">
         {selectOptions.map((option, index) => (
@@ -74,7 +75,7 @@ export const RadioButton = function RadioButton({
               onChange={() => onSelect(option.value)}
             />
             <span className="form-check-label" style={{ color: textColor }}>
-              {option.name}
+              {getSafeRenderableValue(option.name)}
             </span>
           </label>
         ))}

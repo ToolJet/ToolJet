@@ -3,6 +3,7 @@ import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
+import { getSafeRenderableValue } from './utils';
 
 export const Tabs = function Tabs({
   id,
@@ -186,7 +187,7 @@ export const Tabs = function Tabs({
                 }
               }}
             >
-              {tab.title}
+              {getSafeRenderableValue(tab.title)}
             </a>
           </li>
         ))}

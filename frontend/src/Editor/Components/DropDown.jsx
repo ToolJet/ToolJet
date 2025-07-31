@@ -4,7 +4,7 @@ import Select, { components } from 'react-select';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
-import { getModifiedColor } from './utils';
+import { getModifiedColor, getSafeRenderableValue } from './utils';
 
 export const DropDown = function DropDown({
   height,
@@ -299,7 +299,7 @@ export const DropDown = function DropDown({
             style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
             className="form-label py-0 my-0"
           >
-            {label}
+            {getSafeRenderableValue(label)}
           </label>
         </div>
         <div className="col px-0 h-100">

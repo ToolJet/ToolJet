@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   const [showOverlay, setShowOverlay] = useState(false);
@@ -44,7 +45,7 @@ export const Tags = ({ value, onChange, readOnly, containerWidth = '' }) => {
   function renderTag(text) {
     return (
       <span className="col-auto badge bg-blue-lt p-2 mx-1 tag">
-        {String(text)}
+        {getSafeRenderableValue(text)}
         {!readOnly && (
           <span className="badge badge-pill bg-red-lt remove-tag-button cursor-pointer" onClick={() => removeTag(text)}>
             x
