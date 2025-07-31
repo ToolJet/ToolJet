@@ -3,14 +3,21 @@ import { MigrationProgress, processDataInBatches } from '@helpers/migration.help
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
-import { CredentialsService } from '@modules/encryption/services/credentials.service';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationInterface {
   private nestApp;
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    this.nestApp = await NestFactory.createApplicationContext(AppModule);
     const entityManager = queryRunner.manager;
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const { CredentialsService } = await import(
+      `${await getImportPath(true, edition)}/encryption/services/credentials.service`
+    );
+    const credentialsService = nestApp.get(CredentialsService);
 
     const totalRecords = await entityManager.query(
       `
@@ -29,13 +36,16 @@ export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationI
       return;
     }
 
-    await this.updateGoogleCalendarClientSecrets(entityManager, totalCount);
+    await this.updateGoogleCalendarClientSecrets(entityManager, totalCount, credentialsService);
     await this.nestApp.close();
   }
 
-  private async updateGoogleCalendarClientSecrets(entityManager: EntityManager, totalCount: number): Promise<void> {
+  private async updateGoogleCalendarClientSecrets(
+    entityManager: EntityManager,
+    totalCount: number,
+    credentialsService
+  ): Promise<void> {
     return dbTransactionWrap(async (entityManager: EntityManager) => {
-      const credentialsService = this.nestApp.get(CredentialsService);
       const migrationProgress = new MigrationProgress('EncrpyGoogleCalendarClientSecret1752749046662', totalCount);
       const batchSize = 100;
 
