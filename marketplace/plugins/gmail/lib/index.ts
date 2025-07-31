@@ -67,7 +67,7 @@ export default class Gmail implements QueryService {
       ];
     }
 
-    let clientId: string | undefined, clientSecret: string | undefined;
+    let clientId: string | undefined, clientSecret: string | undefined, oauth_type: string | undefined
 
     for (const item of sourceOptions) {
       if (item.key === "client_id") {
@@ -76,6 +76,14 @@ export default class Gmail implements QueryService {
       if (item.key === "client_secret") {
         clientSecret = item.value;
       }
+      if (item.key === "oauth_type") {
+        oauth_type = item.value;
+      }
+    }
+
+    if (oauth_type === 'tooljet_app') {
+      clientId = process.env.GOOGLE_CLIENT_ID;
+      clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     }
 
     this.validateSourceOptions({
