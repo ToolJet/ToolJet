@@ -1552,7 +1552,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 10.4rem);
+    height: calc(100vh - 12.8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -3005,8 +3005,8 @@ input:focus-visible {
 }
 
 .widget-documentation-link {
-  position: fixed;
-  bottom: 0;
+  // position: relative;
+  // top: 0px;
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 999;
@@ -4151,7 +4151,7 @@ input[type="text"] {
   }
 
   .rbc-event {
-    background-color: var(--primary-brand) !important;
+    background-color: var(--primary-brand);
     border: transparent;
 
     .rbc-event-label {
@@ -18777,6 +18777,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  
 
   &::-webkit-scrollbar {
     width: 16px;
