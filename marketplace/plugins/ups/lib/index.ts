@@ -125,7 +125,9 @@ export default class Ups implements QueryService {
     const headers = {
       "x-merchant-id": shipper_number,
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${btoa(`${client_id}:${client_secret}`)}`,
+      Authorization: `Basic ${Buffer.from(
+        `${client_id}:${client_secret}`
+      ).toString("base64")}`,
     };
 
     const body = new URLSearchParams();
@@ -239,7 +241,11 @@ export default class Ups implements QueryService {
       );
     }
 
-    if (!["get", "post", "put", "patch", "delete"].includes(operation.toLowerCase())) {
+    if (
+      !["get", "post", "put", "patch", "delete"].includes(
+        operation.toLowerCase()
+      )
+    ) {
       throw new QueryError(
         "Query could not be completed",
         "Invalid operation, expected 'get', 'post', 'put', 'patch', or 'delete'",
