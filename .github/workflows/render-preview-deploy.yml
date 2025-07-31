@@ -167,17 +167,13 @@ jobs:
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
                 "value": "${{ secrets.MARKETPLACE_BUCKET }}"
-              },
-              {
-                "key": "NODE_ENV",
-                "value": "production"
               }
             ],
             "serviceDetails": {
               "env": "node",
               "envSpecificDetails": {
-                "buildCommand": "npm install --prefix frontend webpack-cli && NODE_ENV=production npm run --prefix frontend build",
-                "startCommand": "npm run --prefix server start"
+                "buildCommand": "npm run --prefix frontend build",
+                "startCommand": "NODE_ENV=production && npm run --prefix db:migrate &&npm run --prefix server start"
               },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
