@@ -101,7 +101,13 @@ export const useInput = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const validationStatus = validate(value);
+    let validationStatus;
+    if (inputType === 'phone') {
+      const countryCode = getCountryCallingCodeSafe(country);
+      validationStatus = validate(value?.replace(`+${countryCode}`, ''));
+    } else {
+      validationStatus = validate(value);
+    }
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   }, [validate]);
@@ -129,7 +135,7 @@ export const useInput = ({
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
       if (typeof value === 'number' || !isNaN(Number(value))) {
-        setInputValue(formatNumber(value, decimalPlaces)); 
+        setInputValue(formatNumber(value, decimalPlaces));
       } else setInputValue(value);
       setCountry(countryCode);
       fireEvent('onChange');
@@ -194,7 +200,18 @@ export const useInput = ({
   const setInputValue = (value) => {
     setValue(value);
     setExposedVariable('value', value);
-    const validationStatus = validate(value);
+    let validationStatus;
+    if (inputType === 'phone') {
+      const countryCode = getCountryCallingCodeSafe(country);
+      setExposedVariables({
+        country: country,
+        countryCode: `+${countryCode}`,
+        formattedValue: `${value}`,
+      });
+      validationStatus = validate(value?.replace(`+${countryCode}`, ''));
+    } else {
+      validationStatus = validate(value);
+    }
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
