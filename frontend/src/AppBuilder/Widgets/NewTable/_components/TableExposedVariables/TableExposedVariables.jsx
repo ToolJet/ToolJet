@@ -46,7 +46,6 @@ export const TableExposedVariables = ({
     setPageIndex,
     setRowSelection,
     setColumnFilters,
-    tableData,
     columns,
     columnSizing,
     resetRowSelection,
@@ -61,7 +60,6 @@ export const TableExposedVariables = ({
     setPageIndex: table.setPageIndex,
     setRowSelection: table.setRowSelection,
     setColumnFilters: table.setColumnFilters,
-    tableData: table.getRowModel().rows,
     columns: table.getAllColumns(),
     columnSizing: table.getState().columnSizing,
     resetRowSelection: table.resetRowSelection,
@@ -205,6 +203,15 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
+    if (lastClickedRow) {
+      setExposedVariables({
+        selectedRow: lastClickedRow?.row ?? {},
+        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
+      });
+    }
+  }, [lastClickedRow, setExposedVariables]);
+
+  useEffect(() => {
     if (!hasDataChanged) return;
     resetRowSelection();
     function selectRow(key, value) {
@@ -231,15 +238,6 @@ export const TableExposedVariables = ({
       });
     }
   }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection, hasDataChanged]);
-
-  useEffect(() => {
-    if (lastClickedRow) {
-      setExposedVariables({
-        selectedRow: lastClickedRow?.row ?? {},
-        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
-      });
-    }
-  }, [lastClickedRow, setExposedVariables]);
 
   useEffect(() => {
     if (selectedRows.length === 0) {
