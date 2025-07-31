@@ -7,8 +7,6 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationInterface {
-  private nestApp;
-
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
@@ -32,12 +30,12 @@ export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationI
     const totalCount = parseInt(totalRecords[0].count);
     if (totalCount === 0) {
       console.log('No records found to update for Google Calendar data sources.');
-      await this.nestApp.close();
+      await nestApp.close();
       return;
     }
 
     await this.updateGoogleCalendarClientSecrets(entityManager, totalCount, credentialsService);
-    await this.nestApp.close();
+    await nestApp.close();
   }
 
   private async updateGoogleCalendarClientSecrets(
