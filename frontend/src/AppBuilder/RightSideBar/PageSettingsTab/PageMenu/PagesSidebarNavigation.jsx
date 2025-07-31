@@ -416,15 +416,12 @@ export const PagesSidebarNavigation = ({
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
-  const isPinnedWithLabel = isSidebarPinned && !labelStyle?.label?.hidden;
-  const isUnpinnedInEdit = !isSidebarPinned && currentMode !== 'view';
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
-  const sidebarCollapsed = !isSidebarPinned;
-  const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
+  const logoHidden = isLicensed ? hideLogo : false;
 
-  if (hideHeader && hideLogo && isPagesSidebarHidden) {
+  if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
   }
 
@@ -523,15 +520,15 @@ export const PagesSidebarNavigation = ({
         }}
       >
         <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
-          {(collapsable || !headerHidden || !hideLogo) && (
+          {(collapsable || !headerHidden || !logoHidden) && (
             <div
               ref={headerRef}
               style={{
-                marginRight: hideHeader && hideLogo && position == 'top' && '0px',
+                marginRight: headerHidden && logoHidden && position == 'top' && '0px',
               }}
               className="app-name"
             >
-              {!hideLogo && (
+              {!logoHidden && (
                 <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
