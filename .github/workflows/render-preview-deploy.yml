@@ -312,7 +312,7 @@ jobs:
       #       echo "Database $PGTJBDATABASE exists, deleting..."
       #       PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGTJBDATABASE\" ;"
       #     else
-      #       echo "Database $PGTJBDATABASE does not exist."
+      #       echo "Database $PGTJBDATABASE does not exist." sdvdf
       #     fi
 
   suspend-ce-review-app:
