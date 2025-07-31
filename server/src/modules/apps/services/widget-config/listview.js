@@ -21,10 +21,10 @@ export const listviewConfig = {
     {
       componentName: 'Text',
       layout: {
-        top: 50,
+        top: 30,
         left: 11,
         height: 30,
-        width: 14
+        width: 14,
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -32,11 +32,12 @@ export const listviewConfig = {
     {
       componentName: 'Button',
       layout: {
-        top: 50,
+        top: 30,
         left: 26,
         height: 30,
+        width: 18,
       },
-      incrementWidth: 2,
+      // incrementWidth: 2,
       properties: ['text'],
       accessorKey: 'buttonText',
     },

@@ -329,7 +329,7 @@ export const filepickerConfig = {
     },
     validation: {
       enableValidation: { value: '{{false}}' },
-      fileType: { value: '{{}}' },
+      fileType: { value: 'image/*' },
       minSize: { value: '{{50}}' },
       maxSize: { value: '{{51200000}}' },
       minFileCount: { value: '{{0}}' },

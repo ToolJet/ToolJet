@@ -72,6 +72,10 @@ export const PagesSidebarNavigation = ({
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
   const labelStyle = useMemo(
     () => ({
       icon: {
@@ -86,7 +90,10 @@ export const PagesSidebarNavigation = ({
     [properties?.style, style, collapsable, isSidebarPinned, properties?.position]
   );
 
-  const pagesTree = useMemo(() => buildTree(pages, !!labelStyle?.label?.hidden), [pages, labelStyle]);
+  const pagesTree = useMemo(
+    () => (isLicensed ? buildTree(pages, !!labelStyle?.label?.hidden) : pages),
+    [isLicensed, pages, labelStyle?.label?.hidden]
+  );
 
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
@@ -412,19 +419,12 @@ export const PagesSidebarNavigation = ({
     );
   };
 
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
-
-  const isPinnedWithLabel = isSidebarPinned && !labelStyle?.label?.hidden;
-  const isUnpinnedInEdit = !isSidebarPinned && currentMode !== 'view';
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
-  const sidebarCollapsed = !isSidebarPinned;
-  const isEditing = currentMode === 'edit';
   const headerHidden = isLicensed ? hideHeader : false;
+  const logoHidden = isLicensed ? hideLogo : false;
 
-  if (hideHeader && hideLogo && isPagesSidebarHidden) {
+  if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
   }
 
@@ -523,15 +523,15 @@ export const PagesSidebarNavigation = ({
         }}
       >
         <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
-          {(collapsable || !headerHidden || !hideLogo) && (
+          {(collapsable || !headerHidden || !logoHidden) && (
             <div
               ref={headerRef}
               style={{
-                marginRight: hideHeader && hideLogo && position == 'top' && '0px',
+                marginRight: headerHidden && logoHidden && position == 'top' && '0px',
               }}
               className="app-name"
             >
-              {!hideLogo && (
+              {!logoHidden && (
                 <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
                   <AppLogo isLoadingFromHeader={false} />
                 </div>
