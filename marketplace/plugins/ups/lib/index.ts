@@ -109,13 +109,58 @@ export default class Ups implements QueryService {
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
     this.validateSourceOptions(sourceOptions);
+    const { accessToken } = await this.generateOAuthToken(sourceOptions);
 
-    await this.generateOAuthToken(sourceOptions);
+    // Use a simple endpoint to test the connection
+    const baseUrl = sourceOptions.base_url + "/api";
+    const resolvedPath = "/track/v1/details/testing"; // Example path for testing
+    const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
 
-    return {
-      status: "ok",
-      message: "Connection successful",
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      "x-merchant-id": sourceOptions.shipper_number!,
+      Accept: "application/json",
+      transID: "testing",
+      transactionSrc: "testing",
     };
+
+    const method = "GET"; // Use GET for testing
+
+    try {
+      await got(fullUrl.toString(), {
+        method: method.toLowerCase() as Method,
+        headers,
+      });
+
+      return {
+        status: "ok",
+        message: "Connection successful",
+      };
+    } catch (error) {
+      let errorMessage = "Failed to fetch data";
+      let errorDetails = {};
+
+      if (error instanceof HTTPError && error.response) {
+        errorMessage = `HTTP ${error.response.statusCode}: ${
+          error.response.statusMessage || "Request failed"
+        }`;
+        errorDetails = {
+          status: error.response.statusCode,
+          statusText: error.response.statusMessage,
+          errors: error.response.body,
+        };
+      } else {
+        errorMessage = error.message || "An unexpected error occurred";
+        errorDetails = { cause: error };
+      }
+
+      throw new QueryError(
+        "Query could not be completed",
+        errorMessage,
+        errorDetails
+      );
+    }
   }
 
   private async generateOAuthToken(sourceOptions: SourceOptions) {
