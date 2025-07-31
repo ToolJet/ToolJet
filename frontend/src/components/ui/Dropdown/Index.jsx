@@ -1,14 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './Select';
 import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils/DropdownUtils';
+import { noop } from 'lodash';
+import { useDropdownContext } from './DropdownProvider';
 
-const DropdownComponent = ({ options = {}, ...props }) => {
+const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
   const triggerRef = useRef(null);
   const [triggerWidth, setTriggerWidth] = useState(0);
+  const selectRef = useRef(null);
+  const dropdownRef = useRef({});
+  const { registerDropdown, unregisterDropdown } = useDropdownContext();
 
   useEffect(() => {
     if (triggerRef.current) {
@@ -16,13 +21,51 @@ const DropdownComponent = ({ options = {}, ...props }) => {
     }
   }, []);
 
+  // Register this dropdown instance - more efficient than the global Set approach
+  useEffect(() => {
+    // Create the dropdown interface only once
+    dropdownRef.current = {
+      close: () => {
+        setOpen(false);
+        onClose?.();
+      },
+    };
+  }, [onClose]);
+
+  // Enhanced container resolution for better Firefox support
+  const getContainer = useCallback(() => {
+    if (container) {
+      return typeof container === 'function' ? container() : container;
+    }
+
+    // Auto-detect container based on context
+    if (triggerRef.current) {
+      // Check if inside a modal
+      const modal = triggerRef.current.closest('.modal-dialog');
+      if (modal) return modal;
+
+      // Check if inside a popover
+      const popover = triggerRef.current.closest('.popover');
+      if (popover) return popover;
+    }
+
+    return document.body;
+  }, [container]);
+
   const dropdownStyle = `${
     isValid === true ? '!tw-border-border-success-strong' : isValid === false ? '!tw-border-border-danger-strong' : ''
   }`;
 
-  const handleOpenChange = () => {
-    setOpen(!open);
-    if (!open) props.onOpen?.();
+  const handleOpenChange = (isOpen) => {
+    if (isOpen) {
+      // Register this dropdown as the active one, which will close others
+      registerDropdown(dropdownRef.current);
+    } else {
+      // Unregister when closing
+      unregisterDropdown(dropdownRef.current);
+    }
+    setOpen(isOpen);
+    if (isOpen) props.onOpen?.();
     else props.onClose?.();
   };
 
@@ -39,13 +82,14 @@ const DropdownComponent = ({ options = {}, ...props }) => {
   return (
     <div className={props.className}>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
-      <Select {...props} onOpenChange={handleOpenChange} onValueChange={handleChange}>
+      <Select {...props} ref={selectRef} open={open} onOpenChange={handleOpenChange} onValueChange={handleChange}>
         <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
         <SelectContent
           className={`${props.className}__content`}
           style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
+          container={getContainer()}
         >
           <SelectGroup>
             {Object.keys(options).map((key) => (
@@ -97,6 +141,7 @@ DropdownComponent.propTypes = {
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
   className: PropTypes.string,
+  container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
 };
 
 DropdownComponent.defaultProps = {

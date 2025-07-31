@@ -7,8 +7,7 @@ import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { decamelizeKeys } from 'humps';
-
-const semver = require('semver');
+import * as semver from 'semver';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -84,7 +83,7 @@ export function isJSONString(value: string): boolean {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -488,4 +487,23 @@ export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
   }
 
   return obj;
+}
+export function objectGUIDtoString(buffer) {
+  function toHex(byte) {
+    return byte.toString(16).padStart(2, '0');
+  }
+
+  const guid = [
+    buffer.readUInt32LE(0).toString(16).padStart(8, '0'),
+    buffer.readUInt16LE(4).toString(16).padStart(4, '0'),
+    buffer.readUInt16LE(6).toString(16).padStart(4, '0'),
+    [...buffer.slice(8, 10)].map(toHex).join(''),
+    [...buffer.slice(10, 16)].map(toHex).join(''),
+  ];
+
+  return guid.join('-');
+}
+
+export function isValidEmail(value: any): boolean {
+  return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }

@@ -57,10 +57,13 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas') => {
+    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+      let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
-      const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
+      const { options: defaultOptions, name: nameFromDefaultOptions } = getDefaultOptions(selectedDataSource);
+      if (!queryName) name = nameFromDefaultOptions;
+      else name = queryName;
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
       const tempId = uuidv4();
@@ -77,10 +80,17 @@ export const createDataQuerySlice = (set, get) => ({
       setIsAppSaving(true);
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
+      const runOnCreate = options.runOnCreate;
+
+      let cleanSelectedQuery = { ...selectedQuery };
+      if(selectedQuery?.permissions) {
+        delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
+      }
+
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
-            ...selectedQuery,
+            ...cleanSelectedQuery,
             data_source_id: dataSourceId,
             app_version_id: appVersionId,
             options,
@@ -111,7 +121,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, moduleId);
+          setSelectedQuery(data.id);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -141,6 +151,10 @@ export const createDataQuerySlice = (set, get) => ({
             },
             moduleId
           );
+
+          if (runOnCreate) {
+            get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
         })
         .catch((error) => {
           set((state) => {
@@ -226,8 +240,12 @@ export const createDataQuerySlice = (set, get) => ({
             delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
           });
         })
-        .catch(() => {
-          toast.error('App could not be saved.');
+        .catch((e) => {
+          if (e.statusCode === 403) {
+            toast.error('You do not have permission to delete this query.');
+          } else {
+            toast.error(`Failed to delete query: ${e.error}`);
+          }
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
           });

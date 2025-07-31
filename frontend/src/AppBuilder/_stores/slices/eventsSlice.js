@@ -1,9 +1,7 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { findAllEntityReferences } from '@/_stores/utils';
-import { debounce, extractAndReplaceReferencesFromString, resolveCode, replaceEntityReferencesWithIds } from '../utils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { dfs } from '@/_stores/handleReferenceTransactions';
+import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, isValidUUID, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
@@ -385,6 +383,9 @@ export const createEventsSlice = (set, get) => ({
           'onInvalid',
           'onNewRowsAdded',
           'onTableDataDownload',
+          'onMessageSent',
+          'onClearHistory',
+          'onTableDataDownload',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -444,9 +445,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -606,7 +606,7 @@ export const createEventsSlice = (set, get) => ({
             //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
             const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
             // const url = resolveReferences(event.url, undefined, customVariables);
-            window.open(resolvedValue, event?.windowTarget === 'newTab' ? '_blank' : '_self');
+            window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
             return Promise.resolve();
           }
           case 'go-to-app': {
@@ -870,9 +870,19 @@ export const createEventsSlice = (set, get) => ({
               get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
                 eventId: event.eventId,
               });
-
               return Promise.reject(error);
             }
+          }
+          case 'toggle-app-mode': {
+            const {
+              updateIsTJDarkMode,
+              globalSettings: { appMode },
+            } = get();
+            if (appMode !== 'auto') return;
+            const value = event.appMode === 'dark' ? true : false;
+            localStorage.setItem('darkMode', `${value}`);
+            updateIsTJDarkMode(value);
+            return Promise.resolve();
           }
           case 'switch-page': {
             try {
@@ -928,7 +938,15 @@ export const createEventsSlice = (set, get) => ({
     }),
 
     generateAppActions: (queryId, mode, isPreview = false, moduleId = 'canvas') => {
-      const { getCurrentPageComponents, dataQuery, eventsSlice, queryPanel, modules } = get();
+      const {
+        getCurrentPageComponents,
+        dataQuery,
+        eventsSlice,
+        queryPanel,
+        modules,
+        isTJDarkMode,
+        globalSettings: { appMode },
+      } = get();
       const { previewQuery } = queryPanel;
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
@@ -1202,6 +1220,24 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
+      const toggleAppMode = (value) => {
+        if (appMode !== 'auto') {
+          return;
+        }
+        if (value && value !== 'light' && value !== 'dark') {
+          return;
+        }
+        if (!value) {
+          value = isTJDarkMode ? 'light' : 'dark';
+        }
+
+        const event = {
+          actionId: 'toggle-app-mode',
+          appMode: value,
+        };
+        return executeAction(event, mode, {});
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1224,6 +1260,7 @@ export const createEventsSlice = (set, get) => ({
         logInfo,
         log,
         logError,
+        toggleAppMode,
       };
     },
     // Selectors

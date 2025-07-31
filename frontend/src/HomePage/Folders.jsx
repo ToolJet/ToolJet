@@ -14,6 +14,10 @@ import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
+import { Button } from '@/components/ui/Button/Button';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
+
 export const Folders = function Folders({
   folders,
   foldersLoading,
@@ -82,13 +86,19 @@ export const Folders = function Folders({
       setCreationStatus(true);
       folderService
         .create(newFolderName, appType)
-        .then(() => {
+        .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
           handleFolderChange({});
           foldersChanged();
+          posthogHelper.captureEvent('create_folder', {
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            folder_id: data?.id,
+          });
         })
         .catch((error) => {
           handleHttpErrorMessages(error, 'folder');
@@ -246,24 +256,41 @@ export const Folders = function Folders({
             <div className="d-flex folder-header-icons-wrap">
               {canCreateFolder && (
                 <>
-                  <div
-                    className="folder-create-btn"
+                  <Button
+                    size="medium"
+                    variant="ghost"
+                    iconOnly
+                    ariaLabel="Create new folder"
                     onClick={() => {
+                      posthogHelper.captureEvent('create_new_folder', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
                       setNewFolderName('');
                       setShowForm(true);
                     }}
                     data-cy="create-new-folder-button"
                   >
-                    <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-                  </div>
-                  <div
-                    className="folder-create-btn"
+                    <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                  </Button>
+                  <Button
+                    size="medium"
+                    variant="ghost"
+                    iconOnly
+                    ariaLabel="Search for folders"
                     onClick={() => {
                       setShowInput(true);
                     }}
+                    data-cy="folder-search-icon"
                   >
-                    <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-                  </div>
+                    <SolidIcon
+                      name="search"
+                      width="14"
+                      fill={darkMode ? '#CFD3D8E6' : '#6A727C'}
+                      className="tw-relative tw-top-[2px]"
+                    />
+                  </Button>
                 </>
               )}
             </div>
@@ -287,8 +314,7 @@ export const Folders = function Folders({
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
-                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
-                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
+                'tw-bg-interactive-default': _.isEmpty(activeFolder),
               }
             )}
             style={{ height: '32px' }}
@@ -314,8 +340,7 @@ export const Folders = function Folders({
             className={cx(
               `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
               {
-                'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                'tw-bg-interactive-default': activeFolder.id === folder.id,
               }
             )}
             onClick={() => {

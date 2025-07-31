@@ -249,7 +249,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   };
 
   return (
-    <Popover id="add-new-page-popup" ref={ref} {...props} className={`${darkMode && 'dark-theme'}`}>
+    <Popover
+      id="add-new-page-popup"
+      ref={ref}
+      {...props}
+      className={`add-new-page-popup ${darkMode && 'dark-theme theme-dark'}`}
+    >
       <Popover.Header>
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
@@ -300,6 +305,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -313,6 +319,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   onBlur={(e) => handleSave(e)}
                   value={handle}
                   minLength="1"
+                  maxLength="32"
                 />
                 <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
                   {error}
@@ -338,24 +345,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     type="checkbox"
                     checked={isHomePage}
                     onChange={() => markAsHomePage(page?.id)}
-                    disabled={isHomePage}
+                    disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
                   />
                 </label>
               </div>
-              {/* <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Hide this page on navigation</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={page?.hidden}
-                    onChange={(e) => updatePageVisibility(page?.id, !page?.hidden)}
-                    disabled={isHomePage}
-                  />
-                </label>
-              </div> */}
               <HidePageOnNavigation
                 hidden={page?.hidden}
+                disabled={page?.disabled}
                 page={page}
                 updatePageVisibility={updatePageVisibility}
                 darkMode={darkMode}
@@ -392,6 +388,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -459,6 +456,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                     pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
                   }}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -527,6 +525,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   onChange={(e) => setPageName(e.target.value)}
                   onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
                   minLength="1"
+                  maxLength="32"
                 />
               </div>
             </div>
@@ -585,11 +584,12 @@ const PageEvents = ({ page, allPages }) => {
   );
 };
 
-const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage }) => {
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
+  const resolvePageHiddenValue = useStore((state) => state.resolvePageHiddenValue);
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
 
   return (
-    <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
+    <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
@@ -604,32 +604,36 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
             style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
             className={`d-flex align-items-center justify-content-end`}
           >
-            <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
-              <FxButton
-                active={forceCodeBox}
-                onPress={() => {
-                  if (forceCodeBox) {
-                    setForceCodeBox(false);
-                  } else {
-                    setForceCodeBox(true);
-                  }
-                }}
-              />
-            </div>
-
+            {!isHomePage && (
+              <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
+                <FxButton
+                  disabled={isHomePage}
+                  active={forceCodeBox}
+                  onPress={() => {
+                    if (forceCodeBox) {
+                      setForceCodeBox(false);
+                    } else {
+                      setForceCodeBox(true);
+                    }
+                  }}
+                />
+              </div>
+            )}
             {!forceCodeBox && (
-              <div className="form-check form-switch m-0">
+              <div className="form-switch m-0">
                 <input
                   className="form-check-input"
                   type="checkbox"
                   checked={resolveReferences(hidden?.value)}
                   disabled={isHomePage}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     updatePageVisibility(page?.id, {
                       value: `{{${e.target.checked}}}`,
                       fxActive: forceCodeBox,
-                    })
-                  }
+                    });
+
+                    resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
+                  }}
                 />
               </div>
             )}
@@ -646,6 +650,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
               value: value,
               fxActive: forceCodeBox,
             });
+            resolvePageHiddenValue('canvas', true, page?.id, value);
           }}
         />
       )}

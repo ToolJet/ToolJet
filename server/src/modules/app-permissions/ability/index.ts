@@ -26,7 +26,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const userAppPermissions = userPermission?.[MODULES.APP];
     const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
-    const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
 
     if (isAdmin || superAdmin) {
       // Admin or super admin and do all operations
@@ -76,22 +75,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         App
       );
       return;
-    }
-
-    if (
-      isAllAppsViewable ||
-      (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
-    ) {
-      can(
-        [
-          FEATURE_KEY.FETCH_USERS,
-          FEATURE_KEY.FETCH_USER_GROUPS,
-          FEATURE_KEY.FETCH_PAGE_PERMISSIONS,
-          FEATURE_KEY.FETCH_QUERY_PERMISSIONS,
-          FEATURE_KEY.FETCH_COMPONENT_PERMISSIONS,
-        ],
-        App
-      );
     }
   }
 }

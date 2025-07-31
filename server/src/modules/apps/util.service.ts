@@ -52,7 +52,13 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
   ) {}
-  async create(name: string, user: User, type: APP_TYPES, manager: EntityManager): Promise<App> {
+  async create(
+    name: string,
+    user: User,
+    type: APP_TYPES,
+    isInitialisedFromPrompt: boolean = false,
+    manager: EntityManager
+  ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
         return manager.save(
@@ -64,6 +70,37 @@ export class AppsUtilService implements IAppsUtilService {
             organizationId: user.organizationId,
             userId: user.id,
             isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
+            ...(isInitialisedFromPrompt && {
+              aiGenerationMetadata: {
+                steps: [
+                  {
+                    name: 'Describe app',
+                    id: 'describe_app',
+                    loadingStates: ['Generating PRD', 'PRD generated successfully'],
+                  },
+                  {
+                    name: 'Define specs',
+                    id: 'define_specs',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
+                    name: 'Setup database',
+                    id: 'setup_database',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
+                    name: 'Generate app',
+                    id: 'generate_app',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                ],
+                activeStep: 'describe_app',
+                completedSteps: [],
+                version: 'v1',
+              },
+            }),
+            isInitialisedFromPrompt: isInitialisedFromPrompt,
+            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
             ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
@@ -449,6 +486,8 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      case APP_TYPES.MODULE:
+        return viewableAppsQb;
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -675,7 +714,9 @@ export class AppsUtilService implements IAppsUtilService {
     return this.appRepository.findByAppName(name, organizationId);
   }
 
-  async findByAppId(appId: string): Promise<App> {
-    return this.appRepository.findByAppId(appId);
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return this.appRepository.findByAppId(appId, manager);
+    }, manager);
   }
 }

@@ -37,7 +37,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
-  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
+  const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -132,6 +132,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
   const previewRef = useRef(null);
+  const fullScreenPreviewRef = useRef(null);
 
   return (
     <div
@@ -146,22 +147,30 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
-        componentId={restProps?.componentId ?? null}
+        componentId={componentId ?? null}
+        fieldMeta={fieldMeta}
+        paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
+        onAiSuggestionAccept={(newValue) => {
+          setCurrentValue(newValue);
+          onChange(newValue);
+        }}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
             <SingleLineCodeEditor.Editor
               previewRef={previewRef}
+              fullScreenPreviewRef={fullScreenPreviewRef}
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
               isFocused={isFocused}
@@ -176,6 +185,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               showPreview={showPreview}
               wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
+              cursorInsidePreview={cursorInsidePreview}
               {...restProps}
             />
           </div>
@@ -206,14 +216,17 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
   previewRef,
+  fullScreenPreviewRef,
   setShowPreview,
   onInputChange,
   wrapperRef,
   showSuggestions,
   setCodeEditorView = null, // Function to set the CodeMirror view
+  cursorInsidePreview = false,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
+  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
@@ -303,6 +316,7 @@ const EditorInput = ({
     ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
     ...completionKeymap,
   ];
+
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -333,7 +347,8 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setShowPreview(false);
+    !cursorInsidePreview && setShowPreview(false);
+
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);
@@ -347,7 +362,7 @@ const EditorInput = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
 
-  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
   // when full screen editor is closed, show the preview box
   useEffect(() => {
     if (isFocused && !isOpen) {
@@ -446,7 +461,7 @@ const EditorInput = ({
               height: '100%',
             }}
             className="check-here"
-            ref={previewRef}
+            ref={isOpen ? fullScreenPreviewRef : previewRef}
           >
             <CodeMirror
               onCreateEditor={(view) => {
@@ -462,11 +477,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                      javascript({ jsx: lang === 'jsx' }),
-                      autoCompleteConfig,
-                      keymap.of([...customKeyMaps]),
-                      customTabKeymap,
-                    ]
+                    javascript({ jsx: lang === 'jsx' }),
+                    autoCompleteConfig,
+                    keymap.of([...customKeyMaps]),
+                    customTabKeymap,
+                  ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -565,9 +580,8 @@ const DynamicEditorBridge = (props) => {
 
     return (
       <div
-        className={`col-auto pt-0 fx-common fx-button-container ${
-          (isEventManagerParam || codeShow) && 'show-fx-button-container'
-        }`}
+        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+          }`}
       >
         <FxButton
           active={codeShow}
@@ -599,9 +613,8 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+                }`}
             />
             {isDeprecated && (
               <span className={'list-item-deprecated-column-type'}>

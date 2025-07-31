@@ -32,6 +32,7 @@ export function defineWorkflowAbility(
         FEATURE_KEY.RELEASE,
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.UPDATE_ICON,
       ],
       App
     );
@@ -56,6 +57,7 @@ export function defineWorkflowAbility(
         FEATURE_KEY.RELEASE,
         FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
         FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.UPDATE_ICON,
       ],
       App
     );

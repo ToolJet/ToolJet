@@ -39,7 +39,9 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
 }
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function create(appId, versionName, versionFromId, currentEnvironmentId) {
@@ -140,7 +142,6 @@ function autoSaveApp(
     credentials: 'include',
     body: JSON.stringify(body),
   };
-
   const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`;
 
   return fetch(url, requestOptions).then(handleResponse);

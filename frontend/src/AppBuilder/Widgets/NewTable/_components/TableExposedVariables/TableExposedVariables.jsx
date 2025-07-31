@@ -19,6 +19,7 @@ export const TableExposedVariables = ({
   componentName,
   pageIndex = 1,
   lastClickedRow,
+  hasDataChanged,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -33,7 +34,6 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
-  const previousLastClickedRow = usePrevious(lastClickedRow);
 
   const {
     selectedRows,
@@ -132,14 +132,6 @@ export const TableExposedVariables = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
 
-  useEffect(() => {
-    if (allowSelection) {
-      if (previousLastClickedRow?.id !== lastClickedRow?.id) {
-        fireEvent('onRowClicked');
-      }
-    }
-  }, [previousLastClickedRow, lastClickedRow, fireEvent, allowSelection]);
-
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
@@ -155,7 +147,7 @@ export const TableExposedVariables = ({
       fireEvent('onSort');
       prevSortingLength.current = sorting.length;
     } else {
-      setExposedVariables({ sortApplied: undefined });
+      setExposedVariables({ sortApplied: [] });
       prevSortingLength.current && fireEvent('onSort');
       prevSortingLength.current = null;
     }
@@ -205,7 +197,7 @@ export const TableExposedVariables = ({
 
   // CSA to set page index
   useEffect(() => {
-    function setPage(targetPageIndex) {
+    function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
       if (clientSidePagination) setPageIndex(targetPageIndex - 1);
     }
@@ -213,6 +205,7 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
+    if (!hasDataChanged) return;
     resetRowSelection();
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
@@ -221,8 +214,8 @@ export const TableExposedVariables = ({
         setRowSelection({ [index]: true });
       }
       setExposedVariables({
-        selectedRow: item,
-        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+        selectedRow: item === null ? {} : item,
+        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
       });
     }
     if (defaultSelectedRow) {
@@ -237,16 +230,31 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection]);
+  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection, hasDataChanged]);
 
   useEffect(() => {
     if (lastClickedRow) {
       setExposedVariables({
-        selectedRow: lastClickedRow,
-        selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
+        selectedRow: lastClickedRow?.row ?? {},
+        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
       });
     }
   }, [lastClickedRow, setExposedVariables]);
+
+  useEffect(() => {
+    if (selectedRows.length === 0) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    }
+  }, [selectedRows, setExposedVariables]);
+
+  useEffect(() => {
+    if (allowSelection) {
+      fireEvent('onRowClicked');
+    }
+  }, [lastClickedRow, fireEvent, allowSelection]);
 
   useEffect(() => {
     function selectRow(key, value) {
@@ -256,8 +264,8 @@ export const TableExposedVariables = ({
         setRowSelection({ [index]: true });
       }
       setExposedVariables({
-        selectedRow: item,
-        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+        selectedRow: item === null ? {} : item,
+        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
       });
     }
 

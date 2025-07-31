@@ -60,6 +60,7 @@
         align-items: center;
         padding: 7px 8px;
         margin-top: 2px;
+        width: 100%;
         justify-content: space-between;
         background-color: var(--interactive-default);
         &.highlight {
@@ -112,6 +113,8 @@
             line-height: 18px;
             margin-left: 8px;
             gap: 6px;
+            flex-shrink: 0;
+            margin-right: 6px;
         }
         button.edit-page-overlay-toggle{
             opacity: 0;
@@ -134,13 +137,23 @@
             // margin-left: 15px;
             display: flex;
             align-items: center;
+            flex-grow: 1;        
+            flex-shrink: 1;      
+            min-width: 0;
+            .main-page-icon-wrapper {
+                flex-shrink: 0;     
+                display: flex;        
+                align-items: center;
+                justify-content: center;
+            } 
             .page-name{
                 overflow: hidden;
                 color: var(--slate12);
                 font-size: 14px;
                 font-style: normal;
                 font-weight: 400;
-                max-width: 246px;
+                flex-shrink: 1;
+                min-width: 0;
             }
         }
 
@@ -281,114 +294,6 @@
     }
 }
 
-.page-permission {
-    .info-container {
-        display: flex;
-        width: auto;
-        height: auto;
-        padding: 10px 12px 8px 12px;
-        border: 1px solid var(--slate5);
-        background: var(--slate2);
-        border-radius: 6px 6px 6px 6px;
-        margin-bottom: 13px;
-        margin-top: 0px;
-    }
-
-    .permission-type-select {
-        align-items: center;
-    
-        .col-auto {
-            padding-right: 0px;
-        }
-    }
-}
-
-.page-permissions-modal {
-    #header-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .react-select__option {
-        padding: 8px 0px;
-        
-        input {
-            margin-right: 10px;
-        }
-    }
-
-    .react-select__menu-list {
-        overflow-y: unset !important;
-    }
-
-    .user-select-option {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        cursor: pointer;
-      
-        &.focused {
-          background-color: #f3f4f6; // Tailwind's gray-100 vibe
-        }
-      
-        .avatar {
-          background-color: var(--slate5); // light gray
-          color: var(--slate12); // dark text
-          font-weight: 500;
-          font-size: 16px;
-          width: 36px;
-          height: 36px;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-right: 12px;
-          flex-shrink: 0;
-        }
-      
-        .user-info {
-          display: flex;
-          flex-direction: column;
-      
-          .name {
-            font-weight: 500;
-            font-size: 14px;
-            color: var(--slate12);
-          }
-      
-          .email {
-            font-size: 12px;
-            color: var(--slate10);
-          }
-        }
-
-        .group-info {
-            display: flex;
-            flex-direction: row;
-            gap: 8px;
-            align-items: center;
-        
-            .name {
-              font-weight: 400;
-              font-size: 14px;
-              color: var(--slate12);
-            }
-        
-            .count {
-              font-size: 12px;
-              color: var(--slate9);
-            }
-          }
-      }
-}
-
-.page-permission {
-    .spinner-center {
-        min-height: 250px;
-    }
-}
-
 #add-new-page-popover, #edit-page-popover {
     margin-left: 40px;
     padding: 8px;    
@@ -410,8 +315,9 @@
     }
 
     .licensed-page-option {
+        pointer-events: unset !important;
         button {
-            pointer-events: none;
+            cursor: default;
             &:hover {
                 background-color: unset !important;
             }
@@ -468,6 +374,17 @@
         }
     }
 
+    .form-control.is-invalid {
+        background-image: none;
+    }
+
+    input[type='text'], textarea {
+        border-radius: 6px;
+        &:focus {
+            border: 2px solid var(--border-accent-strong);
+        }
+    }
+
     .page-events {
         .page-empty-events {
             display: flex;
@@ -503,4 +420,12 @@
 .modal-base .modal-footer .action-btn-page-permission svg path {
     fill: var(--indigo1) !important;
 }
+}
+
+.page-options-dark {
+    background-color: var(--base) !important;
+
+    &:hover {
+        background-color: var(--slate3) !important;
+    }
 }

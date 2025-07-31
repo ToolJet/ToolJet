@@ -98,8 +98,8 @@ export class UserRepository extends Repository<User> {
       const existingUser = await manager.findOne(User, { where: { email: user.email } });
 
       if (existingUser) {
-        Object.assign(existingUser, user);
-        return manager.save(User, existingUser);
+        await manager.update(User, { id: existingUser.id }, user);
+        return manager.findOne(User, { where: { id: existingUser.id } });
       } else {
         const newUser = manager.create(User, user);
         return manager.save(User, newUser);
@@ -170,7 +170,7 @@ export class UserRepository extends Repository<User> {
   }
 
   async getUserWithAdminRole(organizationId: string, manager?: EntityManager): Promise<User | null> {
-    return dbTransactionWrap((manager: EntityManager) => {
+    return await dbTransactionWrap((manager: EntityManager) => {
       return manager
         .createQueryBuilder(User, 'user')
         .innerJoin('user.userGroups', 'groupUsers')

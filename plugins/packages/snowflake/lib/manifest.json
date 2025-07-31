@@ -12,8 +12,12 @@
       "rawData": {}
     },
     "options": {
-      "username": { "type": "string" },
-      "account": { "type": "string" },
+      "username": {
+        "type": "string"
+      },
+      "account": {
+        "type": "string"
+      },
       "password": {
         "type": "string",
         "encrypted": true
@@ -29,6 +33,25 @@
       },
       "role": {
         "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "custom_auth_params": {
+        "type": "object"
+      },
+      "custom_query_params": {
+        "type": "object"
       }
     }
   },
@@ -53,26 +76,20 @@
     },
     "role": {
       "value": ""
+    },
+    "auth_type": {
+      "value": "basic"
+    },
+    "oauthTypes": {
+      "value": "custom_app"
     }
   },
   "properties": {
-    "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
-      "description": "Enter username"
-    },
     "account": {
       "label": "Account",
       "key": "account",
       "type": "text",
       "description": "Enter account"
-    },
-    "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
-      "description": "Enter password"
     },
     "database": {
       "label": "Database",
@@ -97,7 +114,40 @@
       "key": "role",
       "type": "text",
       "description": "Enter role"
+    },
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for snowflake",
+      "oauth_configs": {
+        "allowed_auth_types": [
+          "oauth2",
+          "basic"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret",
+            "auth_url",
+            "access_token_url",
+            "client_auth",
+            "access_token_custom_headers"
+          ],
+          "basic": [
+            "username",
+            "password"
+          ]
+        },
+        "allowed_scope_field": true
+      }
     }
   },
-  "required": ["account", "username", "password"]
+  "required": [
+    "account",
+    "username",
+    "password"
+  ]
 }

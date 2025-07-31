@@ -70,24 +70,28 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const handleAddTabItem = () => {
     const generateNewTabItem = () => {
-      let found = false;
-      let title = '';
-      let currentNumber = tabItems.length;
-      let id = `t${currentNumber}`;
-      while (!found) {
-        title = `Tab ${currentNumber}`;
-        if (tabItems.find((tabItem) => tabItem.title === title) === undefined) {
-          found = true;
-        }
-        currentNumber += 1;
-      }
+      const existingTitles = new Set(tabItems.map((tab) => tab.title));
+      const existingIds = new Set(tabItems.map((tab) => tab.id));
+      let titleNumber = 1;
+      let title;
+      do {
+        title = `Tab ${titleNumber++}`;
+      } while (existingTitles.has(title));
+
+      let idNumber = 0;
+      let id;
+      do {
+        id = `t${idNumber++}`;
+      } while (existingIds.has(id));
+
       return {
-        id: id,
+        id,
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
+        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       };
     };
 
@@ -95,10 +99,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     const updatedTabItems = [...tabItems, newTabItem];
     setTabItems(updatedTabItems);
     updateAllTabItemsParams(updatedTabItems);
-  };
-
-  const updateAllTabItemsParams = (tabItems) => {
-    paramUpdated({ name: 'tabItems' }, 'value', tabItems, 'properties', false);
   };
 
   const getItemStyle = (isDragging, draggableStyle) => ({
@@ -139,6 +139,14 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     });
 
     setTabItems(updatedTabItems);
+
+    if (property === 'id') {
+      const [isValid] = validateTabId(value, item?.id);
+      if (!isValid) {
+        return;
+      }
+    }
+
     updateAllTabItemsParams(updatedTabItems);
   };
 
@@ -175,10 +183,43 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
+  const validateTabId = (value, currentItemId) => {
+    if (value === null || value === undefined || value === '') {
+      return [false, 'Tab ID cannot be empty'];
+    }
+
+    const stringValue = String(value);
+    const trimmedValue = stringValue.trim();
+
+    if (!trimmedValue) {
+      return [false, 'Tab ID cannot be empty'];
+    }
+
+    const duplicateTab = tabItems.find((tabItem) => tabItem.id === trimmedValue && tabItem.id !== currentItemId);
+
+    if (duplicateTab) {
+      return [false, 'Tab ID must be unique. This ID is already used by another tab.'];
+    }
+
+    return [true, null];
+  };
+
+  const areAllTabIdsValid = () => {
+    const ids = tabItems.map((tab) => tab.id);
+    const uniqueIds = new Set(ids);
+    return ids.length === uniqueIds.size;
+  };
+
+  const updateAllTabItemsParams = (tabItems) => {
+    if (areAllTabIdsValid()) {
+      paramUpdated({ name: 'tabItems' }, 'value', tabItems, 'properties', false);
+    }
+  };
+
   const _renderOverlay = (item, index) => {
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
-        <Popover.Body>
+        <Popover.Body onClick={(e) => e.stopPropagation()}>
           <div className="field mb-3" data-cy={`input-and-label-tab-title`}>
             <label data-cy={`label-tab-title`} className="font-weight-500 mb-1 font-size-12">
               {'Tab Title'}
@@ -208,6 +249,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Tab ID'}
               onChange={(value) => handleValueChange(item, value, 'id', index)}
+              validationFn={(value) => validateTabId(value, item?.id)}
             />
           </div>
 
@@ -245,8 +287,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'fieldBackgroundColor', index);
               }}
-              fieldMeta={{ type: 'color', displayName: 'Background' }}
-              paramType={'color'}
+              fieldMeta={{ type: 'colorSwatches', displayName: 'Background' }}
+              paramType={'colorSwatches'}
             />
           </div>
 

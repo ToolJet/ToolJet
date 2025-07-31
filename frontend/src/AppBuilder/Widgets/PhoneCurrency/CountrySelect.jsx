@@ -4,6 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { CustomMenuList } from './CustomMenuList';
 import { CustomOption } from './CustomOption';
 import { CustomValueContainer } from './CustomValueContainer';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const {
@@ -16,9 +17,15 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
     computedStyles,
     darkMode,
     filterOption,
+    componentId,
   } = rest;
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const mode = useStore((state) => state.modeStore.modules.canvas.currentMode);
+  const selectedComponents = useStore((state) => state.selectedComponents);
+  const isComponentSelected = selectedComponents.length === 1 && selectedComponents[0] === componentId;
+  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -96,8 +103,22 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   return (
     <div
       onClick={() => {
-        if (disabledState || !isCountryChangeEnabled) return;
-        setMenuIsOpen((prev) => !prev);
+        // Use onClick to toggle dropdown in view mode (normal way)
+        if (mode !== 'edit' && !disabledState && isCountryChangeEnabled) {
+          setMenuIsOpen((prev) => !prev);
+        }
+      }}
+      onMouseDownCapture={(e) => {
+        // Use onMouseDownCapture to toggle dropdown in edit mode (fix: to prevent unexpected behaviour)
+        if (mode === 'edit') {
+          const menu = document.querySelector(`.country-${componentId}__menu`);
+          if (menu && menu.contains(e.target)) return; // Return early if user clicks on the menu to search or select option
+          e.stopPropagation();
+          if (!isComponentSelected) setSelectedComponents([componentId]); // Select component if not selected, to show component properties in right sidebar
+          if (!disabledState && isCountryChangeEnabled) {
+            setMenuIsOpen((prev) => !prev);
+          }
+        }
       }}
       ref={dropdownRef}
     >
@@ -133,8 +154,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         darkMode={darkMode}
         isDisabled={disabledState}
         menuIsOpen={menuIsOpen}
-        onMenuOpen={() => setMenuIsOpen(true)}
-        onMenuClose={() => setMenuIsOpen(false)}
+        classNamePrefix={`country-${componentId}`}
       />
     </div>
   );

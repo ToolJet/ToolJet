@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponseWithoutValidation } from '@/_helpers';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export const whiteLabellingService = {
   get,
@@ -13,11 +14,16 @@ function get(organizationId = null) {
     headers: headers,
     credentials: 'include',
   };
-  const orgId = headers['tj-workspace-id'];
-  console.log(headers, 'headers');
-  return fetch(`${config.apiUrl}/white-labelling?organizationId=${organizationId || orgId}`, requestOptions).then(
-    handleResponseWithoutValidation
-  );
+  const edition = fetchEdition();
+  const currentOrganizationId = headers['tj-workspace-id'] || organizationId;
+  // Cloud edition with organization ID uses organization-specific endpoint
+  if (edition === 'cloud' && currentOrganizationId) {
+    return fetch(`${config.apiUrl}/white-labelling/${currentOrganizationId}`, requestOptions).then(
+      handleResponseWithoutValidation
+    );
+  }
+  // For CE, EE, and Cloud without organization ID, use generic endpoint without organizationID
+  return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
 }
 
 function update(settings) {
@@ -29,7 +35,11 @@ function update(settings) {
     body: JSON.stringify(settings),
   };
   const organizationId = headers['tj-workspace-id'];
-  return fetch(`${config.apiUrl}/white-labelling/${organizationId}`, requestOptions).then(
-    handleResponseWithoutValidation
-  );
+  const edition = fetchEdition();
+  if (edition === 'cloud') {
+    return fetch(`${config.apiUrl}/white-labelling/${organizationId}`, requestOptions).then(
+      handleResponseWithoutValidation
+    );
+  }
+  return fetch(`${config.apiUrl}/white-labelling`, requestOptions).then(handleResponseWithoutValidation);
 }

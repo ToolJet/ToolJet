@@ -57,7 +57,7 @@ const FilePicker = (props) => {
     containerBackgroundColor,
     borderRadius,
     containerBorder,
-    containerBoxShadow,
+    boxShadow,
     containerPadding,
     dropzoneTitleColor,
     dropzoneActiveColor,
@@ -89,8 +89,8 @@ const FilePicker = (props) => {
     if (containerBorder) {
       rootRef.current.style.setProperty('--file-picker-border', containerBorder);
     }
-    if (containerBoxShadow) {
-      rootRef.current.style.setProperty('--file-picker-box-shadow', containerBoxShadow);
+    if (boxShadow) {
+      rootRef.current.style.setProperty('--file-picker-box-shadow', boxShadow);
     }
     if (containerPadding !== undefined) {
       rootRef.current.style.setProperty(
@@ -98,7 +98,6 @@ const FilePicker = (props) => {
         typeof containerPadding === 'number' ? `${containerPadding}px` : containerPadding
       );
     }
-
   }, [
     dropzoneActiveColor,
     dropzoneErrorColor,
@@ -106,7 +105,7 @@ const FilePicker = (props) => {
     borderRadius,
     containerBackgroundColor,
     containerBorder,
-    containerBoxShadow,
+    boxShadow,
     containerPadding,
     darkMode,
   ]);
@@ -118,11 +117,11 @@ const FilePicker = (props) => {
       display: isVisible ? 'flex' : 'none',
       backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
-      height: `${numericWidgetHeight}px`,
+      height: `${numericWidgetHeight + (containerPadding === 'default' ? 0 : 4)}px`,
       overflowY: isSmallWidget ? 'auto' : 'visible',
       opacity: disabledState ? 0.5 : 1,
     }),
-    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState]
+    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState, containerPadding]
   );
 
   if (rootRef?.current) {
@@ -176,16 +175,19 @@ const FilePicker = (props) => {
   //       : 'h-auto overflow-y-auto'
   // );
 
-  const filePaneClasses = clsx(
-    'file-picker-files-pane tw-p-2 tw-pt-0'
-  );
+  const filePaneClasses = clsx('file-picker-files-pane tw-p-2 tw-pt-0');
 
   const topSectionClasses = clsx('tw-flex tw-flex-col tw-shrink-0 tw-grow tw-p-4', {
     'tw-flex-grow': selectedFiles.length === 0,
   });
 
   return (
-    <div ref={rootRef} className="file-picker-widget-wrapper files-pane-scrollable" style={{ ...dynamicDropzoneStyle }} data-cy={dataCy}>
+    <div
+      ref={rootRef}
+      className="file-picker-widget-wrapper files-pane-scrollable"
+      style={{ ...dynamicDropzoneStyle }}
+      data-cy={dataCy}
+    >
       {isLoading ? (
         <div className="p-2 tw-flex tw-items-center tw-justify-center h-full">
           <Loader width={16} />
@@ -194,7 +196,7 @@ const FilePicker = (props) => {
         <>
           <div className={topSectionClasses}>
             <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
-              {labelText || 'Upload files'}
+              {labelText}
             </h3>
             <ValidationBar
               minSize={minSize}
@@ -261,9 +263,9 @@ FilePicker.defaultProps = {
   darkMode: false,
   styles: {},
   properties: {},
-  fireEvent: () => { },
-  setExposedVariable: () => { },
-  setExposedVariables: () => { },
+  fireEvent: () => {},
+  setExposedVariable: () => {},
+  setExposedVariables: () => {},
 };
 
 export default FilePicker;

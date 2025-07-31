@@ -40,6 +40,7 @@ import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
+import { rangeSliderV2Config } from './rangesliderV2';
 import { timelineConfig } from './timeline';
 import { svgImageConfig } from './svgImage';
 import { htmlConfig } from './html';
@@ -63,6 +64,7 @@ import { moduleViewerConfig } from './moduleViewer';
 import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
+import { chatConfig } from './chat';
 
 export {
   buttonConfig,
@@ -128,6 +130,8 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
+  rangeSliderV2Config,
 };

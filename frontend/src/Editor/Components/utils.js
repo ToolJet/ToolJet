@@ -45,3 +45,12 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
 
   return tinycolor(colorValue).darken(modificationAmount).toString();
 }
+
+export function getSafeRenderableValue(value) {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+    ? value
+    : (() => {
+      try { return String(value ?? ''); }
+      catch { return ''; }
+    })();
+}

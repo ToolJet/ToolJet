@@ -16,7 +16,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { GroupPermission } from './group_permission.entity';
-const bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
 import { OrganizationUser } from './organization_user.entity';
 import { File } from './file.entity';
 import { Organization } from './organization.entity';
@@ -118,6 +118,9 @@ export class User extends BaseEntity {
   @Column({ name: 'company_size' })
   companySize: string;
 
+  @Column({ name: 'auto_activated', default: false })
+  autoActivated: boolean;
+
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;
 
@@ -203,4 +206,5 @@ export class User extends BaseEntity {
   isSSOLogin: boolean;
   sessionId: string;
   roleGroup: USER_ROLE;
+  tjApiSource?: string;
 }

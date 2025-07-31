@@ -1,6 +1,7 @@
-.apps-modules-tabs {
-    .nav-link {
-        background-color: var(--page-default);
+.apps-modules-tabs.nav-tabs {
+    .nav-link,
+    ul > li.nav-link.active {
+        background-color: var(--page-weak);
     }
 
     .nav-link.active {
@@ -14,6 +15,26 @@
         }
     }
 
+}
+
+// Beta tag base styles
+.beta-tag-base {
+    padding: 0 4px !important;
+    border: none !important;
+    margin-left: 4px !important;
+    color: var(--text-on-solid) !important;
+    display: inline-flex !important;
+}
+
+// Beta tag variants
+.beta-tag-editor {
+    background-color: var(--background-success-strong) !important;
+    font-weight: 400 !important;
+    padding: 0 6px !important;
+}
+
+.beta-tag-module {
+    background-color: var(--background-accent-strong) !important;
 }
 
 .apps-modules-navigation {

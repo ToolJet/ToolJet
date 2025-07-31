@@ -24,6 +24,7 @@ import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 @Module({})
 export class AppsModule extends SubModule {
@@ -52,6 +53,11 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
+    const { AppsActionsListener, TemporalService } = await this.getProviders(configs, 'workflows', [
+      'listeners/app-actions.listener',
+      'services/temporal.service',
+    ]);
+
     return {
       module: AppsModule,
       imports: [
@@ -74,6 +80,8 @@ export class AppsModule extends SubModule {
         VersionRepository,
         AppsRepository,
         AppGitRepository,
+        AppsActionsListener,
+        TemporalService,
         PageService,
         EventsService,
         AppsUtilService,
@@ -87,6 +95,7 @@ export class AppsModule extends SubModule {
         RolesRepository,
         UserSessionRepository,
         UserRepository,
+        GroupPermissionsRepository,
       ],
       exports: [AppsUtilService, AppImportExportService],
     };

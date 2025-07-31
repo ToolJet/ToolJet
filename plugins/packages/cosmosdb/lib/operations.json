@@ -152,6 +152,16 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "item_id"
+      },
+      "partitionKey": {
+        "label": "Partition key",
+        "key": "partitionKey",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter partition key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "query_database": {

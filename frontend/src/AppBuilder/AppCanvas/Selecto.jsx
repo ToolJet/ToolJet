@@ -81,9 +81,6 @@ export const EditorSelecto = () => {
         setSelectedComponents(
           !isCanvasSelectStartEndSame ? newSelection : filterSelectedComponentsByHighestLevel(newSelection)
         );
-        if (e.isClick) {
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-        }
       }
       canvasStartId.current = null;
     },
@@ -121,7 +118,6 @@ export const EditorSelecto = () => {
             setSelectedComponents(mergedArray);
           }
         }
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
       }
       return false;
     },

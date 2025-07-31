@@ -5,8 +5,9 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _ from 'lodash';
+import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _, { isEmpty } from 'lodash';
+import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
   isSaving: false,
@@ -131,12 +132,13 @@ export const createAppSlice = (set, get) => ({
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
+    const newState = !isMaintenanceOn;
 
-    appsService.setMaintenance(appId, !isMaintenanceOn).then(() => {
+    appsService.setMaintenance(appId, newState).then(() => {
       set((state) => {
-        state.appStore.modules[moduleId].app.isMaintenanceOn = !isMaintenanceOn;
+        state.appStore.modules[moduleId].app.isMaintenanceOn = newState;
       });
-      if (isMaintenanceOn) {
+      if (newState) {
         toast.success('Application is on maintenance.');
       } else {
         toast.success('Application maintenance is completed');
@@ -210,24 +212,26 @@ export const createAppSlice = (set, get) => ({
     const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && isLicenseValid) return false;
+      if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().appStore.modules[moduleId].app.slug;
+    const subpath = getSubpath();
+    let toNavigate = '';
 
     if (!isBackOrForward) {
-      navigate(
-        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-        {
-          state: {
-            isSwitchingPage: true,
-            id: pageId,
-            handle: handle,
-          },
-        }
-      );
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
+      navigate(toNavigate, {
+        state: {
+          isSwitchingPage: true,
+          id: pageId,
+          handle: handle,
+        },
+      });
     }
 
     const newPage = pages.find((p) => p.id === pageId);
@@ -301,4 +305,36 @@ export const createAppSlice = (set, get) => ({
     set((state) => {
       state.appPermission.selectedUsers = users;
     }),
+
+  updateAppGenerationMetadata: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      if (isEmpty(dataToUpdate) || !state.appStore.modules[moduleId].app?.aiGenerationMetadata) return;
+
+      // Any value at the top level of aiGenerationMetadata can be updated using this, for nested keys either send complete data or need to add separate logic to handle it
+      Object.keys(dataToUpdate).forEach((key) => {
+        if (dataToUpdate[key] !== undefined) {
+          state.appStore.modules[moduleId].app.aiGenerationMetadata[key] = dataToUpdate[key];
+        }
+      });
+    });
+  },
+
+  updateAppData: (dataToUpdate, moduleId = 'canvas') => {
+    set((state) => {
+      state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
+    });
+  },
+
+  updateAppInfoInDB: async (payload, moduleId = 'canvas') => {
+    const { appId } = get().appStore.modules[moduleId].app;
+
+    if (!appId || isEmpty(payload)) return;
+
+    try {
+      await appsService.saveApp(appId, payload);
+      get().updateAppData(convertKeysToCamelCase(payload), moduleId);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 });

@@ -26,7 +26,14 @@ RUN git checkout ${BRANCH_NAME}
 RUN git submodule update --init --recursive
 
 # Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
+RUN git submodule foreach " \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    git checkout main; \
+  fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -118,7 +125,7 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
-COPY --from=builder /app/server/src/assets ./app/server/src/assets
+COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 
 COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
@@ -136,6 +143,9 @@ ENV HOME=/home/appuser
 
 # Installing git for simple git commands
 RUN apt-get update && apt-get install -y git && apt-get clean
+
+#Installing open ssh client for ssh 
+RUN apt-get update && apt-get install -y openssh-client
 
 USER appuser
 

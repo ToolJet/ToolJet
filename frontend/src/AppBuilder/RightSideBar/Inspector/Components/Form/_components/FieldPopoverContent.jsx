@@ -167,7 +167,6 @@ const FieldPopoverContent = ({
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={'Email id'}
               onChange={(value) => handleFieldChange('label', value)}
             />
           </div>

@@ -9,12 +9,15 @@ export function DeletePageConfirmationModal({ darkMode }) {
   const editingPage = useStore((state) => state.editingPage);
   const show = useStore((state) => state.showDeleteConfirmationModal);
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
+
   const deletePageGroup = useStore((state) => state.deletePageGroup);
   const deletePage = useStore((state) => state.deletePage);
   const { t } = useTranslation();
 
   const handleClose = () => {
     toggleDeleteConfirmationModal(false);
+    openPageEditPopover(null);
   };
 
   const handleConfirm = () => {
@@ -35,6 +38,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
         className={`${darkMode && 'dark-theme'} delete-folder-modal `}
         backdrop="static"
         onClick={(event) => event.stopPropagation()}
+        backdropClassName={'delete-folder-backdrop'}
       >
         <Modal.Header>
           <Modal.Title data-cy={'delete-folder-modal'}>Delete folder</Modal.Title>
@@ -80,6 +84,8 @@ export function DeletePageConfirmationModal({ darkMode }) {
       size="sm"
       centered={true}
       contentClassName={darkMode ? 'dark-theme' : ''}
+      className="delete-page-modal"
+      backdropClassName={'delete-page-backdrop'}
     >
       <Modal.Header>
         <Modal.Title>{'Delete Page'}</Modal.Title>

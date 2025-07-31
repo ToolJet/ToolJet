@@ -100,7 +100,7 @@ describe(
       );
 
       // Test public access
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
       cy.openApp(
         "appSlug",
         Cypress.env("workspaceId"),
@@ -152,7 +152,7 @@ describe(
         "be.visible"
       );
 
-      cy.get(commonSelectors.viewerPageLogo).click();
+      // cy.get(commonSelectors.viewerPageLogo).click();
 
       // Test public access
       cy.defaultWorkspaceLogin();
@@ -258,7 +258,9 @@ describe(
         "be.visible"
       );
 
-      cy.get('[data-cy="viewer-page-logo"]').click();
+      // cy.get('[data-cy="viewer-page-logo"]').click();
+      cy.visit("/my-workspace");
+      cy.wait(2000);
       logout();
       cy.wait(1000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
@@ -276,6 +278,8 @@ describe(
       data.slug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
       cy.createApp(data.appName);
+
+      cy.wait(2000);
       cy.dragAndDropWidget("Text", 500, 500);
       releaseApp();
       setUpSlug(data.slug);

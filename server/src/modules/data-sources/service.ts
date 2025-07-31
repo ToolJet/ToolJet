@@ -2,8 +2,6 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
-import { AbilityService } from '@modules/ability/interfaces/IService';
-import { MODULES } from '@modules/app/constants/modules';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
@@ -20,27 +18,25 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
-// import { FEATURE_KEY } from './constants';
-import { OrganizationsService } from '@modules/organizations/service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import * as fs from 'fs';
+import { UserPermissions } from '@modules/ability/types';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
-    protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector,
-    protected readonly organizationsService: OrganizationsService
+    protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
 
-  async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
+  async getForApp(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
@@ -53,12 +49,11 @@ export class DataSourcesService implements IDataSourcesService {
     return { data_sources: decamelizedDatasources };
   }
 
-  async getAll(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
-
+  async getAll(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
@@ -120,7 +115,6 @@ export class DataSourcesService implements IDataSourcesService {
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
       const protoFilePath = `${rootDir}/protos/service.proto`;
-      const fs = require('fs');
 
       const filecontent = fs.readFileSync(protoFilePath, 'utf8');
       const rcps = await this.dataSourcesUtilService.getServiceAndRpcNames(filecontent);
@@ -208,8 +202,8 @@ export class DataSourcesService implements IDataSourcesService {
   ): Promise<DataSource> {
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      organizationId,
-      environmentId
+      environmentId,
+      organizationId
     );
     delete dataSource['dataSourceOptions'];
     return dataSource;
@@ -223,8 +217,8 @@ export class DataSourcesService implements IDataSourcesService {
     const { environment_id, dataSourceId } = testDataSourceDto;
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      user.defaultOrganizationId,
-      environment_id
+      environment_id,
+      user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);

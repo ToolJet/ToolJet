@@ -46,20 +46,26 @@ import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/Ba
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
-  const { updateIsTJDarkMode } = useStore(
+  const { updateIsTJDarkMode, isTJDarkMode } = useStore(
     (state) => ({
       updateIsTJDarkMode: state.updateIsTJDarkMode,
+      isTJDarkMode: state.isTJDarkMode,
     }),
     shallow
   );
-
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} updateIsTJDarkMode={updateIsTJDarkMode} />
+        <AppWithRouter
+          props={props}
+          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+          darkMode={isTJDarkMode} // This is the dark mode of entire platform
+          updateIsTJDarkMode={updateIsTJDarkMode}
+        />
       </BrowserRouter>
     </Suspense>
   );
@@ -106,6 +112,10 @@ class AppComponent extends React.Component {
     });
   };
 
+  initTelemetryAndSupport(currentUser) {
+    posthogHelper.initPosthog(currentUser);
+  }
+
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
@@ -115,6 +125,20 @@ class AppComponent extends React.Component {
     const featureAccess = await licenseService.getFeatureAccess();
     const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
     this.setState({ showBanner: isBasicPlan });
+    this.updateColorScheme();
+    let counter = 0;
+    let interval;
+
+    interval = setInterval(async () => {
+      ++counter;
+      const current_user = authenticationService.currentSessionValue?.current_user;
+      if (current_user?.id) {
+        this.initTelemetryAndSupport(current_user); //Call when currentuser is available
+        clearInterval(interval);
+      } else if (counter > 10) {
+        clearInterval(interval);
+      }
+    }, 1000);
   }
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
@@ -124,7 +148,7 @@ class AppComponent extends React.Component {
     return false;
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     // Check if the current location is the dashboard (homepage)
     if (
       this.props.location.pathname === `/${getWorkspaceIdOrSlugFromURL()}` &&
@@ -137,18 +161,24 @@ class AppComponent extends React.Component {
     }
     // Update margin when showBanner changes
     this.updateMargin();
+    // Update color scheme if darkMode changed
+    if (prevProps.darkMode !== this.props.darkMode) {
+      this.updateColorScheme();
+    }
   }
 
   switchDarkMode = (newMode) => {
-    this.setState({ darkMode: newMode });
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
+    this.updateColorScheme(newMode);
   };
+
   isEditorOrViewerFromPath = () => {
     const pathname = this.props.location.pathname;
     if (pathname.includes('/apps/')) {
       return 'editor';
-    } else if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
+    }
+    if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
       return 'viewer';
     }
     return '';
@@ -159,8 +189,17 @@ class AppComponent extends React.Component {
   isExistingPlanUser = (date) => {
     return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
   };
+  updateColorScheme = (darkModeValue) => {
+    const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
+    if (isDark) {
+      document.documentElement.style.setProperty('color-scheme', 'dark');
+    } else {
+      document.documentElement.style.removeProperty('color-scheme');
+    }
+  };
   render() {
-    const { updateAvailable, darkMode, isEditorOrViewer, showBanner } = this.state;
+    const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
+    const { darkMode } = this.props;
     const mergedProps = {
       ...this.props,
       switchDarkMode: this.switchDarkMode,
@@ -293,22 +332,19 @@ class AppComponent extends React.Component {
                     }
                   />
                 )}
-                <Route
-                  path="/:workspaceId/workspace-settings/*"
-                  element={<WorkspaceSettings {...mergedProps} />}
-                ></Route>
+                <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />} />
                 <Route
                   path="settings/*"
                   element={
                     <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
                   }
-                ></Route>
+                />
                 <Route
                   path="/:workspaceId/settings/*"
                   element={
                     <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
                   }
-                ></Route>
+                />
                 <Route
                   exact
                   path="/:workspaceId/modules"
@@ -319,7 +355,7 @@ class AppComponent extends React.Component {
                   }
                 />
 
-                {getAuditLogsRoutes(this.props)}
+                {getAuditLogsRoutes(mergedProps)}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"
@@ -444,7 +480,7 @@ class AppComponent extends React.Component {
                 />
               </Routes>
             </BreadCrumbContext.Provider>
-            <div id="modal-div"></div>
+            <div id="modal-div" />
           </div>
 
           <Toast toastOptions={toastOptions} />
