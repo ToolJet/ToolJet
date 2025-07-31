@@ -18,7 +18,7 @@ export const TableExposedVariables = ({
   table,
   componentName,
   pageIndex = 1,
-  lastClickedRow,
+  lastClickedRowRef,
   hasDataChanged,
 }) => {
   const { moduleId } = useModuleContext();
@@ -34,6 +34,8 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
+
+  const lastClickedRow = lastClickedRowRef.current;
 
   const {
     selectedRows,
@@ -121,6 +123,13 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
+    } else if (!allowSelection) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+        selectedRows: [],
+        selectedRowsId: [],
+      });
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -203,13 +212,18 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
-    if (lastClickedRow) {
+    if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    } else if (Object.keys(lastClickedRow).length > 0) {
       setExposedVariables({
         selectedRow: lastClickedRow?.row ?? {},
         selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
       });
     }
-  }, [lastClickedRow, setExposedVariables]);
+  }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
 
   useEffect(() => {
     if (!hasDataChanged) return;
@@ -240,15 +254,6 @@ export const TableExposedVariables = ({
   }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection, hasDataChanged]);
 
   useEffect(() => {
-    if (selectedRows.length === 0) {
-      setExposedVariables({
-        selectedRow: {},
-        selectedRowId: null,
-      });
-    }
-  }, [selectedRows, setExposedVariables]);
-
-  useEffect(() => {
     if (allowSelection && Object.keys(lastClickedRow).length > 0) {
       fireEvent('onRowClicked');
     }
@@ -261,6 +266,7 @@ export const TableExposedVariables = ({
       if (item) {
         setRowSelection({ [index]: true });
       }
+      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: item === null ? {} : item,
         selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
@@ -279,7 +285,7 @@ export const TableExposedVariables = ({
       });
     }
     setExposedVariables({ selectRow, deselectRow });
-  }, [data, setExposedVariables, setRowSelection]);
+  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection]);
 
   // CSA to set & clear filters
   useEffect(() => {
