@@ -1,20 +1,142 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Microsoft_graph datasource",
-  "description": "A schema defining Microsoft_graph datasource",
+  "title": "Microsoft Graph",
+  "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
   "type": "api",
   "source": {
-    "name": "Microsoft_graph",
+    "name": "Microsoft Graph",
     "kind": "microsoft_graph",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "tenant_id": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
   },
-  "defaults": {},
-  "properties": {},
+  "defaults": {
+      "username": {
+        "value": ""
+      },
+      "account": {
+        "value": ""
+      },
+      "password": {
+        "value": ""
+      },
+      "database": {
+        "value": ""
+      },
+      "schema": {
+        "value": ""
+      },
+      "warehouse": {
+        "value": ""
+      },
+      "role": {
+        "value": ""
+      },
+      "client_id": {
+          "value": ""
+      },
+      "client_secret": {
+        "value": ""
+      },
+      "tenant_id": {
+        "value": ""
+      },
+      "access_token_url": {
+        "value": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token"
+      },
+      "redirect_url": {
+          "value": ""
+      },
+      "auth_url": {
+          "value": ""
+      },
+      "allowed_auth_types": {
+          "value": "oauth2"
+      },
+      "auth_type": {
+          "value": "oauth2"
+      },
+      "grant_type": {
+          "value": "authorization_code"
+      },
+      "scopes": {
+          "value": "https://graph.microsoft.com/.default"
+      },
+      "access_token_custom_headers": {
+        "value": [
+          ["Content-Type", "application/x-www-form-urlencoded"]
+        ]
+      },
+      "oauth_type": {
+        "value": "custom_app"
+      }
+  },
+  "properties": {
+    "tenant_id": {
+      "label": "Tenant",
+      "key": "tenant_id",
+      "type": "text",
+      "description": "Enter tenant"
+    },
+    "access_token_url": {
+      "label": "Access token URL",
+      "key": "access_token_url",
+      "type": "text",
+      "description": "Enter access token url",
+      "helpText": "Replace < {{tenant_id}} > with the actual tenent value"
+    },
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for Microsoft Graph",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app",
+              "tooljet_app"
+            ]
+          }
+        },
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": false
+      }
+    }
+  },
   "required": []
 }

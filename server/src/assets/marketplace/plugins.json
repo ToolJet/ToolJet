@@ -248,7 +248,7 @@
   },
   {
     "name": "microsoft_graph",
-    "description": "api plugin from microsoft_graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
     "version": "1.0.0",
     "id": "microsoft_graph",
     "author": "Tooljet",
