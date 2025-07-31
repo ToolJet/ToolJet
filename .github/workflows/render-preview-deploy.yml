@@ -175,12 +175,6 @@ jobs:
                 "buildCommand": "NODE_ENV=production npm run --prefix frontend build",
                 "startCommand": "npm run --prefix server start"
               },
-              "env": "docker",
-              "envSpecificDetails": {
-                "dockerCommand": "",
-                "dockerContext": "./",
-                "dockerfilePath": "./docker/ce-preview.Dockerfile"
-                },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{
