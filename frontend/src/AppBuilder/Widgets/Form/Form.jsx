@@ -430,7 +430,7 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    overflow: 'hidden auto',
+                    // overflow: 'hidden auto',
                     height: '100%',
                   }}
                   darkMode={darkMode}
