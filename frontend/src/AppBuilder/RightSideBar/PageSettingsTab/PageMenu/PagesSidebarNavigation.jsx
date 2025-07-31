@@ -272,6 +272,8 @@ export const PagesSidebarNavigation = ({
     measuredDarkModeToggleWidth,
     measuredMoreButtonWidth,
     canvasMaxWidth,
+    isPagesSidebarHidden,
+    style,
   ]);
 
   useLayoutEffect(() => {

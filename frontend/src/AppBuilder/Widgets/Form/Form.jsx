@@ -106,6 +106,7 @@ const FormComponent = (props) => {
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    borderRadius: 'inherit',
   };
 
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
@@ -118,6 +119,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${footerMaxHeight}px`,
+    borderBottomLeftRadius: `${borderRadius}px`,
+    borderBottomRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
@@ -128,6 +131,8 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -79,13 +79,20 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   // const [isGroupDragging, setIsGroupDragging] = useState(false);
-  const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
+  // const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
+
+  const isWidgetResizable = useMemo(() => {
+    if (virtualTarget) {
+      return false;
+    }
+    return isVerticalExpansionRestricted ? HORIZONTAL_CONFIG : RESIZABLE_CONFIG;
+  }, [isVerticalExpansionRestricted, virtualTarget]);
 
   const getMoveableTarget = useCallback(() => {
     if (virtualTarget) {
@@ -104,7 +111,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     };
   }, []);
 
-  const { elementGuidelines } = useElementGuidelines(boxList, selectedComponents, getResolvedValue, virtualTarget);
+  const elementGuidelines = useElementGuidelines(boxList, selectedComponents, getResolvedValue, virtualTarget);
 
   useEffect(() => {
     setBoxList(
@@ -427,7 +434,6 @@ export default function Grid({ gridWidth, currentLayout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
-
   // Add event listeners for config handle visibility when hovering over widget boundary
   // This is needed even though we have hovered widget state because when hovered on boundary,
   // the hovered widget state is empty, hence created a separate state for boundary
@@ -590,7 +596,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
-  console.log('moveableRef', moveableRef);
   if (mode !== 'edit') return null;
 
   return (
@@ -609,13 +614,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={
-          !shouldFreeze
-            ? isVerticalExpansionRestricted
-              ? HORIZONTAL_CONFIG
-              : RESIZABLE_CONFIG
-            : false && mode !== 'view'
-        }
+        resizable={!shouldFreeze ? isWidgetResizable : false && mode !== 'view'}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -926,9 +925,9 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
-
-            const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
             const componentParentType = target?.widget?.componentType;
+
+            const isModalToCanvas = source.isModal && source.id !== target.id;
             // For now, only doing it for container and form, we need to check it for other components later
             let scrollDelta =
               componentParentType === 'Form' || componentParentType === 'Container'
@@ -1000,7 +999,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           // Snap to grid
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-
           const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
@@ -1026,11 +1024,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (isParentModal) {
             const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
-
             const mainRect = mainCanvas.getBoundingClientRect();
             const modalRect = modalContainer.getBoundingClientRect();
             const relativePosition = {
-              top: modalRect.top - mainRect.top,
+              top: modalRect.top - mainRect.top + (isParentLegacyModal ? 56 : 0), // 56 is the height of the legacy modal header
               right: mainRect.right - modalRect.right + modalContainer.offsetWidth,
               bottom: modalRect.height + (modalRect.top - mainRect.top),
               left: modalRect.left - mainRect.left,
