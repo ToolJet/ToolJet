@@ -2754,6 +2754,13 @@ const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds:
     let pageSettings = version.pageSettings as any;
     const globalSettings = version.globalSettings as any;
 
+    // Only run migration for apps that have hideHeader in globalSettings (legacy apps)
+    const needsMigration = globalSettings && 'hideHeader' in globalSettings;
+
+    if (!needsMigration) {
+      continue; // Skip migration - either new app or already migrated
+    }
+
     if (!pageSettings) {
       pageSettings = { properties: {} };
     }
