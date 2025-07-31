@@ -168,7 +168,6 @@ export class AppsUtilService implements IAppsUtilService {
       appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
-        hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
