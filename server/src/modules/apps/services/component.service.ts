@@ -333,7 +333,8 @@ export class ComponentsService implements IComponentsService {
                   componentData.type === 'MultiselectV2' ||
                   componentData.type === 'ModuleContainer' ||
                   componentData.type === 'Tabs' ||
-                  componentData.type === 'Steps') &&
+                  componentData.type === 'Steps' ||
+                  componentData.type === 'RadioButtonV2') &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
