@@ -497,8 +497,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
                   substitutedVariables: options,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
                 }
               : errorData,
           isQuerySuccessLog: false,
