@@ -1,0 +1,21 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Aftership datasource",
+  "description": "A schema defining Aftership datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "aftership_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "Shipping": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/shipping.json",
+        "Tracking": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/tracking.json",
+        "Returns": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/return.json"
+    }
+  }
+}
+}
