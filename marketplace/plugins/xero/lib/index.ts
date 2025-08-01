@@ -45,11 +45,13 @@ export default class Xero implements QueryService {
   async run(sourceOptions: any,queryOptions: any,dataSourceId: string,dataSourceUpdatedAt: string,context?: { user?: User; app?: App }): Promise<QueryResult> {
     
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
+      console.log('-------------------------------------------------------->Using Tooljet App OAuth');
       sourceOptions['client_id'] = process.env.XERO_CLIENT_ID;
       sourceOptions['client_secret'] = process.env.XERO_CLIENT_SECRET;
     }
     
     const accessToken = sourceOptions['access_token'];
+    //const accessToken = sourceOptions.tokenData?.[0]?.access_token;
     const tenant_id = sourceOptions['tenant_id'];
     const operation = queryOptions.operation;
     const path = queryOptions['path'];
@@ -65,6 +67,7 @@ export default class Xero implements QueryService {
     let requestOptions;
 
     if (sourceOptions['multiple_auth_enabled']) {
+      console.log('-------------------------------------------------------->Using Multiple Auth Enabled');
       const customHeaders = { 'tj-x-forwarded-for': '::1' };
       const newSourceOptions = this.constructSourceOptions(sourceOptions);
       const authValidatedRequestOptions = this.convertQueryOptions(queryOptions, customHeaders);
@@ -92,7 +95,7 @@ export default class Xero implements QueryService {
     try {
       const response = await got(url, requestOptions);
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
-      console.log('----------------------------------------------------------------------------->[Xero Plugin Response]', result);
+
       return {
         status: 'ok',
         data: result,

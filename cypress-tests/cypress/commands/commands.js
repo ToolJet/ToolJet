@@ -239,9 +239,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -561,7 +561,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -643,4 +643,17 @@ Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
   if (envArray.includes(actualEnv)) {
     callback();
   }
+});
+
+Cypress.Commands.add("openComponentSidebar", (selector, value) => {
+  cy.get("body")
+    .then(($body) => {
+      const isSearchVisible = $body
+        .find(commonSelectors.searchField)
+        .is(":visible");
+
+      if (!isSearchVisible) {
+        cy.get('[data-cy="right-sidebar-plus-button"]').click();
+      }
+    })
 });

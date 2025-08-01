@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import _ from 'lodash';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import _, { set } from 'lodash';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
@@ -28,6 +28,7 @@ export const PagesSidebarNavigation = ({
   isSidebarPinned,
   toggleSidebarPinned,
   height,
+  canvasMaxWidth,
   switchDarkMode,
 }) => {
   const { moduleId } = useModuleContext();
@@ -42,6 +43,8 @@ export const PagesSidebarNavigation = ({
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
+  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -49,6 +52,7 @@ export const PagesSidebarNavigation = ({
     }),
     shallow
   );
+  const { appMode } = useStore((state) => state.globalSettings, shallow);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -67,10 +71,40 @@ export const PagesSidebarNavigation = ({
   const [measuredMoreButtonWidth, setMeasuredMoreButtonWidth] = useState(0);
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
-  const pagesTree = buildTree(pages, !!labelStyle?.label?.hidden);
-  const mainNavBarPages = pagesTree.filter(
-    (page) => !page?.restricted && (!page?.isPageGroup || page.children?.length > 0)
+
+  const labelStyle = useMemo(
+    () => ({
+      icon: {
+        hidden: properties?.style === 'text',
+      },
+      label: {
+        hidden:
+          properties?.style === 'icon' ||
+          (style === 'texticon' && collapsable && !isSidebarPinned && properties?.position != 'top'),
+      },
+    }),
+    [properties?.style, style, collapsable, isSidebarPinned, properties?.position]
   );
+
+  const pagesTree = useMemo(() => buildTree(pages, !!labelStyle?.label?.hidden), [pages, labelStyle]);
+
+  const mainNavBarPages = useMemo(() => {
+    return pagesTree.filter((page) => {
+      const pageVisibility = pagesVisibilityState[page?.id]?.hidden ?? false;
+      return (
+        (!page?.restricted || currentMode !== 'view') &&
+        !pageVisibility &&
+        !page?.disabled &&
+        (!page?.isPageGroup ||
+          (page.children?.length > 0 &&
+            page.children.some((child) => !child?.disabled) &&
+            page.children.some((child) => {
+              const pageVisibility = pagesVisibilityState[child?.id]?.hidden ?? false;
+              return pageVisibility === false;
+            })))
+      );
+    });
+  }, [pagesTree, pagesVisibilityState, currentMode]);
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
@@ -224,7 +258,14 @@ export const PagesSidebarNavigation = ({
 
     setVisibleLinks(finalVisible);
     setOverflowLinks(finalOverflow);
-  }, [pages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, measuredMoreButtonWidth]);
+  }, [
+    mainNavBarPages,
+    position,
+    measuredHeaderWidth,
+    measuredDarkModeToggleWidth,
+    measuredMoreButtonWidth,
+    canvasMaxWidth,
+  ]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -240,7 +281,7 @@ export const PagesSidebarNavigation = ({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [pages, calculateOverflow, position, hideHeader, hideLogo, collapsable, isSidebarPinned, style]);
+  }, [calculateOverflow]);
 
   if (isMobileDevice) {
     return null;
@@ -295,16 +336,6 @@ export const PagesSidebarNavigation = ({
         };
       }
     }
-  };
-
-  const labelStyle = {
-    icon: {
-      hidden: properties?.style === 'text',
-    },
-    label: {
-      hidden:
-        properties?.style === 'icon' || (style === 'texticon' && !isSidebarPinned && properties?.position != 'top'),
-    },
   };
 
   const getAbsoluteUrl = (url) => {
@@ -394,9 +425,24 @@ export const PagesSidebarNavigation = ({
   if (hideHeader && hideLogo && isPagesSidebarHidden) {
     return null;
   }
+  console.log({ isPagesSidebarVisible, position, currentMode, isSidebarOpen, isRightSidebarOpen });
 
   return (
-    <div>
+    <div
+      style={{
+        ...(position === 'top' && {
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+        }),
+      }}
+      className={cx({
+        'right-sidebar-open':
+          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
+        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
+      })}
+    >
       <button
         ref={measurementContainerRef}
         style={{
@@ -443,12 +489,15 @@ export const PagesSidebarNavigation = ({
         className={cx('navigation-area', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
-            style === 'icon' ||
-            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
+            (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
+            (style === 'texticon' &&
+              (collapsable ? !isSidebarPinned : false) &&
+              position === 'side' &&
+              !isPagesSidebarHidden),
           'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
-          'right-sidebar-open': isRightSidebarOpen && (position === 'top' || isPagesSidebarHidden),
-          'left-sidebar-open': isSidebarOpen && (position === 'top' || isPagesSidebarHidden),
+          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
           'no-preview-settings': isReleasedVersionId,
         })}
         style={{
@@ -465,6 +514,11 @@ export const PagesSidebarNavigation = ({
             !styles?.borderColor?.isDefault && position === 'top' ? `1px solid ${styles?.borderColor?.value}` : '',
           overflow: 'scroll',
           boxShadow: 'var(--elevation-100-box-shadow)',
+          maxWidth: (() => {
+            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
+              return canvasMaxWidth;
+            }
+          })(),
         }}
       >
         <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
@@ -517,6 +571,7 @@ export const PagesSidebarNavigation = ({
               navRef={navRef}
               position={position}
               isSidebarPinned={isSidebarPinned}
+              currentMode={currentMode}
             />
           ) : (
             !isPagesSidebarHidden && (
@@ -533,18 +588,21 @@ export const PagesSidebarNavigation = ({
                 visibleLinks={visibleLinks}
                 overflowLinks={overflowLinks}
                 position={position}
+                currentMode={currentMode}
               />
             )
           )}
         </div>
-        <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-          <DarkModeToggle
-            toggleForCanvas={true}
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            tooltipPlacement="right"
-          />
-        </div>
+        {appMode === 'auto' && (
+          <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+            <DarkModeToggle
+              toggleForCanvas={true}
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              tooltipPlacement="right"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -565,18 +623,13 @@ const RenderPagesWithoutGroup = ({
   handleToggle,
   position,
   moreBtnRef,
+  currentMode,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const filteredPagesVisible = (position == 'top' ? visibleLinks : pages).filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
-  const filteredPagesOverflow = overflowLinks.filter(
-    (page) => (!page?.isPageGroup || page.children?.length > 0) && !page?.restricted
-  );
 
   return (
     <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-      {filteredPagesVisible.map((page) => {
+      {visibleLinks.map((page) => {
         return (
           <RenderPage
             key={page.handle}
@@ -593,12 +646,12 @@ const RenderPagesWithoutGroup = ({
           />
         );
       })}
-      {filteredPagesOverflow.length > 0 && position === 'top' && (
+      {overflowLinks.length > 0 && position === 'top' && (
         <>
           <button
             ref={moreBtnRef}
             onClick={() => setShowPopover(!showPopover)}
-            className="tj-list-item page-name"
+            className="tj-list-item page-name more-btn-pages width-unset"
             style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
           >
             <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
@@ -612,9 +665,9 @@ const RenderPagesWithoutGroup = ({
             onHide={() => setShowPopover(false)}
             rootClose
           >
-            <Popover id="more-nav-btns">
+            <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
               <Popover.Body>
-                {filteredPagesOverflow.map((page, index) => {
+                {overflowLinks.map((page, index) => {
                   return (
                     <RenderPage
                       key={page.handle}

@@ -189,25 +189,24 @@ const ApiEndpointInput = (props) => {
 
     if (path && operation) {
       return (
-        <div className="d-flex align-items-start">
-          <div className="me-2" style={{ minWidth: '60px' }}>
-            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation.toUpperCase()}</span>
+        <div>
+          <div className="d-flex align-items-center">
+            <span className={`badge bg-${operationColorMapping[operation]} me-2`}>{operation.toUpperCase()}</span>
+            <span>{path}</span>
           </div>
-          <div className="flex-grow-1">
-            <div>{path}</div>
-            {summary && !isSelected && (
-              <small className="text-muted d-block" style={{ fontSize: '0.875em' }}>
+          {summary && !isSelected && (
+            <div>
+              <small className="d-block" style={{ fontSize: '0.875em', color: '#a4a8ab', marginTop: '1px' }}>
                 {summary}
               </small>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       );
     } else {
       return 'Select an operation';
     }
   };
-
   const categorizeOperations = (operation, path, acc, category) => {
     const operationData = specJson.paths[path][operation];
     const summary = operationData?.summary || '';
@@ -324,7 +323,7 @@ const ApiEndpointInput = (props) => {
       {isMultiSpec && (
         <div className="d-flex g-2 mb-3">
           <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
           </div>
           <div className="col flex-grow-1">
             <Select

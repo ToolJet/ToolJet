@@ -27,8 +27,8 @@ export const DarkModeToggle = function DarkModeToggle({
     if (toggleForCanvas) {
       const exposedTheme = !appLevelDarkMode ? 'dark' : 'light';
       setResolvedGlobals('theme', { name: exposedTheme });
-      setGlobalSettings({ ...globalSettings, appMode: exposedTheme });
       setAppLevelDarkMode(!appLevelDarkMode);
+      switchDarkMode(!darkMode);
     } else {
       posthogHelper.captureEvent('darkMode', { mode: !darkMode ? 'dark' : 'white' });
       switchDarkMode(!darkMode);
