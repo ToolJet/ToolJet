@@ -151,6 +151,7 @@ export const Tabs = function Tabs({
     isContainer: true,
     value: currentTab,
     componentCount,
+    visibility:widgetVisibility,
   });
 
   useEffect(() => {

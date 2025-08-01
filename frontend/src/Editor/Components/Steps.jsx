@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
-import { getSafeRenderableValue } from './utils';
+import { getFormattedSteps, getSafeRenderableValue } from './utils';
 
 export const Steps = function Steps({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
   const { stepsSelectable, disabledState } = properties;
@@ -29,7 +29,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
   useEffect(() => {
-    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
+    const formattedSteps = getFormattedSteps(steps);
+    const sanitizedSteps = JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
       ...step,
       visible: 'visible' in step ? step.visible : true,
       disabled: 'disabled' in step ? step.disabled : false,
