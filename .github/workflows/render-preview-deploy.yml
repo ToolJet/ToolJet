@@ -170,11 +170,17 @@ jobs:
               }
             ],
             "serviceDetails": {
-              "env": "node",
-              "envSpecificDetails": {
-                "buildCommand": "npm run --prefix frontend build",
-                "startCommand": "NODE_ENV=production && npm run --prefix db:migrate &&npm run --prefix server start"
+              "disk": {
+                "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
+                "mountPath": "/var/lib/postgresql/13/main",
+                "sizeGB": 10
               },
+              "env": "docker",
+              "envSpecificDetails": {
+                "dockerCommand": "",
+                "dockerContext": "./",
+                "dockerfilePath": "./docker/ce-preview.Dockerfile"
+                },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{
