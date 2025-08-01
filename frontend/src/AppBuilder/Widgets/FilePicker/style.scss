@@ -110,7 +110,7 @@
 
   &:focus,
   &:active {
-    border-color: var(--cc-primary-brand);
+    border-color: var(--file-picker-primary-brand);
     color: var(--cc-primary-text);
   }
 
@@ -125,7 +125,7 @@
   }
 
   &.is-rejecting {
-    border-color: var(--status-error-strong);
+    border-color: var(--file-picker-error-strong);
   }
 
   &.is-focused {
@@ -207,7 +207,7 @@
     // gap: 12px;
     background-color: var(--file-picker-background-color);
     border-radius: var(--file-picker-border-radius);
-    border: var(--file-picker-border);
+    border: 1px solid var(--file-picker-border);
     box-shadow: var(--file-picker-box-shadow);
   }
 
