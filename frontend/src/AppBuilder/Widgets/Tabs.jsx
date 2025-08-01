@@ -151,7 +151,7 @@ export const Tabs = function Tabs({
     isContainer: true,
     value: currentTab,
     componentCount,
-    visibility:widgetVisibility,
+    visibility: widgetVisibility,
   });
 
   useEffect(() => {
@@ -574,6 +574,7 @@ const TabContent = memo(function TabContent({
         position: 'relative',
         top: '0px',
         width: '100%',
+        backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
       }}
     >
       {loading ? (
@@ -598,9 +599,10 @@ const TabContent = memo(function TabContent({
             backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
           }}
           darkMode={darkMode}
+          gridParentType="tabs"
         />
       )}
     </div>
   );
 },
-areEqual);
+  areEqual);
