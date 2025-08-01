@@ -420,7 +420,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
-        let finalData = data;
+        let finalData = data?.data;
         rawData = rawData || data;
 
         if (dataQuery.options.enableTransformation) {
@@ -514,9 +514,9 @@ export const createQueryPanelSlice = (set, get) => ({
             } : query.kind === 'restapi'
               ? {
                   metadata: errorData?.metadata,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
-                  responseHeaders: errorData?.responseHeaders,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
+                  responseHeaders: errorData?.data?.responseHeaders,
                 }
               : {}),
           },
@@ -672,7 +672,7 @@ export const createQueryPanelSlice = (set, get) => ({
               return;
             } else {
               const rawData = data.data;
-              const result = await processQueryResults(data.data, rawData);
+              const result = await processQueryResults(data, rawData);
               resolve(result);
             }
           })

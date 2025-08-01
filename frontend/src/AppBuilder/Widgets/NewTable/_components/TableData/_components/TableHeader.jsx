@@ -93,7 +93,9 @@ const DraggableHeader = ({ header, darkMode, id }) => {
             })}
             style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
           >
-            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+            {header.isPlaceholder
+              ? null
+              : flexRender(header.column.columnDef.header, header.getContext())}
           </div>
         </div>
         {header.column.getIsSorted() && (
