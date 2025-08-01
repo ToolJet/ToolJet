@@ -14,7 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -125,7 +125,7 @@ export const DropdownV2 = ({
         .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: data?.label,
+          label: getSafeRenderableValue(data?.label),
           value: data?.value,
           isDisabled: data?.disable ?? false,
         }));
