@@ -92,7 +92,7 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
     .keys({
       PG_HOST: Joi.string().default('localhost'),
       PG_PORT: Joi.number().positive().default(5432),
-      PG_PASS: Joi.string().default(''),
+      // PG_PASS: Joi.string().default(''),
       PG_USER: Joi.string().required(),
       PG_DB: Joi.string().default('tooljet_production'),
       PG_DB_OWNER: Joi.string().default('true'),
@@ -106,7 +106,7 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
       ...{
         SAMPLE_PG_DB_HOST: Joi.string().default('localhost'),
         SAMPLE_PG_DB_PORT: Joi.number().positive().default(5432),
-        SAMPLE_PG_DB_PASS: Joi.string().default(''),
+        // SAMPLE_PG_DB_PASS: Joi.string().default(''),
         SAMPLE_PG_DB_USER: Joi.string().required(),
         SAMPLE_DB: Joi.string().default('sample_db'),
       },
