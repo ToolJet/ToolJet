@@ -165,6 +165,7 @@ export const Table = memo(
       adjustComponentPositions,
       currentLayout,
       width,
+      visibility,
     });
 
     return (

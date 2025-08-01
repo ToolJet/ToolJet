@@ -44,6 +44,7 @@ export const CodeEditor = ({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
 
   const codeChanged = debounce((code) => {
