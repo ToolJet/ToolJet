@@ -8,13 +8,21 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { VersionModule } from '@modules/versions/module';
 import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { AppGitRepository } from './repository';
+import { AppGitRepository } from '../repository';
 import { SubModule } from '@modules/app/sub-module';
-export class AppGitModule extends SubModule {
+
+export class AppGitListenerModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+    if (configs?.IS_GET_CONTEXT === true) {
+      // If this module is being used to get context, we don't need to import any other modules
+      // Used on migrations
+      return {
+        module: AppGitListenerModule,
+        imports: [],
+        providers: [],
+      };
+    }
     const {
-      AppGitController,
-      AppGitService,
       SourceControlProviderService,
       SSHAppGitService,
       HTTPSAppGitService,
@@ -22,9 +30,8 @@ export class AppGitModule extends SubModule {
       SSHAppGitUtilityService,
       HTTPSAppGitUtilityService,
       GitLabAppGitUtilityService,
+      AppVersionRenameListener,
     } = await this.getProviders(configs, 'app-git', [
-      'controller',
-      'service',
       'source-control-provider',
       'providers/github-ssh/service',
       'providers/github-https/service',
@@ -32,9 +39,10 @@ export class AppGitModule extends SubModule {
       'providers/github-https/util.service',
       'providers/github-ssh/util.service',
       'providers/gitlab/util.service',
+      'listeners/listener',
     ]);
     return {
-      module: AppGitModule,
+      module: AppGitListenerModule,
       imports: [
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
@@ -42,12 +50,10 @@ export class AppGitModule extends SubModule {
         await ImportExportResourcesModule.register(configs),
         await VersionModule.register(configs),
       ],
-      controllers: [AppGitController],
       providers: [
         OrganizationGitSyncRepository,
         AppGitRepository,
         AppsRepository,
-        AppGitService,
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
@@ -57,8 +63,8 @@ export class AppGitModule extends SubModule {
         GitLabAppGitUtilityService,
         VersionRepository,
         FeatureAbilityFactory,
+        AppVersionRenameListener,
       ],
-      exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],
     };
   }
 }

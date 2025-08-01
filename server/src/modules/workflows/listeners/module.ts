@@ -33,28 +33,27 @@ import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
-export class WorkflowsModule extends SubModule {
+
+export class WorkflowsListenerModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const {
       WorkflowExecutionsService,
-      WorkflowExecutionsController,
-      WorkflowSchedulesController,
-      WorkflowWebhooksController,
       WorkflowWebhooksService,
-      WorkflowsController,
       WorkflowSchedulesService,
       TemporalService,
+      WorkflowWebhooksListener,
+      WorkflowTriggersListener,
+      AppsActionsListener,
       FeatureAbilityFactory,
       WorkflowStreamService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
-      'controllers/workflow-executions.controller',
-      'controllers/workflow-schedules.controller',
-      'controllers/workflow-webhooks.controller',
       'services/workflow-webhooks.service',
-      'controllers/workflows.controller',
       'services/workflow-schedules.service',
       'services/temporal.service',
+      'listeners/workflow-webhooks.listener',
+      'listeners/workflow-triggers.listener',
+      'listeners/app-actions.listener',
       'ability/app',
       'services/workflow-stream.service',
     ]);
@@ -76,7 +75,7 @@ export class WorkflowsModule extends SubModule {
     const { OrganizationConstantsService } = await this.getProviders(configs, 'organization-constants', ['service']);
 
     return {
-      module: WorkflowsModule,
+      module: WorkflowsListenerModule,
       imports: [
         TypeOrmModule.forFeature([
           App,
@@ -128,6 +127,9 @@ export class WorkflowsModule extends SubModule {
         EventsService,
         WorkflowExecutionsService,
         WorkflowStreamService,
+        WorkflowTriggersListener,
+        WorkflowWebhooksListener,
+        AppsActionsListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
         ComponentsService,
@@ -137,12 +139,6 @@ export class WorkflowsModule extends SubModule {
         FeatureAbilityFactory,
         RolesRepository,
         GroupPermissionsRepository,
-      ],
-      controllers: [
-        WorkflowsController,
-        WorkflowExecutionsController,
-        WorkflowWebhooksController,
-        WorkflowSchedulesController,
       ],
     };
   }
