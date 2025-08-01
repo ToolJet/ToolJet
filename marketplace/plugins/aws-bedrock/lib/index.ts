@@ -6,15 +6,12 @@ import {
 } from "@tooljet-marketplace/common";
 import {
   BedrockRuntimeClient,
-  BedrockClient,
-  InvokeModelCommand,
-  ListFoundationModelsCommand,
   BedrockRuntimeServiceException,
-  BedrockServiceException
 } from "@aws-sdk/client-bedrock-runtime";
 import { SourceOptions, QueryOptions } from "./types";
 import { generateContent, listFoundationModels } from "./query_operations";
-
+import { BedrockServiceException } from "@aws-sdk/client-bedrock";
+import { BedrockClient, ListFoundationModelsCommand } from "@aws-sdk/client-bedrock";
 export default class AWSBedrock implements QueryService {
   async run(
     sourceOptions: SourceOptions,
@@ -72,7 +69,7 @@ export default class AWSBedrock implements QueryService {
     } catch (error) {
       // Standardized error handling
       if (error instanceof QueryError) {
-        throw error; 
+        throw error;
       }
 
       // Handle AWS SDK errors
@@ -107,14 +104,18 @@ export default class AWSBedrock implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    const client = this.createClient(sourceOptions);
+    this.validateCredentials(sourceOptions);
+    const credentials = this.createCredentials(sourceOptions);
+    const bedrockClient = new BedrockClient({
+      region: sourceOptions.region,
+      credentials,
+    });
 
     try {
       const command = new ListFoundationModelsCommand({});
-      await client.send(command);
+      await bedrockClient.send(command);
       return { status: "ok" };
     } catch (error) {
-      // Standardized connection test error
       let errorMessage = "Connection test failed";
       const errorDetails: any = {};
 
@@ -141,14 +142,74 @@ export default class AWSBedrock implements QueryService {
     }
   }
 
-  private createClient(sourceOptions: SourceOptions): BedrockRuntimeClient {
-    return new BedrockRuntimeClient({
-      region: sourceOptions.region,
-      credentials: {
+  private validateCredentials(sourceOptions: SourceOptions): void {
+    const hasAccessKey = sourceOptions.access_key && sourceOptions.secret_access_key;
+    const hasSessionToken = sourceOptions.session_token;
+
+    if (hasSessionToken && !hasAccessKey) {
+      throw new QueryError(
+        "Invalid credentials configuration",
+        "Session tokens require temporary credentials (access key + secret + token)",
+        {
+          validation: {
+            error: "session_token_requires_access_keys"
+          }
+        }
+      );
+    }
+
+    if (!hasAccessKey) {
+      throw new QueryError(
+        "Invalid credentials configuration",
+        "Access key and secret access key are required",
+        {
+          validation: {
+            missing: "access_credentials_required"
+          }
+        }
+      );
+    }
+
+    if (!sourceOptions.access_key.trim() || !sourceOptions.secret_access_key.trim()) {
+      throw new QueryError(
+        "Invalid credentials configuration",
+        "Both access key and secret access key must be non-empty",
+        {
+          validation: {
+            access_key: !sourceOptions.access_key.trim() ? "empty" : "valid",
+            secret_access_key: !sourceOptions.secret_access_key.trim() ? "empty" : "valid"
+          }
+        }
+      );
+    }
+  }
+
+  private createCredentials(sourceOptions: SourceOptions) {
+    this.validateCredentials(sourceOptions);
+    if (sourceOptions.access_key && sourceOptions.secret_access_key) {
+      return {
         accessKeyId: sourceOptions.access_key,
         secretAccessKey: sourceOptions.secret_access_key,
-        sessionToken: sourceOptions.session_token,
-      },
+        sessionToken: sourceOptions.session_token ? sourceOptions.session_token : undefined
+      };
+    }
+    throw new QueryError(
+      "Invalid credentials configuration",
+      "Session tokens require temporary credentials (access key + secret + token)",
+      {
+        validation: {
+          error: "session_token_requires_temporary_credentials"
+        }
+      }
+    );
+  }
+
+  private createClient(sourceOptions: SourceOptions): BedrockRuntimeClient {
+    const credentials = this.createCredentials(sourceOptions);
+
+    return new BedrockRuntimeClient({
+      region: sourceOptions.region,
+      credentials,
     });
   }
 }

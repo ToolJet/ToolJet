@@ -6,6 +6,7 @@
   "source": {
     "name": "AWS Bedrock",
     "kind": "aws-bedrock",
+    "customTesting": false,
     "exposedVariables": {
       "isLoading": false,
       "data": {},
@@ -15,7 +16,7 @@
       "access_key": {
         "type": "string"
       },
-      "secret_key": {
+      "secret_access_key": {
         "type": "string",
         "encrypted": true
       },
@@ -26,14 +27,13 @@
         "type": "string",
         "encrypted": true
       }
-    },
-    "customTesting": true
+    }
   },
   "defaults": {
     "access_key": {
       "value": ""
     },
-    "secret_key": {
+    "secret_access_key": {
       "value": ""
     },
     "region": {
@@ -48,19 +48,22 @@
       "label": "Access Key ID",
       "key": "access_key",
       "type": "text",
-      "description": "Enter your AWS Access Key ID"
+      "description": "Enter your AWS Access Key ID",
+      "helpText": "For generating Acess Key credentials visit : <a href='https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html' target='_blank' rel='noreferrer'>AWS Docs</a>"
     },
-    "secret_key": {
+    "secret_access_key": {
       "label": "Secret Access Key",
-      "key": "secret_key",
+      "key": "secret_access_key",
       "type": "password",
-      "description": "Enter your AWS Secret Access Key"
+      "description": "Enter your AWS Secret Access Key",
+      "helpText": "For generating secret access key, visit: <a href='https://console.aws.amazon.com/iam/home#/security_credentials' target='_blank' rel='noreferrer'>AWS IAM Console</a>"
     },
     "region": {
       "label": "Region",
       "key": "region",
       "type": "dropdown",
       "description": "Single select dropdown for region",
+      "helpText": "Supported foundation models in Amazon Bedrock : <a href='https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html' target='_blank' rel='noreferrer'>AWS Models Docs</a>",
       "list": [
         {
           "name": "US East (Ohio)",
@@ -168,8 +171,14 @@
       "label": "Session Token",
       "key": "session_token",
       "type": "password",
-      "description": "Enter your AWS Session Token (optional)"
+      "description": "Enter your AWS Session Token (optional)",
+      "helpText": "Leave empty to automatically generate temporary credentials using your IAM keys",
+      "optional": true
     }
   },
-  "required": ["access_key", "secret_key", "region"]
+  "required": [
+    "access_key",
+    "secret_access_key",
+    "region"
+  ]
 }

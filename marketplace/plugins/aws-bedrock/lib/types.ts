@@ -6,7 +6,7 @@ import {
 
 export interface SourceOptions {
   access_key: string;
-  secret_key: string;
+  secret_access_key: string;
   region: string;
   session_token?: string;
 }

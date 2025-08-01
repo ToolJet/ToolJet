@@ -236,7 +236,10 @@
     "version": "1.0.0",
     "id": "aws-bedrock",
     "author": "Tooljet",
-    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT"
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT",
+    "tags": [
+      "AI"
+    ]
   },
   {
     "name": "Prometheus",
