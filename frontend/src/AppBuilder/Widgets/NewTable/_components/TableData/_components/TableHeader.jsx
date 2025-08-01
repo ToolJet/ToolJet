@@ -10,7 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
@@ -95,7 +95,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
           >
             {header.isPlaceholder
               ? null
-              : flexRender(getSafeRenderableValue(header.column.columnDef.header), header.getContext())}
+              : flexRender(header.column.columnDef.header, header.getContext())}
           </div>
         </div>
         {header.column.getIsSorted() && (
