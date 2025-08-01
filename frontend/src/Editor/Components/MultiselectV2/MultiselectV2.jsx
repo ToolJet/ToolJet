@@ -12,7 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -96,7 +96,7 @@ export const MultiselectV2 = ({
           .filter((data) => data?.visible ?? true)
           .map((data) => ({
             ...data,
-            label: data?.label,
+            label: getSafeRenderableValue(data?.label),
             value: data?.value,
             isDisabled: data?.disable ?? false,
           }))
