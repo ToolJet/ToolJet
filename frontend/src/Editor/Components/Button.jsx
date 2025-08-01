@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 

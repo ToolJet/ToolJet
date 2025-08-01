@@ -6,7 +6,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 
-var _ = require('lodash');
+import _ from 'lodash';
 
 const resetters = [];
 

@@ -9,7 +9,7 @@ import CustomValueContainer from './CustomValueContainer';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import cx from 'classnames';
 import Label from '@/_ui/Label';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';

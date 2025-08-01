@@ -5,7 +5,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
 import { debounce } from 'lodash';
 import PasswordResponses from 'react-pdf/dist/cjs/PasswordResponses';
-require('pdfjs-dist/build/pdf.worker.entry.js');
+// require('pdfjs-dist/build/pdf.worker.entry.js');
 // The above line is required to fix the issue of pdf becoming black when resizing
 
 export const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {

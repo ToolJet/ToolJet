@@ -1,0 +1,541 @@
+
+> frontend@0.1.0 start
+> vite --port 8082 --host 0.0.0.0
+
+[Sentry] APM_VENDOR is set to sentry but SENTRY_AUTH_TOKEN is missing
+7:32:58 pm [vite] (client) Forced re-optimization of dependencies
+
+  VITE v7.0.6  ready in 550 ms
+
+  ➜  Local:   http://localhost:8082/
+  ➜  Network: http://192.168.1.5:8082/
+Files in the public directory are served at the root path.
+Instead of /assets/libs/pyodide-0.23.2/pyodide.js, use /libs/pyodide-0.23.2/pyodide.js.
+7:33:13 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+196|    }, globalThis.document) loadScript = async (url) => await import(
+197|      /* webpackIgnore: true */
+198|      url
+   |      ^^^
+199|    );
+200|    else if (globalThis.importScripts) loadScript = async (url) => {
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+7:33:13 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+205|        await import(
+206|          /* webpackIgnore: true */
+207|          url
+   |          ^^^
+208|        );
+209|      }
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+7:33:13 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+215|        url.includes("://") ? nodeVmMod.runInThisContext(await (await nodeFetch(url)).text()) : await import(
+216|          /* webpackIgnore: true */
+217|          nodeUrlMod.pathToFileURL(url).href
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+218|        );
+219|      };
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+7:33:15 pm [vite] (client) warning: The "??" operator here will always return the left operand
+962|                left = dragged.left * sourcegridWidth;
+963|                top = dragged.top;
+964|                !isModalToCanvas ??
+   |                                 ^
+965|                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+966|              }
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/AppCanvas/Grid/Grid.jsx
+7:33:16 pm [vite] (client) warning: Duplicate key "events" in object literal
+87 |      }
+88 |    },
+89 |    events: {},
+   |    ^
+90 |    styles: {
+91 |      dividerColor: {
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/divider.js
+7:33:16 pm [vite] (client) warning: Duplicate key "styles" in object literal
+88 |    },
+89 |    events: {},
+90 |    styles: {
+   |    ^
+91 |      dividerColor: {
+92 |        type: 'colorSwatches',
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/divider.js
+7:33:16 pm [vite] (client) warning: Duplicate key "padding" in object literal
+478|          value: '{{true}}'
+479|        },
+480|        padding: {
+   |        ^
+481|          value: 'default'
+482|        }
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/rangesliderV2.js
+7:33:16 pm [vite] (client) warning: The "??" operator here will always return the left operand
+88 |  const findCard = (state, cardId) => {
+89 |    for (let i = 0; i < state.length; i++) {
+90 |      for (let j = 0; j < state[i].cards?.length ?? 0; j++) {
+   |                                                 ^
+91 |        if (state[i].cards[j].id === cardId) {
+92 |          return state[i].cards[j];
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/Editor/Components/KanbanBoard/utils.js
+[BABEL] Note: The code generator has deoptimised the styling of /Users/kavin/Work/ToolJet/frontend/ee/modules/onboarding/components/StartFreeTrial/components/PricingComponent/resources/images/pricing-default.svg as it exceeds the max of 500KB.
+7:33:21 pm [vite] (client) warning: The "??" operator here will always return the left operand
+98 |    const items = [];
+99 |    const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+100|      !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
+   |                                                               ^
+101|    );
+102|    const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DatepickerProperties.jsx
+7:33:21 pm [vite] (client) warning: The "??" operator here will always return the left operand
+101|    );
+102|    const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+103|      !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
+   |                                                                    ^
+104|    );
+105|  
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DatepickerProperties.jsx
+7:33:26 pm [vite] (client) ✨ new dependencies optimized: lodash/isString, lodash/clone, lodash/capitalize, lodash/sample, lodash/camelCase, lodash/mapKeys, lodash/noop, lodash/isEqual, lodash/differenceWith, lodash/throttle, lodash/merge, lodash/has, lodash/unset, lodash/omit, lodash/mergeWith, lodash/assign, lodash/delay, lodash/map, lodash/isArray, lodash/cloneDeep, lodash/zipObject, lodash/isUndefined, lodash/isBoolean, lodash/truncate, lodash/forIn, lodash/toArray, lodash/defaultsDeep, lodash/toPairs, lodash/intersection, lodash/keys, lodash/isNumber, lodash/uniqBy, lodash/startCase, lodash/range, lodash/filter, lodash/find, lodash/isObject, lodash/pick, lodash/difference, lodash/xorWith, lodash/toLower, lodash/upperFirst, lodash/groupBy, lodash/uniqueId, lodash/kebabCase, lodash/defaults
+7:33:26 pm [vite] (client) ✨ optimized dependencies changed. reloading
+Files in the public directory are served at the root path.
+Instead of /assets/libs/pyodide-0.23.2/pyodide.js, use /libs/pyodide-0.23.2/pyodide.js.
+7:33:26 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+196|    }, globalThis.document) loadScript = async (url) => await import(
+197|      /* webpackIgnore: true */
+198|      url
+   |      ^^^
+199|    );
+200|    else if (globalThis.importScripts) loadScript = async (url) => {
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+7:33:26 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+205|        await import(
+206|          /* webpackIgnore: true */
+207|          url
+   |          ^^^
+208|        );
+209|      }
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+7:33:26 pm [vite] (client) warning: 
+/Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+215|        url.includes("://") ? nodeVmMod.runInThisContext(await (await nodeFetch(url)).text()) : await import(
+216|          /* webpackIgnore: true */
+217|          nodeUrlMod.pathToFileURL(url).href
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+218|        );
+219|      };
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /Users/kavin/Work/ToolJet/frontend/assets/libs/pyodide-0.23.2/pyodide.js
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/empty-modules.svg instead of /assets/images/icons/empty-modules.svg.
+If you intend to use the URL of that asset, use /images/icons/empty-modules.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/tj-logo.svg instead of /assets/images/tj-logo.svg.
+If you intend to use the URL of that asset, use /images/tj-logo.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/rocket.svg instead of /assets/images/rocket.svg.
+If you intend to use the URL of that asset, use /images/rocket.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/no-apps.svg instead of /assets/images/no-apps.svg.
+If you intend to use the URL of that asset, use /images/no-apps.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/no-queries-added.svg instead of /assets/images/icons/no-queries-added.svg.
+If you intend to use the URL of that asset, use /images/icons/no-queries-added.svg?url.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/index.jsx, use /images/icons/widgets/index.jsx.
+7:33:32 pm [vite] (client) warning: The "??" operator here will always return the left operand
+962|                left = dragged.left * sourcegridWidth;
+963|                top = dragged.top;
+964|                !isModalToCanvas ??
+   |                                 ^
+965|                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+966|              }
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/AppCanvas/Grid/Grid.jsx
+7:33:33 pm [vite] (client) warning: Duplicate key "events" in object literal
+87 |      }
+88 |    },
+89 |    events: {},
+   |    ^
+90 |    styles: {
+91 |      dividerColor: {
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/divider.js
+7:33:33 pm [vite] (client) warning: Duplicate key "styles" in object literal
+88 |    },
+89 |    events: {},
+90 |    styles: {
+   |    ^
+91 |      dividerColor: {
+92 |        type: 'colorSwatches',
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/divider.js
+7:33:33 pm [vite] (client) warning: Duplicate key "padding" in object literal
+478|          value: '{{true}}'
+479|        },
+480|        padding: {
+   |        ^
+481|          value: 'default'
+482|        }
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/WidgetManager/widgets/rangesliderV2.js
+Files in the public directory are served at the root path.
+Instead of /assets/images/onboardingassets/Icons/EyeHide.jsx, use /images/onboardingassets/Icons/EyeHide.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/onboardingassets/Icons/EyeShow.jsx, use /images/onboardingassets/Icons/EyeShow.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/onboardingassets/Icons/Enter.jsx, use /images/onboardingassets/Icons/Enter.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/buttongroup.jsx, use /images/icons/widgets/buttongroup.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/boundedbox.jsx, use /images/icons/widgets/boundedbox.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/button.jsx, use /images/icons/widgets/button.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/calendar.jsx, use /images/icons/widgets/calendar.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/chart.jsx, use /images/icons/widgets/chart.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/container.jsx, use /images/icons/widgets/container.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/customcomponent.jsx, use /images/icons/widgets/customcomponent.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/checkbox.jsx, use /images/icons/widgets/checkbox.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/circularprogressbar.jsx, use /images/icons/widgets/circularprogressbar.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/codeeditor.jsx, use /images/icons/widgets/codeeditor.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/datetimepickerV2.jsx, use /images/icons/widgets/datetimepickerV2.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/dropdown.jsx, use /images/icons/widgets/dropdown.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/downstatistics.jsx, use /images/icons/widgets/downstatistics.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/filepicker.jsx, use /images/icons/widgets/filepicker.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/colorpicker.jsx, use /images/icons/widgets/colorpicker.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/datepicker.jsx, use /images/icons/widgets/datepicker.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/form.jsx, use /images/icons/widgets/form.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/frame.jsx, use /images/icons/widgets/frame.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/daterangepicker.jsx, use /images/icons/widgets/daterangepicker.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/icon.jsx, use /images/icons/widgets/icon.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/iframe.jsx, use /images/icons/widgets/iframe.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/group.jsx, use /images/icons/widgets/group.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/html.jsx, use /images/icons/widgets/html.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/kanbanboard.jsx, use /images/icons/widgets/kanbanboard.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/listview.jsx, use /images/icons/widgets/listview.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/image.jsx, use /images/icons/widgets/image.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/kanban.jsx, use /images/icons/widgets/kanban.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/multiselect.jsx, use /images/icons/widgets/multiselect.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/pagination.jsx, use /images/icons/widgets/pagination.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/map.jsx, use /images/icons/widgets/map.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/modal.jsx, use /images/icons/widgets/modal.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/link.jsx, use /images/icons/widgets/link.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/numberinput.jsx, use /images/icons/widgets/numberinput.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/statistics.jsx, use /images/icons/widgets/statistics.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/passwordinput.jsx, use /images/icons/widgets/passwordinput.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/pdf.jsx, use /images/icons/widgets/pdf.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/rating.jsx, use /images/icons/widgets/rating.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/radio-button.jsx, use /images/icons/widgets/radio-button.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/rangeslider.jsx, use /images/icons/widgets/rangeslider.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/qrscanner.jsx, use /images/icons/widgets/qrscanner.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/svgimage.jsx, use /images/icons/widgets/svgimage.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/spinner.jsx, use /images/icons/widgets/spinner.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/steps.jsx, use /images/icons/widgets/steps.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/textarea.jsx, use /images/icons/widgets/textarea.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/table.jsx, use /images/icons/widgets/table.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/tabs.jsx, use /images/icons/widgets/tabs.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/text.jsx, use /images/icons/widgets/text.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/tags.jsx, use /images/icons/widgets/tags.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/texteditor.jsx, use /images/icons/widgets/texteditor.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/textinput.jsx, use /images/icons/widgets/textinput.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/timeline.jsx, use /images/icons/widgets/timeline.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/timer.jsx, use /images/icons/widgets/timer.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/treeselect.jsx, use /images/icons/widgets/treeselect.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/verticaldivider.jsx, use /images/icons/widgets/verticaldivider.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/toggleswitch.jsx, use /images/icons/widgets/toggleswitch.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/upstatistics.jsx, use /images/icons/widgets/upstatistics.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/timepicker.jsx, use /images/icons/widgets/timepicker.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/datepickerv2.jsx, use /images/icons/widgets/datepickerv2.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/emailinput.jsx, use /images/icons/widgets/emailinput.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/horizontalDivider.jsx, use /images/icons/widgets/horizontalDivider.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/phoneinput.jsx, use /images/icons/widgets/phoneinput.jsx.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/widgets/chat.jsx, use /images/icons/widgets/chat.jsx.
+7:33:34 pm [vite] (client) warning: The "??" operator here will always return the left operand
+88 |  const findCard = (state, cardId) => {
+89 |    for (let i = 0; i < state.length; i++) {
+90 |      for (let j = 0; j < state[i].cards?.length ?? 0; j++) {
+   |                                                 ^
+91 |        if (state[i].cards[j].id === cardId) {
+92 |          return state[i].cards[j];
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/Editor/Components/KanbanBoard/utils.js
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/info.svg instead of /assets/images/icons/info.svg.
+If you intend to use the URL of that asset, use /images/icons/info.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/branch.svg instead of /assets/images/icons/branch.svg.
+If you intend to use the URL of that asset, use /images/icons/branch.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/edit-white.svg instead of /assets/images/icons/edit-white.svg.
+If you intend to use the URL of that asset, use /images/icons/edit-white.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/no-results.svg instead of /assets/images/no-results.svg.
+If you intend to use the URL of that asset, use /images/no-results.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/consultation-banner-icon.svg instead of /assets/images/consultation-banner-icon.svg.
+If you intend to use the URL of that asset, use /images/consultation-banner-icon.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/info-red.svg instead of /assets/images/info-red.svg.
+If you intend to use the URL of that asset, use /images/info-red.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/check.svg instead of /assets/images/icons/check.svg.
+If you intend to use the URL of that asset, use /images/icons/check.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/Logomark.svg instead of /assets/images/Logomark.svg.
+If you intend to use the URL of that asset, use /images/Logomark.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/Logomark-dark-mode.svg instead of /assets/images/Logomark-dark-mode.svg.
+If you intend to use the URL of that asset, use /images/Logomark-dark-mode.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/response.svg instead of /assets/images/icons/response.svg.
+If you intend to use the URL of that asset, use /images/icons/response.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/if.svg instead of /assets/images/icons/if.svg.
+If you intend to use the URL of that asset, use /images/icons/if.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/loop.svg instead of /assets/images/icons/loop.svg.
+If you intend to use the URL of that asset, use /images/icons/loop.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/arrow-right.svg instead of /assets/images/icons/arrow-right.svg.
+If you intend to use the URL of that asset, use /images/icons/arrow-right.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/x-env.svg instead of /assets/images/icons/x-env.svg.
+If you intend to use the URL of that asset, use /images/icons/x-env.svg?url.
+[BABEL] Note: The code generator has deoptimised the styling of /Users/kavin/Work/ToolJet/frontend/ee/modules/onboarding/components/StartFreeTrial/components/PricingComponent/resources/images/pricing-default.svg as it exceeds the max of 500KB.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/add-gray.svg instead of /assets/images/icons/add-gray.svg.
+If you intend to use the URL of that asset, use /images/icons/add-gray.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/split.svg instead of /assets/images/icons/split.svg.
+If you intend to use the URL of that asset, use /images/icons/split.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/split-color.svg instead of /assets/images/icons/split-color.svg.
+If you intend to use the URL of that asset, use /images/icons/split-color.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/add-thunder.svg instead of /assets/images/icons/add-thunder.svg.
+If you intend to use the URL of that asset, use /images/icons/add-thunder.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/pin.svg instead of /assets/images/icons/pin.svg.
+If you intend to use the URL of that asset, use /images/icons/pin.svg?url.
+7:33:40 pm [vite] (client) warning: The "??" operator here will always return the left operand
+98 |    const items = [];
+99 |    const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+100|      !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
+   |                                                               ^
+101|    );
+102|    const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DatepickerProperties.jsx
+7:33:40 pm [vite] (client) warning: The "??" operator here will always return the left operand
+101|    );
+102|    const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+103|      !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
+   |                                                                    ^
+104|    );
+105|  
+
+  Plugin: vite:esbuild
+  File: /Users/kavin/Work/ToolJet/frontend/src/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DatepickerProperties.jsx
+Files in the public directory are served at the root path.
+Instead of /assets/images/logo.svg, use /images/logo.svg.
+Files in the public directory are served at the root path.
+Instead of /assets/translations/en.json, use /translations/en.json.
+Files in the public directory are served at the root path.
+Instead of /assets/images/tj-logo.svg, use /images/tj-logo.svg.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500.woff2, use /fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-regular.woff2, use /fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-regular.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/chevron-left.svg, use /images/icons/chevron-left.svg.
+Files in the public directory are served at the root path.
+Instead of /assets/images/icons/chevron-right.svg, use /images/icons/chevron-right.svg.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/inter-v12-latin/inter-v12-latin-500.woff2, use /fonts/inter-v12-latin/inter-v12-latin-500.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/inter-v12-latin/inter-v12-latin-regular.woff2, use /fonts/inter-v12-latin/inter-v12-latin-regular.woff2.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/tj-logo.svg instead of /assets/images/tj-logo.svg.
+If you intend to use the URL of that asset, use /images/tj-logo.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/rocket.svg instead of /assets/images/rocket.svg.
+If you intend to use the URL of that asset, use /images/rocket.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/empty-modules.svg instead of /assets/images/icons/empty-modules.svg.
+If you intend to use the URL of that asset, use /images/icons/empty-modules.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/no-apps.svg instead of /assets/images/no-apps.svg.
+If you intend to use the URL of that asset, use /images/no-apps.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/no-queries-added.svg instead of /assets/images/icons/no-queries-added.svg.
+If you intend to use the URL of that asset, use /images/icons/no-queries-added.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/info.svg instead of /assets/images/icons/info.svg.
+If you intend to use the URL of that asset, use /images/icons/info.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/branch.svg instead of /assets/images/icons/branch.svg.
+If you intend to use the URL of that asset, use /images/icons/branch.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/edit-white.svg instead of /assets/images/icons/edit-white.svg.
+If you intend to use the URL of that asset, use /images/icons/edit-white.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/no-results.svg instead of /assets/images/no-results.svg.
+If you intend to use the URL of that asset, use /images/no-results.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/consultation-banner-icon.svg instead of /assets/images/consultation-banner-icon.svg.
+If you intend to use the URL of that asset, use /images/consultation-banner-icon.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/info-red.svg instead of /assets/images/info-red.svg.
+If you intend to use the URL of that asset, use /images/info-red.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/check.svg instead of /assets/images/icons/check.svg.
+If you intend to use the URL of that asset, use /images/icons/check.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/Logomark.svg instead of /assets/images/Logomark.svg.
+If you intend to use the URL of that asset, use /images/Logomark.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/Logomark-dark-mode.svg instead of /assets/images/Logomark-dark-mode.svg.
+If you intend to use the URL of that asset, use /images/Logomark-dark-mode.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/loop.svg instead of /assets/images/icons/loop.svg.
+If you intend to use the URL of that asset, use /images/icons/loop.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/response.svg instead of /assets/images/icons/response.svg.
+If you intend to use the URL of that asset, use /images/icons/response.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/if.svg instead of /assets/images/icons/if.svg.
+If you intend to use the URL of that asset, use /images/icons/if.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/arrow-right.svg instead of /assets/images/icons/arrow-right.svg.
+If you intend to use the URL of that asset, use /images/icons/arrow-right.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/x-env.svg instead of /assets/images/icons/x-env.svg.
+If you intend to use the URL of that asset, use /images/icons/x-env.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/add-gray.svg instead of /assets/images/icons/add-gray.svg.
+If you intend to use the URL of that asset, use /images/icons/add-gray.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/split.svg instead of /assets/images/icons/split.svg.
+If you intend to use the URL of that asset, use /images/icons/split.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/split-color.svg instead of /assets/images/icons/split-color.svg.
+If you intend to use the URL of that asset, use /images/icons/split-color.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/pin.svg instead of /assets/images/icons/pin.svg.
+If you intend to use the URL of that asset, use /images/icons/pin.svg?url.
+Assets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use /src/images/icons/add-thunder.svg instead of /assets/images/icons/add-thunder.svg.
+If you intend to use the URL of that asset, use /images/icons/add-thunder.svg?url.
+Files in the public directory are served at the root path.
+Instead of /assets/translations/en.json, use /translations/en.json.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500.woff2, use /fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-regular.woff2, use /fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-regular.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-600.woff2, use /fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-600.woff2.
+Files in the public directory are served at the root path.
+Instead of /assets/fonts/inter-v12-latin/inter-v12-latin-regular.woff2, use /fonts/inter-v12-latin/inter-v12-latin-regular.woff2.

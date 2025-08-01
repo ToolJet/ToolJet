@@ -11,7 +11,7 @@ import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/Editor/Components/utils';
 
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const PhoneInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;

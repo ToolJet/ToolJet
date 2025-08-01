@@ -5,6 +5,6 @@ import * as ceModules from '@/modules';
 
 export const editions = {
   ee: eeModules,
-  cloud: eeModules, // Treat cloud as enterprise edition for now
+  cloud: cloudModules,
   ce: ceModules,
 };

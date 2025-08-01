@@ -1,4 +1,4 @@
-const {
+import {
   type,
   number,
   string,
@@ -12,7 +12,7 @@ const {
   coerce,
   create,
   never,
-} = require('superstruct');
+} from 'superstruct';
 
 import { validateMultilineCode } from '@/_helpers/utility';
 import _, { isNumber } from 'lodash';

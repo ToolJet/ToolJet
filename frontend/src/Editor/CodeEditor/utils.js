@@ -11,7 +11,7 @@ import {
 } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 
-const acorn = require('acorn');
+import * as acorn from 'acorn';
 
 const acorn_code = `
 const array = [1, 2, 3];

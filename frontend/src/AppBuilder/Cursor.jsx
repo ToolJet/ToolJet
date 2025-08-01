@@ -1,5 +1,5 @@
 import * as React from 'react';
-var tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 /**
  * Cursor component: Thanks to https://codesandbox.io/s/u85tu?file=/src/components/Cursor.tsx

@@ -27,7 +27,7 @@ import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { Filter } from './Filter';
 import { GlobalFilter } from './GlobalFilter';
-var _ = require('lodash');
+import _ from 'lodash';
 import loadPropertiesAndStyles from './load-properties-and-styles';
 import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';

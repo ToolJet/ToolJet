@@ -6,7 +6,7 @@ import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { useEditorStore } from '@/_stores/editorStore';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject, pick } from 'lodash';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import './dropdownV2.scss';
 import CustomValueContainer from './CustomValueContainer';
 import CustomMenuList from './CustomMenuList';

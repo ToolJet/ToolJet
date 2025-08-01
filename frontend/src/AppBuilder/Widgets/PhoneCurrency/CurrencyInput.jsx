@@ -6,7 +6,7 @@ import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
 import { getModifiedColor } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;

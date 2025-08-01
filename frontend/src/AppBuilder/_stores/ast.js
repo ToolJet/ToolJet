@@ -1,5 +1,5 @@
-const acorn = require('acorn');
-const walk = require('acorn-walk');
+import * as acorn from 'acorn';
+import * as walk from 'acorn-walk';
 
 function findExpression(input) {
   const matches = [];

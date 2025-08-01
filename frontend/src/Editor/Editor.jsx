@@ -39,7 +39,6 @@ import { WidgetManager } from './WidgetManager';
 import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
-const { produce, enablePatches, setAutoFreeze } = require('immer');
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
@@ -94,6 +93,7 @@ import {
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 import { resolveReferences } from './CodeEditor/utils';
+import { produce, enablePatches, setAutoFreeze } from 'immer';
 
 setAutoFreeze(false);
 enablePatches();

@@ -6,7 +6,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
-var tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({

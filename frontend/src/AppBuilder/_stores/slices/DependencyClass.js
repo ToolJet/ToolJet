@@ -1,4 +1,4 @@
-const { DepGraph } = require('dependency-graph');
+import { DepGraph } from 'dependency-graph';
 
 class DependencyGraph {
   constructor() {

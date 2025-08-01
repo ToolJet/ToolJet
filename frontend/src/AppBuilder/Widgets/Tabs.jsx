@@ -14,7 +14,7 @@ import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (

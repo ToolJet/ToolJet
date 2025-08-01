@@ -4,7 +4,7 @@ import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
-var tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const Modal = function Modal({
   id,

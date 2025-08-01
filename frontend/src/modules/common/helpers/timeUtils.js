@@ -1,4 +1,4 @@
-const moment = require('moment-timezone');
+import moment from 'moment-timezone';
 /**
  * Get the user's country based on their time zone.
  * @param {string} userTimeZone - The user's time zone.

@@ -6,9 +6,9 @@ import Spinner from '@/_ui/Spinner';
 // import { Editor } from '@/Editor';
 import { Editor } from '@/AppBuilder';
 import useStore from '@/AppBuilder/_stores/store';
-const Y = require('yjs');
-const psl = require('psl');
-const { WebsocketProvider } = require('y-websocket');
+import * as Y from 'yjs';
+import psl from 'psl';
+import { WebsocketProvider } from 'y-websocket';
 
 const ydoc = new Y.Doc();
 

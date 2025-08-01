@@ -1,4 +1,4 @@
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import { MODAL_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export function createModalStyles({

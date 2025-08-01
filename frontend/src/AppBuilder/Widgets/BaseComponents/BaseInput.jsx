@@ -3,7 +3,7 @@ import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { getModifiedColor } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 const RenderInput = forwardRef((props, ref) => {
   return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;

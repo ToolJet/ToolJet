@@ -10,7 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getModifiedColor } from './utils';
 
-var tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const Chart = function Chart({
   width,

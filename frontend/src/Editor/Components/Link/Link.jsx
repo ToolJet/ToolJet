@@ -3,7 +3,7 @@ import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './link.scss';
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const Link = ({ height, properties, styles, fireEvent, setExposedVariables, dataCy }) => {
   const { linkTarget, linkText, targetType, visibility, disabledState, loadingState } = properties;

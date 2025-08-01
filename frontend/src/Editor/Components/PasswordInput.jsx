@@ -56,7 +56,7 @@ export const PasswordInput = function PasswordInput({
   const [iconVisibility, setIconVisibility] = useState(false);
   const [loading, setLoading] = useState(loadingState);
   const [isFocused, setIsFocused] = useState(false);
-  const tinycolor = require('tinycolor2');
+  import tinycolor from 'tinycolor2';
 
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
   const computedStyles = {

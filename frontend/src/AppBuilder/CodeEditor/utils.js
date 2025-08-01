@@ -7,7 +7,7 @@ import { hasCircularDependency, resolveReferences as olderResolverMethod } from 
 import { validateMultilineCode } from '@/_helpers/utility';
 import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
 
-const acorn = require('acorn');
+import * as acorn from 'acorn';
 
 const acorn_code = `
 const array = [1, 2, 3];

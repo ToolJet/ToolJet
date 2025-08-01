@@ -4,7 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 import Label from '@/_ui/Label';
 import { useGridStore } from '@/_stores/gridStore';
 

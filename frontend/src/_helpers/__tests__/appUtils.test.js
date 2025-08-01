@@ -1,4 +1,4 @@
-const { getQueryVariables, runQuery, setTablePageIndex, computeComponentState } = require('../appUtils.js');
+import { getQueryVariables, runQuery, setTablePageIndex, computeComponentState } from '../appUtils.js';
 
 jest.mock(
   'config',

@@ -9,7 +9,7 @@ import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/Editor/Components/utils';
 
-const tinycolor = require('tinycolor2');
+import tinycolor from 'tinycolor2';
 
 export const BaseDateComponent = ({
   styles,
