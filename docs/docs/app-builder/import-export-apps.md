@@ -51,7 +51,7 @@ This documentation explains the process of exporting and importing applications 
 
 **Import**:
 
-- When you import an application, the platform automatically checks for any existing modules with matching names in your workspace or instance. If a module with the same name already exists, the imported application connects to the existing module, avoiding duplication. 
+- When you import an application, the platform automatically checks for any existing modules with matching names in your workspace. If a module with the same name already exists, the imported application connects to the existing module, avoiding duplication. 
 - However, if no matching module is found, the platform creates a new module from the imported JSON file. 
 - This approach ensures that your application imports smoothly while maintaining consistency and preventing redundant modules.
 
