@@ -79,6 +79,7 @@ export const Text = function Text({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
 
   useEffect(() => {
