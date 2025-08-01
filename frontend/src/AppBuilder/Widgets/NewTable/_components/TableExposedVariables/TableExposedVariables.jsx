@@ -240,6 +240,7 @@ export const TableExposedVariables = ({
       });
     }
     if (defaultSelectedRow) {
+      lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
       if (key && value) {
@@ -251,7 +252,15 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection, hasDataChanged]);
+  }, [
+    data,
+    defaultSelectedRow,
+    setExposedVariables,
+    setRowSelection,
+    resetRowSelection,
+    hasDataChanged,
+    lastClickedRowRef,
+  ]);
 
   useEffect(() => {
     if (allowSelection && Object.keys(lastClickedRow).length > 0) {
