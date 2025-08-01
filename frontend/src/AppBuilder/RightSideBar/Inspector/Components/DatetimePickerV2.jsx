@@ -255,7 +255,6 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
               darkMode
             );
           })}
-
         </>
       ),
     });
@@ -430,29 +429,21 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     isOpen: true,
     children: (
       <>
-        {validations.map((property, index) => (
-          <div
-            key={index}
-            className={'date-validation-wrapper'}
-            style={{
-              height: index + 1 < validations.length ? '62px' : '22px',
-            }}
-          >
-            {renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'validation',
-              currentState,
-              allComponents,
-              darkMode,
-              getDynamicPlaceholder(property),
-              getDynamicDateValidator(property)
-            )}
-          </div>
-        ))}
+        {validations.map((property, index) =>
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            property,
+            'validation',
+            currentState,
+            allComponents,
+            darkMode,
+            getDynamicPlaceholder(property),
+            getDynamicDateValidator(property)
+          )
+        )}
       </>
     ),
   });
