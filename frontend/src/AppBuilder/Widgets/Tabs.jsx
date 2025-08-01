@@ -599,6 +599,7 @@ const TabContent = memo(function TabContent({
             backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
           }}
           darkMode={darkMode}
+          gridParentType="tabs"
         />
       )}
     </div>

@@ -547,7 +547,9 @@ export const computeScrollDelta = ({ source }) => {
 export const computeScrollDeltaOnDrag = computeScrollDelta;
 
 export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const transformedCanvasParentId = canvasParentId?.substring(0, 36);
+  const parentType = document.getElementById(`canvas-${canvasParentId}`)?.getAttribute('data-grid-parent-type');
+  const transformedCanvasParentId = parentType === 'tabs' ? canvasParentId : canvasParentId?.substring(0, 36);
+
   const targetCanvasWidth =
     document.getElementById(`canvas-${transformedCanvasParentId}`)?.offsetWidth ||
     document.getElementById('real-canvas')?.offsetWidth;

@@ -38,6 +38,7 @@ const Container = React.memo(
     canvasMaxWidth,
     componentType,
     appType,
+    gridParentType,
   }) => {
     const { moduleId } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -203,6 +204,7 @@ const Container = React.memo(
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
         component-type={componentType}
+        data-grid-parent-type={gridParentType}
       >
         <div
           className={cx('container-fluid rm-container p-0', {
