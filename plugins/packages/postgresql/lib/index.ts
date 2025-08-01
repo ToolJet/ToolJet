@@ -155,7 +155,6 @@ export default class PostgresqlQueryService implements QueryService {
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
-        ssl: this.getSslConfig(sourceOptions),
         statement_timeout: this.STATEMENT_TIMEOUT,
       };
     }
