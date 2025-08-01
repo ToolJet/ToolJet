@@ -167,12 +167,20 @@ jobs:
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
                 "value": "${{ secrets.MARKETPLACE_BUCKET }}"
+              },
+              {
+                "Key": "NODE_OPTIONS",
+                "value": "--max-old-space-size=4096"
+              },
+              {
+                "key": "NODE_ENV",
+                "value": "production"
               }
             ],
             "serviceDetails": {
               "env": "node",
               "envSpecificDetails": {
-                "buildCommand": "npm run --prefix frontend build",
+                "buildCommand": "NODE_OPTIONS="--max-old-space-size=4096" && npm ci --prefix frontend && npm run build:plugins:prod && npm run build:frontend",
                 "startCommand": "NODE_ENV=production && npm run --prefix db:migrate &&npm run --prefix server start"
               },
                 "healthCheckPath": "/api/health",
