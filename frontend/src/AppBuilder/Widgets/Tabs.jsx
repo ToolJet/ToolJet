@@ -151,7 +151,7 @@ export const Tabs = function Tabs({
     isContainer: true,
     value: currentTab,
     componentCount,
-    visibility:widgetVisibility,
+    visibility: widgetVisibility,
   });
 
   useEffect(() => {
@@ -389,7 +389,7 @@ export const Tabs = function Tabs({
                     opacity: tab?.disable && '0.5',
                     width: tabWidth == 'split' && equalSplitWidth + '%',
                     borderBottom: currentTab === tab.id && !tab?.disable ? `2px solid ${accent}` : ' #CCD1D5',
-                    backgroundColor: headerBackground,
+                    backgroundColor: 'transparent',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
@@ -569,11 +569,14 @@ const TabContent = memo(function TabContent({
       activetab={currentTab}
       className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
-        display: disable ? 'none' : 'block',
+        display: 'block',
         height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
         position: 'relative',
         top: '0px',
         width: '100%',
+        backgroundColor: fieldBackgroundColor || bgColor,
+        opacity: disable ? 0.5 : 1,
+        pointerEvents: disable ? 'none' : 'auto',
       }}
     >
       {loading ? (
@@ -595,7 +598,8 @@ const TabContent = memo(function TabContent({
           allowContainerSelect={true}
           styles={{
             overflow: isTransitioning ? 'hidden' : 'hidden auto',
-            backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor,
+            backgroundColor: fieldBackgroundColor || bgColor,
+            opacity: disable ? 0.5 : 1,
           }}
           darkMode={darkMode}
         />
@@ -603,4 +607,4 @@ const TabContent = memo(function TabContent({
     </div>
   );
 },
-areEqual);
+  areEqual);
