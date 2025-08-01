@@ -41,27 +41,27 @@ To retain audit logs indefinitely, set the variable to 0.
 
 You can apply filters to the audited events based on the following criteria.
 
-### Select Users
+## Select Users
 
 Choose a specific user from the dropdown list to view all their activities.
 
-### Select Apps
+## Select Apps
 
 The dropdown will display all the apps associated with your account. Select an app to filter the logs related to that particular app.
 
-### Select Resources
+## Select Resources
 
 | <div style={{ width:"100px"}}> Resources </div> | <div style={{ width:"100px"}}> Description </div> |
 | ----------- | ----------- |
 | User | Filter all the User events like `USER_LOGIN`, `USER_SIGNUP`, `USER_INVITE`, AND `USER_INVITE_REDEEM`. |
-| App | Filter all the App events like `APP_CREATE`, `APP_UPDATE`,`APP_VIEW`,`APP_DELETE`,`APP_IMPORT`,`APP_EXPORT`,`APP_CLONE`. |
+| App | Filter all the App events like `APP_CREATE`, `APP_UPDATE`,`APP_DELETE`,`APP_IMPORT`,`APP_EXPORT`,`APP_CLONE`. |
 | Data Query | Filters the events associated with Data Query like `DATA_QUERY_RUN`. |
 | Group Permission | All the events associated with Group Permissions will be filtered. Group Permissions include `GROUP_CREATE`, `GROUP_UPDATE`, `GROUP_DELETE`. |
 | App Group Permission | Within each group, you can set apps for read or edit privileges. These events get recorded as App Group Permissions. |
 
-### Select Actions
+## Select Actions
 
-#### User
+### User
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -78,7 +78,7 @@ The dropdown will display all the apps associated with your account. Select an a
 | USER_PASSWORD_UPDATE | This event is recorded whenever a user update the password from profile settings. |
 | USER_DETAILS_UPDATE | This event is recorded whenever a super admin updates the user details. |
 
-#### User Groups and Permissions
+### User Groups and Permissions
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -96,7 +96,7 @@ The dropdown will display all the apps associated with your account. Select an a
 | GRANULAR_PERMISSION_DATA_SOURCE_UPDATE | This event is recorded whenever a data source level permission is updated. |
 | GRANULAR_PERMISSION_DATA_SOURCE_DELETE | This event is recorded whenever a data source level permission is deleted. |
 
-#### Workspace
+### Workspace
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -107,7 +107,7 @@ The dropdown will display all the apps associated with your account. Select an a
 | WORKSPACE_LOGIN_SETTINGS_UPDATE | This event is recorded whenever workspace login settings is updated. |
 
 
-#### App
+### App
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
@@ -125,7 +125,7 @@ The dropdown will display all the apps associated with your account. Select an a
 | APP_VERSION_UPDATE | This event is recorded whenever a version of an application is updated. |
 | APP_VERSION_DELETE | This event is recorded whenever a version of an application is deleted. |
 
-#### Data Source
+### Data Source
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>|
 | ----------- | ----------- |
