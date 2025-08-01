@@ -126,13 +126,13 @@ export class ImportExportResourcesService {
             manager
           );
 
-          imports.app.push({ id: createdApp.id, name: createdApp.name });
+          imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });
 
           RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
             userId: user.id,
             organizationId: user.organizationId,
-            resourceId: createdApp.id,
-            resourceName: createdApp.name,
+            resourceId: createdApp.newApp.id,
+            resourceName: createdApp.newApp.name,
           });
         }
       }
@@ -144,7 +144,7 @@ export class ImportExportResourcesService {
   async legacyImport(user: User, templateDefinition: any, appName: string) {
     const importedApp = await this.appImportExportService.import(user, templateDefinition, appName);
     return {
-      app: [importedApp],
+      app: [importedApp.newApp],
       tooljet_database: [],
     };
   }
