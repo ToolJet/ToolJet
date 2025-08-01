@@ -191,7 +191,13 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
 
   const timeFormatSection = () => {
     return (
-      <div className="field mb-2 input-date-time-format" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="field mb-2 input-date-time-format"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          height: 'auto',
+        }}
+      >
         <div className="d-flex justify-content-between mb-1">
           <label className="form-label"> Time Format</label>
           <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
@@ -272,6 +278,9 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                     data-cy={`input-date-display-format`}
                     className="field mb-2 w-100 input-date-display-format"
                     onClick={(e) => e.stopPropagation()}
+                    style={{
+                      height: 'auto',
+                    }}
                   >
                     <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
                       <div className="d-flex justify-content-between mb-1">
