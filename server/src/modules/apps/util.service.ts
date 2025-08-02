@@ -623,6 +623,7 @@ export class AppsUtilService implements IAppsUtilService {
           ...currentComponentData.layouts,
         },
         withDefaultChildren: componentMeta.withDefaultChildren ?? false,
+        ...(currentComponentData.permissions && { permissions: currentComponentData.permissions }),
       };
 
       mergedComponent.component.definition = mergedDefinition;
