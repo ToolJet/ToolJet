@@ -27,6 +27,7 @@ import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
+import HintText from '@/_components/HintText';
 
 const DynamicForm = ({
   schema,
@@ -244,10 +245,12 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType = 'basic',
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
     spec_url = '',
     disabled = false,
-    buttonText,
+    buttonText: buttonTextProp,
+    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
     text,
     subtext,
     oauth_configs,
@@ -258,6 +261,11 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
+    
+    // Prefer buttonText over button_text
+    const buttonText = buttonTextProp || button_text;
+
+    const editorType = editorTypeProp || editor_type;
 
     switch (type) {
       case 'password':
@@ -575,7 +583,7 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
+          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '', hint } = obj[key];
           const Element = getElement(type);
           const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
@@ -654,6 +662,7 @@ const DynamicForm = ({
                     //to be removed after whole ui is same
                     isHorizontalLayout={isHorizontalLayout}
                   />
+                  <HintText hint={hint} />
                 </div>
               </div>
             )
