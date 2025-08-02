@@ -62,7 +62,10 @@ const ApiEndpointInput = (props) => {
 
   // Check if specUrl is an object (multiple specs) or string (single spec)
   const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
-  const [selectedSpecType, setSelectedSpecType] = useState(isMultiSpec ? Object.keys(props.specUrl)[0] || '' : null);
+  // Initialize selectedSpecType from props.options.specType if available
+  const [selectedSpecType, setSelectedSpecType] = useState(
+    isMultiSpec ? props.options?.specType || Object.keys(props.specUrl)[0] || '' : null
+  );
 
   const fetchOpenApiSpec = (specUrlOrType) => {
     setLoadingSpec(true);
@@ -89,10 +92,19 @@ const ApiEndpointInput = (props) => {
             let newPath = null;
             let newSelectedOperation = null;
 
+            // Check if current operation exists in new spec
             if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
               newOperation = options.operation;
               newPath = options.path;
               newSelectedOperation = data.paths[options.path][options.operation];
+            } else {
+              // Auto-select first operation if current doesn't exist or is not set
+              const firstOperation = getFirstOperation(data);
+              if (firstOperation) {
+                newOperation = firstOperation.operation;
+                newPath = firstOperation.path;
+                newSelectedOperation = firstOperation.selectedOperation;
+              }
             }
 
             const newOptions = {
@@ -101,15 +113,60 @@ const ApiEndpointInput = (props) => {
               path: newPath,
               selectedOperation: newSelectedOperation,
               params: queryParams,
+              specType: specUrlOrType, // Add specType to options
             };
 
             setOptions(newOptions);
             props.optionsChanged(newOptions);
+          } else {
+            // For single spec, auto-select first operation if no operation is currently selected
+            if (!options?.operation || !options?.path) {
+              const firstOperation = getFirstOperation(data);
+              if (firstOperation) {
+                const newOptions = {
+                  ...options,
+                  operation: firstOperation.operation,
+                  path: firstOperation.path,
+                  selectedOperation: firstOperation.selectedOperation,
+                  params: {
+                    path: {},
+                    query: {},
+                    request: {},
+                  },
+                };
+                setOptions(newOptions);
+                props.optionsChanged(newOptions);
+              }
+            }
           }
 
           setLoadingSpec(false);
         });
       });
+  };
+
+  // Helper function to get the first available operation
+  const getFirstOperation = (specData) => {
+    if (!specData?.paths) return null;
+
+    const paths = Object.keys(specData.paths);
+    if (paths.length === 0) return null;
+
+    // Get the first path
+    const firstPath = paths[0];
+    const operations = Object.keys(specData.paths[firstPath]);
+    
+    if (operations.length === 0) return null;
+
+    // Get the first operation
+    const firstOperation = operations[0];
+    const selectedOperation = specData.paths[firstPath][firstOperation];
+
+    return {
+      operation: firstOperation,
+      path: firstPath,
+      selectedOperation: selectedOperation,
+    };
   };
 
   const changeOperation = (value) => {
@@ -129,6 +186,7 @@ const ApiEndpointInput = (props) => {
       operation,
       selectedOperation: specJson.paths[path][operation],
       params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
 
     setOptions(newOptions);
@@ -159,6 +217,7 @@ const ApiEndpointInput = (props) => {
             [paramName]: parsedValue,
           },
         },
+        ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);
@@ -168,6 +227,9 @@ const ApiEndpointInput = (props) => {
   const removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(options));
     delete newOptions['params'][paramType][paramName];
+    if (isMultiSpec) {
+      newOptions.specType = selectedSpecType; // Include specType if multiSpec
+    }
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -262,7 +324,14 @@ const ApiEndpointInput = (props) => {
       request: props.options?.params?.request ?? {},
     };
     setLoadingSpec(true);
-    setOptions({ ...props.options, params: queryParams });
+
+    // Initialize options with specType if multiSpec
+    const initialOptions = {
+      ...props.options,
+      params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }),
+    };
+    setOptions(initialOptions);
 
     if (!isMultiSpec) {
       fetchOpenApiSpec();
@@ -275,10 +344,30 @@ const ApiEndpointInput = (props) => {
     }
   }, [selectedSpecType]);
 
+  const handleSpecTypeChange = (val) => {
+    setSelectedSpecType(val);
+    // When spec type changes, clear current operation and let fetchOpenApiSpec handle auto-selection
+    const newOptions = {
+      ...options,
+      specType: val,
+      // Clear operation-specific data when changing spec type
+      operation: null,
+      path: null,
+      selectedOperation: null,
+      params: {
+        path: {},
+        query: {},
+        request: {},
+      },
+    };
+    setOptions(newOptions);
+    props.optionsChanged(newOptions);
+  };
+
   const specTypeOptions = isMultiSpec
     ? Object.keys(props.specUrl).map((key) => ({
         value: key,
-        label: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
       }))
     : [];
 
@@ -288,13 +377,16 @@ const ApiEndpointInput = (props) => {
       {isMultiSpec && (
         <div className="d-flex g-2 mb-3">
           <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
           </div>
           <div className="col flex-grow-1">
             <Select
               options={specTypeOptions}
-              value={{ value: selectedSpecType, label: selectedSpecType }}
-              onChange={(val) => setSelectedSpecType(val)}
+              value={{
+                value: selectedSpecType,
+                label: selectedSpecType.charAt(0).toUpperCase() + selectedSpecType.slice(1),
+              }}
+              onChange={(val) => handleSpecTypeChange(val)}
               width={'100%'}
               styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
             />
