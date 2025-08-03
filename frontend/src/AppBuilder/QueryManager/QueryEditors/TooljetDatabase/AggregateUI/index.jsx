@@ -277,7 +277,11 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   };
 
   const aggFxOptions = [
-    { label: 'Sum', value: 'sum', description: 'Sum of all values in this column' },
+    {
+      label: 'Sum',
+      value: 'sum',
+      description: 'Sum of all values in this column',
+    },
     {
       label: 'Count',
       value: 'count',
@@ -402,7 +406,11 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                     />
                   </div>
                   <div
-                    style={{ width: '32px', minWidth: '32px', borderRadius: '0 4px 4px 0' }}
+                    style={{
+                      width: '32px',
+                      minWidth: '32px',
+                      borderRadius: '0 4px 4px 0',
+                    }}
                     className="d-flex justify-content-center align-items-center border"
                     onClick={() => handleDeleteAggregate(aggregateKey)}
                   >

@@ -12,6 +12,8 @@ import { ConfirmDialog } from '@/_components';
 import { serialDataType } from '../constants';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 const TableForm = ({
   selectedTable = {},
@@ -194,6 +196,12 @@ const TableForm = ({
 
     toast.success(`${tableName} created successfully`);
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    posthogHelper.captureEvent('click_create_tooljet_table', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      datasource: 'tooljet_db',
+    });
     setCreateForeignKeyInEdit(false);
   };
 

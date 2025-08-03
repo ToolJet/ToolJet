@@ -58,6 +58,13 @@ import { kanbanBoardConfig } from './kanbanBoard';
 import { datetimePickerV2Config } from './datetimepickerV2';
 import { datePickerV2Config } from './datepickerV2';
 import { timePickerConfig } from './timepicker';
+import { moduleContainerConfig } from './moduleContainer';
+import { moduleViewerConfig } from './moduleViewer';
+import { emailinputConfig } from './emailinput';
+import { phoneinputConfig } from './phoneinput';
+import { currencyinputConfig } from './currencyinput';
+import { rangeSliderV2Config } from './rangesliderV2';
+import { chatConfig } from './chat';
 
 const widgets = {
   buttonConfig,
@@ -73,12 +80,15 @@ const widgets = {
   datetimePickerV2Config,
   datePickerV2Config,
   timePickerConfig,
+  emailinputConfig,
+  phoneinputConfig,
+  currencyinputConfig,
   checkboxConfig,
   radiobuttonConfig, //!Depreciated
   radiobuttonV2Config,
   toggleswitchConfig, //!Depreciated
   toggleSwitchV2Config,
-  textareaConfig,
+  textareaConfig, //! Deprecated
   daterangepickerConfig,
   textConfig,
   imageConfig,
@@ -105,6 +115,7 @@ const widgets = {
   spinnerConfig,
   statisticsConfig,
   rangeSliderConfig,
+  rangeSliderV2Config,
   timelineConfig,
   svgImageConfig,
   htmlConfig,
@@ -120,6 +131,9 @@ const widgets = {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
+  moduleContainerConfig,
+  moduleViewerConfig
 };
 
 const universalProps = {

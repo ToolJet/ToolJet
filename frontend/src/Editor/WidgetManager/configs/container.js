@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 5,
-    height: 200,
+    width: 13,
+    height: 480,
   },
   component: 'Container',
   others: {
@@ -51,10 +51,12 @@ export const containerConfig = {
   defaultChildren: [
     {
       componentName: 'Text',
+      slotName: 'header',
       layout: {
         top: 20,
         left: 1,
         height: 40,
+        width: 20,
       },
       displayName: 'ContainerText',
       properties: ['text'],
@@ -71,7 +73,7 @@ export const containerConfig = {
   events: {},
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -80,7 +82,7 @@ export const containerConfig = {
       accordian: 'container',
     },
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -89,22 +91,13 @@ export const containerConfig = {
       accordian: 'header',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#fff',
       },
       accordian: 'container',
-    },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Height',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 80,
-      },
-      accordian: 'header',
     },
     borderRadius: {
       type: 'numberInput',
@@ -157,12 +150,14 @@ export const containerConfig = {
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      headerHeight: { value: `{{80}}` },
     },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },
       headerBackgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
+      headerHeight: { value: '{{80}}' },
       borderColor: { value: '#fff' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

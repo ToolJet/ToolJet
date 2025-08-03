@@ -8,6 +8,8 @@
         <script data-required="true">
             let callbackFn = () => {};
             let props = {};
+            let messageEventListener = null;
+            let loadEventListener = null;
             window.Tooljet = {
                 componentId: window.frameElement.getAttribute('data-id'),
                 subscribe: fn => {
@@ -28,6 +30,16 @@
                     updatedObj: obj,
                     componentId: window.Tooljet.componentId
                 }, "*"),
+                cleanup: () => {
+                    if (messageEventListener) {
+                        window.removeEventListener('message', messageEventListener);
+                        messageEventListener = null;
+                    }
+                    if (loadEventListener) {
+                        window.removeEventListener('load', loadEventListener);
+                        loadEventListener = null;
+                    }
+                },
                 init: () => {
                     window.parent.postMessage({
                         from: 'customComponent',
@@ -35,7 +47,7 @@
                         componentId: window.Tooljet.componentId,
                     }, "*");
             
-                    window.addEventListener('message', (e) => {
+                    messageEventListener = (e) => {
                         if(e.data.message === 'CODE_UPDATED' || e.data.message === 'INIT_RESPONSE'){
                             const tags = document.getElementsByTagName("script");
                             for(let i = 0; i < tags.length; i++){
@@ -56,13 +68,25 @@
                         } else if(e.data.message === 'DATA_UPDATED'){
                             props = e.data.data;
                             callbackFn(e.data.data)
+                        } else if(e.data.message === 'CLEANUP' && e.data.componentId === window.Tooljet.componentId) {
+                            // Cleanup React components
+                            const root = document.body;
+                            if (root._reactRootContainer) {
+                                ReactDOM.unmountComponentAtNode(root);
+                            }
+                            // Call the cleanup function
+                            window.Tooljet.cleanup();
                         }
-                    });
+                    };
+                    window.addEventListener('message', messageEventListener);
                 }
             }
-            window.addEventListener('load', function() {
+
+            loadEventListener = function() {
                 window.Tooljet.init();
-            })
+            };
+            
+            window.addEventListener('load', loadEventListener);
         </script>
         <script type="text/babel" data-required="true"> window.Tooljet.connectComponent = WrappedComponent => {
             class ConnectedComponent extends React.Component {

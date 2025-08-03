@@ -1,7 +1,7 @@
 @import "./colors.scss";
 @import "./designtheme.scss";
 .left-sidebar {
-  background: var(--page-default) !important;
+  background: var(--page-weak) !important;
   display: flex;
   gap: 16px;
 
@@ -182,9 +182,17 @@
   }
 }
 
+.page {
+  .leftsidebar-panel-header {
+    margin-bottom: 8px;
+  }
+
+}
+
 .debugger {
   .leftsidebar-panel-header {
     border-bottom: none;
+    margin-bottom: 8px;
   }
 
   .text-slate-12 {
@@ -195,6 +203,7 @@
 
   .text-tomato-9 {
     color: var(--tomato9);
+    font-weight: 500;
   }
 
   .text-slate-10 {
@@ -206,7 +215,7 @@
   }
 
   .nav-item .nav-link {
-    background-color: var(--slate3) !important;
+    background-color: var(--base) !important;
     color: var(--slate11) !important;
   }
 
@@ -252,11 +261,24 @@
     background-color: var(--slate3);
   }
 
-  .error-target {
+  .error-target, .error-target-custom-log {
     background-color: var(--interactive-overlays-fill-hover) !important;
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10)
+  }
+
+  .error-target-custom-log {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    background: var(--purple5) !important;
+    color: var(--purple11);
+    width: fit-content;
+
+    svg {
+      margin-right: 1px;
+    }
   }
 }
 
@@ -595,30 +617,25 @@
 
 .page-handler-wrapper {
   background: transparent;
-  height: 100%;
-  scrollbar-width: none;
   overflow: auto;
-  &.viewer{
-    overflow: visible !important;
-  }
-
-  &::-webkit-scrollbar {
-      display: none;
-  }
+  scrollbar-width: thin !important;
+  height: 100%;
+  padding-bottom: 48px;
+  scrollbar-color: var(--interactive-selected) transparent;
 
   .tj-list-item-selected {
     .custom-icon {
         svg {
-            color: #4368E3;
-            stroke: #4368E3;
+            color: var(--icon-accent);
+            stroke: var(--icon-accent);
             
         }
     }
   }
     .custom-icon {
         svg {
-          color: #6A727C;
-          stroke: #6A727C;
+          color: var(--icon-default);
+          stroke: var(--icon-default);
       }
     }
 
@@ -635,30 +652,44 @@
 
 
 .viewer-page-handler {
-  height: 32px;
-  padding: 0;
+  height: 40px;
 
   .card {
     background: none;
-    border: none;
+    border: none !important;
     box-shadow: none;
     display: flex;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    color: var(--text-placeholder) !important;
+    font-weight: 400 !important;
+    font-size: 14px !important;
+    outline: none !important;
+    background-color: unset !important;
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     margin-right: 5px;
+    stroke: var(--icon-weak);
   }
 
-  .card,
   .card-body {
-    padding: 3px;
-    height: 32px;
+    padding: 0px !important;
+    display: flex;
+    gap: 6px;
+    align-items: center;
   }
 
   .card.active {
     background: #fff;
+    font-weight: 500 !important;
+    color: var(--text-default) !important;
+
+    svg {
+      stroke: var(--icon-accent);
+    }
   }
 }
 
@@ -674,17 +705,33 @@
 
 .mobile-header {
   width: 100%;
+  .header-container {
+    background-color: unset !important;
+  }
+  .navbar {
+    border-bottom: 0px !important;
+  }
+}
+
+.bm-item {
+  &:last-child {
+    width: unset !important;
+    position: fixed;
+    bottom: 0px;
+    background: var(--background-surface-layer-01);
+  }
 }
 
 .bm-item .pages-container {
   width: 100% !important;
-  padding: 6px 0.3rem;
 
   .card.active {
     width: inherit;
-    background-color: var(--slate5);
-    color: var(--slate12);
-    border: none;
+    background-color: var(--background-accent-weak) !important;
+    color: var(--text-default) !important;
+    border: none !important;
+    padding: 0px;
+    border-radius: 6px;
   }
 }
 
@@ -701,8 +748,10 @@
 .sidebar-h-100-popover {
   position: relative;
   height: 100vh;
+  overflow-y:scroll !important;
   margin-top: 0px;
   border-radius: 0px !important;
+  box-shadow: none !important;
 
   .add-datasource-btn {
     position: absolute;
@@ -734,7 +783,7 @@
   align-items: center;
   padding-top: 0px;
   width: 48px;
-  border-right: 1px solid var(--slate5);
+  border-right: 1px solid var(--border-weak);
 }
 
 .tj-leftsidebar-icon-wrap {
@@ -756,6 +805,7 @@
   padding-bottom: 8px;
   width: 44px;
   max-height: 230px;
+  margin-bottom: var(--dynamic-margin-2, 0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-leftsidebar-icon-items {
@@ -843,4 +893,19 @@
   height: calc(100% - 48px);
   min-height: 300px;
   position: relative;
+}
+
+.left-sidebar-scrollbar {
+  &::-webkit-scrollbar {
+    margin-right: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--interactive-default) !important;
+    border-radius: 3px;
+  }
 }

@@ -1,7 +1,7 @@
 export const multipageSelector = {
   sidebarPageButton: '[data-cy="left-sidebar-page-button"]',
   pagesLabel: '[data-cy="label-pages"]',
-  addPageIcon: '[title="Add Page"]',
+  addPageIcon: '[data-cy="add-page-button"]',
   searchPageIcon: '[title="Search"]',
   pagesPinIcon: '[title="Pin"]',
 

@@ -1,4 +1,4 @@
-import { appEnvironmentService, appVersionService } from '@/_services';
+import { appEnvironmentService, appVersionService, authenticationService } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
 
@@ -196,7 +196,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   },
   changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
-      const data = await appVersionService.getAppVersionData(appId, versionId);
+      const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -243,7 +243,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
         const versionIsAvailableInEnvironment = environment?.priority <= get().currentAppVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
-          const appId = useStore.getState().app.appId;
+          const { appId } = useStore.getState().appStore.modules.canvas.app;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
@@ -285,7 +285,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
     try {
-      const appId = useStore.getState().app.appId; // Correct way to access appId
+      const { appId } = useStore.getState().appStore.modules.canvas.app;
 
       const response = await appVersionService.promoteEnvironment(appId, versionId, get().selectedEnvironment.id);
       set((state) => ({
@@ -318,10 +318,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const isVersionReleased = get().releasedVersionId === get().selectedVersion?.id;
     const isLastEnvironment = get().selectedEnvironment?.isDefault;
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
-
+    const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
+    const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
+      isPromoteVersionEnabled: hasPromotePermission,
+      isReleaseVersionEnabled: hasReleasePermission,
     };
   },
 
@@ -338,7 +341,7 @@ const calculatePromoteAndReleaseButtonVisibility = (
 ) => {
   const isVersionReleased = releasedVersionId === selectedVersionId;
   const isLastEnvironment = selectedEnvironment.isDefault;
-
+  // need to make an api call here to check if the current user has promote and release permissions or not
   return {
     shouldRenderPromoteButton: featureAccess?.multiEnvironment && !isLastEnvironment && !isVersionReleased,
     shouldRenderReleaseButton: !featureAccess?.multiEnvironment || isLastEnvironment || isVersionReleased,

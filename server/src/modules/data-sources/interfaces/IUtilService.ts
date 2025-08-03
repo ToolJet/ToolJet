@@ -17,14 +17,10 @@ export interface IDataSourcesUtilService {
   fetchAPITokenFromPlugins(
     dataSource: DataSource,
     code: string,
-    sourceOptions: any
-  ): Promise<
-    Array<{
-      key: string;
-      value: string;
-      encrypted: boolean;
-    }>
-  >;
+    sourceOptions: any,
+    isMultiAuthEnabled: boolean,
+    userId: string
+  ): Promise<Array<{ key: string; value: string; encrypted: boolean }> | Record<string, any>>;
 
   createDataSourceInAllEnvironments(
     organizationId: string,
@@ -34,7 +30,7 @@ export interface IDataSourcesUtilService {
 
   parseOptionsForOauthDataSource(options: Array<object>, resetSecureData?: boolean): Promise<Array<object>>;
 
-  resolveConstants(value: string, organizationId: string, environmentId: string): Promise<string>;
+  resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
 
   resolveKeyValuePair(element: any, organizationId: string, environmentId: string): Promise<any>;
 

@@ -1,12 +1,13 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
-  newToastMessage: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
+  newToastMessage:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   workspaceConstantNameInput: '[data-cy="name-input-field"]',
@@ -17,8 +18,8 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
-  nameInputFieldd: "[data-cy=name-input-field]",
-  valueInputFieldd: '[data-cy=value-input-field]',
+  inputFieldName: "[data-cy=name-input-field]",
+  valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
@@ -176,7 +177,7 @@ export const commonSelectors = {
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
-  confirmDuplicateButton: '[data-cy="confim-button"]',
+  confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
   labelEmailInput: '[data-cy="email-label"]',
   inputFieldEmailAddress: '[data-cy="email-input"]',
@@ -259,7 +260,7 @@ export const commonSelectors = {
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
   appNameErrorLabel: '[data-cy="app-name-error-label"]',
-  importAppTitle: '[data-cy="import-app-title"]',
+  importAppTitle: '[data-cy="import-an-app"]',
   importAppButton: '[data-cy="import-app"]',
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
@@ -277,6 +278,17 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+
+  textField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
+  },
+  labelFieldValidation: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
+  },
+  labelFieldAlert: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
+  },
+  pageLogo: '[data-cy="page-logo"]',
 };
 
 export const commonWidgetSelector = {
@@ -342,7 +354,7 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
@@ -395,7 +407,7 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="input-field-label"]',
+  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',

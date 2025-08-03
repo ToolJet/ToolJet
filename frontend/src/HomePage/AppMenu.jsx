@@ -13,10 +13,12 @@ export const AppMenu = function AppMenu({
   openAppActionModal,
   darkMode,
   currentFolder,
+  popoverVisible,
+  setMenuOpen,
   appType,
-  appCreationMode,
 }) {
   const { t } = useTranslation();
+  const isModuleApp = appType === 'module';
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
       document.body.click();
@@ -40,9 +42,12 @@ export const AppMenu = function AppMenu({
   return (
     <OverlayTrigger
       trigger="click"
-      placement="bottom-end"
+      placement="top-start"
       rootClose
       onToggle={onMenuOpen}
+      onExit={() => setMenuOpen(false)}
+      show={popoverVisible}
+      container={document.getElementsByClassName('home-page-content')[0]}
       overlay={
         <div>
           <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
@@ -50,9 +55,11 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
-                    customClass={appCreationMode === 'GIT' && 'disabled-action-tooltip'}
-                    text={t('homePage.appCard.renameApp', appType === 'workflow' ? 'Rename workflow' : 'Rename app')}
-                    onClick={() => appCreationMode !== 'GIT' && openAppActionModal('rename-app')}
+                    text={t(
+                      'homePage.appCard.renameApp',
+                      appType === 'workflow' ? 'Rename workflow' : appType === 'module' ? 'Rename module' : 'Rename app'
+                    )}
+                    onClick={() => openAppActionModal('rename-app')}
                   />
                 )}
                 {canUpdateApp && (
@@ -61,7 +68,7 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canCreateApp && (
+                {canCreateApp && appType !== 'module' && (
                   <>
                     <Field
                       text={t('homePage.appCard.addToFolder', 'Add to folder')}
@@ -79,10 +86,17 @@ export const AppMenu = function AppMenu({
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>
                     <Field
-                      text={t('homePage.appCard.cloneApp', 'Clone app')}
+                      text={
+                        appType === 'workflow' ? 'Clone workflow' : appType === 'module' ? 'Clone module' : 'Clone app'
+                      }
                       onClick={() => openAppActionModal('clone-app')}
                     />
-                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    <Field text={appType === 'module' ? 'Export module' : 'Export app'} onClick={exportApp} />
+                  </>
+                )}
+                {canUpdateApp && canCreateApp && appType === 'workflow' && (
+                  <>
+                    <Field text={'Export workflow'} onClick={exportApp} />
                   </>
                 )}
                 {canDeleteApp && (
@@ -90,7 +104,9 @@ export const AppMenu = function AppMenu({
                     text={
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
-                        : t('homePage.appCard.deleteApp', 'Delete app')
+                        : appType === 'front-end'
+                        ? t('homePage.appCard.deleteApp', 'Delete app')
+                        : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}
@@ -102,7 +118,7 @@ export const AppMenu = function AppMenu({
         </div>
       }
     >
-      <div className={'cursor-pointer menu-ico'} data-cy={`app-card-menu-icon`}>
+      <div className={'cursor-pointer menu-ico menu-icon--trigger'} data-cy={`app-card-menu-icon`}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

@@ -1,6 +1,7 @@
 import React from 'react';
 import FolderList from '@/_ui/FolderList/FolderList';
-
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 const categoryTitles = {
   all: 'All categories',
   'customer-support': 'Customer support',
@@ -21,7 +22,15 @@ export default function Categories(props) {
       {categories.map((category) => (
         <FolderList
           selectedItem={category.id === selectedCategory.id}
-          onClick={() => selectCategory(category)}
+          onClick={() => {
+            posthogHelper.captureEvent('click_template_category', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
+              template_category_id: category.id,
+            });
+            selectCategory(category);
+          }}
           key={category.id}
           dataCy={`${String(categoryTitles[category.id]).toLowerCase().replace(/\s+/g, '-')}`}
         >

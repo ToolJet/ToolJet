@@ -13,7 +13,7 @@ const Runjs = (props) => {
   }, [props.options]);
 
   return (
-    <Card className="runjs-editor mb-3">
+    <Card className="runjs-editor mb-3 !tw-mb-0">
       <CodeHinter
         renderCopilot={props.renderCopilot}
         type="multiline"

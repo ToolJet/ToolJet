@@ -8,13 +8,14 @@ import { shallow } from 'zustand/shallow';
 import { EditOrganization } from '@/modules/common/components/OrganizationManager';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { WorkspaceDropDown } from '@/modules/dashboard/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 /* TODO: 
   each workspace related component has organizations list component which can be moved to a single wrapper. 
   otherwise this component will intiate everytime we switch between pages
 */
-const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = () => null, ...props }) {
-  const { current_organization_id, admin } = authenticationService.currentSessionValue;
+const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, ...props }) => {
+  const { current_organization_id, admin, super_admin } = authenticationService.currentSessionValue;
   const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
     (state) => ({
       organizationList: state.organizations,
@@ -23,6 +24,8 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
     }),
     shallow
   );
+  const edition = fetchEdition();
+  const showLicenseInfoToolTip = edition === 'cloud' && super_admin === false;
   const darkMode = localStorage.getItem('darkMode') === 'true';
   useEffect(() => {
     fetchOrganizations();
@@ -53,7 +56,7 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
         <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
           {org.id === current_organization_id ? (
             <div className="current-org-avatar">
-              <SolidIcon name="tickv3" fill="#3E63DD" dataCy="add-new-workspace-link" width="21" />
+              <SolidIcon name="tickv3" fill="#3E63DD" data-cy="add-new-workspace-link" width="21" />
             </div>
           ) : (
             <div
@@ -64,8 +67,11 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
             </div>
           )}
 
-          <ToolTip message={org.name} placement="right">
-            <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
+          <ToolTip message={org.name} placement="top">
+            <div
+              className={`org-name ${showLicenseInfoToolTip ? 'license-info-tooltip' : ''}`}
+              data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}
+            >
               <span style={{ color: org.id === current_organization_id ? '#3E63DD' : 'var(--slate12)' }}>
                 {decodeEntities(org.name)}
               </span>
@@ -78,7 +84,7 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
                 data-cy="current-org-indicator"
                 onClick={() => setShowEditOrg(true)}
               >
-                <SolidIcon name="editable" fill="#3E63DD" dataCy="add-new-workspace-link" width="16" />
+                <SolidIcon name="editable" fill="#3E63DD" data-cy="edit-rectangle-icon" width="16" />
               </div>
             </ToolTip>
           ) : (

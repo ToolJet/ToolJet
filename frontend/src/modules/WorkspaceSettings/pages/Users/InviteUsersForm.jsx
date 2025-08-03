@@ -13,6 +13,8 @@ import { EDIT_ROLE_MESSAGE } from '@/modules/common/constants';
 import ModalBase from '@/_ui/Modal';
 import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 function InviteUsersForm({
   onClose,
@@ -33,7 +35,6 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
-  const [userLimits, setUserLimits] = useState({});
   const [existingGroups, setExistingGroups] = useState([]);
   const [newRole, setNewRole] = useState(null);
   const customGroups = groups.filter((group) => group.groupType === 'custom' && group?.disabled !== true);
@@ -59,6 +60,7 @@ function InviteUsersForm({
     },
   ];
   const [selectedGroups, setSelectedGroups] = useState([]);
+  const [limitReachedType, setLimitReachedType] = useState({});
   useEffect(() => {
     setFileUpload(false);
   }, [activeTab]);
@@ -68,6 +70,7 @@ function InviteUsersForm({
 
   const { super_admin } = authenticationService.currentSessionValue;
   const [featureAccess, setFeatureAccess] = useState({});
+  const edition = fetchEdition();
 
   useEffect(() => {
     fetchFeatureAccess();
@@ -81,8 +84,18 @@ function InviteUsersForm({
   };
 
   const fetchUserLimits = () => {
-    userService.getUserLimits('total').then((data) => {
-      setUserLimits(data);
+    userService.getUserLimits('all').then((data) => {
+      const licenseBannerObject = {
+        builderPercentage: data?.editorsCount?.percentage,
+        endUserPercentage: data?.viewersCount?.percentage,
+        builderTotal: data?.editorsCount?.total,
+        endUserTotal: data?.viewersCount?.total,
+        canAddUnlimitedBuilder: data?.editorsCount?.canAddUnlimited,
+        canAddUnlimitedEndUser: data?.viewersCount?.canAddUnlimited,
+        currentBuilder: data?.editorsCount?.current,
+        currentEndUser: data?.viewersCount?.current,
+      };
+      setLimitReachedType(licenseBannerObject);
     });
   };
 
@@ -232,26 +245,23 @@ function InviteUsersForm({
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
-      groupsToRemove.length ||
-      newRole ||
-      newGroupsToAdd.length ||
-      JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
+          groupsToRemove.length ||
+          newRole ||
+          newGroupsToAdd.length ||
+          JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
       : !inValidUserDetail || activeTab == 2;
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+  let fillColor;
+  if (activeTab == 1) {
+    fillColor = darkmode ? '#FFFFFF' : '#11181C';
+  } else {
+    fillColor = darkmode ? '#AAAAAA' : '#687076';
+  }
 
   const metadataChanged = (newOptions) => {
     setUserMetadata(newOptions);
-  };
-
-  // Returns the fill color based on active tab and theme
-  const getFillColor = (tabIndex) => {
-    if (activeTab !== tabIndex) {
-      return darkMode ? '#545B64' : '#687076'; // returning fill color for inactive tab wrt theme
-    }
-    
-    return darkMode ? '#FAFCFF' : '#313739'; // returning fill color for active tab wrt theme
   };
 
   return (
@@ -308,18 +318,32 @@ function InviteUsersForm({
                 <div className="tj-drawer-tabs-container">
                   <button
                     className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
-                    onClick={() => setActiveTab(1)}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_invite_with_email', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
+                      setActiveTab(1);
+                    }}
                     data-cy="button-invite-with-email"
                   >
-                    <SolidIcon name="mail" width="14" fill={getFillColor(1)} />
+                    <SolidIcon name="mail" width="14" fill={fillColor} />
                     <span> Invite with email</span>
                   </button>
                   <button
                     className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
-                    onClick={() => setActiveTab(2)}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_upload_csv_file', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
+                      setActiveTab(2);
+                    }}
                     data-cy="button-upload-csv-file"
                   >
-                    <SolidIcon name="fileupload" width="14" fill={getFillColor(2)} />
+                    <SolidIcon name="fileupload" width="14" fill={fillColor} />
                     <span>Upload CSV file</span>
                   </button>
                 </div>
@@ -328,15 +352,18 @@ function InviteUsersForm({
           </div>
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
-              <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
-              <div className={`invite-user-by-email ${isEditing && 'enable-edit-fields'}`}>
+              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
+              <div
+                className={`invite-user-by-email ${isEditing && 'enable-edit-fields'}`}
+                style={{ flexDirection: 'row' }}
+              >
                 <form
                   onSubmit={isEditing ? handleEditUser : handleCreateUser}
                   noValidate
                   className="invite-email-body"
                   id="inviteByEmail"
                 >
-                  <label className="form-label" data-cy="label-full-name-input-field">
+                  <label className="form-label" data-cy="name-label">
                     Name
                   </label>
                   <div className="form-group mb-3 ">
@@ -357,7 +384,7 @@ function InviteUsersForm({
                           name="fullName"
                           onChange={changeNewUserOption.bind(this, 'fullName')}
                           value={fields['fullName']}
-                          data-cy="input-field-full-name"
+                          data-cy="name-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-fullname">
@@ -367,7 +394,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="label-email-input-field">
+                    <label className="form-label" data-cy="email-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <ToolTip
@@ -385,7 +412,7 @@ function InviteUsersForm({
                           name="email"
                           onChange={changeNewUserOption.bind(this, 'email')}
                           value={fields['email']}
-                          data-cy="input-field-email"
+                          data-cy="email-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-email">
@@ -395,7 +422,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
-                    <label className="form-label" data-cy="label-group-input-field">
+                    <label className="form-label" data-cy="user-group-label">
                       {isEditing
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select groups')}
@@ -413,7 +440,7 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
-              <LicenseBanner limits={userLimits} type="users" size="small" />
+              <LicenseBanner classes="mb-3" userLimits={limitReachedType} size="small" type={'user-limits'} />
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -427,7 +454,7 @@ function InviteUsersForm({
                     <ButtonSolid
                       href={`${window.public_config?.TOOLJET_HOST}${
                         window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                        }assets/csv/sample_upload.csv`}
+                      }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
@@ -474,6 +501,7 @@ function InviteUsersForm({
               width="20"
               fill={'#FDFDFE'}
               isLoading={uploadingUsers || creatingUser}
+              iconCustomClass="icon-color"
             >
               {!isEditing
                 ? activeTab == 1

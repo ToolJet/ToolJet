@@ -7,11 +7,11 @@ sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-u
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install 18.18.2
+nvm install 22.15.1
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
 
-sudo npm i -g npm@9.8.1
+sudo npm i -g npm@10.9.2
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
@@ -58,10 +58,10 @@ envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
 sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # Download and setup postgrest binary
-curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.0.2/postgrest-v12.0.2-linux-static-x64.tar.xz
-tar xJf postgrest-v12.0.2-linux-static-x64.tar.xz
+curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.2.0/postgrest-v12.2.0-linux-static-x64.tar.xz
+tar xJf postgrest-v12.2.0-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
-sudo rm postgrest-v12.0.2-linux-static-x64.tar.xz
+sudo rm postgrest-v12.2.0-linux-static-x64.tar.xz
 
 # Add the Redis APT repository
 sudo add-apt-repository ppa:redislabs/redis -y
@@ -78,6 +78,28 @@ sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 # Start and enable Redis service
 sudo systemctl daemon-reload
 
+
+# Setup Neo4j with APOC plugin
+wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+echo "deb https://debian.neo4j.com stable 5" | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt-get update
+sudo apt-get install -y neo4j=1:5.26.6
+sudo apt-mark hold neo4j
+
+# Setup APOC plugin
+sudo mkdir -p /var/lib/neo4j/plugins
+sudo wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar
+
+# Update Neo4j config
+echo "dbms.security.procedures.unrestricted=apoc.*" | sudo tee -a /etc/neo4j/neo4j.conf
+echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" | sudo tee -a /etc/neo4j/neo4j.conf
+echo "dbms.directories.plugins=/var/lib/neo4j/plugins" | sudo tee -a /etc/neo4j/neo4j.conf
+echo "dbms.security.auth_enabled=true" | sudo tee -a /etc/neo4j/neo4j.conf
+
+# Clean up APT cache
+sudo apt-get clean
+sudo rm -rf /var/lib/apt/lists/*
+
 # Setup app directory
 mkdir -p ~/app
 
@@ -92,8 +114,9 @@ mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
 
-npm install -g npm@9.8.1
+npm install -g npm@10.9.2
 
 # Building ToolJet app
 npm install -g @nestjs/cli
+export NODE_OPTIONS='--max-old-space-size=8000'
 TOOLJET_EDTION=ee npm run build

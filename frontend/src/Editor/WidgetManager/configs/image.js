@@ -135,11 +135,22 @@ export const imageConfig = {
       displayName: 'Shape',
       options: [
         { name: 'None', value: 'none' },
+        { name: 'Rounded', value: 'rounded' },
         { name: 'Circle', value: 'circle' },
+        { name: 'Thumbnail', value: 'thumbnail' },
       ],
       validation: {
         schema: { type: 'string' },
         defaultValue: 'none',
+      },
+      accordian: 'Image',
+    },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
       },
       accordian: 'Image',
     },
@@ -164,6 +175,10 @@ export const imageConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
+      conditionallyRender: {
+        key: 'imageShape',
+        value: 'none',
+      },
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'Container',
     },
@@ -249,12 +264,13 @@ export const imageConfig = {
     styles: {
       imageFit: { value: 'contain' },
       imageShape: { value: 'none' },
-      backgroundColor: { value: '#FFFFFF' },
+      backgroundColor: { value: '' },
       borderColor: { value: '' },
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
+      alignment: { value: 'center' },
     },
   },
 };

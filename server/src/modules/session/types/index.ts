@@ -11,6 +11,10 @@ export type JWTPayload = {
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
   invitedOrganizationId?: string;
+  isPATLogin?: boolean;
+  token?: string;
+  appId?: string;
+  tj_api_source?: string;
 };
 
 interface Features {

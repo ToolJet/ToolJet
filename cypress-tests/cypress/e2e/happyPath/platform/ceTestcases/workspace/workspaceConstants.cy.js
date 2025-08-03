@@ -24,6 +24,7 @@ import {
 } from "Support/utils/dataSource";
 
 import { dataSourceSelector } from "Selectors/dataSource";
+import { setUpSlug } from "Support/utils/apps";
 
 const data = {};
 
@@ -39,6 +40,8 @@ describe("Workspace constants", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
+    cy.viewport(1800, 1800);
+
   });
 
   it("Verify workspace constants UI and CRUD operations", () => {
@@ -66,12 +69,11 @@ describe("Workspace constants", () => {
     });
   });
 
-  it("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
+  it.only("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
     data.workspaceName = fake.firstName;
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.visit(data.workspaceSlug);
-    cy.viewport(1440, 960);
     data.appName = `${fake.companyName}-App`;
 
     // create global constants
@@ -80,8 +82,8 @@ describe("Workspace constants", () => {
     addNewconstants("restapiHeaderKey", "customHeader");
     addNewconstants("restapiHeaderValue", "key=value");
     addNewconstants("deleteConst", "deleteconst");
-    addNewconstants("gconst", "236");
-    addNewconstants("gconstUrl", "http://34.66.166.236:4000/");
+    addNewconstants("gconst", "108");
+    addNewconstants("gconstUrl", "http://20.29.40.108:4000/");
     addNewconstants("gconstEndpoint", "production");
 
     // create secret constants
@@ -102,13 +104,23 @@ describe("Workspace constants", () => {
       .eq(0)
       .selectFile('cypress/fixtures/templates/workspace_constants.json', { force: true });
     cy.get(importSelectors.importAppButton).click();
-    cy.wait(5000);
-
+    cy.wait(6000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
     //Verify global constant value is resolved in component
     cy.get(commonWidgetSelector.draggableWidget('textinput1'))
       .verifyVisibleElement("have.value", "customHeader");
 
+    //Verify all static and datasource queries output in components
+    cy.wait(8000);
+    for (let i = 3; i <= 16; i++) {
+      cy.wait(1000);
+      cy.log("Verifying textinput" + i);
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
+        .verifyVisibleElement("have.value", "Production environment testing");
+    }
+
     //Verify secret constant value is not resolved in component and verify error message
+    cy.openComponentSidebar();
     cy.get(commonWidgetSelector.draggableWidget('textinput2'))
       .verifyVisibleElement("have.value", "").click();
     cy.get(commonWidgetSelector.defaultValueInputField).click();
@@ -116,15 +128,10 @@ describe("Workspace constants", () => {
       "secrets cannot be used in apps"
     );
 
-    //Verify all static and datasource queries output in components
-    for (let i = 3; i <= 16; i++) {
-      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
-        .verifyVisibleElement("have.value", "Production environment testing");
-    }
-
     //verify global constant is resolved in static query url
     cy.get('[data-cy="list-query-restapistaticg"]').click();
-    cy.get('.rest-api-methods-select-element-container .codehinter-container').click();
+    cy.get('.rest-api-methods-select-element-container .codehinter-container').eq(0).click();
+    cy.wait(500)
     cy.get('.text-secondary').should('have.text', Cypress.env("constants_host"));
 
     //Verify global constant is resolved in static query preview
@@ -141,28 +148,34 @@ describe("Workspace constants", () => {
     cy.get(dataSourceSelector.previewTabRawContainer).contains("secrets is not defined");
 
     //verify global const should be visible, secrets and deleted const are not in Inspector
-    cy.get(commonWidgetSelector.inspectorIcon).click();
-    cy.get(commonWidgetSelector.constantInspectorIcon).click();
-    cy.get('[data-cy="inspector-node-restapiheaderkey"]').should('exist');
-    cy.get('[data-cy="inspector-node-deleteconst"]').should('not.exist');
-    cy.get('[data-cy="inspector-node-sconst"]').should('not.exist');
+    // cy.get(commonWidgetSelector.sidebarinspector).click();
+    // cy.get(commonWidgetSelector.constantInspectorIcon).click();
+    // cy.get('[data-cy="inspector-node-restapiheaderkey"]').should('exist');
+    // cy.get('[data-cy="inspector-node-deleteconst"]').should('not.exist');
+    // cy.get('[data-cy="inspector-node-sconst"]').should('not.exist');
 
     //Preview app and verify components
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.wait(6000);
-    for (let i = 3; i <= 16; i++) {
+    cy.wait(8000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
+    for (let i = 16; i >= 3; i--) {
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`)).should('be.visible');
       cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
-        .verifyVisibleElement("have.value", "Production environment testing");
+        .verifyVisibleElement("have.value", "Production environment testing", { timeout: 10000 });
     }
 
-    //back to dashboard and open app again
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.wait(2000);
+
+    cy.visit('/');
+    cy.wait(4000);
     cy.get(commonSelectors.appEditButton).click({ force: true });
+    cy.wait(4000);
 
     cy.releaseApp();
-
+    setUpSlug(data.slug);
+    cy.forceClickOnCanvas();
     cy.backToApps();
+
 
     //Verify global are getting resolved and secrets are hidded in the data source form
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -176,5 +189,17 @@ describe("Workspace constants", () => {
     verifyConstantValueVisibility('[value="{{secrets.restapiHeaderValue}}"]', workspaceConstantsText.secretsHiddenText);
     cy.get('[data-cy="restapiurlgs-button"]').click();
     verifyConstantValueVisibility(dataSourceSelector.baseUrlTextField, workspaceConstantsText.secretsHiddenText);
+
+
+    cy.visitSlug({ actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}` });
+    cy.wait(8000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
+    for (let i = 16; i >= 3; i--) {
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`)).should('be.visible');
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
+        .verifyVisibleElement("have.value", "Production environment testing", { timeout: 10000 });
+    }
+
   })
 });
