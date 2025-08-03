@@ -3,6 +3,13 @@ FROM tooljet/tooljet:ee-latest
 # Copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+
+RUN wget http://snapshot.debian.org/archive/debian-security/2022-11-15T00:00:00Z/pool/updates/main/o/openssl1.1/libssl1.1_1.1.1n-0+deb11u4_amd64.deb && \
+    wget http://ftp.debian.org/debian/pool/main/i/icu/libicu67_67.1-7_amd64.deb && \
+    wget http://ftp.debian.org/debian/pool/main/o/openldap/libldap-2.4-2_2.4.57+dfsg-3+deb11u1_amd64.deb && \
+    dpkg -i libssl1.1_1.1.1n-0+deb11u4_amd64.deb libicu67_67.1-7_amd64.deb libldap-2.4-2_2.4.57+dfsg-3+deb11u1_amd64.deb && \
+    rm libssl1.1_1.1.1n-0+deb11u4_amd64.deb libicu67_67.1-7_amd64.deb libldap-2.4-2_2.4.57+dfsg-3+deb11u1_amd64.deb
+
 # Install Postgres
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
