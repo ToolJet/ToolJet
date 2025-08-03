@@ -129,7 +129,7 @@ export const NumberColumn = ({
           className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
-          step={allowedDecimalPlaces !== null ? `0.${'0'.repeat(allowedDecimalPlaces - 1)}1` : 'any'}
+          step={allowedDecimalPlaces !== null ? (allowedDecimalPlaces === 0 ? '1' : `0.${'0'.repeat(allowedDecimalPlaces - 1)}1`) : 'any'}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (displayValue !== cellValue) {
