@@ -9,6 +9,7 @@ describe("Login functionality", () => {
   let user;
   const invalidEmail = fake.email;
   const invalidPassword = fake.password;
+  const envVar = Cypress.env("environment");
 
   beforeEach(() => {
     cy.fixture("credentials/login.json").then((login) => {

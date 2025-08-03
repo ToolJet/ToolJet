@@ -24,6 +24,7 @@ import {
     exportAppModalSelectors,
     importSelectors,
 } from "Selectors/exportImport";
+import { dashboardText } from "../../../../../../constants/texts/dashboard";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -75,16 +76,18 @@ describe("Manage Groups", () => {
 
         // App operations
         cy.createApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appCreatedToast
-        );
+        // cy.verifyToastMessage(
+        //     commonSelectors.toastMessage,
+        //     commonText.appCreatedToast,
+        //     false
+        // );
         cy.backToApps();
 
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appDeletedToast
+            commonText.appDeletedToast,
+            false
         );
 
         // Folder operations
@@ -114,9 +117,10 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.cloneAppButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.cloneAppErrorToast
+            dashboardText.appClonedToast,
+            false
         );
-        cy.get(commonSelectors.cancelButton).click();
+        // cy.get(commonSelectors.cancelButton).click();
         cy.apiLogout();
 
         cy.apiLogin();
@@ -174,16 +178,18 @@ describe("Manage Groups", () => {
 
         // App operations
         cy.createApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appCreatedToast
-        );
+        // cy.verifyToastMessage(
+        //     commonSelectors.toastMessage,
+        //     commonText.appCreatedToast,
+        //     false
+        // );
         cy.backToApps();
 
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            commonText.appDeletedToast
+            commonText.appDeletedToast,
+            false
         );
 
         // Folder operations

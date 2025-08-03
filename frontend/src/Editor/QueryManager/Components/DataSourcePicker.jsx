@@ -50,7 +50,6 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
     navigate(`/${workspaceId}/data-sources`);
   };
 
-  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   return (
     <>
@@ -63,7 +62,7 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
         <a
           data-cy="querymanager-doc-link"
           target="_blank"
-          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          href="https://docs.tooljet.ai/docs/app-builder/query-panel"
           rel="noreferrer"
         >
           documentation
@@ -75,8 +74,6 @@ function DataSourcePicker({ dataSources, sampleDataSource, staticDataSources, da
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {staticDataSources.map((source) => {
-            if (!workflowsEnabled && source.kind === 'workflows') return null;
-
             return (
               <ButtonSolid
                 key={`${source.id}-${source.kind}`}

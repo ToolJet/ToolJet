@@ -17,8 +17,8 @@ data.customText = fake.randomSentence;
 
 describe("Data source Azure Blob Storage", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.intercept("GET", "/api/v2/data_sources");
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");

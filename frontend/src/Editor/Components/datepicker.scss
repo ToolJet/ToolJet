@@ -9,6 +9,37 @@
     background-color: var(--surfaces-surface-01) !important
   }
 
+  .react-datepicker__day:not([aria-disabled=true]):hover,
+  .react-datepicker__month-text:not([aria-disabled=true]):hover,
+  .react-datepicker__quarter-text:not([aria-disabled=true]):hover,
+  .react-datepicker__year-text:not([aria-disabled=true]):hover {
+    border-radius: 0.3rem;
+    background-color: var(--cc-surface1-surface);
+    filter: brightness(0.92);
+  }
+
+  .react-datepicker__day--selected:not([aria-disabled=true]):hover {
+    border-radius: 0.3rem;
+    background-color: var(--cc-primary-brand);
+    filter: brightness(0.92);
+  }
+
+  .react-datepicker__day--keyboard-selected {
+    background-color: var(--cc-surface1-surface);
+  }
+
+  .react-datepicker__day--keyboard-selected:not([aria-disabled=true]):hover {
+    border-radius: 0.3rem;
+    background-color: var(--cc-surface1-surface);
+    filter: brightness(0.92);
+  }
+
+
+
+}
+
+.react-datepicker-popper.tj-datepicker-widget {
+  width:242px !important;
 }
 
   // .dark-theme {

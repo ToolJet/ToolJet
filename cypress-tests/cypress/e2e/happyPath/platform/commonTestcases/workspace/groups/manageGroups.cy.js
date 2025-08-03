@@ -152,7 +152,7 @@ describe("Manage Groups", () => {
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Workspace settings");
     });
-    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", " Groups");
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", "Groups");
 
     // Verify base group elements
     groups.manageGroupsElements();
@@ -202,7 +202,6 @@ describe("Manage Groups", () => {
     testDuplicateGroup();
     createNewGroup();
 
-    // Verify permissions section
     cy.get(groupsSelector.permissionsLink).click();
     verifyPermissionSection();
 
@@ -220,8 +219,8 @@ describe("Manage Groups", () => {
       cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
       cy.get(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`)
         .verifyVisibleElement("have.text", groupsText.editPermissionModalTitle);
-      verifyModalFields(true, groupName);
       cy.get(groupsSelector.editPermissionRadio).check();
+      verifyModalFields(true, groupName);
       cy.get(groupsSelector.confimButton).click();
     };
 

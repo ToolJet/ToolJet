@@ -1,6 +1,7 @@
 import { QueryError } from './query.error';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
+import crypto from 'crypto';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -17,8 +18,29 @@ export function cacheConnection(dataSourceId: string, connection: any): any {
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): any {
-  const cachedData = CACHED_CONNECTIONS[dataSourceId];
+export function generateSourceOptionsHash(sourceOptions) {
+  const sortedEntries = Object.entries(sourceOptions)
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join('|');
+
+  return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
+}
+
+export function cacheConnectionWithConfiguration(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
+  const updatedAt = new Date();
+  const allKeys = Object.keys(CACHED_CONNECTIONS);
+  const oldKeysForThisDatasource = allKeys.filter(
+    (key) => key.startsWith(`${dataSourceId}_`) && key !== enhancedCacheKey
+  );
+  oldKeysForThisDatasource.forEach((oldKey) => delete CACHED_CONNECTIONS[oldKey]);
+
+  CACHED_CONNECTIONS[enhancedCacheKey] = { connection, updatedAt };
+}
+
+export function getCachedConnection(cacheKey: string | number, dataSourceUpdatedAt: any): any {
+  const cachedData = CACHED_CONNECTIONS[cacheKey];
 
   if (cachedData) {
     const updatedAt = new Date(dataSourceUpdatedAt || null);
@@ -83,14 +105,26 @@ export const sanitizeHeaders = (
   hasDataSource = true
 ): { [k: string]: string } => {
   const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+  const filterValidHeaderEntries = (headers) => {
+    return headers.filter(([_, value]) => {
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) return true;
+      return false;
+    });
+  };
 
-  const _queryHeaders = cleanHeaders(queryOptions.headers || []);
-  const queryHeaders = Object.fromEntries(_queryHeaders);
+  const processHeaders = (rawHeaders) => {
+    const cleaned = cleanHeaders(rawHeaders || []);
+    const validHeaders = filterValidHeaderEntries(cleaned);
+    return Object.fromEntries(validHeaders);
+  };
+
+  const queryHeaders = processHeaders(queryOptions.headers || []);
 
   if (!hasDataSource) return queryHeaders;
 
-  const _sourceHeaders = cleanHeaders(sourceOptions.headers || []);
-  const sourceHeaders = Object.fromEntries(_sourceHeaders);
+  const sourceHeaders = processHeaders(sourceOptions.headers || []);
 
   return { ...queryHeaders, ...sourceHeaders };
 };
@@ -121,8 +155,11 @@ export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasD
   });
 
   if (!hasDataSource) return _urlParams;
+  const sanitisedUrlParamsFromSourceOptions = (sourceOptions.url_params || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
 
-  const urlParams = _urlParams.concat(sourceOptions.url_params || []);
+  const urlParams = _urlParams.concat(sanitisedUrlParamsFromSourceOptions || []);
   return urlParams;
 };
 

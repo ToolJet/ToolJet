@@ -2,7 +2,7 @@ import React from 'react';
 
 export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
   const { data } = properties;
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, alignment } = styles;
 
   const computedStyles = {
     width,
@@ -10,6 +10,7 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
     display: visibility ? '' : 'none',
     overflowY: 'auto',
     boxShadow,
+    textAlign: alignment || 'left', // Add this line
   };
 
   function renderTag(item, index) {

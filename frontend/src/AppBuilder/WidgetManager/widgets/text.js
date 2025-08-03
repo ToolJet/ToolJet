@@ -29,6 +29,15 @@ export const textConfig = {
       },
       showLabel: false,
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -105,7 +114,7 @@ export const textConfig = {
       accordian: 'Text',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
@@ -185,7 +194,7 @@ export const textConfig = {
     },
 
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -195,11 +204,11 @@ export const textConfig = {
       colorPickerPosition: 'top',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#ffffff00',
       },
       accordian: 'Container',
       colorPickerPosition: 'top',
@@ -215,7 +224,7 @@ export const textConfig = {
       displayName: 'Box shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000090',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'Container',
     },
@@ -267,6 +276,7 @@ export const textConfig = {
     },
     properties: {
       textFormat: { value: 'html' },
+      dynamicHeight: { value: '{{false}}' },
       text: { value: `Hello {{globals.currentUser.firstName}}👋` },
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
@@ -275,7 +285,7 @@ export const textConfig = {
     events: [],
     styles: {
       backgroundColor: { value: '#fff00000' },
-      textColor: { value: '#000000' },
+      textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{14}}' },
       textAlign: { value: 'left' },
       fontWeight: { value: 'normal' },
@@ -289,8 +299,8 @@ export const textConfig = {
       fontVariant: { value: 'normal' },
       verticalAlignment: { value: 'center' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 0px 0px 0px #00000090' },
-      borderColor: { value: '' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      borderColor: { value: '#ffffff00' },
       borderRadius: { value: '{{6}}' },
       isScrollRequired: { value: 'enabled' },
     },

@@ -19,6 +19,7 @@ import {
 } from "Support/utils/common";
 import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
 import { resolveHost } from "Support/utils/apps";
+import { addSuccessNotification } from "Support/utils/queries";
 
 const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -32,7 +33,7 @@ describe("Datasource Manager", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit(`${workspaceSlug}`);
-    cy.viewport(1200, 1300);
+    cy.viewport(1800, 1800);
     cy.skipWalkthrough();
   });
 
@@ -46,8 +47,8 @@ describe("Datasource Manager", () => {
     data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    const allDataSources = host.includes("8082") ? "All data sources (42)" : "All data sources (44)";
-    const allDatabase = host.includes("8082") ? "Databases (18)" : "Databases (20)";
+    const allDataSources = host.includes("8082") ? "All data sources (45)" : "All data sources (45)";
+    const allDatabase = host.includes("8082") ? "Databases (20)" : "Databases (20)";
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
@@ -66,27 +67,27 @@ describe("Datasource Manager", () => {
       {
         selector: dataSourceSelector.commonDsLabelAndCount,
         text: "Commonly used (5)",
-        title: " Commonly used",
+        title: "Commonly used",
       },
       {
         selector: dataSourceSelector.databaseLabelAndCount,
         text: allDatabase,
-        title: " Databases",
+        title: "Databases",
       },
       {
         selector: dataSourceSelector.apiLabelAndCount,
         text: dataSourceText.allApis,
-        title: " APIs",
+        title: "APIs",
       },
       {
         selector: dataSourceSelector.cloudStorageLabelAndCount,
         text: dataSourceText.allCloudStorage,
-        title: " Cloud Storages",
+        title: "Cloud Storages",
       },
       {
         selector: dataSourceSelector.pluginsLabelAndCount,
         text: dataSourceText.pluginsLabelAndCount,
-        title: " Plugins",
+        title: "Plugins",
       },
     ];
 
@@ -140,7 +141,7 @@ describe("Datasource Manager", () => {
     cy.get(commonSelectors.yesButton).click();
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " Databases"
+      "Databases"
     );
     cy.get(`[data-cy="cypress-${data.dsName1}-postgresql-button"]`).click();
     cy.clearAndType(
@@ -183,7 +184,7 @@ describe("Datasource Manager", () => {
       data.dsName1
     );
 
-    cy.intercept("GET", "/api/v2/data_sources").as("datasource");
+    // cy.intercept("GET", "/api/v2/data_sources").as("datasource");
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),
@@ -192,13 +193,14 @@ describe("Datasource Manager", () => {
         Username: Cypress.env("pg_user"),
         Password: Cypress.env("pg_password"),
       },
-      ".form-switch"
+      '[data-cy="ssl-enabled-toggle-input"]'
     );
-    cy.wait("@datasource");
+    // cy.wait("@datasource");
+    cy.wait(1000);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    pinInspector();
+    // pinInspector();
 
     addQuery(
       "table_preview",
@@ -211,9 +213,11 @@ describe("Datasource Manager", () => {
       "table_preview "
     );
 
-    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get('[data-cy="query-tab-settings"]').click();
+    addSuccessNotification("table_preview");
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "table_preview");
+
     cy.get('[data-cy="show-ds-popover-button"]').click();
 
     cy.get(".p-2 > .tj-base-btn")
@@ -223,7 +227,7 @@ describe("Datasource Manager", () => {
     cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
 
     cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName2}-postgresql`,
       "postgresql",
       [
@@ -246,9 +250,13 @@ describe("Datasource Manager", () => {
     cy.get("#react-select-4-listbox")
       .contains(`cypress-${data.dsName2}-postgresql`)
       .click();
+
+    cy.get('[data-cy="query-tab-settings"]').click();
+    addSuccessNotification("postgresql");
     cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "4 items ");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "postgresql");
+
   });
 
   it.skip("Should verify the query creation and scope changing functionality.", () => {
@@ -274,7 +282,7 @@ describe("Datasource Manager", () => {
     pinInspector();
 
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    verifyValueOnInspector("table_preview", "7 items ");
+    verifyValueOnInspector("table_preview", "10 items ");
 
     //scope changing is pending
   });

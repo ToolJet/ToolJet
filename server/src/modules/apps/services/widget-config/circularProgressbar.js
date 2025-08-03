@@ -32,19 +32,19 @@ export const circularProgressbarConfig = {
   events: {},
   styles: {
     color: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     textSize: {
@@ -104,8 +104,8 @@ export const circularProgressbarConfig = {
     },
     events: [],
     styles: {
-      color: { value: '' },
-      textColor: { value: '' },
+      color: { value: 'var(--cc-primary-brand)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{16}}' },
       strokeWidth: { value: '{{8}}' },
       counterClockwise: { value: '{{false}}' },

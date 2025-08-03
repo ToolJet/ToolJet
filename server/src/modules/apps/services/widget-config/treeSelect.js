@@ -23,8 +23,8 @@ export const treeSelectConfig = {
     onUnCheck: { displayName: 'On uncheck' },
   },
   styles: {
-    textColor: { type: 'color', displayName: 'Text Color' },
-    checkboxColor: { type: 'color', displayName: 'Checkbox color' },
+    textColor: { type: 'colorSwatches', displayName: 'Text Color' },
+    checkboxColor: { type: 'colorSwatches', displayName: 'Checkbox color' },
     visibility: { type: 'toggle', displayName: 'Visibility' },
     disabledState: { type: 'toggle', displayName: 'Disable' },
   },
@@ -70,8 +70,8 @@ export const treeSelectConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      checkboxColor: { value: '' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      checkboxColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

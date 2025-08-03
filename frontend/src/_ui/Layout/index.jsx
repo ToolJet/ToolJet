@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
-import Logo from '@assets/images/rocket.svg';
+import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
@@ -14,6 +14,7 @@ import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whi
 import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 
 function Layout({
   children,
@@ -24,8 +25,10 @@ function Layout({
   toggleCollapsibleSidebar = () => {},
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
-  const [logo, setLogo] = useState(null);
+  const logo = useWhiteLabellingStore((state) => state.whiteLabelLogo);
+  const isWhiteLabellingDataLoading = useWhiteLabellingStore((state) => state.loadingWhiteLabelDetails);
   const router = useRouter();
+  const [licenseStatus, setLicenseStatus] = useState(null);
   const { featureAccess } = useLicenseStore(
     (state) => ({
       featureAccess: state.featureAccess,
@@ -79,11 +82,13 @@ function Layout({
 
   useEffect(() => {
     useLicenseStore.getState().actions.fetchFeatureAccess();
+    fetchWhiteLabelDetails(authenticationService?.currentSessionValue?.organization_id);
   }, []);
 
   useEffect(() => {
     let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
     setLicenseValid(licenseValid);
+    setLicenseStatus(featureAccess?.licenseStatus);
   }, [featureAccess]);
 
   const currentUserValue = authenticationService.currentSessionValue;
@@ -97,22 +102,6 @@ function Layout({
     admin ||
     super_admin;
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
-  fetchWhiteLabelDetails();
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const whiteLabelLogo = await retrieveWhiteLabelLogo();
-        setLogo(whiteLabelLogo);
-      } catch (error) {
-        console.error('Error fetching logo:', error);
-        setLogo(null);
-      }
-    };
-
-    fetchLogo();
-  }, []);
-
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
   const {
@@ -138,7 +127,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {logo ? <img src={logo} /> : <Logo />}
+                {isWhiteLabellingDataLoading ? '' : logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}
               </Link>
             </div>
             <LeftNavSideBar
@@ -162,8 +151,9 @@ function Layout({
           enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
           toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+          licenseStatus={licenseStatus}
         />
-        <div style={{ paddingTop: 64 }}>{children}</div>
+        <div style={{ paddingTop: 48 }}>{children}</div>
       </div>
       <ConfirmDialog
         title={'Unsaved Changes'}

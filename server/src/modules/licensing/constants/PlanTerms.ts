@@ -25,7 +25,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     gitSync: false,
     comments: false,
     customThemes: false,
-    ai: true,
+    serverSideGlobalResolve: false,
   },
   domains: [],
   workflows: {
@@ -70,6 +70,27 @@ export const BASIC_PLAN_SETTINGS = {
   },
 };
 
+export const CLOUD_EDITION_SETTINGS = {
+  ALLOW_PERSONAL_WORKSPACE: {
+    value: 'true',
+  },
+  ENABLE_MULTIPLAYER_EDITING: {
+    value: 'true',
+  },
+  ENABLE_COMMENTS: {
+    value: 'true',
+  },
+  ENABLE_WORKSPACE_LOGIN_CONFIGURATION: {
+    value: 'true',
+  },
+  SMTP_ENV_CONFIGURED: {
+    value: 'true',
+  },
+  ENABLE_SIGNUP: {
+    value: 'true',
+  },
+};
+
 export const BUSINESS_PLAN_TERMS = {
   auditLogs: {
     maximumDays: 14,
@@ -79,5 +100,17 @@ export const BUSINESS_PLAN_TERMS = {
 export const ENTERPRISE_PLAN_TERMS = {
   auditLogs: {
     maximumDays: 30,
+  },
+};
+
+export const WORKFLOW_TEAM_PLAN_TERMS: Partial<Terms> = {
+  workflows: {
+    execution_timeout: 60,
+    instance: {
+      total: LICENSE_LIMIT.UNLIMITED,
+      daily_executions: LICENSE_LIMIT.UNLIMITED,
+      monthly_executions: LICENSE_LIMIT.UNLIMITED,
+    },
+    //Only sending instance not workspace
   },
 };

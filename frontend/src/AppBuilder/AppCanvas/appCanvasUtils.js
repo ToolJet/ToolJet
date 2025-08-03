@@ -5,8 +5,18 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import { findHighestLevelofSelection, getMouseDistanceFromParentDiv } from './Grid/gridUtils';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+  TAB_CANVAS_PADDING,
+  MODAL_CANVAS_PADDING,
+  LISTVIEW_CANVAS_PADDING,
+} from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -17,30 +27,64 @@ export function snapToGrid(canvasWidth, x, y) {
 }
 
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
-export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, currentLayout, realCanvasRef, parentId) => {
-  const canvasBoundingRect = realCanvasRef?.current?.getBoundingClientRect();
+export const addNewWidgetToTheEditor = (
+  componentType,
+  currentLayout,
+  realCanvasRef,
+  parentId,
+  moduleInfo = undefined
+) => {
+  const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
   const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
-
+  const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const offsetFromTopOfWindow = canvasBoundingRect?.top;
-  const offsetFromLeftOfWindow = canvasBoundingRect?.left;
-  const currentOffset = eventMonitorObject?.getSourceClientOffset();
+  const { e } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
-  let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
-  let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
-
-  [left, top] = snapToGrid(subContainerWidth, left, top);
+  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+    e,
+    parentId === 'canvas' ? 'real-canvas' : parentId,
+    parentCanvasType
+  );
+  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
+
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+
+  let customLayouts = undefined;
+
+  if (moduleInfo) {
+    componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
+    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.visibility = { value: true };
+    customLayouts = moduleInfo?.moduleContainer?.layouts;
+
+    const inputItems = Object.values(
+      moduleInfo.moduleContainer?.component.definition.properties?.input_items?.value ?? {}
+    );
+
+    for (const { name, default_value } of inputItems) {
+      componentData.definition.properties[name] = { value: default_value };
+    }
+  }
+
+  // Ensure minimum width
+  width = Math.max(width, 1);
+
+  // Adjust position and width if exceeding grid bounds
+  if (width + left > NO_OF_GRIDS) {
+    left = Math.max(0, NO_OF_GRIDS - width);
+    width = Math.min(width, NO_OF_GRIDS);
+  }
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
@@ -59,14 +103,14 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
       [currentLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[currentLayout].width : width,
+        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
       },
       [nonActiveLayout]: {
         top: top,
         left: left,
-        width,
-        height: defaultHeight,
+        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
       },
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
@@ -153,6 +197,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
         component: {
           ...componentData,
           parent: _parent,
+          name: widgetName,
         },
         layouts: {
           [currentLayout]: {
@@ -215,6 +260,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       const childTabId = componentParentId.split('-').at(-1);
       if (componentParentId === `${parentId}-${childTabId}`) {
         childComponent.isParentTabORCalendar = true;
+        childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
         childComponents.push(childComponent);
         // Recursively find children of the current child component
         const childrenOfChild = getAllChildComponents(allComponents, componentId);
@@ -225,6 +271,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
     if (componentParentId === parentId) {
       let childComponent = deepClone(allComponents[componentId]);
       childComponent.id = componentId;
+      childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
       childComponents.push(childComponent);
 
       // Recursively find children of the current child component
@@ -248,6 +295,12 @@ const getSelectedText = () => {
 
 // TODO: Move this function to componentSlice
 export const copyComponents = ({ isCut = false, isCloning = false }) => {
+  const selectedText = window.getSelection()?.toString().trim();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    return;
+  }
+
   const selectedComponents = useStore.getState().getSelectedComponentsDefinition();
   if (selectedComponents.length < 1) return getSelectedText();
   const allComponents = useStore.getState().getCurrentPageComponents();
@@ -498,7 +551,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'Modal'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
@@ -509,8 +562,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     parentComponent = components[id];
   }
 
+  const componentIdMappingSet = new Map(),
+    formComponentIds = new Set();
+
   pastedComponents.forEach((component) => {
+    component = deepClone(component);
     const newComponentId = isCut ? component.id : uuidv4();
+    if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
+    if (component.component.component === 'Form') formComponentIds.add(newComponentId);
     const componentName = computeComponentName(component.component.component, {
       ...components,
       ...Object.fromEntries(finalComponents.map((component) => [component.id, component])),
@@ -550,15 +609,13 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
     // Adjust width if parent changed
-    let width = component.layouts.desktop.width;
+    let width = component.layouts[currentLayout].width;
 
-    if (targetParentId !== component.component?.parent) {
-      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
-      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
-      width = Math.round((width * oldContainerWidth) / containerWidth);
-    }
+    component.layouts[currentLayout] = {
+      ...component.layouts[currentLayout],
+      width,
+    };
 
-    component.layouts[currentLayout].width = width;
     const newComponent = {
       component: {
         ...componentData,
@@ -573,8 +630,17 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     finalComponents.push(newComponent);
   });
   const canAddToParent = useStore.getState().canAddToParent;
-  const filteredFinalComponents = finalComponents.filter((component) => {
+  const fc = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
+  });
+  const filteredFinalComponents = fc.map((component) => {
+    if (formComponentIds.has(component.id)) {
+      const fields = component.component.definition?.properties?.fields?.value || [];
+      fields.forEach((field) => {
+        field.componentId = componentIdMappingSet.get(field.componentId) || field.componentId;
+      });
+    }
+    return component;
   });
 
   const filteredComponentsCount = filteredFinalComponents.length;
@@ -643,10 +709,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
 
-export const getCanvasWidth = (currentLayout) => {
-  if (currentLayout === 'mobile') {
-    return CANVAS_WIDTHS.deviceWindowWidth;
+export const getCanvasWidth = (moduleId = 'canvas') => {
+  if (moduleId !== 'canvas') {
+    return '100%';
   }
+
+  // if (currentLayout === 'mobile') {
+  //   return CANVAS_WIDTHS.deviceWindowWidth;
+  // }
   const windowWidth = window.innerWidth;
   const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + CANVAS_WIDTHS.rightSideBarWidth);
   const canvasMaxWidth = useStore.getState().globalSettings.canvasMaxWidth;
@@ -705,4 +775,34 @@ export const getSubContainerIdWithSlots = (parentId) => {
     }
   }
   return cleanParentId;
+};
+
+export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
+  let padding = 2; //Need to update this 2 to correct value for other subcontainers
+  if (componentType === 'Container' || componentType === 'Form') {
+    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  }
+  // if (componentType === 'Tabs') {
+  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  // }
+  if (componentType === 'ModalV2') {
+    const isModalHeader = componentId?.includes('header');
+    if (isModalHeader) {
+      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
+        ?.hideCloseButton;
+      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+    } else {
+      padding = 2 * MODAL_CANVAS_PADDING;
+    }
+  }
+  if (componentType === 'Listview') {
+    padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+  }
+  return canvasWidth - padding;
+};
+
+export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {
+  const { id } = defaultChildComponents[defaultChildComponents.length - 1]; // Assuming the last child is the button
+  formComponent.component.definition.properties.buttonToSubmit = { value: id };
+  return formComponent;
 };

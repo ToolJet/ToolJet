@@ -40,4 +40,8 @@ export class InstanceConfigsUpdateDto {
   @IsOptional()
   @IsBoolean()
   automaticSsoLoginEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  customLogoutUrl?: string;
 }

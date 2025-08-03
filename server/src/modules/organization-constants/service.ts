@@ -143,9 +143,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
           );
           await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
             encryptedValue,
-            (
-              await environment
-            ).id,
+            (await environment).id,
             savedOrganizationConstant.id,
             manager
           );

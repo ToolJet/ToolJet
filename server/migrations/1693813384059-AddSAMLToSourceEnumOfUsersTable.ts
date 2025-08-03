@@ -18,7 +18,7 @@ export class AddSAMLToSourceEnumOfUsersTable1693813384059 implements MigrationIn
     );
     await queryRunner.query('DROP TYPE IF EXISTS source');
     await queryRunner.query(
-      "CREATE TYPE source AS ENUM ('signup', 'invite', 'google', 'git', 'openid', 'ldap', 'saml')"
+      "CREATE TYPE source AS ENUM ('signup', 'invite', 'google', 'git', 'openid', 'ldap', 'saml', 'workspace_signup')"
     );
     if (checkResult[0].exists) {
       await queryRunner.query("ALTER TABLE organization_users ALTER COLUMN source set DEFAULT 'invite'::source");

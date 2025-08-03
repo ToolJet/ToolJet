@@ -7,14 +7,16 @@ import {
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from '../dto';
+import { UserPermissions } from '@modules/ability/types';
 
 export interface IDataSourcesController {
-  fetchGlobalDataSources(user: User): Promise<{ data_sources: object[] }>;
+  fetchGlobalDataSources(user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
   fetchGlobalDataSourcesForVersion(
     user: User,
     appVersionId: string,
-    environmentId: string
+    environmentId: string,
+    userPermissions: UserPermissions
   ): Promise<{ data_sources: object[] }>;
 
   createGlobalDataSources(user: User, createDataSourceDto: CreateDataSourceDto): Promise<any>;
@@ -44,4 +46,6 @@ export interface IDataSourcesController {
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ): Promise<void>;
+
+  decryptOptions(options: Record<string, any>): Promise<any>;
 }
