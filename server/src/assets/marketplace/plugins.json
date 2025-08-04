@@ -232,7 +232,7 @@
   },
   {
     "name": "AWS Bedrock",
-    "description": "Consume invoke model api via foundation models available on AWS",
+    "description": "Plugin to use AI foundation models available on AWS",
     "version": "1.0.0",
     "id": "aws-bedrock",
     "author": "Tooljet",

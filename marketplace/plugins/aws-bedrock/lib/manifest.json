@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "AWS Bedrock datasource",
-  "description": "Consume invoke model api via foundation models available on AWS",
+  "description": "Plugin to use AI foundation models available on AWS",
   "type": "api",
   "source": {
     "name": "AWS Bedrock",
@@ -172,7 +172,7 @@
       "key": "session_token",
       "type": "password",
       "description": "Enter your AWS Session Token (optional)",
-      "helpText": "Leave empty to automatically generate temporary credentials using your IAM keys",
+      "helpText": "Required only while using temporary credentials",
       "optional": true
     }
   },
