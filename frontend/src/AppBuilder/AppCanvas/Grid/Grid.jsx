@@ -948,6 +948,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               top = dragged.top;
               !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+              isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }
             // Apply transform for smooth transition
             e.target.style.transform = `translate(${left}px, ${top + scrollDelta}px)`;

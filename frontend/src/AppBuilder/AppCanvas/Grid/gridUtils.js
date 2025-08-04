@@ -410,7 +410,6 @@ export function showGridLines() {
     }
     return true;
   });
-  console.log('elementsArray', elementsArray);
   elementsArray.forEach(function (element) {
     element.classList.remove('hide-grid');
     element.classList.add('show-grid');

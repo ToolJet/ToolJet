@@ -35,8 +35,12 @@ export const useCanvasDropHandler = () => {
 
     setShowModuleBorder(false); // Hide the module border when dropping
 
-    if ((!isModuleEditor && isParentModuleContainer) || (isModuleEditor && canvasId === 'canvas')) {
+    if (isModuleEditor && canvasId === 'canvas') {
       return;
+    }
+
+    if (!isModuleEditor && isParentModuleContainer) {
+      return toast.error('Modules cannot be edited inside an app');
     }
 
     if (draggedComponentType === 'PDF' && !isPDFSupported()) {
