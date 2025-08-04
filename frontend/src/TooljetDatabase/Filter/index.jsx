@@ -29,7 +29,9 @@ const Filter = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(tempFilters);
   const tempFilterCount = Object.keys(tempFilters).length;
-  const filterCount = Object.keys(filters).length;
+  const filterCount = Object.values(filters).filter(
+    (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
+  ).length;
   const validFilterCountRef = React.useRef(0);
   const isMounted = useMounted();
 
@@ -222,7 +224,17 @@ const Filter = ({
         show={show}
         onToggle={(show) => {
           if (show && isEmpty(filters)) setTempFilters({ 0: {} });
-          if (show && !isEmpty(filters)) setTempFilters(deepClone(filters));
+          if (show && !isEmpty(filters)) {
+            // Remove empty filters before setting tempFilters
+            const nonEmptyFilters = Object.keys(filters).reduce((acc, key) => {
+              const filter = filters[key];
+              if (!isEmpty(filter.column) || !isEmpty(filter.operator) || !isEmpty(filter.value)) {
+                acc[key] = filter;
+              }
+              return acc;
+            }, {});
+            setTempFilters(deepClone(nonEmptyFilters));
+          }
           setShow(show);
         }}
         placement="bottom-start"
