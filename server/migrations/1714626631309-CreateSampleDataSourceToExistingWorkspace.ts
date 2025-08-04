@@ -80,8 +80,8 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
         },
         {
           key: 'ssl_enabled',
-          value: true,
-          encrypted: false,
+          value: false,
+          encrypted: true,
         },
         { key: 'ssl_certificate', value: 'none', encrypted: false },
       ];
@@ -115,5 +115,5 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
