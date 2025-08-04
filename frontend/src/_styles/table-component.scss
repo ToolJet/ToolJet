@@ -1600,37 +1600,39 @@
 }
 
 
+.card.jet-table.table-component {
 
-.table-cell {
-  input[type="checkbox"] {
-    position: relative;
-    appearance: none;
-    -webkit-appearance: none;
-    border: 1px solid var(--cc-default-border,--borders-default);
-    border-radius: 3px;
-    background-color: var(--cc-surface1-surface);
-    cursor: pointer;
-    
-    &:checked {
-      background-color: var(--cc-primary-brand);
-      border-color: var(--cc-primary-brand);
-      
-      &:after {
-        content: '';
-        position: absolute;
-        left: 4px;
-        top: 1px;
-        width: 5px;
-        height: 9px;
-        border: solid white;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg);
-      }
-    }
-    
-    &:not(:checked) {
+  .table-cell {
+    input[type="checkbox"] {
+      position: relative;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid var(--cc-default-border,--borders-default);
+      border-radius: 3px;
       background-color: var(--cc-surface1-surface);
-      border-color: var(--cc-default-border,--borders-default);
+      cursor: pointer;
+      
+      &:checked {
+        background-color: var(--cc-primary-brand);
+        border-color: var(--cc-primary-brand);
+        
+        &:after {
+          content: '';
+          position: absolute;
+          left: 4px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+      }
+      
+      &:not(:checked) {
+        background-color: var(--cc-surface1-surface);
+        border-color: var(--cc-default-border,--borders-default);
+      }
     }
   }
 }
