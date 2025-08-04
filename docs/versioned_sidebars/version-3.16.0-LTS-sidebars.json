@@ -624,7 +624,8 @@
               "type": "category",
               "label": "Workspace level",
               "items": [
-                "user-management/group-sync/workspace-level/oidc"
+                "user-management/group-sync/workspace-level/oidc",
+                "user-management/group-sync/workspace-level/saml"
               ]
             }
           ]
