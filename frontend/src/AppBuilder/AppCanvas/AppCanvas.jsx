@@ -207,7 +207,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           )}
           style={canvasContainerStyles}
         >
-          {showOnDesktop && appType !== 'module' && (
+          {appType !== 'module' && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
