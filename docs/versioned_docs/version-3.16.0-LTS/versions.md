@@ -5,23 +5,24 @@ title: ToolJet Documentation Versions
 
 ## Current LTS Versions (Stable)
 
-| Version    | Documentation                                   |
-|------------|-------------------------------------------------|
-| 3.5.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/) |
-| 3.0.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/3.0.0-LTS/) |
+| Version    | Documentation                                              |
+|------------|------------------------------------------------------------|
+| 3.16.0-LTS | [Documentation](https://docs.tooljet.ai/docs/)             |
+| 3.5.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/3.5.0-LTS/)   |
+| 3.0.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/3.0.0-LTS/)   |
 | 2.50.0-LTS | [Documentation](https://docs.tooljet.ai/docs/2.50.0-LTS/)  |
 
 ## Beta Version (Pre-Release)
 
-| Version     | Documentation                             | 
-|-------------|-------------------------------------------|
-| 3.11.0-Beta 🚧   | [Documentation](https://docs.tooljet.ai/docs/beta/) |
+| Version    | Documentation                                        | 
+|------------|------------------------------------------------------|
+| beta 🚧     | [Documentation](https://docs.tooljet.ai/docs/beta/) |
 
 ## Past Versions (Not Maintained Anymore)
 
-| Version     | Documentation                             |
-|-------------|-------------------------------------------|
-| 2.65.0      | [Documentation](https://archived-docs.tooljet.com/docs/) |
+| Version     | Documentation                                                  |
+|-------------|----------------------------------------------------------------|
+| 2.65.0      | [Documentation](https://archived-docs.tooljet.com/docs/)       |
 | 2.62.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.62.0) |
 | 2.61.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.61.0) |
 | 2.43.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.43.0) |
