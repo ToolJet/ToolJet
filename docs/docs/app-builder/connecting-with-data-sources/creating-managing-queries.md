@@ -65,6 +65,28 @@ Before connecting a query to your app’s UI, use the Preview button to check wh
 
 Once things look good, use the Run button to execute the query and verify how it interacts with your components and other queries.
 
+## Query Level Permission
+
+You can configure query-level permissions to allow only selected end users or user groups to run the query. 
+
+### Configuring Query Level Permission
+
+Follow these steps to configure query level permission:
+
+**Role Required**: Admin or Builder
+
+1. Select the query, then click the kebab menu (three dots) next to the query name on the query panel. <br/>
+    <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/app-builder/connecting-with-datasouces/query-permission-kebab.png" alt="App Builder: Create queries"/>
+2. Select **Query permission**. <br/>
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/connecting-with-datasouces/query-permission.png" alt="App Builder: Component library"/>
+3. Select the **Type**:
+    - **All users with access to the app**: Grants access to all users who can access the application.
+    - **Users**: Select specific users from the dropdown. Note: These users must already have access to the application.
+    - **User groups**: Restricts access to members of selected user groups. Note: The selected user groups must have access to the application.
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/connecting-with-datasouces/permission-type.png" alt="App Builder: Component library"/>
+
+**Note**: If a query's permissions have been configured by an admin and the builder is not included in the allowed users or groups, the builder will not be able to run or modify the query or its permissions.
+
 ## Triggers
 
 Triggers allow you to control when and how a query executes within your application. You can find them under the **Settings** tab in the query editor. Following are the triggers available:

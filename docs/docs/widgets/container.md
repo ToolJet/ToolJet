@@ -15,33 +15,31 @@ The show header toggle can be used to display or hide a header for the component
 
 ## Component Specific Actions (CSA)
 
-Following actions of component can be controlled using the component specific actions(CSA):
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.container1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.container1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.container1.setDisable(true)`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.     | `components.container1.setVisibility(false)` |
+| setLoading()   | Sets the loading state of the component.  | `components.container1.setLoading(true)` |
+| setDisable()   | Disables the component.                   | `components.container1.setDisable(true)` |
 
 ## Exposed Variables
 
 | Variable | Description | How To Access |
 |:--------|:-----------|:------------|
-| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.container1.isLoading}}`).|
-| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.container1.isVisible}}`).|
-| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.container1.isDisabled}}`).|
-
-## Tooltip
-
-You can add a Tooltip to the component in string format. Once you pass a value in the tooltip input, hovering over the component will display the value on the right.
+| isLoading | Indicates if the component is loading. | `{{components.container1.isLoading}}` |
+| isVisible | Indicates if the component is visible. | `{{components.container1.isVisible}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.container1.isDisabled}}` |
 
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
 | Loading state      | Enables a loading spinner, often used with the isLoading property to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component.                                            | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the container's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip  | Provides additional information on hover. Set a display string.  | String |
 
 ## Devices
 
@@ -50,18 +48,22 @@ You can add a Tooltip to the component in string format. Once you pass a value i
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
----
-
 ## Styles
+
+### Container
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background        | Sets the background color of the container.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Header    | Sets the background color of the header.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Header height      | Sets the height of the header within the component.                                     | Enter a number or click on **fx** and input a number programmatically using code.          |
-| Border radius      | Sets the radius of the component.                                     | Enter a number or click on **fx** and input a number programmatically using code.          |
-| Border color          | Sets the color of the border.                                               | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.                                            |
+| Background | Sets the background color of the container.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border color | Sets the color of the border. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border radius | Sets the radius of the component. | Enter a number or click on **fx** and input a number programmatically using code.   |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the header.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 
 

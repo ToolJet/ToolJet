@@ -2,7 +2,6 @@
 id: multiselect
 title: Multiselect
 ---
-# Multiselect
 
 The Multiselect component enables users to select multiple options from a predefined list, making it ideal for gathering multiple inputs.
 
@@ -13,11 +12,11 @@ The Multiselect component enables users to select multiple options from a predef
 | Label         | Text to display as the label for the component.           | String (e.g., `Select an option`).         |
 | Placeholder         | Text to display when none of the options are selected.           | String (e.g., `Select the loan type`).         |
 
-
 ## Options
+
 Allows you to add options to the multiselect component field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
 
-### Example Code for Dynamic Columns
+### Example Code for Dynamic Options
 
 1. Passing an array of objects and specifying each value:
 
@@ -43,63 +42,74 @@ Allows you to add options to the multiselect component field. You can click on `
 }} 
 ```
 
-### Options loading state
-Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
-
-## Component specific actions (CSA)
-
-Following actions of the component can be controlled using the component specific actions(CSA):
-
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :------------ | :---------- | :------------ |
-| clear()        | Clears the selected option.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.clear()`) or trigger it using an event. |
-| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.multiselect1.setDisable(true)`) or trigger it using an event. |
-| selectOptions()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.selectOptions(['2','3'])`) or trigger it using an event. |
-| deselectOptions()        | Deselects all options.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.deselectOptions()`) or trigger it using an event. |
-
-**Note:** The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
-
-For example, if the code is:
-```javascript
-{{
-    [
-        { label: 'option1', value: 1, disable: false, visible: true, default: true },
-        { label: 'option2', value: 2, disable: false, visible: true },
-        { label: 'option3', value: 3, disable: false, visible: true }
-    ]
-}}
-```
-
-You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
-
-```javascript
-components.multiselect1.selectOptions([2, 3])
-```
-
-## Exposed Variables
-
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|:----------|:----------|:------------|
-| label               | Holds the label name of the multiselect component.                                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.label}}`).                                          |
-| value               | Holds the value selected by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.value}}`).                                          |
-| options        | Holds all the option values of the multiselect component in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.options}}` or <br/>`{{components.multiselect1.options[0].label}}` for a specific option). |
-| isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isValid}}`).                                        |
-| isMandatory         | Indicates if the field is required.                                                                   | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isMandatory}}`).                                    |
-| isLoading           | Indicates if the component is loading.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isLoading}}`).                                      |
-| isVisible           | Indicates if the component is visible.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isVisible}}`).                                      |
-| isDisabled          | Indicates if the component is disabled.                                                               | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isDisabled}}`).                                     |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Options Loading State | Allows you to add a loading state to the dynamically generated options. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Enable select all option | Adds "Select all" option in the list to select all the option at once. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show "All items are selected" | Shows "All items are selected" when all the options are selected.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Sort options | Sort all the options in the selected pattern. | Choose from **None**, **a-z** or **z-a**. |
 
 ## Events
 
 | <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------------- | :--------------------------------------------- |
-| On select | The **On select** event is triggered when a particular option is chosen. |
+| On select | Triggers whenever an option is selected. |
+| On search text changed | Triggers whenever the search text is changed. |
+| On focus     | Triggers whenever the user clicks inside the input field.                                        |
+| On blur      | Triggers whenever the user clicks outside the input field.                                       |
 
 :::info
-For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+## Component specific actions (CSA)
+
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| clear( )        | Clears the selected option.      | `components.multiselect1.clear()` |
+| setVisibility( )| Sets the visibility of the component.            | `components.multiselect1.setVisibility(false)` |
+| setLoading( )   | Sets the loading state of the component.         | `components.multiselect1.setLoading(true)` |
+| setDisable( ) | Disables the component.                           | `components.multiselect1.setDisable(true)` |
+| selectOptions( ) | Selects an option.      | `components.multiselect1.selectOptions(['2','3'])` |
+| deselectOptions( ) | Deselects all options.      | `components.multiselect1.deselectOptions()` |
+
+**Note:** 
+
+1. The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
+
+    For example, if the code is:
+    ```javascript
+    {{
+        [
+            { label: 'option1', value: 1, disable: false, visible: true, default: true },
+            { label: 'option2', value: 2, disable: false, visible: true },
+            { label: 'option3', value: 3, disable: false, visible: true }
+        ]
+    }}
+    ```
+
+    You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+
+    ```javascript
+    components.multiselect1.selectOptions([2, 3])
+    ```
+
+2. When using the Control Component action to trigger selectOption in CSA, the values should be passed within `{{ }}`, e.g., `{{["1", "2"]}}`.
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|:----------|:----------|:------------|
+| label | Holds the label name of the multiselect component. | `{{components.multiselect1.label}}`   |
+| value | Holds the value selected by the user in the component. | `{{components.multiselect1.value}}` |
+| options | Holds all the option values of the multiselect component in array form. | `{{components.multiselect1.options}}` |
+| isValid | Indicates if the input meets validation criteria. | `{{components.multiselect1.isValid}}` |
+| isMandatory | Indicates if the field is required. | `{{components.multiselect1.isMandatory}}`|
+| isLoading | Indicates if the component is loading. | `{{components.multiselect1.isLoading}}` |
+| isVisible | Indicates if the component is visible. | `{{components.multiselect1.isVisible}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.multiselect1.isDisabled}}` |
 
 ## Validation
 
@@ -112,12 +122,12 @@ For comprehensive information on all available **Actions**, refer to the [Action
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Select an option.` ).                       |
-
-<div style={{paddingTop:'24px'}}>
+| Show clear selection button | Gives a button to clear all selections. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show search in options | Enables a search option. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Select an option.` ). |
 
 ## Devices
 
@@ -126,11 +136,9 @@ For comprehensive information on all available **Actions**, refer to the [Action
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-</div>
+## Style
 
----
-
-## Label
+### Label
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
@@ -138,7 +146,7 @@ For comprehensive information on all available **Actions**, refer to the [Action
 | Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
 | Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value. |
 
-## Field
+### Field
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
@@ -155,8 +163,3 @@ For comprehensive information on all available **Actions**, refer to the [Action
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
-
-
-
-
-
