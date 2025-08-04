@@ -5,6 +5,7 @@ import { components } from 'react-select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import moment from 'moment';
 import { range } from 'lodash';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const CustomDatePickerHeader = (props) => {
   const {
@@ -42,6 +43,9 @@ const CustomDatePickerHeader = (props) => {
   ];
 
   const years = range(1900, 2101);
+
+  const menuHoverColor = getModifiedColor('var(--cc-surface1-surface)', 'hover');
+  const menuActiveColor = getModifiedColor('var(--cc-surface1-surface)', 'active');
 
   const customSelectStyles = {
     control: (provided) => ({
@@ -82,6 +86,7 @@ const CustomDatePickerHeader = (props) => {
       width: '150px',
       borderRadius: '8px',
       top: 'auto',
+      backgroundColor: 'var(--cc-surface1-surface) !important',
     }),
     menuList: (provided) => ({
       ...provided,
@@ -90,15 +95,11 @@ const CustomDatePickerHeader = (props) => {
       overflowY: 'auto', // Enable scrolling if needed
       scrollbarWidth: 'none', // Hide scrollbar for Firefox
       borderRadius: '8px',
+      backgroundColor: 'var(--cc-surface1-surface) !important',
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isFocused
-        ? '#f0f0f0' // Hover color
-        : state.isSelected
-        ? '#e6e6e6' // Selected background color
-        : 'white',
-      color: state.isSelected ? '#333' : 'black', // Adjust text color for selected state
+      color: 'var(--cc-primary-text)', // Adjust text color for selected state
       paddingLeft: '20px',
       position: 'relative',
     }),
@@ -117,7 +118,7 @@ const CustomDatePickerHeader = (props) => {
           }}
         >
           {isSelected && (
-            <CheckMark fill="transparent" fillIcon={'var(--primary-brand)'} className="datepicker-select-check" />
+            <CheckMark fill="transparent" fillIcon={'var(--cc-primary-brand)'} className="datepicker-select-check" />
           )}
           <span style={{ marginLeft: '10px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
         </div>
@@ -133,6 +134,8 @@ const CustomDatePickerHeader = (props) => {
           marginTop: 10,
           display: 'flex',
           justifyContent: 'center',
+          '--cc-date-dropdown-hover': menuHoverColor,
+          '--cc-date-dropdown-active': menuActiveColor,
         }}
       >
         {!(datepickerSelectionType === 'range' && customHeaderCount === 1) && (
@@ -145,7 +148,7 @@ const CustomDatePickerHeader = (props) => {
             }}
             disabled={datepickerMode === 'date' ? prevMonthButtonDisabled : prevYearButtonDisabled}
           >
-            <SolidIcon name="cheveronleft" width="12" />
+            <SolidIcon name="cheveronleft" width="12" fill={'var(--cc-default-icon)'} />
           </button>
         )}
         <div style={{ marginRight: '8px' }}>
@@ -164,7 +167,7 @@ const CustomDatePickerHeader = (props) => {
             </div>
           )}
           {datepickerSelectionType === 'range' && (
-            <div className="daterangepicker-header">
+            <div className="daterangepicker-header" style={{ color: 'var(--cc-primary-text)' }}>
               {!['month', 'year'].includes(datepickerMode) && (
                 <Select
                   options={months.map((option) => ({ name: option, value: option }))}
@@ -207,7 +210,7 @@ const CustomDatePickerHeader = (props) => {
             }}
             disabled={datepickerMode === 'date' ? nextMonthButtonDisabled : nextYearButtonDisabled}
           >
-            <SolidIcon name="cheveronright" width="12" />
+            <SolidIcon name="cheveronright" width="12" fill={'var(--cc-default-icon)'} />
           </button>
         )}
       </div>

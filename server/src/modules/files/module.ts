@@ -1,13 +1,11 @@
 import { DynamicModule } from '@nestjs/common';
 import { FilesRepository } from '@modules/files/repository';
 import { FeatureAbilityFactory } from './ability';
-import { getImportPath } from '@modules/app/constants';
-export class FilesModule {
+import { SubModule } from '@modules/app/sub-module';
+export class FilesModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+    const { FilesController, FilesService } = await this.getProviders(configs, 'files', ['controller', 'service']);
 
-    const { FilesController } = await import(`${importPath}/files/controller`);
-    const { FilesService } = await import(`${importPath}/files/service`);
     return {
       module: FilesModule,
       providers: [FilesService, FilesRepository, FeatureAbilityFactory],

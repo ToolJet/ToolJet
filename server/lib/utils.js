@@ -32,11 +32,11 @@ export function resolveCode(codeContext) {
       ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
     };
     const codeToExecute = getFunctionWrappedCode(
-      'const console = { log: __reserved_keyword_log };\n' + code,
+      'const console = { log: (...args) => __reserved_keyword_log(args.join(\', \'), \'normal\') };\n' + code,
       globalState,
       isIfCondition
     );
-    const isolate = new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOWS_JS_MEMORY_LIMIT ?? '20') });
+    const isolate = new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
     const context = isolate.createContextSync();
     Object.entries(globalState).forEach(([key, value]) => {
       context.global.setSync(key, new ivm.ExternalCopy(value).copyInto({ release: true }));
@@ -57,7 +57,13 @@ export function resolveCode(codeContext) {
     // }, 1); // Monitor every 100ms
 
     // try {
-    result = script.runSync(context, { release: true, timeout: 100, copy: true });
+    result = script.runSync(
+      context,
+      {
+        release: true,
+        timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
+        copy: true
+      });
     //   const stats = isolate.getHeapStatisticsSync();
     //   addLog("Used heap size: " + stats.used_heap_size);
     //   addLog("heap size limit: " + stats.heap_size_limit);

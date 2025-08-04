@@ -11,6 +11,7 @@ export interface UserAllPermissions {
   isBuilder: boolean;
   isEndUser: boolean;
   user: User;
+  resource: ResourceDetails[];
 }
 
 export interface FeatureConfig {
@@ -18,6 +19,7 @@ export interface FeatureConfig {
   auditLogsKey?: string;
   skipAuditLogs?: boolean;
   isPublic?: boolean;
+  isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
 }
 

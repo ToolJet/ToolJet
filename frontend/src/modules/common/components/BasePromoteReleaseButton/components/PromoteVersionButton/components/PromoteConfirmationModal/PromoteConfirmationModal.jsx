@@ -38,6 +38,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     onClose();
     setShow(false);
   }, [promotingEnvironment, onClose]);
+  const allowAppEdit = useStore((state) => state.allowEditing);
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
@@ -46,7 +47,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
       currentVersionId,
       async (response) => {
         toast.success(`${selectedVersion.name} has been promoted to ${data.target.name}!`);
-        if (data?.current?.name == 'development' && creationMode !== 'GIT') {
+        if (
+          data?.current?.name == 'development' &&
+          (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
+        ) {
           try {
             const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersion?.id);
             const appGit = gitData?.app_git;
@@ -63,7 +67,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           } catch (err) {
             const status = err?.statusCode;
             const error = err?.error;
-            if (!(status === 404 && error === 'Git Configuration not found')) {
+            if (
+              !(status === 404 && error === 'Git Configuration not found') &&
+              !(error === 'No Git Provider is enabled for the workspace')
+            ) {
               toast.error(error, {
                 style: {
                   width: 'auto',

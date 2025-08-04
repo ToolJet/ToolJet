@@ -7,6 +7,8 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';
 import { MODULES } from '../constants/modules';
+import { isSuperAdmin } from '@helpers/utils.helper';
+import { cloneDeep } from 'lodash';
 
 // User should be present or app should be public
 @Injectable()
@@ -22,13 +24,20 @@ export abstract class AbilityGuard implements CanActivate {
   protected forwardAbility(): boolean {
     return false;
   }
+  protected resource: any;
+  protected getResourceObject(): any {
+    return this.resource;
+  }
+  protected setResourceObject(resource: any): void {
+    this.resource = resource;
+  }
   protected getResource(): ResourceDetails | ResourceDetails[] {
     return;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
-    let features = this.reflector.get<string[]>('tjFeatureId', context.getHandler());
+    const module = cloneDeep(this.reflector.get<MODULES>('tjModuleId', context.getClass()));
+    let features = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -37,6 +46,9 @@ export abstract class AbilityGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const app: App = request.tj_app;
+    if (app) {
+      this.setResourceObject(app);
+    }
 
     if (!features?.length) {
       return false;
@@ -50,7 +62,14 @@ export abstract class AbilityGuard implements CanActivate {
       }
 
       const licenseRequired: LICENSE_FIELD = featureInfo?.license;
-      if (licenseRequired && !(await this.licenseTermsService.getLicenseTerms(licenseRequired))) {
+      if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
+        // If no license is required, continue to the next feature
+        return true;
+      }
+      if (
+        licenseRequired &&
+        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app?.organizationId || user?.organizationId))
+      ) {
         throw new HttpException(
           `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
           451
@@ -59,12 +78,26 @@ export abstract class AbilityGuard implements CanActivate {
 
       // If any of the feature is public
       if (featureInfo.isPublic) {
+        // No other validations if user is API is public
         return true;
+      }
+
+      if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
+        // If the user is not super admin and the feature is a super admin feature
+        throw new ForbiddenException({
+          message: 'You do not have permission to access this resource',
+          organizationId: app?.organizationId,
+        });
       }
 
       if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
         // No need to do validations if app is public
         return true;
+      }
+
+      if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
+        // App is public and feature should not skip public app check and user is not available
+        return false;
       }
     }
 

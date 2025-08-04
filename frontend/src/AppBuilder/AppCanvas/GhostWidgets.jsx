@@ -1,24 +1,30 @@
 import React from 'react';
+import useStore from '@/AppBuilder/_stores/store';
 
-export const DragGhostWidget = ({ isDragging }) => {
-  if (!isDragging) return '';
+export const DragGhostWidget = () => {
+  const draggingComponentId = useStore((state) => state.draggingComponentId);
+
+  if (!draggingComponentId) return null;
+
   return (
     <div
-      id={'moveable-drag-ghost'}
+      id="moveable-drag-ghost"
       style={{
         zIndex: 4,
         position: 'absolute',
         background: '#D9E2FC',
         opacity: '0.7',
+        pointerEvents: 'none',
+        left: 0,
+        top: 0,
       }}
-    ></div>
+    />
   );
 };
 
-export const ResizeGhostWidget = ({ isResizing }) => {
-  if (!isResizing) {
-    return '';
-  }
+export const ResizeGhostWidget = () => {
+  const resizingComponentId = useStore((state) => state.resizingComponentId);
+  if (!resizingComponentId) return null;
 
   return (
     <div

@@ -280,10 +280,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     }
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>

@@ -7,10 +7,10 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
   const computedStyles = {
     width,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: visibility ? '' : 'none',
     overflowY: 'auto',
     boxShadow,
-    justifyContent: alignment,
+    textAlign: alignment || 'left', // Add this line
   };
 
   function renderTag(item, index) {

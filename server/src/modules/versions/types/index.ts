@@ -4,6 +4,7 @@ import { MODULES } from '@modules/app/constants/modules';
 
 interface Features {
   [FEATURE_KEY.CLONE_PAGES]: FeatureConfig;
+  [FEATURE_KEY.CLONE_GROUP]: FeatureConfig;
   [FEATURE_KEY.REORDER_PAGES]: FeatureConfig;
   [FEATURE_KEY.UPDATE_PAGES]: FeatureConfig;
   [FEATURE_KEY.DELETE_PAGE]: FeatureConfig;
@@ -12,6 +13,9 @@ interface Features {
   [FEATURE_KEY.GET_EVENTS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_EVENT]: FeatureConfig;
   [FEATURE_KEY.DELETE_EVENT]: FeatureConfig;
+  [FEATURE_KEY.APP_VERSION_CREATE]: FeatureConfig;
+  [FEATURE_KEY.APP_VERSION_DELETE]: FeatureConfig;
+  [FEATURE_KEY.APP_VERSION_UPDATE]: FeatureConfig;
   [FEATURE_KEY.CREATE_COMPONENTS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_COMPONENTS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_COMPONENT_LAYOUT]: FeatureConfig;

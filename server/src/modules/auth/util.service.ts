@@ -2,12 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
 import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import {
@@ -41,6 +41,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -48,18 +49,19 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly userRepository: UserRepository,
     protected readonly licenseUserService: LicenseUserService,
     protected readonly configService: ConfigService,
-    protected licenseTermsService: LicenseTermsService,
-    protected organizationUsersUtilService: OrganizationUsersUtilService,
-    protected organizationUsersRepository: OrganizationUsersRepository,
-    protected organizationRepository: OrganizationRepository,
-    protected sessionUtilService: SessionUtilService,
+    protected readonly licenseTermsService: LicenseTermsService,
+    protected readonly organizationUsersUtilService: OrganizationUsersUtilService,
+    protected readonly organizationUsersRepository: OrganizationUsersRepository,
+    protected readonly organizationRepository: OrganizationRepository,
+    protected readonly sessionUtilService: SessionUtilService,
     protected readonly roleUtilService: RolesUtilService,
     protected readonly groupPermissionsUtilService: GroupPermissionsUtilService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly rolesRepository: RolesRepository,
-    protected profileUtilService: ProfileUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+    protected readonly profileUtilService: ProfileUtilService,
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -121,7 +123,7 @@ export class AuthUtilService implements IAuthUtilService {
     try {
       const signedJwt = this.sessionUtilService.verifyToken(token);
       return signedJwt;
-    } catch (err) {
+    } catch {
       return null;
     }
   }
@@ -348,17 +350,18 @@ export class AuthUtilService implements IAuthUtilService {
 
       // IF current role is empty -> user not exist
       // IF new role not equals current one
-      if (!currentRole || (newRole !== currentRole && groups.length > 0)) {
+      if (!currentRole || newRole !== currentRole) {
+        const adminUser = await this.groupPermissionsRepository.getAdminUserForOrg(organizationId);
         await this.roleUtilService.editDefaultGroupUserRole(
           organizationId,
-          { newRole, userId, currentRole: currentRoleObj },
+          { newRole, userId, currentRole: currentRoleObj, updatingUserId: adminUser.id },
           manager
         );
       }
 
       if (ssoGroups?.length) {
         await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, true, manager);
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
       }
 
       /* Create avatar if profilePhoto available */
@@ -379,7 +382,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       await Promise.all(
         groups.map(async (group) => {
-          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, manager);
+          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, group?.organizationId, manager);
           builderLevelRole = builderLevelRole || isBuilderGroup;
         })
       );

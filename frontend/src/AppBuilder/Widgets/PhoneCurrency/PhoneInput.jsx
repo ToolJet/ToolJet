@@ -9,11 +9,12 @@ import { useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -99,6 +100,11 @@ export const PhoneInput = (props) => {
             value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
             setCountry(value ? value : '');
           }
+          setExposedVariables({
+            country: country,
+            countryCode: `+${getCountryCallingCodeSafe(country)}`,
+            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
+          });
         },
       });
       isInitialRender.current = false;
@@ -107,7 +113,9 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (!isInitialRender.current) {
-      setCountry(defaultCountry);
+      if (getCountryCallingCodeSafe(defaultCountry)) {
+        setCountry(defaultCountry);
+      }
     }
   }, [defaultCountry]);
 
@@ -149,7 +157,7 @@ export const PhoneInput = (props) => {
       : disabledState
       ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
@@ -214,11 +222,12 @@ export const PhoneInput = (props) => {
                 setCountry(selectedOption.value);
               }
             }}
+            componentId={id}
           />
           <Input
             ref={inputRef}
             country={country}
-            international={false}
+            international={true}
             value={value}
             onChange={onInputValueChange}
             placeholder={placeholder}

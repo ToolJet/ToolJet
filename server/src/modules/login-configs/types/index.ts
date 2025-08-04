@@ -15,6 +15,7 @@ export interface InstanceSSOConfigMap {
 export interface SSOConfig {
   enabled: boolean;
   configs: any;
+  oidcGroupSyncs?: [];
 }
 
 export interface ILoginConfigsService {
@@ -22,7 +23,7 @@ export interface ILoginConfigsService {
   getProcessedConfigs(organizationId: string): Promise<any>;
   constructSSOConfigs(): Promise<any>;
   fetchOrganizationDetails(
-    organizationId: string,
+    organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
@@ -39,6 +40,7 @@ interface Features {
   [FEATURE_KEY.GET_ORGANIZATION_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_ORGANIZATION_SSO]: FeatureConfig;
   [FEATURE_KEY.UPDATE_ORGANIZATION_GENERAL_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.INSTANCE_SSO_INHERIT]: FeatureConfig;
   [FEATURE_KEY.UPDATE_INSTANCE_SSO]: FeatureConfig;
   [FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.GET_INSTANCE_SSO]: FeatureConfig;

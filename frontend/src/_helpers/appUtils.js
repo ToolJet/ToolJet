@@ -967,6 +967,8 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onSubmit',
       'onInvalid',
       'onNewRowsAdded',
+      'onMessageSent',
+      'onClearHistory',
     ].includes(eventName)
   ) {
     executeActionsForEventId(_ref, eventName, events, mode, customVariables);
@@ -2379,7 +2381,7 @@ export const buildAppDefinition = (data) => {
     canvasMaxWidth: 100,
     canvasMaxWidthType: '%',
     canvasMaxHeight: 2400,
-    canvasBackgroundColor: '#edeff5',
+    canvasBackgroundColor: 'var(--cc-appBackground-surface)',
     backgroundFxQuery: '',
   };
 
@@ -2405,11 +2407,11 @@ export const removeFunctionObjects = (obj) => {
 };
 
 export const checkIfLicenseNotValid = () => {
-  const licenseStatus = useEditorStore.getState().featureAccess?.licenseStatus;
+  const licenseStatus = useStore.getState().license.featureAccess?.licenseStatus;
   // When purchased, then isExpired key is also avialale else its not available
   if (licenseStatus) {
     if (_.has(licenseStatus, 'isExpired')) {
-      return licenseStatus?.isExpired && !licenseStatus?.isLicenseValid;
+      return licenseStatus?.isExpired;
     }
     return !licenseStatus?.isLicenseValid;
   }
@@ -2558,4 +2560,38 @@ export const deepCamelCase = (obj) => {
 export const isMobileDevice = () => {
   const userAgent = window.navigator.userAgent;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+};
+
+
+// Color picker utils
+
+export const getRGBAValueFromHex = (hex) => {
+  let c = hex.substring(1).split('');
+  switch (c.length) {
+    case 3:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
+      break;
+    case 4:
+      c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
+      break;
+    case 6:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
+      break;
+    case 8:
+      c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
+      break;
+  }
+  c = c.map((char) => parseInt(char, 16).toString());
+  c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
+  return c;
+};
+
+export const hexToRgba = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
+};
+
+export const hexToRgb = (hex) => {
+  const rgbaArray = getRGBAValueFromHex(hex);
+  return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
 };

@@ -5,13 +5,15 @@ import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
-import { PageMenu } from './PageMenu';
+// import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
+import SupportButton from './SupportButton';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -23,6 +25,7 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
+  isUserInZeroToOneFlow,
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
@@ -58,9 +61,9 @@ export const BaseLeftSidebar = ({
   const sideBarBtnRefs = useRef({});
 
   const handleSelectedSidebarItem = (item) => {
-    pinned && localStorage.setItem('selectedSidebarItem', item);
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
+    localStorage.setItem('selectedSidebarItem', item);
     if (item === selectedSidebarItem && !pinned) {
       return toggleLeftSidebar(false);
     }
@@ -72,6 +75,11 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
+    if (isUserInZeroToOneFlow) {
+      setPopoverContentHeight(((window.innerHeight - 48) / window.innerHeight) * 100);
+      return;
+    }
+
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
@@ -80,20 +88,21 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight, isDraggingQueryPane]);
+  }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-      case 'page':
-        return (
-          <PageMenu
-            setPinned={setPinned}
-            pinned={pinned}
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-          />
-        );
+      // case 'page':
+      //   return (
+      //     <PageMenu
+      //       setPinned={setPinned}
+      //       pinned={pinned}
+      //       darkMode={darkMode}
+      //       selectedSidebarItem={selectedSidebarItem}
+      //     />
+      //   );
+      case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
           <LeftSidebarInspector
@@ -111,7 +120,7 @@ export const BaseLeftSidebar = ({
           />
         );
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return renderAIChat({ darkMode, isUserInZeroToOneFlow });
       //   case 'datasource':
       //     return (
       //       <LeftSidebarDataSources
@@ -153,10 +162,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -211,28 +220,24 @@ export const BaseLeftSidebar = ({
           tip: 'Build with AI',
           ref: setSideBarBtnRefs('tooljetai'),
         })}
-        <SidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('page')}
-          darkMode={darkMode}
-          icon="page"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-          tip="Pages"
-          ref={setSideBarBtnRefs('page')}
-        />
-        {renderCommonItems()}
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-        />
+
+        {!isUserInZeroToOneFlow && (
+          <>
+            {renderCommonItems()}
+            <SidebarItem
+              icon="settings"
+              selectedSidebarItem={selectedSidebarItem}
+              darkMode={darkMode}
+              // eslint-disable-next-line no-unused-vars
+              onClick={(e) => handleSelectedSidebarItem('settings')}
+              className={`left-sidebar-item  left-sidebar-layout`}
+              badge={true}
+              tip="Settings"
+              ref={setSideBarBtnRefs('settings')}
+              isModuleEditor={isModuleEditor}
+            />
+          </>
+        )}
       </>
     );
   };
@@ -266,6 +271,7 @@ export const BaseLeftSidebar = ({
               ref={setSideBarBtnRefs('comments')}
             />
           </div> */}
+          <SupportButton />
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>

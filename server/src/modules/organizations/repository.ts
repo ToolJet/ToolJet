@@ -21,7 +21,7 @@ export class OrganizationRepository extends Repository<Organization> {
 
   async fetchOrganizationWithSSOConfigs(slug: string, statusList?: Array<boolean>): Promise<Organization> {
     const conditions: any = {
-      relations: ['ssoConfigs'],
+      relations: ['ssoConfigs', 'ssoConfigs.oidcGroupSyncs'],
       where: {
         ssoConfigs: {
           enabled: statusList ? In(statusList) : In([true, false]),
@@ -34,7 +34,7 @@ export class OrganizationRepository extends Repository<Organization> {
         ...conditions,
         where: { ...conditions.where, slug },
       });
-    } catch (error) {
+    } catch {
       organization = await this.manager.findOneOrFail(Organization, {
         ...conditions,
         where: { ...conditions.where, id: slug },
@@ -84,10 +84,10 @@ export class OrganizationRepository extends Repository<Organization> {
       let organization: Organization;
       try {
         organization = await manager.findOneOrFail(Organization, {
-          where: { slug },
+          where: { slug: slug },
           select,
         });
-      } catch (error) {
+      } catch {
         organization = await manager.findOneOrFail(Organization, {
           where: { id: slug },
           select,
@@ -205,16 +205,16 @@ export class OrganizationRepository extends Repository<Organization> {
     });
   }
 
-  async getDefaultWorkspaceOfInstance(): Promise<Organization>{
+  async getDefaultWorkspaceOfInstance(): Promise<Organization> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       try {
         return await manager.findOneOrFail(Organization, {
           where: { isDefault: true },
         });
-      } catch (error) {
+      } catch {
         console.error('No default workspace in this instance');
         return null;
-      }      
+      }
     });
   }
 
@@ -222,7 +222,7 @@ export class OrganizationRepository extends Repository<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // First, unset any existing default workspace
       await manager.update(Organization, { isDefault: true }, { isDefault: false });
-      
+
       // Then set the new default workspace
       await manager.update(Organization, { id: organizationId }, { isDefault: true });
     }, manager || this.manager);

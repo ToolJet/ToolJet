@@ -22,12 +22,14 @@ export interface AuditLogFields {
   actionType: string;
   resourceName?: string;
   ipAddress?: string;
+  userAgent?: string;
   metadata?: object;
   organizationIds?: Array<string>;
 }
 
 export interface Features {
   [FEATURE_KEY.VIEW_LOGS]: FeatureConfig;
+  [FEATURE_KEY.VIEW_RESOURCES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -5,21 +5,17 @@ import {
   appsService,
   appVersionService,
   dataqueryService,
-  datasourceService,
   orgEnvironmentConstantService,
   authenticationService,
-  orgEnvironmentVariableService,
   customStylesService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
-import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
-import { camelCase, cloneDeep, isEmpty, kebabCase, mapKeys, rest } from 'lodash';
+import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import useRouter from '@/_hooks/use-router';
-import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
@@ -30,7 +26,6 @@ import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
-import { handleError } from '@/_helpers/handleAppAccess';
 import toast from 'react-hot-toast';
 
 /**
@@ -64,16 +59,17 @@ const useAppData = (
   darkMode,
   mode = 'edit',
   { environmentId, versionId } = {},
-  moduleMode = false
+  moduleMode = false,
+  appSlug
 ) => {
   const mounted = useMounted();
-  const initModules = useStore((state) => state.initModules, shallow);
+  const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
+
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
-  const app = useStore((state) => state.appStore.modules[moduleId].app);
   const user = useStore((state) => state.user);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -90,10 +86,6 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
-  const previousVersion = usePrevious(currentVersionId);
-  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
-  const pages = useStore((state) => state.modules[moduleId]?.pages || []);
-  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -115,23 +107,18 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const appMode = useStore((state) => state.globalSettings.appMode);
-  const selectedTheme = useStore((state) => state.globalSettings.theme);
-  const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
-  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady, shallow);
-  const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
 
-  const setModulesIsLoading = useStore((state) => state.setModulesIsLoading, shallow);
-  const setModulesList = useStore((state) => state.setModulesList, shallow);
-  const setModuleDefinition = useStore((state) => state.setModuleDefinition);
-  const getModuleDefinition = useStore((state) => state.getModuleDefinition);
-  const deleteModuleDefinition = useStore((state) => state.deleteModuleDefinition);
+  const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
+  const setModulesList = useStore((state) => state?.setModulesList ?? noop);
+  const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
+  const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
+  const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
   const themeAccess = useThemeAccess();
-
+  const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
@@ -141,9 +128,18 @@ const useAppData = (
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = moduleMode ? '' : pathParams?.slug;
-  const licenseStatus = useStore((state) => state.isLicenseValid());
 
-  const match = useMatch('/applications/:slug/:pageHandle');
+  const previousVersion = usePrevious(currentVersionId);
+  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
+  const appMode = useStore((state) => state.globalSettings.appMode);
+  const selectedTheme = useStore((state) => state.globalSettings.theme);
+  const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
+  const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady);
+  const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
+  const licenseStatus = useStore((state) => state.isLicenseValid());
+  const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
+  const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   const location = useRouter().location;
 
@@ -176,7 +172,7 @@ const useAppData = (
       }
       styleTag.innerHTML = data?.css || null;
     } catch (error) {
-      console.log('Failed to fetch custom styles:', error);
+      // Silently handle error - custom styles are optional
     }
   };
 
@@ -252,7 +248,7 @@ const useAppData = (
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
         appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId)
+          ? appVersionService.getAppVersionData(appId, versionId, mode)
           : appService.fetchApp(appId);
       }
     }
@@ -293,7 +289,7 @@ const useAppData = (
                     slug,
                     viewerEnvironment?.environment?.id
                   )
-                : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
           }
@@ -333,10 +329,12 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+
         setApp(
           {
             appName: appData.name,
-            appId: appData.id,
+            appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
             currentAppEnvironmentId: editorEnvironment.id,
             isMaintenanceOn:
@@ -349,9 +347,25 @@ const useAppData = (
             homePageId: homePageId,
             isPublic: appData.is_public,
             creationMode: appData.creation_mode,
+            appGeneratedFromPrompt: appData.app_generated_from_prompt,
+            aiGenerationMetadata: appData.ai_generation_metadata || {},
+            appBuilderMode: appData.app_builder_mode || 'visual',
+            isReleasedApp: isReleasedApp,
           },
           moduleId
         );
+
+        if (appData.app_builder_mode === 'ai') {
+          setSelectedSidebarItem('tooljetai');
+          toggleLeftSidebar(true);
+
+          // If the app builder mode is AI
+          // - Do not show zero state - if there is some conversation already done or if route state has prompt
+          setConversationZeroState(
+            state?.prompt ? true : Boolean(appData.ai_conversation?.aiConversationMessages?.length)
+          );
+        }
+
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
           const global_settings = mapKeys(
@@ -372,8 +386,8 @@ const useAppData = (
         let startingPage = appData.pages.find((page) => page.id === homePageId);
 
         //no access to homepage, set to the next available page
-        if (startingPage?.restricted) {
-          startingPage = appData.pages.find((page) => !page?.restricted);
+        if (startingPage?.restricted && mode === 'view') {
+          startingPage = appData.pages.find((page) => !page?.restricted && !page?.isPageGroup && !page?.disabled);
         }
 
         if (initialLoadRef.current && !moduleMode) {
@@ -383,7 +397,7 @@ const useAppData = (
           const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
           if (page) {
             // if page is disabled, and not editing redirect to home page
-            const shouldRedirect = page?.restricted || (mode !== 'edit' && page?.disabled);
+            const shouldRedirect = mode !== 'edit' && (page?.restricted || page?.disabled);
 
             if (shouldRedirect) {
               const newUrl = window.location.href.replace(initialLoadPath, startingPage.handle);
@@ -435,7 +449,7 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
+            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
         const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
@@ -481,17 +495,14 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
+
         if (
           !moduleMode &&
-          state.ai &&
           state?.prompt &&
           initialLoadRef.current &&
           (conversation?.aiConversationMessages || []).length === 0
         ) {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar('true');
           sendMessage(state.prompt);
-          setConversationZeroState(true);
           showWalkthrough = false;
         }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
@@ -529,35 +540,48 @@ const useAppData = (
   useEffect(() => {
     if (isComponentLayoutReady) {
       runOnLoadQueries(moduleId).then(() => {
-        let startingPage = pages.find((page) => page.id === currentPageId);
-        const currentPageEvents = events.filter(
-          (event) => event.target === 'page' && event.sourceId === startingPage.id
-        );
+        const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
   }, [isComponentLayoutReady, moduleId]);
 
   useEffect(() => {
-    if (moduleId) return;
+    if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
       page: pageTitles.EDITOR,
-      appName: app.appName,
+      appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
       licenseStatus: licenseStatus,
     });
-  }, [app.appName, isReleasedVersionId, licenseStatus, mode, moduleId]);
+  }, [appName, isReleasedVersionId, licenseStatus, mode, moduleId]);
 
   useEffect(() => {
-    if (!themeAccess) return;
     const root = document.documentElement;
-    const brandColors = selectedTheme?.definition?.brand?.colors || {};
-    Object.keys(brandColors).forEach((colorType) => {
-      const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
-      root.style.setProperty(`--${colorType}-brand`, `${color}`);
+    const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
+    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    Object.keys(themeObj).forEach((category) => {
+      const categoryObj = themeObj[category];
+      Object.keys(categoryObj).forEach((property) => {
+        const propertyObj = categoryObj[property];
+        Object.keys(propertyObj).forEach((type) => {
+          const color = propertyObj[type][mode];
+          root.style.setProperty(`--cc-${camelCase(type)}-${camelCase(category)}`, `${color}`);
+          if (type === 'placeholder' && category === 'text') {
+            root.style.setProperty(`--cc-default-icon`, `${color}`);
+          }
+          if (category === 'text' && type === 'placeholder') {
+            root.style.setProperty(`--cc-default-icon-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-default-icon-dark`, `${propertyObj[type]['dark']}`);
+            root.style.setProperty(`--cc-placeholder-text-light`, `${propertyObj[type]['light']}`);
+            root.style.setProperty(`--cc-placeholder-text-dark`, `${propertyObj[type]['dark']}`);
+          }
+        });
+      });
     });
-  }, [darkMode, selectedTheme, themeAccess]);
+    detectThemeChange();
+  }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
     if (moduleMode) return;
@@ -573,7 +597,7 @@ const useAppData = (
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
-      appVersionService.getAppVersionData(appId, selectedVersion?.id).then(async (appData) => {
+      appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
         cleanUpStore(false);
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
@@ -583,6 +607,7 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
+        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.name,
           appId: appData.id,
@@ -597,6 +622,7 @@ const useAppData = (
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
+          isReleasedApp: isReleasedApp,
         });
 
         setGlobalSettings(
@@ -627,12 +653,12 @@ const useAppData = (
             }
           });
           // fetchDataSources(currentVersionId, selectedEnvironment.id);
-          fetchGlobalDataSources(app.organizationId, currentVersionId, selectedEnvironment.id);
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
           setResolvedConstants(orgConstants);
           setSecrets(orgSecrets);
         }
 
-        const queryData = await dataqueryService.getAll(currentVersionId);
+        const queryData = await dataqueryService.getAll(currentVersionId, mode);
         const dataQueries = queryData.data_queries;
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
@@ -664,7 +690,7 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        setEditorLoading(false, false);
+        setEditorLoading(false, moduleId);
       });
     }
   }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);

@@ -12,7 +12,10 @@ import { AppsRepository } from '@modules/apps/repository';
 
 @Injectable()
 export class ValidateQueryAppGuard implements CanActivate {
-  constructor(private readonly versionRepository: VersionRepository, private readonly appsRepository: AppsRepository) {}
+  constructor(
+    private readonly versionRepository: VersionRepository,
+    private readonly appsRepository: AppsRepository
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

@@ -11,6 +11,7 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
@@ -31,17 +32,15 @@ import { cloneDeep } from 'lodash';
 import { merge } from 'lodash';
 import { mergeWith } from 'lodash';
 import { isArray } from 'lodash';
-import { UserAppsPermissions } from '@modules/ability/types';
+import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
-import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
-import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { APP_TYPES } from './constants';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSource } from '@entities/data_source.entity';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -51,11 +50,15 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly abilityService: AbilityService,
-    protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly dataSourceUtilService: DataSourcesUtilService
-  ) { }
-  async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
+    protected readonly abilityService: AbilityService
+  ) {}
+  async create(
+    name: string,
+    user: User,
+    type: APP_TYPES,
+    isInitialisedFromPrompt: boolean = false,
+    manager: EntityManager
+  ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
         return manager.save(
@@ -66,8 +69,39 @@ export class AppsUtilService implements IAppsUtilService {
             updatedAt: new Date(),
             organizationId: user.organizationId,
             userId: user.id,
-            isMaintenanceOn: type === 'workflow' ? true : false,
-            ...(type === 'workflow' && { workflowApiToken: uuidv4() }),
+            isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
+            ...(isInitialisedFromPrompt && {
+              aiGenerationMetadata: {
+                steps: [
+                  {
+                    name: 'Describe app',
+                    id: 'describe_app',
+                    loadingStates: ['Generating PRD', 'PRD generated successfully'],
+                  },
+                  {
+                    name: 'Define specs',
+                    id: 'define_specs',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
+                    name: 'Setup database',
+                    id: 'setup_database',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                  {
+                    name: 'Generate app',
+                    id: 'generate_app',
+                    loadingStates: ['Generating app', 'App generated successfully'],
+                  },
+                ],
+                activeStep: 'describe_app',
+                completedSteps: [],
+                version: 'v1',
+              },
+            }),
+            isInitialisedFromPrompt: isInitialisedFromPrompt,
+            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
+            ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
@@ -76,14 +110,6 @@ export class AppsUtilService implements IAppsUtilService {
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
       const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
 
-      for (const defaultSource of ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows']) {
-        const dataSource = await this.dataSourceRepository.createDefaultDataSource(
-          defaultSource,
-          appVersion.id,
-          manager
-        );
-        await this.dataSourceUtilService.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
-      }
       const defaultHomePage = await manager.save(
         manager.create(Page, {
           name: 'Home',
@@ -142,12 +168,11 @@ export class AppsUtilService implements IAppsUtilService {
       appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
-        hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: '#edeff5',
+        canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
         appMode: 'auto',
       };
@@ -155,43 +180,6 @@ export class AppsUtilService implements IAppsUtilService {
       return app;
     }, manager);
   }
-
-  // async createVersion(
-  //   user: User,
-  //   app: App,
-  //   versionName: string,
-  //   versionFromId: string,
-  //   manager?: EntityManager
-  // ): Promise<AppVersion> {
-  //   return await dbTransactionWrap(async (manager: EntityManager) => {
-  //     let versionFrom: AppVersion;
-  //     const { organizationId } = user;
-
-  //     if (versionFromId) {
-  //       versionFrom = await manager.findOneOrFail(AppVersion, {
-  //         where: {
-  //           id: versionFromId,
-  //           app: {
-  //             id: app.id,
-  //             organizationId,
-  //           },
-  //         },
-  //         relations: ['app', 'dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
-  //       });
-  //     }
-
-  //     const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
-
-  //     if (noOfVersions && !versionFrom) {
-  //       throw new BadRequestException('Version from should not be empty');
-  //     }
-
-  //     if (versionFrom) {
-  //     }
-
-  //     return appVersion;
-  //   }, manager);
-  // }
 
   async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
     let app: App;
@@ -217,7 +205,10 @@ export class AppsUtilService implements IAppsUtilService {
     currentEnvIdOfVersion: string,
     organizationId: string
   ): Promise<AppEnvironment> {
-    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
     if (environmentName && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
@@ -253,7 +244,7 @@ export class AppsUtilService implements IAppsUtilService {
     });
   }
 
-  async update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager) {
+  async update(app: App, appUpdateDto: AppUpdateDto, organizationId: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
@@ -277,8 +268,10 @@ export class AppsUtilService implements IAppsUtilService {
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 
         const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          organizationId
         );
+
         /* 
         Allow version release only if the environment is on 
         production with a valid license or 
@@ -360,7 +353,7 @@ export class AppsUtilService implements IAppsUtilService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
-      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId))) {
         throw new BadRequestException('You do not have permissions to perform this action');
       }
 
@@ -407,19 +400,39 @@ export class AppsUtilService implements IAppsUtilService {
 
   async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
     //Migrate it to app utility files
+    let resourceType: MODULES;
+
+    switch (type) {
+      case APP_TYPES.WORKFLOW:
+        resourceType = MODULES.WORKFLOWS;
+        break;
+      case APP_TYPES.FRONT_END:
+        resourceType = MODULES.APP;
+        break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.APP;
+        break;
+      default:
+        resourceType = MODULES.APP;
+    }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.APP }],
+      resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const viewableAppsQb = this.viewableAppsQueryUsingPermissions(
         user,
-        userPermission[MODULES.APP],
+        userPermission[resourceType],
         manager,
         searchKey,
         undefined,
         type
       );
+
+      // Eagerly load appVersions for modules
+      if (type === APP_TYPES.MODULE) {
+        viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
+      }
 
       if (page) {
         return await viewableAppsQb
@@ -433,79 +446,121 @@ export class AppsUtilService implements IAppsUtilService {
 
   protected viewableAppsQueryUsingPermissions(
     user: User,
-    userAppPermissions: UserAppsPermissions,
+    userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
     type?: string
   ): SelectQueryBuilder<AppBase> {
-    const viewableApps = userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : [
-        null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-          ])
-        ),
-      ];
     const viewableAppsQb = manager
-      .createQueryBuilder(AppBase, 'viewable_apps')
-      .innerJoin('viewable_apps.user', 'user')
+      .createQueryBuilder(AppBase, 'apps')
+      .innerJoin('apps.user', 'user')
       .addSelect(['user.firstName', 'user.lastName'])
-      .where('viewable_apps.organizationId = :organizationId', { organizationId: user.organizationId });
+      .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (type === 'module') {
-      viewableAppsQb.leftJoinAndSelect('viewable_apps.appVersions', 'versions');
+    if (type === APP_TYPES.MODULE) {
+      viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 
-    if (type) viewableAppsQb.andWhere('viewable_apps.type = :type', { type: type });
+    if (type) {
+      viewableAppsQb.andWhere('apps.type = :type', { type });
+    }
 
     if (searchKey) {
-      viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
         searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
       });
     }
 
     if (select) {
-      viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
+      viewableAppsQb.select(select.map((col) => `apps.${col}`));
     }
-    viewableAppsQb.orderBy('viewable_apps.createdAt', 'DESC');
+
+    viewableAppsQb.orderBy('apps.createdAt', 'DESC');
+
     if (this.isSuperAdmin(user)) {
       return viewableAppsQb;
     }
 
+    const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
+
+    switch (type) {
+      case APP_TYPES.MODULE:
+        return viewableAppsQb;
+      case APP_TYPES.FRONT_END:
+      default:
+        return this.addViewableFrontEndAppsFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          viewableApps
+        );
+    }
+  }
+
+  private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
+    return userAppPermissions.hideAll
+      ? [null, ...userAppPermissions.editableAppsId]
+      : [
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
+  }
+
+  private addViewableFrontEndAppsFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userAppPermissions: UserAppsPermissions,
+    viewableApps: string[]
+  ): SelectQueryBuilder<AppBase> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-    if (isAllEditable) return viewableAppsQb;
+    if (isAllEditable) return query;
+
     if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
-      viewableAppsQb.andWhere('viewable_apps.id IN (:...viewableApps)', {
+      query.andWhere('apps.id IN (:...viewableApps)', {
         viewableApps,
       });
-      return viewableAppsQb;
+      return query;
     }
+
     const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
     if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
-      viewableAppsQb.andWhere('viewable_apps.id NOT IN (:...hiddenApps)', {
+      query.andWhere('apps.id NOT IN (:...hiddenApps)', {
         hiddenApps,
       });
     }
-    return viewableAppsQb;
+
+    return query;
   }
 
   protected isSuperAdmin(user: User) {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
 
-  async count(user: User, searchKey, type: string): Promise<number> {
+  async count(user: User, searchKey, type: APP_TYPES): Promise<number> {
+    let resourceType: MODULES;
+
+    switch (type) {
+      case APP_TYPES.WORKFLOW:
+        resourceType = MODULES.WORKFLOWS;
+        break;
+      case APP_TYPES.FRONT_END:
+        resourceType = MODULES.APP;
+        break;
+      default:
+        resourceType = MODULES.APP;
+    }
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.APP }],
+      resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const apps = await this.viewableAppsQueryUsingPermissions(
         user,
-        userPermission[MODULES.APP],
+        userPermission[resourceType],
         manager,
         searchKey,
         undefined,
@@ -540,7 +595,9 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'Steps', 'Tabs', 'RadioButtonV2'].includes(
+                currentComponentData?.component?.component
+              ) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -604,10 +661,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-            .distinct(true)
-            .getMany()
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
           : [];
       return modules;
     });
@@ -622,7 +679,7 @@ export class AppsUtilService implements IAppsUtilService {
       const tooljetDbDataQueries = await manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
-        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
@@ -652,5 +709,15 @@ export class AppsUtilService implements IAppsUtilService {
         return { table_id };
       });
     });
+  }
+
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appRepository.findByAppName(name, organizationId);
+  }
+
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return this.appRepository.findByAppId(appId, manager);
+    }, manager);
   }
 }

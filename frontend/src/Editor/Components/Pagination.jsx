@@ -69,7 +69,7 @@ export const Pagination = ({
       data-disabled={disabledState}
       className="d-flex align-items-center"
       data-cy={dataCy}
-      style={{ boxShadow, justifyContent: alignment }}
+      style={{ boxShadow: visibility ? boxShadow : 'none', justifyContent: alignment }}
     >
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
@@ -212,7 +212,11 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   return (
     <React.Fragment>
       <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
-        <a style={{ cursor: 'pointer' }} className={`page-link ${darkMode && 'text-light'}`} onClick={handleOnClick}>
+        <a
+          style={{ cursor: 'pointer' }}
+          className={`page-link arrow-icon ${darkMode && 'text-light'}`}
+          onClick={handleOnClick}
+        >
           {getOperator(operator)}
         </a>
       </li>

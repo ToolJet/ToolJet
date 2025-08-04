@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, ForbiddenException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion } from '@entities/app_version.entity';
 import { PromoteVersionDto, VersionCreateDto } from './dto';
@@ -21,6 +21,8 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { IVersionService } from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AppGitRepository } from '@modules/app-git/repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -33,8 +35,10 @@ export class VersionService implements IVersionService {
     protected readonly appUtilService: AppsUtilService,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
-    protected readonly versionsUtilService: VersionUtilService
-  ) {}
+    protected readonly versionsUtilService: VersionUtilService,
+    protected readonly eventEmitter: EventEmitter2,
+    protected readonly appGitRepository: AppGitRepository
+  ) { }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -70,6 +74,7 @@ export class VersionService implements IVersionService {
 
       await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
 
+      //APP_VERSION_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -89,25 +94,10 @@ export class VersionService implements IVersionService {
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const numVersions = await this.versionRepository.getCount(app.id);
-
-      if (numVersions <= 1) {
-        throw new ForbiddenException('Cannot delete only version of app');
-      }
-
-      if (app.currentVersionId === app.appVersions[0].id) {
-        throw new BadRequestException('You cannot delete a released version');
-      }
-
-      await this.versionRepository.deleteById(app.appVersions[0].id, manager);
-
-      // TODO: Add audit logs
-      return;
-    }, manager);
+    return await this.versionsUtilService.deleteVersion(app, user, manager);
   }
 
-  async getVersion(app: App, user: User): Promise<any> {
+  async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
         updatedVersionId = versionId;
@@ -126,7 +116,7 @@ export class VersionService implements IVersionService {
 
       if (
         appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId))
       ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
@@ -134,7 +124,7 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -162,15 +152,17 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+      }
       editingVersion['globalSettings']['theme'] = appTheme;
-
       return {
         ...appData,
         editing_version: editingVersion,
         pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
         events: eventsForVersion,
-        should_freeze_editor: app.creationMode === 'GIT' || shouldFreezeEditor,
+        should_freeze_editor: shouldFreezeEditor,
       };
     };
 
@@ -186,9 +178,17 @@ export class VersionService implements IVersionService {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
-
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
+    } else if (appVersion.name !== appVersionUpdateDto.name) {
+      const versionRenameDto = {
+        user: user,
+        appVersion: appVersion,
+        appId: app.id,
+        appVersionUpdateDto: appVersionUpdateDto,
+        organizationId: user?.organizationId,
+      };
+      await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -216,6 +216,7 @@ export class VersionService implements IVersionService {
     return;
   }
 
+
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { currentEnvironmentId } = promoteVersionDto;
@@ -231,7 +232,7 @@ export class VersionService implements IVersionService {
           });
         }
 
-        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
         }
 
@@ -261,6 +262,7 @@ export class VersionService implements IVersionService {
         await this.versionRepository.update(version.id, editableParams);
         const environments = await this.appEnvironmentUtilService.getAll(user.organizationId, app.id, manager);
 
+        //APP_PROMOTE audit
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
           userId: user.id,
           organizationId: user.organizationId,

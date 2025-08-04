@@ -4,8 +4,11 @@ import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
+import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
+import { Tooltip } from 'react-tooltip';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -24,6 +27,7 @@ export const ConfigHandle = ({
   subContainerIndex,
 }) => {
   const { moduleId } = useModuleContext();
+  const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const configHandleRef = useRef(null);
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
@@ -55,8 +59,42 @@ export const ConfigHandle = ({
   const configHandleRect = configHandleRef.current?.getBoundingClientRect();
   const canvasRect = document.getElementById('real-canvas')?.getBoundingClientRect();
   const isOverflowingOutOfCanvas = configHandleRect?.right > canvasRect?.right;
+  const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
+  const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const isRestricted = component?.permissions && component?.permissions?.length !== 0;
+  const draggingComponentId = useStore((state) => state.draggingComponentId);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
   let height = visibility === false ? 10 : widgetHeight;
+
+  const getTooltip = () => {
+    const permission = component.permissions?.[0];
+    if (!permission) return null;
+
+    const users = permission.groups || permission.users || [];
+    if (users.length === 0) return null;
+
+    const isSingle = permission.type === 'SINGLE';
+    const isGroup = permission.type === 'GROUP';
+
+    if (isSingle) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].user.email}`
+        : `Access restricted to ${users.length} users`;
+    }
+
+    if (isGroup) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].permission_group?.name || users[0].permissionGroup?.name} group`
+        : `Access restricted to ${users.length} user groups`;
+    }
+
+    return null;
+  };
+
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -82,7 +120,26 @@ export const ConfigHandle = ({
           }
         }
       }}
+      data-tooltip-id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+      data-tooltip-html="Your plan is expired. <br/> Renew to use the modules."
+      data-tooltip-place="right"
     >
+      {licenseValid && isRestricted && (
+        <ToolTip message={getTooltip()} show={licenseValid && isRestricted && !draggingComponentId}>
+          <span
+            style={{
+              background:
+                visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+              border: position === 'bottom' ? '1px solid white' : 'none',
+              color: visibility === false && 'var(--text-placeholder)',
+              marginRight: '4px',
+            }}
+            className="badge handle-content"
+          >
+            <SolidIcon width="12" name="lock" fill="var(--icon-on-solid)" />
+          </span>
+        </ToolTip>
+      )}
       <span
         style={{
           background:
@@ -103,11 +160,18 @@ export const ConfigHandle = ({
           className="text-truncate"
         >
           {/* Settings Icon */}
-          <span style={{ cursor: 'pointer', marginRight: '5px' }}>
+          <span
+            onClick={() => {
+              setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+              setRightSidebarOpen(true);
+            }}
+            style={{ cursor: 'pointer', marginRight: '5px' }}
+          >
             <SolidIcon
-              name="settings"
+              name="propertiesstyles"
               width="12"
               height="12"
+              viewBox="0 0 16 16"
               fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
             />
           </span>
@@ -156,6 +220,15 @@ export const ConfigHandle = ({
           </div>
         )}
       </span>
+      {/* Tooltip for invalid license on ModuleViewer */}
+      {!isLicenseValid && componentType === 'ModuleViewer' && (
+        <Tooltip
+          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+          className="tooltip"
+          isOpen={_showHandle && componentType === 'ModuleViewer'}
+          style={{ textAlign: 'center' }}
+        />
+      )}
     </div>
   );
 };

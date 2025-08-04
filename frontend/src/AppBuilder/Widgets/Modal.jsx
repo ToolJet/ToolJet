@@ -85,7 +85,6 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      fireEvent('onOpen');
     }
   };
 
@@ -99,7 +98,6 @@ export const Modal = function Modal({
     if (canvasElement && realCanvasEl && modalContainer) {
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
-      fireEvent('onClose');
     }
     if (canvasElement && !hasManyModalsOpen) {
       canvasElement.style.overflow = 'auto';
@@ -191,7 +189,18 @@ export const Modal = function Modal({
       isInitialRender.current = false;
       return;
     }
-
+    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
+    // Scroll to top of canvas content when modal is opened and disbale page overflow
+    if (showModal) {
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
+    } else {
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
+    }
     fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
@@ -220,7 +229,7 @@ export const Modal = function Modal({
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
-      borderColor: 'var(--primary-brand)',
+      borderColor: 'var(--cc-primary-brand)',
     },
   };
 
@@ -302,6 +311,7 @@ export const Modal = function Modal({
           hideCloseButton,
           hideModal: onHideModal,
           component,
+          darkMode,
           showConfigHandler: mode === 'edit',
         }}
       >
@@ -338,6 +348,7 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     hideModal,
     showConfigHandler,
+    darkMode,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -381,6 +392,7 @@ const Component = ({ children, ...restProps }) => {
               className="cursor-pointer"
               data-cy={`modal-close-button`}
               size="sm"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

@@ -63,7 +63,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               className="released-version-no-header-mbl-preview"
               style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
             >
-              <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
+              <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
                 Preview
               </span>
               <span
@@ -71,7 +71,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 onClick={props.onClick}
                 data-cy="preview-settings"
               >
-                <Icon name="settings" height={12} width={12} fill="#889099" />
+                <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
               </span>
             </div>
           )}
@@ -125,7 +125,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
-          <Icon name="settings" height={12} width={12} fill="#889099" />
+          <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
         </span>
       </OverlayTrigger>
     </div>

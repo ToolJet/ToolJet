@@ -20,6 +20,9 @@
       },
       "client_secret": {
         "encrypted": true
+      },
+      "host": {
+        "type": "string"
       }
     },
     "customTesting": true
@@ -62,22 +65,49 @@
       "value": ""
     },
     "headers": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "custom_query_params": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "custom_auth_params": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "client_auth": {
       "value": "header"
     },
     "access_token_custom_headers": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     }
   },
   "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host",
+      "helpText": "Overrides the host defined in the OpenAPI spec"
+    },
     "format": {
       "label": "Format",
       "key": "format",
@@ -85,5 +115,7 @@
       "description": "Format of definition"
     }
   },
-  "required": ["definition"]
+  "required": [
+    "definition"
+  ]
 }

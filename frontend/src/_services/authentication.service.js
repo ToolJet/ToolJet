@@ -21,6 +21,7 @@ const currentSessionSubject = new BehaviorSubject({
   group_permissions: null,
   app_group_permissions: null,
   data_source_group_permissions: null,
+  workflow_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,
@@ -68,6 +69,7 @@ export const authenticationService = {
   getInviteFlowIndetifier,
   setSignUpOrganizationDetails,
   deleteAllAuthCookies,
+  deleteAllSSOCookies,
 };
 
 function setSignUpOrganizationDetails(organizationId, organizationSlug, inviteFlowIdentifier) {
@@ -84,7 +86,6 @@ function deleteAllAuthCookies() {
     'signup-workspace-slug',
     'invite-flow-identifier',
   ];
-
   cookiesToDelete.forEach((cookieName) => eraseCookie(cookieName));
 }
 
@@ -314,4 +315,8 @@ function getInvitedUserSession({ accountToken, organizationToken }) {
   const body = { organizationToken, ...(accountToken && { accountToken }) };
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/session/invited-user-session`, requestOptions).then(handleResponseWithoutValidation);
+}
+function deleteAllSSOCookies() {
+  const cookiesToDelete = ['login-workspace', 'login-workspace-slug', 'signup-workspace-id', 'signup-workspace-slug'];
+  cookiesToDelete.forEach((cookieName) => eraseCookie(cookieName));
 }

@@ -7,6 +7,11 @@ export const whiteLabellingOptions = {
   WHITE_LABEL_LOGO: 'white_label_logo',
   WHITE_LABEL_FAVICON: 'white_label_favicon',
 };
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'assets/images/tj-logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
+};
 
 export function retrieveWhiteLabelFavicon() {
   const { whiteLabelFavicon } = useWhiteLabellingStore.getState();
@@ -27,8 +32,11 @@ export function retrieveWhiteLabelLogo() {
 export async function setFaviconAndTitle(location) {
   // TODO:Uncomment-if-needed
   // await fetchWhiteLabelDetails(organizationId);
+  if (!location || !location.pathname) {
+    document.title = 'Loading';
+    return;
+  }
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
-
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -77,25 +85,33 @@ export async function setFaviconAndTitle(location) {
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
 }
 
-export async function fetchAndSetWindowTitle(pageDetails) {
-  const whiteLabelText = retrieveWhiteLabelText();
+export async function fetchAndSetWindowTitle(pageDetails, organizationId = null) {
+  const state = useWhiteLabellingStore.getState();
+  if (!state.isWhiteLabelDetailsFetched && state.loadingWhiteLabelDetails) {
+    await fetchWhiteLabelDetails(organizationId);
+  }
+  const whiteLabelText = state.whiteLabelText;
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
   let mode = pageDetails?.mode || '';
   let isPreview = !pageDetails?.isReleased || false;
   const license = pageDetails?.licenseStatus;
+  let appName = pageDetails?.appName;
+  if (appName === undefined || appName === null) {
+    appName = 'Loading...';
+  }
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      pageTitle = `${titlePrefix}${appName || 'My App'}`;
       break;
     }
     case pageTitles.EDITOR:
     case pageTitles.WORKFLOW_EDITOR: {
       if (mode == 'edit') {
-        pageTitle = `${pageDetails?.appName}`;
+        pageTitle = `${appName}`;
       } else {
-        pageTitle = `Preview - ${pageDetails?.appName}` || 'My App';
+        pageTitle = `Preview - ${appName}` || 'My App';
       }
       break;
     }
@@ -105,7 +121,7 @@ export async function fetchAndSetWindowTitle(pageDetails) {
     }
   }
   if (!isPreview && mode === 'view') {
-    document.title = `${pageDetails?.appName} ${license ? '' : '| ToolJet'}`;
+    document.title = `${appName} ${license ? '' : '| ToolJet'}`;
     return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
@@ -137,8 +153,14 @@ export async function resetToDefaultWhiteLabels() {
 
 // Check if current settings match the default values
 export function checkWhiteLabelsDefaultState() {
-  const { isDefaultWhiteLabel } = useWhiteLabellingStore.getState();
-  return isDefaultWhiteLabel;
+  const whiteLabelText = retrieveWhiteLabelText();
+  const whiteLabelFavicon = retrieveWhiteLabelFavicon();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
+  return (
+    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+  );
 }
 
 export const pageTitles = {

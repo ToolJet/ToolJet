@@ -1,4 +1,4 @@
-import { FEATURE_KEY } from '../constants';
+import { DataSourceTypes, FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { QueryError, OAuthUnauthorizedClientError } from '@tooljet/plugins/dist/server';
@@ -10,6 +10,7 @@ interface Features {
   [FEATURE_KEY.DELETE]: FeatureConfig;
   [FEATURE_KEY.GET_BY_ENVIRONMENT]: FeatureConfig;
   [FEATURE_KEY.TEST_CONNECTION]: FeatureConfig;
+  [FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB]: FeatureConfig;
   [FEATURE_KEY.SCOPE_CHANGE]: FeatureConfig;
   [FEATURE_KEY.GET_OAUTH2_BASE_URL]: FeatureConfig;
   [FEATURE_KEY.AUTHORIZE]: FeatureConfig;
@@ -50,6 +51,7 @@ export { QueryError, OAuthUnauthorizedClientError };
 export interface GetQueryVariables {
   appVersionId?: string;
   environmentId?: string;
+  types?: DataSourceTypes[];
   shouldIncludeWorkflows?: boolean;
 }
 
@@ -57,3 +59,5 @@ export interface UpdateOptions {
   dataSourceId: string;
   environmentId: string;
 }
+
+export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';

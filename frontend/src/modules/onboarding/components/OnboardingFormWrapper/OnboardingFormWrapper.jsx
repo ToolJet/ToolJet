@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Logo from '@/modules/common/resources/images/Logo';
 import './resources/styles/onboarding-form-wrapper.styles.scss';
 import { getSubpath } from '@/_helpers/routes';
 import WhiteLabellingFormWrapper from '@/modules/onboarding/components/WhiteLabellingFormWrapper';
-import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { defaultWhiteLabellingSettings, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
 const OnboardingFormWrapper = ({ children: components }) => {
-  const isWhiteLabelApplied = !checkWhiteLabelsDefaultState();
+  const [isWhiteLabelApplied, setIsWhiteLabelApplied] = useState(false);
+  const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
+  useEffect(() => {
+    const favIcon = retrieveWhiteLabelFavicon();
+    setIsWhiteLabelApplied(favIcon !== defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON);
+  }, []);
   const redirectToLoginPage = () => {
     window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };
@@ -13,7 +19,11 @@ const OnboardingFormWrapper = ({ children: components }) => {
     return <div></div>;
   }
   if (window.location.pathname != '/setup' && isWhiteLabelApplied) {
-    return <WhiteLabellingFormWrapper>{components}</WhiteLabellingFormWrapper>;
+    return (
+      <WhiteLabellingFormWrapper whiteLabelFavIcon={whiteLabelFavIcon} isWhiteLabelApplied={isWhiteLabelApplied}>
+        {components}
+      </WhiteLabellingFormWrapper>
+    );
   }
   return (
     <div>

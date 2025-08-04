@@ -18,6 +18,8 @@ import '../../resources/styles/group-permissions.styles.scss';
 import { SearchBox } from '@/_components/SearchBox';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import _ from 'lodash';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 class BaseManageGroupPermissions extends React.Component {
   constructor(props) {
@@ -275,6 +277,11 @@ class BaseManageGroupPermissions extends React.Component {
     groupPermissionV2Service
       .create(this.state.newGroupName)
       .then(() => {
+        posthogHelper.captureEvent('create_group', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+        });
         this.setState({
           creatingGroup: false,
           showNewGroupForm: false,
@@ -394,6 +401,8 @@ class BaseManageGroupPermissions extends React.Component {
     } = this.state;
 
     const { featureAccess, isFeatureEnabled, isTrial } = this.props;
+    const isValidLicense = featureAccess?.licenseStatus.isLicenseValid;
+    const planType = featureAccess?.licenseStatus?.licenseType;
 
     const grounNameErrorStyle =
       this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
@@ -541,6 +550,11 @@ class BaseManageGroupPermissions extends React.Component {
                     className="btn btn-primary create-new-group-button"
                     onClick={(e) => {
                       e.preventDefault();
+                      posthogHelper.captureEvent('create_new_group', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
                       this.setState({ newGroupName: '', showNewGroupForm: true, isSaveBtnDisabled: true });
                     }}
                     data-cy="create-new-group-button"
@@ -797,7 +811,7 @@ class BaseManageGroupPermissions extends React.Component {
                     )}
                   </div>
                 </div>
-                {!_.isEmpty(featureAccess) && !isFeatureEnabled && (
+                {(!isValidLicense || planType === 'trial') && featureAccess && (
                   <LicenseBanner
                     style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                     limits={featureAccess}
@@ -827,6 +841,7 @@ class BaseManageGroupPermissions extends React.Component {
                         value: group.name,
                       };
                     })}
+                    workflowEnabled={false}
                     featureAccess={featureAccess}
                   />
                 )}

@@ -1,0 +1,85 @@
+.ghost-search-box-wrapper {
+  .form-control.ghost-search {
+    background: none !important;
+    color: var(--slate12);
+    height: 48px;
+    border: none !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--border-weak) !important;
+    transition: border-bottom 0.2s ease-in-out;
+
+    &:hover {
+      background: none !important;
+      border-bottom: 1px solid var(--border-accent-weak) !important;
+      color: var(--slate12);
+    }
+
+    &:focus {
+      background: none !important;
+      border: none !important;
+      border-bottom: 1px solid var(--border-accent-strong) !important;
+    }
+    
+  }
+  .input-icon {
+    .input-icon-addon {
+      padding-right: 6px;
+      display: flex;
+    }
+  }
+}
+
+
+/**
+ * Search Box
+ */
+ .ghost-search-box-wrapper {
+  input {
+    width: 200px;
+    border-radius: 5px !important;
+    color: var(--slate12);
+    background-color: var(--base);
+  }
+
+  .input-icon .form-control:not(:first-child),
+  .input-icon .form-select:not(:last-child) {
+    padding-left: 28px !important;
+  }
+
+  input:focus {
+    width: 200px;
+    background-color: var(--base);
+  }
+
+  .input-icon .input-icon-addon {
+    display: flex;
+  }
+
+  .input-icon .input-icon-addon.end {
+    pointer-events: auto;
+
+    .tj-common-search-input-clear-icon {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 4px;
+      width: 20px;
+      height: 20px;
+      background: var(--indigo3) !important;
+      border-radius: 4px;
+    }
+
+    div {
+      border-radius: 12px;
+      color: #ffffff;
+      padding: 1px;
+      cursor: pointer;
+
+      svg {
+        height: 14px;
+        width: 14px;
+      }
+    }
+  }
+}

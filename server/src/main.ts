@@ -14,17 +14,12 @@ import {
   INestApplicationContext,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { custom } from 'openid-client';
 import { join } from 'path';
-import * as helmet from 'helmet';
 import * as express from 'express';
-import * as fs from 'fs';
-import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { AppModule } from '@modules/app/module';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
-import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { ITemporalService } from '@modules/workflows/interfaces/ITemporalService';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { validateEdition } from '@helpers/edition.helper';
@@ -32,166 +27,152 @@ import { ResponseInterceptor } from '@modules/app/interceptors/response.intercep
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+// Import helper functions
+import {
+  handleLicensingInit,
+  replaceSubpathPlaceHoldersInStaticAssets,
+  setSecurityHeaders,
+  buildVersion,
+  rawBodyBuffer,
+  setupGlobalAgent,
+  createLogger,
+  logStartupInfo,
+  logShutdownInfo,
+} from '@helpers/bootstrap.helper';
+
 let appContext: INestApplicationContext = undefined;
 
-async function handleLicensingInit(app: NestExpressApplication) {
-  const importPath = await getImportPath(false);
-  const { LicenseUtilService } = await import(`${importPath}/licensing/util.service`);
-
-  const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
-  const licenseUtilService = app.get<ILicenseUtilService>(LicenseUtilService);
-  await licenseInitService.init();
-
-  if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
-    return;
-  }
-  const LicenseModule = await import(`${importPath}/licensing/configs/License`);
-  const License = LicenseModule.default;
-  licenseUtilService.validateHostnameSubpath(License.Instance()?.domains);
-
-  console.log(
-    `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
-  );
-}
-function replaceSubpathPlaceHoldersInStaticAssets() {
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
-  for (const fileName of filesToReplaceAssetPath) {
-    const file = join(__dirname, '../../../', 'frontend/build', fileName);
-
-    let newValue = process.env.SUB_PATH;
-
-    if (process.env.SUB_PATH === undefined) {
-      newValue = fileName === 'index.html' ? '/' : '';
-    }
-
-    const data = fs.readFileSync(file, { encoding: 'utf8' });
-
-    const result = data
-      .replace(/__REPLACE_SUB_PATH__\/api/g, join(newValue, '/api'))
-      .replace(/__REPLACE_SUB_PATH__/g, newValue);
-
-    fs.writeFileSync(file, result, { encoding: 'utf8' });
-  }
-}
-
-function setSecurityHeaders(app, configService) {
-  const tooljetHost = configService.get('TOOLJET_HOST');
-  const host = new URL(tooljetHost);
-  const domain = host.hostname;
-
-  app.enableCors({
-    origin: configService.get('ENABLE_CORS') === 'true' || tooljetHost,
-    credentials: true,
-  });
-
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        useDefaults: true,
-        directives: {
-          upgradeInsecureRequests: null,
-          'img-src': ['*', 'data:', 'blob:'],
-          'script-src': [
-            'maps.googleapis.com',
-            'storage.googleapis.com',
-            'apis.google.com',
-            'accounts.google.com',
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            'blob:',
-            'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
-            'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
-            'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
-            'cdn.skypack.dev',
-            'cdn.jsdelivr.net',
-            'https://esm.sh',
-            'www.googletagmanager.com',
-          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
-          'object-src': ["'self'", 'data:'],
-          'media-src': ["'self'", 'data:'],
-          'default-src': [
-            'maps.googleapis.com',
-            'storage.googleapis.com',
-            'apis.google.com',
-            'accounts.google.com',
-            '*.sentry.io',
-            "'self'",
-            'blob:',
-            'www.googletagmanager.com',
-          ].concat(configService.get('CSP_WHITELISTED_DOMAINS')?.split(',') || []),
-          'connect-src': ['ws://' + domain, "'self'", '*', 'data:'],
-          'frame-ancestors': ['*'],
-          'frame-src': ['*'],
-        },
-      },
-      frameguard: configService.get('DISABLE_APP_EMBED') !== 'true' ? false : { action: 'deny' },
-      hidePoweredBy: true,
-      referrerPolicy: {
-        policy: 'no-referrer',
-      },
-    })
-  );
-
-  app.use((req, res, next) => {
-    res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
-    res.setHeader('X-Powered-By', 'ToolJet');
-
-    if (req.path.startsWith('/api/')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    } else {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-
-    return next();
-  });
-}
-
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(await AppModule.register({ IS_GET_CONTEXT: false }), {
-    bufferLogs: true,
-    abortOnError: false,
-  });
+  const logger = createLogger('Bootstrap');
+  logger.log('🚀 Starting ToolJet application bootstrap...');
 
-  // Get DataSource from the app
-  await validateEdition(app);
+  try {
+    logger.log('Creating NestJS application...');
+    const app = await NestFactory.create<NestExpressApplication>(await AppModule.register({ IS_GET_CONTEXT: false }), {
+      bufferLogs: true,
+      abortOnError: false,
+    });
 
-  globalThis.TOOLJET_VERSION = `${fs.readFileSync('./.version', 'utf8').trim()}-${getTooljetEdition()}`;
-  process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
+    const configService = app.get<ConfigService>(ConfigService);
+    logger.log('✅ NestJS application created successfully');
 
-  process.on('SIGINT', async () => {
-    console.log('SIGINT signal received: closing application...');
-    await app.close();
-    process.exit(0);
-  });
+    // Validate edition
+    logger.log('Validating ToolJet edition...');
+    await validateEdition(app);
+    logger.log('✅ Edition validation completed');
 
-  process.on('SIGTERM', async () => {
-    console.log('SIGTERM signal received: closing application...');
-    await app.close();
-    process.exit(0);
-  });
+    // Build version
+    logger.log('Building version information...');
+    const version = buildVersion();
+    globalThis.TOOLJET_VERSION = version;
+    process.env['RELEASE_VERSION'] = version;
+    logger.log(`✅ Version set: ${version}`);
 
-  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
-    replaceSubpathPlaceHoldersInStaticAssets();
+    // Setup graceful shutdown
+    logger.log('Setting up graceful shutdown handlers...');
+    setupGracefulShutdown(app, logger);
+    logger.log('✅ Graceful shutdown handlers configured');
+
+    // Handle static assets in production
+    if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+      logger.log('Replacing subpath placeholders in static assets...');
+      replaceSubpathPlaceHoldersInStaticAssets();
+      logger.log('✅ Static assets processed');
+    }
+
+    // Initialize licensing
+    logger.log('Initializing licensing...');
+    await handleLicensingInit(app);
+    logger.log('✅ Licensing initialization completed');
+
+    // Configure OIDC timeout
+    logger.log('Configuring OIDC connection timeout...');
+    const oidcTimeout = parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500');
+    custom.setHttpOptionsDefaults({ timeout: oidcTimeout });
+    logger.log(`✅ OIDC timeout set to ${oidcTimeout}ms`);
+
+    // Setup application middleware and pipes
+    logger.log('Setting up application middleware and pipes...');
+    setupApplicationMiddleware(app);
+    logger.log('✅ Application middleware configured');
+
+    // Configure URL prefix and excluded paths
+    logger.log('Configuring URL prefix and excluded paths...');
+    const { urlPrefix, pathsToExclude } = configureUrlPrefix();
+    app.setGlobalPrefix(urlPrefix + 'api', { exclude: pathsToExclude });
+    logger.log(`✅ URL prefix configured: ${urlPrefix}`);
+
+    // Setup body parsers
+    logger.log('Setting up body parsers...');
+    setupBodyParsers(app, configService);
+    logger.log('✅ Body parsers configured');
+
+    // Enable versioning
+    logger.log('Enabling API versioning...');
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: VERSION_NEUTRAL,
+    });
+    logger.log('✅ API versioning enabled');
+
+    // Setup security headers
+    logger.log('Setting up security headers...');
+    setSecurityHeaders(app, configService);
+    logger.log('✅ Security headers configured');
+
+    // Setup static assets
+    logger.log('Setting up static assets...');
+    app.use(`${urlPrefix}/assets`, express.static(join(__dirname, '/assets')));
+    logger.log('✅ Static assets configured');
+
+    // Validate JWT guard
+    logger.log('Validating Ability guard on controllers...');
+    const guardValidator = app.get(GuardValidator);
+    await guardValidator.validateJwtGuard();
+    logger.log('✅ Ability guard validation completed');
+
+    // Start server
+    const listen_addr = process.env.LISTEN_ADDR || '::';
+    const port = parseInt(process.env.PORT) || 3000;
+
+    logger.log(`Starting server on ${listen_addr}:${port}...`);
+    await app.listen(port, listen_addr, async function () {
+      logStartupInfo(configService, logger);
+    });
+  } catch (error) {
+    logger.error('❌ Failed to bootstrap application:', error);
+    process.exit(1);
   }
+}
 
-  await handleLicensingInit(app);
+function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
+  const gracefulShutdown = async (signal: string) => {
+    logShutdownInfo(signal, logger);
+    try {
+      await app.close();
+      logger.log('✅ Application closed successfully');
+      process.exit(0);
+    } catch (error) {
+      logger.error('❌ Error during application shutdown:', error);
+      process.exit(1);
+    }
+  };
 
-  const configService = app.get<ConfigService>(ConfigService);
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+}
 
-  custom.setHttpOptionsDefaults({
-    timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
-  });
-
+function setupApplicationMiddleware(app: NestExpressApplication) {
   app.useLogger(app.get(Logger));
   app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), app.get(Logger), app.get(EventEmitter2)));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
+}
 
+function configureUrlPrefix() {
   const hasSubPath = process.env.SUB_PATH !== undefined;
-  const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+  const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
   const pathsToExclude = [];
@@ -201,70 +182,86 @@ async function bootstrap() {
   pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
   pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
 
-  app.setGlobalPrefix(UrlPrefix + 'api', {
-    exclude: pathsToExclude,
-  });
+  return { urlPrefix, pathsToExclude };
+}
+
+function setupBodyParsers(app: NestExpressApplication, configService: ConfigService) {
+  const maxSize = configService.get<string>('MAX_JSON_SIZE') || '50mb';
 
   app.use(compression());
   app.use(cookieParser());
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
-
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL,
-  });
-
-  setSecurityHeaders(app, configService);
-
-  app.use(`${UrlPrefix}/assets`, express.static(join(__dirname, '/assets')));
-
-  const listen_addr = process.env.LISTEN_ADDR || '::';
-  const port = parseInt(process.env.PORT) || 3000;
-
-  const guardValidator = app.get(GuardValidator);
-  // Run the validation
-  await guardValidator.validateJwtGuard();
-
-  await app.listen(port, listen_addr, async function () {
-    const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    const subPath = configService.get<string>('SUB_PATH');
-
-    console.log(`Ready to use at ${tooljetHost}${subPath || ''} 🚀`);
-  });
-}
-
-// Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
-if (process.env.TOOLJET_HTTP_PROXY) {
-  process.env['GLOBAL_AGENT_HTTP_PROXY'] = process.env.TOOLJET_HTTP_PROXY;
-  globalAgentBootstrap();
+  app.use(json({ verify: rawBodyBuffer, limit: maxSize }));
+  app.use(
+    urlencoded({
+      verify: rawBodyBuffer,
+      extended: true,
+      limit: maxSize,
+      parameterLimit: 1000000,
+    })
+  );
 }
 
 async function bootstrapWorker() {
-  appContext = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: false }));
+  const logger = createLogger('Worker');
+  logger.log('🚀 Starting ToolJet worker bootstrap...');
 
-  process.on('SIGINT', async () => {
-    console.log('SIGINT signal received: closing application...');
-    temporalService.shutDownWorker();
-  });
+  try {
+    logger.log('Creating application context...');
+    appContext = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: false }));
+    logger.log('✅ Application context created');
 
-  process.on('SIGTERM', async () => {
-    console.log('SIGTERM signal received: closing application...');
-    temporalService.shutDownWorker();
-  });
+    // Setup graceful shutdown for worker
+    setupWorkerGracefulShutdown(logger);
 
-  const importPath = await getImportPath(false);
-  const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
+    logger.log('Initializing Temporal service...');
+    const importPath = await getImportPath(false);
+    const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
 
-  const temporalService = appContext.get<ITemporalService>(TemporalService);
-  await temporalService.runWorker();
-  await appContext.close();
+    const temporalService = appContext.get<ITemporalService>(TemporalService);
+    logger.log('✅ Temporal service initialized');
+
+    logger.log('Starting Temporal worker...');
+    await temporalService.runWorker();
+    logger.log('✅ Temporal worker started');
+
+    await appContext.close();
+    logger.log('✅ Worker bootstrap completed');
+  } catch (error) {
+    logger.error('❌ Failed to bootstrap worker:', error);
+    process.exit(1);
+  }
+}
+
+function setupWorkerGracefulShutdown(logger: any) {
+  const gracefulShutdown = async (signal: string) => {
+    logShutdownInfo(signal, logger);
+    try {
+      const importPath = await getImportPath(false);
+      const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
+      const temporalService = appContext.get<ITemporalService>(TemporalService);
+
+      logger.log('Shutting down Temporal worker...');
+      temporalService.shutDownWorker();
+      logger.log('✅ Temporal worker shutdown completed');
+    } catch (error) {
+      logger.error('❌ Error during worker shutdown:', error);
+    }
+  };
+
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 }
 
 export function getAppContext(): INestApplicationContext {
   return appContext;
 }
+
+// Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
+setupGlobalAgent();
+
+// Main execution
 if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   process.env.WORKER ? bootstrapWorker() : bootstrap();
 } else {
   bootstrap();

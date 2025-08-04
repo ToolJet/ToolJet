@@ -16,11 +16,15 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
+  const isGitSyncEnabled =
+    orgGit?.org_git?.git_ssh?.is_enabled ||
+    orgGit?.org_git?.git_https?.is_enabled ||
+    orgGit?.org_git?.git_lab?.is_enabled;
 
   const {
     createNewVersionAction,
@@ -29,6 +33,7 @@ const CreateVersionModal = ({
     appId,
     setCurrentVersionId,
     selectedVersion,
+    currentMode,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -41,6 +46,7 @@ const CreateVersionModal = ({
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
+      currentMode: state.currentMode,
     }),
     shallow
   );
@@ -90,7 +96,7 @@ const CreateVersionModal = ({
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         appVersionService
-          .getAppVersionData(appId, newVersion.id)
+          .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);
@@ -100,8 +106,8 @@ const CreateVersionModal = ({
           });
       },
       (error) => {
-        if (error?.data?.code === "23505") {
-          toast.error("Version name already exists.");
+        if (error?.data?.code === '23505') {
+          toast.error('Version name already exists.');
         } else {
           toast.error(error?.error);
         }
@@ -170,7 +176,7 @@ const CreateVersionModal = ({
             </div>
           </div>
 
-          {orgGit?.org_git?.is_enabled && (
+          {isGitSyncEnabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
               <div>
                 <input

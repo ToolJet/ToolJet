@@ -28,14 +28,16 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getCssVarValue } from '@/Editor/Components/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
+import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
-  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
+  const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -79,7 +81,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
@@ -131,6 +132,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
   const previewRef = useRef(null);
+  const fullScreenPreviewRef = useRef(null);
 
   return (
     <div
@@ -145,22 +147,30 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
-        componentId={restProps?.componentId ?? null}
+        componentId={componentId ?? null}
+        fieldMeta={fieldMeta}
+        paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
+        onAiSuggestionAccept={(newValue) => {
+          setCurrentValue(newValue);
+          onChange(newValue);
+        }}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
             <SingleLineCodeEditor.Editor
               previewRef={previewRef}
+              fullScreenPreviewRef={fullScreenPreviewRef}
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
               isFocused={isFocused}
@@ -175,6 +185,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               showPreview={showPreview}
               wrapperRef={wrapperRef}
               showSuggestions={showSuggestions}
+              cursorInsidePreview={cursorInsidePreview}
               {...restProps}
             />
           </div>
@@ -205,18 +216,25 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
   previewRef,
+  fullScreenPreviewRef,
   setShowPreview,
   onInputChange,
   wrapperRef,
   showSuggestions,
+  setCodeEditorView = null, // Function to set the CodeMirror view
+  cursorInsidePreview = false,
 }) => {
   const codeHinterContext = useContext(CodeHinterContext);
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
+  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
-  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
@@ -226,7 +244,7 @@ const EditorInput = ({
   );
   function autoCompleteExtensionConfig(context) {
     const hintsWithoutParamHints = getSuggestions();
-    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+    const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     let word = context.matchBefore(/\w*/);
 
@@ -274,7 +292,10 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [isInsideQueryManager, paramHints]);
+  const overRideFunction = React.useCallback(
+    (context) => autoCompleteExtensionConfig(context),
+    [isInsideQueryManager, paramHints]
+  );
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -295,6 +316,7 @@ const EditorInput = ({
     ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
     ...completionKeymap,
   ];
+
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -325,7 +347,8 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setShowPreview(false);
+    !cursorInsidePreview && setShowPreview(false);
+
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);
@@ -339,7 +362,7 @@ const EditorInput = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
 
-  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
   // when full screen editor is closed, show the preview box
   useEffect(() => {
     if (isFocused && !isOpen) {
@@ -438,11 +461,14 @@ const EditorInput = ({
               height: '100%',
             }}
             className="check-here"
-            ref={previewRef}
+            ref={isOpen ? fullScreenPreviewRef : previewRef}
           >
             <CodeMirror
               onCreateEditor={(view) => {
                 setCodeMirrorView(view);
+                if (setCodeEditorView) {
+                  setCodeEditorView(view);
+                }
               }}
               value={currentValue}
               placeholder={placeholder}
@@ -487,9 +513,9 @@ const EditorInput = ({
               }}
             />
           </div>
-        </ErrorBoundary >
-      </CodeHinter.Portal >
-    </div >
+        </ErrorBoundary>
+      </CodeHinter.Portal>
+    </div>
   );
 };
 
@@ -514,20 +540,44 @@ const DynamicEditorBridge = (props) => {
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
-  const { isFxNotRequired } = fieldMeta;
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
+  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
-  const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  let newInitialValue = initialValue,
+    shouldResolve = true;
+
+  // This is to handle the case when the initial value is a string and contains components or queries
+  // and we need to replace the ids with names
+  // but we don't want to resolve the references as it needs to be displayed as it is
+  if (paramName === 'generateFormFrom') {
+    if (
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
+    ) {
+      newInitialValue = replaceIdsWithName(initialValue);
+      shouldResolve = false;
+    }
+  }
+  const [_, error, value] =
+    type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  let modifiedValue = initialValue;
+  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
+    modifiedValue = getCssVarValue(document.documentElement, initialValue);
+  }
+
   const renderFx = () => {
-    if (paramType === 'query' || (paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+    if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
       return null;
     }
+
     return (
       <div
         className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
@@ -539,6 +589,9 @@ const DynamicEditorBridge = (props) => {
             if (codeShow) {
               setForceCodeBox(false);
               onFxPress(false);
+              if (paramType === 'colorSwatches') {
+                onChange(modifiedValue);
+              }
             } else {
               setForceCodeBox(true);
               onFxPress(true);
@@ -551,9 +604,10 @@ const DynamicEditorBridge = (props) => {
   };
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
-  return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+
+  const renderedLabel = () => {
+    return (
+      <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -562,37 +616,56 @@ const DynamicEditorBridge = (props) => {
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
                 }`}
             />
+            {isDeprecated && (
+              <span className={'list-item-deprecated-column-type'}>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            )}
           </div>
         )}
+      </>
+    );
+  };
+
+  const renderDynamicFx = () => {
+    if (codeShow) return null;
+    return (
+      <DynamicFxTypeRenderer
+        value={!error ? value : ''}
+        onChange={onChange}
+        paramName={paramName}
+        paramLabel={paramLabel}
+        paramType={paramType}
+        forceCodeBox={() => {
+          setForceCodeBox(true);
+          onFxPress(true);
+        }}
+        meta={fieldMeta}
+        cyLabel={cyLabel}
+        styleDefinition={styleDefinition}
+        component={component}
+        onVisibilityChange={onVisibilityChange}
+      />
+    );
+  };
+
+  return (
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+        {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
             {renderFx()}
           </div>
         </div>
-        {!codeShow && (
-          <DynamicFxTypeRenderer
-            value={!error ? value : ''}
-            onChange={onChange}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            paramType={paramType}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-            styleDefinition={styleDefinition}
-            component={component}
-            onVisibilityChange={onVisibilityChange}
-          />
-        )}
+        {!newLine && renderDynamicFx()}
       </div>
+      {newLine && renderDynamicFx()}
       {codeShow && (
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor initialValue {...props} />
+              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
           </div>
         </div>

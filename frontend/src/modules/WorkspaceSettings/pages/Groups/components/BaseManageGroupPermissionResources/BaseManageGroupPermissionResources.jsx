@@ -21,6 +21,9 @@ import ChangeRoleModal from '../ChangeRoleModal';
 import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
+import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -205,6 +208,12 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
         toast.success('Users added to the group');
         this.fetchUsersInGroup(groupPermissionId);
+        posthogHelper.captureEvent('click_add_user_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: groupPermissionId,
+        });
       })
       .catch(({ error, statusCode }) => {
         if (error?.type) {
@@ -264,7 +273,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -876,7 +885,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                               )}
                             </p>
                           </div>
-                          <div className="permission-body">
+                          <div className={`${showPermissionInfo ? 'permissions-body-one' : 'permissions-body-two'}`}>
                             {isLoadingGroup ? (
                               <tr>
                                 <td className="col-auto">
@@ -954,10 +963,25 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           Delete any app in this workspace
                                         </span>
                                       </label>
+
+                                      {/* Promote and release app permissions */}
+                                      <AppPromoteReleasePermissionsUI
+                                        groupPermission={groupPermission}
+                                        disablePermissionUpdate={disablePermissionUpdate}
+                                        updateGroupPermission={this.updateGroupPermission}
+                                        updateState={this.updateParamState}
+                                      />
                                     </div>
                                   </div>
                                   {/* //App till here */}
                                 </div>
+                                {/* Worklfow Permission */}
+                                <WorkflowPermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
 
                                 {/* Data source */}
                                 <DataSourcePermissionsUI

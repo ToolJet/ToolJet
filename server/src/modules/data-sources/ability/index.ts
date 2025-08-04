@@ -6,6 +6,7 @@ import { FEATURE_KEY } from '../constants';
 import { DataSource } from '@entities/data_source.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 type Subjects = InferSubjects<typeof DataSource> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -38,14 +39,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // Oauth end points available to all
     can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
     can(FEATURE_KEY.AUTHORIZE, DataSource);
-    if ((toolJetEdition == 'ee' && superAdmin) || (toolJetEdition !== 'ee' && isAdmin)) {
+    if ((toolJetEdition === TOOLJET_EDITIONS.EE && superAdmin) || (toolJetEdition !== TOOLJET_EDITIONS.EE && isAdmin)) {
       can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);
     }
 
     if (isBuilder) {
       // Only builder can do scope change, Get call is there on app builder
-      can(FEATURE_KEY.SCOPE_CHANGE, DataSource);
-      can(FEATURE_KEY.GET_FOR_APP, DataSource);
+      can([FEATURE_KEY.SCOPE_CHANGE, FEATURE_KEY.GET_FOR_APP, FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB], DataSource);
     }
 
     if (isAdmin || superAdmin) {
@@ -58,6 +58,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE,
           FEATURE_KEY.GET_BY_ENVIRONMENT,
           FEATURE_KEY.TEST_CONNECTION,
+          FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
           FEATURE_KEY.SCOPE_CHANGE,
           FEATURE_KEY.GET_FOR_APP,
           FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE,
@@ -70,7 +71,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isCanCreate || isCanDelete) {
       // Can create and can delete has master permissions
       can(
-        [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
+        [
+          FEATURE_KEY.GET,
+          FEATURE_KEY.UPDATE,
+          FEATURE_KEY.GET_BY_ENVIRONMENT,
+          FEATURE_KEY.TEST_CONNECTION,
+          FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+        ],
         DataSource
       );
 
@@ -86,7 +93,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isAllEditable) {
       // All operations are available
       can(
-        [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
+        [
+          FEATURE_KEY.GET,
+          FEATURE_KEY.UPDATE,
+          FEATURE_KEY.GET_BY_ENVIRONMENT,
+          FEATURE_KEY.TEST_CONNECTION,
+          FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+        ],
         DataSource
       );
       return;
@@ -96,18 +109,37 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.GET], DataSource);
 
       if (dataSourceId && resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)) {
-        can([FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+        can(
+          [
+            FEATURE_KEY.UPDATE,
+            FEATURE_KEY.GET_BY_ENVIRONMENT,
+            FEATURE_KEY.TEST_CONNECTION,
+            FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+          ],
+          DataSource
+        );
       }
     }
 
     if (isAllViewable) {
-      can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.GET, FEATURE_KEY.TEST_CONNECTION], DataSource);
+      can(
+        [
+          FEATURE_KEY.GET_BY_ENVIRONMENT,
+          FEATURE_KEY.GET,
+          FEATURE_KEY.TEST_CONNECTION,
+          FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+        ],
+        DataSource
+      );
       return;
     }
     if (resourcePermissions.usableDataSourcesId?.length) {
       can([FEATURE_KEY.GET], DataSource);
       if (dataSourceId && resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)) {
-        can([FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION], DataSource);
+        can(
+          [FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION, FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB],
+          DataSource
+        );
       }
       return;
     }

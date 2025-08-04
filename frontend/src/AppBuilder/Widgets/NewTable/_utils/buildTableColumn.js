@@ -16,8 +16,10 @@ export const buildTableColumn = (
   handleCellValueChange,
   globalFilter,
   serverSideSearch,
-  tableBodyRef
+  tableBodyRef,
+  t
 ) => {
+  console.log('columnSizes', columnSizes);
   return [
     {
       id: 'selection',
@@ -64,6 +66,7 @@ export const buildTableColumn = (
       tableRef: tableBodyRef,
       handleCellValueChange,
       searchText: globalFilter,
+      t,
     }).filter(Boolean),
 
     ...generateActionColumns({

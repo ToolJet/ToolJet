@@ -18,7 +18,7 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
-  nameInputFieldd: "[data-cy=name-input-field]",
+  inputFieldName: "[data-cy=name-input-field]",
   valueInputFieldd: "[data-cy=value-input-field]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
@@ -177,7 +177,7 @@ export const commonSelectors = {
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
-  confirmDuplicateButton: '[data-cy="confim-button"]',
+  confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
   labelEmailInput: '[data-cy="email-label"]',
   inputFieldEmailAddress: '[data-cy="email-input"]',
@@ -288,6 +288,7 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
+  pageLogo: '[data-cy="page-logo"]',
 };
 
 export const commonWidgetSelector = {
@@ -353,7 +354,7 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",

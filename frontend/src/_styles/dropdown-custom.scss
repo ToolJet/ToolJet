@@ -1,80 +1,93 @@
 // for selects and dropdowns across app dashboard
 .react-select__control {
-    background-color: var(--base) !important;
-    border: 1px solid var(--slate7) !important;
+  background-color: var(--surfaces-surface-01) !important;
+  border: 1px solid var(--border-weak) !important;
 
-    &:active {
-        border: 1px solid var(--indigo9);
-    }
+  &:active {
+    border: 1px solid var(--indigo9);
+  }
 }
 
 .react-select__menu-portal {
-    z-index: 100 !important;
+  z-index: 100 !important;
 
-    .react-select__option {
-        color: var(--slate12);
-        z-index: 100;
-
-    }
+  .react-select__option {
+    color: var(--text-default);
+    min-height: 32px;  
+    z-index: 100;
+    padding: 4px 8px;
+  }
 }
 
 .react-select__single-value {
-    color: var(--slate12) ;
+  color: var(--text-default);
 }
 
 .react-select__menu {
-    background-color: var(--base) !important;
-    border: 1px solid var(--slate3) !important;
-    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
-    margin: 0px !important;
-    z-index: 100;
+  background-color: var(--surfaces-surface-01) !important;
+  border: 1px solid var(--border-weak) !important;
+  box-shadow: var(--elevation-00-box-shadow) !important;
+  margin: 0px !important;
+  z-index: 100;
 
-    .react-select__menu-list {
-        background-color: var(--base) !important;
-        overflow-y: auto;
+  .react-select__menu-list {
+    background-color: var(--surfaces-surface-01) !important;
+    padding: 4px;
+    overflow-y: auto;
 
-        .react-select__option {
-            background-color: var(--base) !important;
+    .react-select__option {
+      background-color: var(--surfaces-surface-01) !important;
+      border-radius: 6px;
 
-            &:hover {
-                background-color: var(--slate3) !important;
-            }
+
+      >div {
+        color: var(--text-default) !important;
+        background-color: transparent !important;
+      }
+
+      &:hover {
+        background-color: var(--interactive-hover) !important;
+
+        >div {
+          background-color: transparent !important;
         }
+      }
     }
+  }
 }
 
 .org-select-container {
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 1px solid var(--slate5);
-    margin-bottom: var(--dynamic-margin, 0px); //please Remove after Basicplan banner is removed..
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border-weak);
+  margin-bottom: var(--dynamic-margin,
+      0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-org-select {
-    .react-select__control {
-        width: 262px;
-        height: 32px;
-        border: none !important;
-        background-color: var(--page-default) !important;
+  .react-select__control {
+    width: 262px;
+    height: 32px;
+    border: none !important;
+    background-color: var(--surfaces-surface-01) !important;
 
-        &:hover {
-            background: var(--slate2) !important;
-        }
-
-        &:active {
-            background: var(--slate3) !important;
-        }
+    &:hover {
+      background: var(--slate2) !important;
     }
 
-    .tj-text-xsm {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 200px;
+    &:active {
+      background: var(--slate3) !important;
     }
+  }
 
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 200px;
+  }
 }
 
 .users-filter-dropdown,
@@ -85,59 +98,111 @@
 .select-order-field,
 .select-column-field,
 .records-dropdown-field {
-    .react-select__control {
-        border: 1px solid var(--slate7) !important;
-    }
+  .react-select__control {
+    border: 1px solid var(--border-default) !important;
+  }
 }
 
 .css-1ms6gku-MenuPortal,
 .css-169zxdi-MenuList {
-    .react-select__option {
-        border-radius: 6px;
-    }
+  .react-select__option {
+    border-radius: 6px;
+  }
 }
 
 .css-nw08ma-menu {
-    box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 .react-select__menu-portal {
-    z-index: 9999 !important;
+  z-index: 9999 !important;
 }
 
 // following is the styles for table select column type menu list and options styles. If its same for all the select elements in the editor, then we can make it common and not specific for table select
-.table-select-custom-menu-list{
-    .react-select__menu-list{
-        padding: 2px;
-        // this is needed otherwise :active state doesn't look nice, gap is required
-        display: flex;
-        flex-direction: column;
-        gap: 4px !important;
-        background-color: var(--base) !important;
-        overflow-y: auto;
+.table-select-custom-menu-list {
+  .react-select__menu-list {
+    padding: 2px;
+    // this is needed otherwise :active state doesn't look nice, gap is required
+    display: flex;
+    flex-direction: column;
+    gap: 4px !important;
+    background-color: var(--surfaces-surface-01) !important;
+    overflow-y: auto;
+  }
+
+  .react-select__option {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    align-self: stretch;
+    align-items: center;
+    color: var(--slate12) !important;
+    border-radius: 6px;
+    /* Paragraph/Extrasmall/Regular */
+    font-family: "IBM Plex Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+
+    /* 166.667% */
+    &.react-select__option--is-selected {
+      color: var(--indigo9) !important;
     }
-    .react-select__option{
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 12px;
-        align-self: stretch;
-        align-items: center;
-        color: var(--slate12) !important;
-        border-radius: 6px;
-        /* Paragraph/Extrasmall/Regular */
-        font-family: 'IBM Plex Sans';
-        font-size: 12px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 20px; /* 166.667% */
-        &.react-select__option--is-selected{
-            color: var(--indigo9) !important;
-        }
-        &:active{
-            background: var(--base) !important;
-            box-shadow: 0px 0px 0px 4px var(--slate6);
-            color : var(--slate12) !important;
-        }
+
+    &:active {
+      background: var(--surfaces-surface-01) !important;
+      box-shadow: 0px 0px 0px 4px var(--slate6);
+      color: var(--slate12) !important;
     }
+  }
 }
 
+// Firefox-specific fixes for Radix UI Select in modals and popovers
+@-moz-document url-prefix() {
+
+  // Fix for dropdowns in modals
+  .modal-dialog [data-radix-select-content] {
+    position: fixed !important;
+    z-index: 99999 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+  }
+
+  // Fix for dropdowns in popovers  
+  .popover [data-radix-select-content] {
+    position: fixed !important;
+    z-index: 99999 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+  }
+
+  // Ensure proper positioning for column mapping modal specifically
+  .column-mapping-modal-body [data-radix-select-content] {
+    max-height: 150px !important;
+    min-width: 140px !important;
+  }
+
+  // Ensure proper viewport constraint for form field popovers
+  .form-field-popover-body [data-radix-select-content] {
+    max-height: 200px !important;
+    min-width: 200px !important;
+  }
+}
+
+// General improvements for all browsers to ensure proper dropdown behavior
+[data-radix-select-content] {
+  // Ensure the dropdown content is always properly positioned
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: none !important; // Disable animations that might cause positioning issues
+
+  // For modals, ensure the dropdown doesn't exceed modal bounds
+  .modal-dialog & {
+    max-height: 250px;
+  }
+
+  // For popovers, ensure the dropdown doesn't exceed popover bounds  
+  .popover & {
+    max-height: 250px;
+  }
+}

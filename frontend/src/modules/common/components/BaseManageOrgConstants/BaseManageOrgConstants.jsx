@@ -473,10 +473,8 @@ const BaseManageOrgConstants = ({
               featureAceess={featureAccess}
               licenseType={featureAccess?.licenseStatus?.licenseType}
             />
-            <div style={{ marginTop: '850px' }}>
-              <OrganizationList />
-            </div>
           </div>
+          <OrganizationList />
         </div>
         <div className="page-wrapper mt-4">
           <div className="container-xl" style={{ width: '880px' }}>
@@ -579,7 +577,7 @@ const BaseManageOrgConstants = ({
                           // Todo: Update link to documentation: workspace constants
                           onClick={() =>
                             window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
                               '_blank'
                             )
                           }

@@ -3,7 +3,6 @@ import { EntityManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { DataSourceTypes } from '@modules/data-sources/constants';
 import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
@@ -16,15 +15,17 @@ import { isEmpty } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService } from './interfaces/IService';
+import { App } from '@entities/app.entity';
+
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository
-  ) { }
+  ) {}
 
-  async getAll(versionId: string) {
+  async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
     const serializedQueries = [];
 
@@ -127,7 +128,8 @@ export class DataQueriesService implements IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     ability: AppAbility,
     dataSource: DataSource,
-    response: Response
+    response: Response,
+    mode?: string
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -138,7 +140,7 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode);
   }
 
   async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response) {
@@ -146,24 +148,32 @@ export class DataQueriesService implements IDataQueriesService {
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view');
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response) {
     return this.runAndGetResult(user, dataQuery, options, response, environmentId);
   }
 
-  private async runAndGetResult(
+  protected async runAndGetResult(
     user: User,
     dataQuery: DataQuery,
     resolvedOptions: object,
     response: Response,
-    environmentId?: string
+    environmentId?: string,
+    mode?: string
   ): Promise<object> {
     let result = {};
 
     try {
-      result = await this.dataQueryUtilService.runQuery(user, dataQuery, resolvedOptions, response, environmentId);
+      result = await this.dataQueryUtilService.runQuery(
+        user,
+        dataQuery,
+        resolvedOptions,
+        response,
+        environmentId,
+        mode
+      );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

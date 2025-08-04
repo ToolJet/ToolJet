@@ -6,15 +6,14 @@
     color: var(--text-default, #1B1F24);
     overflow-x: auto;
     min-width: 0;
+    // Hide scrollbar for IE, Edge and Firefox
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
     
     // Hide scrollbar for Chrome, Safari and Opera
     &::-webkit-scrollbar {
         display: none;
     }
-    
-    // Hide scrollbar for IE, Edge and Firefox
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
 
     .json-viewer-row-container {
         min-width: max-content;
@@ -89,5 +88,13 @@
             }
         }
 
+    }
+}
+
+.inspector-node-tooltip { 
+    .tooltip-inner {
+        max-height: 110px;
+        max-width: 200px !important;
+        overflow: hidden;
     }
 }

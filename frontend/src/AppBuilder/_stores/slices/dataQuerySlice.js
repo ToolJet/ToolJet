@@ -1,4 +1,4 @@
-import { dataqueryService } from '@/_services';
+import { dataqueryService, appPermissionService } from '@/_services';
 import { getDefaultOptions } from '@/_stores/storeHelper';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty, throttle } from 'lodash';
@@ -57,10 +57,13 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas') => {
+    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+      let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
-      const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
+      const { options: defaultOptions, name: nameFromDefaultOptions } = getDefaultOptions(selectedDataSource);
+      if (!queryName) name = nameFromDefaultOptions;
+      else name = queryName;
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
       const tempId = uuidv4();
@@ -77,10 +80,17 @@ export const createDataQuerySlice = (set, get) => ({
       setIsAppSaving(true);
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
+      const runOnCreate = options.runOnCreate;
+
+      let cleanSelectedQuery = { ...selectedQuery };
+      if(selectedQuery?.permissions) {
+        delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
+      }
+
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
-            ...selectedQuery,
+            ...cleanSelectedQuery,
             data_source_id: dataSourceId,
             app_version_id: appVersionId,
             options,
@@ -111,7 +121,7 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
-          setSelectedQuery(data.id, moduleId);
+          setSelectedQuery(data.id);
           if (shouldRunQuery) setQueryToBeRun(data);
 
           /** Checks if there is an API call cached. If yes execute it */
@@ -141,6 +151,10 @@ export const createDataQuerySlice = (set, get) => ({
             },
             moduleId
           );
+
+          if (runOnCreate) {
+            get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
         })
         .catch((error) => {
           set((state) => {
@@ -226,8 +240,12 @@ export const createDataQuerySlice = (set, get) => ({
             delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
           });
         })
-        .catch(() => {
-          toast.error('App could not be saved.');
+        .catch((e) => {
+          if (e.statusCode === 403) {
+            toast.error('You do not have permission to delete this query.');
+          } else {
+            toast.error(`Failed to delete query: ${e.error}`);
+          }
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
           });
@@ -270,7 +288,6 @@ export const createDataQuerySlice = (set, get) => ({
         )
         .then((data) => {
           set((state) => {
-            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = [
               {
                 ...data,
@@ -307,6 +324,42 @@ export const createDataQuerySlice = (set, get) => ({
               index: event.index,
             };
             createAppVersionEventHandlers(newEvent, moduleId);
+          });
+
+          if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
+            const body = {
+              type: queryToClone.permissions[0]?.type,
+              ...(queryToClone.permissions[0]?.type === 'GROUP'
+                ? {
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
+                : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
+            };
+            appPermissionService
+              .createQueryPermission(appId, data.id, body)
+              .then((newQuery) => {
+                const dataQueries = get().dataQuery.queries.modules[moduleId];
+                const updatedDataQueries = dataQueries.map((query) => {
+                  if (query.id === data.id) {
+                    return {
+                      ...query,
+                      permissions: newQuery.length === 0 || newQuery.length === undefined ? [] : [newQuery[0]],
+                    };
+                  }
+                  return query;
+                });
+                get().dataQuery.setQueries(updatedDataQueries);
+              })
+              .catch(() => {
+                toast.error('Permission could not be created. Please try again!', {
+                  className: 'text-nowrap w-auto mw-100',
+                });
+              });
+          }
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
           });
         })
         .catch((error) => {
@@ -438,7 +491,10 @@ export const createDataQuerySlice = (set, get) => ({
       const queries = get().dataQuery.queries.modules[moduleId];
       try {
         for (const query of queries) {
-          if ((query.options.runOnPageLoad || query.options.run_on_page_load) && isQueryRunnable(query)) {
+          if (
+            (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
+            (query.restricted || isQueryRunnable(query))
+          ) {
             await get().queryPanel.runQuery(
               query.id,
               query.name,

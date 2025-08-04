@@ -4,6 +4,7 @@ import cx from 'classnames';
 import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject } from 'lodash';
+import { getSafeRenderableValue } from '../utils';
 
 export const RadioButtonV2 = ({
   properties,
@@ -34,7 +35,7 @@ export const RadioButtonV2 = ({
 
   const isInitialRender = useRef(true);
 
-  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
+  const [checkedValue, setCheckedValue] = useState(findDefaultItem(schema));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -81,12 +82,9 @@ export const RadioButtonV2 = ({
   }
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    if (advanced) {
-      onSelect(findDefaultItem(schema));
-    } else onSelect(value);
+    onSelect(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), value]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -166,16 +164,16 @@ export const RadioButtonV2 = ({
         fireEvent('onSelectionChange');
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setDisable: async function (value) {
-        setIsDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       setLoading: async function (value) {
-        setIsLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
     };
     setExposedVariables(exposedVariables);
@@ -241,7 +239,7 @@ export const RadioButtonV2 = ({
                             : 'var(--text-primary)',
                       }}
                     >
-                      {option.label}
+                      {getSafeRenderableValue(option.label)}
                     </span>
                     <input
                       style={{
@@ -281,7 +279,7 @@ export const RadioButtonV2 = ({
       <div
         className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}
         style={{
-          color: 'var(--status-error-strong)',
+          color: 'var(--cc-error-systemStatus)',
           justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
           fontSize: '11px',
           fontWeight: '400',

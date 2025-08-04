@@ -1,4 +1,4 @@
-FROM node:18.18.2-buster AS builder
+FROM node:22.15.1 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -6,10 +6,11 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
+# Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 
-# Clone and checkout the frontend repositorys
+# Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
@@ -21,8 +22,15 @@ RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
-# Checkout the same branch in submodules if it exists, otherwise stay on default branch
-RUN git submodule foreach 'git checkout ${BRANCH_NAME} || true'
+# Checkout the same branch in submodules if it exists, otherwise fallback to main
+RUN git submodule foreach " \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    git checkout main; \
+  fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -50,10 +58,11 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli 
+RUN npm install -g @nestjs/cli
+RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:18.18.2-bullseye
+FROM node:22.15.1-bullseye
 
 RUN apt-get update -yq \
     && apt-get install curl wget gnupg zip -yq \

@@ -9,6 +9,7 @@ import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const ReleaseVersionButton = function DeployVersionButton() {
   const { moduleId } = useModuleContext();
@@ -38,6 +39,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
         toast(`Version ${name} released`, {
           icon: '🚀',
         });
+        posthogHelper.captureEvent('click_release', { appId }); //posthog event
 
         updateReleasedVersionId(versionToBeReleased);
 

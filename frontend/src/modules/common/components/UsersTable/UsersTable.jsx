@@ -12,6 +12,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { NoActiveWorkspaceModal } from './components/NoActiveWorkspaceModal';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToolTip } from '@/_components/ToolTip';
+import { fetchEdition } from '../../helpers/utils';
 const UsersTable = ({
   isLoading,
   users,
@@ -56,6 +57,7 @@ const UsersTable = ({
     setSelectedUser(user);
     setIsResetPasswordModalVisible(true);
   };
+  const edition = fetchEdition();
 
   return (
     <div className="workspace-settings-table-wrap mb-4">
@@ -68,7 +70,7 @@ const UsersTable = ({
       />
       <div style={customStyles} className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive">
-          <table data-testid="usersTable" className="users-table table table-vcenter h-100">
+          <table data-testid="usersTable" className="users-table table table-vcenter h-100 mx-0">
             <thead>
               <tr>
                 <th data-cy="users-table-name-column-header" data-name="name-header">
@@ -85,7 +87,7 @@ const UsersTable = ({
                   </th>
                 )}
                 {isLoadingAllUsers && (
-                  <th data-cy="users-table-type-column-header">
+                  <th data-cy="users-table-type-column-header" data-name="type-header">
                     {translator('header.organization.menus.manageUsers.userType', 'Type')}
                   </th>
                 )}
@@ -106,9 +108,7 @@ const UsersTable = ({
                     {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
                   </th>
                 )}
-                <th className="w-1"></th>
-                <th className="w-1"></th>
-                <th className="w-1"></th>
+                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16"></th>
               </tr>
             </thead>
             {isLoading ? (
@@ -128,7 +128,7 @@ const UsersTable = ({
                   users.length > 0 &&
                   users.map((user) => (
                     <tr key={user.id} data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-row`}>
-                      <td>
+                      <td data-name="name-header">
                         <Avatar
                           avatarId={user.avatar_id}
                           text={`${user.first_name ? user.first_name[0] : ''}${
@@ -161,7 +161,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted">
+                        <td className="text-muted" data-name="type-header">
                           <span
                             className="text-muted user-type"
                             data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-type`}
@@ -176,7 +176,7 @@ const UsersTable = ({
                       {!isLoadingAllUsers && <GroupChipTD groups={user.groups.map((group) => group.name)} />}
                       {user.status && (
                         <td
-                          className="text-muted"
+                          className="text-muted !tw-w-[230px] tw-max-w-[230px]"
                           data-name={wsSettings ? 'status-header' : ''}
                           style={{ marginRight: wsSettings ? '6px' : '0px' }}
                         >
@@ -194,7 +194,10 @@ const UsersTable = ({
                           >
                             {user.status}
                           </small>
-                          {user.status === 'invited' && !hideAccountSetupLink && user?.invitation_token ? (
+                          {user.status === 'invited' &&
+                          !hideAccountSetupLink &&
+                          user?.invitation_token &&
+                          edition != 'cloud' ? (
                             <div className="workspace-clipboard-wrap">
                               <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                                 <span>
@@ -223,7 +226,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted">
+                        <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <a
                             className="px-2 text-muted workspaces"
                             onClick={
@@ -239,7 +242,7 @@ const UsersTable = ({
                           </a>
                         </td>
                       )}
-                      <td className="user-actions-button">
+                      <td className="user-actions-button tw-w-16 tw-max-w-16">
                         <UsersActionMenu
                           archivingUser={archivingUser}
                           user={user}
@@ -336,7 +339,9 @@ const GroupChipTD = ({ groups = [], isRole = false }) => {
       onClick={(e) => {
         orderedArray.length > 2 && toggleAllGroupsList(e);
       }}
-      className={cx('text-muted groups-name-cell', { 'groups-hover': orderedArray.length > 2 })}
+      className={cx('text-muted groups-name-cell !tw-w-[230px] tw-max-w-[230px]', {
+        'groups-hover': orderedArray.length > 2,
+      })}
     >
       <div className="groups-name-container tj-text-sm font-weight-500">
         {orderedArray.length === 0 ? (
