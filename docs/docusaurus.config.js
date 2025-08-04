@@ -261,10 +261,10 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true,
-          lastVersion: '3.5.0-LTS',
+          lastVersion: '3.16.0-LTS',
           versions: {
             current: {
-              label: '3.11.0-Beta 🚧',
+              label: 'Beta 🚧',
               path: 'beta',
               banner: 'none',
               badge: false
@@ -278,6 +278,10 @@ module.exports = {
               badge: false
             },
             "3.5.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.16.0-LTS": {
               banner: 'none',
               badge: false
             }
