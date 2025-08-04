@@ -248,8 +248,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     pagePositionType={position}
                     appType={appType}
                   />
-                  <DragGhostWidget />
-                  <ResizeGhostWidget />
+                  {currentMode === 'edit' && (
+                    <>
+                      <DragGhostWidget />
+                      <ResizeGhostWidget />
+                    </>
+                  )}
                   <div id="component-portal" />
                   {appType !== 'module' && <div id="component-portal" />}
                 </div>
