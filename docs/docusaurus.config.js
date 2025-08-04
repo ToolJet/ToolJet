@@ -495,14 +495,15 @@ module.exports = {
             to: '/docs/development-lifecycle/gitsync/delete-gitsync',
             from: '/docs/release-management/gitsync/delete-gitsync',
           },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-            from: '/docs/release-management/gitsync/ssh-config',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-            from: '/docs/release-management/gitsync/tj-config',
-          },
+          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
+          //   from: '/docs/release-management/gitsync/ssh-config',
+          // },
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
+          //   from: '/docs/release-management/gitsync/tj-config',
+          // },
           {
             to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
             from: '/docs/release-management/multi-environment',
