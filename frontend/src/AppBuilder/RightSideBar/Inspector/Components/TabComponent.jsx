@@ -13,6 +13,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -420,7 +421,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {resolveReferences(item.title, currentState)}
+                                    {getSafeRenderableValue(resolveReferences(item.title, currentState))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredTabItemIndex && (

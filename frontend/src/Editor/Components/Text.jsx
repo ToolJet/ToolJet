@@ -79,6 +79,7 @@ export const Text = function Text({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
 
   useEffect(() => {
@@ -200,10 +201,10 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'}>{text}</Markdown>
+              <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>
             </div>
           )}
           {(textFormat === 'html' || !textFormat) && (

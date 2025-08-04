@@ -1081,6 +1081,15 @@
   }
 }
 
+
+.table-column-popover {
+  .popover-body.show-scrollbar {
+    overflow-y: scroll !important;
+    max-height: 80vh !important;
+  }
+}
+
+
 .table-column-popover#popover-basic-2 {
   z-index: 999 !important;
   min-width: 280px;

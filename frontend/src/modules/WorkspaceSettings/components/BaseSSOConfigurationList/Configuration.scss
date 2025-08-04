@@ -20,6 +20,8 @@
   padding-top: 6px;
   padding-bottom: 6px;
   margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #e1e1e1;
   width: 100%;
   border-radius: 8px;
   transition: background-color 0.1s;
@@ -270,10 +272,10 @@ input:checked+.slider:before {
       padding: 24px 32px;
       gap: 8px;
       border-top: 1px solid var(--border-weak) !important;
-      background: var(--surfaces-surface-01);
       margin-top: 0px !important;
       align-Self: 'stretch';
-      height: 88px;
+      height: 88px;;
+      background: 0 0;
     }
 
     .card-body {

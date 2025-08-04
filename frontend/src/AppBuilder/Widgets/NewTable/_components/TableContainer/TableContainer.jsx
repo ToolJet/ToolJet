@@ -40,7 +40,7 @@ export const TableContainer = ({
   const actions = useTableStore((state) => state.getActions(id), shallow);
 
   const [globalFilter, setGlobalFilter] = useState('');
-  const lastClickedRowRef = useRef([]);
+  const lastClickedRowRef = useRef({});
   const tableBodyRef = useRef(null);
 
   const handleCellValueChange = useCallback(
@@ -149,7 +149,7 @@ export const TableContainer = ({
         table={table}
         componentName={componentName}
         pageIndex={pagination.pageIndex + 1}
-        lastClickedRow={lastClickedRowRef.current}
+        lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
       />
       <Header

@@ -499,8 +499,8 @@ export const createEventsSlice = (set, get) => ({
         switch (event.actionId) {
           case 'show-alert': {
             let message = getResolvedValue(event.message, customVariables, moduleId);
-
             if (typeof message === 'object') message = JSON.stringify(message);
+            if (Number.isNaN(message)) message = '';
 
             switch (event.alertType) {
               case 'success':
