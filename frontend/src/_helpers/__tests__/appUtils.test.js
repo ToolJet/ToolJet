@@ -1,17 +1,7 @@
 import { getQueryVariables, runQuery, setTablePageIndex, computeComponentState } from '../appUtils.js';
 
-jest.mock(
-  'config',
-  () => {
-    return {
-      apiUrl: `http://localhost:3000/api`,
-      SERVER_IP: process.env.SERVER_IP,
-      COMMENT_FEATURE_ENABLE: true,
-      ENABLE_MULTIPLAYER_EDITING: true,
-    };
-  },
-  { virtual: true }
-);
+// Config is now provided globally via setupTests.js
+// No need to mock it here anymore as it's available as global.config
 
 describe('getQueryVariables method', () => {
   test('Returns empty object.', async () => {

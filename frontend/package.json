@@ -168,6 +168,8 @@
     "@storybook/react": "^7.2.1",
     "@storybook/react-webpack5": "^7.2.1",
     "@storybook/testing-library": "^0.2.0",
+    "@swc/core": "^1.13.3",
+    "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
@@ -187,7 +189,10 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^0.6.13",
     "html-loader": "^4.2.0",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^29.4.2",
+    "jest-environment-jsdom": "^30.0.5",
+    "jest-jasmine2": "^30.0.5",
     "path": "^0.12.7",
     "postcss": "^8.4.35",
     "postcss-loader": "^8.1.0",
@@ -261,18 +266,30 @@
     "extends": "react-app"
   },
   "jest": {
+    "testEnvironment": "jsdom",
+    "testRunner": "jest-jasmine2",
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@ee/(.*)$": "<rootDir>/ee/$1",
+      "^@cloud/(.*)$": "<rootDir>/cloud/$1",
+      "^@assets/(.*)$": "<rootDir>/assets/$1",
+      "^@white-label/(.*)$": "<rootDir>/src/_helpers/white-label/$1",
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js"
+    },
     "transform": {
-      "^.+\\.js?$": "babel-jest",
-      "^.+\\.jsx?$": "babel-jest",
+      "^.+\\.(js|jsx)$": "babel-jest",
+      "^.+\\.(ts|tsx)$": [
+        "@swc/jest"
+      ],
       "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(react|mpx-error-boundary)/)"
+      "node_modules/(?!(react|mpx-error-boundary|query-string|decode-uri-component|split-on-first|filter-obj|url-join|yaml|react-bootstrap|dom-helpers)/)"
     ],
-    "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
-    },
-    "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [
       "node_modules",
       "src"
@@ -280,7 +297,17 @@
     "moduleFileExtensions": [
       "js",
       "json",
-      "jsx"
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/build/",
+      "<rootDir>/assets/libs/pyodide"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/build/",
+      "<rootDir>/node_modules/"
     ]
   }
 }
