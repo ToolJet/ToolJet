@@ -27,6 +27,7 @@ export const TableContainer = ({
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const enableSorting = useTableStore((state) => state.getTableProperties(id)?.enabledSort, shallow);
+  const enablePagination = useTableStore((state) => state.getTableProperties(id)?.enablePagination, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
 
   // Server side properties
@@ -89,6 +90,7 @@ export const TableContainer = ({
       data,
       columns,
       enableSorting,
+      enablePagination,
       showBulkSelector,
       serverSidePagination,
       serverSideSort,
