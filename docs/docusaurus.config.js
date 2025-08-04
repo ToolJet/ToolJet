@@ -264,7 +264,7 @@ module.exports = {
           lastVersion: '3.16.0-LTS',
           versions: {
             current: {
-              label: 'Beta 🚧',
+              label: 'beta 🚧',
               path: 'beta',
               banner: 'none',
               badge: false
