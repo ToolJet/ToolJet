@@ -1,0 +1,148 @@
+name: Manual Build and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch to build from'
+        required: true
+        default: 'main'
+      dockerfile_path:
+        description: 'Select Dockerfile'
+        required: true
+        type: choice
+        options:
+          - ./docker/ee/ee-production.Dockerfile
+      docker_tag:
+        description: 'Docker tag suffix (e.g., pre-release-14, 3.16-lts, etc.)'
+        required: true
+      test_system:
+        description: 'Select test system'
+        required: true
+        type: choice
+        options:
+          - app-builder-3.16-lts
+          - app-builder-pre-release
+          - platform-3.16-lts
+          - platform-pre-release
+          - marketplace-3.16-lts
+          - marketplace-pre-release
+          - ai-3.16-lts
+          - ai-pre-release
+
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate full Docker tag
+        id: taggen
+        run: |
+          input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ "$input_tag" == *"/"* ]]; then
+            echo "tag=$input_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ github.event.inputs.dockerfile_path }}
+          push: true
+          tags: ${{ steps.taggen.outputs.tag }}
+          platforms: linux/amd64
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
+      - name: Show the full Docker tag
+        run: echo "✅ Docker image built and pushed:${{ steps.taggen.outputs.tag }}"
+
+      - name: Install SSH and JQ
+        run: sudo apt-get install -y jq openssh-client
+
+      - name: Determine target host
+        id: vmhost
+        run: |
+          test_system="${{ github.event.inputs.test_system }}"
+          vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
+          if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
+            echo "VM mapping not found for $test_system"
+            exit 1
+          fi
+          echo "host=$vm_host" >> $GITHUB_OUTPUT
+
+      - name: Deploy to target environment
+        run: |
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+
+          TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
+          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            REMOTE_DIR="lts-tooljet"
+          else
+            REMOTE_DIR="$TARGET_SYSTEM"
+          fi
+
+          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
+            set -e
+            cd ~
+            echo "📁 Moving to deployment directory: \$REMOTE_DIR"
+            cd \$REMOTE_DIR
+
+            echo "🔐 Docker login"
+            echo "${DOCKER_PASSWORD}" | sudo docker login --username "${DOCKER_USERNAME}" --password-stdin
+
+            echo "🛑 Stopping and removing containers"
+            sudo docker-compose down
+
+            echo "🗑️ Removing previous image"
+            existing_image=\$(grep TOOLJET_IMAGE .env | cut -d'=' -f2)
+            if [[ ! -z "\$existing_image" && "\$existing_image" != "${{ steps.taggen.outputs.tag }}" ]]; then
+              sudo docker rmi -f "\$existing_image" || true
+            fi
+
+            echo "📝 Updating .env with new image"
+            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=${{ steps.taggen.outputs.tag }}|" .env
+
+            echo "📥 Pulling latest image"
+            sudo docker pull "${{ steps.taggen.outputs.tag }}"
+
+            echo "🚀 Starting container"
+            sudo docker-compose up -d
+
+            echo "⏳ Waiting for container readiness"
+            timeout 240 bash -c '
+              until docker logs Tooljet-app 2>&1 | grep -q "Ready to use at http://localhost:80"; do
+                sleep 2
+              done
+            '
+
+            echo "🧹 Pruning old Docker images"
+            sudo docker image prune -f
+
+            echo "✅ Deployment successful!"
+          EOF
+        env:
+          SSH_USER: ${{ secrets.AZURE_VM_USER }}
+          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
