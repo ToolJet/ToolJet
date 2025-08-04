@@ -146,6 +146,7 @@ const FormComponent = (props) => {
     isContainer: true,
     componentCount,
     value: isJSONSchema,
+    visibility: isVisible,
   });
 
   const parentRef = useRef(null);

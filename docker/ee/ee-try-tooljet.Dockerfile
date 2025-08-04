@@ -1,13 +1,11 @@
 FROM tooljet/tooljet:ee-latest
 
-# Copy postgrest executable
-COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+RUN apt-get update && apt-get install -y wget libicu72 libldap-2.5-0 libssl3 || true
 
 # Install Postgres
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN echo "deb http://deb.debian.org/debian"
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
 RUN service postgresql start && \

@@ -54,3 +54,17 @@ export function getSafeRenderableValue(value) {
       catch { return ''; }
     })();
 }
+
+export const getFormattedSteps = (steps) => {
+  if (Array.isArray(steps)) return steps;
+  if (typeof steps === 'string') {
+    if (steps.trim() === '') return [];
+    try {
+      const parsed = JSON.parse(steps);
+      return Array.isArray(parsed) ? steps : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};

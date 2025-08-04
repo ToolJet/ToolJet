@@ -79,9 +79,15 @@ export const TableData = ({
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
-    if (!allowSelection) return;
     lastClickedRowRef.current = { row: row?.original, index: row.index };
-
+    if (!allowSelection) {
+      setExposedVariables({
+        selectedRow: row?.original ?? {},
+        selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
+      });
+      fireEvent('onRowClicked');
+      return;
+    }
     // Update row selection
     row.toggleSelected();
   };

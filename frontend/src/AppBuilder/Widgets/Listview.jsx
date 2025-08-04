@@ -87,6 +87,7 @@ export const Listview = function Listview({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
