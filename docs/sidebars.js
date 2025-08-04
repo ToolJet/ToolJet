@@ -563,7 +563,8 @@ const sidebars = {
               'items': [
                 'user-management/authentication/self-hosted/overview',
                 'user-management/authentication/self-hosted/instance-login',
-                'user-management/authentication/self-hosted/workspace-login'
+                'user-management/authentication/self-hosted/workspace-login',
+                'user-management/authentication/self-hosted/pat'
               ]
             },
             'user-management/authentication/cloud-login',
