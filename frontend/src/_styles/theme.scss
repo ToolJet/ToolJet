@@ -11619,10 +11619,6 @@ tbody {
     display: none;
   }
 
-  &:hover .current-org-indicator {
-    display: block;
-  }
-
   .org-name {
     color: var(--slate12) !important;
     white-space: nowrap;
