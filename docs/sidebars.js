@@ -625,7 +625,20 @@ const sidebars = {
           'type': 'category',
           'label': 'Group Sync',
           'items': [
-            'user-management/group-sync/oidc',
+            {
+              'type': 'category',
+              'label': 'Instance level',
+              'items': [
+                'user-management/group-sync/instance-level/oidc',
+              ]
+            },
+            {
+              'type': 'category',
+              'label': 'Workspace level',
+              'items': [
+                'user-management/group-sync/workspace-level/oidc',
+              ]
+            },
           ]
         },
         {
