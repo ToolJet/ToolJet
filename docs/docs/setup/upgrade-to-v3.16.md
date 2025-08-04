@@ -3,20 +3,11 @@ id: upgrade-to-v3.16
 title: ToolJet 3.16 Migration Guide
 ---
 
-ToolJet 3.16 introduces a set of **UI and platform updates**. All changes are **non-breaking**, but there are a few that may require minor layout adjustments. This guide summarises all key updates.
+ToolJet 3.16 introduces a set of **new features and platform updates**. All changes are **non-breaking**, but there are a few that may require minor layout adjustments. This guide summarise all key updates.
 
 :::tip Before upgrading
 We recommend reviewing this guide and testing in a staging environment to evaluate UI differences. For self-hosted users, ensure `.env` changes are applied for audit log retention.
 :::
-
-## Action Required (High Severity)
-
-These changes may visibly impact your application's layout or remove features, manual action may be required.
-
-| Area       |Change     |
-|:-----------|:----------|
-| App Header | Free plan users can **no longer hide the app header**. If you have hidden the app header, it will now be visible on all your applications. Ensure your layout accounts for this change.|
-| Dark Mode & Header   | **Toggle App Mode icon** disappears if the page menu is hidden. **Workaround**: Use a Button with the `Toggle App Mode` action.     |
 
 ## Suggested Updates (Medium Severity)
 
@@ -26,7 +17,9 @@ These are layout or usability improvements that may require tweaks depending on 
 
 | Area       |Change     |
 |:-----------|:----------|
-| Page Menu (Text and icon)         | For page menus using the **Text and icon** style, icons will now stay visible when the menu is collapsed. This was not the case before and may slightly affect your layout. |
+| App Header | The **Hide app header** option has been deprecated and is now included under the Page & Navigation features. If you previously had the app header hidden, it will now be displayed. Ensure your layout accounts for this change. |
+| Dark Mode & Header   | **Toggle App Mode icon** disappears if the page menu is hidden. **Workaround**: Use a Button with the `Toggle App Mode` action.     |
+| Page Menu (Text and icon) | For page menus using the **Text and icon** style, icons will now stay visible when the menu is collapsed. This was not the case before and may slightly affect your layout. |
 | Page Menu (Text only and Icon only) | Page menus using **Text only** or **Icon only** styles can no longer be collapsed. If your layout depended on collapsing these, adjustments may be needed. |
 | Branding | The app logo and title now appear side-by-side in the top-left corner of the page menu. The separate top bar that previously held the title and logo has been removed. This change may affect layout balance and branding visibility. |
 
