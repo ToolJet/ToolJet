@@ -151,34 +151,36 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   function getMinWidth() {
     if (isModuleMode) return '100%';
 
+    const isSidebarOpenInEditor = currentMode === 'edit' ? isSidebarOpen : false;
+
     const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
 
     if (!shouldAdjust) return '';
     let offset;
     if (isViewerSidebarPinned && !isPagesSidebarHidden) {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       }
     } else {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       }
     }
 
     if (currentMode === 'edit') {
-      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && !isRightSidebarOpen) {
         offset = `${LEFT_SIDEBAR_WIDTH}px`;
-      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpenInEditor) {
         offset = `${RIGHT_SIDEBAR_WIDTH}px`;
       }
     }
