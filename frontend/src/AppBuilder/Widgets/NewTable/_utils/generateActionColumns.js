@@ -59,7 +59,6 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
       size: calculatedWidth,
       header: 'Actions',
       cell: ({ row, cell }) => (
-        // <div style={{ display: 'flex', width: '100%' }}>
         <ActionButtons
           actions={actionsForPosition}
           row={row}
@@ -68,7 +67,6 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
           setExposedVariables={setExposedVariables}
           id={id}
         />
-        // </div>
       ),
     };
   };
