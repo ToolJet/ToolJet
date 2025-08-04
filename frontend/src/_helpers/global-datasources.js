@@ -1,10 +1,13 @@
 import { authenticationService } from '@/_services';
+import { hasBuilderRole } from './utils';
 
 export const canAnyGroupPerformAction = (action, id) => {
-  let { user_permissions, data_source_group_permissions, super_admin, admin } =
+  let { user_permissions, data_source_group_permissions, super_admin, admin, role } =
     authenticationService.currentSessionValue;
+  const isBuilder = hasBuilderRole(role ?? {});
   const canCreateDataSource = super_admin || admin || user_permissions?.data_source_create;
   const canDeleteDataSource = super_admin || admin || user_permissions?.data_source_delete;
+  const canUseDataSourceForQuery = isBuilder;
   const canConfigureDataSource =
     canCreateDataSource ||
     data_source_group_permissions?.is_all_configurable ||
@@ -19,6 +22,8 @@ export const canAnyGroupPerformAction = (action, id) => {
       return canCreateDataSource;
     case 'data_source_delete':
       return canDeleteDataSource;
+    case 'read_data_source_for_query':
+      return canUseDataSourceForQuery;
     case 'read':
       return canUseDataSource;
     case 'update':
@@ -29,7 +34,7 @@ export const canAnyGroupPerformAction = (action, id) => {
 };
 
 export const canUseDataSourceForQuery = (dataSourceId) => {
-  return canAnyGroupPerformAction('read', dataSourceId);
+  return canAnyGroupPerformAction('read_data_source_for_query', dataSourceId);
 };
 
 export const canCreateDataSource = () => {
