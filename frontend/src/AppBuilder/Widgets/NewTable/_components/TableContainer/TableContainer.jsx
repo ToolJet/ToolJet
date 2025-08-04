@@ -108,13 +108,6 @@ export const TableContainer = ({
   }, [JSON.stringify(table.getState().columnOrder), table]);
 
   useEffect(() => {
-    setPagination((prev) => ({
-      ...prev,
-      pageSize: rowsPerPage,
-    }));
-  }, [rowsPerPage, setPagination]);
-
-  useEffect(() => {
     if (serverSideSearch && globalFilter?.trim() !== '') {
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     }
