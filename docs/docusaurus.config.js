@@ -261,10 +261,10 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true,
-          lastVersion: '3.5.0-LTS',
+          lastVersion: '3.16.0-LTS',
           versions: {
             current: {
-              label: '3.11.0-Beta 🚧',
+              label: 'beta 🚧',
               path: 'beta',
               banner: 'none',
               badge: false
@@ -278,6 +278,10 @@ module.exports = {
               badge: false
             },
             "3.5.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.16.0-LTS": {
               banner: 'none',
               badge: false
             }
@@ -491,14 +495,15 @@ module.exports = {
             to: '/docs/development-lifecycle/gitsync/delete-gitsync',
             from: '/docs/release-management/gitsync/delete-gitsync',
           },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-            from: '/docs/release-management/gitsync/ssh-config',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-            from: '/docs/release-management/gitsync/tj-config',
-          },
+          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
+          //   from: '/docs/release-management/gitsync/ssh-config',
+          // },
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
+          //   from: '/docs/release-management/gitsync/tj-config',
+          // },
           {
             to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
             from: '/docs/release-management/multi-environment',
