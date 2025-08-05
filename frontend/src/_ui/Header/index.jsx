@@ -145,7 +145,7 @@ function Header({
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label tw-flex tw-items-center " data-cy="app-header-label">
+            <div className="app-header-label tw-flex tw-items-center "   data-cy={`breadcrumb-header-${pathname.replace(/\s+/g, '-').toLowerCase()}`}>
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div

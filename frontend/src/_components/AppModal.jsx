@@ -164,7 +164,8 @@ export function AppModal({
         <FormWrapper callback={handleAction} id="createAppForm">
           <div className="row workspace-folder-modal custom-gap-16">
             <div className="col modal-main tj-app-input">
-              <label className="tj-input-label" data-cy="app-name-label">
+              <label className="tj-input-label" data-cy={`${appTypeName.toLowerCase()}-name-label`}
+              >
                 {`${appTypeName} name`}
               </label>
               <input
@@ -173,7 +174,7 @@ export function AppModal({
                 className={`form-control ${errorText ? 'input-error-border' : ''}`}
                 placeholder={`Enter ${appTypeName.toLowerCase()} name`}
                 value={newAppName}
-                data-cy="app-name-input"
+                data-cy={`${appTypeName.toLowerCase()}-name-input`}
                 maxLength={50}
                 autoFocus
                 ref={inputRef}
@@ -189,7 +190,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#DB4324',
                   }}
-                  data-cy="app-name-error-label"
+                  data-cy={`${appTypeName.toLowerCase()}-name-error-label`}
                 >
                   {errorText}
                 </small>
@@ -200,7 +201,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#ED5F00',
                   }}
-                  data-cy="app-name-error-label"
+                  data-cy={`${appTypeName.toLowerCase()}-name-error-label`}
                 >
                   {infoText || 'Maximum length has been reached'}
                 </small>
@@ -211,7 +212,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#7E868C',
                   }}
-                  data-cy="app-name-info-label"
+                  data-cy={`${appTypeName.toLowerCase()}-name-info-label`}
                 >
                   {`${appTypeName} name must be unique and max 50 characters`}
                 </small>
