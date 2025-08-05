@@ -263,7 +263,8 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            await processQueryResults(result);
+            const processedResult = { data: result };
+            await processQueryResults(processedResult);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
@@ -420,7 +421,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
-        let finalData = data;
+        let finalData = data?.data;
         rawData = rawData || data;
 
         if (dataQuery.options.enableTransformation) {
@@ -497,8 +498,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
                   substitutedVariables: options,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
                 }
               : errorData,
           isQuerySuccessLog: false,
@@ -508,15 +509,17 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
-            ...(errorData?.data?.type === 'tj-401' ? {
-              metadata: errorData?.metadata,
-              response: errorData?.data?.responseObject,
-            } : query.kind === 'restapi'
+            ...(errorData?.data?.type === 'tj-401'
               ? {
                   metadata: errorData?.metadata,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
-                  responseHeaders: errorData?.responseHeaders,
+                  response: errorData?.data?.responseObject,
+                }
+              : query.kind === 'restapi'
+              ? {
+                  metadata: errorData?.metadata,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
+                  responseHeaders: errorData?.data?.responseHeaders,
                 }
               : {}),
           },
@@ -666,13 +669,14 @@ export const createQueryPanelSlice = (set, get) => ({
                   break;
               }
 
-              errorData = (query.kind === 'runpy' || query.kind === 'runjs') && (data?.data?.type !== 'tj-401') ? data?.data : data;
+              errorData =
+                (query.kind === 'runpy' || query.kind === 'runjs') && data?.data?.type !== 'tj-401' ? data?.data : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
             } else {
               const rawData = data.data;
-              const result = await processQueryResults(data.data, rawData);
+              const result = await processQueryResults(data, rawData);
               resolve(result);
             }
           })
@@ -756,6 +760,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
+            query,
             query.options.workflowId,
             query.options.blocking,
             query.options?.params,
@@ -773,7 +778,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // async queries in the future
             if (query.kind === 'workflows') {
               const processQueryResultsPreview = async (result) => {
-                let finalData = result;
+                let finalData = result?.data;
                 if (query.options.enableTransformation) {
                   finalData = await runTransformation(
                     finalData,
@@ -1232,7 +1237,6 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     createProxy: (obj, path = '') => {
-
       return new Proxy(obj, {
         get(target, prop) {
           const fullPath = path ? `${path}.${prop}` : prop;

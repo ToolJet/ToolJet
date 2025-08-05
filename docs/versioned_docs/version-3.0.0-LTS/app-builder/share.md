@@ -46,7 +46,7 @@ For embedding private ToolJet apps, you'll need to set an environment variable i
 |:-------------- |:------------------------------------ |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
 
-You can learn more [here](/docs/setup/env-vars#enabling-embedding-of-private-apps).
+You can learn more [here](/docs/setup/env-vars#embedding-private-apps).
 :::
 
 <div style={{textAlign: 'center'}}>

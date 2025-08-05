@@ -14,7 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -125,7 +125,7 @@ export const DropdownV2 = ({
         .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: data?.label,
+          label: getSafeRenderableValue(data?.label),
           value: data?.value,
           isDisabled: data?.disable ?? false,
         }));
@@ -269,7 +269,7 @@ export const DropdownV2 = ({
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
+  }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
@@ -401,8 +401,9 @@ export const DropdownV2 = ({
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
+      opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       display: 'flex',

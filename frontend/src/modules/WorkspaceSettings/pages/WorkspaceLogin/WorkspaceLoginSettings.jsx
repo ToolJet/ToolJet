@@ -529,9 +529,13 @@ class OrganizationLogin extends React.Component {
                         </label>
                         <div
                           className="d-flex justify-content-between form-control align-items-center"
-                          style={{ backgroundColor: '#F1F3F5', color: '#889096' }}
+                          style={{ backgroundColor: '#F1F3F5', color: '#889096', overflowX: 'auto' }}
                         >
-                          <p id="login-url" data-cy="workspace-login-url">
+                          <p
+                            id="login-url"
+                            data-cy="workspace-login-url"
+                            style={{ margin: 0, flexGrow: 1, minWidth: 0 }}
+                          >
                             {`${window.public_config?.TOOLJET_HOST}${
                               window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
                             }login/${
@@ -539,7 +543,12 @@ class OrganizationLogin extends React.Component {
                               authenticationService?.currentSessionValue?.current_organization_id
                             }`}
                           </p>
-                          <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
+                          <SolidIcon
+                            name="copy"
+                            width="16"
+                            onClick={() => this.copyFunction('login-url')}
+                            style={{ flexShrink: 0, marginLeft: '8px', cursor: 'pointer' }}
+                          />
                         </div>
                         <div className="mt-1 tj-text-xxsm">
                           <div data-cy="workspace-login-help-text">

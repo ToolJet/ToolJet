@@ -942,6 +942,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
             const isParentChangeAllowed = dragContext.isDroppable;
 
+            const isParentModuleContainer =
+              !isModuleEditor &&
+              document.getElementById(`canvas-${target.slotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
             const componentParentType = target?.widget?.componentType;
@@ -952,7 +956,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               componentParentType === 'Form' || componentParentType === 'Container'
                 ? document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0
                 : computeScrollDelta({ source });
-            if (isParentChangeAllowed && !isModalToCanvas) {
+            if (isParentChangeAllowed && !isModalToCanvas && !isParentModuleContainer) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
               handleDragEnd([{ id: e.target.id, x: left, y: top + scrollDelta, parent }]);
@@ -963,6 +967,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               top = dragged.top;
               !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+              isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }
             // Apply transform for smooth transition
             e.target.style.transform = `translate(${left}px, ${top + scrollDelta}px)`;

@@ -398,7 +398,18 @@ export function hasParentWithClass(child, className) {
 export function showGridLines() {
   var canvasElms = document.getElementsByClassName('real-canvas');
   // Filter out module canvas
-  var elementsArray = Array.from(canvasElms).filter((element) => !element.classList.contains('module-container'));
+  var elementsArray = Array.from(canvasElms).filter((element) => {
+    if (element.classList.contains('module-container')) {
+      return false;
+    }
+    if (
+      !element.classList.contains('is-module-editor') &&
+      element.getAttribute('component-type') === 'ModuleContainer'
+    ) {
+      return false;
+    }
+    return true;
+  });
   elementsArray.forEach(function (element) {
     element.classList.remove('hide-grid');
     element.classList.add('show-grid');
