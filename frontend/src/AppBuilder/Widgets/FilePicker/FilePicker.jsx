@@ -118,7 +118,7 @@ const FilePicker = (props) => {
       backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
       height: `${numericWidgetHeight + (containerPadding === 'default' ? 0 : 4)}px`,
-      overflowY: isSmallWidget ? 'auto' : 'visible',
+      overflowY: isSmallWidget ? 'auto' : 'scroll',
       opacity: disabledState ? 0.5 : 1,
     }),
     [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState, containerPadding]

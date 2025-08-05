@@ -121,7 +121,9 @@ export default function generateColumnsData({
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedRowFromIndex(id, row.index);
 
-          let cellValue = changeSet ? changeSet[cell.column.columnDef?.meta?.name] ?? cell.getValue() : cell.getValue();
+          let cellValue = changeSet
+            ? changeSet[cell.column.columnDef?.accessorKey] ?? cell.getValue()
+            : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
 

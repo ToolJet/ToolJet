@@ -13,7 +13,7 @@
 
   .react-select__option {
     color: var(--text-default);
-    height: 32px;
+    min-height: 32px;  
     z-index: 100;
     padding: 4px 8px;
   }
@@ -38,6 +38,7 @@
     .react-select__option {
       background-color: var(--surfaces-surface-01) !important;
       border-radius: 6px;
+      min-height: 38px;
 
 
       >div {
@@ -51,6 +52,9 @@
         >div {
           background-color: transparent !important;
         }
+      }
+      &:hover .current-org-indicator {
+        display: block;
       }
     }
   }

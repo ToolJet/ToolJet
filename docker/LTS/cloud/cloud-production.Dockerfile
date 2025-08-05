@@ -25,14 +25,14 @@ RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
-# Checkout the same branch in submodules if it exists, otherwise stay on default branch
+# Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
 RUN git submodule foreach " \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
-    git checkout main; \
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
+    git checkout lts-3.16; \
   fi"
 
 # Scripts for building
@@ -127,7 +127,7 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 
-COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
+COPY ./docker/LTS/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \
