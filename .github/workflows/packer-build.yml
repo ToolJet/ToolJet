@@ -56,7 +56,7 @@ jobs:
 
       # Echo RENDER_GITHUB_PAT
       - name: Set PACKER_GITHUB_PAT
-        run: echo "PACKER_GITHUB_PAT=${{ secrets.PACKER_GITHUB_PAT}}" >> $GITHUB_ENV
+        run: echo "PACKER_GITHUB_PAT=${{ secrets.CUSTOM_GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       # Dynamically update setup_machine.sh with PAT
       - name: Validate PAT
