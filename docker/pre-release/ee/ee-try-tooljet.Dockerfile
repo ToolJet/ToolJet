@@ -47,8 +47,8 @@ RUN apt update && apt install -y gettext-base curl \
     && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.0/grpcurl_1.8.0_linux_x86_64.tar.gz | tar -xzv -C /usr/local/bin grpcurl
 
 # Copy Temporal configuration files
-COPY ./docker/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
-COPY ./docker/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
+COPY ./docker/pre-release/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
+COPY ./docker/pre-release/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
 # Install Neo4j + APOC
 RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
@@ -134,6 +134,6 @@ ENV TOOLJET_HOST=http://localhost \
     TEMPORAL_CORS_ORIGINS=http://localhost:8080
 
 # Set the entrypoint
-COPY ./docker/ee/ee-try-entrypoint.sh /ee-try-entrypoint.sh
+COPY ./docker/pre-release/ee/ee-try-entrypoint.sh /ee-try-entrypoint.sh
 RUN chmod +x /ee-try-entrypoint.sh
 ENTRYPOINT ["/ee-try-entrypoint.sh"]

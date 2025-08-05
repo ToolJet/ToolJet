@@ -115,7 +115,7 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 
-COPY  ./docker/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
+COPY ./docker/LTS/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
 
 
 # Installing git for simple git commands
