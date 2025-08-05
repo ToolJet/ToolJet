@@ -56,7 +56,7 @@ export class SampleDataSourceService {
       },
       {
         key: 'ssl_enabled',
-        value: false,
+        value: this.configService.get<string>('PGSSLMODE') === 'require',
         encrypted: true,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
