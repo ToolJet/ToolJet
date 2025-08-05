@@ -102,7 +102,7 @@ const Filter = ({
             <>
               <div className="filter-title">
                 <span className="width-lg">Column</span>
-                <span className="width-sm">Operation</span>
+                <span className="width-lg">Operation</span>
                 <span className="width-lg">Value</span>
               </div>
               {Object.values(tempFilters).map((filter, index) => {
