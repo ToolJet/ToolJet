@@ -28,7 +28,7 @@
       "key": "private_key",
       "type": "password",
       "description": "Enter the Google Cloud service account private key in JSON format",
-      "hint": "You can generate a service account key from your Google Cloud Console."
+      "helpText": "You can generate a service account key from your Google Cloud Console."
     },
     "instance_id": {
       "label": "Instance id",

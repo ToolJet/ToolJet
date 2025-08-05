@@ -38,7 +38,7 @@
       "height": "150px",
       "editorType": "multiline",
       "placeholder": "SELECT AlbumTitle FROM Albums WHERE ArtistId = @artistId",
-      "hint": "As per database configuration, use @paramName for GoogleSQL or $1, $2, etc. for PostgreSQL."
+      "helpText": "As per database configuration, use @paramName for GoogleSQL or $1, $2, etc. for PostgreSQL."
     },
     "query_params": {
       "key": "query_params",

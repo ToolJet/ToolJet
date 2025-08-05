@@ -234,7 +234,8 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText,
+    helpText: helpTextProp, // For marketplace compatibility
+    help_text,
     description,
     type,
     placeholder = '',
@@ -265,10 +266,10 @@ const DynamicForm = ({
 
     if (!options) return;
     
-    // Prefer buttonText over button_text
+    // Select snake_case for marketplace plugins if camelCase is undefined
     const buttonText = buttonTextProp || button_text;
-
     const editorType = editorTypeProp || editor_type;
+    const helpText = helpTextProp || help_text;
 
     switch (type) {
       case 'password':
