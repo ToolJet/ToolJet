@@ -58,5 +58,10 @@ export async function listFoundationModels(
 
   const command = new ListFoundationModelsCommand(input);
   const response = await client.send(command);
-  return response.modelSummaries || [];
+  if (!response.modelSummaries || response.modelSummaries.length === 0) {
+    return [{
+      message: "No foundation models were found for the selected filters. Please adjust your criteria and try again."
+    }];
+  }
+  return response.modelSummaries;
 }

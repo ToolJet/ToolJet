@@ -16,8 +16,8 @@ export interface QueryOptions {
   model_id?: string;
   request_body?: any;
   content_type?: string;
-  by_customization_type?: ModelCustomization;
-  by_inference_type?: InferenceType;
-  by_output_modality?: ModelModality;
-  by_provider?: string;
+  customization_type?: ModelCustomization;
+  inference_type?: InferenceType;
+  output_modality?: ModelModality;
+  provider?: string;
 }

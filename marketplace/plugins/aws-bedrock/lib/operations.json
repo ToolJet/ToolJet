@@ -49,26 +49,42 @@
       "customization_type": {
         "label": "Customization Type",
         "key": "customization_type",
-        "type": "text",
-        "description": "Customization type filter (optional)"
+        "type": "dropdown-component-flip",
+        "description": "Customization type filter (optional)",
+        "list": [
+          {"value": "FINE_TUNING", "name": "Fine Tuning"},
+          {"value": "CONTINUED_PRE_TRAINING", "name": "Continued Pre-Training"},
+          {"value": "DISTILLATION", "name": "Distillation"}
+        ]
       },
       "inference_type": {
         "label": "Inference Type",
         "key": "inference_type",
-        "type": "text",
-        "description": "Inference type filter (optional)"
+        "type": "dropdown-component-flip",
+        "description": "Inference type filter (optional)",
+        "list": [
+          {"value": "ON_DEMAND", "name": "On Demand"},
+          {"value": "PROVISIONED", "name": "Provisioned"}
+        ]
       },
       "output_modality": {
         "label": "Output Modality",
         "key": "output_modality",
-        "type": "text",
-        "description": "Output modality filter (optional)"
+        "type": "dropdown-component-flip",
+        "description": "Output modality filter (optional)",
+        "list": [
+          {"value": "TEXT", "name": "Text"},
+          {"value": "IMAGE", "name": "Image"},
+          {"value": "EMBEDDING", "name": "Embedding"}
+        ]
       },
       "provider": {
         "label": "Provider",
         "key": "provider",
-        "type": "text",
-        "description": "Provider filter (optional)"
+        "type": "codehinter",
+        "description": "Provider filter (optional)",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter provider name"
       }
     }
   }

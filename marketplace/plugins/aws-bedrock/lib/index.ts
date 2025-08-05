@@ -18,7 +18,11 @@ export default class AWSBedrock implements QueryService {
     queryOptions: QueryOptions,
     dataSourceId: string
   ): Promise<QueryResult> {
-    const client = this.createClient(sourceOptions);
+    const runtimeClient = this.createClient(sourceOptions);
+    const bedrockClient = new BedrockClient({
+      region: sourceOptions.region,
+      credentials: this.createCredentials(sourceOptions),
+    });
 
     try {
       let data;
@@ -36,7 +40,7 @@ export default class AWSBedrock implements QueryService {
               }
             );
           }
-          data = await generateContent(client, {
+          data = await generateContent(runtimeClient, {
             model_id: queryOptions.model_id,
             request_body: queryOptions.request_body,
             content_type: queryOptions.content_type,
@@ -44,11 +48,11 @@ export default class AWSBedrock implements QueryService {
           break;
 
         case "list_foundation_models":
-          data = await listFoundationModels(client, {
-            customization_type: queryOptions.by_customization_type,
-            inference_type: queryOptions.by_inference_type,
-            output_modality: queryOptions.by_output_modality,
-            provider: queryOptions.by_provider,
+          data = await listFoundationModels(bedrockClient, {
+            customization_type: queryOptions.customization_type,
+            inference_type: queryOptions.inference_type,
+            output_modality: queryOptions.output_modality,
+            provider: queryOptions.provider,
           });
           break;
 
