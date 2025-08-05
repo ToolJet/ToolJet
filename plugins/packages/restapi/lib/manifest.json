@@ -120,7 +120,7 @@
       "value": ""
     },
     "client_auth": {
-      "value": "header"
+      "value": "body"
     },
     "headers": {
       "value": [
@@ -165,7 +165,7 @@
     }
   },
   "properties": {
-    "renderForm":{
+    "renderForm": {
       "type": "react-form-component",
       "credentialsInputs": {
         "title": "CREDENTIALS",
@@ -226,9 +226,18 @@
             "type": "dropdown-component-flip",
             "description": "Single select dropdown for choosing certificates",
             "list": [
-              { "value": "ca_certificate", "name": "CA certificate" },
-              { "value": "client_certificate", "name": "Client certificate" },
-              { "value": "none", "name": "None" }
+              {
+                "value": "ca_certificate",
+                "name": "CA certificate"
+              },
+              {
+                "value": "client_certificate",
+                "name": "Client certificate"
+              },
+              {
+                "value": "none",
+                "name": "None"
+              }
             ]
           },
           "ca_certificate": {
