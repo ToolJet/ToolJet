@@ -127,7 +127,7 @@ export const TableData = ({
       ref={tableBodyRef}
     >
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: containerBackgroundColor }}>
+        <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
           {renderTableHeader()}
         </thead>
         <tbody
