@@ -165,7 +165,7 @@ COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templat
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
-COPY ./docker/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
     chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \

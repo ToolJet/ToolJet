@@ -129,7 +129,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=main
-          file: docker/ee/ee-production.Dockerfile
+          file: docker/pre-release/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-latest,tooljet/tooljet:ee-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
@@ -145,7 +145,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=lts-3.16
-          file: docker/ee/ee-production.Dockerfile
+          file: docker/LTS/ee/ee-production.Dockerfile
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
@@ -205,7 +205,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=lts-3.16
-          file: docker/cloud/cloud-server.Dockerfile
+          file: docker/LTS/cloud/cloud-server.Dockerfile
           push: true
           tags: tooljet/saas:${{ github.event.release.tag_name }}
           platforms: linux/amd64
@@ -284,7 +284,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/ee/ee-try-tooljet.Dockerfile
+          file: docker/pre-release/ee/ee-try-tooljet.Dockerfile
           push: true
           tags: tooljet/try:${{ github.event.release.tag_name }},tooljet/try:ee-latest
           platforms: linux/amd64
@@ -297,7 +297,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/ee/ee-try-tooljet-lts.Dockerfile
+          file: docker/LTS/ee/ee-try-tooljet-lts.Dockerfile
           push: true
           tags: tooljet/try:${{ github.event.release.tag_name }},tooljet/try:ee-lts-latest
           platforms: linux/amd64
