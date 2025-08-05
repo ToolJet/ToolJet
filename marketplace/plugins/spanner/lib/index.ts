@@ -13,12 +13,13 @@ export default class Spanner implements QueryService {
     client_email?: string;
     private_key?: string;
   } {
-    return this.parseJSON(configs);
-  }
+    if (!configs) return {};
 
-  private parseJSON(json?: string): object {
-    if (!json) return {};
-    return JSON.parse(json);
+    try {
+      return JSON.parse(configs);
+    } catch (error) {
+      throw new Error(`Invalid JSON in private key configuration: ${error.message}`);
+    }
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
