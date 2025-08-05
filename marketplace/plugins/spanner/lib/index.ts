@@ -8,28 +8,28 @@ import { SourceOptions, QueryOptions, Dialect } from "./types";
 import { Spanner as GoogleSpanner, Instance } from "@google-cloud/spanner";
 
 export default class Spanner implements QueryService {
-  private getPrivateKey(configs?: string): {
+  private parsePrivateKey(key?: string): {
     project_id?: string;
     client_email?: string;
     private_key?: string;
   } {
-    if (!configs) return {};
+    if (!key) return {};
 
     try {
-      return JSON.parse(configs);
+      return JSON.parse(key);
     } catch (error) {
       throw new Error(`Invalid JSON in private key configuration: ${error.message}`);
     }
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
-    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
+    const parsedKey = this.parsePrivateKey(sourceOptions?.private_key);
     const { instance_id } = sourceOptions;
 
     if (
-      !privateKey?.project_id ||
-      !privateKey?.client_email ||
-      !privateKey?.private_key ||
+      !parsedKey?.project_id ||
+      !parsedKey?.client_email ||
+      !parsedKey?.private_key ||
       !instance_id
     ) {
       const error = new Error("Required Spanner credentials are missing");
@@ -116,7 +116,7 @@ export default class Spanner implements QueryService {
       this.validateQueryOptions(queryOptions);
 
       const { instance_id } = sourceOptions;
-      const { project_id, client_email, private_key } = this.getPrivateKey(
+      const { project_id, client_email, private_key } = this.parsePrivateKey(
         sourceOptions?.private_key
       );
 
@@ -238,7 +238,7 @@ export default class Spanner implements QueryService {
   ): Promise<ConnectionTestResult> {
     this.validateSourceOptions(sourceOptions);
     const { instance_id } = sourceOptions;
-    const { project_id, client_email, private_key } = this.getPrivateKey(
+    const { project_id, client_email, private_key } = this.parsePrivateKey(
       sourceOptions?.private_key
     );
 
