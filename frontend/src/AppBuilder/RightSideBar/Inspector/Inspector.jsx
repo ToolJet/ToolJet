@@ -118,6 +118,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Steps',
   'FilePicker',
   'Chat',
+  'Statistics',
 ];
 
 export const Inspector = ({

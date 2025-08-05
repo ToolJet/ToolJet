@@ -1,6 +1,18 @@
+import React, { useEffect } from 'react';
+
+import { cn } from '@/lib/utils';
+import * as Icons from '@tabler/icons-react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
-import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
+
+export const Statistics = function Statistics({
+  width,
+  height,
+  properties,
+  styles,
+  darkMode,
+  dataCy,
+  setExposedVariable,
+}) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -9,41 +21,127 @@ export const Statistics = function Statistics({ width, height, properties, style
     secondarySignDisplay,
     hideSecondary,
     loadingState,
+    visibility,
+    primaryPrefixText,
+    primarySuffixText,
+    secondaryPrefixText,
+    secondarySuffixText,
+    dataAlignment,
+    icon,
+    iconDirection,
+    iconVisibility,
+    secondaryValueAlignment,
+    disabledState,
   } = properties;
-  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility, boxShadow } =
-    styles;
+  const {
+    primaryLabelSize,
+    primaryLabelColour,
+    primaryValueSize,
+    primaryTextColour,
+    secondaryLabelSize,
+    secondaryLabelColour,
+    secondaryValueSize,
+    positiveSecondaryValueColor,
+    negativeSecondaryValueColor,
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    boxShadow,
+    padding,
+  } = styles;
+
+  useEffect(() => {
+    setExposedVariable('primaryLabel', primaryValueLabel);
+  }, [primaryValueLabel]);
+
+  useEffect(() => {
+    setExposedVariable('secondaryLabel', secondaryValueLabel);
+  }, [secondaryValueLabel]);
+
+  useEffect(() => {
+    setExposedVariable('primaryValue', primaryValue);
+  }, [primaryValue]);
+
+  useEffect(() => {
+    setExposedVariable('secondaryValue', secondaryValue);
+  }, [secondaryValue]);
+
+  useEffect(() => {
+    setExposedVariable('secondarySignDisplay', secondarySignDisplay);
+  }, [secondarySignDisplay]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', loadingState);
+  }, [loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('setPrimaryValue', async function (newValue) {
+      setExposedVariable('primaryValue', newValue);
+    });
+
+    setExposedVariable('setSecondaryValue', async function (newValue) {
+      setExposedVariable('secondaryValue', newValue);
+    });
+
+    setExposedVariable('setDisable', async function (disable) {
+      setExposedVariable('isDisabled', !!disable);
+    });
+
+    setExposedVariable('setLoading', async function (loading) {
+      setExposedVariable('isLoading', !!loading);
+    });
+
+    setExposedVariable('setVisibility', async function (visibility) {
+      setExposedVariable('isVisible', !!visibility);
+    });
+  }, []);
 
   const baseStyle = {
-    borderRadius: 4,
-    backgroundColor: 'var(--cc-surface1-surface)',
-    alignItems: 'center',
-    flexDirection: 'column',
+    borderRadius: `${borderRadius ?? 4}px`,
+    backgroundColor: backgroundColor ?? 'var(--cc-surface1-surface)',
     margin: '0px auto',
-    border: darkMode ? ' 0.75px solid #232A35' : ' 0.75px solid #A6B6CC',
+    border: `0.75px solid ${borderColor ?? 'var(--cc-default-border)'}`,
     fontFamily: 'Inter',
-    justifyContent: 'center',
     display: visibility ? 'flex' : 'none',
+    gap: '1.5rem 2rem',
     wordBreak: 'break-all',
-    textAlign: 'center',
     overflow: 'hidden',
     height,
     boxShadow,
+    padding: padding === 'default' ? '1.5rem' : 0,
+    ...((dataAlignment === 'center' || loadingState === true) && {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }),
+    ...(iconDirection === 'right' && {
+      flexDirection: 'row-reverse',
+    }),
   };
 
   const letterStyle = {
     fontSize: '14px',
-    fontWeight: '500',
     wordBreak: 'break-all',
-    padding: '12px 20px 0px 20px ',
+    lineHeight: 1.3,
+    textAlign: dataAlignment,
   };
 
   const primaryStyle = {
-    fontSize: '34px',
+    fontSize: `${primaryValueSize ?? 34}px`,
     color: primaryTextColour !== '#000000' ? primaryTextColour : darkMode && '#FFFFFC',
     fontWeight: '700',
     marginBottom: '0px',
     wordBreak: 'break-all',
-    padding: '0 10px',
+    textAlign: dataAlignment,
+    lineHeight: 1.3,
   };
 
   const marginStyle = {
@@ -55,22 +153,26 @@ export const Statistics = function Statistics({ width, height, properties, style
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: ' center',
-    padding: '5px 8px',
-    margin: '14px 20px 0px 0px ',
-    minWidth: '61px',
     wordBreak: 'break-all',
-    minHeight: '24px',
-    background:
-      secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
     borderRadius: '58px',
-    color:
-      secondaryTextColour !== '#36AF8B'
-        ? secondaryTextColour
-        : secondarySignDisplay !== 'negative'
-        ? '#36AF8B'
-        : '#EE2C4D',
+    // color:
+    //   secondaryTextColour !== '#36AF8B'
+    //     ? secondaryTextColour
+    //     : secondarySignDisplay !== 'negative'
+    //     ? '#36AF8B'
+    //     : '#EE2C4D',
+    color: secondarySignDisplay !== 'negative' ? positiveSecondaryValueColor : negativeSecondaryValueColor,
     fontWeight: '700',
+    lineHeight: 1.3,
+    fontSize: `${secondaryValueSize ?? 14}px`,
+    marginBottom: 0,
   };
+
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[icon] ?? Icons['IconHome2'];
+  const derivedPrimaryValue = `${primaryPrefixText ?? ''}${String(primaryValue)}${primarySuffixText ?? ''}`;
+  const derivedSecondaryValue = `${secondaryPrefixText ?? ''}${secondaryValue}${secondarySuffixText ?? ''}`;
+  const trendIconSize = (secondaryValueSize ?? 14) * 1.3;
 
   return (
     <div style={baseStyle} data-cy={dataCy}>
@@ -82,44 +184,65 @@ export const Statistics = function Statistics({ width, height, properties, style
         </div>
       ) : (
         <>
-          <p
-            style={{
-              ...letterStyle,
-              ...marginStyle,
-              color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
-            }}
+          {Boolean(iconVisibility) && (
+            <IconElement className="tw-shrink-0" size={(primaryValueSize ?? 34) * 1.3} stroke={1.5} />
+          )}
+
+          <div
+            className={cn('tw-flex-1 tw-grid tw-content-between', {
+              'tw-flex-grow-0 tw-justify-center tw-content-start tw-gap-y-6': dataAlignment === 'center',
+              'tw-justify-end': dataAlignment === 'right',
+            })}
           >
-            {primaryValueLabel}
-          </p>
-          <h2 style={primaryStyle}>{String(primaryValue)}</h2>
-          {hideSecondary ? (
-            ''
-          ) : (
             <div>
-              <div className="d-flex flex-row justify-content-center align-items-baseline">
-                {secondarySignDisplay !== 'negative' ? (
-                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
-                    <WidgetIcon name={'upstatistics'} />
-                  </span>
-                ) : (
-                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
-                    <WidgetIcon name={'downstatistics'} />
-                  </span>
-                )}
-                <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
-              </div>
               <p
                 style={{
                   ...letterStyle,
-                  color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
-                  padding: '6px 20px 12px 20px ',
-                  marginBottom: '0px',
+                  ...marginStyle,
+                  color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
+                  fontSize: `${primaryLabelSize ?? 14}px`,
                 }}
               >
-                {secondaryValueLabel}
+                {primaryValueLabel}
               </p>
+
+              <h2 style={primaryStyle}>{derivedPrimaryValue}</h2>
             </div>
-          )}
+
+            {!hideSecondary && (
+              <div
+                className={cn('tw-flex tw-gap-1', {
+                  'tw-flex-col': secondaryValueAlignment === 'vertical',
+                })}
+              >
+                <div
+                  className={cn('tw-flex tw-items-center tw-gap-2', {
+                    'tw-justify-center': dataAlignment === 'center',
+                    'tw-justify-end': dataAlignment === 'right',
+                  })}
+                >
+                  <WidgetIcon
+                    name={secondarySignDisplay !== 'negative' ? 'upstatistics' : 'downstatistics'}
+                    width={trendIconSize}
+                    height={trendIconSize}
+                  />
+
+                  <p style={secondaryContainerStyle}>{derivedSecondaryValue}</p>
+                </div>
+
+                <p
+                  style={{
+                    ...letterStyle,
+                    color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
+                    marginBottom: '0px',
+                    fontSize: `${secondaryLabelSize ?? 14}px`,
+                  }}
+                >
+                  {secondaryValueLabel}
+                </p>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
