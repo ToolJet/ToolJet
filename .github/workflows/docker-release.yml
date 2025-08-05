@@ -81,17 +81,6 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
-      - name: Send Slack Notification
-        run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet community image published:\n\`tooljet/tooljet-ce:${{ github.event.release.tag_name }}\`"
-          else
-            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
-          fi
-
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
-
   build-tooljet-image-for-ee-edtion:
 
     runs-on: ubuntu-latest
