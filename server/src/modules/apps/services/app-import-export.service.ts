@@ -80,7 +80,8 @@ type NewRevampedComponent =
   | 'Image'
   | 'FilePicker'
   | 'Icon'
-  | 'Steps';
+  | 'Steps'
+  | 'Statistics';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -109,6 +110,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'FilePicker',
   'Icon',
   'Steps',
+  'Statistics',
 ];
 
 const INPUT_WIDGET_TYPES = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DaterangePicker', 'TimePicker', 'DatetimePickerV2', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'RangeSliderV2'];
@@ -2585,6 +2587,19 @@ function migrateProperties(
       if (properties.steps && !properties.schema) {
         properties.schema = properties.steps;
         delete properties.steps;
+      }
+    }
+
+    // Statistics
+    if (componentType === 'Statistics') {
+      properties.dataAlignment ??= { value: 'center' };
+
+      properties.iconVisibility ??= { value: false };
+
+      if (styles.secondaryTextColour) {
+        styles.positiveSecondaryValueColor = styles.secondaryTextColour;
+        styles.negativeSecondaryValueColor = styles.secondaryTextColour;
+        delete styles.secondaryTextColour;
       }
     }
   }

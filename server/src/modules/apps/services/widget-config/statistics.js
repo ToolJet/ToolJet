@@ -5,25 +5,49 @@ export const statisticsConfig = {
   component: 'Statistics',
   defaultSize: {
     width: 9,
-    height: 152,
+    height: 160,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    primaryValueSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Primary value',
+    },
     primaryValueLabel: {
       type: 'code',
-      displayName: 'Primary value label',
+      displayName: 'Label',
       validation: { schema: { type: 'string' }, defaultValue: 'This months earnings' },
     },
     primaryValue: {
       type: 'code',
-      displayName: 'Primary value',
+      displayName: 'Value',
       validation: {
         schema: { type: 'string' },
         defaultValue: '682.3',
       },
+    },
+    primaryPrefixText: {
+      type: 'code',
+      displayName: 'Prefix text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    primarySuffixText: {
+      type: 'code',
+      displayName: 'Suffix text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    secondaryValueSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Secondary value',
     },
     hideSecondary: {
       type: 'toggle',
@@ -32,54 +56,259 @@ export const statisticsConfig = {
     },
     secondaryValueLabel: {
       type: 'code',
-      displayName: 'Secondary value label',
+      displayName: 'Label',
       validation: { schema: { type: 'string' }, defaultValue: 'Last month' },
     },
     secondaryValue: {
       type: 'code',
-      displayName: 'Secondary value',
+      displayName: 'Value',
       validation: { schema: { type: 'string' }, defaultValue: '2.85' },
+    },
+    secondaryPrefixText: {
+      type: 'code',
+      displayName: 'Prefix text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    secondarySuffixText: {
+      type: 'code',
+      displayName: 'Suffix text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
     },
     secondarySignDisplay: {
       type: 'code',
-      displayName: 'Secondary sign display',
-
+      displayName: 'Trend',
       validation: { schema: { type: 'string' }, defaultValue: 'positive' },
+    },
+    layoutSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Layout',
+    },
+    dataAlignment: {
+      type: 'switch',
+      displayName: 'Data',
+      validation: { schema: { type: 'string' } },
+      showLabel: true,
+      isIcon: true,
+      options: [
+        { displayName: 'Left', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'Center', value: 'center', iconName: 'alignhorizontalcenter' },
+        { displayName: 'Right', value: 'right', iconName: 'alignrightinspector' },
+      ],
+    },
+    secondaryValueAlignment: {
+      type: 'switch',
+      displayName: 'Secondary value',
+      validation: { schema: { type: 'string' } },
+      showLabel: true,
+      isIcon: false,
+      options: [
+        { displayName: 'Vertical', value: 'vertical' },
+        { displayName: 'Horizontal', value: 'horizontal' },
+      ],
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      visibility: false,
+    },
+    iconDirection: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'Left', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'Right', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      conditionallyRender: {
+        key: 'dataAlignment',
+        value: ['left', 'right'],
+      },
     },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
-    },
-  },
-  events: {},
-  styles: {
-    primaryLabelColour: {
-      type: 'colorSwatches',
-      displayName: 'Primary label colour',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
-    },
-    primaryTextColour: {
-      type: 'colorSwatches',
-      displayName: 'Primary text  colour',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
-    },
-    secondaryLabelColour: {
-      type: 'colorSwatches',
-      displayName: 'Secondary label colour',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
-    },
-    secondaryTextColour: {
-      type: 'colorSwatches',
-      displayName: 'Secondary text colour',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-success-systemStatus)' },
+      section: 'additionalActions',
     },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
     },
   },
+  events: {},
+  styles: {
+    primaryLabelSize: {
+      type: 'numberInput',
+      displayName: 'Label size',
+      validation: {
+        schema: [{ type: 'string' }, { type: 'number' }],
+        defaultValue: 14,
+      },
+      accordian: 'Primary label and value',
+    },
+    primaryLabelColour: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'Primary label and value',
+    },
+    primaryValueSize: {
+      type: 'numberInput',
+      displayName: 'Value size',
+      validation: {
+        schema: [{ type: 'string' }, { type: 'number' }],
+        defaultValue: 34,
+      },
+      accordian: 'Primary label and value',
+    },
+    primaryTextColour: {
+      type: 'colorSwatches',
+      displayName: 'Value color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'Primary label and value',
+    },
+    secondaryLabelSize: {
+      type: 'numberInput',
+      displayName: 'Label size',
+      validation: {
+        schema: [{ type: 'string' }, { type: 'number' }],
+        defaultValue: 14,
+      },
+      accordian: 'Secondary label and value',
+    },
+    secondaryLabelColour: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'Secondary label and value',
+    },
+    secondaryValueSize: {
+      type: 'numberInput',
+      displayName: 'Value size',
+      validation: {
+        schema: [{ type: 'string' }, { type: 'number' }],
+        defaultValue: 14,
+      },
+      accordian: 'Secondary label and value',
+    },
+    positiveSecondaryValueColor: {
+      type: 'colorSwatches',
+      displayName: 'Positive secondary value',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-success-systemStatus)' },
+      accordian: 'Secondary label and value',
+    },
+    negativeSecondaryValueColor: {
+      type: 'colorSwatches',
+      displayName: 'Negative secondary value',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
+      accordian: 'Secondary label and value',
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'Container',
+      colorPickerPosition: 'top',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'Container',
+      colorPickerPosition: 'top',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: { schema: { type: 'string' }, defaultValue: 'default' },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
+    },
+  },
+  exposedVariables: {
+    primaryLabel: 'This months earnings',
+    secondaryLabel: 'Last month',
+    primaryValue: '682.3',
+    secondaryValue: '2.85',
+    secondarySignDisplay: 'positive',
+    isDisabled: false,
+    isLoading: false,
+    isVisible: true,
+  },
+  actions: [
+    {
+      handle: 'setPrimaryValue',
+      displayName: 'Set primary value',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
+    },
+    {
+      handle: 'setSecondaryValue',
+      displayName: 'Set secondary value',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -88,18 +317,39 @@ export const statisticsConfig = {
     properties: {
       primaryValueLabel: { value: 'This months earnings' },
       primaryValue: { value: '682.3' },
+      primaryPrefixText: { value: '' },
+      primarySuffixText: { value: '' },
       secondaryValueLabel: { value: 'Last month' },
       secondaryValue: { value: '2.85' },
+      secondaryPrefixText: { value: '' },
+      secondarySuffixText: { value: '' },
       secondarySignDisplay: { value: 'positive' },
+      dataAlignment: { value: 'left' },
+      secondaryValueAlignment: { value: 'vertical' },
+      icon: { value: '' },
+      iconDirection: { value: 'left' },
+      iconVisibility: { value: true },
       loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: `{{false}}` },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      primaryLabelColour: { value: 'var(--cc-primary-text)' },
+      primaryLabelSize: { value: '{{14}}' },
+      primaryLabelColour: { value: 'var(--cc-placeholder-text)' },
+      primaryValueSize: { value: '{{34}}' },
       primaryTextColour: { value: 'var(--cc-primary-text)' },
+      secondaryLabelSize: { value: '{{14}}' },
       secondaryLabelColour: { value: 'var(--cc-placeholder-text)' },
-      secondaryTextColour: { value: 'var(--cc-success-systemStatus)' },
-      visibility: { value: '{{true}}' },
+      secondaryValueSize: { value: '{{14}}' },
+      positiveSecondaryValueColor: { value: 'var(--cc-success-systemStatus)' },
+      negativeSecondaryValueColor: { value: 'var(--cc-error-systemStatus)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-default-border)' },
+      borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      padding: { value: 'default' },
     },
   },
 };
