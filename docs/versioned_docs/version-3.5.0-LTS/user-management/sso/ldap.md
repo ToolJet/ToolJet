@@ -53,5 +53,5 @@ TOOLJET_LDAP_BASE_DNS__nexus-corps='["ou=team1,dc=company,dc=com","ou=team2,dc=c
 ToolJet will iterate through the provided list during login attempts, checking each base DN until a matching user is found or all options are exhausted.
 
 **Notes**
-- If TOOLJET_LDAP_BASE_DNS__ is not set, ToolJet will default to the single OU behavior to maintain backward compatibility.
+- If `TOOLJET_LDAP_BASE_DNS__<workspace-slug>` is not set, ToolJet will default to the single OU behavior to maintain backward compatibility.
 - The order of base DNs matters—authentication will follow the sequence defined in the array.
