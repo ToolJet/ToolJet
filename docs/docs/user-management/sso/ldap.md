@@ -32,24 +32,3 @@ Role Required: **Admin** <br/>
 :::info
 During the first login, ToolJet performs additional checks. It verifies the user groups in the LDAP server, and if the corresponding group exists in the ToolJet workspace, the user will be automatically added to that group. Additionally, ToolJet also looks for the user's profile picture in the LDAP server and updates the ToolJet account accordingly.
 :::
-
-## Support for Multiple Organizational Units
-
-ToolJet’s LDAP SSO implementation supports authentication across multiple Organizational Units (OUs). This allows ToolJet to search across multiple base Distinguished Names (DNs) to locate and authenticate users, making it easier to support complex directory structures.
-
-### How to Enable Multi-OU Support
-
-To enable support for multiple OUs, admins can configure a list of base DNs using an environment variable. ToolJet will attempt to authenticate users against each base DN in the order they are defined.
-
-**Environment Variable**
-Set the `TOOLJET_LDAP_BASE_DNS__` environment variable with a JSON array of base DNs. Example:
-
-```javascript
-TOOLJET_LDAP_BASE_DNS__='["ou=team1,dc=company,dc=com","ou=team2,dc=company,dc=com"]'
-```
-
-ToolJet will iterate through the provided list during login attempts, checking each base DN until a matching user is found or all options are exhausted.
-
-**Notes**
-- If TOOLJET_LDAP_BASE_DNS__ is not set, ToolJet will default to the single OU behavior to maintain backward compatibility.
-- The order of base DNs matters—authentication will follow the sequence defined in the array.
