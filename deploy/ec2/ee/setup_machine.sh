@@ -106,7 +106,7 @@ mkdir -p ~/app
 git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
 
 #The below url will be edited dynamically when actions is triggered
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 git submodule update --init --recursive
 git submodule foreach 'git checkout main || true'
 

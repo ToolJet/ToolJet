@@ -6,7 +6,7 @@ on:
 
 jobs:
   merge-submodules:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +40,7 @@ jobs:
 
   update-submodule-sha:
     needs: merge-submodules
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
     runs-on: ubuntu-latest
 
     steps:

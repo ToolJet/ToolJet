@@ -15,12 +15,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
 export const useCanvasDropHandler = () => {
-  const { moduleId, isModuleEditor, appType } = useModuleContext();
+  const { isModuleEditor } = useModuleContext();
 
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
@@ -30,17 +29,18 @@ export const useCanvasDropHandler = () => {
       !canvasId || canvasId === 'canvas'
         ? document.getElementById(`real-canvas`)
         : document.getElementById(`canvas-${canvasId}`);
-
+    const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
     handleDeactivateTargets();
     hideGridLines();
 
     setShowModuleBorder(false); // Hide the module border when dropping
-    if (
-      currentMode === 'view' ||
-      (!isModuleEditor && appType === 'module' && draggedComponentType !== 'ModuleContainer') ||
-      (isModuleEditor && canvasId === 'canvas')
-    ) {
+
+    if (isModuleEditor && canvasId === 'canvas') {
       return;
+    }
+
+    if (!isModuleEditor && isParentModuleContainer) {
+      return toast.error('Modules cannot be edited inside an app');
     }
 
     if (draggedComponentType === 'PDF' && !isPDFSupported()) {
