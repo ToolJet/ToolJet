@@ -42,10 +42,12 @@ ToolJet’s LDAP SSO implementation supports authentication across multiple Orga
 To enable support for multiple OUs, admins can configure a list of base DNs using an environment variable. ToolJet will attempt to authenticate users against each base DN in the order they are defined.
 
 **Environment Variable**
-Set the `TOOLJET_LDAP_BASE_DNS__` environment variable with a JSON array of base DNs. Example:
+Set the `TOOLJET_LDAP_BASE_DNS__<workspace-slug>` environment variable with a JSON array of base DNs. Make sure to update your workspace slug in place of `<workspace-slug>`.
+
+Example:
 
 ```javascript
-TOOLJET_LDAP_BASE_DNS__='["ou=team1,dc=company,dc=com","ou=team2,dc=company,dc=com"]'
+TOOLJET_LDAP_BASE_DNS__nexus-corps='["ou=team1,dc=company,dc=com","ou=team2,dc=company,dc=com"]'
 ```
 
 ToolJet will iterate through the provided list during login attempts, checking each base DN until a matching user is found or all options are exhausted.
