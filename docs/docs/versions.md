@@ -12,11 +12,13 @@ title: ToolJet Documentation Versions
 | 3.0.0-LTS  | [Documentation](https://docs.tooljet.ai/docs/3.0.0-LTS/)   |
 | 2.50.0-LTS | [Documentation](https://docs.tooljet.ai/docs/2.50.0-LTS/)  |
 
+<!-- 
 ## Beta Version (Pre-Release)
 
 | Version    | Documentation                                        | 
 |------------|------------------------------------------------------|
-| beta 🚧     | [Documentation](https://docs.tooljet.ai/docs/beta/) |
+| beta 🚧     | [Documentation](https://docs.tooljet.ai/docs/beta/) | 
+-->
 
 ## Past Versions (Not Maintained Anymore)
 
