@@ -30,7 +30,7 @@ export class PageService implements IPageService {
       allPages.map(async (page) => {
         const components = await this.componentsService.getAllComponents(page.id, manager);
         delete page.appVersionId;
-        return { ...page, components };
+        return { ...page, components, restricted: false };
       })
     );
     return pagesWithComponents;

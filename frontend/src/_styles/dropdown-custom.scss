@@ -13,7 +13,7 @@
 
   .react-select__option {
     color: var(--text-default);
-    height: 32px;
+    min-height: 32px;  
     z-index: 100;
     padding: 4px 8px;
   }

@@ -205,7 +205,7 @@ export const PageSettings = () => {
               </div>
             </Tab>
             <Tab eventKey="styles" title="Styles">
-              <div className={cx({ disabled: isVersionReleased })}>
+              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
                 <div className="tj-text-xsm color-slate12 settings-tab ">
                   <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
                 </div>

@@ -416,7 +416,7 @@ export const tabsConfig = {
       selectedIcon: { value: 'var(--cc-default-icon)' },
       accent: { value: 'var(--cc-primary-brand)' },
       tabWidth: { value: 'auto' },
-      transition: { value: 'slide' },
+      transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: 'var(--cc-default-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
