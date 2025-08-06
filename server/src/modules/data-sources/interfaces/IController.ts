@@ -52,7 +52,7 @@ export interface IDataSourcesController {
 
   invokeDataSourceMethod(
     user: User,
-    invokeDto: any,
+    invokeDto: InvokeDataSourceMethodDto,
     dataSource: DataSourceEntity
   ): Promise<any>;
 }
