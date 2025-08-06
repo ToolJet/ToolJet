@@ -2592,7 +2592,7 @@ function migrateProperties(
     if (componentType === 'Statistics') {
       properties.dataAlignment ??= { value: 'center' };
 
-      properties.iconVisibility ??= { value: false };
+      styles.iconVisibility ??= { value: false };
 
       if (styles.secondaryTextColour) {
         styles.positiveSecondaryValueColor = styles.secondaryTextColour;
