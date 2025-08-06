@@ -67,11 +67,10 @@ export default class Grpcv2QueryService implements QueryService {
           message: `Proto file loaded successfully. Found ${serviceNames.length} service(s).`
         };
       }
-    } catch (error: unknown) {
-      const err = error as Error;
+    } catch (error) {
       return {
         status: 'failed',
-        message: err.message || 'Connection test failed'
+        message: error?.description || error.message || 'Connection test failed',
       };
     }
   }
