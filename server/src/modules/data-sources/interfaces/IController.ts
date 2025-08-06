@@ -4,11 +4,13 @@ import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
   GetDataSourceOauthUrlDto,
+  InvokeDataSourceMethodDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from '../dto';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesController {
   fetchGlobalDataSources(user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
