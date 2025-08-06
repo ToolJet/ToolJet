@@ -1,15 +1,155 @@
 import React from 'react';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
+import cx from 'classnames';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ArrowUpDown from '@/_ui/Icon/solidIcons/ArrowUpDown';
+import './grpcv2.scss';
+
+const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [expandedServices, setExpandedServices] = React.useState(() =>
+    new Set(options.map(service => service.label))
+  );
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    setExpandedServices(new Set(options.map(service => service.label)));
+  }, [options]);
+
+  React.useEffect(() => {
+    if (disabled) {
+      setIsOpen(false);
+      setExpandedServices(new Set());
+    }
+  }, [disabled]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const toggleService = (serviceName) => {
+    const newExpanded = new Set(expandedServices);
+    if (newExpanded.has(serviceName)) {
+      newExpanded.delete(serviceName);
+    } else {
+      newExpanded.add(serviceName);
+    }
+    setExpandedServices(newExpanded);
+  };
+
+  const selectMethod = (methodOption) => {
+    if (methodOption.disabled) return;
+    onChange(methodOption);
+    setTimeout(() => setIsOpen(false), 0);
+  };
+
+  const getDisplayValue = () => {
+    if (disabled) return placeholder;
+
+    const selectedMethod = options
+      .flatMap(service => service.methods)
+      .find(method => method.value === value);
+    return selectedMethod ? `${selectedMethod.serviceName} → ${selectedMethod.label}` : placeholder;
+  };
+
+  return (
+    <div ref={dropdownRef} className="grpcv2-dropdown">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className={cx('grpcv2-dropdown__button', {
+          'grpcv2-dropdown__button--open': isOpen
+        })}
+      >
+        <span className="grpcv2-dropdown__button__text">
+          {getDisplayValue()}
+        </span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          className={cx('grpcv2-dropdown__button__arrow', {
+            'grpcv2-dropdown__button__arrow--open': isOpen
+          })}
+        >
+          <path
+            d="M4 6l4 4 4-4"
+            stroke="#6a727c"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="grpcv2-dropdown__menu">
+          {options.map((service) => (
+            <div key={service.value}>
+              <div
+                onClick={() => toggleService(service.label)}
+                className="grpcv2-dropdown__service"
+              >
+                <span className="grpcv2-dropdown__service__name">{service.label}</span>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  className={cx('grpcv2-dropdown__service__arrow', {
+                    'grpcv2-dropdown__service__arrow--collapsed': !expandedServices.has(service.label)
+                  })}
+                >
+                  <path
+                    d="M5 8l5-5 5 5"
+                    stroke="#687076"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              {expandedServices.has(service.label) && service.methods.map((method) => (
+                <div
+                  key={method.value}
+                  onClick={() => selectMethod(method)}
+                  title={method.disabled ? "Streaming methods are not supported" : ""}
+                  className={cx('grpcv2-dropdown__method', {
+                    'grpcv2-dropdown__method--disabled': method.disabled,
+                    'grpcv2-dropdown__method--selected': method.value === value
+                  })}
+                >
+                  <ArrowUpDown
+                    width="20"
+                    fill={method.isStreaming ? "#889096" : "#4368e3"}
+                  />
+                  <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const { options, optionsChanged, queryName, currentEnvironment } = restProps;
   const serverUrl = selectedDataSource?.options?.url?.value;
 
-  // State management
   const [servicesData, setServicesData] = React.useState({ services: [] });
   const [selectedService, setSelectedService] = React.useState(null);
   const [selectedMethod, setSelectedMethod] = React.useState(null);
@@ -21,19 +161,15 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     return [['', '']];
   });
 
-  // Initialize requestData from existing options for backward compatibility
   React.useEffect(() => {
     if (options?.jsonMessage && !options?.requestData) {
-      // Migrate from old jsonMessage to new requestData
       handleRequestDataChanged(options.jsonMessage);
     }
   }, []);
 
-  // Load services and methods from backend
-  const loadServicesAndMethods = React.useCallback(async () => {
+  const loadServices = React.useCallback(async () => {
     if (!selectedDataSource?.id) return;
 
-    // Check if we have a valid URL
     if (!selectedDataSource?.options?.url?.value) {
       toast.error('Please configure the server URL in your data source settings');
       return;
@@ -42,25 +178,21 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setIsLoadingServices(true);
 
     try {
-      // Call the grpcv2 plugin method with environment context
       const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
-      
-      // Handle QueryResult format: { status: 'ok', data: [...] } or { status: 'failed', errorMessage: '...' }
+
       if (result.status === 'failed') {
         throw new Error(result.errorMessage || 'Failed to discover services');
       }
-      
+
       const servicesArray = Array.isArray(result.data) ? result.data : (result.data || []);
-      
-      // Prepare restoration state
       let restoredService = null;
       let restoredMethod = null;
-      
+
       if (options?.service && servicesArray.length > 0) {
         const foundService = servicesArray.find(s => s.name === options.service);
         if (foundService) {
           restoredService = foundService;
-          
+
           if (options?.method) {
             const foundMethod = foundService.methods.find(m => m.name === options.method);
             if (foundMethod) {
@@ -69,37 +201,19 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
           }
         }
       }
-      
-      // Batch all state updates together to prevent intermediate render
+
       setServicesData({ services: servicesArray });
       setSelectedService(restoredService);
       setSelectedMethod(restoredMethod);
     } catch (error) {
       console.error('Failed to load services:', error);
-      let errorMessage = 'Failed to load services';
-
-      // Provide more helpful error messages based on the error type
-      if (error.message) {
-        if (error.message.includes('REFLECTION_NOT_SUPPORTED')) {
-          errorMessage = 'Server does not support reflection. Please use proto URL method instead.';
-        } else if (error.message.includes('REFLECTION_CONNECTION_FAILED') || error.message.includes('CONNECTION_FAILED') || error.message.includes('UNAVAILABLE')) {
-          errorMessage = 'Unable to connect to gRPC server. Please check:\n• URL format should be host:port (e.g., localhost:50051)\n• Remove http:// or https:// prefix\n• Ensure the server is running';
-        } else if (error.message.includes('UNAUTHENTICATED')) {
-          errorMessage = 'Authentication failed. Please check your credentials.';
-        } else if (error.message.includes('NO_SERVICES_FOUND')) {
-          errorMessage = 'No services found. The server may not have any exposed services.';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
+      const errorMessage = error.errorMessage || error.message || 'Failed to load services';
       toast.error(errorMessage);
     } finally {
       setIsLoadingServices(false);
     }
   }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value]);
 
-  // Force immediate loading state when data source changes to prevent stale data
   React.useEffect(() => {
     setIsLoadingServices(true);
     setServicesData({ services: [] });
@@ -107,15 +221,12 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setSelectedMethod(null);
   }, [selectedDataSource?.id]);
 
-  // Load services on component mount and when data source changes
   React.useEffect(() => {
-    loadServicesAndMethods();
-  }, [loadServicesAndMethods]);
+    loadServices();
+  }, [loadServices]);
 
-  // Handle hierarchical selection (service + method combined)
-  const handleHierarchicalSelection = (selectedOption) => {
+  const selectMethod = (selectedOption) => {
     if (!selectedOption || selectedOption.type !== 'method') {
-      // Only allow method selection, not service selection
       return;
     }
 
@@ -132,35 +243,26 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     });
   };
 
-  // Get current selection display value
-  const getCurrentSelectionValue = () => {
+  const getSelectionValue = () => {
     if (selectedService && selectedMethod) {
       return `${selectedService.name}:${selectedMethod.name}`;
     }
     return '';
   };
 
-  const getCurrentSelectionLabel = () => {
-    if (selectedService && selectedMethod) {
-      return `${selectedService.name} → ${selectedMethod.name}`;
-    }
-    return 'Select service';
-  };
-
-  // Metadata handlers (reuse from existing GRPC component)
-  const addNewMetaDataKeyValuePair = () => {
+  const addMetadata = () => {
     const currentMetaDataOptions = [...metaDataOptions];
     currentMetaDataOptions.push(['', '']);
     setMetaDataOptions(currentMetaDataOptions);
   };
 
-  const removeMetaDataKeyValuePair = (index) => {
+  const removeMetadata = (index) => {
     const currentMetaDataOptions = [...metaDataOptions];
     currentMetaDataOptions.splice(index, 1);
     setMetaDataOptions(currentMetaDataOptions);
   };
 
-  const handleOnMetaDataKeyChange = (type, index, value) => {
+  const updateMetadata = (type, index, value) => {
     const currentMetaDataOptions = [...metaDataOptions];
     currentMetaDataOptions[index][type === 'key' ? 0 : 1] = value;
 
@@ -172,13 +274,11 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   };
 
   const handleRequestDataChanged = (value) => {
-    // Store the raw JSON string for the editor
     const updatedOptions = {
       ...options,
       requestData: value,
     };
 
-    // Parse JSON and add to request field for backend
     try {
       if (value && value.trim()) {
         updatedOptions.request = JSON.parse(value);
@@ -186,18 +286,12 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         updatedOptions.request = {};
       }
     } catch (error) {
-      // Keep the raw requestData but don't set request if JSON is invalid
-      // Show a warning to the user about invalid JSON
       console.warn('Invalid JSON in request data:', error.message);
-      // Don't show toast immediately as user might still be typing
-      // The error will be shown when they try to run the query
     }
 
     optionsChanged(updatedOptions);
   };
 
-
-  // Prepare hierarchical options for single dropdown
   const hierarchicalOptions = servicesData.services.map(service => ({
     type: 'service',
     label: service.name,
@@ -215,285 +309,31 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         method: method,
       }))
       .sort((a, b) => {
-        // Put non-streaming methods first
         if (a.disabled && !b.disabled) return 1;
         if (!a.disabled && b.disabled) return -1;
         return a.label.localeCompare(b.label);
       })
   }));
 
-
-  // Custom Hierarchical Dropdown Component
-  const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    // Initialize with all services expanded by default
-    const [expandedServices, setExpandedServices] = React.useState(() =>
-      new Set(options.map(service => service.label))
-    );
-
-    const dropdownRef = React.useRef(null);
-
-    // Update expanded services when options change (when services are loaded)
-    React.useEffect(() => {
-      setExpandedServices(new Set(options.map(service => service.label)));
-    }, [options]);
-
-    // Close dropdown and reset state when disabled (loading)
-    React.useEffect(() => {
-      if (disabled) {
-        setIsOpen(false);
-        setExpandedServices(new Set());
-      }
-    }, [disabled]);
-
-    // Close dropdown when clicking outside
-    React.useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setIsOpen(false);
-        }
-      };
-
-      if (isOpen) {
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-      }
-    }, [isOpen]);
-
-    const toggleService = (serviceName) => {
-      const newExpanded = new Set(expandedServices);
-      if (newExpanded.has(serviceName)) {
-        newExpanded.delete(serviceName);
-      } else {
-        newExpanded.add(serviceName);
-      }
-      setExpandedServices(newExpanded);
-    };
-
-    const handleMethodSelect = (methodOption) => {
-      if (methodOption.disabled) return;
-      onChange(methodOption);
-      // Use setTimeout to prevent immediate re-opening
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 0);
-    };
-
-    const getDisplayValue = () => {
-      // Show placeholder immediately when disabled (loading)
-      if (disabled) return placeholder;
-      
-      const selectedMethod = options
-        .flatMap(service => service.methods)
-        .find(method => method.value === value);
-      return selectedMethod ? `${selectedMethod.serviceName} → ${selectedMethod.label}` : placeholder;
-    };
-
-    return (
-      <div ref={dropdownRef} className="hierarchical-dropdown" style={{ position: 'relative', width: '100%' }}>
-        {/* Dropdown Button */}
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setIsOpen(!isOpen)}
-          style={{
-            width: '100%',
-            height: '32px',
-            backgroundColor: '#ffffff',
-            border: isOpen ? '2px solid #4368e3' : '1px solid #e6e8eb',
-            borderRadius: '0 6px 6px 0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 10px',
-            fontSize: '12px',
-            fontFamily: 'IBM Plex Sans, sans-serif',
-            fontWeight: '400',
-            color: '#687076',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            outline: 'none'
-          }}
-        >
-          <span style={{
-            display: 'block',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            marginRight: '20px'
-          }}>
-            {getDisplayValue()}
-          </span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            style={{
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s'
-            }}
-          >
-            <path
-              d="M4 6l4 4 4-4"
-              stroke="#6a727c"
-              strokeWidth="1.5"
-              fill="none"
-            />
-          </svg>
-        </button>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            minWidth: '100%',
-            backgroundColor: '#ffffff',
-            border: '1px solid #e6e8eb',
-            borderRadius: '6px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            maxHeight: '300px',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            zIndex: 1000,
-            padding: '8px 0'
-          }}>
-            {options.map((service, index) => (
-              <div key={service.value}>
-                {/* Service Header - matches Figma design */}
-                <div
-                  onClick={() => toggleService(service.label)}
-                  style={{
-                    padding: '12px 10px 4px 10px',
-                    fontSize: '12px',
-                    fontFamily: 'IBM Plex Sans, sans-serif',
-                    fontWeight: '500',
-                    color: '#687076',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderTop: index > 0 ? '1px solid #e6e8eb' : 'none',
-                    marginTop: index > 0 ? '12px' : '0',
-                    lineHeight: '20px'
-                  }}
-                >
-                  <span style={{ whiteSpace: 'nowrap' }}>{service.label}</span>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    style={{
-                      transform: expandedServices.has(service.label) ? 'rotate(0deg)' : 'rotate(180deg)',
-                      transition: 'transform 0.2s'
-                    }}
-                  >
-                    <path
-                      d="M5 8l5-5 5 5"
-                      stroke="#687076"
-                      strokeWidth="1.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-
-                {/* Methods - matches Figma design */}
-                {expandedServices.has(service.label) && service.methods.map((method) => (
-                  <div
-                    key={method.value}
-                    onClick={() => handleMethodSelect(method)}
-                    title={method.disabled ? "Streaming methods are not supported" : ""}
-                    style={{
-                      padding: '8px 10px',
-                      fontSize: '14px',
-                      fontFamily: 'IBM Plex Sans, sans-serif',
-                      fontWeight: '400',
-                      color: method.disabled ? '#889096' : '#11181c',
-                      backgroundColor: method.value === value ? '#f0f4ff' : 'transparent',
-                      cursor: method.disabled ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      opacity: method.disabled ? 0.6 : 1,
-                      textDecoration: method.disabled ? 'line-through' : 'none',
-                      lineHeight: '20px',
-                      borderRadius: '6px',
-                      margin: '2px 0'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!method.disabled) {
-                        e.target.style.backgroundColor = '#f8f9fa';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (method.value !== value) {
-                        e.target.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    {/* Method type icon - matches Figma design */}
-                    <ArrowUpDown
-                      width="20"
-                      fill={method.isStreaming ? "#889096" : "#4368e3"}
-                    />
-                    <span style={{ whiteSpace: 'nowrap' }}>{method.label}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
-    <div>
-      {/* Request section with hierarchical dropdown - matching Source field structure */}
-      <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
+    <div className="grpcv2-container">
+      <div className="d-flex grpcv2-request-section">
         <div className="d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500">
           Request
         </div>
-        <div className="d-flex flex-column align-items-start" style={{ width: '500px' }}>
-          <div className="d-flex" style={{ minHeight: '32px', width: '100%' }}>
-            {/* Server URL */}
-            <div
-              style={{
-                width: '160px',
-                height: '32px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e6e8eb',
-                borderRadius: '6px 0 0 6px',
-                display: 'flex',
-                alignItems: 'center',
-                paddingLeft: '10px',
-                paddingRight: '10px'
-              }}
-            >
-              <span style={{
-                fontSize: '12px',
-                color: '#687076',
-                fontFamily: 'IBM Plex Sans, sans-serif',
-                fontWeight: '400',
-                lineHeight: '20px',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}>
+        <div className="d-flex flex-column align-items-start grpcv2-request-section__content">
+          <div className="d-flex grpcv2-request-section__fields">
+            <div className="grpcv2-server-url">
+              <span className="grpcv2-server-url__text">
                 {serverUrl || 'localhost:50051'}
               </span>
             </div>
 
-            {/* Hierarchical Service/Method selector */}
             <div className="flex-grow-1">
               <HierarchicalDropdown
                 options={hierarchicalOptions}
-                value={getCurrentSelectionValue()}
-                onChange={handleHierarchicalSelection}
+                value={getSelectionValue()}
+                onChange={selectMethod}
                 placeholder={
                   isLoadingServices ? "Loading services..." :
                     hierarchicalOptions.length === 0 ? "No services found" :
@@ -506,14 +346,14 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         </div>
       </div>
 
-      <div className={`query-pane-restapi-tabs  ${darkMode ? 'dark' : ''}`}>
+      <div className={cx('query-pane-restapi-tabs', { dark: darkMode })}>
         <GRPCv2Component.Tabs
           theme={darkMode ? 'monokai' : 'default'}
           metaDataoptions={metaDataOptions}
-          onChange={handleOnMetaDataKeyChange}
+          onChange={updateMetadata}
           onRequestDataChange={handleRequestDataChanged}
-          removeKeyValuePair={removeMetaDataKeyValuePair}
-          addNewKeyValuePair={addNewMetaDataKeyValuePair}
+          removeKeyValuePair={removeMetadata}
+          addNewKeyValuePair={addMetadata}
           darkMode={darkMode}
           componentName={queryName}
           requestData={options?.requestData || options?.jsonMessage || '{\n\n}'}
@@ -523,8 +363,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   );
 };
 
-// Reuse tab components from existing GRPC component
-function ControlledTabs({
+const ControlledTabs = ({
   metaDataoptions,
   theme,
   onChange,
@@ -534,7 +373,7 @@ function ControlledTabs({
   darkMode,
   componentName,
   requestData,
-}) {
+}) => {
   const [key, setKey] = React.useState('request');
   const tabs = ['Request', 'Metadata'];
 
@@ -551,7 +390,7 @@ function ControlledTabs({
           </ListGroup>
         </div>
 
-        <div className={`col ${darkMode && 'theme-dark'}`}>
+        <div className={cx('col', { 'theme-dark': darkMode })}>
           <Tab.Content
             bsPrefix="rest-api-tab-content"
             className="border overflow-hidden query-manager-border-color rounded"
@@ -590,15 +429,13 @@ function ControlledTabs({
       </Row>
     </Tab.Container>
   );
-}
+};
 
 const TabContent = ({
   options = [],
-  theme, // eslint-disable-line no-unused-vars
   onChange,
   componentName,
   removeKeyValuePair,
-  paramType, // eslint-disable-line no-unused-vars
   tabType,
   addNewKeyValuePair,
   darkMode,
@@ -653,8 +490,9 @@ const TabContent = ({
 
       <div className="d-flex" style={{ maxHeight: '32px' }}>
         <div
-          className="d-flex align-items-center justify-content-center add-tabs "
-          style={{ flex: '0 0 32px', background: darkMode ? 'inherit' : '#F8F9FA', height: '32px' }}
+          className={cx('d-flex align-items-center justify-content-center add-tabs grpcv2-add-button', {
+            'grpcv2-add-button--dark': darkMode
+          })}
           onClick={() => addNewKeyValuePair()}
           role="button"
         >
@@ -669,24 +507,26 @@ const TabContent = ({
             </svg>
           </span>
         </div>
-        <div className="col" style={{ flex: '1', background: darkMode ? '' : '#ffffff' }}></div>
+        <div
+          className="col"
+          style={{
+            flex: '1',
+            background: darkMode ? '' : '#ffffff'
+          }}
+        ></div>
       </div>
     </div>
   );
 };
 
-export const BaseUrl = ({ dataSourceURL, theme }) => {
+const BaseUrl = ({ dataSourceURL, theme }) => {
   return (
     <span
-      className="col-6"
+      className={cx('col-6 grpcv2-base-url', {
+        'grpcv2-base-url--default': theme === 'default',
+        'grpcv2-base-url--dark': theme !== 'default'
+      })}
       htmlFor=""
-      style={{
-        padding: '5px',
-        border: theme === 'default' ? '1px solid rgb(217 220 222)' : '1px solid white',
-        background: theme === 'default' ? 'rgb(246 247 251)' : '#20211e',
-        color: theme === 'default' ? '#9ca1a6' : '#9e9e9e',
-        height: '32px',
-      }}
     >
       {dataSourceURL}
     </span>

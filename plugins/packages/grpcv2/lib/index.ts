@@ -1,5 +1,5 @@
 import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl, getRefreshedToken } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError } from './types';
+import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
 import {
   buildReflectionClient,
@@ -40,7 +40,7 @@ export default class Grpcv2QueryService implements QueryService {
         throw new QueryError('Query could not be completed', error.message, error.errorDetails);
       }
 
-      const err = error as Error;
+      const err = toError(error);
       throw new QueryError('Query could not be completed', err.message || 'An unknown error occurred', {
         grpcCode: 0,
         grpcStatus: 'UNKNOWN',
@@ -106,7 +106,7 @@ export default class Grpcv2QueryService implements QueryService {
         throw new QueryError('Query could not be completed', error.message, error.errorDetails);
       }
 
-      const err = error as Error;
+      const err = toError(error);
       throw new QueryError('Query could not be completed', err.message, {
         grpcCode: 0,
         grpcStatus: 'UNKNOWN',
@@ -115,7 +115,7 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  private async createGrpcClient(sourceOptions: SourceOptions, serviceName: string) {
+  private async createGrpcClient(sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> {
     if (sourceOptions.proto_files === 'server_reflection') {
       return await buildReflectionClient(sourceOptions, serviceName);
     } else {
@@ -135,25 +135,54 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  private validateMethodExists(client: any, queryOptions: QueryOptions): void {
-    if (!client[queryOptions.method] || typeof client[queryOptions.method] !== 'function') {
+  private validateMethodExists(client: GrpcClient, queryOptions: QueryOptions): void {
+    const methodFunction = client[queryOptions.method];
+    if (!methodFunction || typeof methodFunction !== 'function') {
       throw new GrpcOperationError(`Method ${queryOptions.method} not found in service ${queryOptions.service}`);
     }
   }
 
-  private async executeGrpcCall(client: any, queryOptions: QueryOptions, metadata: grpc.Metadata): Promise<Record<string, unknown>> {
+  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, metadata: grpc.Metadata): Promise<Record<string, unknown>> {
     return new Promise<Record<string, unknown>>((resolve, reject) => {
-      client[queryOptions.method](
-        queryOptions.request,
-        metadata,
-        (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(response || {});
+      const methodFunction = client[queryOptions.method];
+
+      if (typeof methodFunction !== 'function') {
+        reject(new GrpcOperationError(`Method ${queryOptions.method} not found on client`));
+        return;
+      }
+
+      const timeoutId = setTimeout(() => {
+        reject(new GrpcOperationError(
+          `Request timeout after 2 minutes for method ${queryOptions.method}`,
+          { errorType: 'NetworkError', grpcStatus: 'DEADLINE_EXCEEDED' }
+        ));
+      }, 120000);
+
+      try {
+        methodFunction.call(
+          client,
+          queryOptions.request,
+          metadata,
+          (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
+            clearTimeout(timeoutId);
+
+            if (error) {
+              reject(new GrpcOperationError(
+                `gRPC call failed: ${error.message}`,
+                error
+              ));
+            } else {
+              resolve(response || {});
+            }
           }
-        }
-      );
+        );
+      } catch (syncError) {
+        clearTimeout(timeoutId);
+        reject(new GrpcOperationError(
+          `Failed to invoke gRPC method ${queryOptions.method}`,
+          syncError
+        ));
+      }
     });
   }
 

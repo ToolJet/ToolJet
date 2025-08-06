@@ -1,4 +1,4 @@
-import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError } from './types';
+import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
 import got from 'got';
 import { GrpcReflection, serviceHelper } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
@@ -29,9 +29,9 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
       }
     });
 
-    return client as GrpcClient;
+    return client;
   } catch (error: unknown) {
-    const err = error as Error;
+    const err = toError(error);
     throw new GrpcOperationError(`Failed to create reflection client for service ${serviceName}: ${err.message}`, error);
   }
 };
@@ -41,7 +41,7 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
     const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
 
-    const service = findServiceInPackage(grpcObject as Record<string, unknown>, serviceName);
+    const service = findServiceInPackage(grpcObject, serviceName);
     if (!service) {
       throw new GrpcOperationError(`Service ${serviceName} not found in proto file`);
     }
@@ -49,13 +49,18 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
     const credentials = createGrpcCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
 
-    const client = new (service as new (...args: unknown[]) => GrpcClient)(cleanUrl, credentials);
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+    // Type assertion necessary for constructor function interface
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const client = new ServiceConstructor(cleanUrl, credentials);
     return client;
   } catch (error: unknown) {
     if (error instanceof GrpcOperationError) {
       throw error;
     }
-    const err = error as Error;
+    const err = toError(error);
     throw new GrpcOperationError(`Failed to create proto file client for service ${serviceName}: ${err.message}`, error);
   }
 };
@@ -166,7 +171,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
         });
 
       } catch (error: unknown) {
-        const err = error as Error;
+        const err = toError(error);
         console.warn(`Could not get methods for service ${serviceName}: ${err.message}`);
         services.push({
           name: serviceName,
@@ -180,7 +185,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     if (error instanceof GrpcOperationError) {
       throw error;
     }
-    const err = error as Error;
+    const err = toError(error);
     throw new GrpcOperationError(`Service discovery via reflection failed: ${err.message}`, error);
   }
 };
@@ -199,7 +204,7 @@ export const discoverServicesUsingProtoFile = async (sourceOptions: SourceOption
     if (error instanceof GrpcOperationError) {
       throw error;
     }
-    const err = error as Error;
+    const err = toError(error);
     throw new GrpcOperationError(`Service discovery via proto file failed: ${err.message}`, error);
   }
 };
@@ -253,9 +258,12 @@ export const extractMethodsFromService = (
   const methods: GrpcMethod[] = [];
 
   try {
-    const serviceObj = (serviceDefinition as any).service;
+    if (!isRecord(serviceDefinition)) {
+      return methods;
+    }
+    const serviceObj = serviceDefinition.service;
 
-    if (!serviceObj || typeof serviceObj !== 'object') {
+    if (!isRecord(serviceObj)) {
       console.warn(`No service object found for ${serviceName}`);
       return methods;
     }
@@ -310,26 +318,25 @@ export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.P
       }
     }
   } catch (error: unknown) {
-    const err = error as Error & { 
-      response?: { statusCode: number; statusMessage: string }; 
-      request?: unknown;
-      code?: string;
-    };
-    
+    const err = toError(error);
     let errorMessage = `Failed to load proto file from URL: ${err.message}`;
-    
-    // Handle got-specific errors
-    if (err.response) {
-      errorMessage = `Failed to load proto file from URL (HTTP ${err.response.statusCode}): ${err.response.statusMessage}`;
-    } else if (err.code) {
-      errorMessage = `Failed to load proto file from URL (${err.code}): ${err.message}`;
+
+    if (isRecord(err)) {
+      if (isRecord(err.response)) {
+        const response = err.response;
+        if (typeof response.statusCode === 'number' && typeof response.statusMessage === 'string') {
+          errorMessage = `Failed to load proto file from URL (HTTP ${response.statusCode}): ${response.statusMessage}`;
+        }
+      } else if (typeof err.code === 'string') {
+        errorMessage = `Failed to load proto file from URL (${err.code}): ${err.message}`;
+      }
     }
-    
+
     throw new GrpcOperationError(errorMessage, error);
   }
 };
 
-export const findServiceInPackage = (grpcObject: Record<string, unknown>, serviceName: string): (new (...args: unknown[]) => unknown) | null => {
+export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: string): (new (url: string, credentials: any) => GrpcClient) | null => {
   const parts = serviceName.split('.');
   let current: any = grpcObject;
 
@@ -342,7 +349,8 @@ export const findServiceInPackage = (grpcObject: Record<string, unknown>, servic
   }
 
   if (typeof current === 'function') {
-    return current as (new (...args: unknown[]) => unknown);
+    // Type assertion necessary: grpc.GrpcObject can contain constructor functions
+    return current as (new (url: string, credentials: any) => GrpcClient);
   }
 
   return recursiveServiceSearch(grpcObject, serviceName);
@@ -356,9 +364,12 @@ export const parseRequestData = (queryOptions: QueryOptions): void => {
 
   if (typeof queryOptions.request === 'string') {
     try {
-      queryOptions.request = JSON5.parse(queryOptions.request as string);
+      if (typeof queryOptions.request === 'string') {
+        queryOptions.request = JSON5.parse(queryOptions.request);
+      }
     } catch (error) {
-      throw new GrpcOperationError(`Invalid JSON in request data: ${(error as Error).message}`, error);
+      const err = toError(error);
+      throw new GrpcOperationError(`Invalid JSON in request data: ${err.message}`, error);
     }
   }
 };
@@ -430,19 +441,20 @@ const createReflectionClient = async (sourceOptions: SourceOptions): Promise<Grp
     if (error instanceof GrpcOperationError) {
       throw error;
     }
-    const err = error as Error;
+    const err = toError(error);
     throw new GrpcOperationError(`Failed to create reflection client: ${err.message}`, error);
   }
 };
 
-const recursiveServiceSearch = (grpcObject: Record<string, unknown>, serviceName: string): (new (...args: unknown[]) => unknown) | null => {
+const recursiveServiceSearch = (grpcObject: grpc.GrpcObject, serviceName: string): (new (url: string, credentials: any) => GrpcClient) | null => {
   for (const key in grpcObject) {
     const value = grpcObject[key];
     if (key === serviceName && typeof value === 'function') {
-      return value as (new (...args: unknown[]) => unknown);
+      // Type assertion necessary: grpc.GrpcObject can contain constructor functions
+      return value as (new (url: string, credentials: any) => GrpcClient);
     }
-    if (typeof value === 'object' && value !== null) {
-      const found = recursiveServiceSearch(value as Record<string, unknown>, serviceName);
+    if (isRecord(value)) {
+      const found = recursiveServiceSearch(value as grpc.GrpcObject, serviceName);
       if (found) return found;
     }
   }
@@ -450,12 +462,10 @@ const recursiveServiceSearch = (grpcObject: Record<string, unknown>, serviceName
 };
 
 const isServiceDefinition = (value: unknown): value is grpc.ServiceDefinition => {
-  return (
-    typeof value === 'function' &&
-    value !== null &&
-    typeof (value as any).service === 'object' &&
-    (value as any).service !== null
-  );
+  if (typeof value !== 'function' || value === null) {
+    return false;
+  }
+  return isRecord(value) && isRecord(value.service);
 };
 
 const isNamespace = (value: unknown): boolean => {
