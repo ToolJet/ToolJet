@@ -62,7 +62,9 @@ export default class Aftership implements QueryService {
 
     let finalPath = path;
     for (const [key, val] of Object.entries(pathParams)) {
-      finalPath = finalPath.replace(`:${key}`, encodeURIComponent(val));
+      const encodedVal = encodeURIComponent(val);
+      finalPath = finalPath.replace(new RegExp(`{${key}}`, 'g'), encodedVal);
+      finalPath = finalPath.replace(new RegExp(`:${key}`, 'g'), encodedVal);
     }
 
     const queryString = new URLSearchParams(query as any).toString();
@@ -78,24 +80,25 @@ export default class Aftership implements QueryService {
       if(result?.meta?.code !== 200) {
           const errorMessage = result?.meta?.message || 'Unexpected response during api call';
           const errorDetails: any = {
-          message: errorMessage,
+          message: result?.meta.message,
           code: result?.meta?.code,
           details: result?.meta?.details,
+          type:result?.meta?.type
         };
        throw new QueryError('Failed to run Query', errorMessage, errorDetails);
       }
-      
       return {
         status: 'ok',
         data: result,
       };
     } catch (err: any) {
-      const errorMessage = err?.message || 'Unknown error';
-      const errorDetails: any = {
-        message: errorMessage,
+        const errorMessage = err?.message || 'Unknown error';
+        const errorDetails: any = {
+        message: err?.data?.message,
         name: err?.name,
-        code: err?.code,
-        details:err?.data?.details
+        code: err?.data?.code,
+        details:err?.data?.details,
+        type:err?.data?.type
       };
       if (err?.response) {
         errorDetails.status = err?.response?.status;
@@ -123,11 +126,10 @@ export default class Aftership implements QueryService {
         },
       });
       const result = await response.json();
-
       if(result?.meta?.code !== 200) {
           const errorMessage = result?.meta?.message || 'Unexpected response during connection test';
           const errorDetails: any = {
-          message: errorMessage,
+          message: result?.meta.message,
           code: result?.meta?.code,
           details: result?.meta?.details,
         };
@@ -144,6 +146,8 @@ export default class Aftership implements QueryService {
         message: errorMessage,
         name: err?.name,
         code: err?.code,
+        details: err?.data?.details,
+        type: err?.data?.type,
         raw: err,
       };
       if (err?.response) {
