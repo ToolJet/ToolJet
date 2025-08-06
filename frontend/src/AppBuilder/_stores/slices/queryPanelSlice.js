@@ -1242,10 +1242,25 @@ export const createQueryPanelSlice = (set, get) => ({
           const fullPath = path ? `${path}.${prop}` : prop;
 
           if (!(prop in target)) {
+            // For components and variables, allow accessing non-existent top-level properties
+            // but still throw errors for deeper property access
+            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables';
+
+            if (isTopLevelComponentsOrVariables) {
+              // Return undefined for non-existent components/variables to allow graceful handling
+              return undefined;
+            }
+
             throw new Error(`ReferenceError: ${fullPath} is not defined`);
           }
 
           const value = target[prop];
+
+          // If the value is an object, create a proxy for it to maintain error handling in nested access
+          if (value !== null && typeof value === 'object') {
+            return get().queryPanel.createProxy(value, fullPath);
+          }
+
           return value;
         },
       });
