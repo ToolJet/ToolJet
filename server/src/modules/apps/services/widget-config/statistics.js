@@ -115,7 +115,7 @@ export const statisticsConfig = {
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconDatabaseDollar' },
       visibility: false,
     },
     iconDirection: {
@@ -188,6 +188,12 @@ export const statisticsConfig = {
       type: 'colorSwatches',
       displayName: 'Value color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'Primary label and value',
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'Primary label and value',
     },
     secondaryLabelSize: {
@@ -326,9 +332,8 @@ export const statisticsConfig = {
       secondarySignDisplay: { value: 'positive' },
       dataAlignment: { value: 'left' },
       secondaryValueAlignment: { value: 'vertical' },
-      icon: { value: '' },
+      icon: { value: 'IconDatabaseDollar' },
       iconDirection: { value: 'left' },
-      iconVisibility: { value: true },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: `{{false}}` },
@@ -340,6 +345,7 @@ export const statisticsConfig = {
       primaryLabelColour: { value: 'var(--cc-placeholder-text)' },
       primaryValueSize: { value: '{{34}}' },
       primaryTextColour: { value: 'var(--cc-primary-text)' },
+      iconColor: { value: 'var(--cc-primary-brand)' },
       secondaryLabelSize: { value: '{{14}}' },
       secondaryLabelColour: { value: 'var(--cc-placeholder-text)' },
       secondaryValueSize: { value: '{{14}}' },
@@ -350,6 +356,7 @@ export const statisticsConfig = {
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
+      iconVisibility: { value: true },
     },
   },
 };

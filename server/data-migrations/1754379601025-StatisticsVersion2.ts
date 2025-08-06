@@ -34,8 +34,8 @@ export class StatisticsVersion221754379601025 implements MigrationInterface {
         properties.dataAlignment = { value: 'center' };
       }
 
-      if (properties.iconVisibility === undefined) {
-        properties.iconVisibility = { value: false };
+      if (styles.iconVisibility === undefined) {
+        styles.iconVisibility = { value: false };
       }
 
       if (general?.tooltip) {
