@@ -1,4 +1,5 @@
 import { User } from '@entities/user.entity';
+import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -48,4 +49,10 @@ export interface IDataSourcesController {
   ): Promise<void>;
 
   decryptOptions(options: Record<string, any>): Promise<any>;
+
+  invokeDataSourceMethod(
+    user: User,
+    invokeDto: any,
+    dataSource: DataSourceEntity
+  ): Promise<any>;
 }

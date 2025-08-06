@@ -42,4 +42,11 @@ export interface IDataSourcesService {
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
     user: User
   ): Promise<void>;
+
+  invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string
+  ): Promise<any>;
 }
