@@ -279,15 +279,10 @@ export class DataSourcesService implements IDataSourcesService {
     user: User,
     environmentId: string
   ): Promise<QueryResult> {
-    const allowedMethods = this.getAllowedMethods(dataSource.kind);
-    if (!allowedMethods.includes(methodName)) {
-      throw new ForbiddenException(`Method ${methodName} not allowed for ${dataSource.kind}`);
-    }
-
     const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
 
-    if (typeof service[methodName] !== 'function') {
-      throw new BadRequestException(`Method ${methodName} not found`);
+    if (!service.invokeMethod) {
+      throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
     }
 
     const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
@@ -303,14 +298,20 @@ export class DataSourcesService implements IDataSourcesService {
       user
     );
 
-    return await service[methodName](sourceOptions);
+    try {
+      const result = await service.invokeMethod(methodName, sourceOptions);
+      return { status: 'ok', data: result };
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        return {
+          status: 'failed',
+          data: error.data,
+          errorMessage: error.message,
+          metadata: error.metadata
+        };
+      }
+      throw error;
+    }
   }
 
-  // TODO: Move this check at the plugin level instead
-  private getAllowedMethods(kind: string): string[] {
-    const methodWhitelist: Record<string, string[]> = {
-      'grpcv2': ['discoverServices'],
-    };
-    return methodWhitelist[kind] || [];
-  }
 }
