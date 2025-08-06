@@ -1024,7 +1024,7 @@ class DataSourceManagerComponent extends React.Component {
                     ) : (
                       <div className="row">
                         <div className="col-md-2">
-                          <SolidIcon name="tooljet" />
+                          <img src="assets/images/tj-logo.svg" />
                         </div>
                         <div className="col-md-10" data-cy="sample-data-source-title">
                           {' '}
