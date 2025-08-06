@@ -10,6 +10,7 @@ import {
 } from '../dto';
 import { GetQueryVariables, UpdateOptions } from '../types';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesService {
   getForApp(
