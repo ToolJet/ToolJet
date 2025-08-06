@@ -245,7 +245,8 @@
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "npx storybook build"
+    "build-storybook": "npx storybook build",
+    "icons": "webpack serve --config tools/icon-showcase/webpack.config.js"
   },
   "eslintConfig": {
     "extends": "react-app"
