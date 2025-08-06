@@ -1,9 +1,23 @@
 import * as grpc from '@grpc/grpc-js';
 
-// Re-export ServiceClient from grpc-js
-export type { ServiceClient as GrpcClient } from '@grpc/grpc-js/build/src/make-client';
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
+}
 
-// Import and re-export actual gRPC SDK error types for strict typing
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function hasProperty<T extends PropertyKey>(obj: unknown, prop: T): obj is Record<T, unknown> {
+  return isRecord(obj) && prop in obj;
+}
+
+export interface GrpcClient {
+  [methodName: string]: Function | any;
+}
+
+export { toError, isRecord, hasProperty };
+
 export type { ServiceError as GrpcServiceError } from '@grpc/grpc-js/build/src/call';
 export { Status as GrpcStatus } from '@grpc/grpc-js/build/src/constants';
 export { ReflectionException, ReflectionRequestException } from 'grpc-js-reflection-client/dist/Exceptions';
@@ -96,15 +110,23 @@ export class GrpcOperationError extends Error {
       baseDetails.errorType = 'ReflectionRequestException';
     } else if (this.isNetworkError(error)) {
       baseDetails.errorType = 'NetworkError';
-      const networkErr = error as Record<string, unknown>;
-      if (networkErr.response && typeof networkErr.response === 'object') {
-        const response = networkErr.response as Record<string, unknown>;
-        // Handle got error format
-        baseDetails.httpStatus = (response.statusCode || response.status) as number;
-        baseDetails.httpStatusText = (response.statusMessage || response.statusText) as string;
-      }
-      if (networkErr.code && typeof networkErr.code === 'string') {
-        baseDetails.networkCode = networkErr.code;
+      if (isRecord(error)) {
+        if (hasProperty(error, 'response') && isRecord(error.response)) {
+          const response = error.response;
+          if (typeof response.statusCode === 'number') {
+            baseDetails.httpStatus = response.statusCode;
+          } else if (typeof response.status === 'number') {
+            baseDetails.httpStatus = response.status;
+          }
+          if (typeof response.statusMessage === 'string') {
+            baseDetails.httpStatusText = response.statusMessage;
+          } else if (typeof response.statusText === 'string') {
+            baseDetails.httpStatusText = response.statusText;
+          }
+        }
+        if (hasProperty(error, 'code') && typeof error.code === 'string') {
+          baseDetails.networkCode = error.code;
+        }
       }
     } else if (error && typeof error === 'object' && error.constructor?.name === 'SyntaxError') {
       baseDetails.errorType = 'ParseError';
@@ -115,13 +137,12 @@ export class GrpcOperationError extends Error {
 
   private isGrpcServiceError(error: unknown): error is { code: number; message: string; details: string; metadata: any } {
     return (
-      error !== null &&
-      typeof error === 'object' &&
-      'code' in error &&
-      'message' in error &&
-      'details' in error &&
-      'metadata' in error &&
-      typeof (error as Record<string, unknown>).code === 'number'
+      isRecord(error) &&
+      hasProperty(error, 'code') &&
+      hasProperty(error, 'message') &&
+      hasProperty(error, 'details') &&
+      hasProperty(error, 'metadata') &&
+      typeof error.code === 'number'
     );
   }
 
