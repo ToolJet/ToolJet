@@ -54,5 +54,5 @@ export interface IDataSourcesController {
     user: User,
     invokeDto: InvokeDataSourceMethodDto,
     dataSource: DataSourceEntity
-  ): Promise<any>;
+  ): Promise<QueryResult>;
 }
