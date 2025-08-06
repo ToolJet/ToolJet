@@ -1244,7 +1244,7 @@ export const createQueryPanelSlice = (set, get) => ({
           if (!(prop in target)) {
             // For components and variables, allow accessing non-existent top-level properties
             // but still throw errors for deeper property access
-            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables';
+            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables' || path === 'page';
 
             if (isTopLevelComponentsOrVariables) {
               // Return undefined for non-existent components/variables to allow graceful handling
