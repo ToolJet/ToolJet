@@ -26,6 +26,7 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+import { batchProcessComponents } from '@/AppBuilder/_helpers/performanceUtils';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -750,10 +751,34 @@ export const createComponentsSlice = (set, get) => ({
 
   addToDependencyGraph: (moduleId = 'canvas', componentId, component) => {
     const { updateDependencyGraphAndResolvedValues, getResolvedComponent } = get();
+
+    // Quick optimization: Skip if component has no definition
+    if (!component || !component.definition) {
+      return {};
+    }
+
+    // Memoization cache for component types (avoid repeated lookups)
+    if (!window.__COMPONENT_TYPE_CACHE__) {
+      window.__COMPONENT_TYPE_CACHE__ = new Map();
+      componentTypes.forEach(comp => {
+        window.__COMPONENT_TYPE_CACHE__.set(comp.component, comp);
+      });
+    }
+
+    const componentType = window.__COMPONENT_TYPE_CACHE__.get(component.component);
+    if (!componentType) {
+      console.warn(`⚠️ Unknown component type: ${component.component}`);
+      return {};
+    }
+
     //TODO: Replace with object of component types
     let resolvedComponentValues = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
-    const componentType = componentTypes.find((comp) => component.component === comp.component);
-    ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((key) => {
+
+    // Process only the keys that exist in the component definition
+    const keysToProcess = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
+    const existingKeys = keysToProcess.filter(key => component.definition[key] && Object.keys(component.definition[key]).length > 0);
+
+    existingKeys.forEach((key) => {
       updateDependencyGraphAndResolvedValues(
         moduleId,
         componentId,
@@ -763,21 +788,148 @@ export const createComponentsSlice = (set, get) => ({
         key
       );
     });
+
     return resolvedComponentValues[componentId];
   },
 
-  initDependencyGraph: (moduleId) => {
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
-    const components = getCurrentPageComponents(moduleId);
+  initDependencyGraph: async (moduleId) => {
+    const { getCurrentPageComponents, setResolvedComponents, resolveOthers } = get();
 
-    //TODO: Replace with object of component types
-    let resolvedComponentValues = {};
+    // Import the new streaming architecture
+    const { AppBuilderArchitecture } = await import('../../_architecture/AppBuilderArchitecture');
 
-    Object.entries(components).forEach(([componentId, component]) => {
-      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
-    });
-    setResolvedComponents(resolvedComponentValues, moduleId);
-    resolveOthers(moduleId);
+    console.log(`🏗️ Initializing dependency graph with new streaming architecture...`);
+
+    try {
+      // Create architecture instance with store actions
+      const storeActions = {
+        getCurrentPageComponents: (mid) => getCurrentPageComponents(mid),
+        addToDependencyGraph: (mid, cid, comp) => get().addToDependencyGraph(mid, cid, comp),
+        setResolvedComponents: (components, mid) => setResolvedComponents(components, mid),
+        setResolvedComponent: (cid, values, mid) => get().setResolvedComponent(cid, values, mid),
+        resolveOthers: (mid) => resolveOthers(mid)
+      };
+
+      // Initialize with new streaming architecture
+      const { architecture, result } = await AppBuilderArchitecture.create(storeActions, moduleId);
+
+      // Store architecture instance for later use
+      set((state) => {
+        if (!state._architecture) state._architecture = {};
+        state._architecture[moduleId] = architecture;
+      }, false, 'setArchitecture');
+
+      console.log(`✅ Streaming architecture initialized:`, result);
+
+      return result;
+
+    } catch (error) {
+      console.error('❌ Streaming architecture failed, using fallback:', error);
+
+      // Fallback to the old progressive approach if new architecture fails
+      const components = getCurrentPageComponents(moduleId);
+      const componentEntries = Object.entries(components);
+
+      if (componentEntries.length <= 50) {
+        // Small apps - use synchronous processing
+        let resolvedComponentValues = {};
+        componentEntries.forEach(([componentId, component]) => {
+          try {
+            resolvedComponentValues[componentId] = get().addToDependencyGraph(moduleId, componentId, component.component);
+          } catch (error) {
+            console.warn(`⚠️ Error processing component ${componentId}:`, error);
+            resolvedComponentValues[componentId] = {};
+          }
+        });
+        setResolvedComponents(resolvedComponentValues, moduleId);
+        resolveOthers(moduleId);
+        return { strategy: 'fallback-sync', components: componentEntries.length };
+      } else {
+        // Large apps - use simplified progressive approach
+        console.log(`🔧 Using simplified progressive processing for ${componentEntries.length} components...`);
+
+        // Start with empty resolved components to enable immediate rendering
+        setResolvedComponents({}, moduleId);
+        resolveOthers(moduleId);
+
+        // Process components in very small batches in background
+        const processComponentsInBackground = async () => {
+          let resolvedComponentValues = {};
+          const batchSize = 2; // Ultra-small batches
+          let processedCount = 0;
+
+          for (let i = 0; i < componentEntries.length; i += batchSize) {
+            const batch = componentEntries.slice(i, i + batchSize);
+
+            // Process batch
+            for (const [componentId, component] of batch) {
+              try {
+                const resolvedValues = get().addToDependencyGraph(moduleId, componentId, component.component);
+                resolvedComponentValues[componentId] = resolvedValues;
+                processedCount++;
+              } catch (error) {
+                console.warn(`⚠️ Error processing component ${componentId}:`, error);
+                resolvedComponentValues[componentId] = {};
+              }
+            }
+
+            // Update UI every few components
+            if (processedCount % 5 === 0 || i + batchSize >= componentEntries.length) {
+              set((state) => {
+                Object.assign(state.resolvedStore.modules[moduleId].components, resolvedComponentValues);
+              }, false, 'progressiveUpdate');
+
+              console.log(`📊 Progress: ${processedCount}/${componentEntries.length} components processed`);
+
+              // Clear processed components to free memory
+              resolvedComponentValues = {};
+
+              // Yield control
+              await new Promise(resolve => setTimeout(resolve, 10));
+            }
+
+            // Small delay between batches
+            if (i % 10 === 0) {
+              await new Promise(resolve => setTimeout(resolve, 5));
+            }
+          }
+
+          console.log(`✅ Fallback progressive processing complete: ${processedCount} components`);
+        };
+
+        // Start background processing
+        processComponentsInBackground();
+
+        return { strategy: 'fallback-progressive', components: componentEntries.length };
+      }
+    }
+  },
+
+  // Cleanup method for the new streaming architecture
+  cleanupArchitecture: (moduleId) => {
+    const architecture = get()._architecture?.[moduleId];
+    if (architecture) {
+      architecture.cleanup();
+      set((state) => {
+        if (state._architecture && state._architecture[moduleId]) {
+          delete state._architecture[moduleId];
+        }
+      }, false, 'cleanupArchitecture');
+    }
+  },
+
+  // Get architecture status for debugging
+  getArchitectureStatus: (moduleId) => {
+    const architecture = get()._architecture?.[moduleId];
+    return architecture ? architecture.getStatus() : null;
+  },
+
+  // Force complete architecture processing (for debugging)
+  forceCompleteArchitecture: async (moduleId) => {
+    const architecture = get()._architecture?.[moduleId];
+    if (architecture) {
+      return await architecture.forceComplete();
+    }
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components

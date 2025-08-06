@@ -10,6 +10,12 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 
+// Initialize memory leak detection BEFORE anything else
+import '@/_helpers/MemoryLeakDetector.js';
+
+// Initialize crash diagnostics for browser crash prevention
+import '@/_helpers/CrashDiagnostics.js';
+
 const AppWithProfiler = Sentry.withProfiler(App);
 
 appService

@@ -15,6 +15,7 @@ import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+import { OptimizedComponentContainer } from './VirtualizedComponentRenderer';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -170,8 +171,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-              ? canvasBgColor
-              : '#f0f0f0',
+                ? canvasBgColor
+                : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -214,23 +215,41 @@ const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {sortedComponents.map((componentId) => (
-            <WidgetWrapper
-              id={componentId}
-              key={componentId}
+          {/* Progressive rendering optimization for large apps */}
+          {sortedComponents.length > 50 ? (
+            <OptimizedComponentContainer
+              sortedComponents={sortedComponents}
               gridWidth={gridWidth}
-              subContainerIndex={index}
+              index={index}
               onOptionChange={onOptionChange}
               onOptionsChange={onOptionsChange}
-              inCanvas={true}
-              readOnly={isContainerReadOnly}
-              mode={currentMode}
+              isContainerReadOnly={isContainerReadOnly}
+              currentMode={currentMode}
               currentLayout={currentLayout}
               darkMode={darkMode}
               moduleId={moduleId}
               parentId={id}
             />
-          ))}
+          ) : (
+            // Original rendering for small apps
+            sortedComponents.map((componentId) => (
+              <WidgetWrapper
+                id={componentId}
+                key={componentId}
+                gridWidth={gridWidth}
+                subContainerIndex={index}
+                onOptionChange={onOptionChange}
+                onOptionsChange={onOptionsChange}
+                inCanvas={true}
+                readOnly={isContainerReadOnly}
+                mode={currentMode}
+                currentLayout={currentLayout}
+                darkMode={darkMode}
+                moduleId={moduleId}
+                parentId={id}
+              />
+            ))
+          )}
         </div>
         {renderEmptyContainer()}
       </div>

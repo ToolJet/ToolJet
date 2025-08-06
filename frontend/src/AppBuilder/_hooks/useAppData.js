@@ -27,6 +27,7 @@ import { useLocation, useMatch, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { perfMonitor, MemoryTracker, analyzeComponentStructure } from '../_helpers/performanceUtils';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -231,7 +232,7 @@ const useAppData = (
     const isPublicAccess = moduleMode
       ? false
       : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+      (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -254,8 +255,17 @@ const useAppData = (
     }
 
     // const appDataPromise = appService.fetchApp(appId);
+
+    // Start performance monitoring
+    perfMonitor.startTiming('TotalAppLoad');
+    perfMonitor.startTiming('AppDataFetch');
+    MemoryTracker.logMemoryUsage('Before App Load');
+
     appDataPromise
       .then(async (result) => {
+        perfMonitor.endTiming('AppDataFetch');
+        perfMonitor.startTiming('AppDataProcessing');
+
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
         if (isPreviewForVersion) {
@@ -286,9 +296,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
+                  slug,
+                  viewerEnvironment?.environment?.id
+                )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -341,8 +351,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -435,7 +445,24 @@ const useAppData = (
           },
           moduleId
         );
+
+        perfMonitor.startTiming('ComponentMapping');
         setComponentNameIdMapping(moduleId);
+        perfMonitor.endTiming('ComponentMapping');
+
+        // Analyze component structure for performance insights
+        if (process.env.NODE_ENV === 'development') {
+          const currentState = useStore.getState();
+          const components = currentState?.modules?.[moduleId]?.components;
+          if (components) {
+            const analysis = analyzeComponentStructure(components);
+            console.log('📊 Component Structure Analysis:', analysis);
+            if (analysis.recommendations.length > 0) {
+              console.warn('⚠️ Performance Recommendations:', analysis.recommendations);
+            }
+          }
+        }
+
         updateEventsField('events', appData.events, moduleId);
         if (!moduleMode) {
           updateFeatureAccess();
@@ -493,7 +520,11 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
-        initDependencyGraph(moduleId);
+
+        perfMonitor.startTiming('DependencyGraphInit');
+        await initDependencyGraph(moduleId);
+        perfMonitor.endTiming('DependencyGraphInit');
+
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         if (
@@ -521,6 +552,24 @@ const useAppData = (
         }
 
         setEditorLoading(false, moduleId);
+
+        // End performance monitoring
+        perfMonitor.endTiming('AppDataProcessing');
+        perfMonitor.endTiming('TotalAppLoad');
+
+        // Log final performance metrics
+        MemoryTracker.logMemoryUsage('After App Load');
+        const performanceReport = perfMonitor.getReport();
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📈 App Loading Performance Report:', performanceReport);
+          console.log('🎯 Performance Recommendations:', {
+            'Large Apps': 'Consider implementing component virtualization',
+            'Memory Usage': 'Monitor memory usage and implement cleanup for unused components',
+            'Async Operations': 'Use async processing for large data operations'
+          });
+        }
+
         initialLoadRef.current = false;
         // only show if app is not created from prompt
         if (showWalkthrough && !moduleMode) initEditorWalkThrough();
@@ -617,8 +666,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

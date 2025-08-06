@@ -1,0 +1,267 @@
+/**
+ * Streaming Architecture CSS
+ * Styles for progressive component loading and enhancement
+ */
+
+/* Component placeholders during streaming */
+.streaming-component-placeholder {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.streaming-component-placeholder:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Streaming component states */
+.streaming-component {
+  position: relative;
+}
+
+.streaming-component.basic {
+  opacity: 0.8;
+}
+
+.streaming-component.enhanced {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Loading indicators */
+.streaming-loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: white;
+  border-radius: 4px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 11px;
+  color: #666;
+  pointer-events: none;
+}
+
+/* Performance debugging overlay */
+.streaming-debug-overlay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 10000;
+  max-width: 300px;
+}
+
+.streaming-debug-overlay.hidden {
+  display: none;
+}
+
+.streaming-debug-metric {
+  margin: 2px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.streaming-debug-metric .label {
+  color: #ccc;
+}
+
+.streaming-debug-metric .value {
+  font-weight: bold;
+}
+
+.streaming-debug-metric .value.good {
+  color: #4CAF50;
+}
+
+.streaming-debug-metric .value.warning {
+  color: #FF9800;
+}
+
+.streaming-debug-metric .value.error {
+  color: #F44336;
+}
+
+/* Large app optimization indicators */
+.large-app-mode .streaming-component-placeholder {
+  background-color: rgba(220, 220, 220, 0.3);
+  border: 1px dashed #ccc;
+}
+
+/* Reduce animations in large apps */
+.large-app-mode * {
+  animation-duration: 0.1s !important;
+  transition-duration: 0.1s !important;
+}
+
+/* Progressive enhancement animation */
+@keyframes streamingEnhance {
+  from {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.streaming-component.enhanced {
+  animation: streamingEnhance 0.2s ease-out;
+}
+
+/* Memory warning overlay */
+.memory-warning-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(244, 67, 54, 0.95);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 20000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.memory-warning-overlay h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.memory-warning-overlay p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.memory-warning-overlay button {
+  background: white;
+  color: #d32f2f;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 5px;
+}
+
+.memory-warning-overlay button:hover {
+  background: #f5f5f5;
+}
+
+/* Virtualization helpers */
+.streaming-viewport {
+  overflow: auto;
+  height: 100%;
+}
+
+.streaming-spacer {
+  pointer-events: none;
+}
+
+/* Component intersection observer targets */
+.streaming-intersection-target {
+  position: absolute;
+  top: -50px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* Error boundaries for streaming components */
+.streaming-error-boundary {
+  border: 2px dashed #f44336;
+  background: rgba(244, 67, 54, 0.1);
+  padding: 20px;
+  text-align: center;
+  color: #d32f2f;
+  border-radius: 4px;
+}
+
+.streaming-error-boundary h4 {
+  margin: 0 0 10px 0;
+  color: #d32f2f;
+}
+
+.streaming-error-boundary p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.streaming-error-boundary button {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* Performance indicators */
+.performance-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  z-index: 100;
+}
+
+.performance-indicator.good {
+  background: #4CAF50;
+}
+
+.performance-indicator.warning {
+  background: #FF9800;
+}
+
+.performance-indicator.error {
+  background: #F44336;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .streaming-debug-overlay {
+    font-size: 10px;
+    padding: 8px;
+    max-width: 250px;
+  }
+
+  .memory-warning-overlay {
+    max-width: 90vw;
+    padding: 15px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .streaming-component-placeholder {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: #555;
+  }
+
+  .streaming-component-placeholder:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .streaming-loading-indicator {
+    background: #333;
+    color: #ccc;
+  }
+
+  .large-app-mode .streaming-component-placeholder {
+    background-color: rgba(100, 100, 100, 0.3);
+    border-color: #666;
+  }
+}

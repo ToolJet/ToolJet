@@ -38,10 +38,17 @@ const plugins = [
     template: './src/index.ejs',
     favicon: './assets/images/logo.svg',
     hash: environment === 'production',
+    // Inject memory leak detector early
+    templateParameters: {
+      memoryLeakDetectorScript: environment === 'development' ?
+        '<script>console.log("Memory leak detection will be initialized...");</script>' : ''
+    }
   }),
   new CompressionPlugin({
     test: /\.js(\?.*)?$/i,
     algorithm: 'gzip',
+    threshold: 8192, // Only compress files larger than 8KB
+    minRatio: 0.8, // Only compress if compression ratio is better than 80%
   }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
   new webpack.DefinePlugin({
@@ -95,18 +102,58 @@ module.exports = {
           keep_fnames: true,
           compress: {
             drop_debugger: true,
-            drop_console: true,
+            drop_console: environment === 'production',
           },
         },
-        parallel: environment === 'production',
+        parallel: environment === 'production' ? 2 : false, // Limit parallel workers to reduce memory
       }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 20,
+      maxAsyncRequests: 20,
       cacheGroups: {
+        // Core React libraries
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
+          name: 'react',
+          chunks: 'all',
+          priority: 40,
+        },
+        // UI libraries
+        ui: {
+          test: /[\\/]node_modules[\\/](antd|@ant-design|react-bootstrap|@mui)[\\/]/,
+          name: 'ui',
+          chunks: 'all',
+          priority: 30,
+        },
+        // Code editors (these are huge)
+        editors: {
+          test: /[\\/]node_modules[\\/](monaco-editor|@monaco-editor|codemirror|@codemirror)[\\/]/,
+          name: 'editors',
+          chunks: 'all',
+          priority: 35,
+        },
+        // Charts and visualization
+        charts: {
+          test: /[\\/]node_modules[\\/](chart\.js|d3|plotly|@nivo|recharts)[\\/]/,
+          name: 'charts',
+          chunks: 'all',
+          priority: 25,
+        },
+        // Utility libraries
+        utils: {
+          test: /[\\/]node_modules[\\/](lodash|moment|date-fns|rxjs)[\\/]/,
+          name: 'utils',
+          chunks: 'all',
+          priority: 20,
+        },
+        // Default vendor chunk for everything else
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
           chunks: 'all',
+          priority: 10,
         },
       },
     },
@@ -128,7 +175,51 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'eval-cheap-module-source-map' : 'hidden-source-map', // Faster, less memory-intensive source maps
+  // Performance optimization for memory usage
+  performance: {
+    hints: environment === 'production' ? 'warning' : false,
+    maxEntrypointSize: 5000000, // 5MB
+    maxAssetSize: 3000000, // 3MB
+  },
+  // Webpack dev server optimization
+  ...(environment === 'development' && {
+    devServer: {
+      historyApiFallback: { index: ASSET_PATH },
+      static: {
+        directory: path.resolve(__dirname, 'assets'),
+        publicPath: '/assets/',
+      },
+      // Memory optimization for dev server
+      hot: true,
+      liveReload: false, // Disable to reduce memory usage
+      // Reduce watch options to minimize memory usage
+      watchFiles: {
+        paths: ['src/**/*'],
+        options: {
+          poll: false, // Use native file watching
+          ignored: /node_modules/,
+          aggregateTimeout: 300,
+        },
+      },
+      // Limit dev middleware memory usage
+      devMiddleware: {
+        writeToDisk: false,
+        stats: 'minimal',
+      },
+      client: {
+        overlay: false, // Disable overlay to reduce memory
+      },
+    },
+  }),
+  // Cache configuration for faster rebuilds
+  cache: environment === 'development' ? {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+    maxMemoryGenerations: 1, // Limit memory usage
+  } : false,
   module: {
     rules: [
       {
@@ -216,16 +307,12 @@ module.exports = {
     ],
   },
   plugins,
-  devServer: {
-    historyApiFallback: { index: ASSET_PATH },
-    static: {
-      directory: path.resolve(__dirname, 'assets'),
-      publicPath: '/assets/',
-    },
-  },
   output: {
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    // Memory optimization
+    clean: environment === 'production', // Only clean in production
+    pathinfo: false, // Reduce memory usage in development
   },
   externals: {
     // global app config object

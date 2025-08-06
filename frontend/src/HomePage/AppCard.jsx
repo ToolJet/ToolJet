@@ -14,6 +14,7 @@ import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
+import { useMemoryCleanup } from '@/_hooks/useMemoryCleanup';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -38,6 +39,9 @@ export default function AppCard({
   const [popoverVisible, setPopoverVisible] = useState(true);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const tooltipRef = useRef(null);
+
+  // Initialize memory cleanup for this component
+  const memoryCleanup = useMemoryCleanup(`app-card-${app?.id}`);
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -75,9 +79,10 @@ export default function AppCard({
     };
 
     checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, []);
+
+    // Use memory-safe event listener
+    memoryCleanup.addEventListenerSafe(window, 'resize', checkOverflow);
+  }, [memoryCleanup]);
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
@@ -95,18 +100,12 @@ export default function AppCard({
       threshold: 1.0,
     };
 
-    const currentCardRef = cardRef.current;
-    const observer = new IntersectionObserver(callBackFunction, options);
-    if (currentCardRef) {
-      observer.observe(currentCardRef);
+    // Use memory-safe intersection observer
+    const observerData = memoryCleanup.createIntersectionObserver(callBackFunction, options);
+    if (observerData && cardRef.current) {
+      observerData.observer.observe(cardRef.current);
     }
-
-    return () => {
-      if (currentCardRef) {
-        observer.unobserve(currentCardRef);
-      }
-    };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, memoryCleanup]);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
@@ -151,8 +150,7 @@ export default function AppCard({
           <button
             type="button"
             className={cx(
-              ` launch-button tj-text-xsm ${
-                app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+              ` launch-button tj-text-xsm ${app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
               }`
             )}
             disabled={app?.current_version_id === null || app?.is_maintenance_on}
@@ -174,8 +172,8 @@ export default function AppCard({
                 app?.current_version_id === null || app?.is_maintenance_on
                   ? '#4C5155'
                   : darkMode
-                  ? '#FDFDFE'
-                  : '#11181C'
+                    ? '#FDFDFE'
+                    : '#11181C'
               }
             />
 
@@ -280,7 +278,7 @@ export default function AppCard({
                         folder_id: currentFolder?.id,
                       });
                     }}
-                    reloadDocument
+                  // reloadDocument
                   >
                     <button
                       type="button"

@@ -21,6 +21,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { PageMenuItemGhost } from '../PageMenuItemGhost';
 import { CustomPointerSensor } from './components/TreeItem/CustomSensor';
+import { optimizedJSON } from '@/AppBuilder/_helpers/performanceUtils';
 
 const measuring = {
   droppable: {
@@ -287,20 +288,25 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
     if (projected && over) {
       const { depth, pageGroupId } = projected;
       const pageGroup = items.find(({ id }) => id === pageGroupId);
-      const clonedItems = JSON.parse(JSON.stringify(flattenTree(items)));
-      const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-      const activeTreeItem = clonedItems[activeIndex];
 
-      clonedItems[activeIndex] = { ...activeTreeItem, depth, pageGroupId };
+      const processUpdate = async () => {
+        const clonedItems = await optimizedJSON.deepCloneAsync(flattenTree(items));
+        const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
+        const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+        const activeTreeItem = clonedItems[activeIndex];
 
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      setSaveNewList(true);
-      const newItems = buildTree(sortedItems);
-      setItems(newItems);
-      if (pageGroup?.collapsed) {
-        handleCollapse(pageGroupId);
-      }
+        clonedItems[activeIndex] = { ...activeTreeItem, depth, pageGroupId };
+
+        const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
+        setSaveNewList(true);
+        const newItems = buildTree(sortedItems);
+        setItems(newItems);
+        if (pageGroup?.collapsed) {
+          handleCollapse(pageGroupId);
+        }
+      };
+
+      processUpdate();
     }
   }
 
