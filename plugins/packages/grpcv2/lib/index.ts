@@ -76,7 +76,24 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  async discoverServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
+  async invokeMethod(methodName: string, ...args: any[]): Promise<unknown> {
+    const methodMap: Record<string, Function> = {
+      'discoverServices': this.discoverServices.bind(this)
+    };
+
+    const method = methodMap[methodName];
+    if (!method) {
+      throw new QueryError(
+        'Method not allowed',
+        `Method ${methodName} is not exposed by this plugin`,
+        { allowedMethods: Object.keys(methodMap) }
+      );
+    }
+
+    return await method(...args);
+  }
+
+  private async discoverServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
     try {
       this.validateSourceOptionsForDiscovery(sourceOptions);
 
