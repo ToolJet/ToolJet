@@ -1266,8 +1266,39 @@ export const createQueryPanelSlice = (set, get) => ({
       });
     },
 
+    // Helper function to convert proxy objects to plain JavaScript objects
+    deproxyObject: (obj) => {
+      if (obj === null || typeof obj !== 'object') {
+        return obj;
+      }
+
+      // Handle arrays
+      if (Array.isArray(obj)) {
+        return obj.map((item) => get().queryPanel.deproxyObject(item));
+      }
+
+      // Handle Date objects
+      if (obj instanceof Date) {
+        return obj;
+      }
+
+      // Handle plain objects and proxy objects
+      const result = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key) || key in obj) {
+          try {
+            result[key] = get().queryPanel.deproxyObject(obj[key]);
+          } catch (error) {
+            // If accessing a property throws an error (like with proxies), skip it
+            continue;
+          }
+        }
+      }
+      return result;
+    },
+
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
-      const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
+      const { queryPanel, dataQuery, eventsSlice } = get();
       const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
@@ -1407,7 +1438,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         result = {
           status: 'ok',
-          data: await evalFn(...fnArgs),
+          data: get().queryPanel.deproxyObject(await evalFn(...fnArgs)),
         };
       } catch (err) {
         const stackLines = err.stack.split('\n');
