@@ -3,6 +3,14 @@ id: logs
 title: Logs
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Once you execute the workflow by clicking on the **Run** button, the logs panel will reflect the execution details of each node. Logs let you easily track the order of execution and check whether the execution of individual nodes is successful. You can click on the top bar of the logs panel to expand or minimize it. 
 
 <div style={{textAlign: 'center'}}>

@@ -3,6 +3,14 @@ id: workflow-triggers
 title: Triggers
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Triggers can be used to execute a workflow. Currently, ToolJet supports three types of triggers: webhooks, scheduled triggers, and manual triggers.
 
 <img className="screenshot-full img-full" src="/img/workflows/triggers/triggers.png" alt="Triggers" />
@@ -12,21 +20,22 @@ Triggers can be used to execute a workflow. Currently, ToolJet supports three ty
 A webhook trigger allows you to run the workflow when a webhook is received. You can configure the webhook trigger from the Triggers tab. The webhook URL is unique for each workflow.
 
 #### Creating a Webhook Trigger
+
 - Click on the **Triggers** option in the left panel to open the Triggers tab.
-  <img className="screenshot-full img-full img-full" src="/img/workflows/triggers/triggerbutton.png" alt="Triggers" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/triggerbutton.png" alt="Triggers" />
 - Click on the **Webhooks** option.
-  <img className="screenshot-full img-full" src="/img/workflows/triggers/webhooks.png" alt="Triggers" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/webhooks.png" alt="Triggers" />
 - By default, the webhook trigger is disabled. Toggle the switch to **enable** the webhook trigger.
-  <img className="screenshot-full img-full" src="/img/workflows/triggers/enable.png" alt="Triggers" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/enable.png" alt="Triggers" />
 - Once enabled, you can choose the **Environment** to modify the webhook endpoint URL to be copied for that specific environment. For example, if you choose the **Production** environment, you can `Copy URL` or `Copy as cURL` which can then be used to trigger for **Production** environment accordingly.
-  <img className="screenshot-full img-full" src="/img/workflows/triggers/env.png" alt="Triggers" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/env.png" alt="Triggers" />
 - Find the API endpoint URL in the **Endpoint** field. You can use this URL to send a POST request to trigger the workflow. You can also click on the **Copy** button to copy the URL to the clipboard. You can either select `Copy URL` or `Copy as cURL` from the dropdown menu. The `Copy as cURL` option copies the URL as a cURL command which will include details such as the `API token` and `Environment`. An example of the Endpoint URL is as follows:
   ```
   http://{TOOLJET_HOST}/api/v2/webhooks/workflows/:id/trigger
   ```
-    <img className="screenshot-full img-full" src="/img/workflows/triggers/copy.png" alt="Triggers" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/copy.png" alt="Triggers" />
 - The API token is used to authenticate the request. You can find the API token in the **API Token** field. You can also click on the **Copy** button to copy the API token to the clipboard.
-    <img className="screenshot-full img-full" src="/img/workflows/triggers/token.png" alt="Triggers" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/token.png" alt="Triggers" />
   :::info
   Currently, authentication is mandatory for webhooks. Use a bearer token in the `Authorization` header for authentication. <br/>
   **Format:**
@@ -39,7 +48,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
   "name": "string",
   "age": "number"
   ```
-    <img className="screenshot-full img-full" src="/img/workflows/triggers/params.png" alt="Triggers" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/triggers/params.png" alt="Triggers" />
 - The **Test JSON parameters** field can be used to test the webhook trigger. You can enter the parameter values in the **Test JSON parameters** field and click on the **Run** button to test the webhook trigger. The workflow will be executed with the parameter values specified in the **Test JSON parameters** field.
   ```json
   {
@@ -47,8 +56,12 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
     "age": 30
   }
   ```
-  These parameters can be accessed in the workflow using the `startTrigger.params`.
-    <img className="screenshot-full img-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
+
+### Accessing Webhook Parameters
+
+These parameters can be accessed in the workflow using the `startTrigger.params.<parameter-name>`.
+
+<img className="screenshot-full img-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
 
 ### Async Workflow Query Execution
 
