@@ -15,6 +15,9 @@
     "customTesting": true
   },
   "defaults": {
+    "oauth_type": {
+      "value": "custom_app"
+    },
     "access_token_custom_headers": {
       "value": [["Content-Type", "application/x-www-form-urlencoded"]]
     },
@@ -45,17 +48,26 @@
     "access_token_url": {
       "value": "https://identity.xero.com/connect/token"
     },
+    "database": {
+      "value": ""
+    },
+    "schema": {
+      "value": ""
+    },
+    "warehouse": {
+      "value": ""
+    },
     "tenant_id": {
       "value": ""
     }
   },
   "properties": {
     "tenant_id": {
-    "key": "tenant_id",
-    "type": "text",
-    "label": "Tenant ID",
-    "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
-    },
+      "key": "tenant_id",
+      "type": "text",
+      "label": "Tenant ID",
+      "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
+      },
     "oauth": {
       "key": "oauth",
       "type": "react-component-oauth",

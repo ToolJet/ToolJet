@@ -5,6 +5,8 @@ export type SourceOptions = {
   client_secret: OptionData;
   scopes: OptionData;
   oauth_type: OptionData;
+  tenant_id: OptionData;
+  access_token?: string;
 };
 export type QueryOptions = {
   operation: string;
