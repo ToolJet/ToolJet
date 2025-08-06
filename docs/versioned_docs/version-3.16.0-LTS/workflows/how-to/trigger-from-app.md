@@ -3,6 +3,16 @@ id: trigger-workflow-from-app
 title: Trigger Workflows Within ToolJet
 ---
 
+
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
+
 This guide will show you how to set up a workflow and trigger it from a ToolJet application. 
 <div style={{paddingTop:'24px'}}>
 

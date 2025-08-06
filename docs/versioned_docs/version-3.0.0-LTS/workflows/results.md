@@ -3,6 +3,14 @@ id: results
 title: Configuring Response
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Users have the flexibility to customize the response returned by workflows. The **Response** node enables configuration of your output through JavaScript code. Each workflow can have multiple response nodes. 
 
 ## Return Data from a Single Node
