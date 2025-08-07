@@ -70,28 +70,27 @@ jobs:
           # Update submodules to match the base branch
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           
-          echo "Updating submodules to latest $BASE_BRANCH branch"
+          echo "Updating submodules to latest commit SHA from $BASE_BRANCH branch"
           
+          # Get latest commit SHA from ee-frontend repository
+          echo "Fetching latest commit from ToolJet/ee-frontend:$BASE_BRANCH"
+          FRONTEND_SHA=$(gh api repos/ToolJet/ee-frontend/branches/$BASE_BRANCH --jq '.commit.sha' 2>/dev/null || gh api repos/ToolJet/ee-frontend/branches/main --jq '.commit.sha')
+          echo "Frontend SHA: $FRONTEND_SHA"
+          
+          # Get latest commit SHA from ee-server repository  
+          echo "Fetching latest commit from ToolJet/ee-server:$BASE_BRANCH"
+          SERVER_SHA=$(gh api repos/ToolJet/ee-server/branches/$BASE_BRANCH --jq '.commit.sha' 2>/dev/null || gh api repos/ToolJet/ee-server/branches/main --jq '.commit.sha')
+          echo "Server SHA: $SERVER_SHA"
+          
+          # Update submodule pointers to specific commit SHAs
           cd frontend/ee
           git fetch origin
-          if git show-ref --verify --quiet "refs/remotes/origin/$BASE_BRANCH"; then
-            echo "Checking out origin/$BASE_BRANCH for frontend/ee"
-            git checkout "origin/$BASE_BRANCH"
-          else
-            echo "Branch $BASE_BRANCH not found in frontend/ee, falling back to main"
-            git checkout "origin/main"
-          fi
+          git checkout "$FRONTEND_SHA"
           cd ../..
           
           cd server/ee  
           git fetch origin
-          if git show-ref --verify --quiet "refs/remotes/origin/$BASE_BRANCH"; then
-            echo "Checking out origin/$BASE_BRANCH for server/ee"
-            git checkout "origin/$BASE_BRANCH"
-          else
-            echo "Branch $BASE_BRANCH not found in server/ee, falling back to main"
-            git checkout "origin/main"
-          fi
+          git checkout "$SERVER_SHA"
           cd ../..
 
           git add frontend/ee server/ee
