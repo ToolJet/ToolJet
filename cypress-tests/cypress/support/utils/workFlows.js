@@ -10,9 +10,7 @@ Cypress.Commands.add("createWorkflowApp", (wfName) => {
 });
 
 Cypress.Commands.add("fillStartNodeInput", () => {
-  cy.contains("span", "Start", { timeout: 5000 })
-    .parents(".react-flow__node")
-    .click({ force: true });
+  cy.get('[data-cy="start-node"]').click({ force: true });
 
   cy.get('[data-cy="parameters-input-field"]')
     .click()
@@ -52,7 +50,7 @@ Cypress.Commands.add("dataSourceNode", (nodeType) => {
 });
 
 Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
-  cy.contains("button", "Run").click();
+  cy.get('[data-cy="workflow-run-button"]').click();
   cy.get('[data-cy="Logs"] .text span').should(
     "have.text",
     "A few seconds ago"
@@ -98,12 +96,14 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
 });
 
 Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
-  cy.contains(".title", nodeTitle)
+  const dataCy = `${nodeTitle.toLowerCase().replace(/\s+/g, '')}-node`;
+
+  cy.get(`[data-cy="${dataCy}"]`)
+    .should("exist")
     .parents(".react-flow__node")
     .as("sourceNode");
 
-  cy.get("@sourceNode")
-    .find(".react-flow__handle-right.source")
+  cy.get(`[data-cy="${dataCy}-handle-right"]`)
     .trigger("mousedown", { button: 0, force: true });
 
   cy.get(".react-flow__pane")

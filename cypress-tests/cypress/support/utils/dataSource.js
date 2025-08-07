@@ -71,7 +71,7 @@ export const deleteAppandDatasourceAfterExecution = (
   deleteDatasource(datasourceName);
 };
 
-export const deleteWorkFlowandDatasourceAfterExecution = (
+export const deleteWorkflowAndDS = (
   appName,
   datasourceName
 ) => {

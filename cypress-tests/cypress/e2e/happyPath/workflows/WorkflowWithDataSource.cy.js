@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkFlowandDatasourceAfterExecution } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { harperDbText } from "Texts/harperDb";
 import {
@@ -122,7 +122,7 @@ AND table_type = 'BASE TABLE';
 
     cy.verifyTextInResponseOutput("employees");
 
-    deleteWorkFlowandDatasourceAfterExecution(
+    deleteWorkflowAndDS(
       data.wfName,
       `cypress-${data.dataSourceName}-manual-pgsql`
     );
@@ -195,7 +195,7 @@ AND table_type = 'BASE TABLE';
 
     cy.verifyTextInResponseOutput("<!DOCTYPE html>");
 
-    deleteWorkFlowandDatasourceAfterExecution(
+    deleteWorkflowAndDS(
       data.wfName,
       `cypress-${data.dataSourceName}-restapi`
     );
@@ -271,7 +271,7 @@ AND table_type = 'BASE TABLE';
 
     cy.verifyTextInResponseOutput("<!DOCTYPE html>");
 
-    deleteWorkFlowandDatasourceAfterExecution(
+    deleteWorkflowAndDS(
       data.wfName,
       `cypress-${data.dataSourceName}-harperdb`
     );
