@@ -100,9 +100,9 @@ const AiBuilder = ({ onSubmit }) => {
               {prompts.map((prompt, idx) => (
                 <div className={`slot-placeholder-line ${idx === promptIndex ? 'active' : ''}`} key={prompt}>
                   {prompt}
-                  <kbd className="tw-ml-1 tw-text-[10px] tw-border-border-default tw-border-solid tw-text-text-placeholder tw-rounded-md tw-px-1 tw-h-4 tw-bg-page-weak tw-flex tw-items-center tw-justify-center tw-relative tw-font-normal">
-                    <span className="tw-text-xl tw-leading-4 tw-relative -tw-top-[1px] tw-pr-0.5">⇥</span>
-                    Tab
+                  <kbd className="tw-ml-1 tw-border tw-border-border-default tw-border-solid tw-text-text-placeholder tw-rounded-md tw-px-1 tw-h-4 tw-bg-page-weak tw-flex tw-items-center tw-justify-center tw-relative tw-font-normal">
+                    <span className="tw-text-xl tw-leading-4 tw-relative tw-pr-0.5">⇥</span>
+                    <span className="tw-text-[10px] tw-leading-4 tw-relative tw-pr-0.5 tw-top-[1px]">Tab</span>
                   </kbd>
                 </div>
               ))}
