@@ -29,7 +29,7 @@ function ControlledTabs({
         <div className="keys d-flex justify-content-between query-pane-tabs-header">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
-              <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
+              <ListGroup.Item key={tab} eventKey={tab.toLowerCase()} data-cy={`restapi-tab-${tab.toLowerCase()}-button`}>
                 <span>{tab}</span>
               </ListGroup.Item>
             ))}
@@ -90,7 +90,7 @@ function ControlledTabs({
             <Tab.Pane
               eventKey="body"
               bsPrefix={`rest-api-tabpanes ${bodyToggle && 'rest-api-tabpanes-body'}`}
-              transition={false}
+              transition={false} data-cy="restapi-tab-body-pane" 
             >
               <Body
                 removeKeyValuePair={removeKeyValuePair}

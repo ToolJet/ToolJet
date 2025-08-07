@@ -157,7 +157,7 @@ export const BlankPage = function BlankPage({
                           leftIcon="plus"
                           onClick={openCreateAppModal}
                           isLoading={creatingApp}
-                          data-cy="button-new-app-from-scratch"
+                          data-cy={`button-new-${appType !== 'workflow' ? 'application' : 'workflow'}-from-scratch`}
                           className="col"
                           disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
                           fill={'#FDFDFE'}
