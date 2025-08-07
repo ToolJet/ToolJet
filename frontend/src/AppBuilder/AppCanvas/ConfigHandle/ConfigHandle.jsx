@@ -49,12 +49,13 @@ export const ConfigHandle = ({
     const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
-      (subContainerIndex === 0 || subContainerIndex === null) &&
-      (isWidgetHovered ||
-        isModuleContainer ||
-        (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered))
+      ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
+      isWidgetHovered ||
+      (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
     );
   }, shallow);
+
+  console.log('_showHandle', { _showHandle, visibility, subContainerIndex, showHandle, isModal, isModalOpen });
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
