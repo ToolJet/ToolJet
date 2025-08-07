@@ -116,7 +116,7 @@ export default class Gmail implements QueryService {
       const response = await got(accessTokenUrl, {
         method: "post",
         json: data,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
       const result = JSON.parse(response.body);
@@ -177,7 +177,7 @@ export default class Gmail implements QueryService {
       const response = await got(accessTokenUrl, {
         method: "post",
         json: data,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
       const result = JSON.parse(response.body);
