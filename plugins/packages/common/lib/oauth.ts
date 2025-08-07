@@ -206,6 +206,7 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
 function fetchEnvVariables(pluginKind, keyAppend) {
   const dataSourcePrefix = {
     googlecalendar: 'GOOGLE',
+    gmail: 'GOOGLE',
     snowflake: 'SNOWFLAKE',
   };
   const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
