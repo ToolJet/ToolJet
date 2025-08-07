@@ -24,7 +24,8 @@
         "type": "codehinter",
         "description": "The foundation model ID to use",
         "className": "codehinter-plugins",
-        "placeholder": "model-id"
+        "placeholder": "amazon.titan-text-express-v1",
+        "helpText":"The foundation model ID to use"
       },
       "request_body": {
         "label": "Request Body",
@@ -32,7 +33,7 @@
         "type": "codehinter",
         "description": "JSON body for the invoke model request",
         "className": "codehinter-plugins",
-        "placeholder": "{\"prompt\": \"Hello\"}",
+          "placeholder": "{\n  \"inputText\": \"Create an email for my client named {{components.table1.data[0].firstName}} about his issue: {{components.table1.data[0].issue}}\",\n  \"textGenerationConfig\": {\n    \"temperature\": 0.7,\n    \"topP\": 0.1,\n    \"maxTokenCount\": 256,\n    \"stopSequences\": [\"spam\", \"conflict\"]\n  }\n}",
         "height": "150px",
         "editorType": "extendedSingleLine"
       },
@@ -40,9 +41,10 @@
         "label": "Content-Type",
         "key": "content_type",
         "type": "codehinter",
-        "description": "The foundation model ID to use",
+        "description": "Content type of the request body",
         "className": "codehinter-plugins",
-        "placeholder": "application/json"
+        "placeholder": "application/json",
+        "helpText":"The content type of the request body"
       }
     },
     "list_foundation_models": {
