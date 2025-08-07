@@ -30,5 +30,7 @@
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@easypost/api": "^8.2.0"
+  }
 }
