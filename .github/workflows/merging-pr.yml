@@ -55,13 +55,23 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}
           submodules: recursive
 
-      - name: Update submodules to latest main
+      - name: Update submodules to latest ${{ github.event.pull_request.base.ref }}
         run: |
           git config user.name "adishM98 Bot"
           git config user.email "adish.madhu@gmail.com"
 
-          git submodule update --remote frontend/ee
-          git submodule update --remote server/ee
+          # Update submodules to match the base branch
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          cd frontend/ee
+          git fetch origin
+          git checkout "origin/$BASE_BRANCH" || git checkout "origin/main"
+          cd ../..
+          
+          cd server/ee  
+          git fetch origin
+          git checkout "origin/$BASE_BRANCH" || git checkout "origin/main"
+          cd ../..
 
           git add frontend/ee server/ee
 
