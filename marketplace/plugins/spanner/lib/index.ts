@@ -18,7 +18,11 @@ export default class Spanner implements QueryService {
     try {
       return JSON.parse(key);
     } catch (error) {
-      throw new Error(`Invalid JSON in private key configuration: ${error.message}`);
+      throw new QueryError(
+        "Query could not be completed",
+        `Invalid JSON in private key configuration: ${error.message}`,
+        { cause: error }
+      );
     }
   }
 
@@ -32,9 +36,16 @@ export default class Spanner implements QueryService {
       !parsedKey?.private_key ||
       !instance_id
     ) {
-      const error = new Error("Required Spanner credentials are missing");
-      error.name = "InvalidSourceOptionsError";
-      throw error;
+      throw new QueryError(
+        "Query could not be completed",
+        "Required Spanner credentials are missing",
+        {
+          project_id: !!parsedKey?.project_id,
+          client_email: !!parsedKey?.client_email,
+          private_key: !!parsedKey?.private_key,
+          instance_id: !!instance_id,
+        }
+      );
     }
   }
 
@@ -61,9 +72,11 @@ export default class Spanner implements QueryService {
     const instance = spanner.instance(instanceId);
 
     if (!instance) {
-      const error = new Error("Spanner instance not found");
-      error.name = "InstanceNotFoundError";
-      throw error;
+      throw new QueryError(
+        "Query could not be completed",
+        "Spanner instance not found",
+        { instanceId }
+      );
     }
 
     return { spanner, instance };
@@ -73,9 +86,11 @@ export default class Spanner implements QueryService {
     const database = instance.database(databaseId);
 
     if (!database) {
-      const error = new Error(`Database with ID ${databaseId} not found`);
-      error.name = "DatabaseNotFoundError";
-      throw error;
+      throw new QueryError(
+        "Query could not be completed",
+        `Database with ID ${databaseId} not found`,
+        { databaseId }
+      );
     }
 
     return database;
@@ -85,23 +100,27 @@ export default class Spanner implements QueryService {
     const { sql, dialect, database_id } = queryOptions;
 
     if (!database_id || typeof database_id !== "string") {
-      const error = new Error("Database ID must be a non-empty string");
-      error.name = "InvalidDatabaseIdError";
-      throw error;
+      throw new QueryError(
+        "Query could not be completed",
+        "Database ID must be a non-empty string",
+        { database_id, type: typeof database_id }
+      );
     }
 
     if (!sql || typeof sql !== "string") {
-      const error = new Error("SQL query must be a non-empty string");
-      error.name = "InvalidQueryError";
-      throw error;
+      throw new QueryError(
+        "Query could not be completed",
+        "SQL query must be a non-empty string",
+        { sql, type: typeof sql }
+      );
     }
 
     if (!dialect || !Object.values(Dialect).includes(dialect)) {
-      const error = new Error(
-        "Invalid dialect. Must be 'Standard' or 'Postgres'"
+      throw new QueryError(
+        "Query could not be completed",
+        "Invalid dialect. Must be 'Standard' or 'Postgres'",
+        { dialect, allowedValues: Object.values(Dialect) }
       );
-      error.name = "InvalidDialectError";
-      throw error;
     }
 
     return queryOptions;
@@ -205,6 +224,12 @@ export default class Spanner implements QueryService {
 
       return { status: "ok", data: rows };
     } catch (err) {
+      // If it's already a QueryError, re-throw it
+      if (err instanceof QueryError) {
+        throw err;
+      }
+
+      // Handle other errors (like Spanner library errors)
       const errorMessage = err.message || "An unknown error occurred";
       const errorDetails: any = {};
 
@@ -236,30 +261,41 @@ export default class Spanner implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    this.validateSourceOptions(sourceOptions);
-    const { instance_id } = sourceOptions;
-    const { project_id, client_email, private_key } = this.parsePrivateKey(
-      sourceOptions?.private_key
-    );
-
-    const { instance } = this.getSpannerClient({
-      projectId: project_id,
-      credentials: {
-        client_email: client_email,
-        private_key: private_key,
-      },
-      instanceId: instance_id,
-    });
-
-    const exists = await instance.exists();
-
-    if (!exists[0]) {
-      throw new Error(
-        `Instance with ID ${instance_id} does not exist or is not accessible`
+    // For testConnection, we'll catch QueryErrors and convert them to regular errors
+    // so they show proper error messages in the config page
+    try {
+      this.validateSourceOptions(sourceOptions);
+      
+      const { instance_id } = sourceOptions;
+      const { project_id, client_email, private_key } = this.parsePrivateKey(
+        sourceOptions?.private_key
       );
-    }
 
-    return { status: "ok" };
+      const { instance } = this.getSpannerClient({
+        projectId: project_id,
+        credentials: {
+          client_email: client_email,
+          private_key: private_key,
+        },
+        instanceId: instance_id,
+      });
+
+      const exists = await instance.exists();
+
+      if (!exists[0]) {
+        throw new Error(
+          `Instance with ID ${instance_id} does not exist or is not accessible`
+        );
+      }
+
+      return { status: "ok" };
+    } catch (err) {
+      // Convert QueryError to regular Error for better UX in config page
+      if (err instanceof QueryError) {
+        throw new Error(err.description || err.message);
+      }
+      throw err;
+    }
   }
 
   private sanitizePrivateKey(key: string) {
