@@ -1242,17 +1242,63 @@ export const createQueryPanelSlice = (set, get) => ({
           const fullPath = path ? `${path}.${prop}` : prop;
 
           if (!(prop in target)) {
+            // For components and variables, allow accessing non-existent top-level properties
+            // but still throw errors for deeper property access
+            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables' || path === 'page';
+
+            if (isTopLevelComponentsOrVariables) {
+              // Return undefined for non-existent components/variables to allow graceful handling
+              return undefined;
+            }
+
             throw new Error(`ReferenceError: ${fullPath} is not defined`);
           }
 
           const value = target[prop];
+
+          // If the value is an object, create a proxy for it to maintain error handling in nested access
+          if (value !== null && typeof value === 'object') {
+            return get().queryPanel.createProxy(value, fullPath);
+          }
+
           return value;
         },
       });
     },
 
+    // Helper function to convert proxy objects to plain JavaScript objects
+    deproxyObject: (obj) => {
+      if (obj === null || typeof obj !== 'object') {
+        return obj;
+      }
+
+      // Handle arrays
+      if (Array.isArray(obj)) {
+        return obj.map((item) => get().queryPanel.deproxyObject(item));
+      }
+
+      // Handle Date objects
+      if (obj instanceof Date) {
+        return obj;
+      }
+
+      // Handle plain objects and proxy objects
+      const result = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key) || key in obj) {
+          try {
+            result[key] = get().queryPanel.deproxyObject(obj[key]);
+          } catch (error) {
+            // If accessing a property throws an error (like with proxies), skip it
+            continue;
+          }
+        }
+      }
+      return result;
+    },
+
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
-      const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
+      const { queryPanel, dataQuery, eventsSlice } = get();
       const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
@@ -1392,7 +1438,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         result = {
           status: 'ok',
-          data: await evalFn(...fnArgs),
+          data: get().queryPanel.deproxyObject(await evalFn(...fnArgs)),
         };
       } catch (err) {
         const stackLines = err.stack.split('\n');
