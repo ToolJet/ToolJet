@@ -57,6 +57,11 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}
           submodules: recursive
 
+      - name: Wait for merge completion
+        run: |
+          echo "Waiting for submodule merges to complete..."
+          sleep 30
+
       - name: Update submodules to latest ${{ github.event.pull_request.base.ref }}
         run: |
           git config user.name "adishM98 Bot"
@@ -65,14 +70,28 @@ jobs:
           # Update submodules to match the base branch
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           
+          echo "Updating submodules to latest $BASE_BRANCH branch"
+          
           cd frontend/ee
           git fetch origin
-          git checkout "origin/$BASE_BRANCH" || git checkout "origin/main"
+          if git show-ref --verify --quiet "refs/remotes/origin/$BASE_BRANCH"; then
+            echo "Checking out origin/$BASE_BRANCH for frontend/ee"
+            git checkout "origin/$BASE_BRANCH"
+          else
+            echo "Branch $BASE_BRANCH not found in frontend/ee, falling back to main"
+            git checkout "origin/main"
+          fi
           cd ../..
           
           cd server/ee  
           git fetch origin
-          git checkout "origin/$BASE_BRANCH" || git checkout "origin/main"
+          if git show-ref --verify --quiet "refs/remotes/origin/$BASE_BRANCH"; then
+            echo "Checking out origin/$BASE_BRANCH for server/ee"
+            git checkout "origin/$BASE_BRANCH"
+          else
+            echo "Branch $BASE_BRANCH not found in server/ee, falling back to main"
+            git checkout "origin/main"
+          fi
           cd ../..
 
           git add frontend/ee server/ee
