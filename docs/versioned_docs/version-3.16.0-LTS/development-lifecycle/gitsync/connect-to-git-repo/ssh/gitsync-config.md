@@ -72,11 +72,34 @@ Role Required: **Admin**
 
 ## Configuring GitSync on a Different Branch
 
-GitSync in ToolJet supports custom branches. This feature is available only on self-hosted versions of ToolJet. The custom branch for GitSync is configured at the instance level via an environment variable.
+ToolJet GitSync allows you to sync your applications with a Git repository to enable version control and team collaboration. By default, GitSync operates on the `main` branch, but in multi-environment setups (like staging, production, or feature development), teams often need to sync with custom branches. ToolJet supports this by allowing you to configure a custom Git branch for syncing.
+You can configure the GitSync target branch in two ways:
 
-Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all configured repositories to ensure smooth operation. The branch specified in the **.env** file will apply to all workspaces with GitSync support.
+### Using the ToolJet UI (Recommended)
 
-To configure a custom branch for GitSync, you need to set the following environment variable in your **.env** file:  <br/>
+ToolJet now supports setting the Git branch directly through the UI when configuring GitSync for a workspace.
+
+- You’ll find an optional Target Branch input while setting up GitSync.
+
+- Simply enter the desired branch name (e.g., develop, release/v1, etc.).
+
+- If left empty:
+
+    - For new users, the default branch will be **main**.
+
+    - For existing users, the default will be master to maintain backward compatibility.
+
+This is the preferred way to set the target branch going forward.
+
+ <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/custom-branch.png" alt="GitSync" />
+
+### Using the Environment Variable
+ToolJet also supports configuring the target branch using an environment variable. This is configured at the instance level and applies globally to all workspaces with GitSync enabled. The branch specified here must exist in all Git repositories used for GitSync across your workspaces.
+
+To set this, add the following to your .env file: <br/>
 `GITSYNC_TARGET_BRANCH` = **branch-name**
 
-**Note:** **Existing GitSync users** who want to use a custom Git branch must first create a new custom branch from the master branch in the Git repository manager. Then, they must configure the branch name in the **.env** file to ensure all operations work smoothly.
+:::note
+- Existing GitSync users, who want to use a custom Git branch must first create a new custom branch from the master branch in the Git repository manager.
+- If both the UI configuration and the environment variable are set, the environment variable (`GITSYNC_TARGET_BRANCH`) will take precedence over the UI setting.
+:::
