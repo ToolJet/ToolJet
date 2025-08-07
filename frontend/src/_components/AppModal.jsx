@@ -6,6 +6,7 @@ import _, { noop } from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { FormWrapper } from './FormWrapper';
 import { PluginsListForAppModal } from './PluginsListForAppModal';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const APP_TYPE = {
   WORKFLOW: 'workflow',
@@ -148,7 +149,7 @@ export function AppModal({
           <ButtonSolid
             form="createAppForm"
             type="submit"
-            data-cy={actionButton.toLowerCase().replace(/\s+/g, '-')}
+            data-cy={generateCypressDataCy(actionButton.toLowerCase().replace(/\s+/g, '-'))}
             disabled={createBtnDisableState}
           >
             {isLoading ? actionLoadingButton : actionButton}
@@ -164,8 +165,7 @@ export function AppModal({
         <FormWrapper callback={handleAction} id="createAppForm">
           <div className="row workspace-folder-modal custom-gap-16">
             <div className="col modal-main tj-app-input">
-              <label className="tj-input-label" data-cy={`${appTypeName.toLowerCase()}-name-label`}
-              >
+              <label className="tj-input-label" data-cy={`${appTypeName.toLowerCase()}-name-label`}>
                 {`${appTypeName} name`}
               </label>
               <input

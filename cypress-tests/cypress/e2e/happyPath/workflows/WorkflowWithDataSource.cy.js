@@ -4,6 +4,12 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { deleteWorkFlowandDatasourceAfterExecution } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
+import { harperDbText } from "Texts/harperDb";
+import {
+  fillDataSourceTextField,
+  selectAndAddDataSource,
+} from "Support/utils/postgreSql";
+
 import {
   dataSourceNode,
   verifyTextInResponseOutput,
@@ -20,22 +26,22 @@ describe("Workflows with Datasource", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.appName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("Creating workflows with runjs and validating execution", () => {
-    cy.createWorkflowApp(data.appName);
+    cy.createWorkflowApp(data.wfName);
 
     cy.fillStartNodeInput();
 
     cy.dataSourceNode("Run JavaScript code");
 
     cy.contains(".title", "runjs1").click({ force: true });
-
-    cy.get('[data-cy="runjs-input-field"] .cm-content[contenteditable="true"]')
+    
+    cy.get(commonSelectors.runjsInputField)
       .click({ force: true })
       .realType("return startTrigger.params", { delay: 50 });
     cy.get("body").click(50, 50);
@@ -44,10 +50,10 @@ describe("Workflows with Datasource", () => {
     cy.connectNodeToResponse("runjs1", "return runjs1.data");
 
     cy.verifyTextInResponseOutput("your value");
-    cy.deleteWorkflow(data.appName);
+    cy.deleteWorkflow(data.wfName);
   });
 
-  it("Creating workflows with postgres with GDS and validating execution", () => {
+  it("Creating workflows with postgres and validating execution", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -90,7 +96,7 @@ describe("Workflows with Datasource", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.reload();
 
-    cy.createWorkflowApp(data.appName);
+    cy.createWorkflowApp(data.wfName);
 
     cy.fillStartNodeInput();
 
@@ -98,9 +104,9 @@ describe("Workflows with Datasource", () => {
     cy.contains(".title", `postgresql1`).click({
       force: true,
     });
-    cy.get('[data-cy="query-input-field"]')
+    cy.get(commonSelectors.pgsqlQueryInputField)
       .click({ force: true })
-      .clearAndTypeOnCodeMirror(" ")
+      .clearAndTypeOnCodeMirror("")
       .realType(
         `SELECT table_name
 FROM information_schema.tables
@@ -117,7 +123,7 @@ AND table_type = 'BASE TABLE';
     cy.verifyTextInResponseOutput("employees");
 
     deleteWorkFlowandDatasourceAfterExecution(
-      data.appName,
+      data.wfName,
       `cypress-${data.dataSourceName}-manual-pgsql`
     );
   });
@@ -168,7 +174,7 @@ AND table_type = 'BASE TABLE';
       ]
     );
 
-    cy.createWorkflowApp(data.appName);
+    cy.createWorkflowApp(data.wfName);
 
     cy.fillStartNodeInput();
 
@@ -177,10 +183,10 @@ AND table_type = 'BASE TABLE';
       force: true,
     });
 
-    cy.get('[data-cy="-input-field"]')
+    cy.get(commonSelectors.restapiUrlInputField)
       .eq(0)
       .click({ force: true })
-      .clearAndTypeOnCodeMirror(" ")
+      .clearAndTypeOnCodeMirror("")
       .realType(`http://9.234.17.31:8000/delay/10s`, { delay: 50 });
     cy.get("body").click(50, 50);
     cy.wait(500);
@@ -190,8 +196,84 @@ AND table_type = 'BASE TABLE';
     cy.verifyTextInResponseOutput("<!DOCTYPE html>");
 
     deleteWorkFlowandDatasourceAfterExecution(
-      data.appName,
+      data.wfName,
       `cypress-${data.dataSourceName}-restapi`
+    );
+  });
+
+  it.skip("Creating workflows with harperdb and validating execution", () => {
+    const Host = Cypress.env("harperdb_host");
+    const Port = Cypress.env("harperdb_port");
+    const Username = Cypress.env("harperdb_username");
+    const Password = Cypress.env("harperdb_password");
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.installMarketplacePlugin("HarperDB");
+
+    selectAndAddDataSource("databases", harperDbText.harperDb, data.dataSourceName);
+
+    fillDataSourceTextField(
+      harperDbText.hostLabel,
+      harperDbText.hostInputPlaceholder,
+      Host
+    );
+
+    fillDataSourceTextField(
+      harperDbText.portLabel,
+      harperDbText.portPlaceholder,
+      Port
+    );
+
+    fillDataSourceTextField(
+      harperDbText.userNameLabel,
+      harperDbText.userNamePlaceholder,
+      Username
+    );
+
+    fillDataSourceTextField(
+      harperDbText.passwordlabel,
+      harperDbText.passwordPlaceholder,
+      Password
+    );
+
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified);
+
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+   
+    cy.createWorkflowApp(data.wfName);
+
+    cy.fillStartNodeInput();
+
+    cy.dataSourceNode(`cypress-${data.dataSourceName}-harperdb`);
+    cy.contains(".title", `harperdb1`).click({
+      force: true,
+    });
+
+    // cy.get('[data-cy="url-input-field"]')
+    //   .eq(0)
+    //   .click({ force: true })
+    //   .clearAndTypeOnCodeMirror(" ")
+    //   .realType(`http://9.234.17.31:8000/delay/10s`, { delay: 50 });
+    // cy.get("body").click(50, 50);
+    // cy.wait(500);
+
+    cy.connectNodeToResponse("harperdb1", "return harperdb1.data");
+
+    cy.verifyTextInResponseOutput("<!DOCTYPE html>");
+
+    deleteWorkFlowandDatasourceAfterExecution(
+      data.wfName,
+      `cypress-${data.dataSourceName}-harperdb`
     );
   });
 });

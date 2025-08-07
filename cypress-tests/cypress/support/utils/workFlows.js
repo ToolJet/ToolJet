@@ -2,10 +2,10 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { deleteDatasource } from "Support/utils/dataSource";
 
-Cypress.Commands.add("createWorkflowApp", (appName) => {
+Cypress.Commands.add("createWorkflowApp", (wfName) => {
   cy.get(commonSelectors.globalWorkFlowsIcon).click();
-  cy.get(commonSelectors.appCreateButton).click();
-  cy.get(commonSelectors.workFlowNameInputField).type(appName);
+  cy.get(commonSelectors.workflowsCreateButton).click();
+  cy.get(commonSelectors.workFlowNameInputField).type(wfName);
   cy.get(commonSelectors.createWorkFlowsButton).click();
 });
 
@@ -14,7 +14,7 @@ Cypress.Commands.add("fillStartNodeInput", () => {
     .parents(".react-flow__node")
     .click({ force: true });
 
-  cy.get('[data-cy="-input-field"]')
+  cy.get('[data-cy="parameters-input-field"]')
     .click()
     .realType("{")
     .realType('"')
@@ -129,10 +129,10 @@ Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
   cy.wait(500);
 });
 
-Cypress.Commands.add("deleteWorkflow", (appName) => {
+Cypress.Commands.add("deleteWorkflow", (wfName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   cy.backToWorkFlows();
-  cy.get(commonSelectors.appCard(appName))
+  cy.get(commonSelectors.appCard(wfName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
     .realHover()
