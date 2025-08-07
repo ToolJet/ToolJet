@@ -55,8 +55,6 @@ export const ConfigHandle = ({
     );
   }, shallow);
 
-  console.log('_showHandle', { _showHandle, visibility, subContainerIndex, showHandle, isModal, isModalOpen });
-
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
