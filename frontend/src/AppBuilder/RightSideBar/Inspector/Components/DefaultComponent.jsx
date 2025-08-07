@@ -39,6 +39,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Link',
   'FilePicker',
   'Listview',
+  'Statistics',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -57,6 +58,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Tabs: 'Data',
   RangeSlider: 'Data',
   Link: 'Data',
+  Statistics: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -160,6 +162,7 @@ export const baseComponentProperties = (
       'Link',
       'FilePicker',
       'Tabs',
+      'Statistics',
     ],
     Layout: [],
   };
