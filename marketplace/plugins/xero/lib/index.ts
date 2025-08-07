@@ -27,8 +27,8 @@ export default class Xero implements QueryService {
       clientSecret = source_options?.client_secret?.value;
     }
 
-    // const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`;
-    const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`;
+    const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`;
+    //const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`;
 
 
     if (!clientId || !clientSecret) {
@@ -92,8 +92,8 @@ export default class Xero implements QueryService {
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      // scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`),
-      scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
+      scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`),
+      //scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
 
     };
   }
@@ -174,7 +174,9 @@ export default class Xero implements QueryService {
         ['refresh_token', tokenResponse.refresh_token],
       ];
     } catch (error: any) {
-      throw new QueryError('Failed to retrieve access tokens', error?.message || 'Unknown error', {errorDetails: error?.response?.body || error});
+      const errorMessage = error?.message || 'unknown error';
+      const errorDetails = error?.response?.body || error
+      throw new QueryError('Failed to retrieve access tokens', errorMessage,errorDetails);
     }
   }
 
@@ -242,7 +244,6 @@ export default class Xero implements QueryService {
     }
 
     try {
-      console.log(`------------------------------------------------------> ${url}`, requestOptions);
       let response;
       try {
         response = await got(url, requestOptions);
@@ -250,7 +251,6 @@ export default class Xero implements QueryService {
         if (err.response?.statusCode === 401) {
           console.log('Access token expired, attempting to refresh...');
           console.log(err);
-
           const tokens = await this.refreshToken(sourceOptions);
           sourceOptions['access_token'] = tokens.access_token;
           sourceOptions['refresh_token'] = tokens.refresh_token;
@@ -266,12 +266,19 @@ export default class Xero implements QueryService {
           response = await got(url, requestOptions);
 
         } else {
-          throw new QueryError('Xero API request failed', err.message || 'Unknown error', {errorDetails: err?.response?.body || err});
+          const errorMessage = err?.message || 'Unknown error';
+          const errorDetails = err?.response?.body || err
+          throw new QueryError('Xero API request failed',errorMessage,errorDetails);
         }
       }
 
       if (response.statusCode !== 200) {
-        throw new QueryError('Unexpected status code', `Xero returned ${response.statusCode}`, {responseBody: response.body,statusCode: response.statusCode,});
+        const errorMessage = `Xero returned ${response.statusCode}`;
+        const errorDetails = {
+          statusCode: response?.statusCode,
+          responseBody: response?.body
+        }
+        throw new QueryError('Unexpected status code',errorMessage,errorDetails);
       }
 
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
@@ -281,7 +288,9 @@ export default class Xero implements QueryService {
         data: result,
       };
     } catch (error: any) {
-      throw new QueryError('Query execution failed', error?.message || 'Unknown error', {errorDetails: error?.response?.body || error});
+      const errorMessage = JSON.parse(error?.response?.body?.data || '{}')?.Message || error?.message || 'Unknown error';
+      const errorDetails = error?.response?.body || error;
+      throw new QueryError('Query execution failed', errorMessage, errorDetails);
     }
   }
 }
