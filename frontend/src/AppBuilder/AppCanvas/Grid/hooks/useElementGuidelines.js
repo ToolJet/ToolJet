@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { findHighestLevelofSelection } from '../gridUtils';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 
 function isInViewport(el, root = window) {
   if (!el) return false;
@@ -31,8 +29,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
     return [];
   }
 
-  console.log('Starting extreme-preservation filtering with', nonSelectedBoxes.length, 'elements');
-
   // Find global extremes in all 4 directions
   const minLeft = Math.min(...nonSelectedBoxes.map((box) => box.left));
   const maxRight = Math.max(...nonSelectedBoxes.map((box) => box.left + box.width));
@@ -50,16 +46,8 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
 
     if (isLeftExtreme || isRightExtreme || isTopExtreme || isBottomExtreme) {
       essentialElements.add(box.id);
-      console.log(`Keeping ${box.component?.name || box.id.slice(-8)} as global extreme:`, {
-        leftExtreme: isLeftExtreme,
-        rightExtreme: isRightExtreme,
-        topExtreme: isTopExtreme,
-        bottomExtreme: isBottomExtreme,
-      });
     }
   });
-
-  console.log('Global extreme elements kept:', essentialElements.size);
 
   // Step 2: Keep local extremes for each alignment line
 
@@ -103,16 +91,12 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
         if (box.left === minLeft || box.left + box.width === maxRight) {
           if (!essentialElements.has(box.id)) {
             essentialElements.add(box.id);
-            console.log(
-              `Keeping ${box.component?.name || box.id.slice(-8)} as horizontal extreme for bottom ${bottomPos}`
-            );
           }
         }
       });
     }
   });
 
-  // For each unique LEFT position, keep topmost and bottommost elements
   const leftGroups = new Map();
   nonSelectedBoxes.forEach((box) => {
     if (!leftGroups.has(box.left)) leftGroups.set(box.left, []);
@@ -134,8 +118,8 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
       });
     }
   });
-
   // For each unique RIGHT position, keep topmost and bottommost elements
+
   const rightGroups = new Map();
   nonSelectedBoxes.forEach((box) => {
     const right = box.left + box.width;
@@ -158,8 +142,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
       });
     }
   });
-
-  console.log('Total extreme elements kept:', essentialElements.size);
 
   // For remaining elements, keep those that provide unique alignment opportunities
   const remainingElements = nonSelectedBoxes.filter((box) => !essentialElements.has(box.id));
@@ -196,23 +178,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
   });
 
   const result = Array.from(essentialElements).map((id) => `.ele-${id}`);
-
-  console.log('Extreme-preservation filtering results:', {
-    total: nonSelectedBoxes.length,
-    kept: result.length,
-    reductionRatio: (((nonSelectedBoxes.length - result.length) / nonSelectedBoxes.length) * 100).toFixed(1) + '%',
-    elements: Array.from(essentialElements).map((id) => {
-      const box = nonSelectedBoxes.find((b) => b.id === id);
-      return {
-        id,
-        name: box?.component?.name || 'unknown',
-        left: box?.left,
-        top: box?.top,
-        width: box?.width,
-        height: box?.height,
-      };
-    }),
-  });
 
   return result;
 }
@@ -256,6 +221,5 @@ export const useElementGuidelines = (boxList, selectedComponents, getResolvedVal
     setElementGuidelines(guidelines);
   }, [boxList, selectedComponents, getResolvedValue, virtualTarget]);
 
-  console.log(elementGuidelines, 'elementGuidelines');
   return elementGuidelines;
 };
