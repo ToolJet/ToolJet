@@ -878,22 +878,20 @@ export default function Grid({ gridWidth, currentLayout }) {
               left: modalRect.left - mainRect.left,
             };
             setCanvasBounds({ ...relativePosition });
+          } else if (isModuleEditor) {
+            const moduleContainer = e.target.closest('.module-container-canvas');
+            const mainCanvas = document.getElementById('real-canvas');
+
+            const mainRect = mainCanvas.getBoundingClientRect();
+            const modalRect = moduleContainer.getBoundingClientRect();
+            const relativePosition = {
+              top: modalRect.top - mainRect.top,
+              right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
+              bottom: modalRect.height + (modalRect.top - mainRect.top),
+              left: modalRect.left - mainRect.left,
+            };
+            setCanvasBounds({ ...relativePosition });
           }
-
-          // if (isModuleEditor) {
-          //   const moduleContainer = e.target.closest('.module-container-canvas');
-          //   const mainCanvas = document.getElementById('real-canvas');
-
-          //   const mainRect = mainCanvas.getBoundingClientRect();
-          //   const modalRect = moduleContainer.getBoundingClientRect();
-          //   const relativePosition = {
-          //     top: modalRect.top - mainRect.top,
-          //     right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
-          //     bottom: modalRect.height + (modalRect.top - mainRect.top),
-          //     left: modalRect.left - mainRect.left,
-          //   };
-          //   setCanvasBounds({ ...relativePosition });
-          // }
 
           //  This flag indicates whether the drag event originated on a child element within a component
           //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
@@ -1052,21 +1050,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent;
           const parentId = oldParentId?.length > 36 ? oldParentId.slice(0, 36) : oldParentId;
           const parentComponent = boxList.find((box) => box.id === parentId);
-
-          if (isModuleEditor) {
-            const moduleContainer = e.target.closest('.module-container-canvas');
-            const mainCanvas = document.getElementById('real-canvas');
-
-            const mainRect = mainCanvas.getBoundingClientRect();
-            const modalRect = moduleContainer.getBoundingClientRect();
-            const relativePosition = {
-              top: modalRect.top - mainRect.top,
-              right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
-              bottom: modalRect.height + (modalRect.top - mainRect.top),
-              left: modalRect.left - mainRect.left,
-            };
-            setCanvasBounds({ ...relativePosition });
-          }
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
           let newParentId = getDroppableSlotIdOnScreen(e, boxList) || 'canvas';
