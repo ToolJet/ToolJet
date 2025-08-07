@@ -11,7 +11,6 @@ The **Time Picker** component can be used for selecting time without date input.
 |:--------------|:------------|----------------|
 | Label         | The text to be used as the label for the Time Picker. | String (e.g., `Time of Arrival`). |
 | Time Format   | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
-| Manage time zones | Use the toggle to manage the time zone. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Default value | The default value that the component will hold when the app is loaded. | String (e.g., `11:00`). |
 
 ## Events
@@ -60,8 +59,6 @@ Following exposed variables can be dynamically accessed using the given JS query
 |  unixTimestamp | Holds the value in UNIX format. | `{{components.timepicker1.unixTimestamp}}` |
 |  displayValue | Holds the display value of the component. | `{{components.timepicker1.displayValue}}` |
 |  timeFormat  | Returns the time format as a string. |  `{{components.timepicker1.timeFormat}}` |
-|  storeTimezone | Returns the time zone in which value will be stored. | `{{components.timepicker1.storeTimezone}}` |
-|  displayTimezone | Returns the time zone in which value will be displayed.  | `{{components.timepicker1.displayTimezone}}` |
 |  isValid  | Indicates if the input meets validation criteria. |  `{{components.timepicker1.isValid}})` |
 |  isMandatory  | Indicates if the field is Mandatory. |  `{{components.timepicker1.isMandatory}}` |
 |  isLoading  | Indicates if the component is loading. | `{{components.timepicker1.isLoading}}` |
