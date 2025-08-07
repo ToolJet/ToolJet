@@ -169,7 +169,7 @@ export default function DragContainer({
     } catch (error) {
       console.error('Error---->', error);
     }
-  }, [hoveredComponent, reloadGrid]);
+  }, [hoveredComponent, reloadGrid, JSON.stringify(widgets)]);
 
   useEffect(() => {
     const boxList = boxes
