@@ -8,6 +8,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
+import { scrollToShowSelectedComponent } from '@/AppBuilder/AppCanvas/canvasScrollUtils';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
   const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
@@ -18,6 +19,8 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const selectedComponents = useStore((state) => state.selectedComponents);
+
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
     if (item === activeRightSideBarTab && !isRightSidebarPinned) {
@@ -45,6 +48,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
         onClick={() => {
+          // Scroll to ensure the selected component is not hidden by the sidebar
+          if (selectedComponents.length > 0) {
+            scrollToShowSelectedComponent(selectedComponents[0]);
+          }
           handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         }}
         darkMode={darkMode}
