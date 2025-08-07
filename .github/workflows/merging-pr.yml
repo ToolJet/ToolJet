@@ -12,29 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Extract Branch Name
-        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+      - name: Extract Branch Name and Base Branch
+        run: |
+          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
 
       - name: Merge PR in ee-server (if exists)
         run: |
-          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
           if [ -n "$PR" ]; then
-            echo "Found ee-server PR: #$PR"
+            echo "Found ee-server PR: #$PR targeting $BASE_BRANCH"
             gh pr merge -R ToolJet/ee-server "$PR" --merge --admin
           else
-            echo "No open ee-server PR for branch $BRANCH_NAME"
+            echo "No open ee-server PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
           fi
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
 
       - name: Merge PR in ee-frontend (if exists)
         run: |
-          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
           if [ -n "$PR" ]; then
-            echo "Found ee-frontend PR: #$PR"
+            echo "Found ee-frontend PR: #$PR targeting $BASE_BRANCH"
             gh pr merge -R ToolJet/ee-frontend "$PR" --merge --admin
           else
-            echo "No open ee-frontend PR for branch $BRANCH_NAME"
+            echo "No open ee-frontend PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
           fi
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
