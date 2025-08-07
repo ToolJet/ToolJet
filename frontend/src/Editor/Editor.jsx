@@ -1,3 +1,5 @@
+// NOTE ---> orgEnvironmentVariableService is not used and is deprecated.
+// Please refactor and use orgEnvironmentConstantService if this component is being used in future.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   appService,

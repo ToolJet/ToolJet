@@ -507,3 +507,7 @@ export function objectGUIDtoString(buffer) {
 export function isValidEmail(value: any): boolean {
   return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
+export function normalizeEnvSlug(key: string): string {
+  // Convert `my-workspace` → `my_workspace`
+  return key.replace(/-/g, '_');
+}

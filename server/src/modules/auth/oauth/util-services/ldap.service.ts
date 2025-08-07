@@ -5,7 +5,7 @@ import { SearchOptions, Client } from 'ldapjs';
 
 @Injectable()
 export class LdapService implements ILdapService {
-  async signIn(body: any, ssoConfigs: any): Promise<UserResponse> {
+  async signIn(body: any, ssoConfigs: any, orgSlug: string): Promise<UserResponse> {
     throw new Error('Method not implemented');
   }
 

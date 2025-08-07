@@ -47,7 +47,7 @@ export async function setFaviconAndTitle(location) {
     links = [link];
   }
   links.forEach((link) => {
-    link.href = whiteLabelFavicon;
+    link.href = whiteLabelFavicon && whiteLabelFavicon;
   });
 
   // Set page title based on route
