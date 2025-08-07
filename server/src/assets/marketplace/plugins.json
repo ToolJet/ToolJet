@@ -232,7 +232,7 @@
   },
   {
     "name": "EasyPost",
-    "description": "EasyPost plugin enables seamless access to multi-carrier shipping, tracking, and address validation services through the EasyPost platform.",
+    "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
     "version": "1.0.0",
     "id": "easypost",
     "author": "Tooljet",

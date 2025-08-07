@@ -1,115 +1,62 @@
-import { QueryError, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions, ErrorResponse, StandardError, EasyPostClient } from './types';
-import EasyPost from '@easypost/api';
-import * as operations from './query_operations';
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got, { Headers } from 'got';
+import { SourceOptions } from './types';
 
-export default class EasyPostPlugin {
-  private standardizeError(error: unknown): StandardError {
-    if (typeof error === 'string') {
-      return { message: error };
-    }
-
-    if (error instanceof Error) {
-      return {
-        message: error.message,
-        ...(error.stack && { details: { stack: error.stack } })
-      };
-    }
-
-    if (typeof error === 'object' && error !== null) {
-      const err = error as ErrorResponse;
-      if (err.error) {
-        return {
-          code: err.error.code,
-          message: err.error.message,
-          details: {
-            errors: err.error.errors,
-            status: err.status
-          }
-        };
-      }
-    }
-
-    return { message: 'An unknown error occurred' };
+export default class EasyPostQueryService implements QueryService {
+  authHeader(token: string): Headers {
+    return {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<EasyPostClient> {
-    try {
-      const { api_key } = sourceOptions;
+  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
+    const operation = queryOptions.operation;
+    const apiKey = sourceOptions.api_key;
+    const baseUrl = 'https://api.easypost.com';
+    const path = queryOptions['path'];
+    let url = `${baseUrl}${path}`;
 
-      if (!api_key?.trim()) {
-        throw new Error('API key is required');
-      }
-
-      const client = new EasyPost(api_key.trim());
-
-      await client.Address.all({ page_size: 1 });
-
-      return client;
-    } catch (error) {
-      throw new QueryError(
-        'Connection failed',
-        error instanceof Error ? error.message : 'Invalid API key',
-        {
-          code: 'EASYPOST_CONNECTION_ERROR',
-          details: {
-            suggestion: 'Verify your key is active at easypost.com/dashboard',
-            rawError: error instanceof Error ? error.stack : null
-          }
-        }
-      );
+    // Handle path parameters
+    const pathParams = queryOptions['params']['path'] || {};
+    for (const param of Object.keys(pathParams)) {
+      url = url.replace(`{${param}}`, pathParams[param]);
     }
-  }
 
-  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    // Handle query parameters
+    const queryParams = queryOptions['params']['query'] || {};
+
+    // Handle body parameters
+    const bodyParams = queryOptions['params']['request'] || {};
+    const jsonBody = Object.keys(bodyParams).length > 0 ? bodyParams : undefined;
+
     try {
-      const client = await this.getConnection(sourceOptions);
-      await client.Address.all({
-        page_size: 1
+      const response = await got(url, {
+        method: operation.toLowerCase(),
+        headers: this.authHeader(apiKey),
+        searchParams: queryParams,
+        json: jsonBody
       });
+
       return {
         status: 'ok',
-        message: 'Successfully connected to EasyPost API'
+        data: JSON.parse(response.body)
       };
     } catch (error) {
-      console.error('Connection test failed:', error);
-      throw new QueryError(
-        'EasyPost connection test failed',
-        error instanceof Error ? error.message : 'Invalid API key',
-        {
-          code: 'CONNECTION_FAILED',
-          details: error instanceof Error ? { stack: error.stack } : {}
+      let errorDetails = {};
+      let errorMessage = 'EasyPost operation failed';
+
+      if (error.response) {
+        try {
+          const errResponse = JSON.parse(error.response.body);
+          errorDetails = errResponse.error || {};
+          errorMessage = errResponse.error?.message || errorMessage;
+        } catch (e) {
+          errorDetails = { rawError: error.response.body };
         }
-      );
-    }
-  }
-
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<object> {
-    try {
-      const { operation } = queryOptions;
-      const client = await this.getConnection(sourceOptions);
-
-      switch (operation) {
-        case 'create_address':
-          return await operations.createAddress(client, queryOptions);
-        case 'create_shipment':
-          return await operations.createShipment(client, queryOptions);
-        case 'buy_shipment':
-          return await operations.buyShipment(client, queryOptions);
-        case 'create_tracker':
-          return await operations.createTracker(client, queryOptions);
-        case 'get_tracker':
-          return await operations.getTracker(client, queryOptions);
-        default:
-          throw new Error(`Unsupported operation: ${operation}`);
       }
-    } catch (error) {
-      const standardized = this.standardizeError(error);
-      throw new QueryError(
-        'EasyPost operation failed',
-        standardized.message,
-        standardized.details
-      );
+
+      throw new QueryError(errorMessage, error.message, errorDetails);
     }
   }
 }
