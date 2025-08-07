@@ -50,25 +50,16 @@ export async function getCompletion(
 ): Promise<string | { error: string; statusCode: number }> {
   const { model, prompt, max_tokens, temperature, stop_sequence, suffix } = options;
 
-  try {
-    const response = await openai.completions.create({
-      model: model || 'gpt-3.5-turbo-instruct',
-      prompt: prompt,
-      temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-      max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
-      stop: stop_sequence || null,
-      suffix: suffix || null,
-    });
+  const response = await openai.completions.create({
+    model: model || 'gpt-3.5-turbo-instruct',
+    prompt: prompt,
+    temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
+    max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
+    stop: stop_sequence || null,
+    suffix: suffix || null,
+  });
 
-    return response.choices[0].text; // Access the response correctly
-  } catch (error) {
-    console.log('Error openai ===============', error);
-
-    return {
-      error: error?.message,
-      statusCode: error?.response?.status,
-    };
-  }
+  return response.choices[0].text; // Access the response correctly
 }
 
 export async function getChatCompletion(
@@ -77,27 +68,20 @@ export async function getChatCompletion(
 ): Promise<string | { error: string; statusCode: number }> {
   const { model, prompt, max_tokens, temperature, stop_sequence } = options;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: model || 'gpt-4-turbo',
-      temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-      max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
-      stop: stop_sequence || null,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+  const response = await openai.chat.completions.create({
+    model: model || 'gpt-4-turbo',
+    temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
+    max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
+    stop: stop_sequence || null,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
 
-    return response.choices[0].message.content; // Ensure to access the correct part of the response
-  } catch (error) {
-    return {
-      error: error?.message,
-      statusCode: error?.response?.status,
-    };
-  }
+  return response.choices[0].message.content; // Ensure to access the correct part of the response
 }
 
 export async function generateImage(
@@ -106,28 +90,45 @@ export async function generateImage(
 ): Promise<{ status: string; message: string; description?: string; data?: any }> {
   const { model, prompt, size /* , n */ } = options;
 
-  try {
-    const response = await openai.images.generate({
-      model: model || 'dall-e-3',
-      prompt: prompt || '',
-      size: getSizeEnum(model, size), // Convert and validate image size based on the model
-      //n: getNumberOfImages(num_images),  Convert and validate number of images
-    });
+  const response = await openai.images.generate({
+    model: model || 'dall-e-3',
+    prompt: prompt || '',
+    size: getSizeEnum(model, size), // Convert and validate image size based on the model
+    //n: getNumberOfImages(num_images),  Convert and validate number of images
+  });
 
-    // Return the URL of the first image as a JSON object
-    return {
-      status: 'success',
-      message: 'Image generated successfully',
-      data: { url: response.data[0].url },
-    };
-  } catch (error: any) {
-    console.error('Error in image generation:', error);
+  // Return the URL of the first image as a JSON object
+  return {
+    status: 'success',
+    message: 'Image generated successfully',
+    data: { url: response.data[0].url },
+  };
+}
 
-    return {
-      status: 'failed',
-      message: 'Query could not be completed',
-      description: error?.response?.data?.error?.message || 'An unexpected error occurred',
-      data: error?.response?.data || {},
-    };
+export async function generateEmbedding(openai: OpenAI, options: QueryOptions) {
+  const { model_embedding: model } = options;
+  let input, encoding_format, dimensions;
+  switch (model) {
+    case 'text-embedding-3-small':
+      input = options.input_M1;
+      encoding_format = options.encoding_format_M1;
+      dimensions = options.dimensions_M1;
+      break;
+    case 'text-embedding-3-large':
+      input = options.input_M2;
+      encoding_format = options.encoding_format_M2;
+      dimensions = options.dimensions_M2;
+      break;
+    case 'text-embedding-ada-002':
+      input = options.input_M3;
+      encoding_format = options.encoding_format_M3;
+      break;
   }
+  const embedding = await openai.embeddings.create({
+    model: model,
+    input: input,
+    encoding_format: encoding_format,
+    ...(dimensions !== undefined && { dimensions: Number(dimensions) }),
+  });
+  return embedding.data[0].embedding;
 }

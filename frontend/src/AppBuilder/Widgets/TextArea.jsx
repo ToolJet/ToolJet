@@ -29,6 +29,7 @@ export const TextArea = (props) => {
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility: properties.visibility,
   });
 
   return <BaseInput {...props} {...inputLogic} inputType="textarea" />;

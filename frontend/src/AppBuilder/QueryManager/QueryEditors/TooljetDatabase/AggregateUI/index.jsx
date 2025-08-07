@@ -355,7 +355,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
 
   return (
     <>
-      <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="d-flex wf-block" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0" data-cy="label-column-filter">
           Aggregate
         </label>
@@ -450,7 +450,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
           </ButtonSolid>
         </div>
       </div>
-      <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="d-flex wf-block" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0" data-cy="label-column-filter">
           Group by
         </label>
