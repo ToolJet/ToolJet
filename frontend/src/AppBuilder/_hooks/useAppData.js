@@ -206,8 +206,8 @@ const useAppData = (
           role: currentSession.role,
           ssoUserInfo: currentSession?.current_user?.sso_user_info,
           groups: currentSession?.group_permissions
-            ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
-            : ['all_users'],
+            ? ['all_users', ...currentSession.group_permissions.map((group) => group.name), currentSession?.role?.name]
+            : ['all_users', currentSession?.role?.name],
         });
       });
 
@@ -231,7 +231,7 @@ const useAppData = (
     const isPublicAccess = moduleMode
       ? false
       : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+      (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -286,9 +286,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
+                  slug,
+                  viewerEnvironment?.environment?.id
+                )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -341,8 +341,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -617,8 +617,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
