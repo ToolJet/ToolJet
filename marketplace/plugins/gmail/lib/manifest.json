@@ -11,37 +11,24 @@
       "data": {},
       "rawData": {}
     },
-    "options": {},
+    "options": {
+      "client_id": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "type": "string"
+      }
+    },
     "customTesting": true
   },
   "defaults": {
-    "username": {
-      "value": ""
-    },
-    "account": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "database": {
-      "value": ""
-    },
-    "schema": {
-      "value": ""
-    },
-    "warehouse": {
-      "value": ""
-    },
-    "role": {
-      "value": ""
-    },
     "redirect_url": {
-      "value": "http://localhost:8082/oauth2/authorize",
-      "encrypted": false
-    },
-    "auth_url": {
-      "value": "https://accounts.google.com/o/oauth2/v2/auth",
+      "value": "",
       "encrypted": false
     },
     "allowed_auth_types": {
@@ -53,9 +40,6 @@
     },
     "grant_type": {
       "value": "authorization_code"
-    },
-    "scopes": {
-      "value": "https://mail.google.com"
     },
     "oauth_type": {
       "value": "custom_app"
@@ -74,10 +58,6 @@
           "authorization_code": [
             "client_id",
             "client_secret"
-          ],
-          "basic": [
-            "password",
-            "username"
           ]
         },
         "allowed_auth_types": [
