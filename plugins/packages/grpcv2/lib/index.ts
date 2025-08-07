@@ -75,7 +75,7 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  async invokeMethod(methodName: string, ...args: any[]): Promise<unknown> {
+  async invokeMethod(methodName: string, ...args: any[]): Promise<QueryResult> {
     const methodMap: Record<string, Function> = {
       'discoverServices': this.discoverServices.bind(this)
     };
