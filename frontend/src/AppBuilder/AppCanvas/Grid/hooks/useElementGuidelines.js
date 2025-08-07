@@ -67,7 +67,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
         if (box.left === minLeft || box.left + box.width === maxRight) {
           if (!essentialElements.has(box.id)) {
             essentialElements.add(box.id);
-            console.log(`Keeping ${box.component?.name || box.id.slice(-8)} as horizontal extreme for top ${topPos}`);
           }
         }
       });
@@ -112,7 +111,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
         if (box.top === minTop || box.top + box.height === maxBottom) {
           if (!essentialElements.has(box.id)) {
             essentialElements.add(box.id);
-            console.log(`Keeping ${box.component?.name || box.id.slice(-8)} as vertical extreme for left ${leftPos}`);
           }
         }
       });
@@ -136,7 +134,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
         if (box.top === minTop || box.top + box.height === maxBottom) {
           if (!essentialElements.has(box.id)) {
             essentialElements.add(box.id);
-            console.log(`Keeping ${box.component?.name || box.id.slice(-8)} as vertical extreme for right ${rightPos}`);
           }
         }
       });
@@ -162,12 +159,6 @@ function getEssentialElements(boxes, selectedComponentIds = []) {
 
     if (providesUniqueLeft || providesUniqueRight || providesUniqueTop || providesUniqueBottom) {
       essentialElements.add(box.id);
-      console.log(`Keeping ${box.component?.name || box.id.slice(-8)} for unique alignment:`, {
-        uniqueLeft: providesUniqueLeft,
-        uniqueRight: providesUniqueRight,
-        uniqueTop: providesUniqueTop,
-        uniqueBottom: providesUniqueBottom,
-      });
 
       // Update kept edges
       keptLeftEdges.add(box.left);
