@@ -45,6 +45,7 @@ const DynamicForm = ({
   disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
+  renderCopilot,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -413,6 +414,7 @@ const DynamicForm = ({
           selectedDataSource,
           darkMode,
           optionsChanged,
+          renderCopilot,
         };
       case 'codehinter': {
         let theme;
@@ -442,6 +444,7 @@ const DynamicForm = ({
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
           disabled,
           delayOnChange: false,
+          renderCopilot,
           ...(helpText && { helpText }),
         };
       }
