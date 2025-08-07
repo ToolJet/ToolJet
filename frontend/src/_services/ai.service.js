@@ -23,7 +23,25 @@ export const aiService = {
   getCreditBalance,
   fixWithAI,
   fixLayout,
+  generatePrd,
+  generateLayout,
 };
+
+async function generatePrd(prompt) {
+  const body = {
+    prompt,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/generate-prd`, requestOptions).then(handleResponse);
+}
+
+async function generateLayout(prompt) {
+  const body = {
+    prompt,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/generate-layout`, requestOptions).then(handleResponse);
+}
 
 async function fixLayout(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
