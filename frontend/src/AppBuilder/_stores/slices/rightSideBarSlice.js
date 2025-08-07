@@ -6,10 +6,12 @@ const initialState = {
   isRightSidebarPinned: false,
 };
 
-export const createRightSideBarSlice = (set) => ({
+export const createRightSideBarSlice = (set, get) => ({
   ...initialState,
   setActiveRightSideBarTab: (tab) => set(() => ({ activeRightSideBarTab: tab }), false, 'setActiveRightSideBarTab'),
-  toggleRightSidebar: () => set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen })),
-  setRightSidebarOpen: (open) => set(() => ({ isRightSidebarOpen: open })),
-  toggleRightSidebarPin: () => set((state) => ({ isRightSidebarPinned: !state.isRightSidebarPinned })),
+  toggleRightSidebar: () =>
+    set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen }), false, 'toggleRightSidebar'),
+  setRightSidebarOpen: (open) => set(() => ({ isRightSidebarOpen: open }), false, 'setRightSidebarOpen'),
+  toggleRightSidebarPin: () =>
+    set((state) => ({ isRightSidebarPinned: !state.isRightSidebarPinned }), false, 'toggleRightSidebarPin'),
 });

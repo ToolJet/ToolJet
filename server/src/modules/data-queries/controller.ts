@@ -21,7 +21,6 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
-import { RunQuerySourceGuard } from './guards/run-query.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -30,8 +29,13 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
-  index(@User() user: UserEntity, @Param('versionId') versionId: string, @Query('mode') mode?: string) {
-    return this.dataQueriesService.getAll(user, versionId, mode);
+  index(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('versionId') versionId: string,
+    @Query('mode') mode?: string
+  ) {
+    return this.dataQueriesService.getAll(user, app, versionId, mode);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -129,7 +133,7 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard, RunQuerySourceGuard)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,

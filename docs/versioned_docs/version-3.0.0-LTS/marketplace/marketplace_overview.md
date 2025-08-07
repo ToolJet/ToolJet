@@ -13,24 +13,6 @@ ToolJet Marketplace allows users to enhance their workspaces by adding custom pl
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Enabling Marketplace 
-
-To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
-
-```bash
-ENABLE_MARKETPLACE_FEATURE=true
-```
-
-When running ToolJet locally, ensure that all the plugins are available by building marketplace before starting the server.
-
-:::info Note
-The logged-in user should be an **Administrator** to access the marketplace page.
-:::
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Installing a Plugin
 
 To navigate to the Marketplace page, click on the settings icon on the bottom left of the dashboard, and click on **Marketplace** from the selection menu.
@@ -73,30 +55,22 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
-- **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
-- **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
-- **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
-- **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
-- **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
 - **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
 - **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-Presto)**
-- **[Qdrant](/docs/marketplace/plugins/marketplace-plugin-qdrant)**
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
-- **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
-
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
 :::

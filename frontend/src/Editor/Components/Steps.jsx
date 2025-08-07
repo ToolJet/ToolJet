@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
+import { getFormattedSteps, getSafeRenderableValue } from './utils';
 
 export const Steps = function Steps({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
   const { stepsSelectable, disabledState } = properties;
@@ -28,7 +29,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
   useEffect(() => {
-    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
+    const formattedSteps = getFormattedSteps(steps);
+    const sanitizedSteps = JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
       ...step,
       visible: 'visible' in step ? step.visible : true,
       disabled: 'disabled' in step ? step.disabled : false,
@@ -67,7 +69,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
       const lastLabelWidth = lastLabelRef.current.offsetWidth;
       const maxLabelWidth = Math.max(firstLabelWidth, lastLabelWidth);
 
-      const calculatedPadding = (maxLabelWidth / 2) - 1;
+      const calculatedPadding = maxLabelWidth / 2 - 1;
       setContainerPadding(Math.max(2, calculatedPadding)); // Ensure minimum padding of 2px
     }
   };
@@ -118,20 +120,18 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
 
     setExposedVariable('setStepVisible', (stepId, visibility) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) =>
-          item.id == stepId ? { ...item, visible: visibility } : item
-        );
+        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, visible: visibility } : item));
         setExposedVariable('steps', updatedSteps);
+        setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
       });
     });
 
     setExposedVariable('setStepDisable', (stepId, disabled) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) =>
-          item.id == stepId ? { ...item, disabled: disabled } : item
-        );
+        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, disabled: disabled } : item));
         setExposedVariable('steps', updatedSteps);
+        setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
       });
     });
@@ -143,8 +143,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
     setExposedVariable('setStep', (stepId) => {
       if (!disabledState) setActiveStepId(stepId);
     });
-    setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
-    setExposedVariable('setDisable', (disabled) => setIsDisabled(disabled));
+    setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
+    setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
   }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
 
   // Update state from props
@@ -163,7 +163,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
         boxShadow,
         padding: theme === 'titles' ? `0 ${containerPadding}px` : 2,
         paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
-        ...dynamicStyle
+        ...dynamicStyle,
       }}
       data-cy={dataCy}
     >
@@ -177,10 +177,12 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
           const isLastStep = index === filteredSteps.length - 1;
 
           return (
-            <React.Fragment key={index}> {/* using index as key to avoid issues due to duplicate step ids */}
+            <React.Fragment key={index}>
+              {' '}
+              {/* using index as key to avoid issues due to duplicate step ids */}
               <ToolTip
                 show={!step.disabled && !isDisabled && step.tooltip}
-                message={step.tooltip || ''}
+                message={getSafeRenderableValue(step.tooltip || '')}
               >
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
@@ -194,8 +196,9 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                       <div
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
-                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent}`,
-                          backgroundColor: isActive ? 'transparent' : (isCompleted ? completedAccent : incompletedAccent)
+                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
+                            }`,
+                          backgroundColor: isActive ? 'transparent' : isCompleted ? completedAccent : incompletedAccent,
                         }}
                       />
                       {theme === 'titles' && (
@@ -204,18 +207,15 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                           className={`label ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                           style={{ maxWidth: `${progressBarWidth}px` }}
                         >
-                          {step.name}
+                          {getSafeRenderableValue(step.name)}
                         </div>
                       )}
                     </>
                   )}
                 </div>
               </ToolTip>
-
               {index < filteredSteps.length - 1 && (
-                <div
-                  className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`}
-                />
+                <div className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`} />
               )}
             </React.Fragment>
           );

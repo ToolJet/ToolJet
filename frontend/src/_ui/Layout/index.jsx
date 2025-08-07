@@ -9,10 +9,11 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
-import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import UnsavedChangesDialog from '@/modules/dataSources/components/DataSourceManager/UnsavedChangesDialog';
 
 function Layout({
@@ -21,10 +22,11 @@ function Layout({
   darkMode,
   enableCollapsibleSidebar = false,
   collapseSidebar = false,
-  toggleCollapsibleSidebar = () => {},
+  toggleCollapsibleSidebar = () => { },
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
-  const logo = retrieveWhiteLabelLogo();
+  const logo = useWhiteLabellingStore((state) => state.whiteLabelLogo);
+  const isWhiteLabellingDataLoading = useWhiteLabellingStore((state) => state.loadingWhiteLabelDetails);
   const router = useRouter();
   const [licenseStatus, setLicenseStatus] = useState(null);
   const { featureAccess } = useLicenseStore(
@@ -80,6 +82,7 @@ function Layout({
 
   useEffect(() => {
     useLicenseStore.getState().actions.fetchFeatureAccess();
+    fetchWhiteLabelDetails(authenticationService?.currentSessionValue?.organization_id);
   }, []);
 
   useEffect(() => {
@@ -99,7 +102,6 @@ function Layout({
     admin ||
     super_admin;
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
-
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
   const { checkForUnsavedChanges } = useGlobalDatasourceUnsavedChanges();
@@ -118,7 +120,7 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {logo ? <img src={logo} /> : <Logo />}
+                {isWhiteLabellingDataLoading ? '' : logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}
               </Link>
             </div>
             <LeftNavSideBar

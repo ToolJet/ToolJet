@@ -74,8 +74,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     }
   }, [hasModuleAccess, activeTab]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 
   const handleSearchQueryChange = useCallback(
     debounce((value) => {
@@ -87,6 +89,11 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     }, 125),
     [activeTab]
   );
+
+  const handleToggle = () => {
+    setActiveRightSideBarTab(null);
+    setRightSidebarOpen(false);
+  };
 
   const filterComponents = useCallback((value) => {
     if (value !== '') {
@@ -223,11 +230,16 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      {isModuleEditor ? (
-        <p className="widgets-manager-header">Components</p>
-      ) : (
-        <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
-      )}
+      <div className="d-flex align-items-center">
+        {isModuleEditor ? (
+          <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
+        ) : (
+          <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
+        )}
+        <div className="icon-btn cursor-pointer flex-shrink-0 me-3 p-2 h-4 w-4" onClick={handleToggle}>
+          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+        </div>
+      </div>
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}

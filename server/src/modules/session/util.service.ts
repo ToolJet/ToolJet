@@ -98,6 +98,7 @@ export class SessionUtilService {
         ...(isPatLogin ? { isPATLogin: true } : {}),
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
+        ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
       if (organization) user.organizationId = organization.id;
@@ -123,7 +124,7 @@ export class SessionUtilService {
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
-      const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id);
+      const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
 
       const responsePayload = {
         organizationId: organization?.id,
@@ -232,24 +233,27 @@ export class SessionUtilService {
     return allGroups;
   }
 
-  async checkUserWorkspaceStatus(userId: string): Promise<boolean> {
+  async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
     // Return true if user has no active workspaces
-    return _.isEmpty(
-      await this.userRepository.getUser(
-        {
-          id: userId,
-          organizationUsers: {
-            status: WORKSPACE_USER_STATUS.ACTIVE,
-            organization: {
-              status: WORKSPACE_STATUS.ACTIVE,
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return _.isEmpty(
+        await this.userRepository.getUser(
+          {
+            id: userId,
+            organizationUsers: {
+              status: WORKSPACE_USER_STATUS.ACTIVE,
+              organization: {
+                status: WORKSPACE_STATUS.ACTIVE,
+              },
             },
           },
-        },
-        null,
-        ['organizationUsers', 'organizationUsers.organization'],
-        { id: true }
-      )
-    );
+          null,
+          ['organizationUsers', 'organizationUsers.organization'],
+          { id: true },
+          manager
+        )
+      );
+    }, manager);
   }
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
@@ -328,13 +332,13 @@ export class SessionUtilService {
     });
   }
 
-  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
+  async generateSessionPayload(user: User, currentOrganization: Organization, appData?: any, aiCookies?: any) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const currentOrganizationId = currentOrganization?.id
         ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
-        ? user.defaultOrganizationId
-        : user?.organizationIds?.[0];
+          ? user.defaultOrganizationId
+          : user?.organizationIds?.[0];
       const organizationDetails = currentOrganizationId
         ? currentOrganization
           ? currentOrganization
@@ -361,6 +365,8 @@ export class SessionUtilService {
         consulationBannerDate: metadata?.createdAt,
         ...onboardingFlags,
         ...(appData && { appData }),
+        ...(user.tjApiSource && { tjApiSource: user.tjApiSource }),
+        ...(aiCookies && { aiCookies }),
       });
     });
   }

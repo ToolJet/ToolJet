@@ -42,6 +42,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -181,7 +182,24 @@ export class AppsService implements IAppsService {
     const { organizationId } = user;
     const { id } = app;
 
-    await this.appRepository.delete({ id, organizationId });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const schedules = await manager
+        .createQueryBuilder(WorkflowSchedule, 'workflowSchedule')
+        .innerJoinAndSelect('workflowSchedule.workflow', 'appVersion')
+        .where('appVersion.appId = :appId', { appId: id })
+        .getMany();
+
+      // Emit event with schedule IDs for temporal schedule cleanup
+      if (schedules.length > 0) {
+        const scheduleIds = schedules.map((schedule) => schedule.id);
+        this.eventEmitter.emit('app.deleted', {
+          appId: id,
+          scheduleIds: scheduleIds,
+        });
+      }
+
+      await manager.delete(App, { id, organizationId });
+    });
 
     //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -254,7 +272,7 @@ export class AppsService implements IAppsService {
       : [];
 
     const pagesForVersion = app.editingVersion
-      ? await this.pageService.findPagesForVersion(app.editingVersion.id, user.organizationId)
+      ? await this.pageService.findPagesForVersion(app.editingVersion.id)
       : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
@@ -332,7 +350,7 @@ export class AppsService implements IAppsService {
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
       const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id, app.organizationId)
+        ? await this.pageService.findPagesForVersion(versionToLoad.id)
         : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
@@ -365,6 +383,7 @@ export class AppsService implements IAppsService {
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
+        appId: app.id,
       };
     };
 

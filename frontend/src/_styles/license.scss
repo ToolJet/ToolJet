@@ -1096,3 +1096,17 @@
         }
     }
 }
+
+.issued-license {
+    background: var(--indigo9);
+    color: var(--indigo1);
+    border-radius: 17px;
+    padding: 5px;
+    font-size: 10px;
+    padding-left: 5px !important;
+    padding: 3px 8px;
+    margin-left: auto;
+    text-transform: capitalize;
+    position: absolute;
+    right: 10%;
+}

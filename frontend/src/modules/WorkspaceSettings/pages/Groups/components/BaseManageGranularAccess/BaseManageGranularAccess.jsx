@@ -14,6 +14,8 @@ import DataSourceResourcePermissions from './components/DataSourceResourcePermis
 import WorkflowResourcePermissions from './components/WorkflowResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 class BaseManageGranularAccess extends React.Component {
   constructor(props) {
@@ -77,6 +79,13 @@ class BaseManageGranularAccess extends React.Component {
     this.fetchAppsCanBeAdded();
     this.fetchGranularPermissions(this.props.groupPermissionId);
   }
+  componentDidUpdate(prevProps) {
+    if (prevProps.addableDs !== this.props.addableDs) {
+      this.setState({
+        addableDs: this.props.addableDs,
+      });
+    }
+  }
 
   fetchAppsCanBeAdded = () => {
     if (this.props.isBasicPlan) {
@@ -112,7 +121,6 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-
   fetchGranularPermissions = (groupPermissionId) => {
     this.setState({
       isLoading: true,
@@ -124,7 +132,6 @@ class BaseManageGranularAccess extends React.Component {
       });
     });
   };
-
   deleteGranularPermissions = () => {
     const { currentEditingPermissions } = this.state;
     this.setState({
@@ -188,6 +195,12 @@ class BaseManageGranularAccess extends React.Component {
     groupPermissionV2Service
       .createGranularPermission(this.props.groupPermissionId, body)
       .then(() => {
+        posthogHelper.captureEvent('click_add_app_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: this.props.groupPermissionId,
+        });
         this.fetchGranularPermissions(this.props.groupPermissionId);
         this.closeAddPermissionModal();
         toast.success('Permission created successfully!');
@@ -371,7 +384,7 @@ class BaseManageGranularAccess extends React.Component {
         this.closeAddPermissionModal();
         toast.success('Permission updated successfully');
       })
-      .catch(({ error }) => {
+      .catch(({ error, statusCode }) => {
         if (error?.type) {
           this.setState({
             showAutoRoleChangeModal: true,
@@ -384,14 +397,16 @@ class BaseManageGranularAccess extends React.Component {
           });
           return;
         }
-        this.props.updateParentState({
-          showEditRoleErrorModal: true,
-          errorTitle: error?.title ? error?.title : 'Cannot update the permissions',
-          errorMessage: error.error,
-          errorIconName: 'usergear',
-          errorListItems: error.data,
-          showAddPermissionModal: false,
-        });
+        if (statusCode !== 451) {
+          this.props.updateParentState({
+            showEditRoleErrorModal: true,
+            errorTitle: error?.title ? error?.title : 'Cannot update the permissions',
+            errorMessage: error.error,
+            errorIconName: 'usergear',
+            errorListItems: error.data,
+            showAddPermissionModal: false,
+          });
+        }
       });
   };
 

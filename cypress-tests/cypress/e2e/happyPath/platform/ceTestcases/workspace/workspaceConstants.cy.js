@@ -24,6 +24,7 @@ import {
 } from "Support/utils/dataSource";
 
 import { dataSourceSelector } from "Selectors/dataSource";
+import { setUpSlug } from "Support/utils/apps";
 
 const data = {};
 
@@ -109,13 +110,6 @@ describe("Workspace constants", () => {
     cy.get(commonWidgetSelector.draggableWidget('textinput1'))
       .verifyVisibleElement("have.value", "customHeader");
 
-    //Verify secret constant value is not resolved in component and verify error message
-    cy.get(commonWidgetSelector.draggableWidget('textinput2'))
-      .verifyVisibleElement("have.value", "").click();
-    cy.get(commonWidgetSelector.defaultValueInputField).click();
-    cy.get(commonWidgetSelector.alertInfoText).contains(
-      "secrets cannot be used in apps"
-    );
     //Verify all static and datasource queries output in components
     cy.wait(8000);
     for (let i = 3; i <= 16; i++) {
@@ -124,6 +118,15 @@ describe("Workspace constants", () => {
       cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
         .verifyVisibleElement("have.value", "Production environment testing");
     }
+
+    //Verify secret constant value is not resolved in component and verify error message
+    cy.openComponentSidebar();
+    cy.get(commonWidgetSelector.draggableWidget('textinput2'))
+      .verifyVisibleElement("have.value", "").click();
+    cy.get(commonWidgetSelector.defaultValueInputField).click();
+    cy.get(commonWidgetSelector.alertInfoText).contains(
+      "secrets cannot be used in apps"
+    );
 
     //verify global constant is resolved in static query url
     cy.get('[data-cy="list-query-restapistaticg"]').click();
@@ -169,8 +172,10 @@ describe("Workspace constants", () => {
     cy.wait(4000);
 
     cy.releaseApp();
-
+    setUpSlug(data.slug);
+    cy.forceClickOnCanvas();
     cy.backToApps();
+
 
     //Verify global are getting resolved and secrets are hidded in the data source form
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -184,5 +189,17 @@ describe("Workspace constants", () => {
     verifyConstantValueVisibility('[value="{{secrets.restapiHeaderValue}}"]', workspaceConstantsText.secretsHiddenText);
     cy.get('[data-cy="restapiurlgs-button"]').click();
     verifyConstantValueVisibility(dataSourceSelector.baseUrlTextField, workspaceConstantsText.secretsHiddenText);
+
+
+    cy.visitSlug({ actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}` });
+    cy.wait(8000);
+    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should('be.visible');
+    for (let i = 16; i >= 3; i--) {
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`)).should('be.visible');
+      cy.get(commonWidgetSelector.draggableWidget(`textinput${i}`))
+        .verifyVisibleElement("have.value", "Production environment testing", { timeout: 10000 });
+    }
+
   })
 });

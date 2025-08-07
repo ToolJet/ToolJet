@@ -14,6 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -113,8 +114,8 @@ export const DropdownV2 = ({
     if (!Array.isArray(schema)) {
       _schema = [];
     }
-    const foundItem = _schema?.find((item) => item?.default === true);
-    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    return defaultItem?.value;
   }
 
   const selectOptions = useMemo(() => {
@@ -124,7 +125,7 @@ export const DropdownV2 = ({
         .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: data?.label,
+          label: getSafeRenderableValue(data?.label),
           value: data?.value,
           isDisabled: data?.disable ?? false,
         }));
@@ -141,15 +142,6 @@ export const DropdownV2 = ({
       setInputValue(value);
       fireEvent('onSelect');
     }
-  }
-
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
   }
 
   const onSearchTextChange = (searchText, actionProps) => {
@@ -277,7 +269,7 @@ export const DropdownV2 = ({
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
+  }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
@@ -286,16 +278,16 @@ export const DropdownV2 = ({
         setInputValue(null);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsDropdownLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsDropdownLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsDropdownDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDropdownDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       selectOption: async function (value) {
         let _value = value;
@@ -345,9 +337,7 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: state.isFocused
-            ? getInputFocusedColor({ accentColor })
-            : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -383,6 +373,10 @@ export const DropdownV2 = ({
     indicatorSeparator: (_state) => ({
       display: 'none',
     }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
+    }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
       height: _height,
@@ -407,8 +401,9 @@ export const DropdownV2 = ({
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
+      opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       display: 'flex',

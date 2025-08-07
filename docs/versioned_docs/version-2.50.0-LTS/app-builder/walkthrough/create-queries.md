@@ -43,7 +43,7 @@ The Query Panel consists of two sections:
 **Example**: For a PostgreSQL query named *fetchUsers* that is fetching data from the *allUsers* table, you might set a parameter to a single user by passing in the id parameter.
 
 ```sql
-SELECT * FROM allUsers WHERE id = {{parameters.id}}
+SELECT * FROM allUsers WHERE id = '{{parameters.id}}'
 ```
 
 Here, `{{parameters.id}}` is a parameter that you can define by clicking on the **+** icon on the Query Panel header next to the `Parameters` label.
@@ -119,7 +119,7 @@ To delete data:
 **Example**: Craft a query `deleteRequest` that removes a product from the database based on a parameter.
 
 ```sql
-DELETE FROM feature_requests WHERE votes < {{parameters.minimumVotes}};
+DELETE FROM feature_requests WHERE votes < '{{parameters.minimumVotes}}';
 ```
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>

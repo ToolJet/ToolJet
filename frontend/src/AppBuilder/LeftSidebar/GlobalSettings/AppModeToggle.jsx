@@ -6,7 +6,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const APP_MODES = [
+export const APP_MODES = [
   { label: 'Auto', value: 'auto' },
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
@@ -15,12 +15,7 @@ const APP_MODES = [
 const AppModeToggle = ({ darkMode }) => {
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
-  const { globalSettingsChanged } = useStore(
-    (state) => ({
-      globalSettingsChanged: state.globalSettingsChanged,
-    }),
-    shallow
-  );
+
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
 
   return (
@@ -34,7 +29,6 @@ const AppModeToggle = ({ darkMode }) => {
               exposedTheme = darkMode ? 'dark' : 'light';
             }
             onAppModeChange({ appMode: value });
-            // globalSettingsChanged({ theme: { name: exposedTheme } });
             setResolvedGlobals('theme', { name: exposedTheme });
           }}
           defaultValue={appMode}

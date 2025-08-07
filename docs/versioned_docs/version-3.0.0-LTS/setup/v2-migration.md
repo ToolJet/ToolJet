@@ -2,9 +2,11 @@
 id: v2-migration-guide
 title: V2 migration guide
 ---
+
 # Version 2 migration guide
 
 ToolJet version 2 comes with a bunch of exciting features, with the major ones being:
+
 1. Multi page
 2. Multi env
 3. Forms widget
@@ -26,8 +28,10 @@ Server may take some time to be ready to handle the HTTP request as v2 changes r
 ## Deprecations
 
 #### Deployments
+
 - Docker compose deployments with [auto SSL](/docs/1.x.x/setup/docker) is deprecated
 
 ## Help and Support
-- Feel free to join our highly active **[Slack Community](https://tooljet.com/slack)** or you can also e-mail us at **hello@tooljet.com**.
+
+- Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)** or you can also e-mail us at **hello@tooljet.com**.
 - If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.

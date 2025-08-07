@@ -67,7 +67,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           } catch (err) {
             const status = err?.statusCode;
             const error = err?.error;
-            if (!(status === 404 && error === 'Git Configuration not found')) {
+            if (
+              !(status === 404 && error === 'Git Configuration not found') &&
+              !(error === 'No Git Provider is enabled for the workspace')
+            ) {
               toast.error(error, {
                 style: {
                   width: 'auto',

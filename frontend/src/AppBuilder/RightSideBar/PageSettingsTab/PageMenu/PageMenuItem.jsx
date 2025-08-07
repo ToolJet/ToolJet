@@ -35,7 +35,7 @@ export const PageMenuItem = withRouter(
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
     const isSelected = page.id === currentPageId;
-    const isHidden = resolveReferences(page?.hidden?.value) ?? false;
+    const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -72,7 +72,7 @@ export const PageMenuItem = withRouter(
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
-      const Icon = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+      const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
 
       return (
         <Icon {...props} style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }} />
@@ -269,7 +269,6 @@ export const PageMenuItem = withRouter(
 
       return '';
     }
-
     return (
       <div
         onMouseEnter={() => setIsHovered(true)}
@@ -280,8 +279,8 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme'} ${
-              showPageOptions && isEditingPage ? 'is-selected' : ''
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
+              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
             }`}
             style={{
               position: 'relative',
@@ -306,16 +305,15 @@ export const PageMenuItem = withRouter(
               </>
             ) : (
               <>
-                {' '}
                 <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
-                  {icon()}
-                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text, maxWidth: '159px' }}>
+                  <div className="main-page-icon-wrapper">{icon()}</div>
+                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                     {page.name}
                   </OverflowTooltip>
-                  <span className="meta-text" style={{ marginLeft: '6px' }}>
-                    {PAGE_TYPES[page?.type]}
-                  </span>
                   <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
+                    {PAGE_TYPES[page?.type] && ( // If 'page' object has a 'type' property like 'URL'
+                      <span className="page-type-text">{PAGE_TYPES[page?.type]}</span>
+                    )}
                     {isHomePage && (
                       <ToolTip message="Home page" placement="bottom">
                         <div className=" d-flex align-items-center justify-content-center">
@@ -386,6 +384,7 @@ export const PageMenuItem = withRouter(
                         show={showPageOptions && isEditingPage}
                         placement="bottom-end"
                         rootClose
+                        transition={false}
                         modifiers={[
                           {
                             name: 'preventOverflow',
@@ -399,7 +398,11 @@ export const PageMenuItem = withRouter(
                           toggleShowPageOptions(false);
                         }}
                       >
-                        <Popover style={{ zIndex: '99999', position: 'absolute' }} id="edit-page-popover">
+                        <Popover
+                          style={{ zIndex: '99999', position: 'absolute' }}
+                          id="edit-page-popover"
+                          className={`${darkMode && 'dark-theme theme-dark'}`}
+                        >
                           <div className="menu-options mb-0">
                             <PageOptions
                               text="Edit page details"

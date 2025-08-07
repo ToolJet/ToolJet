@@ -60,7 +60,10 @@ export const ControlButtons = memo(
 
     // Haven't seperated this into a separate component because of UI issues
     const hideColumnsPopover = () => (
-      <Popover className={`${darkMode && 'dark-theme'}`} style={{ maxHeight: `${height - 79}px`, overflowY: 'auto' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme'} dropdown-table-column-hide-common-popover`}
+        style={{ maxHeight: `${height - 79}px`, overflowY: 'auto', backgroundColor: 'var(--cc-surface1-surface)' }}
+      >
         <div
           data-cy={`dropdown-hide-column`}
           className={`dropdown-table-column-hide-common ${

@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,11 +16,11 @@ jobs:
     name: packer-ee
 
     steps:
-      - name: Checkout code to lts-3.6 branch
-        if: contains(github.event.release.tag_name, '-ee-lts')
+      - name: Checkout code to lts-3.16 branch
+        if: contains(github.event.release.tag_name, '-lts')
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/lts-3.6
+          ref: refs/heads/lts-3.16
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -56,7 +56,7 @@ jobs:
 
       # Echo RENDER_GITHUB_PAT
       - name: Set PACKER_GITHUB_PAT
-        run: echo "PACKER_GITHUB_PAT=${{ secrets.PACKER_GITHUB_PAT}}" >> $GITHUB_ENV
+        run: echo "PACKER_GITHUB_PAT=${{ secrets.CUSTOM_GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       # Dynamically update setup_machine.sh with PAT
       - name: Validate PAT

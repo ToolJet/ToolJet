@@ -14,7 +14,6 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { cleanObject } from '@helpers/utils.helper';
 import { decode } from 'js-base64';
-import allPlugins from '@tooljet/plugins/dist/server';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
@@ -259,7 +258,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager) {
     if (!options) return {};
 
-    const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
+    const resolvedOptions = [];
+    for (const option of options) {
+      if (option['encrypted'] && !option['value'] && dataSource?.options?.[option['key']]?.credential_id) {
+        try {
+          const value = await this.credentialService.getValue(dataSource.options[option['key']].credential_id);
+          resolvedOptions.push({ ...option, value });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+          resolvedOptions.push(option);
+        }
+      } else {
+        resolvedOptions.push(option);
+      }
+    }
+
+    const optionsWithOauth = await this.parseOptionsForOauthDataSource(resolvedOptions);
     const parsedOptions = {};
 
     if (dataSource?.options) {
@@ -333,8 +347,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   async findOneByEnvironment(
     dataSourceId: string,
-    organizationId: string,
-    environmentId?: string
+    environmentId: string,
+    organizationId?: string
   ): Promise<DataSource> {
     const dataSource = await this.dataSourceRepository.findOneOrFail({
       where: { id: dataSourceId, organizationId },
@@ -512,11 +526,31 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
-    if (['googlesheets', 'slack', 'zendesk', 'salesforce'].includes(dataSource.kind)) {
+    const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
+    // Auth flow starts from datasource config page
+    if (
+      !isMultiAuthEnabled &&
+      ['googlesheets', 'slack', 'zendesk', 'salesforce', 'googlecalendar', 'snowflake'].includes(dataSource.kind)
+    ) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
-    } else {
-      const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
-      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
+    }
+    // Auth flow starts in query manager
+    else {
+      let newToken = {};
+
+      // Datasources using third party library for token generation
+      if (['salesforce'].includes(dataSource.kind)) {
+        const queryService = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
+        const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
+        for (const [key, value] of accessDetails) {
+          newToken[key] = value;
+        }
+        if (isMultiAuthEnabled) {
+          newToken['user_id'] = userId;
+        }
+      } else {
+        newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
+      }
       const tokenData = this.getCurrentToken(
         isMultiAuthEnabled,
         dataSource.options['tokenData']?.value,
@@ -604,12 +638,39 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return params;
   }
 
+  private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
+    const dataSourcePrefix = {
+      googlecalendar: 'GOOGLE',
+      snowflake: 'SNOWFLAKE',
+    };
+    const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
+    return key;
+  }
+
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string, userId: any, isMultiAuthEnabled: boolean): Promise<any> {
+  async fetchOAuthToken(
+    sourceOptions: any,
+    code: string,
+    userId: any,
+    isMultiAuthEnabled: boolean,
+    dataSource: DataSource
+  ): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
+    if (sourceOptions['oauth_type'] === 'tooljet_app') {
+      const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
+      const clientSecretKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_SECRET');
+      sourceOptions['client_id'] = process.env[sourceOptions[clientIdKey]];
+      sourceOptions['client_secret'] = process.env[sourceOptions[clientSecretKey]];
+    }
 
+    if (!accessTokenUrl) {
+      throw new BadRequestException('Missing access_token_url');
+    }
+    if (!sourceOptions['client_id']) {
+      throw new BadRequestException('Missing client_id');
+    }
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
@@ -621,6 +682,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       redirect_uri: `${tooljetHost}/oauth2/authorize`,
       ...customParams,
     };
+
     try {
       const response = await got(accessTokenUrl, {
         method: 'post',
@@ -633,6 +695,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       });
 
       const result = JSON.parse(response.body);
+      console.log('access token result', result);
       return {
         ...(isMultiAuthEnabled ? { user_id: userId } : {}),
         access_token: result['access_token'],
@@ -657,7 +720,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   /* this function only for getting auth token for googlesheets and related plugins*/
   async fetchAPITokenFromPlugins(dataSource: DataSource, code: string, sourceOptions: any) {
-    const queryService = new allPlugins[dataSource.kind]();
+    const queryService = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
     const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
     const options = [];
     for (const row of accessDetails) {
@@ -665,7 +728,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       option['key'] = row[0];
       option['value'] = row[1];
       option['encrypted'] = true;
-
       options.push(option);
     }
     return options;
@@ -781,7 +843,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
     const { provider, source_options = {}, plugin_id = null } = getDataSourceOauthUrlDto;
-    const service = await this.pluginsServiceSelector.getService(plugin_id, provider);
+    const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
     return { url: service.authUrl(source_options) };
   }
 

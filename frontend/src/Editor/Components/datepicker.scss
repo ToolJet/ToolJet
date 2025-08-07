@@ -34,6 +34,12 @@
     filter: brightness(0.92);
   }
 
+
+
+}
+
+.react-datepicker-popper.tj-datepicker-widget {
+  width:242px !important;
 }
 
   // .dark-theme {
@@ -45,3 +51,8 @@
   //       color:  #fff !important // This needs to be black since this has no effect on mac but has on windows
   //     }
   // }
+
+.legacy-datepicker-poppper.react-datepicker-popper.tj-datepicker-widget {
+  width: 254px !important;
+  border-radius: 6px !important;
+}

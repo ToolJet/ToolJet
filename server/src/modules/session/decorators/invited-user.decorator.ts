@@ -1,7 +1,8 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { App } from '@entities/app.entity';
+import { cloneDeep } from 'lodash';
+import { User } from '@sentry/node';
 
-export const InvitedUser = createParamDecorator((data: unknown, ctx: ExecutionContext): App => {
+export const InvitedUser = createParamDecorator((data: unknown, ctx: ExecutionContext): User => {
   const request = ctx.switchToHttp().getRequest();
-  return request.invitedUser;
+  return cloneDeep(request.invitedUser) as User;
 });

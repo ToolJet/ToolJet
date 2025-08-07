@@ -8,6 +8,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -56,11 +57,13 @@ export const ConfigHandle = ({
   }, shallow);
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
-  const component = useStore((state) => state.modules.canvas.pages[currentPageIndex].components[id]);
+  const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-  const isRestricted = component.permissions && component.permissions.length !== 0;
+  const isRestricted = component?.permissions && component?.permissions?.length !== 0;
   const draggingComponentId = useStore((state) => state.draggingComponentId);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
   let height = visibility === false ? 10 : widgetHeight;
 
@@ -153,11 +156,18 @@ export const ConfigHandle = ({
           className="text-truncate"
         >
           {/* Settings Icon */}
-          <span style={{ cursor: 'pointer', marginRight: '5px' }}>
+          <span
+            onClick={() => {
+              setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+              setRightSidebarOpen(true);
+            }}
+            style={{ cursor: 'pointer', marginRight: '5px' }}
+          >
             <SolidIcon
-              name="settings"
+              name="propertiesstyles"
               width="12"
               height="12"
+              viewBox="0 0 16 16"
               fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
             />
           </span>

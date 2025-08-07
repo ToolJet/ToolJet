@@ -11,7 +11,9 @@ import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/Editor/Components/utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './table.scss';
 
 export const Table = memo(
   ({
@@ -38,7 +40,6 @@ export const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
-    console.log('selectedTheme', selectedTheme);
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -68,6 +69,7 @@ export const Table = memo(
       columnDeletionHistory,
       autogenerateColumns,
       actions,
+      shouldRender,
       ...restOfProperties
     } = properties;
 
@@ -78,6 +80,19 @@ export const Table = memo(
     const allAppEvents = useEvents();
 
     const shouldAutogenerateColumns = useRef(false);
+    const hasDataChanged = useRef(false);
+
+    useEffect(() => {
+      hasDataChanged.current = false;
+    }, [shouldRender]);
+
+    useEffect(() => {
+      hasDataChanged.current = true;
+    }, [restOfProperties.data]);
+
+    // Create ref for height observation
+    const tableRef = useRef(null);
+    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -139,20 +154,24 @@ export const Table = memo(
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
       return transformTableData(restOfProperties.data, transformations, getResolvedValue);
-    }, [getResolvedValue, restOfProperties.data, transformations]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getResolvedValue, restOfProperties.data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    // Added to handle the dynamic value (fx) on the table column properties
 
     useDynamicHeight({
       dynamicHeight: properties.dynamicHeight,
       id: id,
       height,
-      value: JSON.stringify(tableData),
+      value: heightChangeValue,
       adjustComponentPositions,
       currentLayout,
       width,
+      visibility,
     });
 
     return (
       <div
+        ref={tableRef}
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
@@ -168,7 +187,8 @@ export const Table = memo(
           '--cc-table-footer-action-hover': hoverColor,
           '--cc-table-row-hover': hoverColor,
           '--cc-table-row-active': activeColor,
-          '--cc-table-scroll-bar-color': activeColor, 
+          '--cc-table-scroll-bar-color': activeColor,
+          '--cc-table-border-color': borderColor,
         }}
       >
         <TableContainer
@@ -180,6 +200,7 @@ export const Table = memo(
           componentName={componentName}
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
+          hasDataChanged={hasDataChanged.current}
         />
       </div>
     );

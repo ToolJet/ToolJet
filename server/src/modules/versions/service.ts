@@ -38,7 +38,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) {}
+  ) { }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -109,14 +109,14 @@ export class VersionService implements IVersionService {
         updatedVersionId = appVersion.id;
       }
 
-      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId, user.organizationId);
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
       const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
       if (
         appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,app.organizationId))
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId))
       ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
@@ -215,6 +215,7 @@ export class VersionService implements IVersionService {
     });
     return;
   }
+
 
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {

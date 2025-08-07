@@ -57,7 +57,12 @@ const DataSectionUI = ({
   const [showAddFieldPopover, setShowAddFieldPopover] = useState(false);
   const addFieldButtonRef = useRef(null);
 
-  const hideManageFields = formFields.length === 0 || savedSourceValue === 'rawJson';
+  const hideManageFields =
+    formFields.length === 0 ||
+    savedSourceValue === '' ||
+    savedSourceValue === 'rawJson' ||
+    savedSourceValue === 'jsonSchema' ||
+    source?.value === 'rawJson';
 
   useEffect(() => {
     if (openModalFromParent && openModalFromParent !== isModalOpen) {

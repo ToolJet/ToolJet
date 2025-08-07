@@ -210,16 +210,16 @@ class DraftEditor extends React.Component {
         this.setState({ editorState: newEditorState });
       },
       setDisable: async (value) => {
-        this.props.setExposedVariable('isDisabled', value);
-        this.props.setIsDisabled(value);
+        this.props.setExposedVariable('isDisabled', !!value);
+        this.props.setIsDisabled(!!value);
       },
       setVisibility: async (value) => {
-        this.props.setExposedVariable('isVisible', value);
-        this.props.setIsVisible(value);
+        this.props.setExposedVariable('isVisible', !!value);
+        this.props.setIsVisible(!!value);
       },
       setLoading: async (value) => {
-        this.props.setExposedVariable('isLoading', value);
-        this.props.setIsLoading(value);
+        this.props.setExposedVariable('isLoading', !!value);
+        this.props.setIsLoading(!!value);
       },
     };
     this.props.setExposedVariables(exposedVariables);

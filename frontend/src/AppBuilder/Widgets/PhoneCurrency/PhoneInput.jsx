@@ -14,7 +14,7 @@ import { getModifiedColor } from '@/Editor/Components/utils';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -100,6 +100,11 @@ export const PhoneInput = (props) => {
             value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
             setCountry(value ? value : '');
           }
+          setExposedVariables({
+            country: country,
+            countryCode: `+${getCountryCallingCodeSafe(country)}`,
+            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
+          });
         },
       });
       isInitialRender.current = false;
@@ -108,7 +113,9 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (!isInitialRender.current) {
-      setCountry(defaultCountry);
+      if (getCountryCallingCodeSafe(defaultCountry)) {
+        setCountry(defaultCountry);
+      }
     }
   }, [defaultCountry]);
 
@@ -215,11 +222,12 @@ export const PhoneInput = (props) => {
                 setCountry(selectedOption.value);
               }
             }}
+            componentId={id}
           />
           <Input
             ref={inputRef}
             country={country}
-            international={false}
+            international={true}
             value={value}
             onChange={onInputValueChange}
             placeholder={placeholder}

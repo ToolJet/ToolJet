@@ -10,7 +10,7 @@ export const ActionButtons = ({ actions, row, cell, fireEvent, setExposedVariabl
   const handleActionClick = useCallback(
     (action) => {
       setExposedVariables({
-        selectedRowId: row.id,
+        selectedRowId: row.index,
         selectedRow: row.original,
       });
 
