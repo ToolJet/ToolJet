@@ -137,6 +137,20 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         ];
       }
 
+      if (!isEmpty(component) && component.component === 'FilePicker' && componentExposedVariables?.file) {
+        return [
+          {
+            iconName: 'file',
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
+            className: 'component-icon',
+            tooltipMessage: 'This file attribute will be deprecated soon, You can use files as an alternative',
+            isInfoIcon: true,
+          },
+        ];
+      }
+
       return [];
     })
     .flat()

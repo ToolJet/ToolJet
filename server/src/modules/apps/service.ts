@@ -272,7 +272,7 @@ export class AppsService implements IAppsService {
       : [];
 
     const pagesForVersion = app.editingVersion
-      ? await this.pageService.findPagesForVersion(app.editingVersion.id, user.organizationId)
+      ? await this.pageService.findPagesForVersion(app.editingVersion.id)
       : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
@@ -350,7 +350,7 @@ export class AppsService implements IAppsService {
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
       const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id, app.organizationId)
+        ? await this.pageService.findPagesForVersion(versionToLoad.id)
         : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
@@ -383,6 +383,7 @@ export class AppsService implements IAppsService {
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
+        appId: app.id,
       };
     };
 

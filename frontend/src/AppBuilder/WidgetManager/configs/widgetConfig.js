@@ -44,6 +44,7 @@ import {
   spinnerConfig,
   statisticsConfig,
   rangeSliderConfig,
+  rangeSliderV2Config,
   timelineConfig,
   svgImageConfig,
   htmlConfig,
@@ -63,6 +64,7 @@ import {
   emailinputConfig,
   phoneinputConfig,
   currencyinputConfig,
+  chatConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -94,7 +96,7 @@ export const widgets = [
   numberinputConfig,
   phoneinputConfig,
   currencyinputConfig,
-  rangeSliderConfig,
+  rangeSliderV2Config,
   starratingConfig,
 
   //Select inputs
@@ -145,6 +147,7 @@ export const widgets = [
   colorPickerConfig,
   boundedBoxConfig,
   qrscannerConfig,
+  chatConfig,
 
   //Legacy
   modalConfig,
@@ -153,6 +156,7 @@ export const widgets = [
   toggleswitchConfig,
   dropdownConfig,
   multiselectConfig,
+  rangeSliderConfig,
 
   //Module
   moduleContainerConfig,

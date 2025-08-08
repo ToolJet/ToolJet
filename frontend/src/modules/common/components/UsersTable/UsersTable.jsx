@@ -87,7 +87,7 @@ const UsersTable = ({
                   </th>
                 )}
                 {isLoadingAllUsers && (
-                  <th data-cy="users-table-type-column-header">
+                  <th data-cy="users-table-type-column-header" data-name="type-header">
                     {translator('header.organization.menus.manageUsers.userType', 'Type')}
                   </th>
                 )}
@@ -161,7 +161,7 @@ const UsersTable = ({
                         </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
+                        <td className="text-muted" data-name="type-header">
                           <span
                             className="text-muted user-type"
                             data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-type`}

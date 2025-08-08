@@ -13,6 +13,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { shallow } from 'zustand/shallow';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 const tinycolor = require('tinycolor2');
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
@@ -150,6 +151,7 @@ export const Tabs = function Tabs({
     isContainer: true,
     value: currentTab,
     componentCount,
+    visibility: widgetVisibility,
   });
 
   useEffect(() => {
@@ -167,7 +169,7 @@ export const Tabs = function Tabs({
     const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, darkMode]);
+  }, [currentTab, darkMode, parsedTabs]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -224,6 +226,7 @@ export const Tabs = function Tabs({
   const [canScroll, setCanScroll] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredTabId, setHoveredTabId] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const checkScroll = () => {
     if (tabsRef.current) {
@@ -321,7 +324,7 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={isDisabled}
-      className="card tabs-component"
+      className="card tabs-component scrollbar-container"
       style={{
         height: dynamicHeight ? '100%' : padding === 'default' ? height : height + 4,
         display: isVisible ? 'flex' : 'none',
@@ -340,11 +343,11 @@ export const Tabs = function Tabs({
         <div
           style={{
             borderBottom: someTabsVisible?.length > 0 && `0.5px solid ${divider}`,
-            display: 'flex',
             alignItems: 'center',
             width: '100%',
             backgroundColor: headerBackground,
             height: '50px',
+            display: parsedHideTabs ? 'none' : 'flex',
           }}
         >
           {canScroll && (
@@ -386,7 +389,7 @@ export const Tabs = function Tabs({
                     opacity: tab?.disable && '0.5',
                     width: tabWidth == 'split' && equalSplitWidth + '%',
                     borderBottom: currentTab === tab.id && !tab?.disable ? `2px solid ${accent}` : ' #CCD1D5',
-                    backgroundColor: headerBackground,
+                    backgroundColor: 'transparent',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
@@ -398,6 +401,11 @@ export const Tabs = function Tabs({
                   onClick={() => {
                     if (currentTab == tab.id) return;
                     if (tab?.disable) return;
+
+                    if (transition !== 'none') {
+                      setIsTransitioning(true);
+                      setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
+                    }
 
                     !tab?.disabled && setCurrentTab(tab.id);
                     !tab?.disabled && setExposedVariable('currentTab', tab.id);
@@ -439,13 +447,13 @@ export const Tabs = function Tabs({
                       <>
                         <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
                         <OverflowTooltip boxWidth={width}>
-                          <>{tab.title}</>
+                          <>{getSafeRenderableValue(tab.title)}</>
                         </OverflowTooltip>
                       </>
                     ) : (
                       <span>
                         <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
-                        {tab.title}
+                        {getSafeRenderableValue(tab.title)}
                       </span>
                     )}
                   </div>
@@ -484,38 +492,79 @@ export const Tabs = function Tabs({
             position: 'relative',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              width: `${tabItems.length * 100}%`,
-              transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
-              transition: 'transform 0.3s ease-in-out',
-              height: '100%',
-            }}
-          >
-            {tabItems.map((tab) => (
+          {transition === 'none' ? (
+            // Simple show/hide when no transition
+            tabItems.map((tab) => (
               <div
                 key={tab.id}
                 style={{
-                  width: `${100 / tabItems.length}%`,
-                  flexShrink: 0,
+                  display: tab.id === currentTab ? 'block' : 'none',
+                  width: '100%',
                   height: '100%',
+                  overflow: 'hidden',
+                  boxSizing: 'border-box',
                 }}
               >
-                <TabContent
-                  id={id}
-                  tab={tab}
-                  height={height}
-                  width={width}
-                  parsedHideTabs={parsedHideTabs}
-                  bgColor={bgColor}
-                  darkMode={darkMode}
-                  dynamicHeight={dynamicHeight}
-                  currentTab={currentTab}
-                />
+                {shouldRenderTabContent(tab) && (
+                  <TabContent
+                    id={id}
+                    tab={tab}
+                    height={height}
+                    width={width}
+                    parsedHideTabs={parsedHideTabs}
+                    bgColor={bgColor}
+                    darkMode={darkMode}
+                    dynamicHeight={dynamicHeight}
+                    currentTab={currentTab}
+                    isTransitioning={isTransitioning}
+                  />
+                )}
               </div>
-            ))}
-          </div>
+            ))
+          ) : (
+            // Sliding animation when transition is enabled
+            <div
+              style={{
+                display: 'flex',
+                width: `${tabItems.length * 100}%`,
+                transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
+                transition: 'transform 0.3s ease-in-out',
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {tabItems.map((tab) => (
+                <div
+                  key={tab.id}
+                  style={{
+                    width: `${100 / tabItems.length}%`,
+                    flexShrink: 0,
+                    height: '100%',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                    contain: 'layout style size',
+                  }}
+                >
+                  {shouldRenderTabContent(tab) && (
+                    <TabContent
+                      id={id}
+                      tab={tab}
+                      height={height}
+                      width={width}
+                      parsedHideTabs={parsedHideTabs}
+                      bgColor={bgColor}
+                      darkMode={darkMode}
+                      dynamicHeight={dynamicHeight}
+                      currentTab={currentTab}
+                      isTransitioning={isTransitioning}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -528,10 +577,6 @@ const areEqual = (prevProps, nextProps) => {
 
   for (let key of allKeys) {
     if (prevProps[key] !== nextProps[key]) {
-      console.log(`[TabContent] Prop changed: ${key}`, {
-        from: prevProps[key],
-        to: nextProps[key],
-      });
       hasChanges = true;
     }
   }
@@ -549,6 +594,7 @@ const TabContent = memo(function TabContent({
   darkMode,
   dynamicHeight,
   currentTab,
+  isTransitioning,
 }) {
   const loading = tab?.loading;
   const disable = tab?.disable;
@@ -563,11 +609,16 @@ const TabContent = memo(function TabContent({
       activetab={currentTab}
       className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
-        display: disable ? 'none' : 'block',
+        display: 'block',
         height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
         position: 'relative',
         top: '0px',
         width: '100%',
+        backgroundColor: fieldBackgroundColor || bgColor,
+        opacity: disable ? 0.5 : 1,
+        pointerEvents: disable ? 'none' : 'auto',
+        overflow: 'hidden', // Ensure TabContent doesn't overflow
+        boxSizing: 'border-box', // Include padding/border in size calculation
       }}
     >
       {loading ? (
@@ -587,7 +638,15 @@ const TabContent = memo(function TabContent({
           canvasHeight={dynamicHeight ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
-          styles={{ overflow: 'hidden auto', backgroundColor: disable ? '#ffffff' : fieldBackgroundColor || bgColor }}
+          styles={{
+            overflow: isTransitioning ? 'hidden' : 'hidden auto',
+            backgroundColor: fieldBackgroundColor || bgColor,
+            opacity: disable ? 0.5 : 1,
+            width: '100%', // Ensure it doesn't exceed container width
+            maxWidth: '100%', // Additional constraint
+            boxSizing: 'border-box', // Include padding/border in width
+            contain: 'layout style', // Add containment for better overflow control
+          }}
           darkMode={darkMode}
         />
       )}

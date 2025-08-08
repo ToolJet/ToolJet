@@ -9,8 +9,8 @@ import TemplateDisplay from './TemplateDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { getWorkspaceId } from '../../_helpers/utils';
-
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
     id: categoryId,
@@ -32,6 +32,17 @@ export default function TemplateLibraryModal(props) {
     selectApp(filteredApps[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
+
+  const selectApplication = (app) => {
+    posthogHelper.captureEvent('click_template_name', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      template_category_id: selectedCategory?.id,
+      template_name: app?.name,
+    });
+    selectApp(app);
+  };
 
   useEffect(() => {
     libraryAppService
@@ -79,7 +90,7 @@ export default function TemplateLibraryModal(props) {
               <Container fluid>
                 <Row style={{ height: '90%' }}>
                   <Col className="template-list-column" xs={3} style={{ height: '100%', overflowY: 'auto' }}>
-                    <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
+                    <AppList apps={filteredApps} selectApp={selectApplication} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
                     <TemplateDisplay app={selectedApp} darkMode={props.darkMode} />
@@ -100,6 +111,15 @@ export default function TemplateLibraryModal(props) {
                           props.openCreateAppFromTemplateModal(selectedApp);
                           setShowCreateAppFromTemplateModal(false);
                           props.onCloseButtonClick();
+                          posthogHelper.captureEvent('create_application_from_template', {
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                            template_category_id: selectedCategory?.id,
+                            template_name: selectedApp?.name,
+                            button_name: 'create_application_from_template',
+                            previous_action_button_name: props.fromButton,
+                          });
                         }}
                         isLoading={deploying}
                         className="ms-2"

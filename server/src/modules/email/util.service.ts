@@ -4,12 +4,14 @@ import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service
 import { Injectable } from '@nestjs/common';
 import { SMTPUtilService } from '@modules/smtp/util.service';
 import { DEFAULT_WHITE_LABELLING_SETTINGS } from '@modules/white-labelling/constant';
-const path = require('path');
-const fs = require('fs');
+import * as path from 'path';
+import * as fs from 'fs';
 import handlebars from 'handlebars';
 import { join } from 'path';
 import * as nodemailer from 'nodemailer';
 import { centsToUSD } from '@helpers/utils.helper';
+import { ConfigService } from '@nestjs/config';
+import { Logger } from 'nestjs-pino';
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -35,11 +37,13 @@ export class EmailUtilService implements IEmailUtilService {
   protected defaultWhiteLabelState: boolean;
   constructor(
     protected readonly whiteLabellingUtilService: WhiteLabellingUtilService,
-    protected readonly smtpUtilService: SMTPUtilService
+    protected readonly smtpUtilService: SMTPUtilService,
+    protected readonly configService: ConfigService,
+    protected readonly logger: Logger
   ) {
-    this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
-    this.SUB_PATH = process.env.SUB_PATH;
-    this.NODE_ENV = process.env.NODE_ENV || 'development';
+    this.TOOLJET_HOST = this.stripTrailingSlash(configService.get<string>('TOOLJET_HOST'));
+    this.SUB_PATH = configService.get<string>('SUB_PATH');
+    this.NODE_ENV = configService.get<string>('NODE_ENV') || 'development';
   }
 
   async retrieveWhiteLabelSettings(organizationId?: string | null): Promise<any> {
@@ -64,7 +68,7 @@ export class EmailUtilService implements IEmailUtilService {
     smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED] = smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED] === 'true';
     smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL] =
       smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED] === 'true'
-        ? process.env.DEFAULT_FROM_EMAIL
+        ? this.configService.get<string>('DEFAULT_FROM_EMAIL')
         : smtpSetting[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL] || 'hello@tooljet.io';
     return smtpSetting;
   }
@@ -102,6 +106,29 @@ export class EmailUtilService implements IEmailUtilService {
   }
 
   async sendEmail(to: string | string[], subject: string, templateData: any) {
+    if (!to) {
+      return;
+    }
+
+    // Filter out test emails if configured
+    const filteredDomains = this.configService.get<string>('FILTERED_DOMAINS_FOR_EMAIL') || '';
+    if (filteredDomains) {
+      const domains = filteredDomains.split(',').map((domain) => domain.trim());
+      const hasFilteredDomain = (email: string): boolean => {
+        const domain = email.split('@')[1]?.toLowerCase();
+        return domains.includes(domain);
+      };
+      if (typeof to === 'string') {
+        if (hasFilteredDomain(to)) {
+          this.logger.log('Email not sent to ', to);
+          return;
+        }
+      } else if (to.some((email) => hasFilteredDomain(email))) {
+        this.logger.log('Email not sent to ', to?.join(', '));
+        return;
+      }
+    }
+
     this.registerPartials();
 
     // Load the main template file
@@ -164,6 +191,7 @@ export class EmailUtilService implements IEmailUtilService {
         console.log('to: ', to);
         console.log('Subject: ', subject);
         console.log('content: ', htmlToSend);
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const previewEmail = require('preview-email');
         const transport = nodemailer.createTransport({
           jsonTransport: true,
@@ -173,12 +201,12 @@ export class EmailUtilService implements IEmailUtilService {
       } else {
         const transport = this.mailTransport(this.SMTP);
         const result = await transport.sendMail(mailOptions);
-        console.log('Message sent: %s', result);
+        this.logger.log(`Message sent: ${result?.messageId || 'No message ID'}`);
         return result;
       }
     } catch (error) {
       if (this.NODE_ENV === 'test' || this.NODE_ENV == 'development') return;
-      console.log(error);
+      this.logger.log(error);
     }
   }
 
@@ -194,10 +222,10 @@ export class EmailUtilService implements IEmailUtilService {
     if (smtp[INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED] === 'true') {
       // Use environment variables for SMTP settings
       smtpSettings = {
-        host: process.env.SMTP_DOMAIN,
-        port: process.env.SMTP_PORT,
-        username: process.env.SMTP_USERNAME,
-        password: process.env.SMTP_PASSWORD,
+        host: this.configService.get<string>('SMTP_DOMAIN'),
+        port: this.configService.get<string>('SMTP_PORT'),
+        username: this.configService.get<string>('SMTP_USERNAME'),
+        password: this.configService.get<string>('SMTP_PASSWORD'),
       };
     } else {
       smtpSettings = {
@@ -211,7 +239,7 @@ export class EmailUtilService implements IEmailUtilService {
     const transporter = nodemailer.createTransport({
       host: smtpSettings.host,
       port: smtpSettings.port,
-      secure: smtpSettings.port === 465, // Use `true` for port 465, `false` for others
+      secure: smtpSettings.port == 465, // Use `true` for port 465, `false` for others
       auth: {
         user: smtpSettings.username,
         pass: smtpSettings.password,
@@ -261,7 +289,7 @@ export class EmailUtilService implements IEmailUtilService {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(null);
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings(organizationId);
     this.SMTP = await this.retrieveSmtpSettings();
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;

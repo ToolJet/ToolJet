@@ -102,10 +102,6 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettings: {},
     showPagePermissionModal: false,
-    permissionPage: null,
-    selectedUserGroups: [],
-    selectedUsers: [],
-    pagePermission: null,
     newPagePopupConfig: {
       show: false,
       type: null,
@@ -119,6 +115,7 @@ export const createPageMenuSlice = (set, get) => {
         state.showSearch = show;
         if (!show) state.pageSearchResults = null;
       }),
+
     openPageEditPopover: (page, ref) =>
       set((state) => {
         state.editingPage = page;
@@ -127,13 +124,7 @@ export const createPageMenuSlice = (set, get) => {
           state.showEditingPopover = true;
         }
       }),
-    setNewPagePopupConfig: (config) =>
-      set((state) => {
-        state.newPagePopupConfig = {
-          ...state.newPagePopupConfig,
-          ...config,
-        };
-      }),
+
     closePageEditPopover: () =>
       set((state) => {
         state.showEditingPopover = false;
@@ -141,6 +132,14 @@ export const createPageMenuSlice = (set, get) => {
         state.showRenamePageHandleModal = false;
         state.showEditPageNameInput = false;
         state.showDeleteConfirmationModal = false;
+      }),
+
+    setNewPagePopupConfig: (config) =>
+      set((state) => {
+        state.newPagePopupConfig = {
+          ...state.newPagePopupConfig,
+          ...config,
+        };
       }),
 
     toggleEditPageHandleModal: (show) =>
@@ -233,7 +232,7 @@ export const createPageMenuSlice = (set, get) => {
       }
     },
     cloneGroup: async (pageId) => {
-      const { getAppId, currentVersionId } = get();
+      const { getAppId, currentVersionId, resolvePageHiddenValue } = get();
       const appId = getAppId('canvas');
       const pages = get().modules.canvas.pages;
       const data = await appVersionService.cloneGroup(appId, currentVersionId, pageId);
@@ -246,6 +245,8 @@ export const createPageMenuSlice = (set, get) => {
         const processedPages = addedPages.map((page) => {
           const cloned = JSON.parse(JSON.stringify(page));
           const currentComponents = cloned?.components ? buildComponentMetaDefinition(cloned.components) : undefined;
+          resolvePageHiddenValue('canvas', true, cloned?.id, cloned?.hidden?.value);
+
           return { ...cloned, components: currentComponents };
         });
 
@@ -481,5 +482,28 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.editingPage = page;
       }),
+    // openPageEditPopover: (type, page, ref) => {
+    //   // Assuming ref is passed for targeting
+    //   set((state) => ({
+    //     editingPage: page,
+    //     showEditingPopover: true, // Make sure this is explicitly set to true
+    //     newPagePopupConfig: {
+    //       // Set default values or infer from page
+    //       show: true, // This might be redundant if showEditingPopover is the primary flag
+    //       mode: type,
+    //       type: page?.type || 'default',
+    //     },
+    //   }));
+    //   // You might store the target ref in the state if overlays need to dynamically pick it up
+    //   // For react-bootstrap Overlay, the target is passed as a prop, not globally
+    // },
+    // And when closing:
+    // closePageEditPopover: () => {
+    //   set((state) => ({
+    //     editingPage: null,
+    //     showEditingPopover: false,
+    //     newPagePopupConfig: { show: false, mode: null, type: null },
+    //   }));
+    // },
   };
 };

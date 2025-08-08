@@ -15,7 +15,6 @@ import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
-import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
@@ -27,6 +26,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
+import OAuthWrapper from './OAuthWrapper';
 
 const DynamicForm = ({
   schema,
@@ -209,10 +209,10 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
-      case 'react-component-salesforce':
-        return Salesforce;
       case 'react-component-sharepoint':
         return Sharepoint;
+      case 'react-component-oauth':
+        return OAuthWrapper;
       default:
         return <div>Type is invalid</div>;
     }
@@ -250,6 +250,7 @@ const DynamicForm = ({
     buttonText,
     text,
     subtext,
+    oauth_configs,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -387,8 +388,8 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-      case 'react-component-salesforce':
       case 'react-component-sharepoint':
+      case 'react-component-oauth':
         return {
           optionchanged,
           createDataSource,
@@ -399,6 +400,9 @@ const DynamicForm = ({
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           optionsChanged,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          scopes: options?.scopes?.value,
+          oauth_configs,
         };
       case 'tooljetdb-operations':
         return {
@@ -642,6 +646,7 @@ const DynamicForm = ({
                   style={{ width: '100%' }}
                 >
                   <Element
+                    key={`${selectedDataSource?.id}-${propertyKey}`}
                     {...getElementProps(obj[key])}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}

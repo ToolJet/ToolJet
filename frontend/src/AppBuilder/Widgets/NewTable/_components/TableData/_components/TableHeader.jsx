@@ -39,6 +39,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     color: columnTitleColor,
     '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 'hover'),
     '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 'active'),
+    '--cc-table-header-active-border': getModifiedColor(columnBackgroundColor, 21),
   };
 
   return (
@@ -92,7 +93,9 @@ const DraggableHeader = ({ header, darkMode, id }) => {
             })}
             style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
           >
-            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+            {header.isPlaceholder
+              ? null
+              : flexRender(header.column.columnDef.header, header.getContext())}
           </div>
         </div>
         {header.column.getIsSorted() && (

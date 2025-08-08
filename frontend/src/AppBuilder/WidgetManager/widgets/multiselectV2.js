@@ -139,7 +139,7 @@ export const multiselectV2Config = {
     sort: {
       type: 'switch',
       displayName: 'Sort options',
-      validation: { schema: { type: 'string' }, defaultValue: 'asc' },
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
       options: [
         { displayName: 'None', value: 'none' },
         { displayName: 'a-z', value: 'asc' },
@@ -290,7 +290,7 @@ export const multiselectV2Config = {
       displayName: 'Icon color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#6A727C',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'field',
       showLabel: false,
@@ -306,7 +306,7 @@ export const multiselectV2Config = {
       displayName: 'Box Shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000090',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'field',
     },
@@ -343,7 +343,7 @@ export const multiselectV2Config = {
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
       optionsLoadingState: { value: '{{false}}' },
-      sort: { value: 'asc' },
+      sort: { value: 'none' },
       placeholder: { value: 'Select the options' },
       showAllSelectedLabel: { value: '{{true}}' },
       showClearBtn: { value: '{{true}}' },
@@ -395,10 +395,10 @@ export const multiselectV2Config = {
       direction: { value: 'left' },
       alignment: { value: 'side' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
-      iconColor: { value: '#6A727C' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },

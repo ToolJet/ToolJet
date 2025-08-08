@@ -39,7 +39,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="plus"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector component-image-holder`}
         tip="Components"
       >
         <Plus width="16" height="16" className="tw-text-icon-strong" />
@@ -51,7 +51,8 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         }}
         darkMode={darkMode}
-        icon="inspect"
+        icon="propertiesstyles"
+        iconWidth="14"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Component properties"
       >

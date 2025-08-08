@@ -23,7 +23,6 @@ export const useActiveSlot = (widgetId) => {
   useEffect(() => {
     const handleDoubleClick = (event) => {
       let target = event.target;
-
       if (!widgetId) {
         setActiveSlot(null);
         return;

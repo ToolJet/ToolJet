@@ -16,6 +16,7 @@ import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
 // import lucide icons
 // import { Settings, LayoutDashboard, Code, Bug, MessageCircle, FileText, Settings, Bug, Code, LayoutDashboard } from 'lucide-react';
 import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
+import SupportButton from './SupportButton';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -65,6 +66,7 @@ export const BaseLeftSidebar = ({
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
+    localStorage.setItem('selectedSidebarItem', item);
     if (item === selectedSidebarItem && !pinned) {
       return toggleLeftSidebar(false);
     }
@@ -94,15 +96,16 @@ export const BaseLeftSidebar = ({
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-      case 'page':
-        return (
-          <PageMenu
-            setPinned={setPinned}
-            pinned={pinned}
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-          />
-        );
+      // case 'page':
+      //   return (
+      //     <PageMenu
+      //       setPinned={setPinned}
+      //       pinned={pinned}
+      //       darkMode={darkMode}
+      //       selectedSidebarItem={selectedSidebarItem}
+      //     />
+      //   );
+      case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
           <LeftSidebarInspector
@@ -162,10 +165,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -278,6 +281,7 @@ export const BaseLeftSidebar = ({
               ref={setSideBarBtnRefs('comments')}
             />
           </div> */}
+          <SupportButton />
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>

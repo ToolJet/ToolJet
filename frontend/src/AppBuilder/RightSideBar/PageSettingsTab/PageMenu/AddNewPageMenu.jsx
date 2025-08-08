@@ -20,7 +20,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
   };
 
   return (
-    <div className="page-type-buttons-container">
+    <div className={`page-type-buttons-container ${darkMode && 'dark-mode'}`}>
       <Button
         ref={newPageBtnRef}
         key="new-page-btn"
@@ -54,7 +54,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         rootClose
         onHide={() => setShowMenuPopover(false)}
       >
-        <Popover id="add-new-page-popover">
+        <Popover className={darkMode && 'dark-theme theme-dark'} id="add-new-page-popover">
           <div className="menu-options mb-0">
             <PageOptions
               type="url"
@@ -70,7 +70,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            <div className={`d-flex ${!isLicensed && 'disabled licensed-page-option'}`}>
+            <div className={`${!isLicensed && 'd-flex disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
@@ -79,7 +79,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
                 onClick={() => handleOpenPopup('group')}
               />
               <LicenseTooltip
-                message={"App header can't be hidden on free plans"}
+                message={"Nav group can't be created on free plans"}
                 placement="bottom"
                 show={!isLicensed}
               >

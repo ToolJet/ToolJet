@@ -13,7 +13,7 @@
 
   .react-select__option {
     color: var(--text-default);
-    height: 32px;
+    min-height: 32px;  
     z-index: 100;
     padding: 4px 8px;
   }
@@ -38,18 +38,23 @@
     .react-select__option {
       background-color: var(--surfaces-surface-01) !important;
       border-radius: 6px;
+      min-height: 38px;
 
 
-      > div {
+      >div {
         color: var(--text-default) !important;
         background-color: transparent !important;
       }
 
       &:hover {
         background-color: var(--interactive-hover) !important;
-        > div {
-            background-color: transparent !important;
+
+        >div {
+          background-color: transparent !important;
         }
+      }
+      &:hover .current-org-indicator {
+        display: block;
       }
     }
   }
@@ -61,10 +66,8 @@
   align-items: center;
   justify-content: center;
   border-top: 1px solid var(--border-weak);
-  margin-bottom: var(
-    --dynamic-margin,
-    0px
-  ); //please Remove after Basicplan banner is removed..
+  margin-bottom: var(--dynamic-margin,
+      0px); //please Remove after Basicplan banner is removed..
 }
 
 .tj-org-select {
@@ -130,6 +133,7 @@
     background-color: var(--surfaces-surface-01) !important;
     overflow-y: auto;
   }
+
   .react-select__option {
     display: flex;
     justify-content: space-between;
@@ -143,14 +147,66 @@
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 20px; /* 166.667% */
+    line-height: 20px;
+
+    /* 166.667% */
     &.react-select__option--is-selected {
       color: var(--indigo9) !important;
     }
+
     &:active {
       background: var(--surfaces-surface-01) !important;
       box-shadow: 0px 0px 0px 4px var(--slate6);
       color: var(--slate12) !important;
     }
+  }
+}
+
+// Firefox-specific fixes for Radix UI Select in modals and popovers
+@-moz-document url-prefix() {
+
+  // Fix for dropdowns in modals
+  .modal-dialog [data-radix-select-content] {
+    position: fixed !important;
+    z-index: 99999 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+  }
+
+  // Fix for dropdowns in popovers  
+  .popover [data-radix-select-content] {
+    position: fixed !important;
+    z-index: 99999 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+  }
+
+  // Ensure proper positioning for column mapping modal specifically
+  .column-mapping-modal-body [data-radix-select-content] {
+    max-height: 150px !important;
+    min-width: 140px !important;
+  }
+
+  // Ensure proper viewport constraint for form field popovers
+  .form-field-popover-body [data-radix-select-content] {
+    max-height: 200px !important;
+    min-width: 200px !important;
+  }
+}
+
+// General improvements for all browsers to ensure proper dropdown behavior
+[data-radix-select-content] {
+  // Ensure the dropdown content is always properly positioned
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: none !important; // Disable animations that might cause positioning issues
+
+  // For modals, ensure the dropdown doesn't exceed modal bounds
+  .modal-dialog & {
+    max-height: 250px;
+  }
+
+  // For popovers, ensure the dropdown doesn't exceed popover bounds  
+  .popover & {
+    max-height: 250px;
   }
 }

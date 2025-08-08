@@ -8,9 +8,9 @@ const storedSelectedSidebarItem = !storedIsSidebarPinned
   : 'page';
 
 const initialState = {
-  isLeftSideBarPinned: false,
-  selectedSidebarItem: null,
-  isSidebarOpen: false,
+  isLeftSideBarPinned: storedIsSidebarPinned,
+  selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
+  isSidebarOpen: storedIsSidebarPinned,
   pathToBeInspected: null,
 };
 
@@ -45,7 +45,7 @@ export const createLeftSideBarSlice = (set, get) => ({
     }
   },
   getComponentIdToAutoScroll: (componentId, moduleId = 'canvas') => {
-    const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas } = get();
+    const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas, getComponentTypeFromId } = get();
     const currentPageComponents = getCurrentPageComponents(moduleId);
 
     let targetComponentId = componentId;
@@ -66,18 +66,13 @@ export const createLeftSideBarSlice = (set, get) => ({
       let nextPossibleCandidate = parentId;
 
       // If the component exists inside a tab component
-      const regForTabs = /-(?!\d{12}$)\d+$/; // Parent id for tabs follow the format 'id-index' and index is not UUIDv4 id segment
-      if (regForTabs.test(parentId)) {
-        const reg = /-(\d+)$/;
-        const tabIndex = Number(parentId.match(reg)[1]); // Tab index inside which the component exists
-
-        const tabId = parentId.replace(regForTabs, ''); // Extract tab id from parent id
-
-        const { currentTab } = getAllExposedValues(moduleId).components?.[tabId] || {};
-        const activeTabIndex = Number(currentTab);
-
-        nextPossibleCandidate = tabId;
-        if (tabIndex !== activeTabIndex) {
+      const componentType = getComponentTypeFromId(parentId?.substring(0, 36));
+      if (componentType === 'Tabs') {
+        const tabIndex = parentId?.substring(37, parentId?.length); // Tab index inside which the component exists
+        const { currentTab, setTab } = getAllExposedValues(moduleId).components?.[parentId?.substring(0, 36)] || {};
+        nextPossibleCandidate = parentId;
+        setTab(tabIndex);
+        if (tabIndex !== currentTab) {
           isComponentVisibleInParent = false;
         }
       }

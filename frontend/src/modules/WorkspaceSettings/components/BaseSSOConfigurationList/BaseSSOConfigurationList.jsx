@@ -7,6 +7,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DefaultSSOList, DefaultSSOModal } from '@/modules/common/components';
 import { Button } from '@/components/ui/Button/Button';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+
 class BaseSSOConfigurationList extends React.Component {
   protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
@@ -357,6 +359,8 @@ class BaseSSOConfigurationList extends React.Component {
     const { enterpriseSSOList: EnterpriseSSOList = () => null } = this.props;
     const { enterpriseSSOModals: EnterpriseSSOModals = () => null } = this.props;
     const defaultSSOModals = this.props.defaultSSOModals;
+    const edition = fetchEdition();
+    const ssoDisplayText = edition === 'cloud' ? 'Default SSO' : 'Instance SSO';
     return (
       <div className="sso-configuration">
         <h4 style={{ fontSize: '12px' }} data-cy="sso-header">
@@ -383,22 +387,21 @@ class BaseSSOConfigurationList extends React.Component {
               bsPrefix="no-caret-dropdown-toggle"
               data-cy="dropdown-custom-toggle"
             >
-              <Button
-                variant="outline"
+              <div
                 className="sso-option-label"
                 style={{
                   paddingLeft: '12px',
                   width: '270px',
-                  paddingRight: '160px',
+                  paddingRight: '220px',
                   paddingTop: '6px',
                   paddingBottom: '6px',
                   height: '34px',
                 }}
                 data-cy="instance-sso-card"
               >
-                Instance SSO {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
+                {ssoDisplayText} {defaultSSO ? `(${this.state.inheritedInstanceSSO})` : ''}
                 <SolidIcon className="option-icon" name={showDropdown ? 'cheveronup' : 'cheverondown'} fill={'grey'} />
-              </Button>
+              </div>
             </Dropdown.Toggle>
 
             <Dropdown.Menu style={{ width: '100%' }}>

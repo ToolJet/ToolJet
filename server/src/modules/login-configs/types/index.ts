@@ -23,7 +23,7 @@ export interface ILoginConfigsService {
   getProcessedConfigs(organizationId: string): Promise<any>;
   constructSSOConfigs(): Promise<any>;
   fetchOrganizationDetails(
-    organizationId: string,
+    organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean

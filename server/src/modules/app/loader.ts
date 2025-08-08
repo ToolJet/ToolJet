@@ -115,13 +115,20 @@ export class AppModuleLoader {
      */
     const dynamicModules: DynamicModule[] = [];
 
-    try {
-      const { LogToFileModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`);
-      const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
-      dynamicModules.push(await LogToFileModule.register(configs));
-      dynamicModules.push(await AuditLogsModule.register(configs));
-    } catch (error) {
-      console.error('Error loading dynamic modules:', error);
+    if (!configs.IS_GET_CONTEXT) {
+      // Load dynamic modules only when not in migration context
+      try {
+        if (process.env.LOG_FILE_PATH) {
+          // Add log-to-file module if LOG_FILE_PATH is set
+          const { LogToFileModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`);
+          dynamicModules.push(await LogToFileModule.register(configs));
+        }
+
+        const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
+        dynamicModules.push(await AuditLogsModule.register(configs));
+      } catch (error) {
+        console.error('Error loading dynamic modules:', error);
+      }
     }
 
     return [...staticModules, ...dynamicModules];

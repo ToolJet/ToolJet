@@ -41,13 +41,13 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
   }
 
   async fetchOrganizationDetails(
-    organizationId: string,
+    organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
     const result: Organization = await this.organizationRepository.fetchOrganizationWithSSOConfigs(
-      organizationId,
+      organizationIdOrSlug,
       statusList
     );
     if (!result) return;

@@ -24,6 +24,8 @@ import CheveronLeft from './CheveronLeft.jsx';
 import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
+import CaretDown from './CaretDown.jsx';
+import CaretUp from './CaretUp.jsx';
 import Clock from './Clock.jsx';
 import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
@@ -262,7 +264,15 @@ import Delete01 from './Delete01.jsx';
 import SourceControl from './SourceControl.jsx';
 import Push from './PushIcon.jsx';
 import Pull from './PullIcon.jsx';
+import PropertiesStyles from './PropertiesStyles.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
+import Support from './Support.jsx';
+import ClearHistory from './ClearHistory.jsx';
+import PageDownload from './PageDownload.jsx';
+import Send from './Send.jsx';
+import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
+import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
+import LoadingState from './LoadingState.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -336,6 +346,10 @@ const Icon = (props) => {
       return <Debugger {...props} />;
     case 'calender':
       return <Calender {...props} />;
+    case 'caretdown':
+      return <CaretDown {...props} />;
+    case 'caretup':
+      return <CaretUp {...props} />;
     case 'checkrectangle':
       return <CheckRectangle {...props} />;
     case 'cheverondown':
@@ -536,6 +550,8 @@ const Icon = (props) => {
       return <Pin {...props} />;
     case 'unpin01':
       return <Unpin01 {...props} />;
+    case 'propertiesstyles':
+      return <PropertiesStyles {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':
@@ -746,6 +762,18 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'clearhistory':
+      return <ClearHistory {...props} />;
+    case 'pagedownload':
+      return <PageDownload {...props} />;
+    case 'send':
+      return <Send {...props} />;
+    case 'defaultresponseavatar':
+      return <DefaultResponseAvatar {...props} />;
+    case 'defaultsenderchatavatar':
+      return <DefaultSenderChatIcon {...props} />;
+    case 'loadingstate':
+      return <LoadingState {...props} />;
     case 'arrowdown01':
       return <ArrowDown01 {...props} />;
     case 'arrowreturn01':
@@ -794,6 +822,8 @@ const Icon = (props) => {
       return <Push {...props} />;
     case 'pull-changes':
       return <Pull {...props} />;
+    case 'support':
+      return <Support {...props} />;
     default:
       return <Apps {...props} />;
   }

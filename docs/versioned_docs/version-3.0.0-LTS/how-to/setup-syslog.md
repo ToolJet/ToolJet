@@ -63,7 +63,7 @@ The **log file** serves as a comprehensive record of audit logs, capturing cruci
    
 The log data captures essential details, such as user ID, organization ID, resource ID, resource type, action type, resource name, IP address, and additional metadata.
 
-<details id="tj-dropdown">
+<details>
 <summary>Example Log file data</summary>
 
 ```bash

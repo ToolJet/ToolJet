@@ -47,7 +47,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row">
-                      {isModuleEditor && <ModuleEditorBanner />}
+                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
                     <div>

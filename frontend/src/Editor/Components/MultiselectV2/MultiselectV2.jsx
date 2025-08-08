@@ -12,6 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -95,7 +96,7 @@ export const MultiselectV2 = ({
           .filter((data) => data?.visible ?? true)
           .map((data) => ({
             ...data,
-            label: data?.label,
+            label: getSafeRenderableValue(data?.label),
             value: data?.value,
             isDisabled: data?.disable ?? false,
           }))
@@ -236,13 +237,16 @@ export const MultiselectV2 = ({
         setInputValue([]);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsMultiSelectLoading(value);
+        setIsMultiSelectLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsMultiSelectDisabled(value);
+        setIsMultiSelectDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       label: label,
       isVisible: properties.visibility,
@@ -377,10 +381,7 @@ export const MultiselectV2 = ({
           isDisabled: isMultiSelectDisabled,
         }),
         '&:hover': {
-          borderColor:
-            state.isFocused || isMultiselectOpen
-              ? getInputFocusedColor({ accentColor })
-              : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -415,6 +416,10 @@ export const MultiselectV2 = ({
         borderRadius: '6px',
       },
     }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
+    }),
     dropdownIndicator: (provided, _state) => ({
       ...provided,
       padding: '0px',
@@ -425,8 +430,9 @@ export const MultiselectV2 = ({
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
+      opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'transparent',
         borderRadius: '8px',
       },
       cursor: 'pointer',

@@ -7,6 +7,8 @@ import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -59,6 +61,14 @@ export const BlankPage = function BlankPage({
               key={id}
               className="col-4 app-template-card-wrapper"
               onClick={() => {
+                /* Posthog Event */
+                posthogHelper.captureEvent('create_application_from_template', {
+                  workspace_id:
+                    authenticationService?.currentUserValue?.organization_id ||
+                    authenticationService?.currentSessionValue?.current_organization_id,
+                  template_name: name,
+                  button_name: 'create_application_from_template_card',
+                });
                 openCreateAppFromTemplateModal({ id, name });
               }}
             >
@@ -92,7 +102,15 @@ export const BlankPage = function BlankPage({
           className={cx('see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0', {
             disabled: appCreationDisabled,
           })}
-          onClick={viewTemplateLibraryModal}
+          onClick={() => {
+            posthogHelper.captureEvent('click_import_from_template', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
+              button_name: 'click_see_all_templates_button',
+            });
+            viewTemplateLibraryModal();
+          }}
           data-cy="see-all-apps-template-buton"
         >
           See all templates
@@ -175,6 +193,15 @@ export const BlankPage = function BlankPage({
                               ref={fileInput}
                               style={{ display: 'none' }}
                               data-cy="import-option-input"
+                              onClick={() => {
+                                /* Posthog Event */
+                                posthogHelper.captureEvent('click_import_button', {
+                                  workspace_id:
+                                    authenticationService?.currentUserValue?.organization_id ||
+                                    authenticationService?.currentSessionValue?.current_organization_id,
+                                  button_name: 'click_import_an_application_button',
+                                });
+                              }}
                             />
                           </label>
                         </ButtonSolid>

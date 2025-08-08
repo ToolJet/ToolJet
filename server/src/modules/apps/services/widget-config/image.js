@@ -130,12 +130,14 @@ export const imageConfig = {
       },
       accordian: 'Image',
     },
-    imageShape: {
+    borderType: {
       type: 'select',
       displayName: 'Shape',
       options: [
         { name: 'None', value: 'none' },
-        { name: 'Circle', value: 'circle' },
+        { name: 'Rounded', value: 'rounded' },
+        { name: 'Circle', value: 'rounded-circle' },
+        { name: 'Thumbnail', value: 'img-thumbnail' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -157,7 +159,7 @@ export const imageConfig = {
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: '#ffffff00',
       },
       accordian: 'Container',
     },
@@ -166,14 +168,18 @@ export const imageConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#ffffff00',
       },
       accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      conditionallyRender: {
+        key: 'borderType',
+        value: 'none',
+      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
       accordian: 'Container',
     },
     boxShadow: {
@@ -181,7 +187,7 @@ export const imageConfig = {
       displayName: 'Box shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000090',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'Container',
     },
@@ -257,11 +263,11 @@ export const imageConfig = {
     events: [],
     styles: {
       imageFit: { value: 'contain' },
-      imageShape: { value: 'none' },
-      backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: '' },
-      borderRadius: { value: '{{6}}' },
-      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      borderType: { value: 'none' },
+      backgroundColor: { value: '#ffffff00' },
+      borderColor: { value: '#ffffff00' },
+      borderRadius: { value: '{{0}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
       alignment: { value: 'center' },

@@ -44,7 +44,7 @@ export const createParamUpdatedInterceptor = ({
               "{{{ 'name': 'John Doe', 'age': 35, 'isActive': true, 'dob': '01-01-1990', 'hobbies': ['reading', 'gaming', 'cycling'], 'address': { 'street': '123 Main Street', 'city': 'New York' } }}}",
           });
           return setSource((prev) => ({ ...prev, value }));
-        } else if (value !== 'rawJson' && value !== 'jsonSchema') {
+        } else if (value !== 'rawJson' && value !== 'jsonSchema' && value.trim() !== '') {
           // Set the source value to the selected query until the query is run
           setSource((prev) => ({ ...prev, value: selectedQuery }));
           setLoading(true);

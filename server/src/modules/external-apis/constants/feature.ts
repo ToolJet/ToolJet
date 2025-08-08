@@ -49,6 +49,26 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.PULL_NEW_APP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.PULL_EXISTING_APP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.PUSH_APP_VERSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.CREATE_ORG_GIT]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.AUTO_RELEASE_APP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GENERATE_PAT]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,

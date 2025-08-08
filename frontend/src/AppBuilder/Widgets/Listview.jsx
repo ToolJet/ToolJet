@@ -31,10 +31,12 @@ export const Listview = function Listview({
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
-
+  const isWidgetInContainerDragging = useStore(
+    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+    shallow
+  );
   const prevFilteredDataRef = useRef([]);
   const prevChildComponents = useRef({});
-
   const {
     data,
     rowHeight,
@@ -59,8 +61,9 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
-    padding: '7px 2px 7px 7px',
-    scrollbarGutter: 'stable',
+    padding: '7px',
+    overflowX: 'hidden',
+    overflowY: isWidgetInContainerDragging ? 'hidden' : 'auto',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {
@@ -84,6 +87,7 @@ export const Listview = function Listview({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
@@ -255,13 +259,13 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className="jet-listview flex-column w-100 position-relative"
+      className="flex-column w-100 position-relative"
       id={id}
       ref={parentRef}
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className={`w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}`}
@@ -269,6 +273,7 @@ export const Listview = function Listview({
               position: 'relative',
               height: `${rowHeight}px`,
               width: `${100 / positiveColumns}%`,
+              padding: '0px',
               ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
             }}
             key={index}

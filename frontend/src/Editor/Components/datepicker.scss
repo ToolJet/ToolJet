@@ -34,6 +34,12 @@
     filter: brightness(0.92);
   }
 
+
+
+}
+
+.react-datepicker-popper.tj-datepicker-widget {
+  width:242px !important;
 }
 
   // .dark-theme {
@@ -45,3 +51,39 @@
   //       color:  #fff !important // This needs to be black since this has no effect on mac but has on windows
   //     }
   // }
+
+.legacy-datepicker-poppper.react-datepicker-popper.tj-datepicker-widget {
+  width: 254px !important;
+  border-radius: 6px !important;
+
+  .react-datepicker {
+    display: inline-block !important;
+    background-color: var(--cc-surface1-surface);
+
+    .react-datepicker__input-time-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 8px;
+
+      .react-datepicker-time__caption {
+        margin-left: 0px;
+        display: inline-block !important;
+        margin-right: 15px;
+      }
+    }
+
+    .react-datepicker__header {
+      color: var(--cc-primary-text);
+      .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
+        color: var(--cc-primary-text);
+      }
+    }
+  }
+
+}
+.legacy-datepicker-poppper.react-datepicker-popper.tj-datepicker-widget.dark-theme {
+  .react-datepicker__header {
+    background-color: transparent;
+  }
+}
