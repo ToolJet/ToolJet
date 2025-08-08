@@ -265,11 +265,16 @@ const MultiLineCodeEditor = (props) => {
           };
 
           if (completion.type === 'js_methods') {
-            pickedCompletionConfig.from = to;
-
-            dispacthConfig.selection = {
-              anchor: pickedCompletionConfig.to + completion.label.length - 1,
-            };
+            let limit = Math.max(1, fromIndex === 1 ? 0 : fromIndex);
+            for (let i = to; i > limit; i--) {
+              if (inputStr[i - 1] === '.') {
+                pickedCompletionConfig.from = i;
+                break;
+              }
+            }
+            // dispacthConfig.selection = {
+            //   anchor: pickedCompletionConfig.to + completion.label.length - 1,
+            // };
           }
 
           view.dispatch(dispacthConfig);
