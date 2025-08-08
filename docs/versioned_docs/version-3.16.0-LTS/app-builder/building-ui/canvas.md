@@ -22,7 +22,7 @@ Through Global Settings, you can customize the following properties of the **Can
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Components Library](/docs/beta/app-builder/building-ui/component-library) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Components Library](/docs/app-builder/building-ui/component-library) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 

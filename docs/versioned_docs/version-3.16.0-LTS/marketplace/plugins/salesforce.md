@@ -14,7 +14,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 - To connect to Salesforce, you need to have the following credentials:
   - **Client ID** - The consumer key of your Salesforce connected app.
   - **Client Secret** - The consumer secret of your Salesforce connected app.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/api_settings.png" alt="Salesforce Connected App API Settings" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/api_settings.png" alt="Salesforce Connected App API Settings" />
 - Establish a connection to Salesforce by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
 - Select the API version from the dropdown, enter your Client ID and Client Secret into their designated fields.
 - Copy the **Redirect URL** and paste it into the OAuth **Callback URL** field in your Salesforce connected app settings.
@@ -40,10 +40,10 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 - To perform a SOQL query, select the **SOQL Query** operation from the dropdown.
 - Enter the SOQL query in the **Query** field.
 - Click **Run** to execute the query.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/soql-query.png" alt="SOQL Query" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/soql-query.png" alt="SOQL Query" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
 :::
 
 ## CRUD Actions
@@ -56,7 +56,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 - **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
 - **Resource Body** - The data you want to insert into the Salesforce object.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-create.png" alt="Create" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-create.png" alt="Create" />
 
 ### Retrieve(Read)
 
@@ -64,7 +64,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 - **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
 - **Resource ID** - The ID of the Salesforce object you want to retrieve.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-read.png" alt="Read" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-read.png" alt="Read" />
 
 ### Update
 
@@ -72,7 +72,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 - **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
 - **Resource Body** - The data you want to update in the Salesforce object. The resource body should contain the ID of the Salesforce object you want to update.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-update.png" alt="Update" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-update.png" alt="Update" />
 
 ### Delete
 
@@ -80,4 +80,4 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 - **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
 - **Resource ID** - The ID of the Salesforce object you want to delete.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-delete.png" alt="Delete" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/action-delete.png" alt="Delete" />
