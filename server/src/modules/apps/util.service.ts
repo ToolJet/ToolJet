@@ -100,7 +100,12 @@ export class AppsUtilService implements IAppsUtilService {
                     id: 'connect_datasource',
                     loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
                     hidden: true,
-                    parent_step_id: 'setup_database',
+                    parent_step_id: 'design_layout',
+                  },
+                  {
+                    name: 'Setup database',
+                    id: 'setup_database',
+                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
                   },
                   {
                     name: 'Generate app',
