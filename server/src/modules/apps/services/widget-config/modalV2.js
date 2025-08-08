@@ -180,6 +180,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'container',
     },
     footerBackgroundColor: {
       type: 'colorSwatches',
@@ -188,6 +189,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'container',
     },
     bodyBackgroundColor: {
       type: 'colorSwatches',
@@ -196,6 +198,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'container',
     },
     triggerButtonBackgroundColor: {
       type: 'colorSwatches',
@@ -204,6 +207,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: false,
       },
+      accordian: 'container',
     },
     triggerButtonTextColor: {
       type: 'colorSwatches',
@@ -212,6 +216,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: false,
       },
+      accordian: 'container',
     },
   },
   exposedVariables: {

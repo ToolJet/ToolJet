@@ -25,7 +25,7 @@ Let's look into three types of subscriptions:
    - **Existing Users**: If eligible, a start trial banner will be visible on your ToolJet dashboard.
 
 2. **Business Subscription**: This is a paid monthly subscription that you can [upgrade](#a-chosen-plan-business-plan) to from within the ToolJet app.
-3. **Enterprise Subscription**: This is a paid subscription with customizable options. To obtain this subscription, you have to contact our **[sales](https://tooljet.com/slack)** team.
+3. **Enterprise Subscription**: This is a paid subscription with customizable options. To obtain this subscription, you have to contact our **[sales](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)** team.
 
 ---
 
@@ -80,10 +80,10 @@ Your business plan subscription cost is based on the total number of builder and
 
 **Seat Pricing**
 
-| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div>|
-| :------------ | :---------- | :------------ |
-| Builder     | $24 per month    | $30 per month |
-| End User        | $8 per month      | $10 per month |
+| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div> |
+| :---------------------------------------------- | :--------------------------------------------------- | :---------------------------------------------------- |
+| Builder                                         | $24 per month                                        | $30 per month                                         |
+| End User                                        | $8 per month                                         | $10 per month                                         |
 
 **Pro-rated charges for added seats**
 
@@ -93,7 +93,7 @@ Example: If you add a builder seat halfway through your monthly billing cycle, y
 
 ### B) Enterprise Plan
 
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
+- You can directly reach out to us via **[Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
 ## Invoice History
 
@@ -114,8 +114,7 @@ You can find your past invoices in the subscriptions overview card. Here's how t
 
 ### B) Enterprise Plan
 
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
-
+- You can directly reach out to us via **[Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
 ## Frequently Asked Questions (FAQs)
 

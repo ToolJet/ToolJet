@@ -23,6 +23,11 @@ export const RichTextEditor = function RichTextEditor({
   const dynamicHeight = properties.dynamicHeight ?? false;
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
+
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isLoading, setIsLoading] = useState(properties?.loadingState);
+
   useDynamicHeight({
     dynamicHeight,
     id: id,
@@ -31,11 +36,9 @@ export const RichTextEditor = function RichTextEditor({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility: isVisible,
   });
 
-  const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [isVisible, setIsVisible] = useState(visibility);
-  const [isLoading, setIsLoading] = useState(properties?.loadingState);
 
   useEffect(() => {
     if (isDisabled !== disabledState) setIsDisabled(disabledState);

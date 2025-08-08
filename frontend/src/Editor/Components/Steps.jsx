@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
+import { getFormattedSteps, getSafeRenderableValue } from './utils';
 
 export const Steps = function Steps({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
   const { stepsSelectable, disabledState } = properties;
@@ -28,7 +29,8 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
   useEffect(() => {
-    const sanitizedSteps = JSON.parse(JSON.stringify(steps || [])).map((step) => ({
+    const formattedSteps = getFormattedSteps(steps);
+    const sanitizedSteps = JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
       ...step,
       visible: 'visible' in step ? step.visible : true,
       disabled: 'disabled' in step ? step.disabled : false,
@@ -178,7 +180,10 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
             <React.Fragment key={index}>
               {' '}
               {/* using index as key to avoid issues due to duplicate step ids */}
-              <ToolTip show={!step.disabled && !isDisabled && step.tooltip} message={step.tooltip || ''}>
+              <ToolTip
+                show={!step.disabled && !isDisabled && step.tooltip}
+                message={getSafeRenderableValue(step.tooltip || '')}
+              >
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
                   className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
@@ -202,7 +207,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                           className={`label ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                           style={{ maxWidth: `${progressBarWidth}px` }}
                         >
-                          {step.name}
+                          {getSafeRenderableValue(step.name)}
                         </div>
                       )}
                     </>

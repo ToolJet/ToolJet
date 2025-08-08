@@ -25,7 +25,7 @@ import {
   positionGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
 } from './gridUtils';
-import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
+import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
@@ -923,6 +923,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
             const isParentChangeAllowed = dragContext.isDroppable;
 
+            const isParentModuleContainer =
+              !isModuleEditor &&
+              document.getElementById(`canvas-${target.slotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
             const componentParentType = target?.widget?.componentType;
@@ -933,7 +937,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               componentParentType === 'Form' || componentParentType === 'Container'
                 ? document.getElementById(`canvas-${target.slotId}`)?.scrollTop || 0
                 : computeScrollDelta({ source });
-            if (isParentChangeAllowed && !isModalToCanvas) {
+            if (isParentChangeAllowed && !isModalToCanvas && !isParentModuleContainer) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
               handleDragEnd([{ id: e.target.id, x: left, y: top + scrollDelta, parent }]);
@@ -944,6 +948,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               top = dragged.top;
               !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+              isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }
             // Apply transform for smooth transition
             e.target.style.transform = `translate(${left}px, ${top + scrollDelta}px)`;
@@ -1049,31 +1054,18 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
-          if (document.elementFromPoint(e.clientX, e.clientY)) {
-            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            const draggedOverElements = targetElems.filter(
-              (ele) =>
-                (ele.id !== e.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
-            );
-            const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
-            const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+          let newParentId = getDroppableSlotIdOnScreen(e, boxList) || 'canvas';
+          if (parentComponent?.component?.component === 'Modal') {
+            // Never update parentId for Modal
+            newParentId = parentComponent?.id;
+            e.target.style.width = `${e.target.clientWidth}px`;
+          }
 
-            // Determine potential new parent
-            let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-            if (newParentId === e.target.id) {
-              newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
-            } else if (parentComponent?.component?.component === 'Modal') {
-              // Never update parentId for Modal
-              newParentId = parentComponent?.id;
-              e.target.style.width = `${e.target.clientWidth}px`;
-            }
-
-            if (newParentId !== prevDragParentId.current) {
-              // setDragParentId(newParentId === 'canvas' ? null : newParentId);
-              newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
-              prevDragParentId.current = newParentId;
-              handleActivateTargets(newParentId);
-            }
+          if (newParentId !== prevDragParentId.current) {
+            // setDragParentId(newParentId === 'canvas' ? null : newParentId);
+            newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
+            prevDragParentId.current = newParentId;
+            handleActivateTargets(newParentId);
           }
 
           // Build the drag context from the event
