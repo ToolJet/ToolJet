@@ -49,22 +49,22 @@ Provide the data that will load the default bounding boxes over the image when t
 
 ```js
 [
-  {
-    type: "RECTANGLE",
-    width: 40,
-    height: 24,
-    x: 41,
-    y: 12,
-    text: "Tree",
-  },
-  {
-    type: "POINT",
-    width: 0,
-    height: 0,
-    x: 10.28,
-    y: 81.14,
-    text: "Car",
-  },
+    {
+        type: 'RECTANGLE',
+        width: 40,
+        height: 24,
+        x: 41,
+        y: 12,
+        text: 'Tree'
+    },
+    {
+        type: 'POINT',
+        width: 0,
+        height: 0,
+        x: 10.28,
+        y: 81.14,
+        text: 'Car'
+    }
 ];
 ```
 
