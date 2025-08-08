@@ -207,13 +207,26 @@ const sidebars = {
                 'widgets/code-editor',
                 'widgets/color-picker',
                 'widgets/container',
+                'widgets/currency-input',
                 'widgets/custom-component',
                 'widgets/date-range-picker',
+                'widgets/date-picker-v2',
+                'widgets/datetime-picker-v2',
                 'widgets/datepicker',
                 'widgets/divider',
                 'widgets/dropdown',
+                'widgets/email-input',
                 'widgets/file-picker',
-                'widgets/form',
+                {
+                  'type': 'category',
+                  'label': 'Form',
+                  'items': [
+                    'widgets/form/generate-form',
+                    'widgets/form/properties',
+                    'widgets/form/csa',
+                    'widgets/form/schema'
+                  ]
+                },
                 'widgets/html',
                 'widgets/icon',
                 'widgets/iframe',
@@ -222,14 +235,15 @@ const sidebars = {
                 'widgets/link',
                 'widgets/listview',
                 'widgets/map',
-                'widgets/modal',
+                'widgets/modal-v2',
                 'widgets/multiselect',
                 'widgets/number-input',
                 'widgets/password-input',
                 'widgets/pdf',
                 'widgets/pagination',
+                'widgets/phone-input',
                 'widgets/qr-scanner',
-                'widgets/radio-button',
+                'widgets/radio-button-v2',
                 'widgets/range-slider',
                 'widgets/spinner',
                 'widgets/star-rating',
@@ -261,10 +275,11 @@ const sidebars = {
                 'widgets/tags',
                 'widgets/text-input',
                 'widgets/text',
-                'widgets/textarea',
+                'widgets/text-area',
                 'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
+                'widgets/time-picker',
                 'widgets/toggle-switch-v2',
                 'widgets/tree-select',
                 'widgets/vertical-divider',
@@ -273,39 +288,46 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'Actions Reference',
-              'link': {
-                'type': 'generated-index',
-                'title': 'Actions Reference',
-                'description': 'All the actions that can be performed through event handlers',
-                'keywords': [
-                  'actions',
-                  'events',
-                ],
-              },
               'items': [
-                'actions/show-alert',
-                'actions/logout',
                 'actions/run-query',
-                'actions/open-webpage',
-                'actions/go-to-app',
+                'actions/show-alert',
+                'actions/control-component',
                 'actions/show-modal',
                 'actions/close-modal',
-                'actions/copy-to-clipboard',
-                'actions/set-localstorage',
-                'actions/generate-file',
                 'actions/set-table-page',
-                'actions/set-variable',
-                'actions/unset-variable',
                 'actions/switch-page',
+                'actions/go-to-app',
+                'actions/open-webpage',
                 'actions/set-page-variable',
                 'actions/unset-page-variable',
-                'actions/control-component',
+                'actions/unset-all-page-var',
+                'actions/set-variable',
+                'actions/unset-variable',
+                'actions/unset-all-var',
+                'actions/logout',
+                'actions/generate-file',
+                'actions/set-localstorage',
+                'actions/copy-to-clipboard',
               ],
             },
           ],
         },
+        'app-builder/custom-theme',
+        {
+          'type': 'category',
+          'label': 'Modules',
+          'items': [
+            'app-builder/modules/overview',
+            'app-builder/modules/create-module',
+            'app-builder/modules/input-output',
+            'app-builder/modules/data-flow',
+            'app-builder/modules/using-modules',
+            'app-builder/modules/import-export-modules',
+          ]
+        },
         'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
+        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -542,7 +564,8 @@ const sidebars = {
               'items': [
                 'user-management/authentication/self-hosted/overview',
                 'user-management/authentication/self-hosted/instance-login',
-                'user-management/authentication/self-hosted/workspace-login'
+                'user-management/authentication/self-hosted/workspace-login',
+                'user-management/authentication/self-hosted/pat'
               ]
             },
             'user-management/authentication/cloud-login',
@@ -603,7 +626,20 @@ const sidebars = {
           'type': 'category',
           'label': 'Group Sync',
           'items': [
-            'user-management/group-sync/oidc',
+            {
+              'type': 'category',
+              'label': 'Instance level',
+              'items': [
+                'user-management/group-sync/instance-level/oidc',
+              ]
+            },
+            {
+              'type': 'category',
+              'label': 'Workspace level',
+              'items': [
+                'user-management/group-sync/workspace-level/oidc',
+              ]
+            },
           ]
         },
         {
@@ -644,6 +680,15 @@ const sidebars = {
             'development-lifecycle/gitsync/delete-gitsync',
             'development-lifecycle/gitsync/push',
             'development-lifecycle/gitsync/pull'
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'GitSync CI/CD',
+          'items': [
+            'development-lifecycle/cicd/overview',
+            'development-lifecycle/cicd/gitsync-api',
+            'development-lifecycle/cicd/example',
           ]
         },
         {

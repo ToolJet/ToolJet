@@ -8,9 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import got from 'got';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
-import { validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
+import { isSQLModeDisabled, validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
 import { QueryError } from '@modules/data-sources/types';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from '../types';
 import { maybeSetSubPath } from '@helpers/utils.helper';
@@ -30,8 +28,16 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
 
-    const dbUser = `user_${organizationId}`;
-    const dbSchema = `workspace_${organizationId}`;
+    const { dbUser, dbSchema } = isSQLModeDisabled()
+      ? {
+          dbUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          dbSchema: 'public',
+        }
+      : {
+          dbUser: `user_${organizationId}`,
+          dbSchema: `workspace_${organizationId}`,
+        };
+
     const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
 
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
@@ -45,15 +51,15 @@ export class PostgrestProxyService {
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
     if (!isEmpty(req.dataQuery) && !isEmpty(req.user)) {
-      this.eventEmitter.emit('auditLogEntry', {
-        userId: req.user.id,
-        organizationId,
-        resourceId: req.dataQuery.id,
-        resourceName: req.dataQuery.name,
-        resourceType: MODULES.DATA_QUERY,
-        actionType: MODULE_INFO.DATA_QUERY.DATA_QUERY_RUN,
-        metadata: {},
-      });
+      // this.eventEmitter.emit('auditLogEntry', {
+      //   userId: req.user.id,
+      //   organizationId,
+      //   resourceId: req.dataQuery.id,
+      //   resourceName: req.dataQuery.name,
+      //   resourceType: MODULES.DATA_QUERY,
+      //   actionType: MODULE_INFO.DATA_QUERY.DATA_QUERY_RUN,
+      //   metadata: {},
+      // });
     }
 
     const tableId = req.url.split('?')[0].split('/').pop();
@@ -72,7 +78,8 @@ export class PostgrestProxyService {
     }
 
     if (['PATCH', 'POST'].includes(req.method)) {
-      await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+      const updatedRequestBody = await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+      req.body = { ...req.body, ...updatedRequestBody };
     }
 
     return this.httpProxy(req, res, next);
@@ -93,8 +100,16 @@ export class PostgrestProxyService {
     body: Record<string, any> = {}
   ) {
     try {
-      const dbUser = `user_${headers['tj-workspace-id']}`;
-      const dbSchema = `workspace_${headers['tj-workspace-id']}`;
+      const { dbUser, dbSchema } = isSQLModeDisabled()
+        ? {
+            dbUser: this.configService.get<string>('TOOLJET_DB_USER'),
+            dbSchema: 'public',
+          }
+        : {
+            dbUser: `user_${headers['tj-workspace-id']}`,
+            dbSchema: `workspace_${headers['tj-workspace-id']}`,
+          };
+
       const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
       const updatedPath = replaceUrlForPostgrest(url);
       let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;
@@ -119,7 +134,12 @@ export class PostgrestProxyService {
       }
 
       if (['PATCH', 'POST'].includes(method)) {
-        await this.validateJSONBInputs(headers['tj-workspace-id'], internalTable.tableName, body);
+        const updatedRequestBody = await this.validateJSONBInputs(
+          headers['tj-workspace-id'],
+          internalTable.tableName,
+          body
+        );
+        body = { ...body, ...updatedRequestBody };
       }
 
       const reqHeaders = {
@@ -268,14 +288,19 @@ export class PostgrestProxyService {
       .map((column) => column.column_name);
 
     if (jsonbColumns.length) {
-      const inValidJsonbColumns = validateTjdbJSONBColumnInputs(jsonbColumns, body);
+      const { inValidValueColumnsList: inValidJsonbColumns, updatedRequestBody } = validateTjdbJSONBColumnInputs(
+        jsonbColumns,
+        body
+      );
       if (inValidJsonbColumns.length) {
         throw new HttpException(
           `Expected JSON values in the following columns : ${inValidJsonbColumns.join(', ')}`,
           400
         );
       }
+      return updatedRequestBody;
     }
+    return body;
   }
 }
 

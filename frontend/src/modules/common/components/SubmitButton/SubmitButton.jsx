@@ -8,8 +8,8 @@ import cx from 'classnames';
 const SubmitButton = ({
   onClick = () => {},
   disabled,
-  dataCy,
   buttonText,
+  dataCy = (buttonText || 'Get started for free').toLowerCase().replace(/\s+/g, '-'),
   isLoading,
   darkMode,
   isSignUpButtonDisabled,
@@ -20,13 +20,13 @@ const SubmitButton = ({
     ...(className ? { [className]: true } : {}),
   });
   return (
-    <div className="row">
+    <div>
       <ButtonSolid
         type="submit"
         className={classes}
         onClick={onClick}
         disabled={disabled || isLoading}
-        data-cy={dataCy}
+        data-cy={`${dataCy}-button`}
       >
         {isLoading ? (
           <div className="spinner-center">

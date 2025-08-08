@@ -57,5 +57,6 @@ export function getDefaultInstanceSettings() {
     [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: process.env.SMTP_PASSWORD,
     [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: process.env.SMTP_DISABLED === 'true' ? 'false' : 'true',
     [INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED]: 'true',
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]: process.env.DEFAULT_FROM_EMAIL,
   };
 }

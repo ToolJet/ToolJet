@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { getTooljetEdition } from '@helpers/utils.helper';
-const fs = require('fs').promises;
+import { stat } from 'fs/promises';
 
 export const LICENSE_FEATURE_ID_KEY = 'tjLicenseFeatureId';
 export enum TOOLJET_EDITIONS {
@@ -15,6 +15,9 @@ export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_ED
 
   if (isGetContext) {
     // Check if 'src' exists in the current working directory
+    // If 'src' exists, we are in a development environment, so we use 'src/modules'
+    // If 'src' does not exist, we are in a production environment, so we use 'dist/modules'
+    // This is only for migrations, not for normal server startup
     const isSrcPresent = await checkIfSrcPresent();
     baseDir = isSrcPresent ? '' : baseDir;
   }
@@ -25,7 +28,7 @@ export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_ED
     case TOOLJET_EDITIONS.EE:
       return `${join(process.cwd(), baseDir, 'ee')}`;
     case TOOLJET_EDITIONS.Cloud:
-      return `${join(process.cwd(), baseDir, 'cloud')}`;
+      return `${join(process.cwd(), baseDir, 'ee')}`;
     default:
       return `${join(process.cwd(), baseDir, 'src/modules')}`;
   }
@@ -34,14 +37,13 @@ export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_ED
 const checkIfSrcPresent = async () => {
   // This function should not be called on normal server startup, only for migrations
   try {
-    // Read the contents of the directory
-    const files = await fs.readdir(process.cwd(), { withFileTypes: true });
-
-    // Filter out directories and check if 'src' is present
-    const directories = files.filter((file) => file.isDirectory());
-    return directories.some((dir) => dir.name === 'src');
+    const srcModulesPath = join(process.cwd(), 'src', 'modules');
+    const statObj = await stat(srcModulesPath);
+    return statObj.isDirectory();
   } catch (err) {
-    console.error('Error reading directory:', err);
+    // If directory doesn't exist, stat will throw
+    if (err.code === 'ENOENT') return false;
+    return false;
   }
 };
 
@@ -49,3 +51,5 @@ export enum FEATURE_KEY {
   HEALTH = 'health',
   ROOT = 'root',
 }
+
+export const AUDIT_LOGS_REQUEST_CONTEXT_KEY = 'tj_audit_logs_meta_data';

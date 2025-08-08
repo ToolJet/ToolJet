@@ -1,0 +1,17 @@
+.right-sidebar-toggle {
+    position: fixed;
+    right: 0 !important;
+    overflow: hidden;
+    left: unset !important;
+    border-right: 1px solid var(--slate5);
+    margin-top: 0px !important;
+    width: 48px !important;
+    flex: 1 1 auto;
+    top: 48px;
+    border-left: 1px solid var(--slate5);
+    background-color: var(--base);
+    background-clip: border-box;
+    height: 100vh;
+    z-index: 1;
+    
+}

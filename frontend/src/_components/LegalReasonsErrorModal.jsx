@@ -4,6 +4,8 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
+import { getWorkspaceId } from '@/_helpers/utils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const LegalReasonsErrorModal = ({
   showModal: propShowModal,
@@ -14,19 +16,23 @@ const LegalReasonsErrorModal = ({
   body,
   showFooter = true,
   toggleModal,
+  edition,
 }) => {
   const [isOpen, setShowModal] = useState(propShowModal);
-  const currentUser = authenticationService.currentSessionValue;
   const handleClose = () => {
     setShowModal(false);
     toggleModal && toggleModal();
     document.querySelector('.legal-reason-backdrop').remove();
   };
+  const actionButtonAdmin =
+    edition == 'ee'
+      ? authenticationService.currentSessionValue?.super_admin
+      : authenticationService.currentSessionValue?.admin;
+  const workspaceId = getWorkspaceId();
 
   useEffect(() => {
     setShowModal(propShowModal);
   }, [propShowModal]);
-
   const modalContent = (
     <>
       <Modal
@@ -46,7 +52,7 @@ const LegalReasonsErrorModal = ({
         </Modal.Header>
         <Modal.Body data-cy="modal-message">
           {message}
-          {(message?.includes('builders') || message?.includes('workspaces')) && (
+          {(message?.includes('builders') || message?.includes('workspaces')) && edition !== 'cloud' && (
             <div className="info">
               <div>
                 <SolidIcon name="idea" />
@@ -63,19 +69,35 @@ const LegalReasonsErrorModal = ({
             <Button className="cancel-btn" onClick={handleClose} data-cy="cancel-button">
               Cancel
             </Button>
-            {currentUser?.super_admin && (
-              <Button className="upgrade-btn" autoFocus onClick={() => {}}>
-                <a
-                  style={{ color: 'white', textDecoration: 'none' }}
-                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`}
+            {actionButtonAdmin &&
+              (edition === 'ee' ? (
+                <Button
+                  className="upgrade-btn"
+                  style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
+                  href="https://www.tooljet.com/pricing"
                   target="_blank"
                   rel="noopener noreferrer"
                   data-cy="upgrade-button"
                 >
                   Upgrade
-                </a>
-              </Button>
-            )}
+                </Button>
+              ) : (
+                <Button
+                  className="upgrade-btn"
+                  style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
+                  autoFocus
+                  onClick={() => {
+                    posthogHelper.captureEvent('click_upgrade_plan', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                    });
+                    window.location.href = `/${workspaceId}/settings/subscription?currentTab=upgradePlan`;
+                  }}
+                >
+                  Upgrade
+                </Button>
+              ))}
           </Modal.Footer>
         )}
       </Modal>

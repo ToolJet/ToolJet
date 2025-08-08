@@ -5,7 +5,7 @@ const Search = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0
     width={width}
     height={width}
     viewBox={viewBox}
-    fill="none"
+    fill={fill}
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     style={style}

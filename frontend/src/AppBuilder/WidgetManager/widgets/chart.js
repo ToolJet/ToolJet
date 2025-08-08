@@ -39,13 +39,13 @@ export const chartConfig = {
       },
     },
     markerColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Marker color',
       validation: {
         schema: {
           type: 'string',
         },
-        defaultValue: '#CDE1F8',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     showAxes: {
@@ -134,9 +134,18 @@ export const chartConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'container',
     },
     padding: {
       type: 'code',
@@ -154,7 +163,7 @@ export const chartConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: 6,
       },
     },
     visibility: {
@@ -192,7 +201,7 @@ export const chartConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
-      markerColor: { value: '#CDE1F8' },
+      markerColor: { value: 'var(--cc-primary-brand)' },
       showAxes: { value: '{{true}}' },
       showGridLines: { value: '{{true}}' },
       plotFromJson: { value: '{{false}}' },
@@ -228,11 +237,12 @@ export const chartConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

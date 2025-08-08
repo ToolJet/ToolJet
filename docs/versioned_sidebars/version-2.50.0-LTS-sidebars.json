@@ -157,7 +157,7 @@
                 "widgets/tags",
                 "widgets/text-input",
                 "widgets/text",
-                "widgets/textarea",
+                "widgets/text-area",
                 "widgets/rich-text-editor",
                 "widgets/timeline",
                 "widgets/timer",
@@ -169,15 +169,6 @@
             {
               "type": "category",
               "label": "Actions Reference",
-              "link": {
-                "type": "generated-index",
-                "title": "Actions Reference",
-                "description": "All the actions that can be performed through event handlers",
-                "keywords": [
-                  "actions",
-                  "events"
-                ]
-              },
               "items": [
                 "actions/show-alert",
                 "actions/logout",

@@ -34,16 +34,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const handleChangeDataSource = (source) => {
-    console.log({ source });
     createDataQuery(source);
     setPreviewData(null);
     closePopup();
   };
-
-  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-  const staticDataSources = workflowsEnabled
-    ? staticDatasources
-    : staticDatasources.filter((ds) => ds?.kind !== 'workflows');
 
   useEffect(() => {
     const shouldAddSampleDataSource = !!sampleDataSource;
@@ -135,7 +129,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
               <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
-                {defaultSources[cleanWord(source.name)].name}
+                {defaultSources[cleanWord(source.name)]?.name}
               </span>
             </div>
           ),

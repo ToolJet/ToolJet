@@ -32,14 +32,14 @@ export const toggleswitchConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
       },
     },
     toggleSwitchColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Toggle switch color',
       validation: {
         schema: { type: 'string' },
@@ -74,8 +74,8 @@ export const toggleswitchConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      toggleSwitchColor: { value: '' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      toggleSwitchColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

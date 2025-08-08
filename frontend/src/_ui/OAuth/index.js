@@ -31,7 +31,9 @@ const OAuth = ({
   options,
   optionsChanged,
   selectedDataSource,
+  oauth_configs,
 }) => {
+  const { allowed_auth_types } = oauth_configs || {};
   const authOptions = (isGrpc = false) => {
     const options = [
       { name: 'None', value: 'none' },
@@ -47,6 +49,9 @@ const OAuth = ({
       options.push({ name: 'API Key', value: 'api_key' });
     }
 
+    if (allowed_auth_types && allowed_auth_types.length > 0) {
+      return options.filter((option) => allowed_auth_types.includes(option.value));
+    }
     return options;
   };
 
@@ -88,6 +93,7 @@ const OAuth = ({
         options={options}
         optionsChanged={optionsChanged}
         selectedDataSource={selectedDataSource}
+        oauth_configs={oauth_configs}
       />
     </>
   );

@@ -260,15 +260,16 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: true,
-          lastVersion: '3.5.0-LTS',
+          includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
+          lastVersion: '3.16.0-LTS',
           versions: {
-            current: {
-              label: '3.11.0-Beta 🚧',
-              path: 'beta',
-              banner: 'none',
-              badge: false
-            },
+            // Uncomment the following line to include the beta version in the sidebar
+            // current: {
+            //   label: 'beta 🚧',
+            //   path: 'beta',
+            //   banner: 'none',
+            //   badge: false,
+            // },
             "2.50.0-LTS": {
               banner: 'none',
               badge: false
@@ -278,6 +279,10 @@ module.exports = {
               badge: false
             },
             "3.5.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.16.0-LTS": {
               banner: 'none',
               badge: false
             }
@@ -340,122 +345,6 @@ module.exports = {
             from: '/docs/enterprise/superadmin',
           },
           {
-            to: '/docs/beta/user-management/sso/oidc/setup',
-            from: '/docs/beta/category/openid-connect/',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/release/share-app/',
-            from: '/docs/beta/dashboard',
-          },
-          {
-            to: '/docs/beta/security/audit-logs',
-            from: '/docs/beta/enterprise/audit_logs',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/super-admin',
-            from: '/docs/beta/enterprise/superadmin',
-          },
-          {
-            to: '/docs/beta/tj-setup/org-branding/white-labeling',
-            from: '/docs/beta/enterprise/white-label',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/overview',
-            from: '/docs/beta/gitsync',
-          },
-          {
-            to: '/docs/beta/tj-setup/licensing/self-hosted',
-            from: '/docs/beta/org-management/licensing/self-hosted/',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/access-control',
-            from: '/docs/beta/org-management/permissions',
-          },
-          {
-            to: '/docs/beta/tj-setup/smtp-setup/configuration',
-            from: '/docs/beta/org-management/smtp-configuration',
-          },
-          {
-            to: '/docs/beta/security/constants/',
-            from: '/docs/beta/org-management/workspaces/workspace_constants/',
-          },
-          {
-            to: '/docs/beta/tj-setup/workspaces',
-            from: '/docs/beta/org-management/workspaces/workspace_overview/',
-          },
-          {
-            to: '/docs/beta/security/constants/variables',
-            from: '/docs/beta/org-management/workspaces/workspace-variables-migration',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/pull',
-            from: '/docs/beta/release-management/gitsync/git-pull',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/gitsync-config',
-            from: '/docs/beta/release-management/gitsync/tj-config/',
-          },
-          {
-            to: '/docs/beta/security/compliance',
-            from: '/docs/beta/security',
-          },
-          {
-            to: '/docs/beta/build-with-ai/overview',
-            from: '/docs/beta/tooljet-copilot',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/custom-groups',
-            from: '/docs/beta/tutorial/manage-users-groups',
-          },
-          {
-            to: '/docs/beta/tooljet-api',
-            from: '/docs/beta/tutorial/tooljet-api',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/overview',
-            from: '/docs/beta/user-authentication/general-settings/',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/beta/user-authentication/password-login',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/beta/user-authentication/sso/auto-sso-login',
-          },
-          {
-            to: '/docs/user-management/sso/github',
-            from: '/docs/beta/user-authentication/sso/github',
-          },
-          {
-            to: '/docs/user-management/sso/ldap',
-            from: '/docs/beta/user-authentication/sso/ldap',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/azuread',
-            from: '/docs/beta/user-authentication/sso/openid/azuread/',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/google',
-            from: '/docs/beta/user-authentication/sso/openid/google-openid',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/okta',
-            from: '/docs/beta/user-authentication/sso/openid/okta',
-          },
-          {
-            to: '/docs/beta/user-management/sso/saml/setup',
-            from: '/docs/beta/user-authentication/sso/saml',
-          },
-          {
-            to: '/docs/beta/user-management/onboard-users/overview',
-            from: '/docs/beta/user-authentication/user-lifecycle/',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/workspace-login',
-            from: '/docs/beta/user-authentication/workspace-login',
-          },
-          {
             to: '/docs/user-management/sso/oidc/setup',
             from: '/docs/category/openid-connect',
           },
@@ -491,14 +380,15 @@ module.exports = {
             to: '/docs/development-lifecycle/gitsync/delete-gitsync',
             from: '/docs/release-management/gitsync/delete-gitsync',
           },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-            from: '/docs/release-management/gitsync/ssh-config',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-            from: '/docs/release-management/gitsync/tj-config',
-          },
+          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
+          //   from: '/docs/release-management/gitsync/ssh-config',
+          // },
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
+          //   from: '/docs/release-management/gitsync/tj-config',
+          // },
           {
             to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
             from: '/docs/release-management/multi-environment',

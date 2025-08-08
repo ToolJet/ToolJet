@@ -10,7 +10,6 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   // This guard will allow access for unauthenticated user if the app is public
@@ -54,11 +53,11 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Throw a custom exception with workspace ID if the app is not public
+    // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);
       return authResult;
-    } catch (error) {
+    } catch {
       let organizationSlug: string;
       if (app?.organizationId) {
         const organization = await this.appUtilService.getAppOrganizationDetails(app);
