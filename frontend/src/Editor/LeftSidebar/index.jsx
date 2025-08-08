@@ -240,7 +240,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
         icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+        className={'left-sidebar-item left-sidebar-layout left-sidebar-page-selector'}
         tip="Pages"
         ref={setSideBarBtnRefs('page')}
       />

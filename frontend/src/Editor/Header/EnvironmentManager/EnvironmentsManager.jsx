@@ -127,7 +127,6 @@ const EnvironmentManager = (props) => {
       <div
         className="app-environment-menu"
         style={{
-          marginLeft: isViewer && currentLayout === 'mobile' ? '0px' : '1rem',
           maxWidth: isViewer && currentLayout === 'mobile' ? '100%' : '180px',
         }}
       >

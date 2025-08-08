@@ -13,6 +13,9 @@ import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
+// import lucide icons
+// import { Settings, LayoutDashboard, Code, Bug, MessageCircle, FileText, Settings, Bug, Code, LayoutDashboard } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
 import SupportButton from './SupportButton';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -176,6 +179,7 @@ export const BaseLeftSidebar = ({
     return null;
   }
 
+  // TODO: Move icons as slots
   const renderCommonItems = () => {
     return (
       <>
@@ -183,14 +187,16 @@ export const BaseLeftSidebar = ({
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => handleSelectedSidebarItem('inspect')}
           darkMode={darkMode}
-          icon="inspect"
+          // IconComponent={() => <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />}
           className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
           tip="Inspector"
           ref={setSideBarBtnRefs('inspect')}
-        />
+        >
+          <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
 
         <SidebarItem
-          icon="debugger"
+          // IconComponent={() => <Bug width="16" height="16" className="tw-text-icon-strong" />}
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           // eslint-disable-next-line no-unused-vars
@@ -200,7 +206,9 @@ export const BaseLeftSidebar = ({
           count={unreadErrorCount}
           tip="Debugger"
           ref={setSideBarBtnRefs('debugger')}
-        />
+        >
+          <Bug width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
       </>
     );
   };
@@ -225,7 +233,7 @@ export const BaseLeftSidebar = ({
           <>
             {renderCommonItems()}
             <SidebarItem
-              icon="settings"
+              // IconComponent={() => <Bolt width="16" height="16" className="tw-text-icon-strong" />}
               selectedSidebarItem={selectedSidebarItem}
               darkMode={darkMode}
               // eslint-disable-next-line no-unused-vars
@@ -235,7 +243,9 @@ export const BaseLeftSidebar = ({
               tip="Settings"
               ref={setSideBarBtnRefs('settings')}
               isModuleEditor={isModuleEditor}
-            />
+            >
+              <Bolt width="16" height="16" className="tw-text-icon-strong" />
+            </SidebarItem>
           </>
         )}
       </>
