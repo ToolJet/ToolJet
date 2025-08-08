@@ -63,7 +63,10 @@ const ApiEndpointInput = (props) => {
 
   // Check if specUrl is an object (multiple specs) or string (single spec)
   const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
-  const [selectedSpecType, setSelectedSpecType] = useState(isMultiSpec ? Object.keys(props.specUrl)[0] || '' : null);
+  // Initialize selectedSpecType from props.options.specType if available
+  const [selectedSpecType, setSelectedSpecType] = useState(
+    isMultiSpec ? props.options?.specType || Object.keys(props.specUrl)[0] || '' : null
+  );
 
   const fetchOpenApiSpec = (specUrlOrType) => {
     setLoadingSpec(true);
@@ -177,6 +180,7 @@ const ApiEndpointInput = (props) => {
             [paramName]: parsedValue,
           },
         },
+        ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);
@@ -204,25 +208,24 @@ const ApiEndpointInput = (props) => {
 
     if (path && operation) {
       return (
-        <div className="d-flex align-items-start">
-          <div className="me-2" style={{ minWidth: '60px' }}>
-            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation.toUpperCase()}</span>
+        <div>
+          <div className="d-flex align-items-center">
+            <span className={`badge bg-${operationColorMapping[operation]} me-2`}>{operation.toUpperCase()}</span>
+            <span>{path}</span>
           </div>
-          <div className="flex-grow-1">
-            <div>{path}</div>
-            {summary && !isSelected && (
-              <small className="text-muted d-block" style={{ fontSize: '0.875em' }}>
+          {summary && !isSelected && (
+            <div>
+              <small className="d-block" style={{ fontSize: '0.875em', color: '#a4a8ab', marginTop: '1px' }}>
                 {summary}
               </small>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       );
     } else {
       return 'Select an operation';
     }
   };
-
   const categorizeOperations = (operation, path, acc, category) => {
     const operationData = specJson.paths[path][operation];
     const summary = operationData?.summary || '';
@@ -286,7 +289,14 @@ const ApiEndpointInput = (props) => {
       request: props.options?.params?.request ?? {},
     };
     setLoadingSpec(true);
-    setOptions({ ...props.options, params: queryParams });
+
+    // Initialize options with specType if multiSpec
+    const initialOptions = {
+      ...props.options,
+      params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }),
+    };
+    setOptions(initialOptions);
 
     if (!isMultiSpec) {
       fetchOpenApiSpec();
@@ -299,10 +309,30 @@ const ApiEndpointInput = (props) => {
     }
   }, [selectedSpecType]);
 
+  const handleSpecTypeChange = (val) => {
+    setSelectedSpecType(val);
+    // When spec type changes, immediately update options with new specType
+    const newOptions = {
+      ...options,
+      specType: val,
+      // Clear operation-specific data when changing spec type
+      operation: null,
+      path: null,
+      selectedOperation: null,
+      params: {
+        path: {},
+        query: {},
+        request: {},
+      },
+    };
+    setOptions(newOptions);
+    props.optionsChanged(newOptions);
+  };
+
   const specTypeOptions = isMultiSpec
     ? Object.keys(props.specUrl).map((key) => ({
         value: key,
-        label: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
       }))
     : [];
 
@@ -312,13 +342,16 @@ const ApiEndpointInput = (props) => {
       {isMultiSpec && (
         <div className="d-flex g-2 mb-3">
           <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
           </div>
           <div className="col flex-grow-1">
             <Select
               options={specTypeOptions}
-              value={{ value: selectedSpecType, label: selectedSpecType }}
-              onChange={(val) => setSelectedSpecType(val)}
+              value={{
+                value: selectedSpecType,
+                label: selectedSpecType.charAt(0).toUpperCase() + selectedSpecType.slice(1),
+              }}
+              onChange={(val) => handleSpecTypeChange(val)}
               width={'100%'}
               styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
             />
