@@ -22,7 +22,7 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](https://github.com/ToolJet/ToolJet/releases) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
+4. Find the [ToolJet version](https://github.com/ToolJet/ToolJet/releases) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu-jammy` in the search bar.
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
    Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
@@ -86,7 +86,7 @@ You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
-### Enabling Scheduling
+### Enabling Workflow Scheduling
 
 To activate workflows scheduling, set the following environment variables:
 
@@ -104,7 +104,7 @@ TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
 Below is a `docker-compose` template to set up Temporal.
 
 ```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/ec2-temporal/docker-compose.yml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/ec2-temporal/docker-compose.yml
 ```
 
 This setup can be deployed on a different EC2 instance. To enable seamless communication, ensure that both the application server and the Temporal server are in the same VPC.

@@ -39,7 +39,7 @@ const Container = React.memo(
     componentType,
     appType,
   }) => {
-    const { moduleId } = useModuleContext();
+    const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
@@ -170,8 +170,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -196,6 +196,7 @@ const Container = React.memo(
           'sub-canvas': id !== 'canvas' && appType !== 'module',
           'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
+          'is-module-editor': isModuleEditor,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

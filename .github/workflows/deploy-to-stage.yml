@@ -10,10 +10,10 @@ on:
       dockerfile_path:
         description: 'Path to Dockerfile'
         required: true
-        default: './docker/cloud/cloud-server.Dockerfile'
+        default: './docker/LTS/cloud/cloud-server.Dockerfile'
         type: choice
         options:
-          - ./docker/cloud/cloud-server.Dockerfile
+          - ./docker/LTS/cloud/cloud-server.Dockerfile
       docker_tag:
         description: 'Docker tag suffix (e.g., cloud-staging-v14)'
         required: true

@@ -16,7 +16,6 @@ docker run \
   -p 80:80 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  -v temporal_sqlite:/etc/temporal \
   tooljet/try:ee-latest
 ```
 
@@ -39,7 +38,6 @@ docker run \
   -e PORT=8080 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  -v temporal_sqlite:/etc/temporal \
   tooljet/try:ee-latest
 ```
 
