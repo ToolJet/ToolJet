@@ -102,11 +102,13 @@ export default class Ups implements QueryService {
         status: "ok",
         message: "Connection successful",
       };
-    } catch (error) {
-      if (error instanceof QueryError) {
-        throw error;
+    } catch (err) {
+      // Convert QueryError to regular Error for better UX in config page
+      if (err instanceof QueryError) {
+        throw new Error(err.description || err.message);
       }
-      throw this.parseHttpError(error, "Failed to test connection");
+      
+      throw err;
     }
   }
 
