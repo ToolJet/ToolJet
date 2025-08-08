@@ -54,13 +54,12 @@ export class PagesController implements IPagesController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id/versions/:versionId/pages')
   async deletePage(@App() app: AppEntity, @Body() deletePageDto) {
-    await this.pageService.deletePage(
+    return await this.pageService.deletePage(
       deletePageDto.pageId,
       app.appVersions[0].id,
       app.editingVersion,
       deletePageDto.deleteAssociatedPages,
       app.organizationId
     );
-    return;
   }
 }
