@@ -31,7 +31,7 @@
       "helpText": "You can generate a service account key from your Google Cloud Console."
     },
     "instance_id": {
-      "label": "Instance id",
+      "label": "Instance ID",
       "key": "instance_id",
       "type": "text",
       "description": "Enter the Google Cloud Spanner instance ID"

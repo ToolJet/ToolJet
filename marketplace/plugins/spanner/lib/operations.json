@@ -25,7 +25,7 @@
     },
     "database_id": {
       "key": "database_id",
-      "label": "Database id",
+      "label": "Database ID",
       "type": "codehinter",
       "description": "Enter the Google Cloud Spanner database ID",
       "placeholder": "my-database"
