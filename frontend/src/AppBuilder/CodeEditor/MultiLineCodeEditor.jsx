@@ -272,9 +272,9 @@ const MultiLineCodeEditor = (props) => {
                 break;
               }
             }
-            // dispacthConfig.selection = {
-            //   anchor: pickedCompletionConfig.to + completion.label.length - 1,
-            // };
+            dispacthConfig.selection = {
+              anchor: pickedCompletionConfig.from + completion.label.length - 1,
+            };
           }
 
           view.dispatch(dispacthConfig);
