@@ -4,16 +4,22 @@
     margin-top: 12px;
 
     &__content {
-      width: 500px;
+      width: 100%;
+      max-width: 500px;
     }
 
     &__fields {
       min-height: 32px;
       width: 100%;
+      display: flex;
+      gap: 0;
     }
   }
 
   .grpcv2-server-url {
+    flex-shrink: 0;
+    min-width: 120px;
+    max-width: 160px;
     width: 160px;
     height: 32px;
     background-color: #ffffff;
@@ -193,6 +199,44 @@
       border: 1px solid white;
       background: #20211e;
       color: #9e9e9e;
+    }
+  }
+}
+
+// Workflow-specific overrides
+.workflows-query-node .grpcv2-container,
+.query-node .grpcv2-container {
+  .grpcv2-request-section {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    // Hide the "Request" label in workflow context
+    .form-label {
+      display: none;
+    }
+    
+    &__content {
+      width: 100%;
+      max-width: none;
+    }
+    
+    &__fields {
+      flex-direction: column;
+      width: 100%;
+      gap: 8px;
+    }
+  }
+  
+  .grpcv2-server-url {
+    width: 100%;
+    max-width: none;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .grpcv2-dropdown {
+    &__button {
+      border-radius: 6px;
     }
   }
 }
