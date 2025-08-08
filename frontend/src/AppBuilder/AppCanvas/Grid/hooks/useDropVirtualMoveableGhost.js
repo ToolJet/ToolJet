@@ -12,7 +12,8 @@ export const useDropVirtualMoveableGhost = () => {
 
   const createGhostMoveElement = (componentSize) => {
     if (ghostElementRef.current) return;
-
+    const mainEditorCanvas = document.getElementById('main-editor-canvas');
+    mainEditorCanvas.classList.add('disable-moveable-line');
     const ghost = document.createElement('div');
     ghost.id = 'moveable-virtual-ghost-element';
     ghost.className = 'moveable-ghost target';
@@ -27,12 +28,11 @@ export const useDropVirtualMoveableGhost = () => {
       box-sizing: border-box;
       top: 0;
       left: 0;
+      border: 1px solid #4af;
     `;
-
     const container = document.getElementById('real-canvas');
     container.appendChild(ghost);
     ghostElementRef.current = ghost;
-
     return ghost;
   };
 
@@ -90,6 +90,8 @@ export const useDropVirtualMoveableGhost = () => {
         setVirtualTarget(null);
         ghostElementRef.current.remove();
         ghostElementRef.current = null;
+        const mainEditorCanvas = document.getElementById('main-editor-canvas');
+        mainEditorCanvas.classList.remove('disable-moveable-line');
         const selectedComponents = useStore.getState().selectedComponents;
         clearActiveTargetClassNamesAfterSnapping(selectedComponents);
       } catch (error) {

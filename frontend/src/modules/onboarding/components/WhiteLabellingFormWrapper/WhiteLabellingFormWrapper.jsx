@@ -8,13 +8,14 @@ const WhiteLabellingFormWrapper = ({ children: components, whiteLabelFavIcon, is
   const redirectToLoginPage = () => {
     window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };
+  // Not showing empty div to avoid page crashing
   if (whiteLabelFavIcon == null) {
-    return <div></div>;
+    console.error('White label favicon is not set');
   }
   return (
     <div className="white-labelling-form-wrapper">
       <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage}>
-        {window.location.pathname != '/setup' && isWhiteLabelApplied ? (
+        {window.location.pathname != '/setup' && isWhiteLabelApplied && whiteLabelFavIcon ? (
           <img width={IMAGE_WIDTH} height={IMAGE_HEIGHT} src={whiteLabelFavIcon} />
         ) : (
           <Logo />

@@ -483,7 +483,7 @@ export const createEventsSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       });
     },
-    executeAction: debounce(async (eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
+    executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
@@ -499,8 +499,8 @@ export const createEventsSlice = (set, get) => ({
         switch (event.actionId) {
           case 'show-alert': {
             let message = getResolvedValue(event.message, customVariables, moduleId);
-
             if (typeof message === 'object') message = JSON.stringify(message);
+            if (Number.isNaN(message)) message = '';
 
             switch (event.alertType) {
               case 'success':

@@ -8,7 +8,6 @@ import SolidIcon from '@/_ui/Icon/solidIcons/index';
 export function UserGroupsSelect(props) {
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
   //Will be used when workspace routing settings have been merged
   const Menu = useCallback(({ children, ...rest }) => {
     return (
@@ -89,6 +88,7 @@ export function UserGroupsSelect(props) {
           type={data.groupType === 'default' ? 'radio' : 'checkbox'}
           className="form-check-input"
           checked={isSelected}
+          disabled={isDisabled}
           data-cy="group-check-input"
         />
         <div className="select-option">{children}</div>

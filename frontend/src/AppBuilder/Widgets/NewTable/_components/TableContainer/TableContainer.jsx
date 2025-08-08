@@ -27,6 +27,7 @@ export const TableContainer = ({
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const enableSorting = useTableStore((state) => state.getTableProperties(id)?.enabledSort, shallow);
+  const enablePagination = useTableStore((state) => state.getTableProperties(id)?.enablePagination, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
 
   // Server side properties
@@ -40,7 +41,7 @@ export const TableContainer = ({
   const actions = useTableStore((state) => state.getActions(id), shallow);
 
   const [globalFilter, setGlobalFilter] = useState('');
-  const lastClickedRowRef = useRef([]);
+  const lastClickedRowRef = useRef({});
   const tableBodyRef = useRef(null);
 
   const handleCellValueChange = useCallback(
@@ -89,6 +90,7 @@ export const TableContainer = ({
       data,
       columns,
       enableSorting,
+      enablePagination,
       showBulkSelector,
       serverSidePagination,
       serverSideSort,
@@ -104,13 +106,6 @@ export const TableContainer = ({
     return table.getAllLeafColumns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(table.getState().columnOrder), table]);
-
-  useEffect(() => {
-    setPagination((prev) => ({
-      ...prev,
-      pageSize: rowsPerPage,
-    }));
-  }, [rowsPerPage, setPagination]);
 
   useEffect(() => {
     if (serverSideSearch && globalFilter?.trim() !== '') {
@@ -149,7 +144,7 @@ export const TableContainer = ({
         table={table}
         componentName={componentName}
         pageIndex={pagination.pageIndex + 1}
-        lastClickedRow={lastClickedRowRef.current}
+        lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
       />
       <Header

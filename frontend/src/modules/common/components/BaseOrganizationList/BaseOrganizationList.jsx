@@ -25,7 +25,7 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     shallow
   );
   const edition = fetchEdition();
-  const showLicenseInfoToolTip = edition === 'cloud' && admin === true && super_admin === false;
+  const showLicenseInfoToolTip = edition === 'cloud' && super_admin === false;
   const darkMode = localStorage.getItem('darkMode') === 'true';
   useEffect(() => {
     fetchOrganizations();
