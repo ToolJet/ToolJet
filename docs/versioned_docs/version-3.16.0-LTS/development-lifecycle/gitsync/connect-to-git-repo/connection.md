@@ -12,9 +12,8 @@ The table below provides a comparison between SSH and HTTPS connection methods t
 |---------|-----|-------|
 | **Connection type** |  Individual git connection (Currently we only support [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config) and [GitLab](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitlab-config))  | Single connection which work for any git provider <br/> ( Example: [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#github), [Gitea](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#gitea), [GitLab](/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config#gitlab), etc. )  |
 | **Port Blocking** | No port blocking issues  | May face port blocking due to firewall issues  |
-| **Branch Configuration** | Can be configured directly from the ToolJet UI | Must be configured using environment variables |
-| **Default Branch** | main | master |
-| **Require Github App** | Yes | No |
+| **Branch Configuration** | Can be configured directly from the ToolJet UI | Can be configured directly from the ToolJet UI |
+| **Default Branch** | main | main |
 
 ToolJet allows you to set up multiple Git repository configurations. However, only one configuration can be active at any given time for a workspace. When switching between configurations, the previously active configuration will be automatically deactivated.
 
