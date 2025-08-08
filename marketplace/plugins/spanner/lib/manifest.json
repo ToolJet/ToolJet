@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Cloud Spanner datasource",
+  "description": "A schema defining Google Cloud Spanner datasource",
+  "type": "database",
+  "source": {
+    "name": "Google Cloud Spanner",
+    "kind": "spanner",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "private_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "instance_id": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "private_key": {
+      "label": "Private key",
+      "key": "private_key",
+      "type": "password",
+      "description": "Enter the Google Cloud service account private key in JSON format",
+      "helpText": "You can generate a service account key from your Google Cloud Console."
+    },
+    "instance_id": {
+      "label": "Instance ID",
+      "key": "instance_id",
+      "type": "text",
+      "description": "Enter the Google Cloud Spanner instance ID"
+    }
+  },
+  "required": [
+    "private_key",
+    "instance_id"
+  ]
+}
