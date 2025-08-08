@@ -2,8 +2,14 @@ import { In, MigrationInterface, QueryRunner } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { WhiteLabelling } from '@entities/white_labelling.entity';
 import { WHITE_LABELLING_SETTINGS } from '@helpers/migration.helper';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 export class MoveInstanceWhiteLabelsToWhiteLabelsEntity1736921797727 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
     const entityManager = queryRunner.manager;
 
     // Get all white label related settings

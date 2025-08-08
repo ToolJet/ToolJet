@@ -128,13 +128,13 @@ export const dropdownConfig = {
       defaultValue: true,
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected text color',
       validation: {
         schema: {
           type: 'string',
         },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     disabledState: {
@@ -200,6 +200,7 @@ export const dropdownConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       justifyContent: { value: 'left' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
     },
   },
 };

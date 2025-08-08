@@ -104,6 +104,7 @@ export enum LICENSE_FIELD {
   CUSTOM_STYLE = 'customStylingEnabled',
   WHITE_LABEL = 'whitelabellingEnabled',
   CUSTOM_THEMES = 'customThemeEnabled',
+  SERVER_SIDE_GLOBAL = 'serverSideGlobalResolveEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
   MAX_DURATION_FOR_AUDIT_LOGS = 'maxDaysForAuditLogs',
   MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
@@ -120,6 +121,8 @@ export enum LICENSE_FIELD {
   GIT_SYNC = 'gitSyncEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  EXTERNAL_API = 'externalApiEnabled',
+  PLAN = 'plan',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -165,4 +168,8 @@ export enum FEATURE_KEY {
   GET_ORGANIZATION_LIMITS = 'get_organization_limits',
   GET_USER_LIMITS = 'get_user_limits',
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
+  GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
+  GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
 }
+
+export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

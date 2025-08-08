@@ -9,6 +9,7 @@ import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import styles from '@/_ui/Select/styles';
 import moment from 'moment-timezone';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const DATE_FORMAT_OPTIONS = [
   {
@@ -101,12 +102,13 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     allComponents,
     pages,
   } = restProps;
+  const { moduleId } = useModuleContext();
   const items = [];
   const additionalActions = [];
   const properties = [];
   const formatting = [];
   const validations = Object.keys(componentMeta.validation || {});
-  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
+  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id, null, moduleId)?.properties);
   const isDateFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
   const isTimeFormatFxOn = componentMeta?.definition?.properties?.timeFormat?.fxActive || false;
   const dateFormat = resolvedProperties?.dateFormat ?? resolvedProperties?.format;
@@ -187,20 +189,98 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     }
   }
 
-  items.push({
-    title: 'Data',
-    isOpen: true,
-    children: (
-      <>
-        {properties?.map((property) => {
-          if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
-            return (
-              <>
-                {!['TimePicker'].includes(componentName) && (
+  const timeFormatSection = () => {
+    return (
+      <div
+        className="field mb-2 input-date-time-format"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          height: 'auto',
+        }}
+      >
+        <div className="d-flex justify-content-between mb-1">
+          <label className="form-label"> Time Format</label>
+          <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
+            <FxButton
+              active={isTimeFormatFxOn}
+              onPress={() => {
+                paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
+              }}
+            />
+          </div>
+        </div>
+        {isTimeFormatFxOn ? (
+          <CodeHinter
+            initialValue={timeFormat}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+          />
+        ) : (
+          <Select
+            options={TIME_FORMAT_OPTIONS}
+            value={timeFormat ?? 'HH:mm'}
+            search={true}
+            closeOnSelect={true}
+            onChange={(value) => {
+              paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties');
+            }}
+            fuzzySearch
+            placeholder="Select.."
+            useCustomStyles={true}
+            styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+          />
+        )}
+      </div>
+    );
+  };
+
+  if (['TimePicker'].includes(componentName)) {
+    // I want my timeFormat section to be the 2nd property in the properties array and then the rest of the properties
+    const transformedProperties = [...properties.slice(0, 1), 'timeFormat', ...properties.slice(1)];
+
+    items.push({
+      title: 'Data',
+      isOpen: true,
+      children: (
+        <>
+          {transformedProperties?.map((property) => {
+            if (property === 'timeFormat') {
+              return timeFormatSection();
+            }
+            return renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              allComponents,
+              darkMode
+            );
+          })}
+        </>
+      ),
+    });
+  } else {
+    items.push({
+      title: 'Data',
+      isOpen: true,
+      children: (
+        <>
+          {properties?.map((property) => {
+            if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
+              return (
+                <>
                   <div
                     data-cy={`input-date-display-format`}
                     className="field mb-2 w-100 input-date-display-format"
                     onClick={(e) => e.stopPropagation()}
+                    style={{
+                      height: 'auto',
+                    }}
                   >
                     <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
                       <div className="d-flex justify-content-between mb-1">
@@ -243,127 +323,92 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                       )}
                     </div>
                   </div>
-                )}
-                {!['DatePickerV2'].includes(componentName) && (
-                  <>
-                    <div className="field mb-2 input-date-time-format" onClick={(e) => e.stopPropagation()}>
-                      <div className="d-flex justify-content-between mb-1">
-                        <label className="form-label"> Time Format</label>
-                        <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
-                          <FxButton
-                            active={isTimeFormatFxOn}
-                            onPress={() => {
-                              paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
-                            }}
-                          />
-                        </div>
-                      </div>
-                      {isTimeFormatFxOn ? (
-                        <CodeHinter
-                          initialValue={timeFormat}
-                          theme={darkMode ? 'monokai' : 'default'}
-                          mode="javascript"
-                          lineNumbers={false}
-                          onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
-                        />
-                      ) : (
-                        <Select
-                          options={TIME_FORMAT_OPTIONS}
-                          value={timeFormat ?? 'HH:mm'}
-                          search={true}
-                          closeOnSelect={true}
-                          onChange={(value) => {
-                            paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties');
-                          }}
-                          fuzzySearch
-                          placeholder="Select.."
-                          useCustomStyles={true}
-                          styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
-                        />
+                  {!['DatePickerV2'].includes(componentName) && (
+                    <>
+                      {timeFormatSection()}
+
+                      {renderElement(
+                        component,
+                        componentMeta,
+                        paramUpdated,
+                        dataQueries,
+                        'isTimezoneEnabled',
+                        'properties',
+                        currentState,
+                        allComponents,
+                        darkMode
                       )}
-                    </div>
 
-                    {renderElement(
-                      component,
-                      componentMeta,
-                      paramUpdated,
-                      dataQueries,
-                      'isTimezoneEnabled',
-                      'properties',
-                      currentState,
-                      allComponents,
-                      darkMode
-                    )}
+                      {isTimezoneEnabled && (
+                        <div style={{ paddingLeft: '16px', borderLeft: '1px solid #E4E7EB' }}>
+                          <div
+                            data-cy={`input-display-time-zone`}
+                            className="field mb-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <label data-cy={`label-display-time-zone`} className="form-label">
+                              Display in
+                            </label>
+                            <Select
+                              options={TIMEZONE_OPTIONS}
+                              value={displayTimezone || 'UTC'}
+                              search={true}
+                              closeOnSelect={true}
+                              onChange={(value) => {
+                                paramUpdated({ name: 'displayTimezone' }, 'value', value, 'properties');
+                              }}
+                              fuzzySearch
+                              placeholder="Select.."
+                              useCustomStyles={true}
+                              styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                            />
+                          </div>
+                          <div
+                            data-cy={`input-display-time-zone`}
+                            className="field mb-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <label data-cy={`label-display-time-zone`} className="form-label">
+                              Store in
+                            </label>
+                            <Select
+                              options={TIMEZONE_OPTIONS}
+                              value={storeTimezone || 'UTC'}
+                              search={true}
+                              closeOnSelect={true}
+                              onChange={(value) => {
+                                paramUpdated({ name: 'storeTimezone' }, 'value', value, 'properties');
+                              }}
+                              fuzzySearch
+                              placeholder="Select.."
+                              useCustomStyles={true}
+                              styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              );
+            }
 
-                    {isTimezoneEnabled && (
-                      <div style={{ paddingLeft: '16px', borderLeft: '1px solid #E4E7EB' }}>
-                        <div
-                          data-cy={`input-display-time-zone`}
-                          className="field mb-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <label data-cy={`label-display-time-zone`} className="form-label">
-                            Display in
-                          </label>
-                          <Select
-                            options={TIMEZONE_OPTIONS}
-                            value={displayTimezone || 'UTC'}
-                            search={true}
-                            closeOnSelect={true}
-                            onChange={(value) => {
-                              paramUpdated({ name: 'displayTimezone' }, 'value', value, 'properties');
-                            }}
-                            fuzzySearch
-                            placeholder="Select.."
-                            useCustomStyles={true}
-                            styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
-                          />
-                        </div>
-                        <div
-                          data-cy={`input-display-time-zone`}
-                          className="field mb-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <label data-cy={`label-display-time-zone`} className="form-label">
-                            Store in
-                          </label>
-                          <Select
-                            options={TIMEZONE_OPTIONS}
-                            value={storeTimezone || 'UTC'}
-                            search={true}
-                            closeOnSelect={true}
-                            onChange={(value) => {
-                              paramUpdated({ name: 'storeTimezone' }, 'value', value, 'properties');
-                            }}
-                            fuzzySearch
-                            placeholder="Select.."
-                            useCustomStyles={true}
-                            styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
+            return renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              allComponents,
+              darkMode
             );
-          }
-
-          return renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            property,
-            'properties',
-            currentState,
-            allComponents,
-            darkMode
-          );
-        })}
-      </>
-    ),
-  });
+          })}
+        </>
+      ),
+    });
+  }
 
   // if (componentName !== 'DaterangePicker') {
   //   items.push({
@@ -393,29 +438,21 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     isOpen: true,
     children: (
       <>
-        {validations.map((property, index) => (
-          <div
-            key={index}
-            className={'date-validation-wrapper'}
-            style={{
-              height: index + 1 < validations.length ? '62px' : '22px',
-            }}
-          >
-            {renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'validation',
-              currentState,
-              allComponents,
-              darkMode,
-              getDynamicPlaceholder(property),
-              getDynamicDateValidator(property)
-            )}
-          </div>
-        ))}
+        {validations.map((property, index) =>
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            property,
+            'validation',
+            currentState,
+            allComponents,
+            darkMode,
+            getDynamicPlaceholder(property),
+            getDynamicDateValidator(property)
+          )
+        )}
       </>
     ),
   });

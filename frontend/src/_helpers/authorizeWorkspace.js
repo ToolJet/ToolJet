@@ -10,7 +10,7 @@ import {
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
-
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -23,12 +23,15 @@ import { safelyParseJSON } from './utils';
 */
 
 export const authorizeWorkspace = () => {
+  /* Default APIs */
+  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({
       triggeredOnce: true,
     });
-    const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-    const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
+    const isApplicationsPath =
+      getPathname(null, true).startsWith('/applications/') || getPathname(null, true).startsWith('/embed-apps/');
     const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
     /* CASE-1 */
     sessionService
@@ -42,6 +45,7 @@ export const authorizeWorkspace = () => {
           is_onboarding_completed: isOnboardingCompleted,
           is_first_user_onboarding_completed: isFirstUserOnboardingCompleted,
           consulation_banner_date,
+          ...data
         }) => {
           if (!isFirstUserOnboardingCompleted) {
             const subpath = getSubpath();
@@ -62,12 +66,14 @@ export const authorizeWorkspace = () => {
                 noWorkspaceAttachedInTheSession,
                 authentication_status: true,
                 consulation_banner_date,
+                ...(data?.tj_api_source && { tj_api_source: data.tj_api_source }),
+                ...(data?.ai_cookies && { ai_cookies: data.ai_cookies }),
               });
               if (noWorkspaceAttachedInTheSession) {
                 /*
-                User just signed up after the invite flow and doesn't have any active workspace.
-                - From useSessionManagement hook we will be redirecting the user to an error page.
-              */
+                    User just signed up after the invite flow and doesn't have any active workspace.
+                    - From useSessionManagement hook we will be redirecting the user to an error page.
+                  */
                 return;
               }
               /*CASE-2*/
@@ -78,9 +84,11 @@ export const authorizeWorkspace = () => {
               current_organization_id,
             });
           }
+          fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
       .catch((error) => {
+        fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
         if (isDesiredStatusCode) {
@@ -122,6 +130,7 @@ export const authorizeWorkspace = () => {
         }
       });
   }
+  // });
 };
 
 const isThisExistedRoute = () => {
@@ -156,7 +165,6 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
 
 export const updateCurrentSession = (newSession) => {
   const currentSession = authenticationService.currentSessionValue;
-  // console.log('currentSession', currentSession);
 
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };

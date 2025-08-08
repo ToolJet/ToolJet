@@ -47,11 +47,11 @@ const OnboardingForm = ({
     <OnboardingUIWrapper>
       <OnboardingFormInsideWrapper>
         <div className="onboarding-questions-form">
-          <div className="steps">
+          <div className="steps" data-cy="steps-details">
             <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
               <LeftArow />
             </div>
-            <span>Step {currentStep}</span> of {totalSteps}
+            <span>Step {currentStep == 0 ? currentStep + 1 : currentStep}</span> of {totalSteps}
           </div>
           <FormHeader>{title}</FormHeader>
           {description && <FormDescription>{description}</FormDescription>}

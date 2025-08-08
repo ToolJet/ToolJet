@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -8,12 +8,21 @@ import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/org
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { User } from '@entities/user.entity';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { OrganizationWithPlan } from '@modules/organizations/interfaces/IService';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
   constructor(
     protected organizationRepository: OrganizationRepository,
-    protected readonly licenseOrganizationService: LicenseOrganizationService
+    protected readonly licenseOrganizationService: LicenseOrganizationService,
+    protected readonly licenseTermsService: LicenseTermsService
   ) {}
 
   async fetchOrganizations(
@@ -22,37 +31,113 @@ export class OrganizationsService implements IOrganizationsService {
     currentPage?: number,
     perPageCount?: number,
     name?: string
-  ): Promise<{ organizations: Organization[]; totalCount: number }> {
+  ): Promise<{ organizations: OrganizationWithPlan[] | Organization[]; totalCount: number }> {
     if (isSuperAdmin(user)) {
       return this.organizationRepository.fetchOrganizationsForSuperAdmin(status, currentPage, perPageCount, name);
     } else {
-      return this.organizationRepository.fetchOrganizationsForRegularUser(
+      const edition = getTooljetEdition();
+      const { organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForRegularUser(
         user,
         status,
         currentPage,
         perPageCount,
         name
       );
+
+      let updatedOrganizations = organizations;
+
+      if (edition === TOOLJET_EDITIONS.Cloud) {
+        //For organization license tags
+        updatedOrganizations = await Promise.all(
+          organizations.map(async (org) => {
+            const licensePlan = await this.licenseTermsService.getLicenseTerms(
+              [LICENSE_FIELD.PLAN, LICENSE_FIELD.STATUS],
+              org.id
+            );
+            const orgWithPlan = new OrganizationWithPlan();
+            Object.assign(orgWithPlan, org);
+            orgWithPlan.plan = licensePlan?.plan;
+            orgWithPlan.license_type = licensePlan?.status;
+
+            return orgWithPlan;
+          })
+        );
+      }
+
+      return { organizations: updatedOrganizations, totalCount };
     }
   }
 
-  async updateOrganizationNameAndSlug(
-    organizationId: string,
-    updatableData: OrganizationUpdateDto
-  ): Promise<Organization> {
+  async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationId = user.organizationId;
+      const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
+
+      //WORKSPACE_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: organizationId,
+        resourceName: organization.name,
+        resourceData: {
+          previous_workspace_details: {
+            id: organizationId,
+            name: organization.name,
+            slug: organization.slug,
+          },
+          updated_workspace_details: {
+            id: organizationId,
+            name: updatableData.name,
+            slug: updatableData.slug,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
   }
 
   async updateOrganizationStatus(
     organizationId: string,
-    updatableData: OrganizationStatusUpdateDto
+    updatableData: OrganizationStatusUpdateDto,
+    user: User
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
+      if (organization.isDefault) {
+        throw new NotAcceptableException('Default workspace cannot be archived');
+      }
+
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
+        await this.licenseOrganizationService.validateOrganization(manager, organizationId); //Check for only unarchiving
+      }
+
+      //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit
+      const resourceData =
+        updatableData.status === WORKSPACE_STATUS.ACTIVE
+          ? {
+              unarchived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            }
+          : {
+              archived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            };
+
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: organizationId,
+        resourceName: organization.name,
+        resourceData: resourceData,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
   }
@@ -82,5 +167,9 @@ export class OrganizationsService implements IOrganizationsService {
     });
     if (result) throw new ConflictException('Workspace name must be unique');
     return;
+  }
+
+  async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
+    throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
 }

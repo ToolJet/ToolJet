@@ -2,6 +2,7 @@
 id: image
 title: Image
 ---
+
 # Image
 
 The **Image** component is used to display images in your app.
@@ -10,13 +11,13 @@ The **Image** component is used to display images in your app.
 
 ## Properties
 
-|  <div style={{ width:"100px"}}> Properties </div> |  <div style={{ width:"100px"}}> Description </div> | 
-|:----------- |:----------- |
-| URL | Enter the URL of the image to display it on the component. |
-| Loading state | Loading state can be used to show a spinner as the image content. Loading state is commonly used with `isLoading` property of the queries to show a loading status while a query is being run. Switch the toggle **On** or click on **fx** to programmatically set the value `{{true}}` or `{{false}}`. |
-| Alternative text | Used for alt text of images. |
-| Zoom button | Toggle this to enable zoom options inside image. |
-| Rotate button | Toggle this on to enable rotate button in the image. |
+| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                                                                       |
+| :----------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| URL                                              | Enter the URL of the image to display it on the component.                                                                                                                                                                                                                                              |
+| Loading state                                    | Loading state can be used to show a spinner as the image content. Loading state is commonly used with `isLoading` property of the queries to show a loading status while a query is being run. Switch the toggle **On** or click on **fx** to programmatically set the value `{{true}}` or `{{false}}`. |
+| Alternative text                                 | Used for alt text of images.                                                                                                                                                                                                                                                                            |
+| Zoom button                                      | Toggle this to enable zoom options inside image.                                                                                                                                                                                                                                                        |
+| Rotate button                                    | Toggle this on to enable rotate button in the image.                                                                                                                                                                                                                                                    |
 
 </div>
 
@@ -24,12 +25,12 @@ The **Image** component is used to display images in your app.
 
 ## Events
 
-|  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| On click | Triggers whenever the user clicks on an image. |
+| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
+| :------------------------------------------ | :------------------------------------------------ |
+| On click                                    | Triggers whenever the user clicks on an image.    |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.5.0-LTS/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>
@@ -53,6 +54,7 @@ There are currently no exposed variables for the component.
 <div style={{paddingTop:'24px'}}>
 
 ## General
+
 ### Tooltip
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
@@ -65,10 +67,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value and entering a logical expression. |
-| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                                               |
+| :--------------------------------------------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value and entering a logical expression. |
+| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value and entering a logical expression. |
 
 </div>
 
@@ -78,14 +80,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | 
-|:--------- |:-------- |
-| Border type | Choose a border type for the image from available options: **None**, **Rounded**, **Circle**, **Thumbnail**. |
-| Image fit | Choose a image fit - similar to object fit for the image from available options: **fill**, **cover**, **contain**, **scale-down** |
-| Background color | Add a background color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker. |
-| Padding | Adds padding between the image and component border. It accepts any numerical value from `0` to `100`. |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                                                                                       |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Border type                                 | Choose a border type for the image from available options: **None**, **Rounded**, **Circle**, **Thumbnail**.                                                                                                                                                                                                            |
+| Image fit                                   | Choose a image fit - similar to object fit for the image from available options: **fill**, **cover**, **contain**, **scale-down**                                                                                                                                                                                       |
+| Background color                            | Add a background color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker.                                                                                                                                                                                       |
+| Padding                                     | Adds padding between the image and component border. It accepts any numerical value from `0` to `100`.                                                                                                                                                                                                                  |
+| Visibility                                  | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`.                                                     |
+| Disable                                     | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

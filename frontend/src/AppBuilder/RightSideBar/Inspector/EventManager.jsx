@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import { ActionTypes } from '@/Editor/ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -7,7 +7,7 @@ import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -30,6 +30,14 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { components as selectComponents } from 'react-select';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { APP_MODES } from '@/AppBuilder/LeftSidebar/GlobalSettings/AppModeToggle';
 
 export const EventManager = ({
   sourceId,
@@ -43,10 +51,13 @@ export const EventManager = ({
   customEventRefs = undefined,
   component,
 }) => {
+  const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
+  const moduleInputDummyQueries = useStore((state) => state?.getModuleInputDummyQueries?.(), shallow) || {};
+
   const dataQueries = useStore((state) => {
     const queries = state.dataQuery?.queries?.modules?.canvas || [];
     if (callerQueryId) {
@@ -57,7 +68,7 @@ export const EventManager = ({
   const allAppEvents = useEvents();
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
-  const appId = useStore((state) => state.app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -65,7 +76,6 @@ export const EventManager = ({
   const eventToDeleteLoaderIndex = useStore((state) => state.eventsSlice.getEventToDeleteLoaderIndex(), shallow);
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
-
   const { updateState } = useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -80,6 +90,8 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const lastFocusedEventIndex = useRef(null);
+  const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
 
@@ -95,12 +107,27 @@ export const EventManager = ({
       return a.index - b.index;
     });
 
-    setEvents(sortedEvents || []);
+    setEvents(sortedEvents || [], moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentEvents)]);
+  }, [JSON.stringify(currentEvents), moduleId]);
 
-  let actionOptions = ActionTypes.map((action) => {
-    return { name: action.name, value: action.id };
+  let groupedOptions = ActionTypes.reduce((acc, action) => {
+    const groupName = action.group;
+
+    if (!acc[groupName]) {
+      acc[groupName] = [];
+    }
+
+    acc[groupName].push({
+      label: action.name,
+      value: action.id,
+    });
+
+    return acc;
+  }, {});
+
+  let actionOptions = Object.keys(groupedOptions).map((groupName) => {
+    return { label: groupName, options: groupedOptions[groupName] };
   });
 
   let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
@@ -119,6 +146,46 @@ export const EventManager = ({
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
+    }),
+  };
+
+  const actionStyles = {
+    ...styles,
+    menuList: (base) => ({
+      ...base,
+      padding: '8px 0 8px 8px',
+      '&::-webkit-scrollbar': {
+        width: '10px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#E4E7EB',
+        border: '1px solid transparent',
+        backgroundClip: 'content-box',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#E4E7EB !important',
+        border: '1px solid transparent !important',
+        backgroundClip: 'content-box !important',
+      },
+      '&:hover': {
+        '&::-webkit-scrollbar-thumb': {
+          background: '#E4E7EB !important',
+          border: '1px solid transparent !important',
+          backgroundClip: 'content-box !important',
+        },
+      },
+    }),
+    group: (base) => ({
+      ...base,
+      padding: 0,
+    }),
+    groupHeading: (base) => ({
+      ...base,
+      margin: 0,
+      padding: '0',
     }),
   };
 
@@ -200,7 +267,7 @@ export const EventManager = ({
     );
     const actions = targetComponentMeta.actions;
 
-    const options = actions.map((action) => ({
+    const options = (actions || []).map((action) => ({
       name: action?.displayName,
       value: action.handle,
     }));
@@ -217,7 +284,7 @@ export const EventManager = ({
       (componentType) => component.component.component === componentType.component
     );
     const actions = targetComponentMeta.actions;
-    return actions.find((action) => action.handle === actionHandle);
+    return (actions || []).find((action) => action.handle === actionHandle);
   }
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
@@ -346,6 +413,28 @@ export const EventManager = ({
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
+    //----------------- Posthog Analytics for event handlers -----------------//
+    let postHogEventType = 'Event Handler';
+
+    switch (eventSourceType) {
+      case 'component':
+        postHogEventType = components[sourceId]['component']['component'];
+        break;
+
+      case 'page':
+        postHogEventType = `Page - ${sourceId}`;
+        break;
+
+      case 'data_query':
+        postHogEventType = `Query - ${sourceId}`;
+        break;
+
+      default:
+        break;
+    }
+
+    posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
+    //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
       event: {
         eventId: Object.keys(eventMetaDefinition?.events)[0],
@@ -392,6 +481,34 @@ export const EventManager = ({
     return defaultValue;
   };
 
+  const constructDataQueryOptions = () => {
+    const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
+    const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
+    return [...moduleInputs, ...queries];
+  };
+  const formatGroupLabel = (data) => {
+    if (data.label === 'run-action') return;
+    return (
+      <div
+        className="tw-border-x-0 tw-border-t-0 tw-border-b-[1px] tw-border-solid tw-my-[4px]"
+        style={{ borderColor: 'var(--border-weak)' }}
+      ></div>
+    );
+  };
+
+  const CustomOption = (props) => {
+    return (
+      <selectComponents.Option {...props}>
+        <div className="d-flex align-items-center">
+          <div style={{ width: '16px', marginRight: '6px' }}>
+            {props.isSelected && <SolidIcon name="tickv3" width="16px" height="16px" />}
+          </div>
+          <span>{props.label}</span>
+        </div>
+      </selectComponents.Option>
+    );
+  };
+
   function eventPopover(event, index) {
     return (
       <Popover
@@ -431,13 +548,17 @@ export const EventManager = ({
               <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={actionOptions}
-                value={event.actionId}
+                value={actionOptions
+                  .flatMap((group) => group.options)
+                  .find((option) => option.value === event.actionId)}
+                components={{ Option: CustomOption }}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
                 placeholder={t('globals.select', 'Select') + '...'}
-                styles={styles}
+                styles={actionStyles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+                formatGroupLabel={formatGroupLabel}
               />
             </div>
           </div>
@@ -503,7 +624,7 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'open-webpage' && (
-              <div className="p-1">
+              <div>
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   type="basic"
@@ -512,6 +633,17 @@ export const EventManager = ({
                   usePortalEditor={false}
                   component={component}
                 />
+                <div className="d-flex align-items-center justify-content-between mt-3">
+                  <label className="form-label mt-1">Open in</label>
+                  <ToggleGroup
+                    onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
+                    defaultValue={event?.windowTarget || 'newTab'}
+                    style={{ width: '74%' }}
+                  >
+                    <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
+                    <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
               </div>
             )}
 
@@ -531,7 +663,7 @@ export const EventManager = ({
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={getComponentOptions('Modal')}
+                    options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
                     value={event.modal?.id ?? event.modal}
                     search={true}
                     onChange={(value) => {
@@ -587,27 +719,34 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={dataQueries
-                        .filter((qry) => isQueryRunnable(qry))
-                        .map((qry) => ({ name: qry.name, value: qry.id }))}
+                      options={constructDataQueryOptions()}
                       value={event?.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
 
-                        const parameters = (query?.options?.parameters ?? []).reduce(
-                          (paramObj, param) => ({
-                            ...paramObj,
-                            [param.name]: param.defaultValue,
-                          }),
-                          {}
-                        );
+                        // If it is a module editor and the query is not found in the data queries, then it is a module input dummy query
+                        if (isModuleEditor && query === undefined) {
+                          handleQueryChange(index, {
+                            queryId: value,
+                            queryName: moduleInputDummyQueries[value],
+                            parameters: {},
+                          });
+                        } else {
+                          const parameters = (query?.options?.parameters ?? []).reduce(
+                            (paramObj, param) => ({
+                              ...paramObj,
+                              [param.name]: param.defaultValue,
+                            }),
+                            {}
+                          );
 
-                        handleQueryChange(index, {
-                          queryId: query.id,
-                          queryName: query.name,
-                          parameters: parameters,
-                        });
+                          handleQueryChange(index, {
+                            queryId: query.id,
+                            queryName: query.name,
+                            parameters: parameters,
+                          });
+                        }
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
@@ -871,51 +1010,87 @@ export const EventManager = ({
                 </div>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
-                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => (
-                    <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
-                        {param?.displayName}
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
+                    let optionsList = param.isDynamicOpiton
+                      ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
+                          name: tab.title,
+                          value: tab.id,
+                        }))
+                      : param.options;
+
+                    return (
+                      <div className="row mt-2" key={param.handle}>
+                        <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
+                          {param?.displayName}
+                        </div>
+
+                        {param.type === 'select' ? (
+                          <div className="col-9" data-cy="action-options-action-selection-field">
+                            <Select
+                              className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                              options={optionsList}
+                              value={valueForComponentSpecificActionHandle(event, param)}
+                              search={true}
+                              onChange={(value) => {
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                              }}
+                              placeholder={t('globals.select', 'Select') + '...'}
+                              styles={styles}
+                              useMenuPortal={false}
+                              useCustomStyles={true}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`${
+                              param?.type ? '' : 'fx-container-eventmanager-code'
+                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                            data-cy="action-options-text-input-field"
+                          >
+                            <CodeHinter
+                              type="fxEditor"
+                              initialValue={valueForComponentSpecificActionHandle(event, param)}
+                              onChange={(value) => {
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                              }}
+                              paramLabel={' '}
+                              paramType={param?.type}
+                              fieldMeta={{ options: param?.options }}
+                              cyLabel={`event-${param.displayName}`}
+                              component={component}
+                              isEventManagerParam={true}
+                            />
+                          </div>
+                        )}
                       </div>
-                      {param.type === 'select' ? (
-                        <div className="col-9" data-cy="action-options-action-selection-field">
-                          <Select
-                            className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                            options={param.options}
-                            value={valueForComponentSpecificActionHandle(event, param)}
-                            search={true}
-                            onChange={(value) => {
-                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                            }}
-                            placeholder={t('globals.select', 'Select') + '...'}
-                            styles={styles}
-                            useMenuPortal={false}
-                            useCustomStyles={true}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className={`${
-                            param?.type ? '' : 'fx-container-eventmanager-code'
-                          } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
-                          data-cy="action-options-text-input-field"
-                        >
-                          <CodeHinter
-                            type="fxEditor"
-                            initialValue={valueForComponentSpecificActionHandle(event, param)}
-                            onChange={(value) => {
-                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                            }}
-                            paramLabel={' '}
-                            paramType={param?.type}
-                            fieldMeta={{ options: param?.options }}
-                            cyLabel={`event-${param.displayName}`}
-                            component={component}
-                            isEventManagerParam={true}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
+              </>
+            )}
+            {event.actionId === 'toggle-app-mode' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.appMode', 'App mode')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={[
+                        { label: 'Light', value: 'light' },
+                        { label: 'Dark', value: 'dark' },
+                      ]}
+                      value={event?.appMode}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'appMode', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>
             )}
             <div className="row mt-3">
@@ -993,10 +1168,21 @@ export const EventManager = ({
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
                           overlay={eventPopover(event.event, index)}
-                          onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
+                            // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
+                            if (shouldSkipOnToggle.current) {
+                              shouldSkipOnToggle.current = false;
+                              return;
+                            }
+
+                            // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
+                            if (focusedEventIndex !== null && showing) {
+                              shouldSkipOnToggle.current = true;
+                            }
+
                             if (showing) {
                               setFocusedEventIndex(index);
+                              lastFocusedEventIndex.current = index;
                             } else {
                               setFocusedEventIndex(null);
                             }
@@ -1005,6 +1191,7 @@ export const EventManager = ({
                         >
                           <div
                             key={index}
+                            id={`${sourceId}-${index}`}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -1047,6 +1234,17 @@ export const EventManager = ({
       </AddNewButton>
     );
   };
+
+  const shouldUsePopoverObserver = events.length !== 0 && eventSourceType === 'data_query';
+
+  usePopoverObserver(
+    shouldUsePopoverObserver ? document.getElementsByClassName('query-details')[0] : null,
+    document.getElementById(`${sourceId}-${lastFocusedEventIndex.current}`),
+    document.getElementById('popover-basic'),
+    focusedEventIndex !== null,
+    () => (document.getElementById('popover-basic').style.display = 'block'),
+    () => (document.getElementById('popover-basic').style.display = 'none')
+  );
 
   if (events.length === 0) {
     return (

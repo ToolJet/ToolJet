@@ -2,9 +2,8 @@ import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getImportPath } from '@modules/app/constants';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { User } from '@entities/user.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { WorkflowExecutionEdge } from '@entities/workflow_execution_edge.entity';
@@ -29,31 +28,56 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { App } from '@entities/app.entity';
 import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
-export class WorkflowsModule {
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { RolesRepository } from '@modules/roles/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { SubModule } from '@modules/app/sub-module';
+export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { WorkflowExecutionsService } = await import(`${importPath}/workflows/services/workflow-executions.service`);
-    const { WorkflowExecutionsController } = await import(
-      `${importPath}/workflows/controllers/workflow-executions.controller`
+    const {
+      WorkflowExecutionsService,
+      WorkflowExecutionsController,
+      WorkflowSchedulesController,
+      WorkflowWebhooksController,
+      WorkflowWebhooksService,
+      WorkflowsController,
+      WorkflowSchedulesService,
+      TemporalService,
+      WorkflowWebhooksListener,
+      WorkflowTriggersListener,
+      FeatureAbilityFactory,
+      WorkflowStreamService,
+    } = await this.getProviders(configs, 'workflows', [
+      'services/workflow-executions.service',
+      'controllers/workflow-executions.controller',
+      'controllers/workflow-schedules.controller',
+      'controllers/workflow-webhooks.controller',
+      'services/workflow-webhooks.service',
+      'controllers/workflows.controller',
+      'services/workflow-schedules.service',
+      'services/temporal.service',
+      'listeners/workflow-webhooks.listener',
+      'listeners/workflow-triggers.listener',
+      'ability/app',
+      'services/workflow-stream.service',
+    ]);
+
+    // Get apps related providers
+    const { AppsService, PageService, EventsService, ComponentsService, PageHelperService } = await this.getProviders(
+      configs,
+      'apps',
+      [
+        'service',
+        'services/page.service',
+        'services/event.service',
+        'services/component.service',
+        'services/page.util.service',
+      ]
     );
-    const { WorkflowSchedulesController } = await import(
-      `${importPath}/workflows/controllers/workflow-schedules.controller`
-    );
-    const { WorkflowWebhooksController } = await import(
-      `${importPath}/workflows/controllers/workflow-webhooks.controller`
-    );
-    const { WorkflowWebhooksService } = await import(`${importPath}/workflows/services/workflow-webhooks.service`);
-    const { WorkflowsController } = await import(`${importPath}/workflows/controllers/workflows.controller`);
-    const { OrganizationConstantsService } = await import(`${importPath}/organization-constants/service`);
-    const { AppsService } = await import(`${importPath}/apps/service`);
-    const { PageService } = await import(`${importPath}/apps/services/page.service`);
-    const { EventsService } = await import(`${importPath}/apps/services/event.service`);
-    const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
-    const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
-    const { WorkflowSchedulesService } = await import(`${importPath}/workflows/services/workflow-schedules.service`);
-    const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
-    const { WorkflowWebhooksListener } = await import(`${importPath}/workflows/listeners/workflow-webhooks.listener`);
-    const { FeatureAbilityFactory } = await import(`${importPath}/workflows/ability/app`);
+
+    // Get organization constants provider
+    const { OrganizationConstantsService } = await this.getProviders(configs, 'organization-constants', ['service']);
 
     return {
       module: WorkflowsModule,
@@ -91,6 +115,7 @@ export class WorkflowsModule {
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),
         await AiModule.register(configs),
+        await AppPermissionsModule.register(configs),
       ],
       providers: [
         AppsAbilityFactory,
@@ -101,10 +126,13 @@ export class WorkflowsModule {
         DataSourcesRepository,
         OrganizationConstantRepository,
         VersionRepository,
+        AppGitRepository,
         AppsService,
         PageService,
         EventsService,
         WorkflowExecutionsService,
+        WorkflowStreamService,
+        WorkflowTriggersListener,
         WorkflowWebhooksListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
@@ -113,6 +141,8 @@ export class WorkflowsModule {
         WorkflowSchedulesService,
         TemporalService,
         FeatureAbilityFactory,
+        RolesRepository,
+        GroupPermissionsRepository,
       ],
       controllers: [
         WorkflowsController,

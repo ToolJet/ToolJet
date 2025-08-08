@@ -11,19 +11,22 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import * as csv from 'fast-csv';
 import { EMAIL_EVENTS } from '@modules/email/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { OrganizationUsersUtilService } from './util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { MAX_ROW_COUNT } from './constants';
 import { isPlural } from '@helpers/utils.helper';
 import { Response } from 'express';
 import { UserCsvRow } from './interfaces';
 import { IOrganizationUsersService } from './interfaces/IService';
 import { UpdateOrgUserDto } from './dto';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { Organization } from '@entities/organization.entity';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -38,7 +41,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
   async updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto) {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
-
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id: organizationUserId, organizationId: user.organizationId },
     });
@@ -75,48 +77,113 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       );
 
       // Step 4 - validate license
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
       return;
     });
   }
 
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
-    const organizationUser = await this.organizationUsersRepository.findOneOrFail({
-      where: { id, organizationId },
-      relations: ['user'],
-    });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationUser = await manager.findOneOrFail(OrganizationUser, {
+        where: { id, organizationId },
+        relations: ['user'],
+      });
 
-    await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
-    await this.organizationUsersRepository.update(id, {
-      status: WORKSPACE_USER_STATUS.ARCHIVED,
-      invitationToken: null,
+      await this.organizationUsersUtilService.throwErrorIfUserIsLastActiveAdmin(organizationUser?.user, organizationId);
+      await manager.update(OrganizationUser, id, {
+        status: WORKSPACE_USER_STATUS.ARCHIVED,
+        invitationToken: null,
+      });
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: organizationUser.user.email,
+        resourceData: {
+          archived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          archived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
-  async archiveFromAll(userId: string): Promise<void> {
+  async archiveFromAll(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const archivedUserWorkspaces = await manager.find(OrganizationUser, {
+        where: { userId },
+        relations: ['user'],
+      });
       await manager.update(
         OrganizationUser,
         { userId },
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
+      const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
+      const auditLogEntry = {
+        userId: user.id,
+        organizationIds: organizationIds,
+        resourceId: user.id,
+        resourceName: archivedUserWorkspaces[0].user.email,
+        resourceData: {
+          archived_user: {
+            id: archivedUserWorkspaces[0].userId,
+            email: archivedUserWorkspaces[0].user.email,
+            first_name: archivedUserWorkspaces[0].user.firstName,
+            last_name: archivedUserWorkspaces[0].user.lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
-  async unarchiveUser(userId: string): Promise<void> {
+  async unarchiveUser(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const targetUser = await manager.findOneOrFail(User, {
         where: { id: userId },
         select: ['id', 'status', 'invitationToken', 'source'],
+      });
+      const unarchivedUserWorkspaces = await manager.find(OrganizationUser, {
+        where: { userId },
+        relations: ['user'],
       });
       const { status, invitationToken } = targetUser;
       /* Special case. what if the user is archived when the status is invited. we were changing status to active before */
       const updatedStatus =
         !!invitationToken && status === USER_STATUS.ARCHIVED ? USER_STATUS.INVITED : USER_STATUS.ACTIVE;
       await this.organizationUsersUtilService.updateUserStatus(userId, updatedStatus, manager);
-      await this.licenseUserService.validateUser(manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseUserService.validateUser(manager, unarchivedUserWorkspaces[0].organizationId);
+      await this.licenseOrganizationService.validateOrganization(manager, user?.organizationId);
+      const organizationIds = unarchivedUserWorkspaces.map((user) => user.organizationId);
+      const auditLogEntry = {
+        userId: user.id,
+        organizationIds: organizationIds,
+        resourceId: user.id,
+        resourceName: unarchivedUserWorkspaces[0].user.email,
+        resourceData: {
+          unarchived_user: {
+            id: unarchivedUserWorkspaces[0].userId,
+            email: unarchivedUserWorkspaces[0].user.email,
+            first_name: unarchivedUserWorkspaces[0].user.firstName,
+            last_name: unarchivedUserWorkspaces[0].user.lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
 
@@ -142,8 +209,31 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         invitationToken,
       });
 
-      await this.licenseUserService.validateUser(manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
+      await this.licenseOrganizationService.validateOrganization(manager, organizationUser.organizationId);
+      const organization = await manager.findOne(Organization, {
+        where: { id: organizationUser.organizationId },
+      });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: organizationUser.user.email,
+        resourceData: {
+          unarchived_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: organizationUser.user.firstName,
+            last_name: organizationUser.user.lastName,
+          },
+          unarchived_user_workspace: {
+            workspace_name: organization.name,
+            workspace_id: organization.id,
+          },
+        },
+      };
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
 
     if (organizationUser.user.invitationToken) {
@@ -160,6 +250,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           sender: user.firstName,
         },
       });
+
       return;
     }
 
@@ -193,13 +284,22 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     let invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const invalidRoles = [];
+    const allowedColumns = ['first name', 'last name', 'email', 'user role', 'group'];
     const groupPermissions = (
       await this.groupPermissionsUtilService.getAllGroupByOrganization(currentUser.organizationId)
     ).groupPermissions?.filter((gp) => !gp.disabled);
     const existingGroups = groupPermissions.map((groupPermission) => groupPermission.name);
+
+    const csvData = fileStream.toString();
+    const firstLine = csvData.split('\n')[0];
+    const actualColumns = firstLine.split(',').map((col) => col.trim().toLowerCase());
+    const extraColumns = actualColumns.filter((col) => !allowedColumns.includes(col));
+    if (extraColumns.length > 0) {
+      throw new BadRequestException(`${extraColumns.join(', ')} ${extraColumns.length > 1 ? 'are' : 'is'} not allowed`);
+    }
     csv
       .parseString(fileStream.toString(), {
-        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups', 'metadata'],
+        headers: ['first_name', 'last_name', 'email', 'user_role', 'groups'],
         renameHeaders: true,
         ignoreEmpty: true,
       })
@@ -211,7 +311,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           ...row,
           groups: groups,
           user_role: this.organizationUsersUtilService.convertUserRolesCasing(row?.user_role),
-          userMetadata: row?.metadata ? JSON.parse(row.metadata) : null,
           email: row?.email?.toLowerCase(),
         });
       })
@@ -233,7 +332,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
               email: data?.email,
               role: data?.user_role,
               groups: data?.groups,
-              userMetadata: data?.metadata,
             };
             users.push(user);
           }

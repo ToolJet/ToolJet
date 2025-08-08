@@ -4,40 +4,62 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { PromoteConfirmationModal } from './components';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteVersionButton = () => {
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment } = useStore(
-    (state) => ({
-      isSaving: state.app.isSaving,
-      editingVersion: state.currentVersionId,
-      selectedEnvironment: state.selectedEnvironment,
-      environments: state.environments,
-      appVersionEnvironment: state.appVersionEnvironment,
-    }),
-    shallow
-  );
+  const { moduleId } = useModuleContext();
+  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
+  const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
+  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
+    useStore(
+      (state) => ({
+        isSaving: state.appStore.modules[moduleId].app.isSaving,
+        editingVersion: state.currentVersionId,
+        selectedEnvironment: state.selectedEnvironment,
+        environments: state.environments,
+        appVersionEnvironment: state.appVersionEnvironment,
+        currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
+      }),
+      shallow
+    );
 
-  const shouldDisablePromote = isSaving || selectedEnvironment?.priority < appVersionEnvironment?.priority;
+  // enable only after the environment details are loaded
+  const shouldDisablePromote =
+    isSaving ||
+    selectedEnvironment?.priority < appVersionEnvironment?.priority ||
+    !appVersionEnvironment ||
+    !environments?.[currentEnvIndex + 1];
 
   const handlePromote = () => {
-    const curentEnvIndex = environments.findIndex((env) => env.id === appVersionEnvironment.id);
     setPromoteModalData({
       current: appVersionEnvironment,
-      target: environments[curentEnvIndex + 1],
+      target: environments[currentEnvIndex + 1],
     });
   };
-
+  const renderTooltipMessage = () => {
+    if (!isPromoteVersionEnabled) {
+      return "You don't have access to promote application. Contact admin to know more.";
+    }
+    if (!shouldDisablePromote) {
+      return 'Promote this version to the next environment';
+    }
+    return '';
+  };
   return (
     <>
       <ButtonSolid
         variant="primary"
         onClick={handlePromote}
         size="md"
-        disabled={shouldDisablePromote}
+        disabled={shouldDisablePromote || !isPromoteVersionEnabled}
         data-cy="promote-button"
       >
-        <ToolTip message="Promote this version to the next environment" placement="bottom" show={!shouldDisablePromote}>
+        <ToolTip
+          message={renderTooltipMessage()}
+          placement="bottom"
+          show={!shouldDisablePromote || !isPromoteVersionEnabled}
+        >
           <div style={{ fontSize: '14px' }}>Promote </div>
         </ToolTip>
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">

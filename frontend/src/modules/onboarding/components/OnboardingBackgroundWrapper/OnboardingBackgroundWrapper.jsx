@@ -1,6 +1,7 @@
 import React from 'react';
 import './resources/styles/background.styles.scss';
-import { defaultWhiteLabellingSettings, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
+import { defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
+import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import WhiteLabellingBackgroundWrapper from '@/modules/onboarding/components/WhiteLabellingBackgroundWrapper';
 const OnboardingBackgroundWrapper = ({
   LeftSideComponent,
@@ -9,9 +10,8 @@ const OnboardingBackgroundWrapper = ({
   rightSize = 7,
   leftSize = 5,
 }) => {
-  const whiteLabelLogo = retrieveWhiteLabelFavicon();
-  const defaultWhiteLabelLogo = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  const isWhiteLabelLogoApplied = !(whiteLabelLogo === defaultWhiteLabelLogo);
+  const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
+  const isWhiteLabelLogoApplied = whiteLabelFavIcon !== defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
   if (window.location.pathname != '/setup' && isWhiteLabelLogoApplied) {
     const ContentComponent = MiddleComponent ? MiddleComponent : LeftSideComponent;
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;

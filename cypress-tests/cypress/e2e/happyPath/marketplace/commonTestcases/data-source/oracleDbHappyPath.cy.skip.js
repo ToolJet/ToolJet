@@ -15,7 +15,7 @@ import {
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
     // cy.createApp();
   });
 
@@ -123,7 +123,7 @@ describe("Data sources", () => {
     );
 
     cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
+      '[data-cy="data-source-name-input-field"]',
       postgreSqlText.psqlName
     );
 

@@ -12,10 +12,14 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default environment for all apps
-    this.nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);
+    if (!appVersions?.length) {
+      console.log('No app versions found, skipping migration.');
+      return;
+    }
     if (appVersions?.length) {
+      this.nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
       for (const appVersion of appVersions) {
         await this.associateDataQueriesAndSources(entityManager, appVersion);
       }

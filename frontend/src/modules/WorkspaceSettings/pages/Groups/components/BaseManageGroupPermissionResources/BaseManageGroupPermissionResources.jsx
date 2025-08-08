@@ -21,7 +21,9 @@ import ChangeRoleModal from '../ChangeRoleModal';
 import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
-import { debounce } from 'lodash';
+import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -60,8 +62,6 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeModalList: [],
       autoRoleChangeMessageType: '',
       updateParam: {},
-      isLoadingSearch: true,
-      searchQuery: '',
     };
   }
 
@@ -127,15 +127,12 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   fetchUsersInGroup = (groupPermissionId, searchString = '') => {
-    this.setState({ isLoadingSearch: true, searchQuery: searchString });
-    groupPermissionV2Service
-      .getUsersInGroup(groupPermissionId, searchString)
-      .then((data) => {
-        this.setState({ usersInGroup: data });
-      })
-      .finally(() => {
-        this.setState({ isLoadingUsers: false, isLoadingSearch: false });
+    groupPermissionV2Service.getUsersInGroup(groupPermissionId, searchString).then((data) => {
+      this.setState({
+        usersInGroup: data,
+        isLoadingUsers: false,
       });
+    });
   };
 
   clearErrorState = () => {
@@ -148,8 +145,6 @@ class BaseManageGroupPermissionResources extends React.Component {
       selectedUsers: [],
       isLoadingUsers: false,
       isAddingUsers: false,
-      isLoadingSearch: false,
-      searchQuery: '',
     });
   };
 
@@ -213,6 +208,12 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
         toast.success('Users added to the group');
         this.fetchUsersInGroup(groupPermissionId);
+        posthogHelper.captureEvent('click_add_user_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: groupPermissionId,
+        });
       })
       .catch(({ error, statusCode }) => {
         if (error?.type) {
@@ -272,7 +273,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -358,30 +359,15 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ showRoleEditMessage: true });
   };
 
-  handleUserSearchInGroup = debounce((e) => {
+  handleUserSearchInGroup = (e) => {
     this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value);
-  }, 500);
+  };
 
   toggleUserTabSearchBox = () => {
-    const { showUserSearchBox, groupPermission } = this.state;
-
-    if (showUserSearchBox) {
-      this.setState({ isLoadingSearch: true, searchQuery: '' });
-
-      groupPermissionV2Service
-        .getUsersInGroup(groupPermission.id, '')
-        .then((data) => {
-          this.setState({
-            usersInGroup: data,
-            showUserSearchBox: false,
-          });
-        })
-        .finally(() => {
-          this.setState({ isLoadingUsers: false, isLoadingSearch: false });
-        });
-    } else {
-      this.setState({ showUserSearchBox: true, searchQuery: '' });
-    }
+    this.fetchUsersInGroup(this.props.groupPermissionId);
+    this.setState((prevState) => ({
+      showUserSearchBox: !prevState.showUserSearchBox,
+    }));
   };
 
   toggleAutoRoleChangeModal = () => {
@@ -468,8 +454,6 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeModalMessage,
       autoRoleChangeModalList,
       autoRoleChangeMessageType,
-      isLoadingSearch,
-      searchQuery,
     } = this.state;
 
     const { featureAccess } = this.props;
@@ -655,6 +639,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                     active: currentTab === 'granularAccess' && !isBasicPlan,
                     'expired-gradient-border': currentTab === 'granularAccess' && isBasicPlan,
                   })}
+                  data-cy="granular-access-link"
                 >
                   {isBasicPlan && currentTab === 'granularAccess' ? (
                     <SolidIcon className="manage-group-tab-icons" name="granularaccessgrad" />
@@ -769,7 +754,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       )}
 
                       <section className="group-users-list-container">
-                        {isLoadingGroup || isLoadingUsers || isLoadingSearch ? (
+                        {isLoadingGroup || isLoadingUsers ? (
                           <tr>
                             <td className="col-auto">
                               <div className="row">
@@ -862,20 +847,18 @@ class BaseManageGroupPermissionResources extends React.Component {
                             </span>
                           </div>
                         ) : (
-                          searchQuery && (
-                            <div className="manage-groups-no-apps-wrap">
-                              <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
-                                <SolidIcon name="warning-user-notfound" width="48" />
-                              </div>
-                              <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
-                                No results found
-                              </p>
-                              <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
-                                There were no results found for your search. Please <br />
-                                try changing the filters and try again.
-                              </span>
+                          <div className="manage-groups-no-apps-wrap">
+                            <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
+                              <SolidIcon name="warning-user-notfound" width="48" />
                             </div>
-                          )
+                            <p className="tj-text-md font-weight-500" data-cy="user-empty-page">
+                              No results found
+                            </p>
+                            <span className="tj-text-sm text-center" data-cy="user-empty-page-info-text">
+                              There were no results found for your search. Please <br />
+                              try changing the filters and try again.
+                            </span>
+                          </div>
                         )}
                       </section>
                     </div>
@@ -902,7 +885,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                               )}
                             </p>
                           </div>
-                          <div className="permission-body">
+                          <div className={`${showPermissionInfo ? 'permissions-body-one' : 'permissions-body-two'}`}>
                             {isLoadingGroup ? (
                               <tr>
                                 <td className="col-auto">
@@ -980,10 +963,25 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           Delete any app in this workspace
                                         </span>
                                       </label>
+
+                                      {/* Promote and release app permissions */}
+                                      <AppPromoteReleasePermissionsUI
+                                        groupPermission={groupPermission}
+                                        disablePermissionUpdate={disablePermissionUpdate}
+                                        updateGroupPermission={this.updateGroupPermission}
+                                        updateState={this.updateParamState}
+                                      />
                                     </div>
                                   </div>
                                   {/* //App till here */}
                                 </div>
+                                {/* Worklfow Permission */}
+                                <WorkflowPermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
 
                                 {/* Data source */}
                                 <DataSourcePermissionsUI

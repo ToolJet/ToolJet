@@ -1,0 +1,13 @@
+// Card 
+.card {
+  border: 0 !important;
+  outline: 1px solid var(--border-weak);
+  box-shadow: var(--elevation-100-box-shadow);
+  border-radius: 8px;
+  // background-color: var(--background-surface-layer-01) !important;
+
+
+  &.card--clickable:hover {
+    box-shadow: var(--elevation-200-box-shadow);
+  }
+}

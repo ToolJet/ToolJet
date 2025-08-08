@@ -4,15 +4,6 @@ title: Overview
 ---
 
 <div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
 
 <div className="badge badge--self-hosted heading-badge" >   
  <span>Self Hosted</span>

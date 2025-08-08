@@ -12,7 +12,7 @@ export const Pagination = ({
   width,
 }) => {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { visibility, disabledState, boxShadow, alignment } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
 
   const pageChanged = (number) => {
@@ -65,7 +65,12 @@ export const Pagination = ({
   };
 
   return (
-    <div data-disabled={disabledState} className="d-flex align-items-center" data-cy={dataCy} style={{ boxShadow }}>
+    <div
+      data-disabled={disabledState}
+      className="d-flex align-items-center"
+      data-cy={dataCy}
+      style={{ boxShadow: visibility ? boxShadow : 'none', justifyContent: alignment }}
+    >
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"
@@ -207,7 +212,11 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   return (
     <React.Fragment>
       <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
-        <a style={{ cursor: 'pointer' }} className={`page-link ${darkMode && 'text-light'}`} onClick={handleOnClick}>
+        <a
+          style={{ cursor: 'pointer' }}
+          className={`page-link arrow-icon ${darkMode && 'text-light'}`}
+          onClick={handleOnClick}
+        >
           {getOperator(operator)}
         </a>
       </li>

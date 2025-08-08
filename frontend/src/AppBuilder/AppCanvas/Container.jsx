@@ -4,22 +4,17 @@ import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDrop } from 'react-dnd';
-import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
-import {
-  CANVAS_WIDTHS,
-  NO_OF_GRIDS,
-  WIDGETS_WITH_DEFAULT_CHILDREN,
-  GRID_HEIGHT,
-  CONTAINER_FORM_CANVAS_PADDING,
-  SUBCONTAINER_CANVAS_BORDER_WIDTH,
-  BOX_PADDING,
-} from './appCanvasConstants';
+import { useDrop, useDragLayer } from 'react-dnd';
+import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
+import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
-import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
-import { isPDFSupported } from '@/_helpers/appUtils';
-import toast from 'react-hot-toast';
+import { ModuleContainerBlank } from '@/modules/Modules/components';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import useSortedComponents from '../_hooks/useSortedComponents';
+import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
+import { useCanvasDropHandler } from './useCanvasDropHandler';
+import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -27,7 +22,7 @@ import toast from 'react-hot-toast';
   index - used to identify the subcontainer index
   onOptionChange - used to pass the onOptionChange function to the child components and pass the exposedValues to the parent component
 */
-export const Container = React.memo(
+const Container = React.memo(
   ({
     id,
     canvasWidth,
@@ -41,95 +36,92 @@ export const Container = React.memo(
     columns,
     darkMode,
     canvasMaxWidth,
-    isViewerSidebarPinned,
-    pageSidebarStyle,
     componentType,
+    appType,
   }) => {
+    const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
-    const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
-    const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
-    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+    const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
-    const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-    const currentMode = useStore((state) => state.currentMode, shallow);
+    const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+
+    // Initialize ghost moveable hook
+    const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
+
+    // // Monitor drag layer to update ghost position continuously
+    const { isDragging } = useDragLayer((monitor) => ({
+      isDragging: monitor.isDragging(),
+    }));
+
+    // // // Cleanup ghost when drag ends
+    useEffect(() => {
+      if (!isDragging) {
+        deactivateMoveableGhost();
+      }
+    }, [id, isDragging, deactivateMoveableGhost]);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
-    }, [componentType, index, currentMode]);
+    }, [index, componentType, currentMode]);
+
+    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+
+    const { handleDrop } = useCanvasDropHandler({
+      appType,
+    });
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
-      hover: (item) => {
-        item.canvasRef = realCanvasRef?.current;
-        item.canvasId = id;
-        item.canvasWidth = getContainerCanvasWidth();
-      },
-      drop: async ({ componentType }, monitor) => {
-        const didDrop = monitor.didDrop();
-        if (didDrop) return;
-        if (componentType === 'PDF' && !isPDFSupported()) {
-          toast.error(
-            'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-          );
-          return;
+      hover: (item, monitor) => {
+        const clientOffset = monitor.getClientOffset();
+
+        const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
+
+        if (clientOffset) {
+          const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+          if (canvasId === id) {
+            setCurrentDragCanvasId(id);
+          }
         }
-        if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentType)) {
-          const parentComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
-          const childComponents = addChildrenWidgetsToParent(componentType, parentComponent?.id, currentLayout);
-          const newComponents = [parentComponent, ...childComponents];
-          await addComponentToCurrentPage(newComponents);
-          // setSelectedComponents([parentComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-        } else {
-          const newComponent = addNewWidgetToTheEditor(componentType, monitor, currentLayout, realCanvasRef, id);
-          await addComponentToCurrentPage([newComponent]);
-          // setSelectedComponents([newComponent?.id]);
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+        // Calculate width based on the app canvas's grid
+        let width = (appCanvasWidth * item.component?.defaultSize?.width) / NO_OF_GRIDS;
+        const componentSize = {
+          width,
+          height: item.component?.defaultSize?.height,
+        };
+        if (clientOffset && id === 'canvas') {
+          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
-      collect: (monitor) => ({
-        isOverCurrent: monitor.isOver({ shallow: true }),
-      }),
     });
 
-    const showEmptyContainer = currentMode === 'edit' && id === 'canvas' && components.length === 0 && !isOverCurrent;
+    const showEmptyContainer =
+      currentMode === 'edit' &&
+      (id === 'canvas' || componentType === 'ModuleContainer') &&
+      components.length === 0 &&
+      !isDragging;
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        if (componentType === 'Container' || componentType === 'Form') {
-          return (
-            canvasWidth - (2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING)
-          );
-        }
-        return canvasWidth - 2; // Need to update this 2 to correct value for other subcontainers
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
       return realCanvasRef?.current?.offsetWidth;
     }
+
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
-
-    const getCanvasWidth = useCallback(() => {
-      if (
-        id === 'canvas' &&
-        !isPagesSidebarHidden &&
-        isViewerSidebarPinned &&
-        currentLayout !== 'mobile' &&
-        currentMode !== 'edit'
-      ) {
-        return `calc(100% - ${pageSidebarStyle === 'icon' ? '65px' : '210px'})`;
-      }
-      return '100%';
-    }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
     const handleCanvasClick = useCallback(
       (e) => {
@@ -146,6 +138,24 @@ export const Container = React.memo(
       [setLastCanvasClickPosition]
     );
 
+    /* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
+        Hence display is set to none on dragover and removed only when the component is added */
+
+    const renderEmptyContainer = () => {
+      if (components && components?.length !== 0) return;
+
+      const styles = {
+        display: showEmptyContainer ? 'block' : 'none',
+        ...(componentType === 'ModuleContainer' ? { height: '100%', width: '100%' } : {}),
+      };
+
+      return (
+        <div style={styles}>
+          {componentType === 'ModuleContainer' ? <ModuleContainerBlank /> : <NoComponentCanvasContainer />}
+        </div>
+      );
+    };
+    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -162,24 +172,31 @@ export const Container = React.memo(
               : id === 'canvas'
               ? canvasBgColor
               : '#f0f0f0',
-          width: getCanvasWidth(),
+          width: '100%',
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {
               if (currentLayout === 'mobile') {
                 return CANVAS_WIDTHS.deviceWindowWidth;
               }
-              return canvasMaxWidth;
+              if (currentMode === 'view') {
+                return '100%';
+              } else {
+                return canvasMaxWidth;
+              }
             }
             // For Subcontainers
             return canvasWidth;
           })(),
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
+          ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
         }}
         className={cx('real-canvas', {
-          'sub-canvas': id !== 'canvas',
-          'show-grid': isOverCurrent && (index === 0 || index === null),
+          'sub-canvas': id !== 'canvas' && appType !== 'module',
+          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'module-container': appType === 'module',
+          'is-module-editor': isModuleEditor,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
@@ -197,10 +214,10 @@ export const Container = React.memo(
           data-parent-type={id === 'canvas' ? 'canvas' : componentType}
           style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
         >
-          {components.map((id) => (
+          {sortedComponents.map((componentId) => (
             <WidgetWrapper
-              id={id}
-              key={id}
+              id={componentId}
+              key={componentId}
               gridWidth={gridWidth}
               subContainerIndex={index}
               onOptionChange={onOptionChange}
@@ -210,18 +227,17 @@ export const Container = React.memo(
               mode={currentMode}
               currentLayout={currentLayout}
               darkMode={darkMode}
+              moduleId={moduleId}
+              parentId={id}
             />
           ))}
         </div>
-
-        {/* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
-        Hence display is set to none on dragover and removed only when the component is added */}
-        {(!components || components?.length === 0) && (
-          <div style={{ display: showEmptyContainer ? 'block' : 'none' }}>
-            <NoComponentCanvasContainer />
-          </div>
-        )}
+        {renderEmptyContainer()}
       </div>
     );
   }
 );
+
+Container.displayName = 'Container';
+
+export { Container };
