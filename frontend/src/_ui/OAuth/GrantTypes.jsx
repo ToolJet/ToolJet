@@ -31,11 +31,13 @@ const CommonOAuthFields = ({
     }),
     shallow
   );
+  const [isCloud, setIsCloud] = React.useState(false);
 
   React.useEffect(() => {
     if (oauthTypes?.default_value && !options?.oauth_type?.value) {
       optionchanged('oauth_type', oauthTypes.default_value);
     }
+    setIsCloud(checkIfToolJetCloud(tooljetVersion));
   }, []);
 
   const oauthTypeOptions = React.useMemo(() => {
@@ -97,7 +99,7 @@ const CommonOAuthFields = ({
           />
         </>
       )}
-      {oauthTypes?.required && (
+      {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
         <div className="col-md-12">
           <label className="form-label mt-3">OAuth type</label>
           <Select
@@ -113,7 +115,7 @@ const CommonOAuthFields = ({
         <>
           {isFieldAllowed('client_id', grant_type, oauth_configs) && (
             <div className="col-md-12">
-              <label className="form-label mt-3" data-cy="label-client-id">
+              <label className="form-label" data-cy="label-client-id">
                 Client ID
               </label>
               <Input
@@ -358,17 +360,19 @@ const OAuthConfiguration = ({
 
   return (
     <div>
-      <div className="row mt-3">
-        <label className="form-label" data-cy="label-grant-type">
-          Grant type
-        </label>
-        <Select
-          options={grantTypeOptions()}
-          value={grant_type}
-          onChange={(value) => optionchanged('grant_type', value)}
-          width={'100%'}
-          useMenuPortal={false}
-        />
+      <div className="row">
+        {allowed_grant_types && allowed_grant_types.length > 1 && (
+          <div>
+            <label className="form-label">Grant type</label>
+            <Select
+              options={grantTypeOptions()}
+              value={grant_type}
+              onChange={(value) => optionchanged('grant_type', value)}
+              width={'100%'}
+              useMenuPortal={false}
+            />
+          </div>
+        )}
         <CommonOAuthFields
           clientConfig={clientConfig}
           tokenConfig={tokenConfig}

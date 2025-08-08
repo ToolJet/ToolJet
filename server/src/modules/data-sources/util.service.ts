@@ -641,6 +641,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
     const dataSourcePrefix = {
       googlecalendar: 'GOOGLE',
+      gmail: 'GOOGLE',
       snowflake: 'SNOWFLAKE',
     };
     const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
