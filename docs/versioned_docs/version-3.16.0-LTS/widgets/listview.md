@@ -20,47 +20,23 @@ To dynamically populate List View components, you can use specific data properti
 Consider this data being passed inside a List View component's `List data` property:
 
 ```js
-{
-  {
-    [
-      {
-        imageURL: "https://www.svgrepo.com/show/34217/image.svg",
-        text: "Sample text 1",
-        buttonText: "Button 1",
-      },
-      {
-        imageURL: "https://www.svgrepo.com/show/34217/image.svg",
-        text: "Sample text 1",
-        buttonText: "Button 2",
-      },
-      {
-        imageURL: "https://www.svgrepo.com/show/34217/image.svg",
-        text: "Sample text 1",
-        buttonText: "Button 3",
-      },
-    ];
-  }
-}
+{{[
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+]}}
 ```
 
 Based on the above data, you can set the `Data` property of a Text component inside List View using the below code:
 
 ```js
-{
-  {
-    listItem.text;
-  }
-}
+{{listItem.text}}
 ```
 
 Similarly, for an Image component inside List View, you can use the below code to pass the `imageURL` value:
 
 ```js
-{
-  {
-    listItem.imageURL;
-  }
-}
+{{listItem.imageURL}}
 ```
 
 </div>
@@ -234,7 +210,7 @@ All the child components of the List View component are exposed through the `chi
 The components inside the list view can be controlled using the javascript queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
 
 ```js
-components.listview1.children[0].button1.disable(true); // disables the button1 component in the first record
+components.listview1.children[0].button1.disable(true) // disables the button1 component in the first record
 ```
 
 <br/>
