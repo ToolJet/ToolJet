@@ -1,18 +1,20 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
+import { workflowsText } from "Texts/workflows";
+import { workflowSelector } from "Selectors/workflows";
 import { deleteDatasource } from "Support/utils/dataSource";
 
 Cypress.Commands.add("createWorkflowApp", (wfName) => {
-  cy.get(commonSelectors.globalWorkFlowsIcon).click();
-  cy.get(commonSelectors.workflowsCreateButton).click();
-  cy.get(commonSelectors.workFlowNameInputField).type(wfName);
-  cy.get(commonSelectors.createWorkFlowsButton).click();
+  cy.get(workflowSelector.globalWorkFlowsIcon).click();
+  cy.get(workflowSelector.workflowsCreateButton).click();
+  cy.get(workflowSelector.workFlowNameInputField).type(wfName);
+  cy.get(workflowSelector.createWorkFlowsButton).click();
 });
 
 Cypress.Commands.add("fillStartNodeInput", () => {
-  cy.get('[data-cy="start-node"]').click({ force: true });
+  cy.get(workflowSelector.startNode).click({ force: true });
 
-  cy.get('[data-cy="parameters-input-field"]')
+  cy.get(workflowSelector.parametersInputField)
     .click()
     .realType("{")
     .realType('"')
@@ -30,7 +32,7 @@ Cypress.Commands.add("fillStartNodeInput", () => {
 });
 
 Cypress.Commands.add("dataSourceNode", (nodeType) => {
-  cy.get('[data-cy="start-node-handle-right"]').trigger("mousedown", {
+  cy.get(workflowSelector.startNodeHandleRight).trigger("mousedown", {
     button: 0,
     force: true,
   });
@@ -50,15 +52,15 @@ Cypress.Commands.add("dataSourceNode", (nodeType) => {
 });
 
 Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
-  cy.get('[data-cy="workflow-run-button"]').click();
-  cy.get('[data-cy="Logs"] .text span').should(
+  cy.get(workflowSelector.workflowRunButton).click();
+  cy.get(workflowSelector.workflowLogs).should(
     "have.text",
     "A few seconds ago"
   );
 
-  cy.contains('[data-cy="node-name"]', "response1").click();
+  cy.get(workflowSelector.responseNodeOutput).click();
   cy.wait(500);
-  cy.get('[data-cy="options-column"]').contains("Output").click();
+  cy.get(workflowSelector.optionsColumn).contains("Output").click();
 
   cy.wait(500);
   cy.get("body").then(($body) => {
@@ -88,23 +90,23 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
     const match = texts.some((txt) => txt.includes(expectedText));
     expect(
       match,
-      `Expected some value to include "${expectedText}", but got:\n\n${texts.join(
-        "\n"
-      )}`
+      `Expected some value to include "${expectedText}", but got:\n\n${texts.join("\n")}`
     ).to.be.true;
   });
 });
 
 Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
-  const dataCy = `${nodeTitle.toLowerCase().replace(/\s+/g, '')}-node`;
+  const dataCy = `${nodeTitle.toLowerCase().replace(/\s+/g, "")}-node`;
 
   cy.get(`[data-cy="${dataCy}"]`)
     .should("exist")
     .parents(".react-flow__node")
     .as("sourceNode");
 
-  cy.get(`[data-cy="${dataCy}-handle-right"]`)
-    .trigger("mousedown", { button: 0, force: true });
+  cy.get(`[data-cy="${dataCy}-handle-right"]`).trigger("mousedown", {
+    button: 0,
+    force: true,
+  });
 
   cy.get(".react-flow__pane")
     .trigger("mousemove", { clientX: 800, clientY: 400, force: true })
@@ -115,8 +117,7 @@ Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
   cy.contains("Response", { timeout: 5000 }).click({ force: true });
   cy.wait(500);
 
-  cy.get(".react-flow__node-output")
-    .contains("response1")
+  cy.get(workflowSelector.nodeName("response1"))
     .parents(".react-flow__node")
     .click({ force: true });
 
@@ -137,7 +138,7 @@ Cypress.Commands.add("deleteWorkflow", (wfName) => {
     .find(commonSelectors.appCardOptionsButton)
     .realHover()
     .click();
-  cy.get(commonSelectors.deleteWorkFlowOption).click();
+  cy.get(workflowSelector.deleteWorkFlowOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
 });

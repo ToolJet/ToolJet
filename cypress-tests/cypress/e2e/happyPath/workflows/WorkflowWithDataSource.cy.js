@@ -5,6 +5,8 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { deleteWorkflowAndDS } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { harperDbText } from "Texts/harperDb";
+import { workflowsText } from "Texts/workflows";
+import { workflowSelector } from "Selectors/workflows";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
@@ -34,21 +36,21 @@ describe("Workflows with Datasource", () => {
 
   it("Creating workflows with runjs and validating execution", () => {
     cy.createWorkflowApp(data.wfName);
-
     cy.fillStartNodeInput();
-
     cy.dataSourceNode("Run JavaScript code");
 
-    cy.get('[data-cy="runjs1-node"]').click({ force: true });
+    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
+      force: true,
+    });
 
-    cy.get(commonSelectors.runjsInputField)
+    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
       .click({ force: true })
       .realType("return startTrigger.params", { delay: 50 });
+
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse("runjs1", "return runjs1.data");
-
+    cy.connectNodeToResponse(workflowsText.runjs, "return runjs1.data");
     cy.verifyTextInResponseOutput("your value");
     cy.deleteWorkflow(data.wfName);
   });
@@ -97,29 +99,30 @@ describe("Workflows with Datasource", () => {
     cy.reload();
 
     cy.createWorkflowApp(data.wfName);
-
     cy.fillStartNodeInput();
-
     cy.dataSourceNode(`cypress-${data.dataSourceName}-manual-pgsql`);
-    cy.get('[data-cy="postgresql1-node"]').click({
+    cy.get(workflowSelector.nodeName(workflowsText.postgresql)).click({
       force: true,
     });
-    cy.get(commonSelectors.pgsqlQueryInputField)
+
+    cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
       .realType(
         `SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'public'
-AND table_type = 'BASE TABLE';
-`,
+AND table_type = 'BASE TABLE';`,
         { delay: 50 }
       );
+
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse("postgresql1", "return postgresql1.data");
-
+    cy.connectNodeToResponse(
+      workflowsText.postgresql,
+      "return postgresql1.data"
+    );
     cy.verifyTextInResponseOutput("employees");
 
     deleteWorkflowAndDS(
@@ -175,26 +178,23 @@ AND table_type = 'BASE TABLE';
     );
 
     cy.createWorkflowApp(data.wfName);
-
     cy.fillStartNodeInput();
-
     cy.dataSourceNode(`cypress-${data.dataSourceName}-restapi`);
-    cy.get('[data-cy="restapi1-node"]').click({
+    cy.get(workflowSelector.nodeName(workflowsText.restapi)).click({
       force: true,
     });
 
-    cy.get(commonSelectors.restapiUrlInputField)
+    cy.get(workflowSelector.inputField(workflowsText.restapiUrlInputField))
       .eq(0)
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
       .realType(`http://9.234.17.31:8000/delay/10s`, { delay: 50 });
+
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse("restapi1", "return restapi1.data");
-
+    cy.connectNodeToResponse(workflowsText.restapi, "return restapi1.data");
     cy.verifyTextInResponseOutput("<!DOCTYPE html>");
-
     deleteWorkflowAndDS(data.wfName, `cypress-${data.dataSourceName}-restapi`);
   });
 
@@ -252,11 +252,9 @@ AND table_type = 'BASE TABLE';
     );
 
     cy.createWorkflowApp(data.wfName);
-
     cy.fillStartNodeInput();
-
     cy.dataSourceNode(`cypress-${data.dataSourceName}-harperdb`);
-    cy.get('[data-cy="harperdb1-node"]').click({
+    cy.get(workflowSelector.nodeName(workflowsText.harperdb)).click({
       force: true,
     });
 
@@ -267,17 +265,18 @@ AND table_type = 'BASE TABLE';
       .within(() => {
         cy.contains(/sql/i).click();
       });
-    cy.get(
-      '[data-cy="sql_query-input-field"] .cm-content[contenteditable="true"]'
-    )
+
+    cy.get(workflowSelector.inputField(workflowsText.harperdbInputField))
+      .click({ force: true })
+
       .click()
       .clearAndTypeOnCodeMirror("")
       .realType(`SELECT * FROM tooljet_harper.tooljet_table;`, { delay: 50 });
+
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse("harperdb1", "return harperdb1.data");
-
+    cy.connectNodeToResponse(workflowsText.harperdb, "return harperdb1.data");
     cy.verifyTextInResponseOutput("Test Record 3");
 
     deleteWorkflowAndDS(data.wfName, `cypress-${data.dataSourceName}-harperdb`);
