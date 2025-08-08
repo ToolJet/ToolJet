@@ -187,44 +187,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     return `calc(100% + ${offset})`;
   }
-
-  const test = useStore((state) => state.ai.test, shallow);
-  const test2 = useStore((state) => state.ai.test2, shallow);
-
   return (
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      <button
-        onClick={() => {
-          test();
-        }}
-        style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'orange',
-        }}
-      >
-        prd
-      </button>
-      <button
-        onClick={() => {
-          test2();
-        }}
-        style={{
-          position: 'fixed',
-          top: '40px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'orange',
-        }}
-      >
-        layout
-      </button>
       <AppCanvasBanner appId={appId} />
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
         <div

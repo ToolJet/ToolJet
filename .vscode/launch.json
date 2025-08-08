@@ -4,7 +4,7 @@
         {
             "name": "Launch Edge",
             "request": "launch",
-            "type": "pwa-msedge",
+            "type": "msedge",
             "url": "http://localhost:8082",
             "webRoot": "${workspaceFolder}"
         },
@@ -12,15 +12,42 @@
             "type": "node",
             "request": "launch",
             "name": "Server (Dev Mode)",
-            "runtimeExecutable": "npm",
+            "runtimeExecutable": "/Users/kartikgupta/.nvm/versions/node/v22.15.1/bin/npm",
             "runtimeArgs": [
                 "run",
                 "start:dev"
             ],
+            "autoAttachChildProcesses": true,
+            "restart": true,
             "sourceMaps": true,
+            "smartStep": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/server/**/*.js",
+                "!**/node_modules/**"
+            ],
+            "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
             "cwd": "${workspaceRoot}/server",
             "console": "integratedTerminal",
-            "skipFiles": ["<node_internals>/**"]
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Server (Direct Node)",
+            "program": "${workspaceFolder}/server/node_modules/.bin/nest",
+            "args": ["start", "--watch"],
+            "autoAttachChildProcesses": true,
+            "restart": true,
+            "sourceMaps": true,
+            "smartStep": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/server/**/*.js",
+                "!**/node_modules/**"
+            ],
+            "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
+            "cwd": "${workspaceRoot}/server",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
         },
         {
             "type": "node",
@@ -38,8 +65,7 @@
             ],
             "sourceMaps": true,
             "cwd": "${workspaceRoot}/server",
-            "console": "integratedTerminal",
-            "protocol": "inspector"
+            "console": "integratedTerminal"
         },
         {
             "name": "Docker Debug Client",
