@@ -248,7 +248,7 @@
   },
   {
     "name": "Hubspot",
-    "description": "Plugin for Hubspot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
     "version": "1.0.0",
     "id": "hubspot",
     "author": "Tooljet",

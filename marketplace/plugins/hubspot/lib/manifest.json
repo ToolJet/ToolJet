@@ -2,7 +2,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Hubspot",
-  "description": "A schema defining Hubspot datasource",
+  "description": "Integrate with HubSpot API for CRM and sales automation",
   "type": "api",
   "source": {
     "name": "Hubspot",
