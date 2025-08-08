@@ -17,10 +17,10 @@ The GitHub Configuration for GitSync introduces a more flexible way to connect y
 
 Role Required: **Admin**
 
-### 1. **Create a New Repository** 
+### 1. Create a New Repository
     Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty.
 
-### 2. **Create the GitHub App**
+### 2. Create the GitHub App
     [Setup a GitHub App](https://github.com/settings/apps/new) and make sure it is created by the same owner as the Git repository. If you have multiple ToolJet instances, use this same GitHub App across all instances. 
 
     <img className="screenshot-full img-l" style={{ marginBottom:'15px' }} src="/img/gitsync/github-config/github-app-register.png" alt="GitSync" />
@@ -35,7 +35,7 @@ Role Required: **Admin**
 
         <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app1.png" alt="GitSync" />
 
-### 3. **Install the GitHub App**
+### 3. Install the GitHub App
     
     To install your GitHub App, follow these steps:
 
@@ -53,30 +53,30 @@ Role Required: **Admin**
 
 Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
 
-
-
 <img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitSync" />
 
 
 The table below describes each configuration values:
 
 #### Repository
-| **Setting**                    | **Description**                                                                                                                                   |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Repo URL**              | The URL of the repository you created to use with ToolJet. (e.g `https://github.com/your-org/repo-name.git`)                                          |
-| **Branch name**         | Branch name of your repo. By default, it uses the main branch.                                                                                      |
+
+| **Setting** | **Description** |
+|-------------|----------------|
+| **Repo URL**  | The URL of the repository you created to use with ToolJet. (e.g `https://github.com/your-org/repo-name.git`) |
+| **Branch name** | Branch name of your repo. By default, it uses the main branch. |
 
 #### Self-hosted GitHub (Optional)
-| **Setting**                    | **Description**                                                                                                                                   |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **GitHub enterprise URL**             |    The domain used to access your self-hosted GitHub instance. If you use GitHub Cloud, you can leave this blank.                                                                                        |
-| **GitHub enterprise API URL**     |  The API endpoint for your self-hosted GitHub instance.  If you use GitHub Cloud, you can leave this blank. (e.g. `https://[hostname]/api/v3/`)                       |
+
+| **Setting** | **Description** |
+|-------------|-----------------|
+| **GitHub enterprise URL** |    The domain used to access your self-hosted GitHub instance. If you use GitHub Cloud, you can leave this blank. |
+| **GitHub enterprise API URL** |  The API endpoint for your self-hosted GitHub instance.  If you use GitHub Cloud, you can leave this blank. (e.g. `https://[hostname]/api/v3/`) |
 
 #### App Access
-| **Setting**                    | **Description**                                                                                                                                   |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **GitHub app ID**                    | The [GitHub App ID](https://docs.github.com/en/developers/apps/identifying-and-authorizing-users-for-github-apps#authenticating-with-a-github-app). |
-| **GitHub app installation ID**           | The [GitHub installation ID](https://docs.github.com/en/developers/apps/managing-github-apps/installing-github-apps#installing-a-github-app).    |
-| **GitHub app private key**           | Private key you downloaded after App creation.                                                                                                                    |
+| **Setting** | **Description**  |
+|-------------|------------------|
+| **GitHub app ID** | The [GitHub App ID](https://docs.github.com/en/developers/apps/identifying-and-authorizing-users-for-github-apps#authenticating-with-a-github-app). |
+| **GitHub app installation ID** | The [GitHub installation ID](https://docs.github.com/en/developers/apps/managing-github-apps/installing-github-apps#installing-a-github-app). |
+| **GitHub app private key** | Private key you downloaded after App creation. |
 
-    Once you've entered the necessary configurations, click **Save Changes**. Your ToolJet instance will now be connected to your GitHub repository.
+Once you've entered the necessary configurations, click **Save Changes**. Your ToolJet instance will now be connected to your GitHub repository.
