@@ -7,7 +7,7 @@ import { App } from '@entities/app.entity';
 import { UpdateSourceDto } from '../dto';
 import { Response } from 'express';
 export interface IDataQueriesController {
-  index(versionId: string): Promise<object>;
+  index(user: UserEntity, app: App, versionId: string, mode?: string): Promise<object>;
 
   create(
     user: UserEntity,
@@ -16,8 +16,9 @@ export interface IDataQueriesController {
     dataQueryDto: CreateDataQueryDto
   ): Promise<object>;
 
-  updateDataSource(
+  updateDataQuery(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     versionId: string,
     updateDataQueryDto: UpdateDataQueryDto
@@ -29,16 +30,19 @@ export interface IDataQueriesController {
 
   runQueryOnBuilder(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     environmentId: string,
     updateDataQueryDto: UpdateDataQueryDto,
     ability: AppAbility,
     dataSource: DataSourceEntity,
-    response: Response
+    response: Response,
+    mode?: string
   ): Promise<object>;
 
   runQuery(
     user: UserEntity,
+    app: App,
     dataQueryId: string,
     updateDataQueryDto: UpdateDataQueryDto,
     response: Response

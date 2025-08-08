@@ -10,6 +10,7 @@ import Ajv from 'ajv';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
+import { AppImportRequestDto } from '@modules/external-apis/dto';
 
 const ajv = new Ajv({ allErrors: true, coerceTypes: true });
 const logger = new Logger('TooljetDatabaseSchemaValidator');
@@ -100,6 +101,18 @@ export class ValidateTooljetDatabaseConstraint implements ValidatorConstraintInt
 
 export function ValidateTooljetDatabaseSchema(validationOptions?: ValidationOptions) {
   return function (object: ImportResourcesDto, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: ValidateTooljetDatabaseConstraint,
+    });
+  };
+}
+
+export function ValidateTooljetDatabaseImportSchema(validationOptions?: ValidationOptions) {
+  return function (object: AppImportRequestDto, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

@@ -47,7 +47,7 @@ Read **[environment variables reference](/docs/setup/env-vars)**v
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database).
+To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/2.50.0-LTS/setup/env-vars#enable-tooljet-database--optional-).
 
 1. Set up PostgREST server
 

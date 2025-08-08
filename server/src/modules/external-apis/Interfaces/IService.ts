@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto/external_apis.dto';
+import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
 import { EntityManager } from 'typeorm';
 
 export interface IExternalApisService {

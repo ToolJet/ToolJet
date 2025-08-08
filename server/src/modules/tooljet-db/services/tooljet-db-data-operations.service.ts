@@ -4,11 +4,13 @@ import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/pac
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
 import { isEmpty } from 'lodash';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
+
 import { AST, Parser } from 'node-sql-parser/build/postgresql';
 import {
   createTooljetDatabaseConnection,
   decryptTooljetDatabasePassword,
   findTenantSchema,
+  isSQLModeDisabled,
   modifyTjdbErrorObject,
 } from 'src/helpers/tooljet_db.helper';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
@@ -58,6 +60,8 @@ export class TooljetDbDataOperationsService implements QueryService {
         return this.sqlExecution(queryOptions, context);
       case 'bulk_update_with_primary_key':
         return this.bulkUpdateWithPrimaryKey(queryOptions, context);
+      case 'bulk_upsert_with_primary_key':
+        return this.bulkUpsertUsingPrimaryKey(queryOptions, context);
       default:
         return {
           status: 'failed',
@@ -167,10 +171,10 @@ export class TooljetDbDataOperationsService implements QueryService {
           );
           if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
         }
-        !isEmpty(whereQuery) && query.push(whereQuery);
-        !isEmpty(orderQuery) && query.push(orderQuery);
-        !isEmpty(limit) && query.push(`limit=${limit}`);
-        !isEmpty(offset) && query.push(`offset=${offset}`);
+        if (!isEmpty(whereQuery)) query.push(whereQuery);
+        if (!isEmpty(orderQuery)) query.push(orderQuery);
+        if (!isEmpty(limit)) query.push(`limit=${limit}`);
+        if (!isEmpty(offset)) query.push(`offset=${offset}`);
       }
 
       const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
@@ -216,7 +220,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
 
-    !isEmpty(whereQuery) && query.push(whereQuery);
+    if (!isEmpty(whereQuery)) query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
@@ -249,8 +253,8 @@ export class TooljetDbDataOperationsService implements QueryService {
       throw new QueryError('An incorrect limit value.', 'Limit should be a valid integer', {});
     }
 
-    !isEmpty(whereQuery) && query.push(whereQuery);
-    limit && limit !== '' && query.push(`limit=${limit}&order=id`);
+    if (!isEmpty(whereQuery)) query.push(whereQuery);
+    if (limit && limit !== '') query.push(`limit=${limit}&order=id`);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
@@ -323,7 +327,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async sqlExecution(queryOptions, context): Promise<QueryResult> {
-    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLE') === 'true')
+    if (isSQLModeDisabled())
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
     const { organization_id: organizationId } = context.app;
@@ -576,6 +580,70 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
 
     return query;
+  }
+
+  async bulkUpsertUsingPrimaryKey(queryOptions, context): Promise<QueryResult> {
+    if (hasNullValueInFilters(queryOptions, 'bulk_upsert_with_primary_key')) {
+      return {
+        status: 'failed',
+        errorMessage: 'Null value comparison not allowed. To check null values, please use IS operator instead.',
+        data: {},
+      };
+    }
+
+    try {
+      const { table_id: tableId, bulk_upsert_with_primary_key: bulkUpsertOptions } = queryOptions;
+      const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
+      const { organization_id: organizationId } = context.app;
+
+      // Validate input
+      if (!Array.isArray(rowsToUpsert) || rowsToUpsert.length === 0) {
+        return {
+          status: 'failed',
+          errorMessage: 'No rows provided for upsert operation',
+          data: {},
+        };
+      }
+
+      if (!Array.isArray(primaryKeyColumns) || primaryKeyColumns.length === 0) {
+        return {
+          status: 'failed',
+          errorMessage: 'No primary key columns specified',
+          data: {},
+        };
+      }
+
+      // Perform bulk upsert
+      const result = await this.tooljetDbBulkUploadService.bulkUpsertRowsWithPrimaryKey(
+        rowsToUpsert,
+        tableId,
+        primaryKeyColumns,
+        organizationId
+      );
+
+      if (result.status === 'failed') {
+        return {
+          status: 'failed',
+          errorMessage: result.error,
+          data: {},
+        };
+      }
+
+      return {
+        status: 'ok',
+        data: {
+          inserted: result.inserted,
+          updated: result.updated,
+          data: result.rows,
+        },
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        errorMessage: error.message,
+        data: {},
+      };
+    }
   }
 }
 

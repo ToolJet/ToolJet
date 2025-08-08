@@ -130,6 +130,8 @@ export default function generateColumnsData({
           return 1;
         }
       };
+    } else if (columnType === 'number') {
+      sortType = 'basic';
     }
     const width = columnSize || defaultColumn.width;
     return {

@@ -3,9 +3,10 @@ import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from '../dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { App } from '@entities/app.entity';
 
 export interface IDataQueriesService {
-  getAll(versionId: string): Promise<{ data_queries: object[] }>;
+  getAll(user: User, app: App, versionId: string, mode?: string): Promise<{ data_queries: object[] }>;
 
   create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto): Promise<object>;
 
@@ -22,7 +23,8 @@ export interface IDataQueriesService {
     updateDataQueryDto: UpdateDataQueryDto,
     ability: object,
     dataSource: DataSource,
-    response: Response
+    response: Response,
+    mode?: string
   ): Promise<object>;
 
   runQueryForApp(

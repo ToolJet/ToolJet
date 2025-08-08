@@ -3,7 +3,7 @@ import { commonSelectors } from "../../constants/selectors/common";
 
 export const searchPage = (pageName) => {
   cy.get('[title="Search"]').click();
-  cy.get('[data-cy="search-input-filed"]').type(pageName);
+  cy.get('[data-cy="search-input-field"]').type(pageName);
 };
 
 export const clearSearch = () => {
@@ -57,7 +57,7 @@ export const setHomePage = (pageName) => {
 
 export const addNewPage = (pageName) => {
   cy.get(multipageSelector.addPageIcon).click();
-  cy.get(".col-12 > .form-control").type(`{selectAll}{backspace}${pageName}`);
+  cy.get('[role="button"] > div > .form-control').type(`{selectAll}{backspace}${pageName}`);
   cy.get(multipageSelector.addPageIcon).click();
   cy.get(`[data-cy="pages-name-${pageName.toLowerCase()}"]`).click();
 };

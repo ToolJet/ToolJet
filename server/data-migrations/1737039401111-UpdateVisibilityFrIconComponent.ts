@@ -30,6 +30,7 @@ export class UpdateVisibilityFrIconComponent1737039401111 implements MigrationIn
       const properties = component.properties;
       const styles = component.styles;
       const general = component.general;
+      const generalStyles = component.generalStyles;
 
       if (styles.visibility) {
         properties.visibility = styles.visibility;
@@ -41,6 +42,11 @@ export class UpdateVisibilityFrIconComponent1737039401111 implements MigrationIn
         delete general?.tooltip;
       }
 
+      if (generalStyles?.boxShadow) {
+        styles.boxShadow = generalStyles?.boxShadow;
+        delete generalStyles?.boxShadow;
+      }
+
       await entityManager.update(Component, component.id, {
         properties,
         styles,
@@ -49,5 +55,5 @@ export class UpdateVisibilityFrIconComponent1737039401111 implements MigrationIn
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }

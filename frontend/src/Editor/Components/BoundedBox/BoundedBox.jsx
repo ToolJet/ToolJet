@@ -7,6 +7,7 @@ import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
+import { getSafeRenderableValue } from '../utils';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
   const [annotationState, setAnnotation] = useState({});
@@ -18,7 +19,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const labels = _.isArray(properties.labels)
     ? [
         ...properties.labels.map((label) => {
-          return { name: label, value: label };
+          return { name: getSafeRenderableValue(label), value: label };
         }),
       ]
     : [];

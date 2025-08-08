@@ -348,10 +348,10 @@ const BaseManageOrgConstants = ({
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
-        .catch(({ error }) => {
+        .catch(({ error, data }) => {
           setErrors(error);
-          toast.error(error);
-          if (error === NoPermissionMessage) {
+          toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+          if (error === NoPermissionMessage || data?.statusCode === 403) {
             redirectToWorkspace();
           }
         })
@@ -364,10 +364,10 @@ const BaseManageOrgConstants = ({
         toast.success(`${variable.type} constant created successfully!`);
         onCancelBtnClicked();
       })
-      .catch(({ error }) => {
+      .catch(({ error, data }) => {
         setErrors(error);
-        toast.error(error || 'Constant could not be created');
-        if (error === NoPermissionMessage) {
+        toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+        if (error === NoPermissionMessage || data?.statusCode === 403) {
           redirectToWorkspace();
         }
       })
@@ -390,9 +390,10 @@ const BaseManageOrgConstants = ({
         setSelectedConstant(null);
         setMode(MODES.NULL);
       })
-      .catch(({ error }) => {
-        toast.error(error);
-        if (error === NoPermissionMessage) {
+      .catch(({ error, data }) => {
+        setErrors(error);
+        toast.error(data?.statusCode === 403 ? 'You do not have permissions to perform this action' : data?.message);
+        if (error === NoPermissionMessage || data?.statusCode === 403) {
           redirectToWorkspace();
         }
       })
@@ -484,7 +485,7 @@ const BaseManageOrgConstants = ({
               <div className="workspace-setting-buttons-wrap">
                 {canCreateVariable() && (
                   <ButtonSolid
-                    data-cy="add-new-constant-button"
+                    data-cy="form-add-new-constant-button"
                     variant="primary"
                     onClick={() => {
                       setMode(() => MODES.CREATE);
@@ -576,7 +577,7 @@ const BaseManageOrgConstants = ({
                           // Todo: Update link to documentation: workspace constants
                           onClick={() =>
                             window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
                               '_blank'
                             )
                           }

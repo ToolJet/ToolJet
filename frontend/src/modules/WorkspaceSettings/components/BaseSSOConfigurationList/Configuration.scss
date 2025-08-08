@@ -22,6 +22,7 @@
   margin-bottom: 10px;
   background-color: #f9f9f9;
   border: 1px solid #e1e1e1;
+  width: 100%;
   border-radius: 8px;
   transition: background-color 0.1s;
   cursor: pointer;
@@ -236,12 +237,9 @@ input:checked+.slider:before {
 .workspace-settings-page {
   width: 880px;
   margin: 0 auto;
-  background: var(--base);
+  background: var(--page-weak);
 
   .card {
-    background: var(--base);
-    border: 1px solid var(--slate7) !important;
-    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05) !important;
     width: 880px;
 
     .card-header {
@@ -273,11 +271,11 @@ input:checked+.slider:before {
       align-items: center;
       padding: 24px 32px;
       gap: 8px;
-      border-top: 1px solid var(--slate5) !important;
-      background: var(--base);
+      border-top: 1px solid var(--border-weak) !important;
       margin-top: 0px !important;
       align-Self: 'stretch';
-      height: 88px;
+      height: 88px;;
+      background: 0 0;
     }
 
     .card-body {
@@ -297,10 +295,23 @@ input:checked+.slider:before {
   }
 }
 
+
+
+
 .theme-dark {
   .form-control {
     background-color: unset !important;
+
+    input {
+      color: var(--text-default) !important;
+      border-color: var(--border-default) !important;
+    }
   }
+
+  .react-tel-input .form-control {
+    background-color: inherit !important; // Or any default value you prefer
+  }
+
 }
 
 .dark-theme {

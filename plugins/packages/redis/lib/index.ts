@@ -62,6 +62,7 @@ export default class RedisQueryService implements QueryService {
       username,
       password,
       tls: tls,
+      ...(sourceOptions?.database && { db: sourceOptions.database }),
     });
   }
 }

@@ -6,6 +6,7 @@ import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
+import { appPromote } from "Support/utils/platform/multiEnv";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -16,9 +17,7 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.logoutLink).click();
-  cy.intercept("GET", "/api/metadata").as("publicConfig");
-  cy.wait("@publicConfig");
-  cy.wait(500);
+  cy.wait(1000);
 };
 
 export const navigateToManageUsers = () => {
@@ -50,7 +49,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -91,7 +90,7 @@ export const navigateToAppEditor = (appName) => {
     .find(commonSelectors.editButton)
     .click({ force: true });
   if (Cypress.env("environment") === "Community") {
-    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.intercept("GET", "/api/data-sources").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
   } else {
@@ -103,11 +102,14 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   cy.wait(1000);
-  cy.reloadAppForTheElement(appName);
+  cy.get(commonSelectors.appCard(appName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover();
   cy.contains("div", appName)
     .parent()
     .within(() => {
-      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+      cy.get(commonSelectors.appCardOptionsButton).click();
     });
 };
 
@@ -183,13 +185,13 @@ export const manageUsersPagination = (email) => {
 
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.inputUserSearch, email);
-  cy.wait(1000)
+  cy.wait(1000);
 };
 
-
 export const selectAppCardOption = (appName, appCardOption) => {
+  cy.wait(1000);
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click({ force: true });
+  cy.get(appCardOption).should("be.visible").click();
 };
 
 export const navigateToDatabase = () => {
@@ -221,7 +223,6 @@ export const pinInspector = () => {
     }
   });
   cy.hideTooltip();
-
 };
 
 export const navigateToworkspaceConstants = () => {
@@ -230,6 +231,9 @@ export const navigateToworkspaceConstants = () => {
 };
 
 export const releaseApp = () => {
+  cy.ifEnv("Enterprise", () => {
+    appPromote("development", "production");
+  });
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
@@ -243,24 +247,3 @@ export const verifyTooltipDisabled = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
-
-export const deleteAllGroupChips = () => {
-  cy.get('body').then(($body) => {
-    if ($body.find('[data-cy="group-chip"]').length > 0) {
-      cy.get('[data-cy="group-chip"]').then(($groupChip) => {
-        if ($groupChip.is(':visible')) {
-          cy.get('[data-cy="group-chip"]').first().click();
-          cy.get('[data-cy="delete-button"]').click();
-          cy.get('[data-cy="yes-button"]').click();
-
-          cy.wait(2000);
-          deleteAllGroupChips(); // Recursive call to delete next chip
-        } else {
-          cy.log("Group chip is present but not visible, skipping deletion");
-        }
-      });
-    } else {
-      cy.log("No group chips left to delete");
-    }
-  });
-}

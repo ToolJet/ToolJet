@@ -236,12 +236,21 @@ export const TextInput = function TextInput({
       value: properties.value,
       isMandatory: isMandatory,
       isLoading: loading,
-      isVisible: visibility,
-      isDisabled: disable,
     };
 
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Fix for "visibility is not defined" in production because there's a naming conflict in the code.
+    // The issue is in the exposedVariables object where we had both a function named visibility and a property isVisible that depends on the state variable with the same name.
+    const exposedVariables = {
+      isVisible: visibility,
+      isDisabled: disable,
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

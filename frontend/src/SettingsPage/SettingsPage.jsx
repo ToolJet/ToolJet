@@ -88,10 +88,11 @@ function SettingsPage(props) {
 
   const handlePasswordInput = (input) => {
     setNewPassword(input);
-    if (input.length > 100) {
+    const trimmedInput = input.trim();
+    if (trimmedInput.length > 100) {
       setHelperText('Password should be Max 100 characters');
       setValidPassword(false);
-    } else if (input.length < 5 && input.length > 0) {
+    } else if (trimmedInput.length < 5 && trimmedInput.length > 0) {
       setHelperText('Password should be at least 5 characters');
       setValidPassword(false);
     } else {
@@ -100,11 +101,19 @@ function SettingsPage(props) {
     }
   };
 
+  const handleConfirmPasswordInput = (input) => {
+    setConfirmPassword(input);
+  };
+
   const changePassword = async () => {
+    const trimmedCurrentPassword = currentpassword.trim();
+    const trimmedNewPassword = newPassword.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
     const errorMsg =
-      (currentpassword.match(/^ *$/) !== null && 'Current password') ||
-      (newPassword.match(/^ *$/) !== null && 'New password') ||
-      (confirmPassword.match(/^ *$/) !== null && 'Confirm new password');
+      (trimmedCurrentPassword.length === 0 && 'Current password') ||
+      (trimmedNewPassword.length === 0 && 'New password') ||
+      (trimmedConfirmPassword.length === 0 && 'Confirm new password');
 
     if (errorMsg) {
       toast.error(errorMsg + " can't be empty!", {
@@ -112,13 +121,13 @@ function SettingsPage(props) {
       });
       return;
     }
-    if (currentpassword === newPassword) {
+    if (trimmedCurrentPassword === trimmedNewPassword) {
       toast.error("New password can't be the same as the current one!", {
         duration: 3000,
       });
       return;
     }
-    if (newPassword !== confirmPassword) {
+    if (trimmedNewPassword !== trimmedConfirmPassword) {
       toast.error('New password and confirm new password should be same', {
         duration: 3000,
       });
@@ -127,7 +136,7 @@ function SettingsPage(props) {
 
     setPasswordChangeInProgress(true);
     try {
-      await userService.changePassword(currentpassword, newPassword);
+      await userService.changePassword(trimmedCurrentPassword, trimmedNewPassword);
       toast.success('Password updated successfully', {
         duration: 3000,
       });
@@ -158,9 +167,9 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
             <div className="container-xl">
-              <div className="profile-page-card">
+              <div className="card profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
                     {t('header.profileSettingPage.profile', 'Profile')}
@@ -235,8 +244,7 @@ function SettingsPage(props) {
                   <div></div>
                 </div>
               </div>
-              <br />
-              <div className="profile-page-card">
+              <div className="card profile-page-card tw-mt-16">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-change-password">
                     {t('header.profileSettingPage.changePassword', 'Change password')}
@@ -293,7 +301,7 @@ function SettingsPage(props) {
                         placeholder={t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                         value={confirmPassword}
                         ref={focusRef}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        onChange={(event) => handleConfirmPasswordInput(event.target.value)}
                         onKeyPress={confirmPasswordKeyPressHandler}
                         data-cy="confirm-password-input"
                       />
@@ -301,7 +309,7 @@ function SettingsPage(props) {
                   </div>
                   <ButtonSolid
                     isLoading={passwordChangeInProgress}
-                    disabled={newPassword.length < 5 || confirmPassword.length < 5 || !validPassword}
+                    disabled={newPassword.trim().length < 5 || confirmPassword.trim().length < 5 || !validPassword}
                     onClick={changePassword}
                     data-cy="change-password-button"
                   >

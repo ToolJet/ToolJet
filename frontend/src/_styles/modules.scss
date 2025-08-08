@@ -1,0 +1,112 @@
+.apps-modules-tabs.nav-tabs {
+    .nav-link,
+    ul > li.nav-link.active {
+        background-color: var(--page-weak);
+    }
+
+    .nav-link.active {
+        border-bottom-width: medium !important;
+    }
+
+    li.nav-item {
+
+        button {
+            width: 100%;
+        }
+    }
+
+}
+
+// Beta tag base styles
+.beta-tag-base {
+    padding: 0 4px !important;
+    border: none !important;
+    margin-left: 4px !important;
+    color: var(--text-on-solid) !important;
+    display: inline-flex !important;
+}
+
+// Beta tag variants
+.beta-tag-editor {
+    background-color: var(--background-success-strong) !important;
+    font-weight: 400 !important;
+    padding: 0 6px !important;
+}
+
+.beta-tag-module {
+    background-color: var(--background-accent-strong) !important;
+}
+
+.apps-modules-navigation {
+    margin-top: 15px;
+    margin-bottom: 10px;
+
+    .tab-content {
+        display: none;
+    }
+}
+
+.apps-modules-tabs.dark-mode {
+    border-bottom-color: #2B394A;
+    
+    .nav-link {
+        background-color: inherit;
+    }
+}
+
+#homePage-tab-front-end,
+#homePage-tab-module {
+    border-radius: 0;
+}
+
+.show-module-border {
+    outline: dotted 2px #CCD1D5 !important;
+}
+
+.module-container-canvas {
+    >div:first-child {
+        /* Firefox scrollbar support */
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        height: 100%;
+        overflow: hidden auto;
+
+        /* Hide scrollbar by default */
+        &::-webkit-scrollbar {
+            width: 6px;
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+
+        /* Show scrollbar only on hover */
+        &:hover {
+            &::-webkit-scrollbar-thumb {
+                background-color: #6a727c4d;
+                border-radius: 3px;
+            }
+        }
+
+        &:hover {
+            scrollbar-color: #6a727c4d transparent;
+        }
+    }
+    &.disabled{
+        pointer-events: none;
+        opacity: 0.5;
+    }
+}
+
+.empty-module-container{
+    display: flex;
+    align-items: center;
+    margin-top: 25vh;
+    flex-direction: column;
+}
+
+.disabled-module{
+    pointer-events: none;
+    opacity: 0.5;
+}

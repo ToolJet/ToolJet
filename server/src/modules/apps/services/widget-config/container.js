@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 5,
-    height: 200,
+    width: 13,
+    height: 480,
   },
   component: 'Container',
   others: {
@@ -20,6 +20,15 @@ export const containerConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
     },
     visibility: {
       type: 'toggle',
@@ -51,70 +60,64 @@ export const containerConfig = {
   defaultChildren: [
     {
       componentName: 'Text',
+      slotName: 'header',
       layout: {
         top: 20,
         left: 1,
         height: 40,
+        width: 20,
       },
       displayName: 'ContainerText',
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
       defaultValue: {
         text: 'Container title',
         fontWeight: 'bold',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
+        boxShadow: '0px 0px 0px 0px #00000090',
       },
     },
   ],
   events: {},
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'container',
     },
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ddd',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'header',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'container',
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Height',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 80,
-      },
-      accordian: 'header',
-    },
     borderRadius: {
       type: 'numberInput',
-      displayName: 'Border',
+      displayName: 'Border radius',
       validation: {
         schema: {
           type: 'union',
           schemas: [{ type: 'string' }, { type: 'number' }],
         },
-        defaultValue: 4,
+        defaultValue: 6,
       },
       accordian: 'container',
     },
@@ -153,17 +156,19 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      showHeader: {value: `{{true}}`},
+      showHeader: { value: `{{true}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
+      headerHeight: { value: `{{80}}` },
     },
     events: [],
     styles: {
-      backgroundColor: { value: '#fff' },
-      headerBackgroundColor: { value: '#fff' },
-      borderRadius: { value: '4' },
-      borderColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderRadius: { value: '6' },
+      borderColor: { value: 'var(--cc-default-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

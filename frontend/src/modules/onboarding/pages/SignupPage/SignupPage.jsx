@@ -5,11 +5,14 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
-import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import * as envConfigs from 'config';
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 
 const SignupPage = ({ configs, organizationId }) => {
+  const edition = fetchEdition();
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,22 +22,21 @@ const SignupPage = ({ configs, organizationId }) => {
     email: '',
     name: '',
   });
-  const [defaultState, setDefaultState] = useState(false);
-
   const routeState = location.state;
   const organizationToken = routeState?.organizationToken;
   const inviteeEmail = routeState?.inviteeEmail;
   const inviteOrganizationId = organizationId;
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
+  if (!paramInviteOrganizationSlug && edition === 'cloud') {
+    window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup';
+  }
   useEffect(() => {
+    fetchWhiteLabelDetails(organizationId);
     const errorMessage = location?.state?.errorMessage;
     if (errorMessage) {
       toast.error(errorMessage);
     }
-    checkWhiteLabelsDefaultState(inviteOrganizationId).then((res) => {
-      setDefaultState(res);
-    });
   }, []);
 
   const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
@@ -47,7 +49,10 @@ const SignupPage = ({ configs, organizationId }) => {
         .catch((errorObj) => {
           let errorMessage;
           const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
-          if (isThereAnyErrorsArray) {
+          if (errorObj?.error?.includes('reached your limit')) {
+            // Note : The fix is made to handle the case when errorObj?.error is a string and not an object
+            errorMessage = errorObj?.error;
+          } else if (isThereAnyErrorsArray) {
             errorMessage = errorObj?.error?.[0];
           } else if (typeof errorObj?.error?.error === 'string') {
             errorMessage = errorObj?.error?.error;
@@ -109,7 +114,6 @@ const SignupPage = ({ configs, organizationId }) => {
           onSubmit={handleSignup}
           setSignupOrganizationDetails={setSignupOrganizationDetails}
           initialData={signingUserInfo}
-          defaultState={defaultState}
         />
       )}
       RightSideComponent={GeneralFeatureImage}
