@@ -215,7 +215,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
   // Hack: This is a temporary solution. We need to find a better way to handle this.
   // We have added this solution to fix dragging widget not being correctly dropped when it is there is scroll
   const widgetType = getWidgetById(widgets, event.target.id)?.component?.component || CANVAS_ID;
-  if (!DROPPABLE_PARENTS.has(widgetType)) {
+  if (!DROPPABLE_PARENTS.has(widgetType) && widgetType !== 'ModuleViewer') {
     const targetElems = document.elementsFromPoint(event.clientX, event.clientY);
     const draggedOverElements = targetElems.filter(
       (ele) => (ele.id !== event.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')

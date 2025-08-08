@@ -168,7 +168,6 @@ export class AppsUtilService implements IAppsUtilService {
       appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
-        hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
@@ -596,7 +595,9 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'Steps', 'Tabs', 'RadioButtonV2'].includes(
+                currentComponentData?.component?.component
+              ) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);

@@ -102,11 +102,13 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         key={dataQuery.id}
         onClick={(e) => {
           if (isQuerySelected) return;
-          const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
-          if (menuBtn.contains(e.target)) {
-            e.stopPropagation();
-          } else {
-            toggleQueryHandlerMenu(false);
+          if (!shouldFreeze) {
+            const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
+            if (menuBtn.contains(e.target)) {
+              e.stopPropagation();
+            } else {
+              toggleQueryHandlerMenu(false);
+            }
           }
           setTimeout(() => {
             setSelectedQuery(dataQuery?.id);

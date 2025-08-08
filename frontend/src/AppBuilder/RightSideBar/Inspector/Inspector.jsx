@@ -451,6 +451,31 @@ export const Inspector = ({
     return <Accordion items={items} />;
   };
 
+  const renderDocumentationLink = () => {
+    return (
+      <span className="widget-documentation-link">
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
+          <span>
+            <Student width={13} fill={'#3E63DD'} />
+            <small className="widget-documentation-link-text">
+              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
+              })}
+            </small>
+          </span>
+          <span>
+            <ArrowRight width={20} fill={'#3E63DD'} />
+          </span>
+        </a>
+      </span>
+    );
+  };
+
   const propertiesTab = isMounted && (
     <div className={`${shouldFreeze && 'disabled'}`}>
       <GetAccordion
@@ -630,26 +655,7 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      <span className="widget-documentation-link">
-        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
-          <span>
-            <Student width={13} fill={'#3E63DD'} />
-            <small className="widget-documentation-link-text">
-              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta:
-                  componentMeta.displayName === 'Toggle Switch (Legacy)'
-                    ? 'Toggle (Legacy)'
-                    : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
-              })}
-            </small>
-          </span>
-          <span>
-            <ArrowRight width={20} fill={'#3E63DD'} />
-          </span>
-        </a>
-      </span>
+      {renderDocumentationLink()}
     </div>
   );
 };

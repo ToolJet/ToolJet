@@ -50,6 +50,7 @@ const FormComponent = (props) => {
   const { moduleId } = useModuleContext();
   const childComponents = useStore((state) => state.getChildComponents(id, moduleId), checkDiff);
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
+  const themeChanged = useStore((state) => state.themeChanged);
 
   const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
 
@@ -145,6 +146,7 @@ const FormComponent = (props) => {
     isContainer: true,
     componentCount,
     value: isJSONSchema,
+    visibility: isVisible,
   });
 
   const parentRef = useRef(null);
@@ -434,7 +436,7 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    overflow: 'hidden auto',
+                    // overflow: 'hidden auto',
                     height: '100%',
                   }}
                   darkMode={darkMode}

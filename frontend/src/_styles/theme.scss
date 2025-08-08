@@ -1552,7 +1552,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 10.4rem);
+    height: calc(100vh - 12.8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -3005,8 +3005,8 @@ input:focus-visible {
 }
 
 .widget-documentation-link {
-  position: fixed;
-  bottom: 0;
+  // position: relative;
+  // top: 0px;
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 999;
@@ -3685,7 +3685,7 @@ input:focus-visible {
 
   .page-item {
     a.page-link {
-      background-color: var(--cc-primary-brand, rgb(77, 94, 240));
+      color: white;
     }
   }
 
@@ -3899,7 +3899,7 @@ input[type="text"] {
   }
 
   .react-datepicker__day--selected {
-    background-color: var(--cc-primary-brand);
+    background-color: var(--cc-primary-brand, #216ba5);
   }
 }
 
@@ -4151,7 +4151,7 @@ input[type="text"] {
   }
 
   .rbc-event {
-    background-color: var(--primary-brand) !important;
+    background-color: var(--primary-brand);
     border: transparent;
 
     .rbc-event-label {
@@ -7543,19 +7543,6 @@ tbody {
   .table-header,
   .table-cell {
     max-width: 230px !important;
-  }
-
-  .table-cell {
-    padding: 0;
-
-    input[type="checkbox"] {
-      accent-color: var(--cc-primary-brand);
-      background-color: var(--cc-surface1-surface);
-    }
-
-    input[type="checkbox"]:checked::before {
-      background-color: var(--cc-surface1-surface);
-    }
   }
 
   .add-more-columns-btn {
@@ -11617,10 +11604,6 @@ tbody {
 
   .current-org-indicator {
     display: none;
-  }
-
-  &:hover .current-org-indicator {
-    display: block;
   }
 
   .org-name {
@@ -16276,12 +16259,12 @@ fieldset:disabled {
 
 
 .create-app-with-ai-prompt-wrapper {
-  padding: 16px 0;
+  padding: 30px 0;
 
   header {
     display: flex;
     gap: 12px;
-    padding: 16px 24px;
+    // padding: 16px 24px;
     background: var(--bg-surface-layer-01);
 
     .left {
@@ -18415,14 +18398,16 @@ section.ai-message-prompt-input-wrapper {
   line-height: 20px;
 }
 
-.table-cell {
-  input[type="checkbox"] {
-    accent-color: var(--cc-primary-brand);
-    background-color: var(--cc-surface1-surface);
-  }
+.card.jet-table.table-component {
+  .table-cell {
+    input[type="checkbox"] {
+      accent-color: var(--cc-primary-brand);
+      background-color: var(--cc-surface1-surface);
+    }
 
-  input[type="checkbox"]:checked::before {
-    background-color: var(--cc-surface1-surface);
+    input[type="checkbox"]:checked::before {
+      background-color: var(--cc-surface1-surface);
+    }
   }
 }
 
@@ -18777,6 +18762,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  
 
   &::-webkit-scrollbar {
     width: 16px;
