@@ -23,7 +23,6 @@ const ApiEndpointInput = (props) => {
   const [specJson, setSpecJson] = useState(null);
 
   const fetchOpenApiSpec = () => {
-    console.log('props old', props);
     setLoadingSpec(true);
     openapiService
       .fetchSpecFromUrl(props.specUrl)
