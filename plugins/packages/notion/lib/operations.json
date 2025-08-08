@@ -174,7 +174,7 @@
           "key": "icon_value",
           "type": "codehinter",
           "placeholder": "Enter icon external url / emoji here",
-          "description": "Enter Enter value here",
+          "description": "Enter value here",
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins"
