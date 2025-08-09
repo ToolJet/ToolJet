@@ -88,7 +88,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
                 page?.hidden || page?.disabled ? null : (
                   <div
                     key={page.handle}
-                    onClick={() => handlepageSwitch(page?.id)}
+                    onClick={currentPageId !== page.id && (() => handlepageSwitch(page?.id))}
                     className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
                   >
                     <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
