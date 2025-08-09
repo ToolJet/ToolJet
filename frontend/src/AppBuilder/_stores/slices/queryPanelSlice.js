@@ -811,16 +811,13 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
-      const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
-      const { runQuery } = queryPanel;
+      const { dataQuery, eventsSlice } = get();
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
       if (isValidCode.status === 'failed') {
         return isValidCode;
       }
-
-      const currentState = getAllExposedValues();
 
       let result = {},
         error = null;
