@@ -284,7 +284,11 @@ export const MultiselectV2 = ({
   const handleClickInside = () => {
     if (!isMultiSelectDisabled && !isMultiSelectLoading) {
       fireEvent('onFocus');
-      setIsMultiselectOpen(!isMultiselectOpen);
+      const isOpen = !isMultiselectOpen;
+      setIsMultiselectOpen(isOpen);
+      if (isOpen) {
+        setSearchInputValue('');
+      }
     }
   };
 
@@ -512,6 +516,9 @@ export const MultiselectV2 = ({
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            onMenuClose={() => {
+              setSearchInputValue('');
+            }}
           />
         </div>
       </div>
