@@ -14,13 +14,12 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
-export const useCanvasDropHandler = ({ appType }) => {
-  const { moduleId } = useModuleContext();
+export const useCanvasDropHandler = () => {
+  const { isModuleEditor } = useModuleContext();
 
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
@@ -30,14 +29,18 @@ export const useCanvasDropHandler = ({ appType }) => {
       !canvasId || canvasId === 'canvas'
         ? document.getElementById(`real-canvas`)
         : document.getElementById(`canvas-${canvasId}`);
-
+    const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
     handleDeactivateTargets();
     hideGridLines();
 
     setShowModuleBorder(false); // Hide the module border when dropping
 
-    if (currentMode === 'view' || (appType === 'module' && draggedComponentType !== 'ModuleContainer')) {
+    if (isModuleEditor && canvasId === 'canvas') {
       return;
+    }
+
+    if (!isModuleEditor && isParentModuleContainer) {
+      return toast.error('Modules cannot be edited inside an app');
     }
 
     if (draggedComponentType === 'PDF' && !isPDFSupported()) {
@@ -50,12 +53,12 @@ export const useCanvasDropHandler = ({ appType }) => {
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
       ? {
-        moduleId: component.moduleId,
-        versionId: component.versionId,
-        environmentId: component.environmentId,
-        moduleName: component.displayName,
-        moduleContainer: component.moduleContainer,
-      }
+          moduleId: component.moduleId,
+          versionId: component.versionId,
+          environmentId: component.environmentId,
+          moduleName: component.displayName,
+          moduleContainer: component.moduleContainer,
+        }
       : undefined;
 
     let addedComponent;

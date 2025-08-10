@@ -187,7 +187,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "starter",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-ce-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -427,6 +427,25 @@ jobs:
         if: env.is_fork == 'false'
         uses: actions/checkout@v3
 
+      - name: Detect base branch and set Dockerfile path
+        run: |
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          echo "Base branch: $BASE_BRANCH"
+          
+          if [[ "$BASE_BRANCH" == "main" || "$BASE_BRANCH" == release/* ]]; then
+            DOCKERFILE="./docker/pre-release/ee/ee-preview.Dockerfile"
+            echo "Using pre-release track"
+          elif [[ "$BASE_BRANCH" == "lts-3.16" || "$BASE_BRANCH" == release-lts/* ]]; then
+            DOCKERFILE="./docker/LTS/ee/ee-preview.Dockerfile"
+            echo "Using LTS track"
+          else
+            echo "Error: Unsupported base branch '$BASE_BRANCH'"
+            echo "Supported branches: main, release/*, lts-3.16, release-lts/*"
+            exit 1
+          fi
+          
+          echo "Selected Dockerfile: $DOCKERFILE"
+          echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
 
       - name: Creating deployment for Enterprise Edition
         id: create-ee-deployment
@@ -584,7 +603,7 @@ jobs:
               "envSpecificDetails": {
                 "dockerCommand": "",
                 "dockerContext": "./",
-                "dockerfilePath": "./docker/ee/ee-preview.Dockerfile"
+                "dockerfilePath": "'"$DOCKERFILE"'"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -592,7 +611,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "standard",
+                "plan": "pro",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-ee-pr-${{ env.PR_NUMBER }}.onrender.com"

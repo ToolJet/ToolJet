@@ -1873,7 +1873,21 @@ class HomePageComponent extends React.Component {
                   ) : (
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
-                      <p className="empty-title mt-3">Create a module to reuse on the applications.</p>
+                      <div className="empty-title mt-3" style={{ display: 'block' }}>
+                        <div>Create reusable groups of components and queries via modules.</div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <a
+                            href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
+                            target="_blank"
+                            className="docs-link"
+                            rel="noreferrer"
+                          >
+                            Check out our guide
+                          </a>
+                          &nbsp;on creating modules.
+                        </div>
+                      </div>
+
                       <ButtonSolid
                         disabled={invalidLicense}
                         leftIcon="folderdownload"

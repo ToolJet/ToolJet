@@ -39,7 +39,6 @@ export const filepickerConfig = {
       displayName: 'Set Disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
-
   ],
   properties: {
     label: {
@@ -231,30 +230,30 @@ export const filepickerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: false },
       accordian: 'File Drop Area',
     },
-    dropzoneActiveColor: {
-      type: 'colorSwatches',
-      displayName: 'Active color',
-      validation: { schema: { type: 'string' }, defaultValue: false },
-      accordian: 'File Drop Area',
-    },
-    dropzoneErrorColor: {
-      type: 'colorSwatches',
-      displayName: 'Error color',
-      validation: { schema: { type: 'string' }, defaultValue: false },
-      accordian: 'File Drop Area',
-    },
-    containerBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: false },
-      accordian: 'Container',
-    },
-    containerBorder: {
-      type: 'colorSwatches',
-      displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
-      accordian: 'Container',
-    },
+    // dropzoneActiveColor: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Active color',
+    //   validation: { schema: { type: 'string' }, defaultValue: false },
+    //   accordian: 'File Drop Area',
+    // },
+    // dropzoneErrorColor: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Error color',
+    //   validation: { schema: { type: 'string' }, defaultValue: false },
+    //   accordian: 'File Drop Area',
+    // },
+    // containerBackgroundColor: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Background',
+    //   validation: { schema: { type: 'string' }, defaultValue: false },
+    //   accordian: 'Container',
+    // },
+    // containerBorder: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Border',
+    //   validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
+    //   accordian: 'Container',
+    // },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border Radius',
@@ -306,9 +305,9 @@ export const filepickerConfig = {
     properties: {
       label: { value: 'Upload files' },
       instructionText: { value: 'Drag and drop files here or click to select files' },
-      enableDropzone: { value: '{{true}}' },
-      enablePicker: { value: '{{true}}' },
-      enableMultiple: { value: '{{false}}' },
+      enableDropzone: { value: '{{true}}', fxActive: false },
+      enablePicker: { value: '{{true}}', fxActive: false },
+      enableMultiple: { value: '{{false}}', fxActive: false },
       parseContent: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
       loadingState: { value: '{{false}}' },
@@ -320,16 +319,16 @@ export const filepickerConfig = {
     styles: {
       borderRadius: { value: '{{6}}' },
       dropzoneTitleColor: { value: 'var(--cc-primary-text)' },
-      dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },
-      dropzoneErrorColor: { value: 'var(--cc-error-systemStatus)' },
-      containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
-      containerBorder: { value: 'var(--cc-default-border)' },
+      // dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },
+      // dropzoneErrorColor: { value: 'var(--cc-error-systemStatus)' },
+      // containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      // containerBorder: { value: 'var(--cc-default-border)' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
+      boxShadow: { value: '0px 1px 3px #0000001A' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },
-      fileType: { value: '{{}}' },
+      fileType: { value: 'image/*' },
       minSize: { value: '{{50}}' },
       maxSize: { value: '{{51200000}}' },
       minFileCount: { value: '{{0}}' },

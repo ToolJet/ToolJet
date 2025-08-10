@@ -8,7 +8,7 @@
     "operation": {
       "label": "",
       "key": "stripe_operation",
-      "type": "react-component-api-endpoint",
+      "type": "react-component-api-endpoint-old",
       "description": "Single select dropdown for operation",
       "spec_url": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json"
     }

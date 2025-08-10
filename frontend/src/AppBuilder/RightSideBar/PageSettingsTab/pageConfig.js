@@ -6,8 +6,8 @@ export const pageConfig = {
     position: 'top',
     name: '',
     hideLogo: false,
-    showMenu: {
-      value: `{{true}}`,
+    disableMenu: {
+      value: `{{false}}`,
       fxActive: false,
     },
     showOnDesktop: true,
@@ -68,8 +68,8 @@ export const pageConfig = {
       position: 'top',
       name: '',
       hideLogo: false,
-      showMenu: {
-        value: '{{true}}',
+      disableMenu: {
+        value: '{{false}}',
         fxActive: false,
       },
       showOnDesktop: true,

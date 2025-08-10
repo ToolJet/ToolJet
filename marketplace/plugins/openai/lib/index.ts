@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import OpenAI from 'openai'; // Correct import for SDK 4.56.0
-import { getCompletion, getChatCompletion, generateImage } from './query_operations';
+import { getCompletion, getChatCompletion, generateImage, generateEmbedding } from './query_operations';
 
 export default class Openai implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -23,11 +23,25 @@ export default class Openai implements QueryService {
           result = await generateImage(openai, queryOptions);
           break;
 
+        case Operation.GenerateEmbedding: {
+          const res = await generateEmbedding(openai, queryOptions);
+          result = { embedding: res };
+          break;
+        }
+
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, {});
+      const errorMessage = error?.message || 'An unknown error occurred';
+      const errorDetails: any = {
+        status: error?.status || null,
+        type: error?.type || null,
+        requestId: error?.request_id || null,
+        code: error?.error?.code || null,
+        param: error?.error?.param || null,
+      };
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
@@ -53,7 +67,7 @@ export default class Openai implements QueryService {
     } catch (error) {
       throw new QueryError('Connection could not be established', error?.message, {});
     }
-  }  
+  }
 
   async getConnection(sourceOptions: SourceOptions): Promise<OpenAI> {
     const { apiKey, organizationId = null } = sourceOptions;

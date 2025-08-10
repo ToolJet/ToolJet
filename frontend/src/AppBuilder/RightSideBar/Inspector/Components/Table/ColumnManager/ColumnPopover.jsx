@@ -103,8 +103,7 @@ export const ColumnPopoverContent = ({
       </Popover.Header>
       <Popover.Body
         ref={popoverRef}
-        className={`table-column-popover ${darkMode && 'theme-dark'}`}
-        style={isGoingBelowScreen ? { maxHeight: '80vh', overflowY: 'auto' } : {}}
+        className={`table-column-popover ${darkMode && 'theme-dark'} ${isGoingBelowScreen ? 'show-scrollbar' : ''}`}
       >
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements

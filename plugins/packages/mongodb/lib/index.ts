@@ -16,6 +16,14 @@ export default class MongodbService implements QueryService {
         case 'list_collections':
           result = await db.listCollections().toArray();
           break;
+         case 'create_collection':
+          const collection = await db.createCollection(queryOptions.collection, this.parseEJSON(queryOptions.options));
+          result = {
+            collectionName: collection.collectionName,
+            namespace: collection.namespace,
+            options: collection.options,
+          };
+          break;
         case 'insert_one':
           result = await db
             .collection(queryOptions.collection)

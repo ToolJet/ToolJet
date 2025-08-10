@@ -31,6 +31,7 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -141,6 +142,7 @@ export class WorkflowsModule extends SubModule {
         TemporalService,
         FeatureAbilityFactory,
         RolesRepository,
+        GroupPermissionsRepository,
       ],
       controllers: [
         WorkflowsController,

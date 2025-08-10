@@ -39,7 +39,7 @@ const Container = React.memo(
     componentType,
     appType,
   }) => {
-    const { moduleId } = useModuleContext();
+    const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
@@ -98,9 +98,6 @@ const Container = React.memo(
         if (clientOffset && id === 'canvas') {
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
-      },
-      drop: (item, monitor) => {
-        handleDrop(item, id);
       },
     });
 
@@ -173,8 +170,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -182,18 +179,24 @@ const Container = React.memo(
               if (currentLayout === 'mobile') {
                 return CANVAS_WIDTHS.deviceWindowWidth;
               }
-              return canvasMaxWidth;
+              if (currentMode === 'view') {
+                return '100%';
+              } else {
+                return canvasMaxWidth;
+              }
             }
             // For Subcontainers
             return canvasWidth;
           })(),
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
+          ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
           'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
+          'is-module-editor': isModuleEditor,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

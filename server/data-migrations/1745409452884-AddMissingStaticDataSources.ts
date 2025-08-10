@@ -41,16 +41,36 @@ export class AddMissingStaticDataSources1745409452884 implements MigrationInterf
       for (const kind of missingKinds) {
         const name = this.getDefaultNameForKind(kind);
 
-        await queryRunner.query(
+        const dataSourceResult = await queryRunner.query(
           `
-                    INSERT INTO data_sources (
-                        name, kind, type, scope, organization_id, created_at, updated_at
-                    ) VALUES (
-                        $1, $2, 'static', 'global', $3, NOW(), NOW()
-                    )
-                `,
+          INSERT INTO data_sources (
+              name, kind, type, scope, organization_id, created_at, updated_at
+          ) VALUES (
+              $1, $2, 'static', 'global', $3, NOW(), NOW()
+          ) RETURNING id
+          `,
           [name, kind, orgId]
         );
+
+        const dataSourceId = dataSourceResult[0].id;
+
+        const envResult = await queryRunner.query(`SELECT id FROM app_environments WHERE organization_id = $1`, [
+          orgId,
+        ]);
+        const envIds = envResult.map((row) => row.id);
+
+        for (const envId of envIds) {
+          await queryRunner.query(
+            `
+            INSERT INTO data_source_options (
+                data_source_id, environment_id, created_at, updated_at
+            ) VALUES (
+                $1, $2, NOW(), NOW()
+            )
+            `,
+            [dataSourceId, envId]
+          );
+        }
 
         console.log(`Added new data source: ${kind} for organization ${orgId}`);
       }

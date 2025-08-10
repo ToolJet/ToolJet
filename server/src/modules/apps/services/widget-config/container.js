@@ -168,7 +168,6 @@ export const containerConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
-      headerHeight: { value: '{{80}}' },
       borderColor: { value: 'var(--cc-default-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

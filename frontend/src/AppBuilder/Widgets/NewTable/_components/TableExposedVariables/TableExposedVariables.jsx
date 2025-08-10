@@ -18,7 +18,8 @@ export const TableExposedVariables = ({
   table,
   componentName,
   pageIndex = 1,
-  lastClickedRow,
+  lastClickedRowRef,
+  hasDataChanged,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -33,7 +34,8 @@ export const TableExposedVariables = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const mounted = useMounted();
-  const previousLastClickedRow = usePrevious(lastClickedRow?.row);
+
+  const lastClickedRow = lastClickedRowRef.current;
 
   const {
     selectedRows,
@@ -46,7 +48,6 @@ export const TableExposedVariables = ({
     setPageIndex,
     setRowSelection,
     setColumnFilters,
-    tableData,
     columns,
     columnSizing,
     resetRowSelection,
@@ -61,7 +62,6 @@ export const TableExposedVariables = ({
     setPageIndex: table.setPageIndex,
     setRowSelection: table.setRowSelection,
     setColumnFilters: table.setColumnFilters,
-    tableData: table.getRowModel().rows,
     columns: table.getAllColumns(),
     columnSizing: table.getState().columnSizing,
     resetRowSelection: table.resetRowSelection,
@@ -123,6 +123,13 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
+    } else if (!allowSelection) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+        selectedRows: [],
+        selectedRowsId: [],
+      });
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -131,14 +138,6 @@ export const TableExposedVariables = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
-
-  useEffect(() => {
-    if (allowSelection) {
-      if (previousLastClickedRow?.id !== lastClickedRow?.row?.id) {
-        fireEvent('onRowClicked');
-      }
-    }
-  }, [previousLastClickedRow, lastClickedRow, fireEvent, allowSelection]);
 
   // Expose page index
   useEffect(() => {
@@ -213,6 +212,21 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
+    if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    } else if (Object.keys(lastClickedRow).length > 0) {
+      setExposedVariables({
+        selectedRow: lastClickedRow?.row ?? {},
+        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
+      });
+    }
+  }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
+
+  useEffect(() => {
+    if (!hasDataChanged) return;
     resetRowSelection();
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
@@ -226,6 +240,7 @@ export const TableExposedVariables = ({
       });
     }
     if (defaultSelectedRow) {
+      lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
       if (key && value) {
@@ -237,16 +252,23 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection]);
+  }, [
+    data,
+    defaultSelectedRow,
+    setExposedVariables,
+    setRowSelection,
+    resetRowSelection,
+    hasDataChanged,
+    lastClickedRowRef,
+  ]);
 
   useEffect(() => {
-    if (lastClickedRow) {
-      setExposedVariables({
-        selectedRow: lastClickedRow?.row ?? {},
-        selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
-      });
+    // onRowClicked event will be fired when a row is clicked
+    // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
+    if (allowSelection && Object.keys(lastClickedRow).length > 0) {
+      fireEvent('onRowClicked');
     }
-  }, [lastClickedRow, setExposedVariables]);
+  }, [lastClickedRow, fireEvent, allowSelection]);
 
   useEffect(() => {
     function selectRow(key, value) {
@@ -255,6 +277,7 @@ export const TableExposedVariables = ({
       if (item) {
         setRowSelection({ [index]: true });
       }
+      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: item === null ? {} : item,
         selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
@@ -273,7 +296,7 @@ export const TableExposedVariables = ({
       });
     }
     setExposedVariables({ selectRow, deselectRow });
-  }, [data, setExposedVariables, setRowSelection]);
+  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection]);
 
   // CSA to set & clear filters
   useEffect(() => {
