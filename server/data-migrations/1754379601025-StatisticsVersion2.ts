@@ -34,6 +34,10 @@ export class StatisticsVersion221754379601025 implements MigrationInterface {
         properties.dataAlignment = { value: 'center' };
       }
 
+      if (properties.secondaryValueAlignment === undefined) {
+        properties.secondaryValueAlignment = { value: 'vertical' };
+      }
+
       if (styles.iconVisibility === undefined) {
         styles.iconVisibility = { value: false };
       }

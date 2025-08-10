@@ -2591,6 +2591,7 @@ function migrateProperties(
     // Statistics
     if (componentType === 'Statistics') {
       properties.dataAlignment ??= { value: 'center' };
+      properties.secondaryValueAlignment ??= { value: 'vertical' };
 
       styles.iconVisibility ??= { value: false };
 

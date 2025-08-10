@@ -4,8 +4,8 @@ export const statisticsConfig = {
   description: 'Show key metrics',
   component: 'Statistics',
   defaultSize: {
-    width: 9,
-    height: 160,
+    width: 10,
+    height: 152,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -57,7 +57,7 @@ export const statisticsConfig = {
     secondaryValueLabel: {
       type: 'code',
       displayName: 'Label',
-      validation: { schema: { type: 'string' }, defaultValue: 'Last month' },
+      validation: { schema: { type: 'string' }, defaultValue: 'mom growth' },
     },
     secondaryValue: {
       type: 'code',
@@ -325,15 +325,15 @@ export const statisticsConfig = {
       primaryValue: { value: '682.3' },
       primaryPrefixText: { value: '' },
       primarySuffixText: { value: '' },
-      secondaryValueLabel: { value: 'Last month' },
+      secondaryValueLabel: { value: 'mom growth' },
       secondaryValue: { value: '2.85' },
       secondaryPrefixText: { value: '' },
       secondarySuffixText: { value: '' },
       secondarySignDisplay: { value: 'positive' },
       dataAlignment: { value: 'left' },
-      secondaryValueAlignment: { value: 'vertical' },
+      secondaryValueAlignment: { value: 'horizontal' },
       icon: { value: 'IconDatabaseDollar' },
-      iconDirection: { value: 'left' },
+      iconDirection: { value: 'right' },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: `{{false}}` },
