@@ -63,7 +63,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     response: Response,
-    environmentId?: string,
+    envId?: string,
     mode?: string
   ): Promise<object> {
     let result;
@@ -79,11 +79,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : app.organizationId;
 
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
-        dataSource.id,
-        organizationId,
-        environmentId
-      );
+      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
+      const environmentId = dataSourceOptions.environmentId;
+
       dataSource.options = dataSourceOptions.options;
 
       let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -321,14 +319,19 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
-  protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+  protected getCurrentUserToken = (
+    isMultiAuthEnabled: boolean,
+    tokenData: any,
+    userId: string,
+    isAppPublic: boolean
+  ) => {
     if (isMultiAuthEnabled) {
       if (!tokenData || !Array.isArray(tokenData)) return null;
       return !isAppPublic
         ? tokenData.find((token: any) => token.user_id === userId)
         : userId
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : tokenData[0];
+          ? tokenData.find((token: any) => token.user_id === userId)
+          : tokenData[0];
     } else {
       return tokenData;
     }

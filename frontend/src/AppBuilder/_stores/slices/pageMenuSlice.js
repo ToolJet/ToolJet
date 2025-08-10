@@ -102,10 +102,6 @@ export const createPageMenuSlice = (set, get) => {
     isPageGroup: false,
     pageSettings: {},
     showPagePermissionModal: false,
-    permissionPage: null,
-    selectedUserGroups: [],
-    selectedUsers: [],
-    pagePermission: null,
     newPagePopupConfig: {
       show: false,
       type: null,
@@ -236,7 +232,7 @@ export const createPageMenuSlice = (set, get) => {
       }
     },
     cloneGroup: async (pageId) => {
-      const { getAppId, currentVersionId } = get();
+      const { getAppId, currentVersionId, resolvePageHiddenValue } = get();
       const appId = getAppId('canvas');
       const pages = get().modules.canvas.pages;
       const data = await appVersionService.cloneGroup(appId, currentVersionId, pageId);
@@ -249,6 +245,8 @@ export const createPageMenuSlice = (set, get) => {
         const processedPages = addedPages.map((page) => {
           const cloned = JSON.parse(JSON.stringify(page));
           const currentComponents = cloned?.components ? buildComponentMetaDefinition(cloned.components) : undefined;
+          resolvePageHiddenValue('canvas', true, cloned?.id, cloned?.hidden?.value);
+
           return { ...cloned, components: currentComponents };
         });
 

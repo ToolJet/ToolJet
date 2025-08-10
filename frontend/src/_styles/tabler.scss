@@ -3085,6 +3085,13 @@ textarea.form-control.is-valid {
     color: #d63939
 }
 
+.invalid-feedback-date{
+    width: 100%;
+    margin-top: .25rem;
+    font-size: 85.7142857%;
+    color: #d63939
+}
+
 .invalid-tooltip {
     position: absolute;
     top: 100%;
@@ -6124,7 +6131,7 @@ fieldset:disabled .btn {
     width: 1.5rem;
     height: 1.5rem;
     vertical-align: text-bottom;
-    border: 2px solid var(--cc-primary-brand);
+    border: 2px solid currentColor;
     border-right-color: transparent;
     border-radius: 50%; 
     -webkit-animation: .75s linear infinite spinner-border;

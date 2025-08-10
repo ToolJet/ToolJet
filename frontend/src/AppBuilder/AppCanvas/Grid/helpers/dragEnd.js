@@ -212,19 +212,34 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
  * Given an event, finds the **nearest valid droppable slot**.
  */
 export const getDroppableSlotIdOnScreen = (event, widgets) => {
-  const [slotId] = document
-    .elementsFromPoint(event.clientX, event.clientY)
-    .filter(
-      (ele) =>
-        !event.target.contains(ele) && ele.id !== event.target.id && ele.classList.contains('drag-container-parent')
-    )
-    .map((ele) => extractSlotId(ele))
-    .filter((slotId) => {
-      const widgetType = getWidgetById(widgets, slotId.slice(0, 36))?.component?.component || CANVAS_ID;
-      return DROPPABLE_PARENTS.has(widgetType);
-    });
+  // Hack: This is a temporary solution. We need to find a better way to handle this.
+  // We have added this solution to fix dragging widget not being correctly dropped when it is there is scroll
+  const widgetType = getWidgetById(widgets, event.target.id)?.component?.component || CANVAS_ID;
+  if (!DROPPABLE_PARENTS.has(widgetType) && widgetType !== 'ModuleViewer') {
+    const targetElems = document.elementsFromPoint(event.clientX, event.clientY);
+    const draggedOverElements = targetElems.filter(
+      (ele) => (ele.id !== event.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
+    );
+    const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+    const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
-  return slotId;
+    // Determine potential new parent
+    const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+    return newParentId == 'canvas' ? undefined : newParentId;
+  } else {
+    const [slotId] = document
+      .elementsFromPoint(event.clientX, event.clientY)
+      .filter(
+        (ele) =>
+          !event.target.contains(ele) && ele.id !== event.target.id && ele.classList.contains('drag-container-parent')
+      )
+      .map((ele) => extractSlotId(ele))
+      .filter((slotId) => {
+        const widgetType = getWidgetById(widgets, slotId.slice(0, 36))?.component?.component || CANVAS_ID;
+        return DROPPABLE_PARENTS.has(widgetType);
+      });
+    return slotId;
+  }
 };
 
 /**

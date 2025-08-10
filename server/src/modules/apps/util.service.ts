@@ -52,7 +52,13 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
   ) {}
-  async create(name: string, user: User, type: APP_TYPES, isInitialisedFromPrompt: boolean = false, manager: EntityManager): Promise<App> {
+  async create(
+    name: string,
+    user: User,
+    type: APP_TYPES,
+    isInitialisedFromPrompt: boolean = false,
+    manager: EntityManager
+  ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await catchDbException(() => {
         return manager.save(
@@ -162,7 +168,6 @@ export class AppsUtilService implements IAppsUtilService {
       appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
-        hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
@@ -480,6 +485,8 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      case APP_TYPES.MODULE:
+        return viewableAppsQb;
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -588,7 +595,9 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'Steps', 'Tabs', 'RadioButtonV2'].includes(
+                currentComponentData?.component?.component
+              ) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -706,7 +715,9 @@ export class AppsUtilService implements IAppsUtilService {
     return this.appRepository.findByAppName(name, organizationId);
   }
 
-  async findByAppId(appId: string): Promise<App> {
-    return this.appRepository.findByAppId(appId);
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return this.appRepository.findByAppId(appId, manager);
+    }, manager);
   }
 }

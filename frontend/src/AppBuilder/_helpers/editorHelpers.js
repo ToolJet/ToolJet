@@ -44,7 +44,8 @@ import { Pagination } from '@/Editor/Components/Pagination';
 import { Tags } from '@/Editor/Components/Tags';
 import { Spinner } from '@/Editor/Components/Spinner';
 import { CircularProgressBar } from '@/Editor/Components/CirularProgressbar';
-import { RangeSlider } from '@/Editor/Components/RangeSlider';
+import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
+import { RangeSliderV2 } from '@/AppBuilder/Widgets/RangeSliderV2';
 import { Timeline } from '@/Editor/Components/Timeline';
 import { SvgImage } from '@/Editor/Components/SvgImage';
 import { Html } from '@/Editor/Components/Html';
@@ -71,8 +72,8 @@ import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
-
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
+import { Chat } from '@/AppBuilder/Widgets/Chat';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -139,6 +140,7 @@ export const AllComponents = {
   Spinner,
   CircularProgressBar,
   RangeSlider,
+  RangeSliderV2,
   Timeline,
   SvgImage,
   Html,
@@ -155,6 +157,7 @@ export const AllComponents = {
   Form,
   BoundedBox,
   ToggleSwitchV2,
+  Chat,
   ModuleContainer,
   ModuleViewer,
 };

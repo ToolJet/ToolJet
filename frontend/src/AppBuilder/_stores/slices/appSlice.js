@@ -7,6 +7,7 @@ import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty } from 'lodash';
+import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
   isSaving: false,
@@ -131,12 +132,13 @@ export const createAppSlice = (set, get) => ({
   setGlobalSettings: (globalSettings) => set(() => ({ globalSettings }), false, 'setGlobalSettings'),
   toggleAppMaintenance: (moduleId = 'canvas') => {
     const { isMaintenanceOn, appId } = get().appStore.modules[moduleId].app;
+    const newState = !isMaintenanceOn;
 
-    appsService.setMaintenance(appId, !isMaintenanceOn).then(() => {
+    appsService.setMaintenance(appId, newState).then(() => {
       set((state) => {
-        state.appStore.modules[moduleId].app.isMaintenanceOn = !isMaintenanceOn;
+        state.appStore.modules[moduleId].app.isMaintenanceOn = newState;
       });
-      if (isMaintenanceOn) {
+      if (newState) {
         toast.success('Application is on maintenance.');
       } else {
         toast.success('Application maintenance is completed');
@@ -170,20 +172,6 @@ export const createAppSlice = (set, get) => ({
     } catch (error) {
       toast.error('App could not be saved.');
       console.error('Error updating page:', error);
-    }
-  },
-  updateAppMode: async (appMode, moduleId = 'canvas') => {
-    const { appStore, currentVersionId } = get();
-    try {
-      const res = await appVersionService.updateAppMode(
-        appStore.modules[moduleId].app.appId,
-        currentVersionId,
-        appMode
-      );
-      set((state) => ({ globalSettings: { ...state.globalSettings, appMode } }));
-    } catch (error) {
-      toast.error('App mode could not be updated.');
-      console.error('Error updating app mode:', error);
     }
   },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
@@ -224,24 +212,26 @@ export const createAppSlice = (set, get) => ({
     const appId = get().appStore.modules[moduleId].app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && isLicenseValid) return false;
+      if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().appStore.modules[moduleId].app.slug;
+    const subpath = getSubpath();
+    let toNavigate = '';
 
     if (!isBackOrForward) {
-      navigate(
-        `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-        {
-          state: {
-            isSwitchingPage: true,
-            id: pageId,
-            handle: handle,
-          },
-        }
-      );
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+        slug ?? appId
+      }/${handle}?${queryParamsString}`;
+      navigate(toNavigate, {
+        state: {
+          isSwitchingPage: true,
+          id: pageId,
+          handle: handle,
+        },
+      });
     }
 
     const newPage = pages.find((p) => p.id === pageId);

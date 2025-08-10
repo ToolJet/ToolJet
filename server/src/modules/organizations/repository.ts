@@ -84,7 +84,7 @@ export class OrganizationRepository extends Repository<Organization> {
       let organization: Organization;
       try {
         organization = await manager.findOneOrFail(Organization, {
-          where: { slug },
+          where: { slug: slug },
           select,
         });
       } catch {

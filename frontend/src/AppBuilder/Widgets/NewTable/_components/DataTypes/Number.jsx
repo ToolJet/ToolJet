@@ -1,10 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+
+// Utility function to generate input step for decimal places
+const getInputStep = (allowedDecimalPlaces) => {
+  if (allowedDecimalPlaces === null || allowedDecimalPlaces === undefined) {
+    return 'any';
+  }
+  
+  const num = Number(allowedDecimalPlaces);
+  if (!Number.isFinite(num) || num < 0) {
+    return 'any';
+  }
+  
+  const validDecimalPlaces = Math.floor(num);
+  return validDecimalPlaces === 0 ? '1' : `0.${'0'.repeat(validDecimalPlaces - 1)}1`;
+};
 
 export const NumberColumn = ({
   id,
@@ -17,8 +33,13 @@ export const NumberColumn = ({
   cell,
   row,
   searchText,
+  containerWidth,
+  darkMode,
 }) => {
   const [displayValue, setDisplayValue] = useState(cellValue);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const ref = useRef(null);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const cellTextColor = useTextColor(id, textColor);
@@ -26,6 +47,10 @@ export const NumberColumn = ({
   useEffect(() => {
     setDisplayValue(cellValue);
   }, [cellValue]);
+
+  useEffect(() => {
+    setShowOverlay(hovered);
+  }, [hovered]);
 
   const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
     if (value?.toString()?.includes('.')) {
@@ -88,6 +113,22 @@ export const NumberColumn = ({
     handleCellValueChange(row.index, column.key || column.name, processedValue, row.original);
   };
 
+  const getOverlay = () => (
+    <div
+      className={`overlay-cell-table ${darkMode ? 'dark-theme' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ color: 'var(--text-primary)' }}
+    >
+      <span style={{ width: `${containerWidth}px` }}>{String(cellValue)}</span>
+    </div>
+  );
+
+  const _showOverlay =
+    ref?.current &&
+    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
+      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+
   if (isEditable) {
     return (
       <div className="h-100 d-flex flex-column justify-content-center position-relative">
@@ -103,7 +144,7 @@ export const NumberColumn = ({
           className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
-          step={allowedDecimalPlaces !== null ? `0.${'0'.repeat(allowedDecimalPlaces - 1)}1` : 'any'}
+          step={getInputStep(allowedDecimalPlaces)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (displayValue !== cellValue) {
@@ -152,13 +193,24 @@ export const NumberColumn = ({
   }
 
   return (
-    <div
-      className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-        horizontalAlignment
-      )}`}
-      style={{ color: cellTextColor || 'inherit', overflow: 'hidden' }}
+    <OverlayTrigger
+      placement="bottom"
+      overlay={_showOverlay ? getOverlay() : <div />}
+      trigger={_showOverlay && ['hover', 'focus']}
+      rootClose={true}
+      show={_showOverlay && showOverlay}
     >
-      <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
-    </div>
+      <div
+        className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={{ color: cellTextColor || 'inherit', overflow: 'hidden' }}
+        onMouseMove={() => !hovered && setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        ref={ref}
+      >
+        <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
+      </div>
+    </OverlayTrigger>
   );
 };

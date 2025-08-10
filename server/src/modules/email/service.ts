@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
@@ -20,6 +20,12 @@ handlebars.registerHelper('highlightMentionedUser', function (comment) {
   return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
 });
 handlebars.registerHelper('eq', (a, b) => a == b);
+handlebars.registerHelper('or', (a, b) => {
+  return a || b;
+});
+handlebars.registerHelper('and', (a, b) => {
+  return a && b;
+});
 
 @Injectable()
 export class EmailService implements IEmailService {
@@ -29,6 +35,7 @@ export class EmailService implements IEmailService {
   protected WHITE_LABEL_LOGO;
   protected SUB_PATH;
   protected defaultWhiteLabelState: boolean;
+  protected tooljetEdition: string;
 
   constructor(
     protected readonly emailUtilService: EmailUtilService,
@@ -37,6 +44,7 @@ export class EmailService implements IEmailService {
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
+    this.tooljetEdition = getTooljetEdition();
   }
 
   protected registerPartials() {
@@ -52,11 +60,11 @@ export class EmailService implements IEmailService {
   }
 
   async init(organizationId?: string | null) {
-    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(null);
+    const whiteLabelSettings = await this.emailUtilService.retrieveWhiteLabelSettings(organizationId);
     this.WHITE_LABEL_TEXT = whiteLabelSettings?.white_label_text;
     this.WHITE_LABEL_LOGO = whiteLabelSettings?.white_label_logo;
     this.defaultWhiteLabelState = whiteLabelSettings?.default;
-    await this.emailUtilService.init();
+    await this.emailUtilService.init(organizationId);
   }
 
   protected compileTemplate(templatePath: string, templateData: object) {
@@ -92,6 +100,7 @@ export class EmailService implements IEmailService {
       organizationName,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = isOrgInvite
       ? this.defaultWhiteLabelState
@@ -124,6 +133,7 @@ export class EmailService implements IEmailService {
       organizationName,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_invite_user.hbs' : 'invite_user.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -148,6 +158,7 @@ export class EmailService implements IEmailService {
       resetLink: url,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const templatePath = this.defaultWhiteLabelState ? 'default_reset_password.hbs' : 'reset_password.hbs';
     const htmlEmailContent = this.compileTemplate(templatePath, templateData);
@@ -175,6 +186,7 @@ export class EmailService implements IEmailService {
       fromAvatar,
       companyName: this.WHITE_LABEL_TEXT,
       companyLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
     };
     const htmlEmailContent = this.compileTemplate('mention.hbs', templateData);
 

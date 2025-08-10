@@ -8,10 +8,10 @@ import { ConfigService } from '@nestjs/config';
 export class ShutdownHook implements OnApplicationShutdown {
   constructor(private readonly configService: ConfigService) {}
   async onApplicationShutdown(signal?: string): Promise<void> {
-    console.log('Creating log json file before shutting down server');
     const envFilePath = this.configService.get<string>('LOG_FILE_PATH');
 
     if (envFilePath) {
+      console.log('Creating log json file before shutting down server');
       const absoluteLogDir = join(homedir(), envFilePath, 'tooljet_log');
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().slice(0, 10);

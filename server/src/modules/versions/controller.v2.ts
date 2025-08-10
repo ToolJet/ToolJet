@@ -37,13 +37,6 @@ export class VersionControllerV2 implements IVersionControllerV2 {
     return this.versionService.update(app, user, appVersionUpdateDto);
   }
 
-  // If we want to update app mode in public app, we use this endpoint
-  @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
-  @Put(':id/versions/:versionId/global_settings/app_mode')
-  updateAppMode(@Body() @Param('appMode') appMode: 'light' | 'dark' | 'auto', @Param('id') appId: string, @Param('versionId') versionId: string) {
-    return this.versionService.updateAppMode(appId, versionId, appMode);
-  }
-
   @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])

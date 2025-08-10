@@ -319,7 +319,7 @@ export const daterangepickerConfig = {
       displayName: 'Box shadow',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #121212',
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'field',
     },
@@ -379,7 +379,7 @@ export const daterangepickerConfig = {
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
       borderRadius: { value: '{{6}}' },
-      boxShadow: { value: '0px 0px 0px 0px #121212' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
       iconColor: { value: 'var(--cc-default-icon)' },
     },

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { default as ReactCurrencyInput } from 'react-currency-input-field';
+import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
@@ -9,7 +9,7 @@ import { getModifiedColor } from '@/Editor/Components/utils';
 const tinycolor = require('tinycolor2');
 
 export const CurrencyInput = (props) => {
-  const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -55,7 +55,6 @@ export const CurrencyInput = (props) => {
     handlePhoneCurrencyInputChange(value);
     setExposedVariables({
       country: country,
-      formattedValue: `${CurrencyMap[country]?.prefix} ${inputRef.current?.value}`,
     });
   };
 
@@ -79,7 +78,7 @@ export const CurrencyInput = (props) => {
   const isInitialRender = useRef(true);
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -106,8 +105,6 @@ export const CurrencyInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderBottomLeftRadius: '0px',
-    borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
 
@@ -130,6 +127,14 @@ export const CurrencyInput = (props) => {
     zIndex: 3,
   };
 
+  const formattedValue = (value) => {
+    return formatValue({
+      value: `${value}`,
+      groupSeparator: ',',
+      decimalSeparator: '.',
+    });
+  };
+
   useEffect(() => {
     if (!isInitialRender.current) {
       setCountry(defaultCountry);
@@ -140,17 +145,26 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
   }, [country]);
 
   useEffect(() => {
+    if (!isInitialRender.current) {
+      setExposedVariables({
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
+        value: Number(value),
+      });
+    }
+  }, [value]);
+
+  useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
-        value: value,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
+        value: Number(value),
         setCountryCode: (code) => {
           setCountry(code);
         },
@@ -223,6 +237,7 @@ export const CurrencyInput = (props) => {
                 });
               }
             }}
+            componentId={id}
           />
           <ReactCurrencyInput
             ref={inputRef}

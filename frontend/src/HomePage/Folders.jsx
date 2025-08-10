@@ -15,8 +15,10 @@ import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helper
 import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
-export const Folders = function Folders ({
+export const Folders = function Folders({
   folders,
   foldersLoading,
   currentFolder,
@@ -74,7 +76,7 @@ export const Folders = function Folders ({
     setFilteredData(filtered);
   };
 
-  function saveFolder () {
+  function saveFolder() {
     const newName = newFolderName?.trim();
     if (!newName) {
       setErrorText("Folder name can't be empty");
@@ -84,13 +86,19 @@ export const Folders = function Folders ({
       setCreationStatus(true);
       folderService
         .create(newFolderName, appType)
-        .then(() => {
+        .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
           handleFolderChange({});
           foldersChanged();
+          posthogHelper.captureEvent('create_folder', {
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            folder_id: data?.id,
+          });
         })
         .catch((error) => {
           handleHttpErrorMessages(error, 'folder');
@@ -103,7 +111,7 @@ export const Folders = function Folders ({
     return `All ${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps'}`;
   };
 
-  function handleFolderChange (folder) {
+  function handleFolderChange(folder) {
     if (_.isEmpty(folder)) {
       setActiveFolder({});
     } else {
@@ -115,30 +123,31 @@ export const Folders = function Folders ({
     updateFolderQuery(folder?.name);
   }
 
-  function updateFolderQuery (name) {
+  function updateFolderQuery(name) {
     const search = `${name ? `?folder=${name}` : ''}`;
     navigate(
       {
-        pathname: `/${getWorkspaceId()}${appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
-          }`,
+        pathname: `/${getWorkspaceId()}${
+          appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
+        }`,
         search,
       },
       { replace: true }
     );
   }
 
-  function deleteFolder (folder) {
+  function deleteFolder(folder) {
     setShowDeleteConfirmation(true);
     setDeletingFolder(folder);
   }
 
-  function updateFolder (folder) {
+  function updateFolder(folder) {
     setNewFolderName(folder.name);
     setShowUpdateForm(true);
     setUpdatingFolder(folder);
   }
 
-  function executeDeletion () {
+  function executeDeletion() {
     setDeletionStatus(true);
     folderService
       .deleteFolder(deletingFolder.id)
@@ -156,12 +165,12 @@ export const Folders = function Folders ({
       });
   }
 
-  function cancelDeleteDialog () {
+  function cancelDeleteDialog() {
     setShowDeleteConfirmation(false);
     setDeletingFolder(null);
   }
 
-  function executeEditFolder () {
+  function executeEditFolder() {
     const folderName = newFolderName?.trim();
     if (folderName === updatingFolder?.name) {
       setUpdationStatus(false);
@@ -212,7 +221,7 @@ export const Folders = function Folders ({
     showUpdateForm ? setShowUpdateForm(false) : setShowForm(false);
   };
 
-  function handleClose () {
+  function handleClose() {
     setShowInput(false);
     setFilteredData(folders);
   }
@@ -253,6 +262,11 @@ export const Folders = function Folders ({
                     iconOnly
                     ariaLabel="Create new folder"
                     onClick={() => {
+                      posthogHelper.captureEvent('create_new_folder', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
                       setNewFolderName('');
                       setShowForm(true);
                     }}
@@ -310,9 +324,9 @@ export const Folders = function Folders ({
             {appType === 'module'
               ? 'All modules'
               : t(
-                `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
-                'All apps'
-              )}
+                  `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+                  'All apps'
+                )}
           </a>
         </div>
       )}

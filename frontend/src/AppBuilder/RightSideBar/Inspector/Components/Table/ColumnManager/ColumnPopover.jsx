@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
@@ -17,6 +17,8 @@ export const ColumnPopoverContent = ({
   handleEventManagerPopoverCallback,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
+  const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
+  const popoverRef = useRef(null);
 
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
@@ -54,6 +56,29 @@ export const ColumnPopoverContent = ({
     { name: '+13:00', value: 'Pacific/Auckland' },
   ];
 
+  // Dont remove this useEffect otherwise the popover suggestions will get clipped and cause a scroll this causes a scroll only if the popover is going below the screen
+  useEffect(() => {
+    const checkPopoverPosition = () => {
+      if (popoverRef.current) {
+        const popoverRect = popoverRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const isBelowScreen = popoverRect.bottom > viewportHeight;
+        setIsGoingBelowScreen(isBelowScreen);
+      }
+    };
+
+    // Check position after a short delay to ensure popover is rendered
+    const timeoutId = setTimeout(checkPopoverPosition, 100);
+
+    // Also check on window resize
+    window.addEventListener('resize', checkPopoverPosition);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkPopoverPosition);
+    };
+  }, [index]);
+
   return (
     <>
       <Popover.Header>
@@ -77,8 +102,8 @@ export const ColumnPopoverContent = ({
         </div>
       </Popover.Header>
       <Popover.Body
-        className={`table-column-popover ${darkMode && 'theme-dark'}`}
-        style={{ maxHeight: '80vh', overflowY: 'auto' }}
+        ref={popoverRef}
+        className={`table-column-popover ${darkMode && 'theme-dark'} ${isGoingBelowScreen ? 'show-scrollbar' : ''}`}
       >
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements

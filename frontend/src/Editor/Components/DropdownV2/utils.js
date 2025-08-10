@@ -73,9 +73,17 @@ export const highlightText = (text = '', highlight) => {
 
 export const sortArray = (arr, sort) => {
   if (sort === 'asc') {
-    return arr.sort((a, b) => a.label?.localeCompare(b.label));
+    return arr.sort((a, b) => {
+      const labelA = typeof a.label === 'string' ? a.label : '';
+      const labelB = typeof b.label === 'string' ? b.label : '';
+      return labelA.localeCompare(labelB);
+    });
   } else if (sort === 'desc') {
-    return arr.sort((a, b) => b.label?.localeCompare(a.label));
+    return arr.sort((a, b) => {
+      const labelA = typeof a.label === 'string' ? a.label : '';
+      const labelB = typeof b.label === 'string' ? b.label : '';
+      return labelB.localeCompare(labelA);
+    });
   }
   return arr;
 };

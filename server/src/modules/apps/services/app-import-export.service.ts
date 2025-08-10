@@ -77,7 +77,10 @@ type NewRevampedComponent =
   | 'Container'
   | 'Tabs'
   | 'Form'
-  | 'Image';
+  | 'Image'
+  | 'FilePicker'
+  | 'Icon'
+  | 'Steps';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -103,6 +106,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tabs',
   'Form',
   'Image',
+  'FilePicker',
+  'Icon',
+  'Steps',
 ];
 
 @Injectable()
@@ -352,8 +358,6 @@ export class AppImportExportService {
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
       for (const importedModule of appParams.modules) {
-        console.log(importedModule, 'imported mod');
-        console.log(existingModules);
         // Find matching module by name in existing modules
         const existingModule = existingModules.find((module) => module.name === importedModule?.appV2?.name);
 
@@ -375,7 +379,7 @@ export class AppImportExportService {
         } else {
           // Module doesn't exist - need to import it
 
-          const importedModuleApp = await this.import(
+          const { newApp, resourceMapping } = await this.import(
             user,
             importedModule,
             importedModule?.appV2?.name,
@@ -385,11 +389,11 @@ export class AppImportExportService {
             false
           );
 
-          moduleResourceMappings.moduleApps[importedModule.appV2?.id] = importedModuleApp.id;
+          moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
           moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            importedModuleApp.editingVersion?.id;
+            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
           moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            importedModuleApp.editingVersion?.currentEnvironmentId;
+            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
         }
       }
     }
@@ -405,7 +409,7 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager
-  ): Promise<App> {
+  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
@@ -465,8 +469,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
       newApp.slug = importedApp.id;
       await manager.save(newApp);
-
-      return newApp;
+      return { newApp, resourceMapping };
     }, manager);
   }
 
@@ -995,7 +998,7 @@ export class AppImportExportService {
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
           index: page.index,
-          pageGroupIndex: page.pageGroupIndex || null,
+          pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
@@ -1120,6 +1123,13 @@ export class AppImportExportService {
             newComponent.page = pageCreated;
 
             const savedComponent = await manager.save(newComponent);
+
+            // Handle ModuleViewer component query input mapping
+            if (savedComponent.type === 'ModuleViewer') {
+              await this.handleModuleViewerComponent(savedComponent, appResourceMappings.dataQueryMapping, manager);
+              // Save the component again if properties were updated
+              await manager.save(savedComponent);
+            }
 
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
@@ -2310,6 +2320,93 @@ export class AppImportExportService {
       await manager.save(event);
     }
   }
+
+  /**
+   * Handle ModuleViewer component by fetching module definition and updating input properties
+   * during app import
+   */
+  protected async handleModuleViewerComponent(
+    component: Component,
+    dataQueryMapping: Record<string, unknown>,
+    manager: EntityManager
+  ): Promise<void> {
+    const properties = component.properties;
+
+    // Skip processing if moduleAppId is not present
+    if (!properties?.moduleAppId?.value) {
+      return;
+    }
+
+    const moduleAppId = properties.moduleAppId.value;
+    try {
+      // Fetch the module from database using moduleAppId
+      const moduleApp = (await manager.findOne(App, {
+        where: { id: moduleAppId },
+        relations: ['appVersions'],
+      })) as App;
+
+      if (!moduleApp) {
+        console.warn(`Module with ID ${moduleAppId} not found`);
+        return;
+      }
+
+      // Get the module's editing version or latest version
+      const moduleVersion = moduleApp.appVersions?.[0]; // Assuming first version is the editing version
+      if (!moduleVersion) {
+        console.warn(`No version found for module with ID ${moduleAppId}`);
+        return;
+      }
+
+      // Find the ModuleContainer component in the module to get input definitions
+      const moduleComponents = await manager.find(Component, {
+        where: {
+          pageId: moduleVersion.homePageId,
+          type: 'ModuleContainer',
+        },
+      });
+
+      const moduleContainer = moduleComponents[0];
+      if (!moduleContainer) {
+        console.warn(`ModuleContainer not found in module ${moduleAppId}`);
+        return;
+      }
+
+      const inputItems = moduleContainer.properties?.inputItems?.value || [];
+
+      // Process each property in the ModuleViewer component
+      const excludedProperties = ['moduleAppId', 'moduleVersionId', 'moduleEnvironmentId', 'visibility'];
+
+      for (const [propertyKey, propertyValue] of Object.entries(properties)) {
+        // Skip excluded properties
+        if (excludedProperties.includes(propertyKey)) {
+          continue;
+        }
+
+        // Find matching input definition in module container
+        const inputDefinition = inputItems.find((item) => item.name === propertyKey);
+
+        if (inputDefinition && inputDefinition.type === 'query') {
+          // This is a query input, check if we need to map the value to a new query ID
+          const currentValue = (propertyValue as any)?.value;
+
+          if (currentValue && dataQueryMapping[currentValue]) {
+            // Update the property value with the new query ID
+            properties[propertyKey] = {
+              ...(propertyValue as any),
+              value: dataQueryMapping[currentValue],
+            };
+          }
+        }
+        // For data type inputs, no special handling needed as they are just values
+      }
+
+      // Update component properties with the processed values
+      component.properties = properties;
+    } catch (error) {
+      console.error(`Error handling ModuleViewer component ${component.id}:`, error);
+      // Continue processing even if module handling fails
+    }
+  }
 }
 
 export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
@@ -2350,76 +2447,142 @@ function migrateProperties(
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
-      properties.visibility = styles.visibility;
+      if (properties.visibility === undefined) {
+        properties.visibility = styles.visibility;
+      }
       delete styles.visibility;
     }
 
     if (styles.disabledState) {
-      properties.disabledState = styles.disabledState;
+      if (properties.disabledState === undefined) {
+        properties.disabledState = styles.disabledState;
+      }
       delete styles.disabledState;
     }
 
     if (general?.tooltip) {
-      properties.tooltip = general?.tooltip;
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
       delete general?.tooltip;
     }
 
     if (generalStyles?.boxShadow) {
-      styles.boxShadow = generalStyles?.boxShadow;
+      if (styles.boxShadow === undefined) {
+        styles.boxShadow = generalStyles?.boxShadow;
+      }
       delete generalStyles?.boxShadow;
     }
 
     // Set empty label for specific components
     if (
       (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
-      (['TextArea', 'DaterangePicker'].includes(componentType) && !properties.label)
+      (['TextArea', 'DaterangePicker', 'FilePicker'].includes(componentType) && !properties.label)
     ) {
       properties.label = '';
     }
 
+    // NumberInput
     if (componentType === 'NumberInput') {
       if (properties.minValue) {
-        validation.minValue = properties?.minValue;
+        if (validation.minValue === undefined) {
+          validation.minValue = properties?.minValue;
+        }
         delete properties.minValue;
       }
 
       if (properties.maxValue) {
-        validation.maxValue = properties?.maxValue;
+        if (validation.maxValue === undefined) {
+          validation.maxValue = properties?.maxValue;
+        }
         delete properties.maxValue;
       }
     }
+
+    // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
     }
 
+    // Form
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
     }
 
+    // Tabs
     if (componentType === 'Tabs') {
       if (properties.useDynamicOptions === undefined) {
         properties.useDynamicOptions = { value: true };
       }
+
+      if (styles.highlightColor) {
+        if (styles.selectedText === undefined) {
+          styles.selectedText = styles.highlightColor;
+        }
+        if (styles.accent === undefined) {
+          styles.accent = styles.highlightColor;
+        }
+        delete styles.highlightColor;
+      }
     }
 
+    // Image
     if (componentType === 'Image') {
       if (styles.padding) {
         styles.customPadding = styles.padding;
         styles.padding = { value: 'custom' };
       }
+    }
 
-      const borderTypeMapping: Record<string, string> = {
-        'rounded-circle': 'circle',
-        'rounded': 'rounded',
-        'img-thumbnail': 'thumbnail',
-        'none': 'none',
-      };
+    // FilePicker
+    if (componentType === 'FilePicker') {
+      if (properties.enableDropzone) {
+        properties.enableDropzone = {
+          ...properties.enableDropzone,
+          fxActive: properties?.enableDropzone?.fxActive ?? true,
+        };
+      }
+      if (properties.enablePicker) {
+        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+      }
+      if (properties.enableMultiple) {
+        properties.enableMultiple = {
+          ...properties.enableMultiple,
+          fxActive: properties?.enableMultiple?.fxActive ?? true,
+        };
+      }
+      if (properties.fileType && !validation.fileType) {
+        validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.fileType;
+      }
 
-      const mappedShape = borderTypeMapping[styles.borderType?.value];
-      if (mappedShape) {
-        styles.imageShape = { value: mappedShape };
-        delete styles.borderType;
+      if (properties.maxFileCount && !validation.maxFileCount) {
+        validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+        delete properties.maxFileCount;
+      }
+      if (properties.maxSize && !validation.maxSize) {
+        validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+        delete properties.maxSize;
+      }
+      if (properties.minSize && !validation.minSize) {
+        validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+        delete properties.minSize;
+      }
+
+      if (!validation.minFileCount) {
+        validation.minFileCount = { value: '{{0}}' };
+      }
+    }
+
+    // Steps
+    if (componentType === 'Steps') {
+      if (!properties.advanced) {
+        properties.advanced = { value: '{{true}}' };
+      }
+      if (properties.steps && !properties.schema) {
+        properties.schema = properties.steps;
+        delete properties.steps;
       }
     }
   }
@@ -2432,7 +2595,8 @@ function transformComponentData(
   componentsMapping: Record<string, string>,
   isNormalizedAppDefinitionSchema = true,
   tooljetVersion: string,
-  moduleResourceMappings?: Record<string, unknown>
+  moduleResourceMappings?: Record<string, unknown>,
+  dataQueryMapping?: Record<string, string>
 ): Component[] {
   const transformedComponents: Component[] = [];
 
@@ -2586,6 +2750,13 @@ const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds:
   for (const version of appVersions) {
     let pageSettings = version.pageSettings as any;
     const globalSettings = version.globalSettings as any;
+
+    // Only run migration for apps that have hideHeader in globalSettings (legacy apps)
+    const needsMigration = globalSettings && 'hideHeader' in globalSettings;
+
+    if (!needsMigration) {
+      continue; // Skip migration - either new app or already migrated
+    }
 
     if (!pageSettings) {
       pageSettings = { properties: {} };

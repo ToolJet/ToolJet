@@ -266,6 +266,13 @@ import Push from './PushIcon.jsx';
 import Pull from './PullIcon.jsx';
 import PropertiesStyles from './PropertiesStyles.jsx';
 import RemoveFolder from './RemoveFolder.jsx';
+import Support from './Support.jsx';
+import ClearHistory from './ClearHistory.jsx';
+import PageDownload from './PageDownload.jsx';
+import Send from './Send.jsx';
+import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
+import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
+import LoadingState from './LoadingState.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -755,6 +762,18 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'clearhistory':
+      return <ClearHistory {...props} />;
+    case 'pagedownload':
+      return <PageDownload {...props} />;
+    case 'send':
+      return <Send {...props} />;
+    case 'defaultresponseavatar':
+      return <DefaultResponseAvatar {...props} />;
+    case 'defaultsenderchatavatar':
+      return <DefaultSenderChatIcon {...props} />;
+    case 'loadingstate':
+      return <LoadingState {...props} />;
     case 'arrowdown01':
       return <ArrowDown01 {...props} />;
     case 'arrowreturn01':
@@ -803,6 +822,8 @@ const Icon = (props) => {
       return <Push {...props} />;
     case 'pull-changes':
       return <Pull {...props} />;
+    case 'support':
+      return <Support {...props} />;
     default:
       return <Apps {...props} />;
   }

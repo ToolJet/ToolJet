@@ -14,8 +14,8 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
+import ApiEndpointInputOld from './ApiEndpointInputOld';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
-import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
@@ -46,6 +46,7 @@ const DynamicForm = ({
   disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
+  renderCopilot,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -210,8 +211,8 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
-      case 'react-component-salesforce':
-        return Salesforce;
+      case 'react-component-api-endpoint-old':
+        return ApiEndpointInputOld;
       case 'react-component-sharepoint':
         return Sharepoint;
       case 'react-component-oauth':
@@ -391,7 +392,6 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-      case 'react-component-salesforce':
       case 'react-component-sharepoint':
       case 'react-component-oauth':
         return {
@@ -417,6 +417,7 @@ const DynamicForm = ({
           selectedDataSource,
           darkMode,
           optionsChanged,
+          renderCopilot,
         };
       case 'codehinter': {
         let theme;
@@ -446,6 +447,7 @@ const DynamicForm = ({
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
           disabled,
           delayOnChange: false,
+          renderCopilot,
           ...(helpText && { helpText }),
         };
       }
@@ -497,6 +499,13 @@ const DynamicForm = ({
           placeholders,
         };
       case 'react-component-api-endpoint':
+        return {
+          specUrl: spec_url,
+          optionsChanged,
+          options,
+          darkMode,
+        };
+      case 'react-component-api-endpoint-old':
         return {
           specUrl: spec_url,
           optionsChanged,
@@ -591,7 +600,11 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
+          const isSpecificComponent = [
+            'tooljetdb-operations',
+            'react-component-api-endpoint',
+            'react-component-api-endpoint-old',
+          ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false

@@ -20,6 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { PageMenuItemGhost } from '../PageMenuItemGhost';
+import { CustomPointerSensor } from './components/TreeItem/CustomSensor';
 
 const measuring = {
   droppable: {
@@ -99,8 +100,11 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
   });
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { delay: 150 },
+    useSensor(CustomPointerSensor, {
+      activationConstraint: {
+        delay: 250,
+        distance: 10,
+      },
     })
   );
 
@@ -169,7 +173,7 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
               indentationWidth={indentationWidth}
               indicator={indicator}
               collapsed={Boolean(collapsed && children.length)}
-              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => {}}
+              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => { }}
             />
           );
         })}

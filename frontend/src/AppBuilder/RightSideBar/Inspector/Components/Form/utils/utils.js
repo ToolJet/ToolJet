@@ -7,13 +7,21 @@ import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 
 export const buildOptions = (options = []) => {
   if (Array.isArray(options))
-    return options.map((option, index) => ({
-      label: option,
-      value: index,
-      disable: { value: false },
-      visible: { value: true },
-      default: { value: false },
-    }));
+    return options
+      .map((option, index) => {
+        // Ignore non-primitive data types (objects or arrays)
+        if (typeof option === 'object' && option !== null) {
+          return null;
+        }
+        return {
+          label: String(option),
+          value: index,
+          disable: { value: false },
+          visible: { value: true },
+          default: { value: false },
+        };
+      })
+      .filter(Boolean);
 };
 
 export const ensureHandlebars = (value) => {

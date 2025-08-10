@@ -23,7 +23,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { DragGhostWidget } from './GhostWidgets';
+import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 
@@ -72,7 +72,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
-  const isPagesSidebarHidden = useStore((state) => state.resolvedStore.modules[moduleId].others.isPagesSidebarHidden);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -151,34 +151,38 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   function getMinWidth() {
     if (isModuleMode) return '100%';
 
+    const isSidebarOpenInEditor = currentMode === 'edit' ? isSidebarOpen : false;
+
     const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
 
     if (!shouldAdjust) return '';
     let offset;
     if (isViewerSidebarPinned && !isPagesSidebarHidden) {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       }
     } else {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
         offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       }
     }
 
-    if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
-      offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+    if (currentMode === 'edit') {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && isRightSidebarOpen) {
+        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && !isRightSidebarOpen) {
+        offset = `${LEFT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpenInEditor) {
+        offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+      }
     }
 
     return `calc(100% + ${offset})`;
@@ -203,7 +207,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           )}
           style={canvasContainerStyles}
         >
-          {showOnDesktop && appType !== 'module' && (
+          {appType !== 'module' && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
@@ -214,6 +218,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               isSidebarPinned={isViewerSidebarPinned}
               toggleSidebarPinned={toggleSidebarPinned}
               darkMode={darkMode}
+              canvasMaxWidth={canvasMaxWidth}
             />
           )}
           <div
@@ -224,7 +229,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
               ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
-            className={`app-${appId} _tooljet-page-${getPageId()}`}
+            className={`app-${appId} _tooljet-page-${getPageId()} canvas-content`}
           >
             {currentMode === 'edit' && (
               <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
@@ -245,7 +250,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     pagePositionType={position}
                     appType={appType}
                   />
-                  <DragGhostWidget />
+                  {currentMode === 'edit' && (
+                    <>
+                      <DragGhostWidget />
+                      <ResizeGhostWidget />
+                    </>
+                  )}
                   <div id="component-portal" />
                   {appType !== 'module' && <div id="component-portal" />}
                 </div>

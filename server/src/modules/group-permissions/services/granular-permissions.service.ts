@@ -111,11 +111,15 @@ export class GranularPermissionsService implements IGranularPermissionsService {
       const group = granularPermissions.group;
 
       this.granularPermissionUtilService.validateGranularPermissionUpdateOperation(group, organizationId);
-      await this.granularPermissionUtilService.update(id, {
-        group: group,
-        organizationId: group.organizationId,
-        updateGranularPermissionDto,
-      });
+      await this.granularPermissionUtilService.update(
+        id,
+        {
+          group: group,
+          organizationId: group.organizationId,
+          updateGranularPermissionDto,
+        },
+        manager
+      );
 
       await this.licenseUserService.validateUser(manager, organizationId);
 

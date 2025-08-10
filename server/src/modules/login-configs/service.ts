@@ -13,6 +13,7 @@ import { User } from '@entities/user.entity';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -22,7 +23,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     protected configService: ConfigService,
     protected encryptionService: EncryptionService,
     protected loginConfigsUtilService: LoginConfigsUtilService,
-    protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository
+    protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository,
+    protected logger: PinoLogger
   ) {}
 
   async getProcessedOrganizationDetails(organizationId?: string) {
@@ -35,10 +37,14 @@ export class LoginConfigsService implements ILoginConfigsService {
       return result;
     }
 
-    const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], true, true);
-    if (!result) throw new NotFoundException();
-
-    return result;
+    try {
+      // Fetch organization details with SSO configs
+      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], true, true);
+      return result;
+    } catch (error) {
+      this.logger.error('Error fetching organization details', error);
+    }
+    return;
   }
 
   async getProcessedOrganizationConfigs(organizationId: string) {
@@ -103,7 +109,12 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
 
     if (automaticSsoLogin === true) {
-      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], true, true);
+      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(
+        organizationId,
+        [true, false],
+        true,
+        true
+      );
       let enabledSSOCount = 0;
       let isFormLoginDisabled = true;
 

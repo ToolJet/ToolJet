@@ -23,6 +23,7 @@ export const Datepicker = function Datepicker({
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [date, setDate] = useState(defaultValue);
   const [excludedDates, setExcludedDates] = useState([]);
   const [showValidationError, setShowValidationError] = useState(false);
@@ -106,21 +107,23 @@ export const Datepicker = function Datepicker({
       }}
     >
       <DatePickerComponent
-        // portalId="real-canvas"
+        open={isCalendarOpen}
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
-        popperClassName={cx('tj-datepicker-widget', { 'dark-theme': darkMode })}
+        popperClassName={cx('legacy-datepicker-poppper tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
-        onFocus={(event) => {
+        onInputClick={() => {
           onComponentClick(id);
+          setIsCalendarOpen(true);
         }}
         showMonthDropdown
         showYearDropdown
+        portalId="component-portal"
         dropdownMode="select"
         excludeDates={excludedDates}
         customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
@@ -131,6 +134,8 @@ export const Datepicker = function Datepicker({
         onCalendarClose={() =>
           document.querySelector(`.ele-${id}`) ? (document.querySelector(`.ele-${id}`).style.zIndex = '') : null
         }
+        onSelect={() => setIsCalendarOpen(false)}
+        onClickOutside={() => setIsCalendarOpen(false)}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>

@@ -99,14 +99,9 @@ export const Color = ({
         style={outerStyles}
       >
         <div
-          className="col-auto"
+          className="color-icon"
           style={{
-            float: 'right',
-            width: '24px',
-            height: '24px',
-            borderRadius: ' 6px',
-            border: `1px solid var(--slate7, #D7DBDF)`,
-            boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
+            marginLeft: '4px',
             backgroundColor: value,
           }}
           data-cy={`${String(cyLabel)}-picker-icon`}

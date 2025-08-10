@@ -29,10 +29,11 @@ import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationMo
 import EditAppName from '@/AppBuilder/Header/EditAppName';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import PagePermission from './PageMenu/PagePermission';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { appPermissionService } from '@/_services';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -46,6 +47,11 @@ export const PageSettings = () => {
   const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
+  const editingPageId = useStore((state) => state.editingPage?.id);
+  const editingPageName = useStore((state) => state.editingPage?.name);
+  const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
+  const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
+  const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
@@ -107,8 +113,19 @@ export const PageSettings = () => {
       children: [
         isLicensed ? (
           <>
-            <PagePermission darkMode={darkMode} />
-
+            <AppPermissionsModal
+              modalType="page"
+              resourceId={editingPageId}
+              resourceName={editingPageName}
+              showModal={showPagePermissionModal}
+              toggleModal={togglePagePermissionModal}
+              darkMode={darkMode}
+              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+            />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
               <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
             </div>
@@ -143,6 +160,7 @@ export const PageSettings = () => {
           pageSettingChanged={pageSettingChanged}
           key="navigation-menu"
           darkMode={darkMode}
+          moduleId={moduleId}
         />,
       ],
     },
@@ -187,7 +205,7 @@ export const PageSettings = () => {
               </div>
             </Tab>
             <Tab eventKey="styles" title="Styles">
-              <div className={cx({ disabled: isVersionReleased })}>
+              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
                 <div className="tj-text-xsm color-slate12 settings-tab ">
                   <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
                 </div>
@@ -342,10 +360,9 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, lice
 };
 
 const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }) => {
-  const resolveReferences = useStore((state) => state.resolveReferences);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { disableMenu, position, style, collapsable } = properties ?? {};
-  const resolvedDisableMenu = resolveReferences(moduleId, disableMenu?.value);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const POSTIONS = [
     { label: 'Top', value: 'top' },
@@ -375,7 +392,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
         <div className="title">Navigation menu</div>
       </div>
       <ShowNavigationMenu moduleId={moduleId} darkMode={darkMode} disableMenu={disableMenu} />
-      {!resolvedDisableMenu && (
+      {!isPagesSidebarHidden && (
         <>
           <div className="d-flex justify-content-between align-items-center pb-2">
             <label className="form-label font-weight-400 mb-0">Position</label>
@@ -485,14 +502,15 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
 const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibility, page, isHomePage }) => {
   const [forceCodeBox, setForceCodeBox] = useState(disableMenu?.fxActive);
   const pageSettingChanged = useStore((state) => state.pageSettingChanged);
-  const resolveReferences = useStore((state) => state.resolveReferences);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const resolveOthers = useStore((state) => state.resolveOthers, shallow);
 
   return (
     <div className={cx({ 'codeShow-active': forceCodeBox }, 'wrapper-div-code-editor pb-2')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
-            label={'Show navigation menu'}
+            label={'Hide navigation menu'}
             labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
               darkMode && 'color-whitish-darkmode'
             }`}
@@ -506,22 +524,28 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
             <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
               <FxButton
                 active={forceCodeBox}
-                onPress={() => {
-                  if (forceCodeBox) {
-                    setForceCodeBox(false);
-                  } else {
-                    setForceCodeBox(true);
-                  }
+                onPress={async () => {
+                  pageSettingChanged(
+                    {
+                      disableMenu: {
+                        value: isPagesSidebarHidden,
+                        fxActive: !forceCodeBox,
+                      },
+                    },
+                    'properties'
+                  );
+                  resolveOthers('canvas', true, { isPagesSidebarHidden: isPagesSidebarHidden });
+                  setForceCodeBox(!forceCodeBox);
                 }}
               />
             </div>
 
             {!forceCodeBox && (
-              <div className="form-check form-switch m-0">
+              <div className="form-switch m-0">
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={resolveReferences(moduleId, disableMenu?.value)}
+                  checked={isPagesSidebarHidden}
                   disabled={isHomePage}
                   onChange={(e) => {
                     pageSettingChanged(
@@ -533,6 +557,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
                       },
                       'properties'
                     );
+                    resolveOthers('canvas', true, { isPagesSidebarHidden: `{{${e.target.checked}}}` });
                   }}
                 />
               </div>
@@ -555,6 +580,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
               },
               'properties'
             );
+            resolveOthers('canvas', true, { isPagesSidebarHidden: value });
           }}
         />
       )}

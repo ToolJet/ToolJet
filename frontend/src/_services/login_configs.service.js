@@ -1,12 +1,13 @@
-import { handleResponse } from '@/_helpers';
+import { handleResponse, authHeader } from '@/_helpers';
 import config from 'config';
-import { authHeader } from '@/_helpers';
+import { fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
 export const loginConfigsService = {
   getOrganizationConfigs,
 };
 
 function getOrganizationConfigs(organizationId) {
+  fetchWhiteLabelDetails(organizationId);
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },

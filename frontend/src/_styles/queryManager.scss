@@ -6,6 +6,10 @@ $border-radius: 4px;
 .query-manager {
   user-select: none;
 
+  .row.header {
+    border-top: 3px solid var(--slate5);
+  }
+
   .react-select__value-container {
     margin-bottom: 0px !important;
   }
@@ -85,7 +89,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 11;
+  z-index: 2;
 }
 
 .query-pane {
@@ -178,7 +182,7 @@ $border-radius: 4px;
     align-items: center;
     padding: 0px;
     font-weight: 500;
-    width: 272px;
+    width: 100%;
     height: 32px;
     color: var(--slate12);
     border-radius: 6px;
@@ -316,6 +320,7 @@ $border-radius: 4px;
       max-height: 44px;
       height: 44px;
       font-weight: 500 !important;
+      border-top: 3px solid var(--slate5);
 
       .query-manager-header-query-name {
         color: var(--slate12);
@@ -379,7 +384,7 @@ $border-radius: 4px;
 
       .queries-header {
         border: solid var(--slate5);
-        border-width: 0px 0px 1px 0px;
+        border-width: 3px 0px 1px 0px;
         height: 44px;
         --tblr-gutter-x: 0rem;
         display: flex;
@@ -507,7 +512,7 @@ $border-radius: 4px;
       .query-list {
         display: flex;
         flex-direction: column;
-        padding: 8px;
+        padding: 8px 8px 8px 8px; // Reduced right padding to minimize gap when scrollbar is visible
         gap: 2px;
         width: 100%;
 

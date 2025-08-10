@@ -9,6 +9,7 @@ import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import './codeEditor.scss';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -43,11 +44,11 @@ export const CodeEditor = ({
     adjustComponentPositions,
     currentLayout,
     width,
+    visibility,
   });
 
   const codeChanged = debounce((code) => {
     setExposedVariable('value', code);
-    setValue(code);
   }, 500);
 
   const editorStyles = {
@@ -69,7 +70,7 @@ export const CodeEditor = ({
 
   const theme = darkMode ? okaidia : githubLight;
   const langExtention = langSupport?.[mode?.toLowerCase()];
-
+  
   const editorHeight = React.useMemo(() => {
     return dynamicHeight ? 'auto' : height || 'auto';
   }, [height, dynamicHeight]);
@@ -78,6 +79,7 @@ export const CodeEditor = ({
     const _setValue = (value) => {
       if (typeof value === 'string') {
         codeChanged(value);
+        setValue(value);
       }
     };
     setExposedVariable('setValue', _setValue);
@@ -87,7 +89,7 @@ export const CodeEditor = ({
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
-        className={`code-hinter codehinter-default-input code-editor-widget`}
+        className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
           height: dynamicHeight ? 'auto' : height || 'auto',
           ...(dynamicHeight
@@ -106,9 +108,10 @@ export const CodeEditor = ({
           maxHeight={dynamicHeight ? 'none' : editorHeight}
           width="100%"
           theme={theme}
-          extensions={[langExtention]}
-          onChange={() => {
-            codeChanged();
+          extensions={[langExtention ?? javascript()]}
+          onChange={(value) => {
+            setValue(value);
+            codeChanged(value);
             setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}

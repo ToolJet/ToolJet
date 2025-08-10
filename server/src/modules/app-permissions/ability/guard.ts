@@ -9,7 +9,7 @@ import { MODULES } from '@modules/app/constants/modules';
 export class FeatureAbilityGuard extends AbilityGuard {
   protected getResource(): ResourceDetails {
     return {
-      resourceType: MODULES.APP_PERMISSIONS,
+      resourceType: MODULES.APP,
     };
   }
   protected getAbilityFactory() {

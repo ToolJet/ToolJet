@@ -74,7 +74,6 @@ export const stepsConfig = {
         defaultValue: 1,
       },
     },
-
   },
   defaultSize: {
     width: 22,
@@ -102,7 +101,7 @@ export const stepsConfig = {
     },
     {
       handle: 'setDisabled',
-      displayName: 'Set disabled',
+      displayName: 'Set disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {

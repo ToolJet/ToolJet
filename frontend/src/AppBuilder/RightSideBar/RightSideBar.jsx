@@ -10,6 +10,7 @@ export const RightSideBar = ({ darkMode }) => {
   const { isModuleEditor } = useModuleContext();
   const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
@@ -32,7 +33,11 @@ export const RightSideBar = ({ darkMode }) => {
     <div className="sub-section">
       <div
         style={{ height: `${popoverContentHeight}vh`, overflow: 'auto' }}
-        className={cx('editor-sidebar', { 'dark-theme theme-dark': darkMode })}
+        className={cx(
+          'editor-sidebar',
+          { 'dark-theme theme-dark': darkMode },
+          { 'tw-pointer-events-none': shouldFreeze }
+        )}
       >
         <div className={cx({ 'dark-theme theme-dark': darkMode })} style={{ position: 'relative', height: '100%' }}>
           {activeTab === 'pages' && <PageSettings />}
