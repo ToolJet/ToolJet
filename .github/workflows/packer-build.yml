@@ -16,6 +16,9 @@ jobs:
     name: packer-ee
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Checkout code to lts-3.16 branch
         if: contains(github.event.release.tag_name, '-lts')
         uses: actions/checkout@v2
