@@ -247,6 +247,14 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
     "name": "Microsoft Graph",
     "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
     "version": "1.0.0",
