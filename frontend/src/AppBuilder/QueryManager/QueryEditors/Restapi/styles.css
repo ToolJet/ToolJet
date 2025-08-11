@@ -30,6 +30,10 @@
   padding: 4px 8px;
 }
 
+.empty-paramlist-btn {
+  width: unset !important;
+}
+
 .add-params-btn p {
   display: flex;
   align-items: center;

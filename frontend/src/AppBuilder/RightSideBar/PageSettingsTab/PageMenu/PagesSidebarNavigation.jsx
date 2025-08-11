@@ -421,8 +421,8 @@ export const PagesSidebarNavigation = ({
 
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
-  const headerHidden = isLicensed ? hideHeader : false;
-  const logoHidden = isLicensed ? hideLogo : false;
+  const headerHidden = isLicensed ? hideHeader : true;
+  const logoHidden = isLicensed ? hideLogo : true;
 
   if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;

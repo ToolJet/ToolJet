@@ -94,7 +94,6 @@ export default class Xero implements QueryService {
       retry_network_errors: true,
       scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`),
       //scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
-
     };
   }
 
@@ -242,36 +241,8 @@ export default class Xero implements QueryService {
         }
       }
     }
-
-    try {
-      let response;
       try {
-        response = await got(url, requestOptions);
-      } catch (err: any) {
-        if (err.response?.statusCode === 401) {
-          console.log('Access token expired, attempting to refresh...');
-          console.log(err);
-          const tokens = await this.refreshToken(sourceOptions);
-          sourceOptions['access_token'] = tokens.access_token;
-          sourceOptions['refresh_token'] = tokens.refresh_token;
-
-          requestOptions.headers = {
-            ...(requestOptions.headers || {}),
-            Authorization: `Bearer ${tokens.access_token}`,
-            'Xero-tenant-id': sourceOptions['tenant_id'],
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          };
-
-          response = await got(url, requestOptions);
-
-        } else {
-          const errorMessage = err?.message || 'Unknown error';
-          const errorDetails = err?.response?.body || err
-          throw new QueryError('Xero API request failed',errorMessage,errorDetails);
-        }
-      }
-
+        const response = await got(url, requestOptions);
       if (response.statusCode !== 200) {
         const errorMessage = `Xero returned ${response.statusCode}`;
         const errorDetails = {
@@ -280,9 +251,7 @@ export default class Xero implements QueryService {
         }
         throw new QueryError('Unexpected status code',errorMessage,errorDetails);
       }
-
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
-
       return {
         status: 'ok',
         data: result,

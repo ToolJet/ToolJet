@@ -247,8 +247,8 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
-    "name": "xero",
-    "description": "api plugin from xero",
+    "name": "Xero",
+    "description": "Plugin for Xero APIs",
     "version": "1.0.0",
     "id": "xero",
     "author": "Tooljet",

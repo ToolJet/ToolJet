@@ -11,12 +11,12 @@
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
       "specUrl":{
-        "Accounts":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-accounting.json",
-        "Contacts":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-contacts.json",
-        "Invoices":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-invoice.json",
-        "Payments":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payments.json",
-        "Reports":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-report.json",
-        "Finance":"https://raw.githubusercontent.com/Pratush613/Xero-Cleaned-OpenAPI/refs/heads/main/xero_finance.yaml"
+        "Accounts":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-accounting.json",
+        "Contacts":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-contacts.json",
+        "Invoices":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-invoice.json",
+        "Payments":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-payments.json",
+        "Reports":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-report.json",
+        "Finance":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero_finance.yaml"
       }
     }
   }
