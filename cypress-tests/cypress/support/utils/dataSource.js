@@ -71,10 +71,7 @@ export const deleteAppandDatasourceAfterExecution = (
   deleteDatasource(datasourceName);
 };
 
-export const deleteWorkflowAndDS = (
-  appName,
-  datasourceName
-) => {
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
   cy.deleteWorkflow(appName);
   deleteDatasource(datasourceName);
 };
@@ -288,6 +285,9 @@ export const createRestAPIQuery = (
 
       cy.request({
         method: "POST",
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         url: `${Cypress.env(
           "server_host"
         )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,

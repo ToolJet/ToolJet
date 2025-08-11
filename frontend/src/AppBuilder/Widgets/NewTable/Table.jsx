@@ -13,6 +13,7 @@ import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/E
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './table.scss';
 
 export const Table = memo(
   ({
@@ -187,6 +188,7 @@ export const Table = memo(
           '--cc-table-row-hover': hoverColor,
           '--cc-table-row-active': activeColor,
           '--cc-table-scroll-bar-color': activeColor,
+          '--cc-table-border-color': borderColor,
         }}
       >
         <TableContainer

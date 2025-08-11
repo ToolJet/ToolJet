@@ -6,7 +6,9 @@ on:
 
 jobs:
   merge-submodules:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: |
+      github.event.pull_request.merged == true &&
+      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16')
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +42,9 @@ jobs:
 
   update-submodule-sha:
     needs: merge-submodules
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: |
+      github.event.pull_request.merged == true &&
+      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16')
     runs-on: ubuntu-latest
 
     steps:
@@ -48,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.TOKEN_PR }}
-          ref: main
+          ref: ${{ github.event.pull_request.base.ref }}
           submodules: recursive
 
       - name: Update submodules to latest main
@@ -72,11 +76,11 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.TOKEN_PR }}
-          commit-message: "🚀 chore: update submodules to latest main after auto-merge"
+          commit-message: "🚀 chore: update submodules to latest ${{ github.event.pull_request.base.ref }} after auto-merge"
           title: "🚀 chore: update submodules"
           body: "Auto-generated PR to update submodules after base PR merge"
           branch: auto/update-submodules-${{ github.run_id }}
-          base: main
+          base: ${{ github.event.pull_request.base.ref }}
 
       - name: Auto-merge PR
         if: steps.cpr.outputs.pull-request-number != ''
@@ -116,7 +120,7 @@ jobs:
           fi
 
           echo "" >> comment.md
-          echo "📝 **Note**: The submodule PRs will be auto-merged once you merge this base PR-$PR_NUMBER into \`main\`." >> comment.md
+          echo "📝 **Note**: The submodule PRs will be auto-merged once you merge this base PR-$PR_NUMBER into \`${{ github.event.pull_request.base.ref }}\`." >> comment.md
 
           gh pr comment "$PR_NUMBER" --repo ToolJet/ToolJet --body-file comment.md
 

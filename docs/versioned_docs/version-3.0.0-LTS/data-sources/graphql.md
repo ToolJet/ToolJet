@@ -75,7 +75,7 @@ Metadata is additional information about the data returned by the GraphQL query.
 While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `content-length` property, you can use `{{queries.graphql1.metadata.request.headers["content-length"]}}` or `{{queries.graphql1.metadata.request.headers."content-length"}}`.
 :::
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Metadata**</summary>
 
 ```json
