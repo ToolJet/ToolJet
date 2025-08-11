@@ -1,6 +1,6 @@
 ---
 id: marketplace-plugin-aftership
-title: Aftership
+title: AfterShip
 ---
 
 Integrating AfterShip with ToolJet enables teams to build custom internal tools for tracking and managing shipments in real time. With this integration, you can fetch delivery statuses, monitor carrier updates, and centralize logistics data within your ToolJet application, streamlining operations and improving customer support efficiency.
