@@ -6,7 +6,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 
-import _ from 'lodash';
+const _ = require('lodash');
 
 const resetters = [];
 
@@ -432,8 +432,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
+      ? queryNameIdMapping[entityName]
+      : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;
@@ -779,7 +779,7 @@ export const baseTheme = {
         weak: {
           light: '#E4E7EB',
           dark: '#EEF0F1',
-        }
+        },
       },
     },
     systemStatus: {

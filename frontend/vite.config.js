@@ -6,6 +6,7 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { resolve } from 'path';
 import fs from 'fs';
 import { createHash } from 'crypto';
+import commonjs from 'vite-plugin-commonjs';
 
 // Custom plugin for edition-based module replacement
 function editionResolver() {
@@ -25,7 +26,7 @@ function editionResolver() {
         return null;
       }
 
-      // Handle @cloud/ imports  
+      // Handle @cloud/ imports
       if (id.startsWith('@cloud/')) {
         if (['ce', 'ee'].includes(edition)) {
           console.log(`[Edition Resolver] Replacing Cloud module: ${id} -> empty module (${edition} edition)`);
@@ -48,14 +49,14 @@ function editionResolver() {
 
       return null;
     },
-    
+
     load(id) {
       // Ensure the empty module is properly loaded
       if (id === emptyModulePath) {
         return fs.readFileSync(emptyModulePath, 'utf-8');
       }
       return null;
-    }
+    },
   };
 }
 
@@ -116,6 +117,7 @@ export default defineConfig(({ command, mode }) => {
       },
       include: '**/*.svg',
     }),
+    commonjs(),
     editionResolver(),
   ];
 
@@ -178,7 +180,7 @@ export default defineConfig(({ command, mode }) => {
         '@cloud': resolve(__dirname, 'cloud'),
         '@assets': resolve(__dirname, 'assets'),
         '@white-label': resolve(__dirname, 'src/_helpers/white-label'),
-        'config': resolve(__dirname, 'src/config.js'),
+        config: resolve(__dirname, 'src/config.js'),
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.wasm', '.tar', '.data'],
     },
@@ -196,7 +198,7 @@ export default defineConfig(({ command, mode }) => {
       target: ['es2022', 'edge88', 'firefox78', 'chrome87', 'safari14'],
       chunkSizeWarningLimit: 2000,
       cssCodeSplit: true,
-      
+
       // Rollup options for advanced optimization
       rollupOptions: {
         output: {
@@ -213,70 +215,80 @@ export default defineConfig(({ command, mode }) => {
               if (id.includes('react-router')) {
                 return 'react-core';
               }
-              
+
               // UI Libraries
               if (id.includes('react-bootstrap') || id.includes('bootstrap') || id.includes('@radix-ui')) {
                 return 'ui-components';
               }
-              
+
               // Utilities and helpers
-              if (id.includes('lodash') || id.includes('moment') || id.includes('axios') || 
-                  id.includes('uuid') || id.includes('classnames') || id.includes('humps')) {
+              if (
+                id.includes('lodash') ||
+                id.includes('moment') ||
+                id.includes('axios') ||
+                id.includes('uuid') ||
+                id.includes('classnames') ||
+                id.includes('humps')
+              ) {
                 return 'utils';
               }
-              
+
               // Code editor and syntax highlighting
               if (id.includes('@codemirror') || id.includes('react-syntax-highlighter')) {
                 return 'code-editor';
               }
-              
+
               // Data visualization
               if (id.includes('plotly') || id.includes('react-circular-progressbar')) {
                 return 'visualization';
               }
-              
+
               // Form and input components
-              if (id.includes('react-datepicker') || id.includes('react-select') || 
-                  id.includes('react-phone-input') || id.includes('react-currency-input') ||
-                  id.includes('react-color')) {
+              if (
+                id.includes('react-datepicker') ||
+                id.includes('react-select') ||
+                id.includes('react-phone-input') ||
+                id.includes('react-currency-input') ||
+                id.includes('react-color')
+              ) {
                 return 'forms';
               }
-              
+
               // Rich text and content
               if (id.includes('react-markdown') || id.includes('draft-js') || id.includes('@mdxeditor')) {
                 return 'rich-content';
               }
-              
+
               // File handling
               if (id.includes('papaparse') || id.includes('xlsx') || id.includes('jspdf') || id.includes('react-pdf')) {
                 return 'file-processing';
               }
-              
+
               // Drag and drop
               if (id.includes('react-dnd') || id.includes('@dnd-kit') || id.includes('react-beautiful-dnd')) {
                 return 'dnd';
               }
-              
+
               // State management
               if (id.includes('zustand') || id.includes('immer') || id.includes('rxjs')) {
                 return 'state-management';
               }
-              
+
               // Icons
               if (id.includes('@tabler/icons')) {
                 return 'icons';
               }
-              
+
               // Everything else goes to vendor
               return 'vendor';
             }
           },
-          
+
           // Optimize asset naming for better caching
           assetFileNames: (assetInfo) => {
             const info = assetInfo.name.split('.');
             const extType = info[info.length - 1];
-            
+
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
               return `assets/images/[name]-[hash][extname]`;
             }
@@ -285,14 +297,14 @@ export default defineConfig(({ command, mode }) => {
             }
             return `assets/[name]-[hash][extname]`;
           },
-          
+
           chunkFileNames: 'assets/js/[name]-[hash].js',
           entryFileNames: 'assets/js/[name]-[hash].js',
         },
-        
+
         // External dependencies (if any needed)
         external: [],
-        
+
         // Tree shaking configuration
         treeshake: {
           moduleSideEffects: false,
@@ -300,13 +312,13 @@ export default defineConfig(({ command, mode }) => {
           unknownGlobalSideEffects: false,
         },
       },
-      
+
       // CSS optimization
       cssMinify: !isDev,
-      
+
       // Enable/disable compression reporting
       reportCompressedSize: !isDev,
-      
+
       // Memory management for large builds
       emptyOutDir: true,
     },
@@ -338,63 +350,62 @@ export default defineConfig(({ command, mode }) => {
         apiUrl: `${stripTrailingSlash(API_URL[mode]) || ''}/api`,
         ENVIRONMENT: mode,
         SERVER_IP: env.SERVER_IP,
-        
+
         // Feature flags with proper defaults
         COMMENT_FEATURE_ENABLE: env.COMMENT_FEATURE_ENABLE === 'false' ? false : true,
         ENABLE_MULTIPLAYER_EDITING: env.ENABLE_MULTIPLAYER_EDITING === 'false' ? false : true,
         ENABLE_MARKETPLACE_DEV_MODE: env.ENABLE_MARKETPLACE_DEV_MODE === 'true' || mode === 'development',
         ENABLE_WORKFLOW_SCHEDULING: env.ENABLE_WORKFLOW_SCHEDULING === 'true',
-        
+
         // ToolJet specific configuration
         TOOLJET_SERVER_URL: env.TOOLJET_SERVER_URL,
         TOOLJET_EDITION: edition,
         TOOLJET_VERSION: version,
         TOOLJET_HOST: env.TOOLJET_HOST,
-        
+
         // Database and file upload limits
-        TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB: 
-          parseInt(env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB) || 5,
-        
+        TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB: parseInt(env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB) || 5,
+
         // External service URLs
-        TOOLJET_MARKETPLACE_URL: 
+        TOOLJET_MARKETPLACE_URL:
           env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
-        
+
         // Authentication and security
         DISABLE_PASSWORD_LOGIN: env.DISABLE_PASSWORD_LOGIN === 'true',
         SSO_DISABLE_SIGNUPS: env.SSO_DISABLE_SIGNUPS === 'true',
-        
+
         // Development and debugging
         NODE_ENV: mode,
         DEBUG: env.DEBUG === 'true' || mode === 'development',
-        
+
         // Sub-path configuration (for deployment)
         SUB_PATH: env.SUB_PATH || '',
         ASSET_PATH: env.ASSET_PATH || '',
-        
+
         // License and subscription
         LICENSE_URL: env.LICENSE_URL,
-        
+
         // Telemetry and monitoring
         POSTHOG_PROJECT_API_KEY: env.POSTHOG_PROJECT_API_KEY,
         POSTHOG_API_HOST: env.POSTHOG_API_HOST,
         APM_VENDOR: env.APM_VENDOR,
-        
+
         // Sentry configuration for runtime
         SENTRY_DSN: env.SENTRY_DSN,
         SENTRY_ENVIRONMENT: env.SENTRY_ENVIRONMENT || mode,
         SENTRY_RELEASE: `tooljet-${version}`,
         SENTRY_DEBUG: env.SENTRY_DEBUG === 'true' || mode === 'development',
-        
+
         // White labeling
         WHITE_LABEL_TEXT: env.WHITE_LABEL_TEXT,
         WHITE_LABEL_LOGO: env.WHITE_LABEL_LOGO,
-        
+
         // Email configuration
         DISABLE_MULTI_WORKSPACE: env.DISABLE_MULTI_WORKSPACE === 'true',
-        
+
         // Redis and session configuration
         ENABLE_REDIS_SESSION_STORE: env.ENABLE_REDIS_SESSION_STORE === 'true',
-        
+
         // Check for required environment variables
         _envVarsLoaded: true,
         _buildTime: new Date().toISOString(),
@@ -406,12 +417,12 @@ export default defineConfig(({ command, mode }) => {
       'process.env.SERVE_CLIENT': JSON.stringify(env.SERVE_CLIENT),
       'process.env.TOOLJET_EDITION': JSON.stringify(edition),
       'process.env.DEBUG': JSON.stringify(env.DEBUG || (mode === 'development' ? 'true' : 'false')),
-      
+
       // Build-time constants
-      '__DEV__': mode === 'development',
-      '__PROD__': mode === 'production',
-      '__VERSION__': JSON.stringify(version),
-      '__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
+      __DEV__: mode === 'development',
+      __PROD__: mode === 'production',
+      __VERSION__: JSON.stringify(version),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     },
 
     assetsInclude: ['**/*.wasm', '**/*.tar', '**/*.data', '**/*.html'],
@@ -421,7 +432,7 @@ export default defineConfig(({ command, mode }) => {
       // Pre-bundle heavy dependencies for faster dev startup
       include: [
         'lodash',
-        'moment', 
+        'moment',
         'axios',
         'react',
         'react-dom',
@@ -438,20 +449,20 @@ export default defineConfig(({ command, mode }) => {
         '@radix-ui/react-avatar',
         '@radix-ui/react-checkbox',
         '@radix-ui/react-select',
-        '@tabler/icons-react'
+        '@tabler/icons-react',
       ],
-      
+
       // Exclude packages that shouldn't be pre-bundled
       exclude: [
         '@tooljet/plugins',
         // Large packages that are better lazy-loaded
         '@codemirror/autocomplete',
-        '@codemirror/commands'
+        '@codemirror/commands',
       ],
-      
+
       // Force pre-bundling of specific packages
       force: ['react', 'react-dom'],
-      
+
       esbuildOptions: {
         loader: {
           '.js': 'jsx',
