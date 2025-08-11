@@ -40,16 +40,20 @@ export default class Ups implements QueryService {
         }
       }
 
-      // Prepare headers
+      const method = operation.toUpperCase();
+      const hasBody = ["POST", "PUT", "PATCH"].includes(method);
+
+      // Prepare headers - only add Content-Type when body is present
       const headers: Record<string, string> = {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
         "x-merchant-id": sourceOptions.shipper_number!,
         Accept: "application/json",
       };
 
-      const method = operation.toUpperCase();
-      const hasBody = ["POST", "PUT", "PATCH"].includes(method);
+      // Add Content-Type only when there's a body
+      if (hasBody) {
+        headers["Content-Type"] = "application/json";
+      }
 
       const response = await got(fullUrl.toString(), {
         method: method.toLowerCase() as Method,
@@ -85,7 +89,6 @@ export default class Ups implements QueryService {
       const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
 
       const headers: Record<string, string> = {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
         "x-merchant-id": sourceOptions.shipper_number!,
         Accept: "application/json",
