@@ -121,14 +121,14 @@ export default class Ups implements QueryService {
 
     const headers = {
       "x-merchant-id": shipper_number,
-      "Content-Type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${Buffer.from(
         `${client_id}:${client_secret}`
       ).toString("base64")}`,
     };
 
-    const body = new URLSearchParams();
-    body.append("grant_type", "client_credentials");
+    const formData = {
+      grant_type: "client_credentials",
+    };
 
     const url = `${base_url}/security/v1/oauth/token`;
 
@@ -136,10 +136,14 @@ export default class Ups implements QueryService {
       const response = await got(url, {
         method: "post",
         headers,
-        body: body.toString(),
+        form: formData,
+        responseType: 'json'
       });
 
-      const data = JSON.parse(response.body);
+      const data = response.body as {
+        access_token?: string;
+        expires_in?: number;
+      }
 
       if (!data.access_token || !data.expires_in) {
         throw new QueryError(
