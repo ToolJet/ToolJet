@@ -3,7 +3,7 @@ import { toast, Toaster, ToastBar } from 'react-hot-toast';
 
 const Toast = ({ toastOptions }) => {
   return (
-    <Toaster toastOptions={toastOptions}>
+    <Toaster toastOptions={toastOptions} limit={2}>
       {(t) => (
         <ToastBar toast={t}>
           {({ icon, message }) => (
