@@ -13,8 +13,7 @@
     },
     "options": {
       "client_id": {
-        "type": "string",
-        "encrypted": true
+        "type": "string"
       },
       "client_secret": {
         "type": "string",
