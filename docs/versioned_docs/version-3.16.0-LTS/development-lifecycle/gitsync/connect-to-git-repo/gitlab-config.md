@@ -13,7 +13,7 @@ title: GitLab Configuration
 </div>
 
 
-The GitLab configuration for git sync offers a flexible way to connect your ToolJet workspace to a GitLab repository. This setup uses HTTPS instead of the traditional SSH-based method, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
+The GitLab configuration for git sync offers a flexible way to connect your ToolJet workspace to a GitLab repository. This setup uses HTTPS, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
 
 
 Role Required: **Admin**

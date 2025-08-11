@@ -13,7 +13,7 @@ sidebar_label: GitHub Configuration
  <span>Paid feature</span>
 </div>
 
-The GitHub Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. Compared to traditional SSH-based setups, it works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
+The GitHub Configuration for GitSync introduces a more flexible way to connect your ToolJet instance to a Git repository. It works over HTTPS, helping you avoid SSH port blocks, and lets you choose branches directly from the UI.
 
 Role Required: **Admin**
 
@@ -22,39 +22,40 @@ Role Required: **Admin**
 
 ### 2. Create the GitHub App
     [Setup a GitHub App](https://github.com/settings/apps/new) and make sure it is created by the same owner as the Git repository. If you have multiple ToolJet instances, use this same GitHub App across all instances. 
-
-    <img className="screenshot-full img-l" style={{ marginBottom:'15px' }} src="/img/gitsync/github-config/github-app-register.png" alt="GitSync" />
-
-    Enter your App details on the **Register new GitHub App** page and make sure to update the following fields:
-    - Uncheck the **Expire user authorization tokens** and **Active** checkbox under **Identifying and authorizing users** and **Webhook** sections respectively.
-    - Add the following Repository permissions:
+    <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app-register.png" alt="GitSync" />
+    
+    Enter your App details on the **Register new GitHub App** page and make sure to uncheck the **Expire user authorization tokens** and **Active** checkbox under **Identifying and authorizing users** and **Webhook** sections respectively.
+    
+    :::note
+    Add the following Repository permissions:
         - Contents: Read & Write
         - Pull requests: Read & Write
+    :::
 
-    After creating the GitHub App, you will be directed to the **GitHub App Settings** page. Here, make sure to copy the **App ID**. Next, generate the **Private key** (`.pem `key), download it, and store it securely. This information will be essential later when configuring GitSync.
+    After creating the GitHub App, you will be directed to the **GitHub App Settings** page. 
 
+    :::note
+    Make sure to copy the **App ID**. 
+    :::
+    Next, generate the **Private key** (`.pem `key), download it, and store it securely. This information will be essential later when configuring GitSync.
         <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app1.png" alt="GitSync" />
 
 ### 3. Install the GitHub App
     
     To install your GitHub App, follow these steps:
-
     - Click on Install App on the **GitHub App Settings** page.
-    <img className="screenshot-full img-s" style={{ marginTop:'15px',marginBottom:'15px' }}  src="/img/gitsync/github-config/github-app2.png" alt="GitSync" />
+        <img className="screenshot-full img-s" style={{ marginTop:'15px'}}  src="/img/gitsync/github-config/github-app2.png" alt="GitSync" />
     - Click the **Install** button next to your organization.
     - Select repositories option and select the repositories you want to connect to ToolJet.
-    - You’ll be redirected to the installation page. The number at the end of the URL is the **installation ID**. Save this for later.
-
-    ```
-    https://github.com/settings/installations/:installation_id
-    ```
+    - You’ll be redirected to the installation page. The number at the end of the URL is the **installation ID**. Save this for later. <br/>
+        ```
+        https://github.com/settings/installations/:installation_id
+        ```
 
 ### 4. Configure GitHub in GitSync 
 
 Navigate to the **Workspace settings** page and click on the **Configure git** tab. Then, enter the required configuration values after selecting GitHub as your repository provider.
-
-<img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitSync" />
-
+    <img className="screenshot-full img-s" src="/img/gitsync/github-config/github-form-full.png" alt="GitSync" />
 
 The table below describes each configuration values:
 
