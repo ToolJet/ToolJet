@@ -59,13 +59,14 @@ export default class Ups implements QueryService {
         method: method.toLowerCase() as Method,
         headers,
         json: hasBody ? params.request : undefined,
+        responseType: 'json'
       });
 
-      const responseData = JSON.parse(response.body);
+      const responseData = response.body;
 
       return {
         status: "ok",
-        data: responseData,
+        data: responseData as any,
       };
     } catch (error) {
       if (error instanceof QueryError) {
