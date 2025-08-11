@@ -57,7 +57,15 @@ export function renderCustomStyles(
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
-    componentConfig.component == 'FilePicker'
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'DatetimePickerV2' ||
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'DatePickerV2' ||
+    componentConfig.component == 'TextArea' ||
+    componentConfig.component == 'Timepicker' ||
+    componentConfig.component == 'PhoneInput' ||
+    componentConfig.component == 'CurrencyInput' ||
+    componentConfig.component == 'DaterangePicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
-import { useInput } from '../BaseComponents/hooks/useInput';
+import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
@@ -71,8 +71,9 @@ export const CurrencyInput = (props) => {
     errTextColor,
     boxShadow,
     borderRadius,
+    widthType,
   } = styles;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
@@ -204,8 +205,16 @@ export const CurrencyInput = (props) => {
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          widthType={widthType}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+          }}
+        >
           <CountrySelect
             value={{
               label: `${CurrencyMap?.[country]?.prefix} (${CurrencyMap?.[country]?.currency})`,

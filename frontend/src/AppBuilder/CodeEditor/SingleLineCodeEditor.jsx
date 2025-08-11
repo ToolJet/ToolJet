@@ -362,7 +362,6 @@ const EditorInput = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
 
-
   // when full screen editor is closed, show the preview box
   useEffect(() => {
     if (isFocused && !isOpen) {
@@ -477,11 +476,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -547,7 +546,6 @@ const DynamicEditorBridge = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue,
     shouldResolve = true;
-
   // This is to handle the case when the initial value is a string and contains components or queries
   // and we need to replace the ids with names
   // but we don't want to resolve the references as it needs to be displayed as it is
@@ -580,8 +578,9 @@ const DynamicEditorBridge = (props) => {
 
     return (
       <div
-        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-          }`}
+        className={`col-auto pt-0 fx-common fx-button-container ${
+          (isEventManagerParam || codeShow) && 'show-fx-button-container'
+        }`}
       >
         <FxButton
           active={codeShow}
@@ -613,8 +612,9 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
             {isDeprecated && (
               <span className={'list-item-deprecated-column-type'}>
