@@ -11883,9 +11883,14 @@ tbody {
   }
 }
 
-// .selected-ds.row>img {
-//   padding: 0 !important;
-// }
+.selected-ds.row>img {
+  padding: 0 !important;
+}
+
+.selected-ds.img-container>img {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
+}
 
 .tj-user-table-wrapper {
   height: calc(100vh - 392px); //52+64+40+32+20+62
@@ -18762,7 +18767,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  
+
 
   &::-webkit-scrollbar {
     width: 16px;
