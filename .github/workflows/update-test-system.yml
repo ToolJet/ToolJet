@@ -12,7 +12,8 @@ on:
         required: true
         type: choice
         options:
-          - ./docker/ee/ee-production.Dockerfile
+          - ./docker/LTS/ee/ee-production.Dockerfile
+          - ./docker/pre-release/ee/ee-production.Dockerfile
       docker_tag:
         description: 'Docker tag suffix (e.g., pre-release-14, 3.16-lts, etc.)'
         required: true
@@ -30,12 +31,46 @@ on:
           - ai-3.16-lts
           - ai-pre-release
 
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: ✅ Check user authorization
+        run: |
+          # Define allowed users
+          allowed_users=(
+            "${{ secrets.ALLOWED_USER1_USERNAME }}"
+            "${{ secrets.ALLOWED_USER2_USERNAME }}"
+            "${{ secrets.ALLOWED_USER3_USERNAME }}"
+            "${{ secrets.ALLOWED_USER4_USERNAME }}"
+            "${{ secrets.ALLOWED_USER5_USERNAME }}"
+            "${{ secrets.ALLOWED_USER6_USERNAME }}"
+            "${{ secrets.ALLOWED_USER7_USERNAME }}"
+            "${{ secrets.ALLOWED_USER8_USERNAME }}"
+            "${{ secrets.ALLOWED_USER9_USERNAME }}"
+            "${{ secrets.ALLOWED_USER10_USERNAME }}"
+            "${{ secrets.ALLOWED_USER11_USERNAME }}"
+          )
+          
+          current_user="${{ github.actor }}"
+          authorized=false
+          
+          for user in "${allowed_users[@]}"; do
+            if [[ "$current_user" == "$user" ]]; then
+              authorized=true
+              break
+            fi
+          done
+          
+          if [[ "$authorized" == "false" ]]; then
+            echo "❌ User '$current_user' is not authorized to trigger this workflow."
+            echo "Authorized users: QA Team (Midhun, Ajith, Yukti Goyal, Mekhla Abhishek Asopa, Mani), DevOps Team (Adish, Souvik), Dev Team (Midhun G S, Akshay, Johnson, Kavin)"
+            exit 1
+          else
+            echo "✅ User '$current_user' is authorized."
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -84,65 +119,148 @@ jobs:
         run: |
           test_system="${{ github.event.inputs.test_system }}"
           vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
+          
           if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
             echo "VM mapping not found for $test_system"
             exit 1
           fi
+          
           echo "host=$vm_host" >> $GITHUB_OUTPUT
 
       - name: Deploy to target environment
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-
+          
+          IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            REMOTE_DIR="lts-tooljet"
-          else
-            REMOTE_DIR="$TARGET_SYSTEM"
-          fi
-
+          
+          # Debug: Show what we're deploying
+          echo "DEBUG: IMAGE_TAG=$IMAGE_TAG"
+          echo "DEBUG: TARGET_SYSTEM=$TARGET_SYSTEM"
+          
           ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
-            set -e
-            cd ~
-            echo "📁 Moving to deployment directory: \$REMOTE_DIR"
-            cd \$REMOTE_DIR
-
-            echo "🔐 Docker login"
-            echo "${DOCKER_PASSWORD}" | sudo docker login --username "${DOCKER_USERNAME}" --password-stdin
-
-            echo "🛑 Stopping and removing containers"
-            sudo docker-compose down
-
-            echo "🗑️ Removing previous image"
-            existing_image=\$(grep TOOLJET_IMAGE .env | cut -d'=' -f2)
-            if [[ ! -z "\$existing_image" && "\$existing_image" != "${{ steps.taggen.outputs.tag }}" ]]; then
-              sudo docker rmi -f "\$existing_image" || true
+          set -e
+          
+          IMAGE_TAG="$IMAGE_TAG"
+          TARGET_SYSTEM="$TARGET_SYSTEM"
+          
+          cd ~
+          echo "📁 Finding correct deployment directory"
+          
+          # Debug: Show variables on remote host
+          echo "Debug on remote: IMAGE_TAG=\$IMAGE_TAG"
+          echo "Debug on remote: TARGET_SYSTEM=\$TARGET_SYSTEM"
+          
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            echo "Detected LTS system: \$TARGET_SYSTEM"
+            echo "🔍 Searching for LTS directories..."
+            
+            # Find LTS directories dynamically
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
+                       ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
+            
+            if [[ -z "\$LTS_DIRS" ]]; then
+              echo "❌ No LTS directories found!"
+              echo "Available directories:"
+              ls -la | grep "^d"
+              exit 1
             fi
-
-            echo "📝 Updating .env with new image"
-            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=${{ steps.taggen.outputs.tag }}|" .env
-
-            echo "📥 Pulling latest image"
-            sudo docker pull "${{ steps.taggen.outputs.tag }}"
-
-            echo "🚀 Starting container"
+            
+            echo "Available LTS directories:"
+            echo "\$LTS_DIRS"
+            
+            # Choose the first available LTS directory
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
+            cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
+          else
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Moving to target directory: \$TARGET_SYSTEM"
+            cd ~
+            echo "✅ Now in directory: \$(pwd)"
+          fi
+          
+          echo "🔐 Docker login"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          echo "current image"
+          cat .env | grep TOOLJET_IMAGE
+          
+          echo "📦 Reading current TOOLJET_IMAGE from .env"
+          CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          echo "Found CURRENT_IMAGE: \$CURRENT_IMAGE"
+          
+          echo "🛑 Stopping containers"
+          sudo docker-compose down
+          
+          echo "📝 Updating .env with new image"
+          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          
+          echo "📥 Pulling new image: \$IMAGE_TAG"
+          if [ -z "\$IMAGE_TAG" ]; then
+            echo "❌ IMAGE_TAG is empty!"
+            exit 1
+          fi
+          sudo docker pull "\$IMAGE_TAG"
+          
+          echo "🚀 Starting container in background"
+          sudo docker-compose up -d
+          
+          # Wait for ToolJet to start and show success message
+          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=300
+          ELAPSED=0
+          
+          while [ \$ELAPSED -lt \$TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            
+            echo "⏳ Still waiting... (\${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=\$((ELAPSED + 10))
+          done
+          
+          if [ "\$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker-compose logs --tail=50
+            echo ""
+            echo "=== CONTAINER STATUS ==="
+            sudo docker-compose ps
+            echo ""
+            
+            echo "🛑 Starting rollback process..."
+            sudo docker-compose down
+            
+            echo "🔄 Reverting to previous image: \$CURRENT_IMAGE"
+            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
+            
+            echo "🔄 Starting previous image..."
             sudo docker-compose up -d
-
-            echo "⏳ Waiting for container readiness"
-            timeout 240 bash -c '
-              until docker logs Tooljet-app 2>&1 | grep -q "Ready to use at http://localhost:80"; do
-                sleep 2
-              done
-            '
-
-            echo "🧹 Pruning old Docker images"
-            sudo docker image prune -f
-
-            echo "✅ Deployment successful!"
+            echo "✅ Rollback completed!"
+            exit 1
+          fi
+          
+          echo "✅ Deployment successful!"
+          
+          echo "📌 Storing successful deployment info in .env"
+          sudo sed -i "/^OLD_IMAGE=/d" .env
+          echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
+          echo "📄 Final application logs:"
+          sudo docker-compose logs --tail=50
+          
+          echo "🧹 Pruning old Docker images"
+          sudo docker image prune -a -f
+          
           EOF
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
