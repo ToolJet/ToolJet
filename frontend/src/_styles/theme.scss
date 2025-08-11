@@ -18762,7 +18762,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  
+
 
   &::-webkit-scrollbar {
     width: 16px;
@@ -18792,4 +18792,10 @@ section.ai-message-prompt-input-wrapper {
 
 .accordion-body-custom {
   padding: 0rem 1rem 1rem 1rem !important;
+}
+
+body {
+  #hubspot-messages-iframe-container {
+    display: var(--hs-chat-container-display) !important;
+  }
 }
