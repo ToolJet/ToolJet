@@ -248,7 +248,7 @@
   },
   {
     "name": "Xero",
-    "description": "Plugin for Xero APIs",
+    "description": "Integrate with Xero API to manage financial accounting data",
     "version": "1.0.0",
     "id": "xero",
     "author": "Tooljet",

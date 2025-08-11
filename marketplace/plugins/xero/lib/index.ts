@@ -27,8 +27,7 @@ export default class Xero implements QueryService {
       clientSecret = source_options?.client_secret?.value;
     }
 
-    const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`;
-    //const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`;
+    const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`;
 
 
     if (!clientId || !clientSecret) {
@@ -92,8 +91,7 @@ export default class Xero implements QueryService {
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read`),
-      //scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
+      scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
     };
   }
 
