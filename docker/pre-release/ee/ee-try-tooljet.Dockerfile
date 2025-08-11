@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y wget libicu72 libldap-2.5-0 libssl3 || 
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN apt update && apt -y install postgresql-16 postgresql-client-16 supervisor
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
@@ -50,16 +50,14 @@ RUN apt update && apt install -y gettext-base curl \
 COPY ./docker/pre-release/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
 COPY ./docker/pre-release/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
-# Install Neo4j + APOC
+# Install Neo4j using Docker-compatible approach
 RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
     echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
     apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
     mkdir -p /var/lib/neo4j/plugins && \
     wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
+    mkdir -p /var/lib/neo4j/data /var/lib/neo4j/logs /var/lib/neo4j/import && \
+    chown -R appuser:appuser /var/lib/neo4j && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
@@ -131,7 +129,11 @@ ENV TOOLJET_HOST=http://localhost \
     TEMPORAL_DB_PORT=5432 \
     TEMPORAL_DB_USER=tooljet \
     TEMPORAL_DB_PASS=postgres \
-    TEMPORAL_CORS_ORIGINS=http://localhost:8080
+    TEMPORAL_CORS_ORIGINS=http://localhost:8080 \
+    NEO4J_URI=bolt://localhost:7687 \
+    NEO4J_USERNAME=neo4j \
+    NEO4J_PASSWORD=appaqvyvRLbeukhFE \
+    ENABLE_AI_FEATURES=true
 
 # Set the entrypoint
 COPY ./docker/pre-release/ee/ee-try-entrypoint.sh /ee-try-entrypoint.sh
