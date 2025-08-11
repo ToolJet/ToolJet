@@ -71,6 +71,11 @@ export const deleteAppandDatasourceAfterExecution = (
   deleteDatasource(datasourceName);
 };
 
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
+};
+
 export const closeDSModal = () => {
   cy.get("body").then(($body) => {
     cy.wait(500);
@@ -280,7 +285,12 @@ export const createRestAPIQuery = (
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         headers: headers,
         body: requestBody,
       }).then((response) => {
