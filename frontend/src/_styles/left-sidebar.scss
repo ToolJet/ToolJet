@@ -955,7 +955,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 0px;
+  padding-top: 8px;
   width: 48px;
   border-right: 1px solid var(--border-weak);
 }
@@ -1049,14 +1049,6 @@
 }
 
 .sidebar-item {
-  height: 32px;
-  width: 32px;
-  border-radius: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--indigo4);
-
   &.tooljetai-icon {
     border-radius: 6px;
     background: linear-gradient(315deg, rgba(252, 95, 112, 0.12) 0%, rgba(142, 78, 198, 0.12) 100%);

@@ -67,7 +67,7 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth }) {
         data-cy="preview-link-button"
         className="preview-link-btn"
       >
-        <Play width="16" height="16" className="tw-text-icon-strong" />
+        <Play width="16" height="16" />
         Preview
       </Link>
       {false && (
@@ -79,7 +79,7 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth }) {
             className="tj-ghost-black-btn"
             data-tooltip-id="tooltip-for-undo"
             data-tooltip-content="Undo"
-            data-cy={`editor-undo-button`}
+            data-cy={'editor-undo-button'}
           >
             <SolidIcon
               width="16"

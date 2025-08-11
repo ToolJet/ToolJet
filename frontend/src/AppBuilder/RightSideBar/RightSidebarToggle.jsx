@@ -29,8 +29,8 @@ const RightSidebarToggle = ({ darkMode = false }) => {
 
   return (
     <div
-      className={cx(' right-sidebar-toggle left-sidebar', { 'dark-theme theme-dark': darkMode })}
-      data-cy="left-sidebar-inspector"
+      className="tw-flex tw-flex-col tw-p-2 tw-gap-1.5 right-sidebar-toggle right-sidebar"
+      data-cy="right-sidebar-inspector"
     >
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}
@@ -39,10 +39,17 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="plus"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector component-image-holder`}
+        iconOnly
+        className={`left-sidebar-inspector`}
         tip="Components"
       >
-        <Plus width="16" height="16" className="tw-text-icon-strong" />
+        <Plus
+          width="16"
+          height="16"
+          className={`${
+            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+          }`}
+        />
       </SidebarItem>
 
       <SidebarItem
@@ -52,11 +59,17 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         }}
         darkMode={darkMode}
         icon="propertiesstyles"
+        iconOnly
         iconWidth="14"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Component properties"
       >
-        <PencilRuler width="16" height="16" className="tw-text-icon-strong" />
+        <PencilRuler
+          width="16"
+          height="16"
+          className={`${
+            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+          }`}
+        />
       </SidebarItem>
       {appType !== 'module' && (
         <SidebarItem
@@ -66,10 +79,16 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           }}
           darkMode={darkMode}
           icon="file01"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+          iconOnly
           tip="Page settings"
         >
-          <BookOpen width="16" height="16" className="tw-text-icon-strong" />
+          <BookOpen
+            width="16"
+            height="16"
+            className={`${
+              activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+            }`}
+          />
         </SidebarItem>
       )}
     </div>

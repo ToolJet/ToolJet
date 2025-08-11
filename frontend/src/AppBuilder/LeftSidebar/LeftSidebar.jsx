@@ -12,11 +12,13 @@ import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-import { PageMenu } from '../RightSideBar/PageSettingsTab/PageMenu';
+import RealtimeAvatars from '@/Editor/RealtimeAvatars';
+import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
 // import lucide icons
 // import { Settings, LayoutDashboard, Code, Bug, MessageCircle, FileText, Settings, Bug, Code, LayoutDashboard } from 'lucide-react';
 import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
 import SupportButton from './SupportButton';
+import AvatarGroup from '@/_ui/AvatarGroup';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -60,8 +62,53 @@ export const BaseLeftSidebar = ({
     shallow
   );
 
+  const sampleAvatars = [
+    {
+      id: "1",
+      text: "JD",
+      title: "John Doe",
+      subtitle: "john.doe@example.com",
+      borderColor: "#3b82f6",
+      image: null,
+    },
+    {
+      id: "2",
+      text: "JS",
+      title: "Jane Smith",
+      subtitle: "jane.smith@example.com",
+      borderColor: "#10b981",
+      image: null,
+    },
+    {
+      id: "3",
+      text: "MJ",
+      title: "Mike Johnson",
+      subtitle: "mike.johnson@example.com",
+      borderColor: "#f59e0b",
+      image: null,
+    },
+    {
+      id: "4",
+      text: "SL",
+      title: "Sarah Lee",
+      subtitle: "sarah.lee@example.com",
+      borderColor: "#ef4444",
+      image: null,
+    },
+    {
+      id: "5",
+      text: "DW",
+      title: "David Wilson",
+      subtitle: "david.wilson@example.com",
+      borderColor: "#8b5cf6",
+      image: null,
+    },
+  ];
+
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
+  // const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const shouldEnableMultiplayer = true;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
@@ -165,10 +212,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-          // toggleAppMaintenance={toggleAppMaintenance}
-          // isMaintenanceOn={isMaintenanceOn}
-          // app={app}
-          // backgroundFxQuery={backgroundFxQuery}
+            // toggleAppMaintenance={toggleAppMaintenance}
+            // isMaintenanceOn={isMaintenanceOn}
+            // app={app}
+            // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -187,7 +234,7 @@ export const BaseLeftSidebar = ({
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => handleSelectedSidebarItem('inspect')}
           darkMode={darkMode}
-          // IconComponent={() => <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />}
+          icon="inspect"
           className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
           tip="Inspector"
           ref={setSideBarBtnRefs('inspect')}
@@ -196,7 +243,7 @@ export const BaseLeftSidebar = ({
         </SidebarItem>
 
         <SidebarItem
-          // IconComponent={() => <Bug width="16" height="16" className="tw-text-icon-strong" />}
+          icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           // eslint-disable-next-line no-unused-vars
@@ -233,7 +280,7 @@ export const BaseLeftSidebar = ({
           <>
             {renderCommonItems()}
             <SidebarItem
-              // IconComponent={() => <Bolt width="16" height="16" className="tw-text-icon-strong" />}
+              icon="settings"
               selectedSidebarItem={selectedSidebarItem}
               darkMode={darkMode}
               // eslint-disable-next-line no-unused-vars
@@ -253,7 +300,11 @@ export const BaseLeftSidebar = ({
   };
 
   return (
-    <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
+    <div
+      className={cx('left-sidebar !tw-z-10', { 'dark-theme theme-dark': darkMode })}
+      data-cy="left-sidebar-inspector"
+      style={{ zIndex: 9999 }}
+    >
       {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
@@ -271,7 +322,7 @@ export const BaseLeftSidebar = ({
         popoverContentHeight={popoverContentHeight}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="">
+        <div className="tw-flex tw-flex-col tw-gap-2">
           {/* <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
             <LeftSidebarComment
               selectedSidebarItem={showComments ? 'comments' : ''}
@@ -282,6 +333,18 @@ export const BaseLeftSidebar = ({
             />
           </div> */}
           <SupportButton />
+          {shouldEnableMultiplayer && (
+            <div className="">
+              {/* <RealtimeAvatars /> */}
+              <AvatarGroup
+                avatars={sampleAvatars}
+                maxDisplay={2}
+                variant="multiplayer"
+                // onAvatarClick={handleAvatarClick}
+              />
+            </div>
+          )}
+          {/* {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />} */}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>

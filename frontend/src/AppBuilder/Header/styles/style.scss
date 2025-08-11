@@ -1,12 +1,8 @@
 .app-name {
-  width: 200px;
-
   .form-control-plaintext {
     background-color: var(--surfaces-surface-01);
     border-radius: 6px;
     border-color: transparent !important;
-    padding: 6px 8px;
-    height: 32px;
   }
 
   .form-control-plaintext:hover {
@@ -119,6 +115,7 @@
   display: inline-flex;
   align-items: center;
   min-width: 100px;
+  width: auto;
   height: 32px;
   border-radius: 6px;
 
@@ -196,7 +193,7 @@
   transition: background 0.15s, border 0.15s, box-shadow 0.15s, color 0.15s;
 
   svg {
-    color: var(--icon-default);
+    color: #9747FF;
     flex-shrink: 0;
   }
 

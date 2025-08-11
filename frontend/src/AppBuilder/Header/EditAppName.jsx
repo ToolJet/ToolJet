@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import InlineEdit from '@/_ui/InlineEdit';
 
 function EditAppName() {
   const { moduleId } = useModuleContext();
@@ -25,12 +26,9 @@ function EditAppName() {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [name, setName] = useState(appName);
   const [isValid, setIsValid] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [warningText, setWarningText] = useState('');
-
-  const inputRef = useRef(null);
 
   useEffect(() => {
     setName(appName);
@@ -46,18 +44,16 @@ function EditAppName() {
     setErrorMessage(message);
   };
 
-  const saveAppName = async (newName) => {
+  const handleSave = async (newName) => {
     const trimmedName = newName.trim();
     if (validateName(trimmedName, 'App', false, true)?.errorMsg) {
       setName(appName);
       clearError();
-      setIsEditing(false);
       return;
     }
 
     if (trimmedName === appName) {
       setIsValid(true);
-      setIsEditing(false);
       setName(appName);
       return;
     }
@@ -65,9 +61,7 @@ function EditAppName() {
     try {
       await appsService.saveApp(appId, { name: trimmedName });
       setAppName(trimmedName);
-
       setIsValid(true);
-      setIsEditing(false);
       toast.success('App name successfully updated!');
     } catch (error) {
       if (error.statusCode === 409) {
@@ -75,92 +69,49 @@ function EditAppName() {
       } else {
         clearError();
         setName(appName);
-        setIsEditing(false);
         handleHttpErrorMessages(error, 'app');
       }
     }
   };
 
-  const handleKeyDown = (e) => {
-    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-    }
+  const handleCancel = () => {
+    setName(appName);
+    clearError();
   };
 
-  React.useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown); // Clean up the event listener
-    };
-  }, []);
-
-  const handleBlur = () => {
-    saveAppName(name);
-  };
-
-  const handleFocus = () => {
-    setIsValid(true);
-    setIsEditing(true);
-  };
-
-  const handleInput = (e) => {
-    const newValue = e.target.value;
-    setName(newValue);
-    if (newValue.length >= 50) {
+  const validateAppName = (value) => {
+    if (value.length >= 50) {
       setWarningText('Maximum length has been reached');
-    } else {
-      setWarningText('');
-      clearError();
+      return 'Maximum length has been reached';
     }
+    setWarningText('');
+    clearError();
+    return '';
   };
-
-  const borderColor = isError
-    ? 'var(--light-tomato-10, #DB4324)' // Apply error border color
-    : darkMode
-    ? 'var(--dark-border-color, #2D3748)' // Change this to the appropriate dark border color
-    : 'var(--light-border-color, #FFF0EE)';
 
   // Define the message based on the pageType prop
   const messageType = 'App';
 
   return (
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <ToolTip message={name} placement="bottom" isVisible={!isEditing && appCreationMode !== 'GIT'}>
-        <input
-          ref={inputRef}
-          type="text"
-          onChange={() => {
-            //this was quick fix. replace this with actual tooltip props and state later
-            if (document.getElementsByClassName('tooltip').length) {
-              document.getElementsByClassName('tooltip')[0].style.display = 'none';
-            }
-          }}
-          onInput={handleInput}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          onClick={() => {
-            inputRef.current.select();
-            setIsEditing(true);
-          }}
-          className={`form-control-plaintext form-control-plaintext-sm ${
-            (!isError && !isEditing) || isValid ? '' : 'is-invalid'
-          } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
-          style={{ border: `1px solid ${borderColor}` }}
+      <ToolTip message={name} placement="bottom" isVisible={appCreationMode !== 'GIT'}>
+        <InlineEdit
           value={name}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          placeholder="Enter app name..."
           maxLength={50}
+          validation={validateAppName}
+          className={`form-control-plaintext form-control-plaintext-sm ${isError ? 'error' : ''}`}
+          textClassName="tw-w-auto tw-h-8 !tw-inline-block tw-font-medium"
+          inputClassName="tw-h-8"
           data-cy="app-name-input"
         />
       </ToolTip>
       <InfoOrErrorBox
-        active={isError || isEditing}
-        message={
-          errorMessage ||
-          warningText ||
-          (name.length >= 50
-            ? 'Maximum length has been reached'
-            : `${messageType} name should be unique and max 50 characters`)
-        }
-        isWarning={warningText || name.length >= 50}
+        active={isError}
+        message={errorMessage || warningText || `${messageType} name should be unique and max 50 characters`}
+        isWarning={warningText}
         isError={isError}
         darkMode={darkMode}
         additionalClassName={isError ? 'error' : ''}

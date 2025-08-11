@@ -1,0 +1,238 @@
+// InlineEdit Component Styles
+// Based on Atlassian Design System
+
+.inline-edit {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 120px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &--editing {
+    .inline-edit-text {
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .inline-edit-input-wrapper {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      animation: expandWidth 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+  }
+
+  &:not(&--editing) {
+    .inline-edit-text {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .inline-edit-input-wrapper {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &--readonly {
+    cursor: default;
+  }
+}
+
+@keyframes expandWidth {
+  from {
+    width: var(--text-width, 120px);
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.inline-edit-text {
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--text-default);
+  font-size: 14px;
+  line-height: 1.42857;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  opacity: 1;
+  transform: scale(1);
+  position: relative;
+  z-index: 1;
+  background-color: var(--background-surface-layer-01);
+
+  &:hover {
+    background-color: var(--interactive-hover);
+    border-color: var(--border-default);
+  }
+
+  &:focus {
+    outline: none;
+    background-color: var(--background-surface-layer-01);
+    border-color: var(--interactive-focus-outline);
+  }
+
+  &--empty {
+    color: var(--text-placeholder);
+    font-style: italic;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    color: var(--text-disabled);
+    background-color: var(--interactive-disabled);
+
+    &:hover {
+      background-color: var(--interactive-disabled);
+      border-color: transparent;
+    }
+  }
+
+  &--readonly {
+    cursor: default;
+    color: var(--text-default);
+
+    &:hover {
+      background-color: transparent;
+      border-color: transparent;
+    }
+  }
+}
+
+.inline-edit-input-wrapper {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inline-edit-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 2px solid var(--border-strong);
+  border-radius: 3px;
+  background-color: var(--background-surface-layer-01);
+  color: var(--text-default);
+  font-size: 14px;
+  line-height: 1.42857;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 32px;
+  resize: vertical;
+  transform-origin: left center;
+
+  &:focus {
+    border-color: var(--interactive-focus-outline);
+  }
+
+  &::placeholder {
+    color: var(--text-placeholder);
+    font-style: italic;
+  }
+
+  &--error {
+    border-color: var(--text-danger);
+    box-shadow: 0 0 0 2px var(--text-danger);
+
+    &:focus {
+      border-color: var(--text-danger);
+      box-shadow: 0 0 0 2px var(--text-danger);
+    }
+  }
+
+  &--multiline {
+    min-height: 60px;
+    max-height: 200px;
+  }
+
+  &:disabled {
+    background-color: var(--interactive-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    border-color: var(--border-default);
+    box-shadow: none;
+  }
+}
+
+.inline-edit-error {
+  color: var(--text-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  line-height: 1.33333;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .inline-edit {
+    min-width: 100px;
+  }
+
+  .inline-edit-text {
+    padding: 8px 10px;
+    font-size: 16px; // Prevent zoom on iOS
+  }
+
+  .inline-edit-input {
+    padding: 8px 10px;
+    font-size: 16px; // Prevent zoom on iOS
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .inline-edit-text {
+    border-color: var(--border-strong);
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+
+    &:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 2px var(--border-strong);
+    }
+  }
+
+  .inline-edit-input {
+    border-color: var(--border-strong);
+
+    &:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 2px var(--border-strong);
+    }
+  }
+}

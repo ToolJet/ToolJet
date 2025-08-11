@@ -36,7 +36,6 @@ const SaveIndicator = ({ isSaving, saveError }) => {
       data-tooltip-content="Changes saved!"
     >
       <CloudCheck width={16} height={16} color="var(--icon-success)" />
-      <p className="mb-0 text-center tw-text-text-success">Changes saved</p>
     </div>
   );
 };
