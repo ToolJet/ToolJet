@@ -4,8 +4,8 @@ import {
   QueryService,
   ConnectionTestResult,
 } from "@tooljet-marketplace/common";
-import { SourceOptions, QueryOptions, Dialect } from "./types";
-import { Spanner as GoogleSpanner, Instance } from "@google-cloud/spanner";
+import { SourceOptions, QueryOptions, Dialect, QueryMode } from "./types";
+import { Database, Spanner as GoogleSpanner, Instance } from "@google-cloud/spanner";
 
 export default class Spanner implements QueryService {
   private parsePrivateKey(key?: string): {
@@ -97,7 +97,7 @@ export default class Spanner implements QueryService {
   }
 
   private validateQueryOptions(queryOptions: QueryOptions) {
-    const { sql, dialect, database_id } = queryOptions;
+    const { sql, dialect, database_id, query_mode } = queryOptions;
 
     if (!database_id || typeof database_id !== "string") {
       throw new QueryError(
@@ -123,7 +123,63 @@ export default class Spanner implements QueryService {
       );
     }
 
+    if (query_mode && !Object.values(QueryMode).includes(query_mode)) {
+      throw new QueryError(
+        "Query could not be completed",
+        "Invalid query mode. Must be 'read', 'write', or 'schema'",
+        { query_mode, allowedValues: Object.values(QueryMode) }
+      );
+    }
+
     return queryOptions;
+  }
+
+  private async executeQuery(
+    database: Database,
+    runOptions: any,
+    queryMode: QueryMode = QueryMode.Read
+  ): Promise<any> {
+    switch (queryMode) {
+      case QueryMode.Read:
+        // Read-only queries - no transaction needed
+        const [rows] = await database.run(runOptions);
+
+        return {
+          type: 'READ',
+          rows: rows.map(row => row.toJSON()),
+          rowCount: rows.length
+        };
+
+      case QueryMode.Write:
+        // DML queries - require transaction for consistency
+        return await database.runTransactionAsync(async (transaction) => {
+          const [rowCount] = await transaction.runUpdate(runOptions);
+          await transaction.commit();
+
+          return {
+            type: 'WRITE',
+            rowCount,
+            affectedRows: rowCount
+          };
+        });
+
+      case QueryMode.Schema:
+        // DDL queries
+        await database.updateSchema([runOptions.sql])
+
+        return {
+          type: 'SCHEMA',
+          success: true,
+          message: 'Schema operation completed successfully'
+        };
+
+      default:
+        throw new QueryError(
+          "Query could not be completed",
+          `Unsupported query mode: ${queryMode}`,
+          { queryMode }
+        );
+    }
   }
 
   async run(
@@ -139,8 +195,15 @@ export default class Spanner implements QueryService {
         sourceOptions?.private_key
       );
 
-      const { sql, query_params, database_id, param_types, dialect, options } =
-        queryOptions;
+      const { 
+        sql, 
+        query_params, 
+        database_id, 
+        param_types, 
+        dialect, 
+        options,
+        query_mode = QueryMode.Read // Default to read mode
+      } = queryOptions;
 
       const { instance } = this.getSpannerClient({
         projectId: project_id,
@@ -220,9 +283,10 @@ export default class Spanner implements QueryService {
         }
       }
 
-      const [rows] = await database.run(runOptions);
+      // Execute query based on the selected mode
+      const result = await this.executeQuery(database, runOptions, query_mode);
 
-      return { status: "ok", data: rows };
+      return { status: "ok", data: result };
     } catch (err) {
       // If it's already a QueryError, re-throw it
       if (err instanceof QueryError) {

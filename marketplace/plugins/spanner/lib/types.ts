@@ -10,9 +10,16 @@ export type QueryOptions = {
   dialect?: Dialect;
   database_id?: string;
   options?: string;
+  query_mode?: QueryMode;
 };
 
 export enum Dialect {
   Standard = "standard",
   Postgres = "postgresql",
+}
+
+export enum QueryMode {
+  Read = "read",
+  Write = "write", 
+  Schema = "schema",
 }

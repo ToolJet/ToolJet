@@ -4,7 +4,8 @@
   "description": "A schema defining Google Cloud Spanner datasource",
   "type": "database",
   "defaults": {
-    "dialect": "standard"
+    "dialect": "standard",
+    "query_mode": "read"
   },
   "properties": {
     "dialect": {
@@ -20,6 +21,26 @@
         {
           "name": "PostgreSQL",
           "value": "postgresql"
+        }
+      ]
+    },
+    "query_mode": {
+      "key": "query_mode",
+      "label": "Query mode",
+      "type": "dropdown",
+      "description": "Choose how the query should be executed",
+      "list": [
+        {
+          "name": "Read-only (SELECT)",
+          "value": "read"
+        },
+        {
+          "name": "Write (INSERT, UPDATE, DELETE)",
+          "value": "write"
+        },
+        {
+          "name": "Schema changes (CREATE, ALTER, DROP)",
+          "value": "schema"
         }
       ]
     },
