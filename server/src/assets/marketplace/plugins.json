@@ -247,7 +247,7 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
-    "name": "microsoft_graph",
+    "name": "Microsoft Graph",
     "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
     "version": "1.0.0",
     "id": "microsoft_graph",
