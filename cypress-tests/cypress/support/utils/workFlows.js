@@ -96,14 +96,12 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
 });
 
 Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
-  const dataCy = `${nodeTitle.toLowerCase().replace(/\s+/g, "")}-node`;
-
-  cy.get(`[data-cy="${dataCy}"]`)
+  cy.get(workflowSelector.nodeName(nodeTitle))
     .should("exist")
     .parents(".react-flow__node")
     .as("sourceNode");
 
-  cy.get(`[data-cy="${dataCy}-handle-right"]`).trigger("mousedown", {
+  cy.get(workflowSelector.nodeHandleRight(nodeTitle)).trigger("mousedown", {
     button: 0,
     force: true,
   });
