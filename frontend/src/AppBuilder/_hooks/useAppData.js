@@ -140,6 +140,7 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const appBuilderMode = useStore((state) => state.appStore.modules[moduleId].app?.appBuilderMode);
 
   const location = useRouter().location;
 
@@ -535,7 +536,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, appBuilderMode]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
