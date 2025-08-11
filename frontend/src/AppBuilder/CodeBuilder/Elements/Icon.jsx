@@ -14,6 +14,7 @@ export const Icon = ({
   styleDefinition,
   component,
   isVisibilityEnabled = true,
+  iconVisibility,
 }) => {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
@@ -125,6 +126,7 @@ export const Icon = ({
                       onVisibilityChange={onVisibilityChange}
                       component={component}
                       styleDefinition={styleDefinition}
+                      iconVisibility={iconVisibility}
                     />
                   )}
                 </div>
