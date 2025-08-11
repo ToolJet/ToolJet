@@ -79,9 +79,15 @@ export const TableData = ({
 
   // Handles row click for row selection
   const handleRowClick = (row) => {
-    if (!allowSelection) return;
     lastClickedRowRef.current = { row: row?.original, index: row.index };
-
+    if (!allowSelection) {
+      setExposedVariables({
+        selectedRow: row?.original ?? {},
+        selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
+      });
+      fireEvent('onRowClicked');
+      return;
+    }
     // Update row selection
     row.toggleSelected();
   };
@@ -121,7 +127,7 @@ export const TableData = ({
       ref={tableBodyRef}
     >
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: containerBackgroundColor }}>
+        <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
           {renderTableHeader()}
         </thead>
         <tbody

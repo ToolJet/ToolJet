@@ -59,6 +59,7 @@ const ApiEndpointInput = (props) => {
   const [loadingSpec, setLoadingSpec] = useState(true);
   const [options, setOptions] = useState(props.options);
   const [specJson, setSpecJson] = useState(null);
+  const [operationParams, setOperationParams] = useState({});
 
   // Check if specUrl is an object (multiple specs) or string (single spec)
   const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
@@ -81,21 +82,25 @@ const ApiEndpointInput = (props) => {
           setSpecJson(data);
 
           if (isMultiSpec) {
-            // Clear all parameters when switching specs
-            const queryParams = {
+            // MODIFIED: Retain existing values instead of clearing them
+            const currentParams = options?.params || {
               path: {},
               query: {},
               request: {},
             };
 
-            let newOperation = null;
-            let newPath = null;
+            // Keep existing values if the operation/path still exists in the new spec
+            let newOperation = options?.operation;
+            let newPath = options?.path;
             let newSelectedOperation = null;
 
-            if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
-              newOperation = options.operation;
-              newPath = options.path;
-              newSelectedOperation = data.paths[options.path][options.operation];
+            // Validate if the current operation/path exists in the new spec
+            if (newPath && newOperation && data?.paths?.[newPath]?.[newOperation]) {
+              newSelectedOperation = data.paths[newPath][newOperation];
+            } else {
+              // Only clear if the operation/path doesn't exist in the new spec
+              newOperation = null;
+              newPath = null;
             }
 
             const newOptions = {
@@ -103,8 +108,8 @@ const ApiEndpointInput = (props) => {
               operation: newOperation,
               path: newPath,
               selectedOperation: newSelectedOperation,
-              params: queryParams,
-              specType: specUrlOrType, // Add specType to options
+              params: currentParams, // Retain existing params
+              specType: specUrlOrType,
             };
 
             setOptions(newOptions);
@@ -116,12 +121,24 @@ const ApiEndpointInput = (props) => {
       });
   };
 
+  const getOperationKey = (operation, path) => {
+    return `${operation}_${path}`;
+  };
+
   const changeOperation = (value) => {
     const operation = value.split('/', 2)[0];
     const path = value.substring(value.indexOf('/'));
 
-    // Clear all params when changing operation
-    const queryParams = {
+    if (options.operation && options.path) {
+      const currentOperationKey = getOperationKey(options.operation, options.path);
+      setOperationParams((prevState) => ({
+        ...prevState,
+        [currentOperationKey]: options.params,
+      }));
+    }
+
+    const newOperationKey = getOperationKey(operation, path);
+    const savedParams = operationParams[newOperationKey] || {
       path: {},
       query: {},
       request: {},
@@ -132,7 +149,7 @@ const ApiEndpointInput = (props) => {
       path,
       operation,
       selectedOperation: specJson.paths[path][operation],
-      params: queryParams,
+      params: savedParams,
       ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
 
@@ -173,7 +190,13 @@ const ApiEndpointInput = (props) => {
 
   const removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(options));
-    delete newOptions['params'][paramType][paramName];
+    const newParams = { ...newOptions.params };
+    const newParamType = { ...newParams[paramType] };
+
+    delete newParamType[paramName];
+
+    newParams[paramType] = newParamType;
+    newOptions.params = newParams;
     if (isMultiSpec) {
       newOptions.specType = selectedSpecType; // Include specType if multiSpec
     }

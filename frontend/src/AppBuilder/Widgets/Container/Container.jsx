@@ -44,6 +44,7 @@ export const Container = ({
     isContainer: true,
     componentCount,
     value: JSON.stringify({ headerHeight, showHeader }),
+    visibility: isVisible,
   });
 
   const isWidgetInContainerDragging = useStore(
