@@ -115,7 +115,7 @@ const CommonOAuthFields = ({
         <>
           {isFieldAllowed('client_id', grant_type, oauth_configs) && (
             <div className="col-md-12">
-              <label className="form-label" data-cy="label-client-id">
+              <label className="form-label mt-3" data-cy="label-client-id">
                 Client ID
               </label>
               <Input
@@ -360,7 +360,7 @@ const OAuthConfiguration = ({
 
   return (
     <div>
-      <div className="row">
+      <div className="row mt-3">
         {allowed_grant_types && allowed_grant_types.length > 1 && (
           <div>
             <label className="form-label">Grant type</label>
