@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import * as Icons from '@tabler/icons-react';
 
 import { cn } from '@/lib/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 
 export const Statistics = function Statistics({
@@ -12,6 +14,7 @@ export const Statistics = function Statistics({
   darkMode,
   dataCy,
   setExposedVariable,
+  setExposedVariables,
 }) {
   const {
     primaryValueLabel,
@@ -66,66 +69,93 @@ export const Statistics = function Statistics({
   };
 
   useEffect(() => {
-    setExposedVariable('primaryLabel', primaryValueLabel);
-  }, [primaryValueLabel]);
+    const exposedVariables = {
+      primaryLabel: primaryValueLabel,
+      secondaryLabel: secondaryValueLabel,
+      primaryValue,
+      secondaryValue,
+      secondarySignDisplay,
+      isLoading: loadingState,
+      isVisible: visibility,
+      isDisabled: disabledState,
+      setPrimaryValue: async function (newValue) {
+        setExposedVariable('primaryValue', newValue);
+        updateExposedVariablesState('primaryValue', newValue);
+      },
+      setSecondaryValue: async function (newValue) {
+        setExposedVariable('secondaryValue', newValue);
+        updateExposedVariablesState('secondaryValue', newValue);
+      },
+      setDisable: async function (disable) {
+        setExposedVariable('isDisabled', !!disable);
+      },
+      setLoading: async function (loading) {
+        setExposedVariable('isLoading', !!loading);
+        updateExposedVariablesState('isLoading', !!loading);
+      },
+      setVisibility: async function (visibility) {
+        setExposedVariable('isVisible', !!visibility);
+        updateExposedVariablesState('isVisible', !!visibility);
+      },
+    };
 
-  useEffect(() => {
-    setExposedVariable('secondaryLabel', secondaryValueLabel);
-  }, [secondaryValueLabel]);
-
-  useEffect(() => {
-    setExposedVariable('primaryValue', primaryValue);
-    updateExposedVariablesState('primaryValue', primaryValue);
-  }, [primaryValue]);
-
-  useEffect(() => {
-    setExposedVariable('secondaryValue', secondaryValue);
-    updateExposedVariablesState('secondaryValue', secondaryValue);
-  }, [secondaryValue]);
-
-  useEffect(() => {
-    setExposedVariable('secondarySignDisplay', secondarySignDisplay);
-  }, [secondarySignDisplay]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', loadingState);
-    updateExposedVariablesState('isLoading', loadingState);
-  }, [loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', visibility);
-    updateExposedVariablesState('isVisible', visibility);
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', disabledState);
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('setPrimaryValue', async function (newValue) {
-      setExposedVariable('primaryValue', newValue);
-      updateExposedVariablesState('primaryValue', newValue);
-    });
-
-    setExposedVariable('setSecondaryValue', async function (newValue) {
-      setExposedVariable('secondaryValue', newValue);
-      updateExposedVariablesState('secondaryValue', newValue);
-    });
-
-    setExposedVariable('setDisable', async function (disable) {
-      setExposedVariable('isDisabled', !!disable);
-    });
-
-    setExposedVariable('setLoading', async function (loading) {
-      setExposedVariable('isLoading', !!loading);
-      updateExposedVariablesState('isLoading', !!loading);
-    });
-
-    setExposedVariable('setVisibility', async function (visibility) {
-      setExposedVariable('isVisible', !!visibility);
-      updateExposedVariablesState('isVisible', !!visibility);
-    });
+    setExposedVariables(exposedVariables);
   }, []);
+
+  useBatchedUpdateEffectArray([
+    {
+      dep: primaryValueLabel,
+      sideEffect: () => {
+        setExposedVariable('primaryLabel', primaryValueLabel);
+      },
+    },
+    {
+      dep: secondaryValueLabel,
+      sideEffect: () => {
+        setExposedVariable('secondaryLabel', secondaryValueLabel);
+      },
+    },
+    {
+      dep: primaryValue,
+      sideEffect: () => {
+        setExposedVariable('primaryValue', primaryValue);
+        updateExposedVariablesState('primaryValue', primaryValue);
+      },
+    },
+    {
+      dep: secondaryValue,
+      sideEffect: () => {
+        setExposedVariable('secondaryValue', secondaryValue);
+        updateExposedVariablesState('secondaryValue', secondaryValue);
+      },
+    },
+    {
+      dep: secondarySignDisplay,
+      sideEffect: () => {
+        setExposedVariable('secondarySignDisplay', secondarySignDisplay);
+      },
+    },
+    {
+      dep: loadingState,
+      sideEffect: () => {
+        setExposedVariable('isLoading', loadingState);
+        updateExposedVariablesState('isLoading', loadingState);
+      },
+    },
+    {
+      dep: visibility,
+      sideEffect: () => {
+        setExposedVariable('isVisible', visibility);
+        updateExposedVariablesState('isVisible', visibility);
+      },
+    },
+    {
+      dep: disabledState,
+      sideEffect: () => {
+        setExposedVariable('isDisabled', disabledState);
+      },
+    },
+  ]);
 
   const baseStyle = {
     borderRadius: `${borderRadius ?? 4}px`,
@@ -137,9 +167,9 @@ export const Statistics = function Statistics({
     gap: '1.5rem 2rem',
     wordBreak: 'break-all',
     overflow: 'hidden',
-    height,
+    height: padding === 'default' ? height : height + BOX_PADDING * 2,
     boxShadow,
-    padding: padding === 'default' ? '1.5rem' : 0,
+    padding: '1.5rem',
     ...((dataAlignment === 'center' || exposedVariablesTemporaryState.isLoading === true) && {
       flexDirection: 'column',
       alignItems: 'center',
