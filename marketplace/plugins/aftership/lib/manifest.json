@@ -13,7 +13,7 @@
       "rawData": {}
     },
     "options": {
-      "as-api-key": {
+      "apiKey": {
         "type": "string",
         "encrypted": true
       }
@@ -21,15 +21,15 @@
   },
   "defaults": {},
   "properties": {
-    "as-api-key": {
+    "apiKey": {
       "label": "API key",
-      "key": "as-api-key",
+      "key": "apiKey",
       "type": "password",
       "description": "Enter your Aftership API key",
       "hint": "You can find your API key in your Aftership account settings."
   }
 },
   "required": [
-    "as-api-key"
+    "apiKey"
   ]
 }

@@ -1,16 +1,10 @@
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  ConnectionTestResult,
-} from '@tooljet-marketplace/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 
 export default class Aftership implements QueryService {
-  async run(sourceOptions: SourceOptions,queryOptions: QueryOptions,dataSourceId: string): Promise<QueryResult> {
-
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const specType = queryOptions?.specType?.toLowerCase();
-    const apiKey = sourceOptions?.['as-api-key'];
+    const apiKey = sourceOptions?.['apiKey'];
     const method = queryOptions.operation?.toUpperCase();
     const path = queryOptions.path;
     const { query = {}, path: pathParams = {}, request: body = {} } = queryOptions.params || {};
@@ -29,7 +23,6 @@ export default class Aftership implements QueryService {
       };
       throw new QueryError('Invalid configuration', errorMessage, errorDetails);
     }
-
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -50,11 +43,11 @@ export default class Aftership implements QueryService {
       default: {
         const errorMessage = `Unsupported specType: ${specType}`;
         const errorDetails = {
-        message: errorMessage,
-        name: 'InvalidSpecTypeError',
-        code: 'INVALID_SPEC_TYPE',
-        raw: specType,
-        allowed: ['shipping', 'tracking', 'returns'],
+          message: errorMessage,
+          name: 'InvalidSpecTypeError',
+          code: 'INVALID_SPEC_TYPE',
+          raw: specType,
+          allowed: ['shipping', 'tracking', 'returns'],
         };
         throw new QueryError('Invalid Spec Type', errorMessage, errorDetails);
       }
@@ -77,28 +70,28 @@ export default class Aftership implements QueryService {
         body: ['POST', 'PUT', 'PATCH'].includes(method) ? JSON.stringify(body) : undefined,
       });
       const result = await response.json();
-      if(result?.meta?.code !== 200) {
-          const errorMessage = result?.meta?.message || 'Unexpected response during api call';
-          const errorDetails: any = {
+      if (result?.meta?.code !== 200) {
+        const errorMessage = result?.meta?.message || 'Unexpected response during api call';
+        const errorDetails: any = {
           message: result?.meta.message,
           code: result?.meta?.code,
           details: result?.meta?.details,
-          type:result?.meta?.type
+          type: result?.meta?.type,
         };
-       throw new QueryError('Failed to run Query', errorMessage, errorDetails);
+        throw new QueryError('Failed to run Query', errorMessage, errorDetails);
       }
       return {
         status: 'ok',
         data: result,
       };
     } catch (err: any) {
-        const errorMessage = err?.message || 'Unknown error';
-        const errorDetails: any = {
+      const errorMessage = err?.message || 'Unknown error';
+      const errorDetails: any = {
         message: err?.data?.message,
         name: err?.name,
         code: err?.data?.code,
-        details:err?.data?.details,
-        type:err?.data?.type
+        details: err?.data?.details,
+        type: err?.data?.type,
       };
       if (err?.response) {
         errorDetails.status = err?.response?.status;
@@ -109,7 +102,7 @@ export default class Aftership implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const apiKey = sourceOptions?.['as-api-key'];
+    const apiKey = sourceOptions?.['apiKey'];
     if (!apiKey) {
       return {
         status: 'failed',
@@ -126,14 +119,14 @@ export default class Aftership implements QueryService {
         },
       });
       const result = await response.json();
-      if(result?.meta?.code !== 200) {
-          const errorMessage = result?.meta?.message || 'Unexpected response during connection test';
-          const errorDetails: any = {
+      if (result?.meta?.code !== 200) {
+        const errorMessage = result?.meta?.message || 'Unexpected response during connection test';
+        const errorDetails: any = {
           message: result?.meta.message,
           code: result?.meta?.code,
           details: result?.meta?.details,
         };
-       throw new QueryError('Failed to verify connection', errorMessage, errorDetails);
+        throw new QueryError('Failed to verify connection', errorMessage, errorDetails);
       }
 
       return {

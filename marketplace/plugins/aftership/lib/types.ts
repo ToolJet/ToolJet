@@ -1,7 +1,5 @@
-
-
 export type SourceOptions = {
-  'as-api-key'?: string; 
+  apiKey?: string;
 };
 export type QueryOptions = {
   operation: string;
