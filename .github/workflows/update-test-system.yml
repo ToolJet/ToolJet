@@ -1,4 +1,4 @@
-name: Manual Build and Deploy
+name: Update test system (LTS and pre-release)
 
 on:
   workflow_dispatch:
