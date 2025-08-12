@@ -5,8 +5,12 @@
   position: relative;
   display: inline-block;
   width: 100%;
-  min-width: 120px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: border-color, border-width, width, opacity;
+  transform: translateZ(0);
 
   &--editing {
     .inline-edit-text {
@@ -18,7 +22,7 @@
 
     .inline-edit-input-wrapper {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateX(0);
       pointer-events: auto;
       animation: expandWidth 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
@@ -34,7 +38,7 @@
 
     .inline-edit-input-wrapper {
       opacity: 0;
-      transform: translateY(-4px) scale(0.98);
+      transform: translateX(-2px);
       pointer-events: none;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -75,7 +79,7 @@
   border: 1px solid transparent;
   border-radius: 3px;
   background-color: transparent;
-  color: var(--text-default);
+  color: var(--text-primary);
   font-size: 14px;
   line-height: 1.42857;
   cursor: pointer;
@@ -88,17 +92,17 @@
   transform: scale(1);
   position: relative;
   z-index: 1;
-  background-color: var(--background-surface-layer-01);
+  background-color: var(--surfaces-surface-01);
 
   &:hover {
-    background-color: var(--interactive-hover);
-    border-color: var(--border-default);
+    background-color: var(--interactive-overlays-fill-hover);
+    border-color: var(--interactive-overlays-border-hover);
   }
 
   &:focus {
     outline: none;
-    background-color: var(--background-surface-layer-01);
-    border-color: var(--interactive-focus-outline);
+    background-color: var(--surfaces-surface-01);
+    border-color: var(--interactive-overlays-focus-outline);
   }
 
   &--empty {
@@ -130,8 +134,8 @@
 
 .inline-edit-input-wrapper {
   position: absolute;
-  top: 5px;
-  left: 0;
+  top: 0px;
+  left: 0px;
   width: 100%;
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
@@ -142,10 +146,10 @@
 .inline-edit-input {
   width: 100%;
   padding: 6px 8px;
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--borders-strong);
   border-radius: 3px;
-  background-color: var(--background-surface-layer-01);
-  color: var(--text-default);
+  background-color: var(--surfaces-surface-01);
+  color: var(--text-primary);
   font-size: 14px;
   line-height: 1.42857;
   outline: none;
@@ -155,7 +159,7 @@
   transform-origin: left center;
 
   &:focus {
-    border-color: var(--interactive-focus-outline);
+    border-color: var(--interactive-overlays-focus-outline);
   }
 
   &::placeholder {
@@ -164,12 +168,10 @@
   }
 
   &--error {
-    border-color: var(--text-danger);
-    box-shadow: 0 0 0 2px var(--text-danger);
+    border-color: var(--status-error-strong);
 
     &:focus {
-      border-color: var(--text-danger);
-      box-shadow: 0 0 0 2px var(--text-danger);
+      border-color: var(--status-error-strong);
     }
   }
 
@@ -179,16 +181,16 @@
   }
 
   &:disabled {
-    background-color: var(--interactive-disabled);
-    color: var(--text-disabled);
+    background-color: var(--surfaces-surface-03);
+    color: var(--text-disbled);
     cursor: not-allowed;
-    border-color: var(--border-default);
+    border-color: var(--borders-weak-disabled);
     box-shadow: none;
   }
 }
 
 .inline-edit-error {
-  color: var(--text-danger);
+  color: var(--status-error-strong);
   font-size: 12px;
   margin-top: 4px;
   margin-bottom: 8px;

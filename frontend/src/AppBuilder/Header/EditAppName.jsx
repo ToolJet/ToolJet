@@ -93,7 +93,7 @@ function EditAppName() {
   const messageType = 'App';
 
   return (
-    <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
+    <div className="tw-h-full tw-flex tw-items-center">
       <ToolTip message={name} placement="bottom" isVisible={appCreationMode !== 'GIT'}>
         <InlineEdit
           value={name}
@@ -102,7 +102,7 @@ function EditAppName() {
           placeholder="Enter app name..."
           maxLength={50}
           validation={validateAppName}
-          className={`form-control-plaintext form-control-plaintext-sm ${isError ? 'error' : ''}`}
+          className={`${isError ? 'error' : ''}`}
           textClassName="tw-w-auto tw-h-8 !tw-inline-block tw-font-medium"
           inputClassName="tw-h-8"
           data-cy="app-name-input"

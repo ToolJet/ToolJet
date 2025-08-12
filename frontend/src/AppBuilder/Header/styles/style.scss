@@ -5,9 +5,10 @@
     border-color: transparent !important;
   }
 
-  .form-control-plaintext:hover {
+  input:hover {
     outline: none;
-    background: var(--surfaces-surface-01);
+    background: var(--surfaces-surface-02);
+    border-color: var(--border-default);
   }
 
   .form-control-plaintext:focus {
@@ -18,14 +19,10 @@
 }
 
 .app-name:hover {
-  background: $bg-light;
+  background: var(--surfaces-surface-01);
 
   input:disabled {
     outline-style: none;
-  }
-
-  &.dark {
-    @extend .bg-dark;
   }
 }
 
