@@ -53,7 +53,7 @@ function Hero() {
           prompt,
         });
         const workspaceId = getWorkspaceId();
-        navigate(`/${workspaceId}/apps/${data.id}`);
+        navigate(`/${workspaceId}/apps/${data.id}`, { state: { prompt } });
         toast.success('App created successfully!');
         return true;
       } catch (error) {
