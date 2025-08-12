@@ -51,6 +51,7 @@ jobs:
             "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
           )
           
           current_user="${{ github.actor }}"
@@ -65,7 +66,6 @@ jobs:
           
           if [[ "$authorized" == "false" ]]; then
             echo "❌ User '$current_user' is not authorized to trigger this workflow."
-            echo "Authorized users: QA Team (Midhun, Ajith, Yukti Goyal, Mekhla Abhishek Asopa, Mani), DevOps Team (Adish, Souvik), Dev Team (Midhun G S, Akshay, Johnson, Kavin)"
             exit 1
           else
             echo "✅ User '$current_user' is authorized."
