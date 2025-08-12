@@ -535,6 +535,7 @@ const DynamicEditorBridge = (props) => {
     component,
     onVisibilityChange,
     isEventManagerParam = false,
+    iconVisibility,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -645,6 +646,7 @@ const DynamicEditorBridge = (props) => {
         styleDefinition={styleDefinition}
         component={component}
         onVisibilityChange={onVisibilityChange}
+        iconVisibility={iconVisibility}
       />
     );
   };

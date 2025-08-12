@@ -1244,9 +1244,26 @@ export const createQueryPanelSlice = (set, get) => ({
           if (!(prop in target)) {
             // For components and variables, allow accessing non-existent top-level properties
             // but still throw errors for deeper property access
-            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables' || path === 'page';
+            const isTopLevelComponentsOrVariables =
+              path === 'components' ||
+              path === 'variables' ||
+              path === 'page' ||
+              path === 'globals' ||
+              path === 'constants' ||
+              path === 'queries' ||
+              path === 'parameters';
 
-            if (isTopLevelComponentsOrVariables) {
+            // Also allow accessing nested properties under these top-level objects
+            const isNestedUnderAllowedPath =
+              path.startsWith('components.') ||
+              path.startsWith('variables.') ||
+              path.startsWith('page.') ||
+              path.startsWith('globals.') ||
+              path.startsWith('constants.') ||
+              path.startsWith('queries.') ||
+              path.startsWith('parameters.');
+
+            if (isTopLevelComponentsOrVariables || isNestedUnderAllowedPath) {
               // Return undefined for non-existent components/variables to allow graceful handling
               return undefined;
             }
