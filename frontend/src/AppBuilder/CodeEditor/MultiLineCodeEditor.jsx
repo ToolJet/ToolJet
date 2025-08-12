@@ -15,7 +15,6 @@ import { getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
-import WorkflowEditorContext from '@/WorkflowEditor/context';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
@@ -26,6 +25,7 @@ import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
+import WorkflowEditorContext from '../../../ee/modules/Workflows/pages/WorkflowEditorPage/context';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
