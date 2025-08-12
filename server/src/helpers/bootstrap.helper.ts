@@ -207,8 +207,39 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     // Custom headers middleware
     app.use((req, res, next) => {
-      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+      // Permissions Policy - configurable via environment variables (.env file or process.env)
+      const permissionsPolicy = process.env.PERMISSIONS_POLICY || 'microphone=(self), camera=(self), autoplay=(self)';
+      res.setHeader('Permissions-Policy', permissionsPolicy);
+      
       res.setHeader('X-Powered-By', 'ToolJet');
+
+      // Additional security headers - configurable via environment variables (.env file or process.env)
+      const referrerPolicy = process.env.REFERRER_POLICY || 'strict-origin-when-cross-origin';
+      const contentTypeOptions = process.env.X_CONTENT_TYPE_OPTIONS || 'nosniff';
+      const xFrameOptions = process.env.X_FRAME_OPTIONS || 'DENY';
+      const xssProtection = process.env.X_XSS_PROTECTION || '1; mode=block';
+      const coopPolicy = process.env.CROSS_ORIGIN_OPENER_POLICY || 'same-origin';
+      const cspPolicy = process.env.CONTENT_SECURITY_POLICY || 'default-src \'self\'; media-src \'self\' https://storage.googleapis.com; img-src \'self\' data: https:; font-src \'self\' https:; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' https:; style-src \'self\' \'unsafe-inline\' https:;';
+      
+      res.setHeader('Referrer-Policy', referrerPolicy);
+      res.setHeader('X-Content-Type-Options', contentTypeOptions);
+      res.setHeader('X-Frame-Options', xFrameOptions);
+      res.setHeader('X-XSS-Protection', xssProtection);
+      res.setHeader('Cross-Origin-Opener-Policy', coopPolicy);
+      res.setHeader('Content-Security-Policy', cspPolicy);
+
+      // Custom headers - users can add any additional headers via CUSTOM_HEADERS env var
+      // Format: "Header-Name: value, Another-Header: value"
+      const customHeaders = process.env.CUSTOM_HEADERS;
+      if (customHeaders) {
+        const headerPairs = customHeaders.split(',').map(pair => pair.trim());
+        headerPairs.forEach(pair => {
+          const [name, value] = pair.split(':').map(part => part.trim());
+          if (name && value) {
+            res.setHeader(name, value);
+          }
+        });
+      }
 
       if (req.path.startsWith(`${subPath || '/'}api/`)) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -219,6 +250,9 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
       return next();
     });
 
+    // Log the configured security policies
+    const permissionsPolicy = process.env.PERMISSIONS_POLICY || 'microphone=(self), camera=(self), autoplay=(self)';
+    logger.log(`Permissions Policy: ${permissionsPolicy}`);
     logger.log('✅ Security headers configured successfully');
   } catch (error) {
     logger.error('❌ Failed to configure security headers:', error);
