@@ -115,11 +115,11 @@ export default class Gmail implements QueryService {
     try {
       const response = await got(accessTokenUrl, {
         method: "post",
-        json: data,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        form: data, // Use form instead of json
+        responseType: 'json' // Automatically parse JSON response
       });
 
-      const result = JSON.parse(response.body);
+      const result = response.body; // No manual JSON.parse needed
 
       if (response.statusCode !== 200) {
         throw Error("Could not connect to Gmail");
@@ -142,7 +142,6 @@ export default class Gmail implements QueryService {
   private getAuthHeader(token: string) {
     return {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
     };
   }
 
@@ -176,11 +175,11 @@ export default class Gmail implements QueryService {
     try {
       const response = await got(accessTokenUrl, {
         method: "post",
-        json: data,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        form: data, // Use form instead of json
+        responseType: 'json' // Automatically parse JSON response
       });
 
-      const result = JSON.parse(response.body);
+      const result = response.body; // No manual JSON.parse needed
 
       if (!(response.statusCode >= 200 && response.statusCode < 300)) {
         throw new QueryError(
@@ -291,25 +290,25 @@ export default class Gmail implements QueryService {
 
         requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
       } else {
+        const hasBody = !["get", "delete"].includes(operation.toLowerCase());
+        
         requestOptions = {
           method: operation,
           headers: this.getAuthHeader(accessToken),
           searchParams: queryParams,
-          json:
-            operation === "get" || operation === "delete"
-              ? undefined
-              : bodyParams,
+          responseType: 'json'
         };
+
+        // Only add JSON body for non-GET/DELETE requests
+        if (hasBody && bodyParams && Object.keys(bodyParams).length > 0) {
+          requestOptions.json = bodyParams;
+        }
       }
 
       const response = await got(url, requestOptions);
 
       if (response && response.body) {
-        try {
-          result = JSON.parse(response.body);
-        } catch (parseError) {
-          result = response.body;
-        }
+        result = response.body;
       } else {
         result = "Query Success";
       }
