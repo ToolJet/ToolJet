@@ -48,11 +48,33 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/index"
-          },
           "items": [
+            {
+              "type": "category",
+              "label": "PostgreSQL 13 → 16 Upgrade",
+              "items": [
+                  {
+                    "type": "category",
+                    "label": "AWS",
+                    "items": [
+                      "setup/postgresql-13-16/aws/overview",
+                      "setup/postgresql-13-16/aws/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/aws/deployment/docker",
+                              "setup/postgresql-13-16/aws/deployment/ami",
+                              "setup/postgresql-13-16/aws/deployment/ecs",
+                              "setup/postgresql-13-16/aws/deployment/eks"
+                          ]
+                      },
+                      "setup/postgresql-13-16/aws/verification",
+                      "setup/postgresql-13-16/aws/best-practices"
+                    ]
+                  }
+              ]
+            },
             "setup/try-tooljet",
             "setup/choose-your-tooljet",
             "setup/system-requirements",
