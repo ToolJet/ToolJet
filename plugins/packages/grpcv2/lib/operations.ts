@@ -1,4 +1,5 @@
 import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
+import { sanitizeHeaders } from '@tooljet-plugins/common';
 import got from 'got';
 import { GrpcReflection, serviceHelper } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
@@ -371,8 +372,32 @@ export const parseRequestData = (queryOptions: QueryOptions): void => {
   }
 };
 
-export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryMetadata?: Record<string, string>): grpc.Metadata => {
+const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions, hasDataSource = true): { [k: string]: string } => {
+  const ensureArrayFormat = (metadata: any) => {
+    if (!metadata) return [];
+    if (Array.isArray(metadata)) return metadata;
+
+    return [];
+  };
+
+  // Create temporary objects with metadata mapped to headers property for sanitizeHeaders
+  const sourceOptionsWithHeaders = {
+    ...sourceOptions,
+    headers: ensureArrayFormat(sourceOptions.metadata)
+  };
+  const queryOptionsWithHeaders = {
+    ...queryOptions,
+    headers: ensureArrayFormat(queryOptions.metadata)
+  };
+
+  return sanitizeHeaders(sourceOptionsWithHeaders, queryOptionsWithHeaders, hasDataSource);
+};
+
+export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions): grpc.Metadata => {
   const metadata = new grpc.Metadata();
+
+  // Sanitize metadata from arrays to objects
+  const sanitizedMetadata = sanitizeMetadata(sourceOptions, queryOptions, true);
 
   switch (sourceOptions.auth_type) {
     case 'basic':
@@ -389,32 +414,23 @@ export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryMetadata?: 
       break;
 
     case 'oauth2':
-      if (queryMetadata?.access_token) {
+      if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
-          metadata.add('authorization', `${prefix}${queryMetadata.access_token}`);
+          metadata.add('authorization', `${prefix}${sanitizedMetadata.access_token}`);
         } else {
-          metadata.add('token', queryMetadata.access_token);
+          metadata.add('token', sanitizedMetadata.access_token);
         }
       }
       break;
   }
 
-  if (sourceOptions.metadata) {
-    sourceOptions.metadata.forEach(([key, value]) => {
-      if (key && value) {
-        metadata.add(key.toLowerCase(), value);
-      }
-    });
-  }
-
-  if (queryMetadata) {
-    Object.entries(queryMetadata).forEach(([key, value]) => {
-      if (key && value && key !== 'access_token') {
-        metadata.add(key.toLowerCase(), value);
-      }
-    });
-  }
+  // Add all sanitized metadata entries
+  Object.entries(sanitizedMetadata).forEach(([key, value]) => {
+    if (key && value && key !== 'access_token') {
+      metadata.add(key.toLowerCase(), String(value));
+    }
+  });
 
   return metadata;
 };
