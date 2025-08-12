@@ -72,6 +72,24 @@
                       "setup/postgresql-13-16/aws/verification",
                       "setup/postgresql-13-16/aws/best-practices"
                     ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "Azure",
+                    "items": [
+                      "setup/postgresql-13-16/azure/overview",
+                      "setup/postgresql-13-16/azure/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/azure/deployment/aks",
+                              "setup/postgresql-13-16/azure/deployment/container"
+                          ]
+                      },
+                      "setup/postgresql-13-16/azure/verification",
+                      "setup/postgresql-13-16/azure/best-practices"
+                    ]
                   }
               ]
             },
