@@ -155,9 +155,9 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const [selectedMethod, setSelectedMethod] = React.useState(null);
   const [isLoadingServices, setIsLoadingServices] = React.useState(false);
   const currentRequestRef = React.useRef(null);
-  const [metaDataOptions, setMetaDataOptions] = React.useState(() => {
-    if (options?.metaDataOptions) {
-      return JSON.parse(options?.metaDataOptions);
+  const [metadata, setMetadata] = React.useState(() => {
+    if (options?.metadata) {
+      return JSON.parse(options?.metadata);
     }
     return [['', '']];
   });
@@ -170,19 +170,19 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
 
   // Handle query switching - reset state when switching to a different query
   React.useEffect(() => {
-    // Update metaDataOptions when options change
-    if (options?.metaDataOptions) {
+    // Update metadata when options change
+    if (options?.metadata) {
       try {
-        const newMetaDataOptions = JSON.parse(options.metaDataOptions);
-        setMetaDataOptions(newMetaDataOptions);
+        const newMetadata = JSON.parse(options.metadata);
+        setMetadata(newMetadata);
       } catch (error) {
-        console.warn('Invalid metaDataOptions JSON:', error);
-        setMetaDataOptions([['', '']]);
+        console.warn('Invalid metadata JSON:', error);
+        setMetadata([['', '']]);
       }
     } else {
-      setMetaDataOptions([['', '']]);
+      setMetadata([['', '']]);
     }
-  }, [options?.metaDataOptions, queryName]);
+  }, [options?.metadata, queryName]);
 
   const loadServices = React.useCallback(async () => {
     if (!selectedDataSource?.id) return;
@@ -291,25 +291,25 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   };
 
   const addMetadata = () => {
-    const currentMetaDataOptions = [...metaDataOptions];
-    currentMetaDataOptions.push(['', '']);
-    setMetaDataOptions(currentMetaDataOptions);
+    const currentMetadata = [...metadata];
+    currentMetadata.push(['', '']);
+    setMetadata(currentMetadata);
   };
 
   const removeMetadata = (index) => {
-    const currentMetaDataOptions = [...metaDataOptions];
-    currentMetaDataOptions.splice(index, 1);
-    setMetaDataOptions(currentMetaDataOptions);
+    const currentMetadata = [...metadata];
+    currentMetadata.splice(index, 1);
+    setMetadata(currentMetadata);
   };
 
   const updateMetadata = (type, index, value) => {
-    const currentMetaDataOptions = [...metaDataOptions];
-    currentMetaDataOptions[index][type === 'key' ? 0 : 1] = value;
+    const currentMetadata = [...metadata];
+    currentMetadata[index][type === 'key' ? 0 : 1] = value;
 
-    setMetaDataOptions(currentMetaDataOptions);
+    setMetadata(currentMetadata);
     optionsChanged({
       ...options,
-      metaDataOptions: JSON.stringify(currentMetaDataOptions),
+      metadata: JSON.stringify(currentMetadata),
     });
   };
 
@@ -389,7 +389,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       <div className={cx('query-pane-restapi-tabs', { dark: darkMode })}>
         <GRPCv2Component.Tabs
           theme={darkMode ? 'monokai' : 'default'}
-          metaDataoptions={metaDataOptions}
+          metadata={metadata}
           onChange={updateMetadata}
           onRequestDataChange={handleRequestDataChanged}
           removeKeyValuePair={removeMetadata}
@@ -404,7 +404,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
 };
 
 const ControlledTabs = ({
-  metaDataoptions,
+  metadata,
   theme,
   onChange,
   onRequestDataChange,
@@ -437,7 +437,7 @@ const ControlledTabs = ({
           >
             <Tab.Pane eventKey="metadata" bsPrefix="rest-api-tabpanes" transition={false}>
               <GRPCv2Component.TabContent
-                options={metaDataoptions}
+                options={metadata}
                 theme={theme}
                 removeKeyValuePair={removeKeyValuePair}
                 onChange={onChange}

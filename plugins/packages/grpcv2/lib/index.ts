@@ -24,7 +24,7 @@ export default class Grpcv2QueryService implements QueryService {
 
       parseRequestData(queryOptions);
 
-      const metadata = buildGrpcMetadata(sourceOptions, queryOptions.metadata);
+      const metadata = buildGrpcMetadata(sourceOptions, queryOptions);
 
       this.validateRequestData(queryOptions);
       this.validateMethodExists(client, queryOptions);
