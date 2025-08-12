@@ -3,7 +3,7 @@ id: ami
 title: AMI
 ---
 
-## 1. Download Certificate on AMI Instance
+### 1. Download Certificate on AMI Instance
 
 ```bash
 # SSH into your AMI instance
@@ -26,7 +26,7 @@ sudo chmod 644 /path/to/certs/global-bundle.pem
 head -5 global-bundle.pem
 ```
 
-## 2. Update Environment Configuration
+### 2. Update Environment Configuration
 
 ```bash
 # Edit the environment file
@@ -38,7 +38,7 @@ PGSSLMODE=require
 NODE_EXTRA_CA_CERTS=/path/to/certs/global-bundle.pem
 ```
 
-## 3. Restart ToolJet Application
+### 3. Restart ToolJet Application
 
 ```bash
 # Restart ToolJet using the setup script

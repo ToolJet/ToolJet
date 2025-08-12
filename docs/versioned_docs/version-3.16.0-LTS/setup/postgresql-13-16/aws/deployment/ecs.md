@@ -3,9 +3,9 @@ id: ecs
 title: ECS
 ---
 
-## Step 1: Upload Certificate to ECS Container Instances
+### Step 1: Upload Certificate to ECS Container Instances
 
-### Using AWS CLI (SSM)
+#### Using AWS CLI (SSM)
 
 ```bash
 # Copy certificate to ECS container instances
@@ -15,7 +15,7 @@ aws ssm send-command \
   --targets "Key=tag:aws:autoscaling:groupName,Values=your-ecs-asg"
 ```
 
-### Using AWS Console (SSM Run Command)
+#### Using AWS Console (SSM Run Command)
 
 1. Navigate to **AWS Systems Manager Console** → **Run Command**
 2. Click **Run command**
@@ -33,9 +33,9 @@ aws ssm send-command \
 6. Click **Run**
 7. Wait for command execution to complete on all instances
 
-## Step 2: Update ECS Task Definition
+### Step 2: Update ECS Task Definition
 
-### Using AWS CLI
+#### Using AWS CLI
 
 Create a new task definition file `tooljet-task-updated.json`:
 ```json
@@ -85,7 +85,7 @@ Register the updated task definition:
 aws ecs register-task-definition --cli-input-json file://tooljet-task-updated.json
 ```
 
-### Using AWS Console
+#### Using AWS Console
 
 1. Navigate to **ECS Console** → **Task Definitions**
 2. Select your ToolJet task definition
@@ -107,9 +107,9 @@ aws ecs register-task-definition --cli-input-json file://tooljet-task-updated.js
    - **Source path**: `/opt/ssl-certs`
 8. Click **Update** then **Create**
 
-## Step 3: Alternative - Using EFS for Certificate Storage
+### Step 3: Alternative - Using EFS for Certificate Storage
 
-### Using AWS CLI
+#### Using AWS CLI
 
 Update your task definition to use EFS:
 ```json
@@ -126,7 +126,7 @@ Update your task definition to use EFS:
 }
 ```
 
-### Using AWS Console
+#### Using AWS Console
 
 1. First, create EFS file system and upload certificate:
    - Go to **EFS Console** → **Create file system**
@@ -138,9 +138,9 @@ Update your task definition to use EFS:
      - **File system ID**: `fs-xxxxxxxxx`
      - **Root directory**: `/ssl-certs`
 
-## Step 4: Update ECS Service
+### Step 4: Update ECS Service
 
-### Using AWS CLI
+#### Using AWS CLI
 
 ```bash
 aws ecs update-service \
@@ -150,7 +150,7 @@ aws ecs update-service \
   --force-new-deployment
 ```
 
-### Using AWS Console
+#### Using AWS Console
 
 1. Navigate to **ECS Console** → **Clusters**
 2. Select your cluster
@@ -164,7 +164,7 @@ aws ecs update-service \
 8. Click **Update Service**
 9. Wait for deployment to complete
 
-## Step 5: Verify Configuration
+### Step 5: Verify Configuration
 
 **Check service status:**
 

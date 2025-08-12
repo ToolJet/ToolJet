@@ -3,7 +3,7 @@ id: docker
 title: Docker
 ---
 
-## 1. Update docker-compose.yaml
+### 1. Update docker-compose.yaml
 
 Add volume mount only
 
@@ -15,7 +15,7 @@ tooljet:
     - /path/to/global-bundle.pem:/certs/global-bundle.pem
 ```
 
-## 2. Update .env file
+### 2. Update .env file
 
 ```bash
 # Database connection settings
@@ -32,7 +32,7 @@ PGSSLMODE=require
 NODE_EXTRA_CA_CERTS=/certs/global-bundle.pem
 ```
 
-## 3. Apply Changes
+### 3. Apply Changes
 
 ```bash
 # Restart containers
