@@ -258,10 +258,7 @@ export const extractMethodsFromService = (
   const methods: GrpcMethod[] = [];
 
   try {
-    if (!isRecord(serviceDefinition)) {
-      return methods;
-    }
-    const serviceObj = serviceDefinition.service;
+    const serviceObj = serviceDefinition?.service;
 
     if (!isRecord(serviceObj)) {
       console.warn(`No service object found for ${serviceName}`);
@@ -462,10 +459,9 @@ const recursiveServiceSearch = (grpcObject: grpc.GrpcObject, serviceName: string
 };
 
 const isServiceDefinition = (value: unknown): value is grpc.ServiceDefinition => {
-  if (typeof value !== 'function' || value === null) {
-    return false;
-  }
-  return isRecord(value) && isRecord(value.service);
+  // After grpc.loadPackageDefinition(), services are constructor functions
+  // We just need to check if it's a function (gRPC service constructors)
+  return typeof value === 'function';
 };
 
 const isNamespace = (value: unknown): boolean => {

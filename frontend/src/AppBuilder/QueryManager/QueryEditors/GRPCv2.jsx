@@ -154,6 +154,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const [selectedService, setSelectedService] = React.useState(null);
   const [selectedMethod, setSelectedMethod] = React.useState(null);
   const [isLoadingServices, setIsLoadingServices] = React.useState(false);
+  const currentRequestRef = React.useRef(null);
   const [metaDataOptions, setMetaDataOptions] = React.useState(() => {
     if (options?.metaDataOptions) {
       return JSON.parse(options?.metaDataOptions);
@@ -167,6 +168,22 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     }
   }, []);
 
+  // Handle query switching - reset state when switching to a different query
+  React.useEffect(() => {
+    // Update metaDataOptions when options change
+    if (options?.metaDataOptions) {
+      try {
+        const newMetaDataOptions = JSON.parse(options.metaDataOptions);
+        setMetaDataOptions(newMetaDataOptions);
+      } catch (error) {
+        console.warn('Invalid metaDataOptions JSON:', error);
+        setMetaDataOptions([['', '']]);
+      }
+    } else {
+      setMetaDataOptions([['', '']]);
+    }
+  }, [options?.metaDataOptions, queryName]);
+
   const loadServices = React.useCallback(async () => {
     if (!selectedDataSource?.id) return;
 
@@ -174,6 +191,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       toast.error('Please configure the server URL in your data source settings');
       return;
     }
+
+    // Create a unique request ID
+    const requestId = Date.now() + Math.random();
+    currentRequestRef.current = requestId;
 
     setIsLoadingServices(true);
 
@@ -202,17 +223,28 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         }
       }
 
-      setServicesData({ services: servicesArray });
-      setSelectedService(restoredService);
-      setSelectedMethod(restoredMethod);
+      // Only update state if this request is still current
+      if (currentRequestRef.current === requestId) {
+        setServicesData({ services: servicesArray });
+        setSelectedService(restoredService);
+        setSelectedMethod(restoredMethod);
+      }
     } catch (error) {
+      // Don't show error if request was superseded by a new request
+      if (currentRequestRef.current !== requestId) {
+        return;
+      }
+      
       console.error('Failed to load services:', error);
       const errorMessage = error.errorMessage || error.message || 'Failed to load services';
       toast.error(errorMessage);
     } finally {
-      setIsLoadingServices(false);
+      // Only update loading state if this request is still current
+      if (currentRequestRef.current === requestId) {
+        setIsLoadingServices(false);
+      }
     }
-  }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value]);
+  }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value, options?.service, options?.method]);
 
   React.useEffect(() => {
     setIsLoadingServices(true);
@@ -224,6 +256,14 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   React.useEffect(() => {
     loadServices();
   }, [loadServices]);
+
+  // Cleanup on unmount or when dependencies change
+  React.useEffect(() => {
+    return () => {
+      // Invalidate any pending requests when component unmounts or query changes
+      currentRequestRef.current = null;
+    };
+  }, [queryName, selectedDataSource?.id]);
 
   const selectMethod = (selectedOption) => {
     if (!selectedOption || selectedOption.type !== 'method') {
