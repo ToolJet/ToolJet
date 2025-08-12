@@ -40,17 +40,17 @@ jobs:
         run: |
           # Define allowed users
           allowed_users=(
-            "${{ secrets.ALLOWED_USER1_USERNAME }}"
-            "${{ secrets.ALLOWED_USER2_USERNAME }}"
-            "${{ secrets.ALLOWED_USER3_USERNAME }}"
-            "${{ secrets.ALLOWED_USER4_USERNAME }}"
-            "${{ secrets.ALLOWED_USER5_USERNAME }}"
-            "${{ secrets.ALLOWED_USER6_USERNAME }}"
-            "${{ secrets.ALLOWED_USER7_USERNAME }}"
-            "${{ secrets.ALLOWED_USER8_USERNAME }}"
-            "${{ secrets.ALLOWED_USER9_USERNAME }}"
-            "${{ secrets.ALLOWED_USER10_USERNAME }}"
-            "${{ secrets.ALLOWED_USER11_USERNAME }}"
+            "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER3_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER4_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER5_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER6_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER7_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER8_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
           )
           
           current_user="${{ github.actor }}"
