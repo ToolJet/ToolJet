@@ -65,8 +65,7 @@
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
-    "@tooljet-plugins/zendesk": "file:packages/zendesk",
-    "lz4": "^0.6.5"
+    "@tooljet-plugins/zendesk": "file:packages/zendesk"
   },
   "peerDependencies": {
     "form-data": "^4.0.0",

@@ -86,7 +86,7 @@
         "type": "codehinter",
         "description": "Provider filter (optional)",
         "className": "codehinter-plugins",
-        "placeholder": "Enter provider name"
+        "placeholder": "^[A-Za-z0-9- ]{1,63}$"
       }
     }
   }

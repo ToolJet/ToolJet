@@ -10,20 +10,13 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 import { SourceOptions, QueryOptions } from "./types";
 import { generateContent, listFoundationModels } from "./query_operations";
-import { BedrockServiceException } from "@aws-sdk/client-bedrock";
-import { BedrockClient, ListFoundationModelsCommand } from "@aws-sdk/client-bedrock";
+import { BedrockClient, ListFoundationModelsCommand,BedrockServiceException } from "@aws-sdk/client-bedrock";
 export default class AWSBedrock implements QueryService {
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string
-  ): Promise<QueryResult> {
-    const runtimeClient = this.createClient(sourceOptions);
-    const bedrockClient = new BedrockClient({
-      region: sourceOptions.region,
-      credentials: this.createCredentials(sourceOptions),
-    });
-
+  ): Promise<QueryResult> {    
     try {
       let data;
       switch (queryOptions.operation) {
@@ -40,20 +33,36 @@ export default class AWSBedrock implements QueryService {
               }
             );
           }
+          const runtimeClient = this.createClient(sourceOptions);
+
           data = await generateContent(runtimeClient, {
             model_id: queryOptions.model_id,
             request_body: queryOptions.request_body,
-            content_type: queryOptions.content_type,
+            ...(queryOptions.content_type && { content_type: queryOptions.content_type }),
           });
           break;
 
         case "list_foundation_models":
-          data = await listFoundationModels(bedrockClient, {
-            customization_type: queryOptions.customization_type,
-            inference_type: queryOptions.inference_type,
-            output_modality: queryOptions.output_modality,
-            provider: queryOptions.provider,
-          });
+          const bedrockClient = new BedrockClient({
+      region: sourceOptions.region,
+      credentials: this.createCredentials(sourceOptions),
+    });
+          const params: Record<string, any> = {
+    ...(queryOptions.customization_type?.length
+      ? { customization_type: queryOptions.customization_type }
+      : {}),
+    ...(queryOptions.inference_type?.length
+      ? { inference_type: queryOptions.inference_type }
+      : {}),
+    ...(queryOptions.output_modality?.length
+      ? { output_modality: queryOptions.output_modality }
+      : {}),
+    ...(queryOptions.provider?.length
+      ? { provider: queryOptions.provider }
+      : {}),
+  };
+
+  data = await listFoundationModels(bedrockClient, params);
           break;
 
         default:
@@ -108,7 +117,6 @@ export default class AWSBedrock implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    this.validateCredentials(sourceOptions);
     const credentials = this.createCredentials(sourceOptions);
     const bedrockClient = new BedrockClient({
       region: sourceOptions.region,
@@ -188,25 +196,15 @@ export default class AWSBedrock implements QueryService {
     }
   }
 
-  private createCredentials(sourceOptions: SourceOptions) {
-    this.validateCredentials(sourceOptions);
-    if (sourceOptions.access_key && sourceOptions.secret_access_key) {
-      return {
-        accessKeyId: sourceOptions.access_key,
-        secretAccessKey: sourceOptions.secret_access_key,
-        sessionToken: sourceOptions.session_token ? sourceOptions.session_token : undefined
-      };
-    }
-    throw new QueryError(
-      "Invalid credentials configuration",
-      "Session tokens require temporary credentials (access key + secret + token)",
-      {
-        validation: {
-          error: "session_token_requires_temporary_credentials"
-        }
-      }
-    );
-  }
+private createCredentials(sourceOptions: SourceOptions) {
+  this.validateCredentials(sourceOptions);
+
+  return {
+    accessKeyId: sourceOptions.access_key,
+    secretAccessKey: sourceOptions.secret_access_key,
+    sessionToken: sourceOptions.session_token || undefined
+  };
+}
 
   private createClient(sourceOptions: SourceOptions): BedrockRuntimeClient {
     const credentials = this.createCredentials(sourceOptions);
