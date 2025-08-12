@@ -54,7 +54,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
         rootClose
         onHide={() => setShowMenuPopover(false)}
       >
-        <Popover className={darkMode && 'darkMode'} id="add-new-page-popover">
+        <Popover className={darkMode && 'dark-theme theme-dark'} id="add-new-page-popover">
           <div className="menu-options mb-0">
             <PageOptions
               type="url"
@@ -76,7 +76,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
                 text="Add nav group"
                 icon="folder"
                 darkMode={darkMode}
-                onClick={() => handleOpenPopup('group')}
+                onClick={() => isLicensed && handleOpenPopup('group')}
               />
               <LicenseTooltip
                 message={"Nav group can't be created on free plans"}

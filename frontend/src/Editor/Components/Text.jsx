@@ -5,6 +5,7 @@ import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -56,6 +57,11 @@ export const Text = function Text({
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   count = count + 1;
+
+  // Create ref for height observation
+  const textRef = useRef(null);
+  const heightChangeValue = useHeightObserver(textRef, dynamicHeight);
+
   // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -65,7 +71,16 @@ export const Text = function Text({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
-  useDynamicHeight({ dynamicHeight, id, height, value: text, adjustComponentPositions, currentLayout, width });
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility,
+  });
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -174,6 +189,7 @@ export const Text = function Text({
 
   return (
     <div
+      ref={textRef}
       data-disabled={isDisabled}
       className="text-widget"
       style={computedStyles}
@@ -185,10 +201,10 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{text}</div>}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'}>{text}</Markdown>
+              <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>
             </div>
           )}
           {(textFormat === 'html' || !textFormat) && (

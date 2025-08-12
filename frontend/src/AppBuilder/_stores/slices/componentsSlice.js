@@ -1289,10 +1289,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1305,6 +1305,10 @@ export const createComponentsSlice = (set, get) => ({
 
     Object.keys(componentLayouts).forEach((componentId) => {
       deleteTemporaryLayouts(componentId);
+      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamic) {
+        adjustComponentPositions(componentId, currentLayout, false, false);
+      }
     });
 
     if (saveAfterAction) {
@@ -1357,16 +1361,21 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
       setResolvedComponent,
       saveComponentPropertyChanges,
+      checkIfParentIsListviewOrKanban,
       getCurrentMode,
+      getCustomResolvables,
+      setResolvedComponentByProperty,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const { component } = getComponentDefinition(componentId, moduleId);
     const oldValue = component.definition[paramType][property];
-
+    const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
-      resolvedComponent[componentId][paramType][property] = [];
-
+      const index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+      if (index === null) {
+        resolvedComponent[componentId][paramType][property] = [];
+      }
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -1377,10 +1386,19 @@ export const createComponentsSlice = (set, get) => ({
         true,
         moduleId
       );
-      setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
 
-      // If the value is not changed, return
-      if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
+      if (index !== null) {
+        const customResolvables = getCustomResolvables(parentId, null);
+        const length = Object.keys(customResolvables).length;
+        const limit = length === 0 ? 1 : length;
+        for (let i = 0; i < limit; i++) {
+          setResolvedComponentByProperty(componentId, paramType, property, updatedValue, i, moduleId);
+        }
+      } else {
+        setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
+        // If the value is not changed, return
+        if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
+      }
 
       set(
         withUndoRedo((state) => {

@@ -263,7 +263,8 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            await processQueryResults(result);
+            const processedResult = { data: result };
+            await processQueryResults(processedResult);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
@@ -420,7 +421,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
-        let finalData = data;
+        let finalData = data?.data;
         rawData = rawData || data;
 
         if (dataQuery.options.enableTransformation) {
@@ -494,11 +495,11 @@ export const createQueryPanelSlice = (set, get) => ({
           message: errorData?.description,
           errorTarget: 'Queries',
           error:
-            query.kind === 'restapi'
+            query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
                   substitutedVariables: options,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
                 }
               : errorData,
           isQuerySuccessLog: false,
@@ -508,12 +509,17 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
-            ...(query.kind === 'restapi' || errorData?.type === 'tj-401'
+            ...(errorData?.data?.type === 'tj-401'
               ? {
                   metadata: errorData?.metadata,
-                  request: errorData?.requestObject,
-                  response: errorData?.responseObject,
-                  responseHeaders: errorData?.responseHeaders,
+                  response: errorData?.data?.responseObject,
+                }
+              : query.kind === 'restapi'
+              ? {
+                  metadata: errorData?.metadata,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
+                  responseHeaders: errorData?.data?.responseHeaders,
                 }
               : {}),
           },
@@ -559,6 +565,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
+            query,
             query.options?.workflowId,
             query.options?.blocking,
             query.options?.params,
@@ -599,7 +606,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
             // async queries in the future
-            if (query.kind === 'workflows') {
+            if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
               const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
                 data,
                 queryId,
@@ -662,13 +669,14 @@ export const createQueryPanelSlice = (set, get) => ({
                   break;
               }
 
-              errorData = query.kind === 'runpy' || query.kind === 'runjs' ? data?.data : data;
+              errorData =
+                (query.kind === 'runpy' || query.kind === 'runjs') && data?.data?.type !== 'tj-401' ? data?.data : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
             } else {
               const rawData = data.data;
-              const result = await processQueryResults(data.data, rawData);
+              const result = await processQueryResults(data, rawData);
               resolve(result);
             }
           })
@@ -752,6 +760,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = triggerWorkflow(
             moduleId,
+            query,
             query.options.workflowId,
             query.options.blocking,
             query.options?.params,
@@ -769,7 +778,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // async queries in the future
             if (query.kind === 'workflows') {
               const processQueryResultsPreview = async (result) => {
-                let finalData = result;
+                let finalData = result?.data;
                 if (query.options.enableTransformation) {
                   finalData = await runTransformation(
                     finalData,
@@ -1050,7 +1059,7 @@ export const createQueryPanelSlice = (set, get) => ({
     ) => {
       const data = rawData;
       const {
-        queryPanel: { runPythonTransformation, createProxy },
+        queryPanel: { runPythonTransformation },
         getResolvedState,
       } = get();
       let result = {};
@@ -1065,12 +1074,12 @@ export const createQueryPanelSlice = (set, get) => ({
           const queriesInResolvedState = deepClone(currentState.queries);
           const actions = generateAppActions(query?.id, mode);
 
-          const proxiedComponents = createProxy(currentState?.components, 'components');
-          const proxiedGlobals = createProxy(currentState?.globals, 'globals');
-          const proxiedConstants = createProxy(currentState?.constants, 'constants');
-          const proxiedVariables = createProxy(currentState?.variables, 'variables');
-          const proxiedPage = createProxy(deepClone(currentState?.page, 'page'));
-          const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState, 'queries');
+          const proxiedComponents = currentState?.components;
+          const proxiedGlobals = currentState?.globals;
+          const proxiedConstants = currentState?.constants;
+          const proxiedVariables = currentState?.variables;
+          const proxiedPage = deepClone(currentState?.page);
+          const proxiedQueriesInResolvedState = queriesInResolvedState;
 
           const evalFunction = Function(
             ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
@@ -1180,10 +1189,22 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId = 'canvas', query, workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId = 'canvas', workflowId, _blocking = false, params = {}, appEnvId) => {
       const { getAppId, getAllExposedValues } = get();
       const appId = getAppId('canvas');
       const currentState = getAllExposedValues(moduleId);
+      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
+
+      try {
+        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+        return { data: response.result, status: 'ok' };
+      } catch (e) {
+        return { data: undefined, status: 'failed' };
+      }
+    },
+    triggerWorkflow: async (moduleId, query, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+      const { getAllExposedValues } = get();
+      const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
       if (query.restricted) {
@@ -1208,18 +1229,6 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
-        return { data: response.result, status: 'ok' };
-      } catch (e) {
-        return { data: undefined, status: 'failed' };
-      }
-    },
-    triggerWorkflow: async (moduleId, workflowAppId, _blocking = false, params = {}, appEnvId) => {
-      const { getAllExposedValues } = get();
-      const currentState = getAllExposedValues();
-      const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
-
-      try {
         const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
@@ -1227,25 +1236,40 @@ export const createQueryPanelSlice = (set, get) => ({
       }
     },
 
-    createProxy: (obj, path = '') => {
+    // Helper function to convert proxy objects to plain JavaScript objects
+    deproxyObject: (obj) => {
+      if (obj === null || typeof obj !== 'object') {
+        return obj;
+      }
 
-      return new Proxy(obj, {
-        get(target, prop) {
-          const fullPath = path ? `${path}.${prop}` : prop;
+      // Handle arrays
+      if (Array.isArray(obj)) {
+        return obj.map((item) => get().queryPanel.deproxyObject(item));
+      }
 
-          if (!(prop in target)) {
-            throw new Error(`ReferenceError: ${fullPath} is not defined`);
+      // Handle Date objects
+      if (obj instanceof Date) {
+        return obj;
+      }
+
+      // Handle plain objects and proxy objects
+      const result = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key) || key in obj) {
+          try {
+            result[key] = get().queryPanel.deproxyObject(obj[key]);
+          } catch (error) {
+            // If accessing a property throws an error (like with proxies), skip it
+            continue;
           }
-
-          const value = target[prop];
-          return value;
-        },
-      });
+        }
+      }
+      return result;
     },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
-      const { createProxy } = queryPanel;
+      const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
@@ -1341,17 +1365,6 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-
-        //Proxy Func required to get current execution line number from stack to log in debugger
-
-        const proxiedComponents = createProxy(deepClone(resolvedState?.components), 'components');
-        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals), 'globals');
-        const proxiedConstants = createProxy(deepClone(resolvedState?.constants), 'constants');
-        const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
-        const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
-        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
-        const proxiedFormattedParams = createProxy(!_.isEmpty(formattedParams) ? [formattedParams] : [], 'parameters');
-
         const fnParams = [
           'moment',
           '_',
@@ -1363,25 +1376,24 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
-          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []),
+          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           code,
         ];
-        const evalFn = new AsyncFunction(...fnParams);
+        var evalFn = new AsyncFunction(...fnParams);
 
         const fnArgs = [
           moment,
           _,
-          proxiedComponents,
-          proxiedQueriesInResolvedState,
-          proxiedGlobals,
-          proxiedPage,
+          resolvedState.components,
+          queriesInResolvedState,
+          resolvedState.globals,
+          deepClone(resolvedState.page),
           axios,
-          proxiedVariables,
+          deepClone(resolvedState.variables),
           actions,
-          proxiedConstants,
-          ...(!_.isEmpty(formattedParams) ? proxiedFormattedParams : []),
+          resolvedState?.constants,
+          ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
         ];
-
         result = {
           status: 'ok',
           data: await evalFn(...fnArgs),
@@ -1462,7 +1474,7 @@ export const createQueryPanelSlice = (set, get) => ({
     runQueryOnShortcut: () => {
       const { queryPanel } = get();
       const { runQuery, selectedQuery } = queryPanel;
-      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true);
+      runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true);
     },
     previewQueryOnShortcut: (moduleId = 'canvas') => {
       const { queryPanel } = get();

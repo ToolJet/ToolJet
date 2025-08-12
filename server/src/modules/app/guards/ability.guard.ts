@@ -8,6 +8,7 @@ import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';
 import { MODULES } from '../constants/modules';
 import { isSuperAdmin } from '@helpers/utils.helper';
+import { cloneDeep } from 'lodash';
 
 // User should be present or app should be public
 @Injectable()
@@ -35,8 +36,8 @@ export abstract class AbilityGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
-    let features = this.reflector.get<string[]>('tjFeatureId', context.getHandler());
+    const module = cloneDeep(this.reflector.get<MODULES>('tjModuleId', context.getClass()));
+    let features = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -92,6 +93,11 @@ export abstract class AbilityGuard implements CanActivate {
       if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
         // No need to do validations if app is public
         return true;
+      }
+
+      if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
+        // App is public and feature should not skip public app check and user is not available
+        return false;
       }
     }
 

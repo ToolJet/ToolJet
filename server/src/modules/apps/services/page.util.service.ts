@@ -14,7 +14,7 @@ export class PageHelperService implements IPageHelperService {
     protected licenseTermsService: LicenseTermsService
   ) {}
 
-  public async fetchPages(appVersionId: string, organizationId: string, manager?: EntityManager): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {
@@ -48,28 +48,25 @@ export class PageHelperService implements IPageHelperService {
     manager: EntityManager,
     organizationId: string
   ): Promise<void> {
-    const appVersionId = pageDeleted.appVersionId;
-    // if user is not licensed, then just update the index of the pages
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const pages = await manager.find(Page, {
-        where: {
-          appVersionId: pageDeleted.appVersionId,
-          isPageGroup: false,
-        },
-        order: {
-          index: 'ASC',
-        },
-      });
-      const updateArr = [];
-      pages.forEach((page, index) => {
-        updateArr.push(
-          manager.update(Page, page.id, {
-            index,
-          })
-        );
-      });
-      await Promise.all(updateArr);
-    }, appVersionId);
+    // Use the existing manager to avoid nested transactions
+    const pages = await manager.find(Page, {
+      where: {
+        appVersionId: pageDeleted.appVersionId,
+        isPageGroup: false,
+      },
+      order: {
+        index: 'ASC',
+      },
+    });
+    const updateArr = [];
+    for (let i = 0; i < pages.length; i++) {
+      updateArr.push(
+        manager.update(Page, pages[i].id, {
+          index: i,
+        })
+      );
+    }
+    await Promise.all(updateArr);
   }
 
   public async deletePageGroup(

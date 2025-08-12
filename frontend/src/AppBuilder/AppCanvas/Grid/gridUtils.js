@@ -398,7 +398,18 @@ export function hasParentWithClass(child, className) {
 export function showGridLines() {
   var canvasElms = document.getElementsByClassName('real-canvas');
   // Filter out module canvas
-  var elementsArray = Array.from(canvasElms).filter((element) => !element.classList.contains('module-container'));
+  var elementsArray = Array.from(canvasElms).filter((element) => {
+    if (element.classList.contains('module-container')) {
+      return false;
+    }
+    if (
+      !element.classList.contains('is-module-editor') &&
+      element.getAttribute('component-type') === 'ModuleContainer'
+    ) {
+      return false;
+    }
+    return true;
+  });
   elementsArray.forEach(function (element) {
     element.classList.remove('hide-grid');
     element.classList.add('show-grid');
@@ -547,10 +558,7 @@ export const computeScrollDelta = ({ source }) => {
 export const computeScrollDeltaOnDrag = computeScrollDelta;
 
 export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const transformedCanvasParentId = canvasParentId?.substring(0, 36);
-  const targetCanvasWidth =
-    document.getElementById(`canvas-${transformedCanvasParentId}`)?.offsetWidth ||
-    document.getElementById('real-canvas')?.offsetWidth;
+  const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;
   const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
   const gridUnits = Math.round(widgetWidth / gridUnitWidth);
   const draggingWidgetWidth = gridUnits * gridUnitWidth;

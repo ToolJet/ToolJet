@@ -79,7 +79,7 @@ export const BaseInput = ({
       : disable || loading
       ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
-    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
+    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor

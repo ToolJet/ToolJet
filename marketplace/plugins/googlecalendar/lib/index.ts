@@ -10,30 +10,20 @@ import got, { Headers, OptionsOfTextResponseBody } from 'got';
 
 export default class GoogleCalendar implements QueryService {
   authUrl(source_options: SourceOptions): string {
-    console.log('source options auth', source_options);
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = source_options.oauth_type.value;
     let clientId: string;
-    let clientSecret: string;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
-      clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     } else {
       clientId = source_options?.client_id?.value;
-      clientSecret = source_options?.client_secret?.value;
     }
     const scope = 'https://www.googleapis.com/auth/calendar';
     if (!clientId) {
       throw new Error(
         `Google OAuth "clientId" ${oauth_type === 'tooljet_app' ? 'environment variable' : 'config'} is missing`
-      );
-    }
-
-    if (!clientSecret) {
-      throw new Error(
-        `Google OAuth "clientSecret" ${oauth_type === 'tooljet_app' ? 'environment variable' : 'config'} is missing`
       );
     }
 
@@ -58,7 +48,6 @@ export default class GoogleCalendar implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     let result = {};
-    console.log('source options run', sourceOptions);
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
       sourceOptions['client_id'] = process.env.GOOGLE_CLIENT_ID;
       sourceOptions['client_secret'] = process.env.GOOGLE_CLIENT_SECRET;
@@ -85,7 +74,8 @@ export default class GoogleCalendar implements QueryService {
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
         newSourcOptions,
         context,
-        authValidatedRequestOptions as any
+        authValidatedRequestOptions as any,
+        { kind: 'googlecalendar' }
       );
       if (_requestOptions.status === 'needs_oauth') return _requestOptions;
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
@@ -193,28 +183,7 @@ export default class GoogleCalendar implements QueryService {
     return newSourcOptions;
   }
 
-  private resolveBodyparams(bodyParams: object): object {
-    if (typeof bodyParams === 'string') {
-      return bodyParams;
-    }
-
-    const expectedResult = {};
-
-    for (const key of Object.keys(bodyParams)) {
-      if (typeof bodyParams[key] === 'object') {
-        for (const subKey of Object.keys(bodyParams[key])) {
-          expectedResult[`${key}[${subKey}]`] = bodyParams[key][subKey];
-        }
-      } else {
-        expectedResult[key] = bodyParams[key];
-      }
-    }
-
-    return expectedResult;
-  }
-
   async accessDetailsFrom(authCode: string, source_options: any, resetSecureData = false): Promise<object> {
-    console.log('soource options access', source_options);
     if (resetSecureData) {
       return [
         ['access_token', ''],
@@ -269,7 +238,7 @@ export default class GoogleCalendar implements QueryService {
 
       const result = JSON.parse(response.body);
       if (response.statusCode !== 200) {
-        throw Error('could not connect to Google Calendar');
+        throw Error('Could not connect to Google Calendar');
       }
 
       if (result['access_token']) {
@@ -280,8 +249,7 @@ export default class GoogleCalendar implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      console.log(error.response.body);
-      throw Error('could not connect to Google Calendar');
+      throw Error('Could not connect to Google Calendar');
     }
 
     return authDetails;
@@ -345,11 +313,8 @@ export default class GoogleCalendar implements QueryService {
         );
       }
     } catch (error) {
-      console.error(
-        `Error while REST API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
-      );
       throw new QueryError(
-        'could not connect to Googles Calendar',
+        'Could not connect to Googles Calendar',
         JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
         {}
       );

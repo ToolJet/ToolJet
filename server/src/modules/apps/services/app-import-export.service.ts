@@ -358,8 +358,6 @@ export class AppImportExportService {
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
       for (const importedModule of appParams.modules) {
-        console.log(importedModule, 'imported mod');
-        console.log(existingModules);
         // Find matching module by name in existing modules
         const existingModule = existingModules.find((module) => module.name === importedModule?.appV2?.name);
 
@@ -381,7 +379,7 @@ export class AppImportExportService {
         } else {
           // Module doesn't exist - need to import it
 
-          const importedModuleApp = await this.import(
+          const { newApp, resourceMapping } = await this.import(
             user,
             importedModule,
             importedModule?.appV2?.name,
@@ -391,11 +389,11 @@ export class AppImportExportService {
             false
           );
 
-          moduleResourceMappings.moduleApps[importedModule.appV2?.id] = importedModuleApp.id;
+          moduleResourceMappings.moduleApps[importedModule.appV2?.id] = newApp.id;
           moduleResourceMappings.moduleVersions[importedModule.appV2?.editingVersion.id] =
-            importedModuleApp.editingVersion?.id;
+            resourceMapping.appVersionMapping[importedModule.appV2?.editingVersion.id];
           moduleResourceMappings.moduleEnvironments[importedModule.appV2?.editingVersion.currentEnvironmentId] =
-            importedModuleApp.editingVersion?.currentEnvironmentId;
+            resourceMapping.appEnvironmentMapping[importedModule.appV2?.editingVersion.currentEnvironmentId];
         }
       }
     }
@@ -411,7 +409,7 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager
-  ): Promise<App> {
+  ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
@@ -471,8 +469,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
       newApp.slug = importedApp.id;
       await manager.save(newApp);
-
-      return newApp;
+      return { newApp, resourceMapping };
     }, manager);
   }
 
@@ -1001,7 +998,7 @@ export class AppImportExportService {
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
           index: page.index,
-          pageGroupIndex: page.pageGroupIndex || null,
+          pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
@@ -2753,6 +2750,13 @@ const applyPageSettingsMigration = async (manager: EntityManager, appVersionIds:
   for (const version of appVersions) {
     let pageSettings = version.pageSettings as any;
     const globalSettings = version.globalSettings as any;
+
+    // Only run migration for apps that have hideHeader in globalSettings (legacy apps)
+    const needsMigration = globalSettings && 'hideHeader' in globalSettings;
+
+    if (!needsMigration) {
+      continue; // Skip migration - either new app or already migrated
+    }
 
     if (!pageSettings) {
       pageSettings = { properties: {} };

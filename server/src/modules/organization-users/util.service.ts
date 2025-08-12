@@ -268,9 +268,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: orgUser.user.userPermissions
-        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
-        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups: isBasicPlan
+        ? []
+        : orgUser.user.userPermissions
+            .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
+            .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       roleGroup: orgUser.user.userPermissions
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
@@ -509,6 +511,13 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
+      this.eventEmitter.emit('CRM.Push', {
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        isInvited: true,
+      });
 
       const groupsArray = [];
       if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {
