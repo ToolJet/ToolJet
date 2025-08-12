@@ -10,6 +10,7 @@ import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons
 import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './styles/style.scss';
 
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
