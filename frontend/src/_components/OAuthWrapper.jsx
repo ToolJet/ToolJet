@@ -28,8 +28,9 @@ const OAuthWrapper = ({
     options?.auth_type?.value === 'oauth2' &&
     options?.grant_type?.value === 'authorization_code' &&
     multiple_auth_enabled !== true;
-  const dataSourceNameCapitalize = capitalize(selectedDataSource?.plugin?.name || selectedDataSource?.kind);
-
+  const dataSourceNameCapitalize = capitalize(
+    selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
+  );
   const hostUrl = window.public_config?.TOOLJET_HOST;
   const subPathUrl = window.public_config?.SUB_PATH;
   const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;

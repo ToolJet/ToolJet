@@ -247,11 +247,27 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
     "name": "Gmail",
     "description": "Integrate with Gmail API to organise and manage emails",
     "version": "1.0.0",
     "id": "gmail",
     "author": "Tooljet",
     "timestamp": "Mon, 21 Jul 2025 07:17:51 GMT"
+  },
+  {
+    "name": "Microsoft Graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
+    "version": "1.0.0",
+    "id": "microsoft_graph",
+    "author": "Tooljet",
+    "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
   }
 ]

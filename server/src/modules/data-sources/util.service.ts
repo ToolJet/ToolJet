@@ -530,7 +530,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // Auth flow starts from datasource config page
     if (
       !isMultiAuthEnabled &&
-      ['googlesheets', 'slack', 'zendesk', 'salesforce', 'googlecalendar', 'snowflake'].includes(dataSource.kind)
+      ['googlesheets', 'slack', 'zendesk', 'salesforce', 'googlecalendar', 'snowflake', 'microsoft_graph'].includes(
+        dataSource.kind
+      )
     ) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     }
@@ -643,6 +645,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       googlecalendar: 'GOOGLE',
       gmail: 'GOOGLE',
       snowflake: 'SNOWFLAKE',
+      microsoft_graph: 'MICROSFT',
     };
     const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
     return key;
