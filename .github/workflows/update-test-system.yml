@@ -260,3 +260,4 @@ jobs:
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
+          
