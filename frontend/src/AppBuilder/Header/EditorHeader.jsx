@@ -88,7 +88,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                     {!isModuleEditor && (
                       <>
                         <AppEnvironments darkMode={darkMode} />
-                        <div className="navbar-seperator" />
+                        <div className="tw-hidden navbar-seperator" />
                         <AppVersionsManager darkMode={darkMode} />
                         <div className="navbar-seperator" />
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />

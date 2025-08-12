@@ -109,6 +109,10 @@
 	background-color: #2b3547;
 }
 
+
+	.app-environment-menu+.navbar-seperator {
+		display: flex;
+	}
 .env-container {
 	font-family: 'IBM Plex Sans';
 	box-sizing: border-box;
