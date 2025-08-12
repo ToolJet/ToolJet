@@ -90,6 +90,25 @@
                       "setup/postgresql-13-16/azure/verification",
                       "setup/postgresql-13-16/azure/best-practices"
                     ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "GCP",
+                    "items": [
+                      "setup/postgresql-13-16/gcp/overview",
+                      "setup/postgresql-13-16/gcp/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/gcp/deployment/docker",
+                              "setup/postgresql-13-16/gcp/deployment/gke",
+                              "setup/postgresql-13-16/gcp/deployment/cloud-run"
+                          ]
+                      },
+                      "setup/postgresql-13-16/gcp/verification",
+                      "setup/postgresql-13-16/gcp/best-practices"
+                    ]
                   }
               ]
             },
