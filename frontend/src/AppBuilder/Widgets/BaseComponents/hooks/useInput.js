@@ -29,6 +29,7 @@ export const useInput = ({
   setExposedVariables,
   fireEvent,
   inputType,
+  width,
 }) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef();
@@ -85,6 +86,7 @@ export const useInput = ({
     styles.padding,
     styles.direction,
     styles.widthType,
+    width,
     labelRef?.current?.getBoundingClientRect()?.width,
   ]);
 
