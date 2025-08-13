@@ -26,6 +26,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.SEND_USER_MESSAGE,
           FEATURE_KEY.SEND_DOCS_MESSAGE,
           FEATURE_KEY.APPROVE_PRD,
+          FEATURE_KEY.REWIND_STEP,
           FEATURE_KEY.REGENERATE_MESSAGE,
           FEATURE_KEY.VOTE_MESSAGE,
           FEATURE_KEY.GET_CREDITS_BALANCE,

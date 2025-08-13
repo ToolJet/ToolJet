@@ -443,8 +443,15 @@ export class AppImportExportService {
         : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
       const currentTooljetVersion = !cloning ? tooljetVersion : null;
-
-      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
+      // existing App Id ise used in the AI flow when importing the app inside of an empty app
+      const existingAppId = appParamsObj.existingAppId;
+      const importedApp = await this.createImportedAppForUser(
+        manager,
+        schemaUnifiedAppParams,
+        user,
+        isGitApp,
+        existingAppId
+      );
 
       const resourceMapping = await this.setupImportedAppAssociations(
         manager,
@@ -537,7 +544,13 @@ export class AppImportExportService {
     }
   }
 
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
+  async createImportedAppForUser(
+    manager: EntityManager,
+    appParams: any,
+    user: User,
+    isGitApp = false,
+    existingAppId?
+  ): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -1839,14 +1852,20 @@ export class AppImportExportService {
         currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
-      const version = await manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appVersion.definition,
-        name: appVersion.name,
-        currentEnvironmentId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      let version;
+      // this case only happens in the AI flow when app is imported within an existing app
+      if (importedApp.editingVersion) {
+        version = importedApp.editingVersion;
+      } else {
+        version = await manager.create(AppVersion, {
+          appId: importedApp.id,
+          definition: appVersion.definition,
+          name: appVersion.name,
+          currentEnvironmentId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
 
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;

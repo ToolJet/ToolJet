@@ -69,7 +69,6 @@ export class App extends BaseEntity {
   @Column({ name: 'workflow_enabled', default: false })
   workflowEnabled: boolean;
 
-
   @Column({ name: 'is_initialised_from_prompt', default: false })
   isInitialisedFromPrompt: boolean;
 
@@ -91,12 +90,17 @@ export class App extends BaseEntity {
       name: string;
       id: string;
       loadingStates: string[];
-      appInitialisationPrompt?: string;
     }[];
+    appInitialisationPrompt?: string;
     appName?: string;
     completedSteps: string[];
     activeStep: string;
     version: string;
+    dataSource: {
+      kind: string;
+      name: string;
+      id: string;
+    }
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
