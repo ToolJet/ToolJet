@@ -18,6 +18,28 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
     props.setRedirectUrlToCookie && props.setRedirectUrlToCookie();
 
     const { client_id } = props.configs;
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmData = {};
+
+    // Extract all UTM parameters
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((param) => {
+      const value = urlParams.get(param);
+      if (value) {
+        utmData[param] = value;
+      }
+    });
+
+    // Create state object with UTM data and CSRF protection
+    const stateData = {
+      nonce: randomString(10),
+      timestamp: Date.now(),
+      utm: utmData,
+      // Add any other data you want to preserve
+      configId: props.configId,
+    };
+
+    // Encode state as base64 JSON
+    const state = btoa(JSON.stringify(stateData));
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
       redirect_uri: `${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ?? '/'}sso/google${
         props.configId ? `/${props.configId}` : ''
@@ -26,8 +48,12 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
       scope: 'email profile',
       client_id,
       nonce: randomString(10),
+      state,
     });
-    window.location.href = authUrl;
+    console.log('State data before encoding:', stateData);
+    console.log('Encoded state:', state);
+    console.log('Final auth URL:', authUrl);
+    // window.location.href = authUrl;
   };
 
   useImperativeHandle(
