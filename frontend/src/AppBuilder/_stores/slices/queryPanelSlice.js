@@ -1059,7 +1059,7 @@ export const createQueryPanelSlice = (set, get) => ({
     ) => {
       const data = rawData;
       const {
-        queryPanel: { runPythonTransformation, createProxy },
+        queryPanel: { runPythonTransformation },
         getResolvedState,
       } = get();
       let result = {};
@@ -1074,12 +1074,12 @@ export const createQueryPanelSlice = (set, get) => ({
           const queriesInResolvedState = deepClone(currentState.queries);
           const actions = generateAppActions(query?.id, mode);
 
-          const proxiedComponents = createProxy(currentState?.components, 'components');
-          const proxiedGlobals = createProxy(currentState?.globals, 'globals');
-          const proxiedConstants = createProxy(currentState?.constants, 'constants');
-          const proxiedVariables = createProxy(currentState?.variables, 'variables');
-          const proxiedPage = createProxy(deepClone(currentState?.page, 'page'));
-          const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState, 'queries');
+          const proxiedComponents = currentState?.components;
+          const proxiedGlobals = currentState?.globals;
+          const proxiedConstants = currentState?.constants;
+          const proxiedVariables = currentState?.variables;
+          const proxiedPage = deepClone(currentState?.page);
+          const proxiedQueriesInResolvedState = queriesInResolvedState;
 
           const evalFunction = Function(
             ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
@@ -1236,36 +1236,6 @@ export const createQueryPanelSlice = (set, get) => ({
       }
     },
 
-    createProxy: (obj, path = '') => {
-      return new Proxy(obj, {
-        get(target, prop) {
-          const fullPath = path ? `${path}.${prop}` : prop;
-
-          if (!(prop in target)) {
-            // For components and variables, allow accessing non-existent top-level properties
-            // but still throw errors for deeper property access
-            const isTopLevelComponentsOrVariables = path === 'components' || path === 'variables' || path === 'page';
-
-            if (isTopLevelComponentsOrVariables) {
-              // Return undefined for non-existent components/variables to allow graceful handling
-              return undefined;
-            }
-
-            throw new Error(`ReferenceError: ${fullPath} is not defined`);
-          }
-
-          const value = target[prop];
-
-          // If the value is an object, create a proxy for it to maintain error handling in nested access
-          if (value !== null && typeof value === 'object') {
-            return get().queryPanel.createProxy(value, fullPath);
-          }
-
-          return value;
-        },
-      });
-    },
-
     // Helper function to convert proxy objects to plain JavaScript objects
     deproxyObject: (obj) => {
       if (obj === null || typeof obj !== 'object') {
@@ -1298,8 +1268,8 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
-      const { queryPanel, dataQuery, eventsSlice } = get();
-      const { createProxy } = queryPanel;
+      const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
+      const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
@@ -1395,17 +1365,6 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-
-        //Proxy Func required to get current execution line number from stack to log in debugger
-
-        const proxiedComponents = createProxy(deepClone(resolvedState?.components), 'components');
-        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals), 'globals');
-        const proxiedConstants = createProxy(deepClone(resolvedState?.constants), 'constants');
-        const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
-        const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
-        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
-        const proxiedFormattedParams = createProxy(!_.isEmpty(formattedParams) ? [formattedParams] : [], 'parameters');
-
         const fnParams = [
           'moment',
           '_',
@@ -1417,28 +1376,27 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
-          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []),
+          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           code,
         ];
-        const evalFn = new AsyncFunction(...fnParams);
+        var evalFn = new AsyncFunction(...fnParams);
 
         const fnArgs = [
           moment,
           _,
-          proxiedComponents,
-          proxiedQueriesInResolvedState,
-          proxiedGlobals,
-          proxiedPage,
+          resolvedState.components,
+          queriesInResolvedState,
+          resolvedState.globals,
+          deepClone(resolvedState.page),
           axios,
-          proxiedVariables,
+          deepClone(resolvedState.variables),
           actions,
-          proxiedConstants,
-          ...(!_.isEmpty(formattedParams) ? proxiedFormattedParams : []),
+          resolvedState?.constants,
+          ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
         ];
-
         result = {
           status: 'ok',
-          data: get().queryPanel.deproxyObject(await evalFn(...fnArgs)),
+          data: await evalFn(...fnArgs),
         };
       } catch (err) {
         const stackLines = err.stack.split('\n');
