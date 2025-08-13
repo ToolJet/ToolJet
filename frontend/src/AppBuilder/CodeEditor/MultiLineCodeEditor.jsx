@@ -11,7 +11,7 @@ import _ from 'lodash';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { findNearestSubstring, generateHints } from './autocompleteExtensionConfig';
+import { getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
@@ -20,12 +20,12 @@ import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { syntaxTree } from '@codemirror/language';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
 import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
+import WorkflowEditorContext from '../../../ee/modules/Workflows/pages/WorkflowEditorPage/context';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -73,6 +73,8 @@ const MultiLineCodeEditor = (props) => {
   );
 
   const context = useContext(CodeHinterContext);
+
+  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
 
   const { suggestionList: paramList } = createReferencesLookup(context, true);
 
@@ -147,17 +149,7 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    const currentCursor = context.pos;
-
-    const currentString = context.state.doc.text ||
-      (context.state.doc.children && context.state.doc.children.flatMap(child => child.text || []));
-
-    const inputStr = currentString.join(' ');
-    const currentCurosorPos = currentCursor;
-    const nearestSubstring = removeNestedDoubleCurlyBraces(findNearestSubstring(inputStr, currentCurosorPos));
-
-    const hints = getSuggestions();
-
+    const hints = getWorkflowSuggestions ?? getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
@@ -165,128 +157,7 @@ const MultiLineCodeEditor = (props) => {
       appHints: [...hints.appHints, ...serverHints],
     };
 
-    let JSLangHints = [];
-    if (lang === 'javascript') {
-      JSLangHints = Object.keys(allHints['jsHints'])
-        .map((key) => {
-          return hints['jsHints'][key]['methods'].map((hint) => ({
-            hint: hint,
-            type: 'js_method',
-          }));
-        })
-        .flat();
-
-      JSLangHints = JSLangHints.filter((cm) => {
-        let lastWordAfterDot = nearestSubstring.split('.');
-
-        lastWordAfterDot = lastWordAfterDot[lastWordAfterDot.length - 1];
-
-        if (cm.hint.includes(lastWordAfterDot)) return true;
-      });
-    }
-
-    const appHints = allHints['appHints'];
-
-    let autoSuggestionList = appHints.filter((suggestion) => {
-      return suggestion.hint.includes(nearestSubstring);
-    });
-
-    const localVariables = new Set();
-
-    // Traverse the syntax tree to extract variable declarations
-    syntaxTree(context.state).iterate({
-      enter: (node) => {
-        // JavaScript: Detect variable declarations (var, let, const)
-        if (node.name === 'VariableDefinition') {
-          const varName = context.state.sliceDoc(node.from, node.to);
-          if (varName && varName.startsWith(nearestSubstring)) localVariables.add(varName);
-        }
-      },
-    });
-
-    // Convert Set to an array of completion suggestions
-    const localVariableSuggestions = [...localVariables].map((varName) => ({
-      hint: varName,
-      type: 'variable',
-    }));
-
-    const suggestionList = paramList.filter((paramSuggestion) => paramSuggestion.hint.includes(nearestSubstring));
-
-    const suggestions = generateHints(
-      [...localVariableSuggestions, ...JSLangHints, ...autoSuggestionList, ...suggestionList],
-      null,
-      nearestSubstring
-    )
-      // Apply depth-based sorting (like SingleLineCodeEditor's filterHintsByDepth)
-      .sort((a, b) => {
-        // Calculate depth based on the original hint property (not label)
-        const aDepth = (a.info?.split('.') || []).length;
-        const bDepth = (b.info?.split('.') || []).length;
-
-        // Sort by depth first (shallow suggestions first)
-        return aDepth - bDepth;
-      })
-      .map((hint) => {
-        if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
-
-        delete hint['apply'];
-
-        hint.apply = (view, completion, from, to) => {
-          /**
-           * This function applies an auto-completion logic to a text editing view based on user interaction.
-           * It uses a pre-defined completion object and modifies the document's content accordingly.
-           *
-           * Parameters:
-           * - view: The editor view where the changes will be applied.
-           * - completion: An object containing details about the completion to be applied. Includes properties like 'label' (the text to insert) and 'type' (e.g., 'js_methods').
-           * - from: The initial position (index) in the document where the completion starts.
-           * - to: The position (index) in the document where the completion ends.
-           *
-           * Logic:
-           * - The function calculates the start index for the change by subtracting the length of the word to be replaced (finalQuery) from the 'from' index.
-           * - It configures the completion details such as where to insert the text and the exact text to insert.
-           * - If the completion type is 'js_methods', it adjusts the insertion point to the 'to' index and sets the cursor position after the inserted text.
-           * - Finally, it dispatches these configurations to the editor view to apply the changes.
-           *
-           * The dispatch configuration (dispacthConfig) includes changes and, optionally, the cursor selection position if the type is 'js_methods'.
-           */
-
-          const wordToReplace = nearestSubstring;
-          const fromIndex = from - wordToReplace.length;
-
-          const pickedCompletionConfig = {
-            from: fromIndex === 1 ? 0 : fromIndex,
-            to: to,
-            insert: completion.label,
-          };
-
-          const dispacthConfig = {
-            changes: pickedCompletionConfig,
-          };
-
-          if (completion.type === 'js_methods') {
-            let limit = Math.max(1, fromIndex === 1 ? 0 : fromIndex);
-            for (let i = to; i > limit; i--) {
-              if (inputStr[i - 1] === '.') {
-                pickedCompletionConfig.from = i;
-                break;
-              }
-            }
-            dispacthConfig.selection = {
-              anchor: pickedCompletionConfig.from + completion.label.length - 1,
-            };
-          }
-
-          view.dispatch(dispacthConfig);
-        };
-        return hint;
-      });
-
-    return {
-      from: context.pos,
-      options: [...suggestions],
-      filter: false,
-    };
+    return getSuggestionsForMultiLine(context, allHints, hints, lang, paramList);
   }
 
   const customKeyMaps = [
