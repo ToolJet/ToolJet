@@ -278,18 +278,19 @@
   .homepage-app-card-list-item-wrap {
     display: flex;
     justify-content: center;
+    flex-direction: column;
     width: 100%;
-    // gap: 24px;
-     margin-left: auto;
-    margin-right: auto;
+    gap: 24px;
+    margin: 22px auto 0 auto;
+    padding: 0 10px;
     width: 100%;
-    margin-top: 22px;
   }
 
   .homepage-app-card-list-item {
-    // max-width: 304px !important;
     max-width: 320px !important;
     flex-basis: 100%;
+    flex-shrink: 0;
+    flex-grow: 0;
 
     .edit-button,
     .launch-button {
