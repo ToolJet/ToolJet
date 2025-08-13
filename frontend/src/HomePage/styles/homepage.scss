@@ -279,17 +279,21 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    gap: 24px;
+    // gap: 24px;
+     margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    margin-top: 22px;
   }
 
   .homepage-app-card-list-item {
     // max-width: 304px !important;
-    max-width: calc(50% - 12px);
+    max-width: 320px !important;
     flex-basis: 100%;
 
     .edit-button,
     .launch-button {
-      width: 129px !important;
+      width: 115px !important;
     }
   }
 }
