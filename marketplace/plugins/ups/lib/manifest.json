@@ -12,17 +12,17 @@
       "rawData": {}
     },
     "options": {
-      "environment": {
-        "type": "string"
-      },
-      "client_id": {
-        "type": "string"
-      },
       "client_secret": {
         "type": "string",
         "encrypted": true
       },
+      "client_id": {
+        "type": "string"
+      },
       "shipper_number": {
+        "type": "string"
+      },
+      "base_url": {
         "type": "string"
       }
     }
@@ -33,11 +33,31 @@
     }
   },
   "properties": {
+    "client_id": {
+      "label": "Client ID",
+      "key": "client_id",
+      "type": "text",
+      "description": "Enter your UPS Client ID",
+      "helpText": "You can find your Client ID in your UPS developer account console."
+    },
+    "client_secret": {
+      "label": "Client secret",
+      "key": "client_secret",
+      "type": "password",
+      "description": "Enter your UPS Client Secret",
+      "helpText": "You can find your Client Secret in your UPS developer account console."
+    },
+    "shipper_number": {
+      "label": "Shipper number",
+      "key": "shipper_number",
+      "type": "text",
+      "description": "Enter your UPS Shipper Number"
+    },
     "base_url": {
       "label": "Base URL",
       "key": "base_url",
-      "type": "dropdown-component-flip",
-      "description": "Select the UPS environment",
+      "type": "dropdown",
+      "description": "Select the UPS base URL",
       "list": [
         {
           "value": "https://onlinetools.ups.com",
@@ -48,33 +68,12 @@
           "name": "[https://wwwcie.ups.com] Recommended for testing"
         }
       ]
-    },
-    "client_id": {
-      "label": "Client ID",
-      "key": "client_id",
-      "type": "text",
-      "description": "Enter your UPS Client ID",
-      "hint": "You can find your Client ID in your UPS developer account."
-    },
-    "client_secret": {
-      "label": "Client secret",
-      "key": "client_secret",
-      "type": "password",
-      "description": "Enter your UPS Client Secret",
-      "hint": "You can find your Client Secret in your UPS developer account."
-    },
-    "shipper_number": {
-      "label": "Shipper number",
-      "key": "shipper_number",
-      "type": "text",
-      "description": "Enter your UPS Shipper Number",
-      "hint": "This is your unique identifier for shipping with UPS."
     }
   },
   "required": [
-    "environment",
-    "client_id",
     "client_secret",
-    "shipper_number"
+    "client_id",
+    "shipper_number",
+    "base_url"
   ]
 }
