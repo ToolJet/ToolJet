@@ -354,23 +354,6 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
   return recursiveServiceSearch(grpcObject, serviceName);
 };
 
-export const parseRequestData = (queryOptions: QueryOptions): void => {
-  if (!queryOptions.request) {
-    queryOptions.request = {};
-    return;
-  }
-
-  if (typeof queryOptions.request === 'string') {
-    try {
-      if (typeof queryOptions.request === 'string') {
-        queryOptions.request = JSON5.parse(queryOptions.request);
-      }
-    } catch (error) {
-      const err = toError(error);
-      throw new GrpcOperationError(`Invalid JSON in request data: ${err.message}`, error);
-    }
-  }
-};
 
 const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions, hasDataSource = true): { [k: string]: string } => {
   const ensureArrayFormat = (metadata: any) => {
