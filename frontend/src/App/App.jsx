@@ -45,6 +45,7 @@ import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import EmbedApp from '@/AppBuilder/EmbedApp';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -117,6 +118,7 @@ class AppComponent extends React.Component {
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
+    hubspotHelper.loadHubspot();
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
