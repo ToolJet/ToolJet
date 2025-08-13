@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
@@ -22,6 +22,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -30,7 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
-  ) {}
+  ) { }
 
   async getForApp(
     query: GetQueryVariables,
@@ -271,4 +272,46 @@ export class DataSourcesService implements IDataSourcesService {
       dependent_queries: queries.length,
     };
   }
+
+  async invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string
+  ): Promise<QueryResult> {
+    const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
+
+    if (!service.invokeMethod) {
+      throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
+    }
+
+    const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+      dataSource.id,
+      user.organizationId,
+      environmentId
+    );
+
+    const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+      dataSourceOptions.options,
+      user.organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    try {
+      const result = await service.invokeMethod(methodName, sourceOptions);
+      return { status: 'ok', data: result };
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        return {
+          status: 'failed',
+          data: error.data,
+          errorMessage: error.message,
+          metadata: error.metadata
+        };
+      }
+      throw error;
+    }
+  }
+
 }

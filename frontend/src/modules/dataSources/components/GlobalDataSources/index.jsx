@@ -361,8 +361,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       <>
         <div className="row row-deck mt-3">
           {datasources.map((item) => {
-            const tags =
+            const marketplaceTags =
               pluginsWithTags[item.kind] || pluginsWithTags[item.pluginId] || pluginsWithTags[item.plugin_id] || [];
+            const manifestTags = item?.tags || [];
+            const tags = [...new Set([...marketplaceTags, ...manifestTags])];
             return (
               <Card
                 key={item.key}
