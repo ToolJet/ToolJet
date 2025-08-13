@@ -14,6 +14,7 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
+import ApiEndpointInputOld from './ApiEndpointInputOld';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
@@ -210,6 +211,8 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
+      case 'react-component-api-endpoint-old':
+        return ApiEndpointInputOld;
       case 'react-component-sharepoint':
         return Sharepoint;
       case 'react-component-oauth':
@@ -502,6 +505,13 @@ const DynamicForm = ({
           options,
           darkMode,
         };
+      case 'react-component-api-endpoint-old':
+        return {
+          specUrl: spec_url,
+          optionsChanged,
+          options,
+          darkMode,
+        };
       default:
         return {};
     }
@@ -580,7 +590,11 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
+          const isSpecificComponent = [
+            'tooljetdb-operations',
+            'react-component-api-endpoint',
+            'react-component-api-endpoint-old',
+          ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
