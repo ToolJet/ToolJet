@@ -380,6 +380,7 @@
             "to": "zu"
         },
         "noApplicationFound": "Keine Apps gefunden",
+        "noWorkflowFound": "Keine Workflows gefunden",
         "thisFolderIsEmpty": "Dieser Ordner ist leer",
         "deleteAppAndData": "Die App und die zugehörigen Daten werden endgültig gelöscht. Möchten Sie fortfahren?",
         "removeAppFromFolder": "Die App wird aus diesem Ordner entfernt. Möchten Sie fortfahren?",

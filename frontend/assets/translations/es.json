@@ -284,9 +284,9 @@
                         "createUpdateDelete": "Crear/Actualizar/Eliminar",
                         "folder": "Carpeta"
                     },
-                    "groupOptions":{
-                        "deleteGroup":"Borrar Grupo",
-                        "duplicateGroup":"Duplicar Grupo"
+                    "groupOptions": {
+                        "deleteGroup": "Borrar Grupo",
+                        "duplicateGroup": "Duplicar Grupo"
                     }
                 },
                 "manageSSO": {
@@ -414,6 +414,7 @@
             "to": "hasta"
         },
         "noApplicationFound": "No se encontraron aplicaciones",
+        "noWorkflowFound": "No se encontraron flujos de trabajo",
         "thisFolderIsEmpty": "Esta carpeta está vacía",
         "deleteAppAndData": "La aplicación {{appName}} y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
         "removeAppFromFolder": "La aplicación se eliminará de esta carpeta, ¿desea continuar?",
@@ -725,9 +726,9 @@
             "addColumn": "+ Agregar columna",
             "addNewColumn": "Agregar nueva columna",
             "noActionMessage": "Esta tabla no tiene botones de acción",
-            "textAlignment":"Alineacion del texto",
-            "deciamalPlaces":"Decimales",
-            "imageFit":"Ajuste de imagen"
+            "textAlignment": "Alineacion del texto",
+            "deciamalPlaces": "Decimales",
+            "imageFit": "Ajuste de imagen"
         },
         "Button": {
             "displayName": "Botón",
