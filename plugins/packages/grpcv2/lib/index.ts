@@ -1,13 +1,13 @@
 import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl, getRefreshedToken } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
+import JSON5 from 'json5';
 import {
   buildReflectionClient,
   buildProtoFileClient,
   discoverServicesUsingReflection,
   discoverServicesUsingProtoFile,
   loadProtoFromRemoteUrl,
-  parseRequestData,
   buildGrpcMetadata
 } from './operations';
 
@@ -21,8 +21,6 @@ export default class Grpcv2QueryService implements QueryService {
   ): Promise<QueryResult> {
     try {
       const client = await this.createGrpcClient(sourceOptions, queryOptions.service);
-
-      parseRequestData(queryOptions);
 
       const metadata = buildGrpcMetadata(sourceOptions, queryOptions);
 
@@ -130,8 +128,22 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   private validateRequestData(queryOptions: QueryOptions): void {
-    if (!queryOptions.request || typeof queryOptions.request !== 'object') {
-      throw new GrpcOperationError('Invalid request data. Please provide a valid JSON object in the Request tab.');
+    const message = this.parseMessage(queryOptions.raw_message);
+    if (!message || typeof message !== 'object') {
+      throw new GrpcOperationError('Invalid message data. Please provide a valid JSON object in the Request tab.');
+    }
+  }
+
+  private parseMessage(raw_message?: string): Record<string, unknown> {
+    if (!raw_message || raw_message.trim() === '') {
+      return {};
+    }
+    
+    try {
+      return JSON5.parse(raw_message);
+    } catch (error) {
+      const err = toError(error);
+      throw new GrpcOperationError(`Invalid JSON in request message: ${err.message}`, error);
     }
   }
 
@@ -159,9 +171,10 @@ export default class Grpcv2QueryService implements QueryService {
       }, 120000);
 
       try {
+        const message = this.parseMessage(queryOptions.raw_message);
         methodFunction.call(
           client,
-          queryOptions.request,
+          message,
           metadata,
           (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
             clearTimeout(timeoutId);

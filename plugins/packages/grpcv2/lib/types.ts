@@ -67,7 +67,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   service: string;
   method: string;
-  request: Record<string, unknown>;
+  raw_message?: string;
   metadata?: Record<string, string>;
 };
 

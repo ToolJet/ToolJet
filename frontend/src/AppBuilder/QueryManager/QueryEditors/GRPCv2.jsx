@@ -162,11 +162,6 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     return [['', '']];
   });
 
-  React.useEffect(() => {
-    if (options?.jsonMessage && !options?.requestData) {
-      handleRequestDataChanged(options.jsonMessage);
-    }
-  }, []);
 
   // Handle query switching - reset state when switching to a different query
   React.useEffect(() => {
@@ -313,21 +308,11 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     });
   };
 
-  const handleRequestDataChanged = (value) => {
+  const handleRawMessageChanged = (value) => {
     const updatedOptions = {
       ...options,
-      requestData: value,
+      raw_message: value,
     };
-
-    try {
-      if (value && value.trim()) {
-        updatedOptions.request = JSON.parse(value);
-      } else {
-        updatedOptions.request = {};
-      }
-    } catch (error) {
-      console.warn('Invalid JSON in request data:', error.message);
-    }
 
     optionsChanged(updatedOptions);
   };
@@ -391,12 +376,12 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
           theme={darkMode ? 'monokai' : 'default'}
           metadata={metadata}
           onChange={updateMetadata}
-          onRequestDataChange={handleRequestDataChanged}
+          onRawMessageChange={handleRawMessageChanged}
           removeKeyValuePair={removeMetadata}
           addNewKeyValuePair={addMetadata}
           darkMode={darkMode}
           componentName={queryName}
-          requestData={options?.requestData || options?.jsonMessage || '{\n\n}'}
+          rawMessage={options?.raw_message || '{\n\n}'}
         />
       </div>
     </div>
@@ -407,12 +392,12 @@ const ControlledTabs = ({
   metadata,
   theme,
   onChange,
-  onRequestDataChange,
+  onRawMessageChange,
   removeKeyValuePair,
   addNewKeyValuePair,
   darkMode,
   componentName,
-  requestData,
+  rawMessage,
 }) => {
   const [key, setKey] = React.useState('request');
   const tabs = ['Request', 'Metadata'];
@@ -454,11 +439,11 @@ const ControlledTabs = ({
                 <div>
                   <CodeHinter
                     type="multiline"
-                    initialValue={requestData || '{\n\n}'}
+                    initialValue={rawMessage || '{\n\n}'}
                     lang="javascript"
                     height={'300px'}
                     className="query-hinter"
-                    onChange={(value) => onRequestDataChange(value)}
+                    onChange={(value) => onRawMessageChange(value)}
                     componentName={`${componentName}/request`}
                   />
                 </div>
