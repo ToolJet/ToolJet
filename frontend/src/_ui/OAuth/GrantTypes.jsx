@@ -99,7 +99,7 @@ const CommonOAuthFields = ({
           />
         </>
       )}
-      {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
+      {oauthTypes?.required && (
         <div className="col-md-12">
           <label className="form-label mt-3">OAuth type</label>
           <Select
@@ -361,18 +361,16 @@ const OAuthConfiguration = ({
   return (
     <div>
       <div className="row mt-3">
-        {allowed_grant_types && allowed_grant_types.length > 1 && (
-          <div>
-            <label className="form-label">Grant type</label>
-            <Select
-              options={grantTypeOptions()}
-              value={grant_type}
-              onChange={(value) => optionchanged('grant_type', value)}
-              width={'100%'}
-              useMenuPortal={false}
-            />
-          </div>
-        )}
+        <div>
+          <label className="form-label">Grant type</label>
+          <Select
+            options={grantTypeOptions()}
+            value={grant_type}
+            onChange={(value) => optionchanged('grant_type', value)}
+            width={'100%'}
+            useMenuPortal={false}
+          />
+        </div>
         <CommonOAuthFields
           clientConfig={clientConfig}
           tokenConfig={tokenConfig}
