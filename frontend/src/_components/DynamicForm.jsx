@@ -529,16 +529,6 @@ const DynamicForm = ({
       if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
         return;
       }
-      
-      // Initialize computedProps[field] if it doesn't exist (for new data sources)
-      if (!computedProps[field]) {
-        setComputedProps(prev => ({
-          ...prev,
-          [field]: { disabled: false }
-        }));
-        return;
-      }
-      
       const isEditing = computedProps[field]['disabled'];
       const workspaceConstant = options?.[field]?.workspace_constant;
       const isWorkspaceConstant = !!workspaceConstant;
@@ -643,7 +633,7 @@ const DynamicForm = ({
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
                         >
-                          {computedProps?.[propertyKey]?.disabled !== false ? 'Edit' : 'Cancel'}
+                          {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
                       </div>
                     )}
