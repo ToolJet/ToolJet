@@ -67,6 +67,7 @@ To remove a plugin, follow these steps:
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
+- **[Microsoft Graph](/docs/marketplace/plugins/marketplace-plugin-microsoft_graph)**
 - **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
