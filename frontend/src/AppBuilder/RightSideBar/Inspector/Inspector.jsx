@@ -532,7 +532,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon" style={{ marginLeft: '8px' }}>
+      <div className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -561,11 +561,11 @@ export const Inspector = ({
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div
-          className={`row inspector-component-title-input-holder inspector-action-container ${
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
             shouldFreeze && 'disabled'
           }`}
         >
-          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
             <>
               <div className="width-unset" data-cy={'component-inspector-options'}>
