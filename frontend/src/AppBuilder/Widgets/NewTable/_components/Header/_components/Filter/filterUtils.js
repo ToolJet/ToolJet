@@ -29,12 +29,12 @@ export const filterFunctions = {
     }
   },
   equals: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '').toLowerCase();
-    return value === String(filterValue.value || '').toLowerCase();
+    const value = String(row.getValue(columnId) || '');
+    return value === String(filterValue.value || '');
   },
   ne: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '').toLowerCase();
-    return value !== String(filterValue.value || '').toLowerCase();
+    const value = String(row.getValue(columnId) || '');
+    return value !== String(filterValue.value || '');
   },
   isEmpty: (row, columnId) => {
     const value = row.getValue(columnId);
@@ -46,19 +46,19 @@ export const filterFunctions = {
   },
   gt: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);
-    return Number(value) > Number(filterValue.value);
+    return value > filterValue.value;
   },
   lt: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);
-    return Number(value) < Number(filterValue.value);
+    return value < filterValue.value;
   },
   gte: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);
-    return Number(value) >= Number(filterValue.value);
+    return value >= filterValue.value;
   },
   lte: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);
-    return Number(value) <= Number(filterValue.value);
+    return value <= filterValue.value;
   },
 };
 
