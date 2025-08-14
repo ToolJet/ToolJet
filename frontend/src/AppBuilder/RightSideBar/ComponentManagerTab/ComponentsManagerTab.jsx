@@ -11,7 +11,7 @@ import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
-import { ComponentModuleTab } from '@/modules/Appbuilder/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
@@ -60,6 +60,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
+  const edition = fetchEdition();
 
   const { hasModuleAccess } = useLicenseStore(
     (state) => ({
@@ -239,7 +240,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      {isModuleEditor ? (
+      {isModuleEditor || edition === 'ce' ? (
         <>
           <div className="d-flex align-items-center">
             <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
