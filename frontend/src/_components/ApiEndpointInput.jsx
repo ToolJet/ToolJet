@@ -94,10 +94,13 @@ const ApiEndpointInput = (props) => {
             let newPath = options?.path;
             let newSelectedOperation = null;
 
-            if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
-              newOperation = options.operation;
-              newPath = options.path;
-              newSelectedOperation = data.paths[options.path][options.operation];
+            // Validate if the current operation/path exists in the new spec
+            if (newPath && newOperation && data?.paths?.[newPath]?.[newOperation]) {
+              newSelectedOperation = data.paths[newPath][newOperation];
+            } else {
+              // Only clear if the operation/path doesn't exist in the new spec
+              newOperation = null;
+              newPath = null;
             }
 
             const newOptions = {
@@ -157,27 +160,17 @@ const ApiEndpointInput = (props) => {
     if (value === '') {
       removeParam(paramType, paramName);
     } else {
-      let parsedValue = value;
-
-      if (paramType === 'request') {
-        try {
-          parsedValue = JSON.parse(value);
-        } catch (e) {
-          console.error(`Invalid JSON for request param "${paramName}":`, e);
-          parsedValue = value;
-        }
-      }
-
+      // Store the value as-is for all param types
       const newOptions = {
         ...options,
         params: {
           ...options.params,
           [paramType]: {
             ...options.params[paramType],
-            [paramName]: parsedValue,
+            [paramName]: value,
           },
         },
-        ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
+        ...(isMultiSpec && { specType: selectedSpecType }),
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);
