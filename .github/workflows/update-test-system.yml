@@ -1,0 +1,267 @@
+name: Update test system (LTS and pre-release)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch to build from'
+        required: true
+        default: 'main'
+      dockerfile_path:
+        description: 'Select Dockerfile'
+        required: true
+        type: choice
+        options:
+          - ./docker/LTS/ee/ee-production.Dockerfile
+          - ./docker/pre-release/ee/ee-production.Dockerfile
+      docker_tag:
+        description: 'Docker tag suffix (e.g., pre-release-14, 3.16-lts, etc.)'
+        required: true
+      test_system:
+        description: 'Select test system'
+        required: true
+        type: choice
+        options:
+          - app-builder-3.16-lts
+          - app-builder-pre-release
+          - platform-3.16-lts
+          - platform-pre-release
+          - marketplace-3.16-lts
+          - marketplace-pre-release
+          - ai-3.16-lts
+          - ai-pre-release
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ✅ Check user authorization
+        run: |
+          # Define allowed users
+          allowed_users=(
+            "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER3_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER4_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER5_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER6_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER7_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER8_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
+          )
+          
+          current_user="${{ github.actor }}"
+          authorized=false
+          
+          for user in "${allowed_users[@]}"; do
+            if [[ "$current_user" == "$user" ]]; then
+              authorized=true
+              break
+            fi
+          done
+          
+          if [[ "$authorized" == "false" ]]; then
+            echo "❌ User '$current_user' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '$current_user' is authorized."
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate full Docker tag
+        id: taggen
+        run: |
+          input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ "$input_tag" == *"/"* ]]; then
+            echo "tag=$input_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ github.event.inputs.dockerfile_path }}
+          push: true
+          tags: ${{ steps.taggen.outputs.tag }}
+          platforms: linux/amd64
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
+      - name: Show the full Docker tag
+        run: echo "✅ Docker image built and pushed:${{ steps.taggen.outputs.tag }}"
+
+      - name: Install SSH and JQ
+        run: sudo apt-get install -y jq openssh-client
+
+      - name: Determine target host
+        id: vmhost
+        run: |
+          test_system="${{ github.event.inputs.test_system }}"
+          vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
+          
+          if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
+            echo "VM mapping not found for $test_system"
+            exit 1
+          fi
+          
+          echo "host=$vm_host" >> $GITHUB_OUTPUT
+
+      - name: Deploy to target environment
+        run: |
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          
+          IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
+          TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
+          
+          # Debug: Show what we're deploying
+          echo "DEBUG: IMAGE_TAG=$IMAGE_TAG"
+          echo "DEBUG: TARGET_SYSTEM=$TARGET_SYSTEM"
+          
+          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
+          set -e
+          
+          IMAGE_TAG="$IMAGE_TAG"
+          TARGET_SYSTEM="$TARGET_SYSTEM"
+          
+          cd ~
+          echo "📁 Finding correct deployment directory"
+          
+          # Debug: Show variables on remote host
+          echo "Debug on remote: IMAGE_TAG=\$IMAGE_TAG"
+          echo "Debug on remote: TARGET_SYSTEM=\$TARGET_SYSTEM"
+          
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            echo "Detected LTS system: \$TARGET_SYSTEM"
+            echo "🔍 Searching for LTS directories..."
+            
+            # Find LTS directories dynamically
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
+                       ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
+            
+            if [[ -z "\$LTS_DIRS" ]]; then
+              echo "❌ No LTS directories found!"
+              echo "Available directories:"
+              ls -la | grep "^d"
+              exit 1
+            fi
+            
+            echo "Available LTS directories:"
+            echo "\$LTS_DIRS"
+            
+            # Choose the first available LTS directory
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
+            cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
+          else
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Moving to target directory: \$TARGET_SYSTEM"
+            cd ~
+            echo "✅ Now in directory: \$(pwd)"
+          fi
+          
+          echo "🔐 Docker login"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          echo "current image"
+          cat .env | grep TOOLJET_IMAGE
+          
+          echo "📦 Reading current TOOLJET_IMAGE from .env"
+          CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          echo "Found CURRENT_IMAGE: \$CURRENT_IMAGE"
+          
+          echo "🛑 Stopping containers"
+          sudo docker-compose down
+          
+          echo "📝 Updating .env with new image"
+          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          
+          echo "📥 Pulling new image: \$IMAGE_TAG"
+          if [ -z "\$IMAGE_TAG" ]; then
+            echo "❌ IMAGE_TAG is empty!"
+            exit 1
+          fi
+          sudo docker pull "\$IMAGE_TAG"
+          
+          echo "🚀 Starting container in background"
+          sudo docker-compose up -d
+          
+          # Wait for ToolJet to start and show success message
+          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=300
+          ELAPSED=0
+          
+          while [ \$ELAPSED -lt \$TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            
+            echo "⏳ Still waiting... (\${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=\$((ELAPSED + 10))
+          done
+          
+          if [ "\$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker-compose logs --tail=50
+            echo ""
+            echo "=== CONTAINER STATUS ==="
+            sudo docker-compose ps
+            echo ""
+            
+            echo "🛑 Starting rollback process..."
+            sudo docker-compose down
+            
+            echo "🔄 Reverting to previous image: \$CURRENT_IMAGE"
+            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
+            
+            echo "🔄 Starting previous image..."
+            sudo docker-compose up -d
+            echo "✅ Rollback completed!"
+            exit 1
+          fi
+          
+          echo "✅ Deployment successful!"
+          
+          echo "📌 Storing successful deployment info in .env"
+          sudo sed -i "/^OLD_IMAGE=/d" .env
+          echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
+          echo "📄 Final application logs:"
+          sudo docker-compose logs --tail=50
+          
+          echo "🧹 Pruning old Docker images"
+          sudo docker image prune -a -f
+          
+          EOF
+        env:
+          SSH_USER: ${{ secrets.AZURE_VM_USER }}
+          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
+          
