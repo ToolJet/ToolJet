@@ -13,9 +13,8 @@ function signInViaOAuth(ssoType, ssoResponse, utmParams = {}) {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse, ...utmParams }),
+    body: JSON.stringify({ ...ssoResponse, utmParams: utmParams }),
   };
-
   return fetch(`${config.apiUrl}/ai/onboarding/sign-in/common/${ssoType}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {

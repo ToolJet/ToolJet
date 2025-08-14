@@ -74,25 +74,40 @@ export function Authorize({ navigate }) {
   const extractUtmParams = (router) => {
     const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
     const utmParams = {};
-    // Extract from hash if present (will override query params if both exist)
     if (window.location.hash) {
-      const hashParams = new Proxy(new URLSearchParams(window.location.hash.substr(1)), {
-        get: (searchParams, prop) => searchParams.get(prop),
-      });
-
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
       UTM_FIELDS.forEach((param) => {
-        if (hashParams[param]) {
-          utmParams[param] = hashParams[param];
+        const value = hashParams.get(param);
+        if (value) {
+          utmParams[param] = value;
         }
       });
+
+      // If no direct UTM params found, check inside the 'state' parameter
+      const stateParam = hashParams.get('state');
+      if (stateParam && Object.keys(utmParams).length === 0) {
+        try {
+          const decodedState = decodeURIComponent(stateParam);
+          const stateParams = new URLSearchParams(decodedState);
+
+          UTM_FIELDS.forEach((param) => {
+            const value = stateParams.get(param);
+            if (value) {
+              utmParams[param] = value;
+            }
+          });
+        } catch (error) {
+          console.warn('Error parsing state parameter:', error);
+        }
+      }
     } else {
+      // Fallback to router.query if no hash
       UTM_FIELDS.forEach((param) => {
         if (router.query[param]) {
           utmParams[param] = router.query[param];
         }
       });
     }
-
     return utmParams;
   };
   const signIn = (authParams, configs, utmParams) => {
@@ -209,3 +224,6 @@ export function Authorize({ navigate }) {
     </div>
   );
 }
+
+// https://accounts.google.com/o/oauth2/v2/auth?response_type=id_token&client_id=294205837601-ugfgfesarj4um3uutnm89apbvhd47mv8.apps.googleusercontent.com&redirect_uri=https://gcpstage.tooljet.ai/sso/google&scope=email%20profile&nonce=GpVBNJBf0e&
+// state=tj_api_source%3Dai_onboarding
