@@ -560,16 +560,11 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px' }}
-            >
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
+        <div
+          className={`row inspector-component-title-input-holder inspector-action-container ${
+            shouldFreeze && 'disabled'
+          }`}
+        >
           <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
             <>

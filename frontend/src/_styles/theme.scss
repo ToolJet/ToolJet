@@ -5233,6 +5233,10 @@ input[type="text"] {
       width: 32px;
       height: 32px;
     }
+
+    &.inspector-action-container {
+      align-items: unset;
+    }
   }
 }
 
