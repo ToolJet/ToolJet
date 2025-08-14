@@ -594,6 +594,7 @@ const DynamicForm = ({
             'tooljetdb-operations',
             'react-component-api-endpoint',
             'react-component-api-endpoint-old',
+            'react-component-oauth',
           ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
@@ -603,8 +604,9 @@ const DynamicForm = ({
           return (
             enabled && (
               <div
-                className={cx('my-2', {
-                  'col-md-12': !className && !isHorizontalLayout,
+                className={cx({
+                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
+                  'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
                   [className]: !!className,
                   'd-flex': isHorizontalLayout,
                   'dynamic-form-row': isHorizontalLayout,

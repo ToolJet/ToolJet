@@ -73,7 +73,6 @@ const OAuthWrapper = ({
   return (
     <div>
       <div>
-        <label className="form-label">Connection type</label>
         <OAuth
           isGrpc={false}
           grant_type={options?.grant_type?.value}
