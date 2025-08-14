@@ -256,7 +256,7 @@
   },
   {
     "name": "UPS",
-    "description": "Integrate with UPS API to create and track shipments of small package, LTL, and air freight.",
+    "description": "Integrate with UPS API to create and track shipments",
     "version": "1.0.0",
     "id": "ups",
     "author": "Tooljet",
