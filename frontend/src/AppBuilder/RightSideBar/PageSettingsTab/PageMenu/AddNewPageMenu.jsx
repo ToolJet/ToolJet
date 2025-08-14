@@ -76,7 +76,7 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
                 text="Add nav group"
                 icon="folder"
                 darkMode={darkMode}
-                onClick={() => handleOpenPopup('group')}
+                onClick={() => isLicensed && handleOpenPopup('group')}
               />
               <LicenseTooltip
                 message={"Nav group can't be created on free plans"}

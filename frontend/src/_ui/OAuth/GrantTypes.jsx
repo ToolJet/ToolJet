@@ -360,7 +360,7 @@ const OAuthConfiguration = ({
 
   return (
     <div>
-      <div className="row">
+      <div className="row mt-3">
         {allowed_grant_types && allowed_grant_types.length > 1 && (
           <div>
             <label className="form-label">Grant type</label>

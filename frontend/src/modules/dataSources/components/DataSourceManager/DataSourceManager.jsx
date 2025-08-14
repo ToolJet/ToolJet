@@ -253,7 +253,7 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar','xero'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'xero'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -965,7 +965,16 @@ class DataSourceManagerComponent extends React.Component {
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
       ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'snowflake','xero'];
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'snowflake',
+      'microsoft_graph',
+      'xero'
+    ];
     return (
       pluginsLoaded && (
         <div>
