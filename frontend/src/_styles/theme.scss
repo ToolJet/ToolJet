@@ -5334,7 +5334,7 @@ div#driver-page-overlay {
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
   color: var(--slate12);
-  border: 1px solid transparent;
+  border: 1px solid transparent !important;
   border-radius: 6px;
   background-color: var(--base);
 
