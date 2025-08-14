@@ -247,6 +247,14 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
+    "name": "Google Cloud Spanner",
+    "description": "Plugin to query relational database using GoogleSQL or PostgreSQL.",
+    "version": "1.0.0",
+    "id": "spanner",
+    "author": "Tooljet",
+    "timestamp": "Mon, 14 Jul 2025 07:03:25 GMT"
+  },
+  {
     "name": "AfterShip",
     "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
     "version": "1.0.0",
