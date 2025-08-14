@@ -234,7 +234,8 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText,
+    helpText: helpTextProp, // For marketplace compatibility
+    help_text,
     description,
     type,
     placeholder = '',
@@ -248,10 +249,12 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType = 'basic',
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
     spec_url = '',
     disabled = false,
-    buttonText,
+    buttonText: buttonTextProp,
+    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
     text,
     subtext,
     oauth_configs,
@@ -262,6 +265,11 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
+    
+    // Select snake_case for marketplace plugins if camelCase is undefined
+    const buttonText = buttonTextProp || button_text;
+    const editorType = editorTypeProp || editor_type;
+    const helpText = helpTextProp || help_text;
 
     switch (type) {
       case 'password':
