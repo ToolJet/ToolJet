@@ -17,7 +17,7 @@ import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import ApiEndpointInputOld from './ApiEndpointInputOld';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
-import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
+import { orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
