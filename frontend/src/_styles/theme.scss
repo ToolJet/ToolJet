@@ -3005,8 +3005,8 @@ input:focus-visible {
 }
 
 .widget-documentation-link {
-  // position: relative;
-  // top: 0px;
+  position: fixed;
+  bottom: 0;
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 999;
