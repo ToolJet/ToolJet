@@ -7,4 +7,5 @@ export interface CRMData {
   isCloudTrialOpted?: boolean;
   paymentTry?: boolean;
   isInvited?: boolean;
+  utmParams?: Record<string, any>;
 }
