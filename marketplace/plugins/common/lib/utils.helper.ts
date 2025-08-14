@@ -258,10 +258,11 @@ export const fetchHttpsCertsForCustomCA = () => {
 
 export const constructSourceOptions = (sourceOptions, props: AuthSourceDetails) => {
   const baseUrl = props.baseUrl;
-  const authUrl = props.baseUrl;
+  const authUrl = props.authUrl;
   const scope = props.scope;
   const accessToken = props.accessTokenUrl;
   const headerPrefix = props.headerPrefix ? props.headerPrefix : 'Bearer ';
+  const accessTokenCustomHeaders = props.accessTokenCustomHeaders ? props.accessTokenCustomHeaders : [['', '']];
   const addSourceOptions = {
     url: baseUrl,
     auth_url: authUrl,
@@ -279,7 +280,7 @@ export const constructSourceOptions = (sourceOptions, props: AuthSourceDetails) 
     ],
     custom_query_params: [['', '']],
     custom_auth_params: [['', '']],
-    access_token_custom_headers: [['', '']],
+    access_token_custom_headers: accessTokenCustomHeaders,
     ssl_certificate: 'none',
     retry_network_errors: true,
 

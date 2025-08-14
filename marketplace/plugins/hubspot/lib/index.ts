@@ -22,14 +22,13 @@ export default class Hubspot implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     let result = {};
-    console.log('source options run', sourceOptions);
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
       sourceOptions['client_id'] = process.env.GOOGLE_CLIENT_ID;
       sourceOptions['client_secret'] = process.env.GOOGLE_CLIENT_SECRET;
     }
     const operation = queryOptions.operation;
     const accessToken = sourceOptions['access_token'];
-    const baseUrl = 'https://www.googleapis.com/calendar/v3';
+    const baseUrl = 'https://api.hubapi.com';
     const path = queryOptions['path'];
     let url = `${baseUrl}${path}`;
     const pathParams = queryOptions['params']['path'];
@@ -46,12 +45,12 @@ export default class Hubspot implements QueryService {
       const authSourceDetails: AuthSourceDetails = {
         baseUrl: 'https://api.hubapi.com',
         authUrl: 'https://app.hubspot.com/oauth/authorize',
-        scope: sourceOptions.scope,
+        scope: sourceOptions.scopes,
         accessTokenUrl: 'https://api.hubapi.com/oauth/v1/token',
+        accessTokenCustomHeaders: [['Content-Type', 'application/x-www-form-urlencoded']],
       };
       const newSourcOptions = constructSourceOptions(sourceOptions, authSourceDetails);
       const authValidatedRequestOptions = convertQueryOptions(queryOptions, customHeaders);
-
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
         newSourcOptions,
         context,
@@ -102,7 +101,6 @@ export default class Hubspot implements QueryService {
   }
 
   authUrl(source_options: SourceOptions): string {
-    console.log('source options auth', source_options);
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
@@ -141,12 +139,10 @@ export default class Hubspot implements QueryService {
       `?response_type=code&client_id=${clientId}` +
       `&redirect_uri=${encodeURIComponent(fullUrl + 'oauth2/authorize')}`;
     const authUrl = `${baseUrl}&scope=${encodedScope}`;
-
     return authUrl;
   }
 
   async accessDetailsFrom(authCode: string, source_options: any, resetSecureData = false): Promise<object> {
-    console.log('source options access', source_options);
     if (resetSecureData) {
       return [
         ['access_token', ''],
@@ -219,7 +215,6 @@ export default class Hubspot implements QueryService {
       console.log(error.response?.body || error.message);
       throw Error('could not connect to HubSpot');
     }
-    console.log('auth details hub', authDetails);
     return authDetails;
   }
 }

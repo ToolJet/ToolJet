@@ -66,8 +66,13 @@
     "grant_type": {
       "value": "authorization_code"
     },
+    "access_token_custom_headers": {
+        "value": [
+          ["Content-Type", "application/x-www-form-urlencoded"]
+        ]
+      },
     "scopes": {
-      "value": "oauth cms.domains.read content cms.domains.write cms.knowledge_base.settings.write cms.knowledge_base.settings.read"
+      "value": "oauth content cms.domains.read cms.domains.write cms.knowledge_base.settings.write cms.knowledge_base.settings.read"
     }
   },
   "properties": {

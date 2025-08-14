@@ -13,6 +13,7 @@ export type AuthSourceDetails = {
   scope: string;
   accessTokenUrl: string;
   headerPrefix?: string;
+  accessTokenCustomHeaders?: [string, string][];
 };
 
 export type ConvertedFormat = {
