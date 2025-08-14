@@ -25,7 +25,7 @@ Use Personal Access Tokens when you want to:
 
 ## Generate PAT
 
-To create a Personal Access Token for a specific app-user combination, you can use the following endpoint:
+To create a Personal Access Token for a specific app–user combination, you can use the following endpoint through an API client such as Postman, cURL, or any other API testing tool.
 
 ```swift
 POST /api/ext/users/personal-access-token
@@ -57,8 +57,8 @@ curl --location 'http://localhost:3000/api/ext/users/personal-access-token' \
 <summary>Example Response</summary>
 ```js
 {
-  "personalAccessToken": "pat_469ed9...1a8b597",
-  "redirectUrl": "http://localhost:8082/embed-apps/8ba8bf0e...?personal-access-token=pat_469ed9..."
+  "personalAccessToken": "pat_XXXX",
+  "redirectUrl": "http://your-domain.com/embed-apps/:appId?personal-access-token=pat_XXXX..."
 }
 ```
 </details>
