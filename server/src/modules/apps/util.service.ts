@@ -51,7 +51,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) {}
+  ) { }
   async create(
     name: string,
     user: User,
@@ -174,7 +174,7 @@ export class AppsUtilService implements IAppsUtilService {
         canvasMaxHeight: 2400,
         canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
-        appMode: 'auto',
+        appMode: 'light',
       };
       await manager.save(appVersion);
       return app;
@@ -501,14 +501,14 @@ export class AppsUtilService implements IAppsUtilService {
     return userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -661,10 +661,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });

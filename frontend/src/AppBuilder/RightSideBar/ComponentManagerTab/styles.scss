@@ -1,0 +1,85 @@
+.components-container {
+   .component-manager-close-icon {
+       position: absolute;
+       top: 6px;
+       right: 5px;
+       z-index: 10;
+   }
+
+  #components-manager-tabs {
+     margin-left: 10px;
+     position: relative;
+     top: 1px;
+     border-bottom: 1px solid var(--border-weak) !important;
+  }
+
+  #components-manager-tabs-tab-components, #components-manager-tabs-tab-modules {
+    border-radius: 0px !important;
+    background-color: transparent !important;
+  }
+
+  #components-manager-tabs-tab-components.nav-link.active, #components-manager-tabs-tab-modules.nav-link.active {
+    border-bottom: 2px solid rgb(77, 114, 250) !important;
+    color: var(--text-default) !important;
+  }
+
+  #components-manager-tabs-tab-components.nav-link, #components-manager-tabs-tab-modules.nav-link {
+    font-weight: 500 !important;
+  }
+
+  #components-manager-tabs-tab-components:hover, #components-manager-tabs-tab-modules:hover {
+    border: none !important;
+  }
+
+
+  #components-manager-tabs {
+    height: 40px;
+    margin-top: 0px !important;
+    align-items: flex-end;
+    gap: 4px;
+
+    .nav-item {
+      background-color: var(--base) !important;
+      flex-grow: 0;
+
+      button {
+        min-width: 0 !important;
+        padding: 2px 7px;
+      }
+
+      #components-manager-tabs-tab-components {
+        width: 84px;
+      }
+
+      #components-manager-tabs-tab-modules {
+        width: 61px;
+      }
+
+      &:hover {
+        button.nav-link:not(.active) {
+          position: relative;
+    
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 22px;
+            transform: translateY(-50%);
+            background-color: var(--interactive-hover);
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 6px;
+          }
+        }
+      }
+    }
+  
+    .tab-content {
+      border-top: 1px solid var(--border-weak);
+    }
+  }
+
+  
+}

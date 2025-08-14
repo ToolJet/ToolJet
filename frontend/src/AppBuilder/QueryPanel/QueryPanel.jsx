@@ -22,6 +22,7 @@ export const QueryPanel = ({ darkMode }) => {
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -152,10 +153,13 @@ export const QueryPanel = ({ darkMode }) => {
         className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
         style={{
           height: 40,
+          ...(isRightSidebarOpen && {
+            width: 'calc(100% - 396px)',
+          }),
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          zIndex: 12,
+          zIndex: 2,
         }}
       >
         <div
@@ -189,6 +193,9 @@ export const QueryPanel = ({ darkMode }) => {
         style={{
           height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
           maxHeight: '93.5%',
+          ...(isRightSidebarOpen && {
+            width: 'calc(100% - 396px)',
+          }),
           cursor: isDraggingQueryPane || isTopOfQueryPanel ? 'row-resize' : 'default',
           ...(!isQueryPaneExpanded && {
             border: 'none',
