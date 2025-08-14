@@ -69,3 +69,7 @@ The table below describes each configuration values:
 
 
     Once you've entered the necessary configurations, click **Save Changes**. Your workspace will now be connected to your GitLab project.
+
+:::note
+You can use the same credentials to configure a specific repository across multiple instances or workspaces.
+:::

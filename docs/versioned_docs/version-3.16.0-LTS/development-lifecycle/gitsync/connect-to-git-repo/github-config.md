@@ -81,3 +81,7 @@ The table below describes each configuration values:
 | **GitHub app private key** | Private key you downloaded after App creation. |
 
 Once you've entered the necessary configurations, click **Save Changes**. Your ToolJet instance will now be connected to your GitHub repository.
+
+:::note
+You can use the same credentials to configure a specific repository across multiple instances or workspaces.
+:::
