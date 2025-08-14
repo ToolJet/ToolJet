@@ -149,7 +149,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
       return;
     return (
       <Transformation
-        renderCopilot={renderCopilot}
+        renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
         changeOption={optionchanged}
         options={options ?? {}}
         darkMode={darkMode}
@@ -186,7 +186,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             )}
         </div>
         <ElementToRender
-          renderCopilot={renderCopilot}
+          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
           key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}

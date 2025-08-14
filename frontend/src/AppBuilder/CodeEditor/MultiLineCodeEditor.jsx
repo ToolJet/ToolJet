@@ -364,6 +364,7 @@ const MultiLineCodeEditor = (props) => {
               language: lang,
               editorRef,
               onAiSuggestionAccept,
+              selectedDataSource: props.selectedDataSource,
             })
           }
         />
