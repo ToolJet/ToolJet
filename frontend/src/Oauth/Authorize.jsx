@@ -33,6 +33,7 @@ export function Authorize({ navigate }) {
 
     const configs = Configs[router.query.origin];
     const authParams = {};
+    const utmParams = extractUtmParams(router);
 
     if (configs.responseType === 'hash') {
       if (!window.location.hash) {
@@ -59,19 +60,42 @@ export function Authorize({ navigate }) {
       subsciption = authenticationService.currentSession.subscribe((session) => {
         //logged users should send tj-workspace-id when login to unauthorized workspace
         if (session.authentication_status === false || session.current_organization_id) {
-          signIn(authParams, configs);
+          signIn(authParams, configs, utmParams);
           subsciption.unsubscribe();
         }
       });
     } else {
-      signIn(authParams, configs);
+      signIn(authParams, configs, utmParams);
     }
 
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const extractUtmParams = (router) => {
+    const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+    const utmParams = {};
+    // Extract from hash if present (will override query params if both exist)
+    if (window.location.hash) {
+      const hashParams = new Proxy(new URLSearchParams(window.location.hash.substr(1)), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
 
-  const signIn = (authParams, configs) => {
+      UTM_FIELDS.forEach((param) => {
+        if (hashParams[param]) {
+          utmParams[param] = hashParams[param];
+        }
+      });
+    } else {
+      UTM_FIELDS.forEach((param) => {
+        if (router.query[param]) {
+          utmParams[param] = router.query[param];
+        }
+      });
+    }
+
+    return utmParams;
+  };
+  const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
 
@@ -151,7 +175,7 @@ export function Authorize({ navigate }) {
       } else {
         /* For ai onboarding */
         aiOnboardingService
-          .signInViaOAuth(router.query.origin, authParams)
+          .signInViaOAuth(router.query.origin, authParams, utmParams)
           .then(handleAuthResponse)
           .catch(handleAuthError);
       }
