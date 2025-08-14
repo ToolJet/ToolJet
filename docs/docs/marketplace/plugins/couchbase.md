@@ -3,7 +3,7 @@ id: marketplace-plugin-couchbase
 title: Couchbase
 ---
 
-ToolJet integrates with Couchbase to utilize its NoSQL database capabilities. This integration enables ToolJet to perform document operations such as creating, reading, updating, and deleting documents, as well as executing SQL++ queries and Full-Text Search (FTS) operations in Couchbase databases.
+ToolJet integrates with Couchbase to utilize its NoSQL database capabilities and advanced vector search features. This integration enables ToolJet to perform document operations such as creating, reading, updating, and deleting documents, as well as executing SQL++ queries, Full-Text Search (FTS) operations in Couchbase databases. With Couchbase's vector store capabilities, ToolJet can leverage semantic search, hybrid search combining traditional and AI-powered queries, and build intelligent applications.
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
@@ -100,6 +100,8 @@ This operation updates an existing document in a Couchbase collection.
 Updated successfully
 ```
 </details>
+
+Note: Update operation replaces the original document with the updated value of the document passed. 
 
 ### Delete Document
 
