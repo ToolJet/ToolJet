@@ -124,7 +124,6 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
       if (!date) return [true, null, date];
 
       const isValid = moment(date, dateFormat, true).isValid();
-      console.log('date', date, isValid);
 
       return [isValid, isValid ? null : [`Invalid date. Expected date format: ${dateFormat}`], date];
     };

@@ -7,12 +7,14 @@ import {
   DeprecatedColumnTooltip,
   checkIfTableColumnDeprecated,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
+import { checkIfInputWidgetTypeIsDeprecated } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 export const Option = (props) => {
-  const isDeprecated = checkIfTableColumnDeprecated(props.value);
+  const isDeprecated = checkIfTableColumnDeprecated(props.value) || checkIfInputWidgetTypeIsDeprecated(props.value);
+
   return (
     <components.Option {...props}>
-      <DeprecatedColumnTooltip columnType={props.value}>
+      <DeprecatedColumnTooltip columnType={props.value} isInputWidget={checkIfInputWidgetTypeIsDeprecated(props.value)}>
         <div className="d-flex justify-content-between">
           <span>{props.label}</span>
           {props.isSelected && (
@@ -94,6 +96,7 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
             IndicatorSeparator: () => null,
             Option,
           }}
+          // menuIsOpen={true}
         />
       </div>
     </div>

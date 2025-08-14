@@ -113,20 +113,9 @@ export const phoneinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    width: {
-      type: 'slider',
-      displayName: 'Width',
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
     auto: {
       type: 'checkbox',
-      displayName: 'auto',
-      showLabel: false,
+      displayName: 'Width',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
@@ -134,6 +123,46 @@ export const phoneinputConfig = {
         value: 'side',
       },
       isFxNotRequired: true,
+    },
+    width: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
 
     backgroundColor: {
@@ -283,6 +312,7 @@ export const phoneinputConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };
