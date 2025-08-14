@@ -253,7 +253,7 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -965,7 +965,15 @@ class DataSourceManagerComponent extends React.Component {
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
       ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'snowflake'];
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'snowflake',
+      'microsoft_graph',
+    ];
     return (
       pluginsLoaded && (
         <div>
@@ -1000,7 +1008,7 @@ class DataSourceManagerComponent extends React.Component {
                   )}
                   <Modal.Title className="mt-3">
                     {selectedDataSource && !isSampleDb ? (
-                      <div className="row selected-ds">
+                      <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                         <div className="input-icon" style={{ width: '160px' }}>
                           <input

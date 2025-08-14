@@ -4,12 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect', 'RadioButton', 'Datepicker', 'Modal', 'RangeSlider'];
 const NEW_WIDGETS = [
-  'ToggleSwitchV2',
-  'DropdownV2',
-  'MultiselectV2',
   'RadioButtonV2',
   'DatetimePickerV2',
-  'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
   'ModalV2',
@@ -17,7 +13,6 @@ const NEW_WIDGETS = [
   'PhoneInput',
   'CurrencyInput',
   'RangeSliderV2',
-  'Chat',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {
