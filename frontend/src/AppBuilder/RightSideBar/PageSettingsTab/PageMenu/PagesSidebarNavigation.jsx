@@ -73,7 +73,6 @@ export const PagesSidebarNavigation = ({
   const [measuredHeaderWidth, setMeasuredHeaderWidth] = useState(0);
   const [measuredDarkModeToggleWidth, setMeasuredDarkModeToggleWidth] = useState(0);
   const [measuredMoreButtonWidth, setMeasuredMoreButtonWidth] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
   const navigationRef = useRef(null);
 
@@ -441,7 +440,7 @@ export const PagesSidebarNavigation = ({
     }
   };
 
-  const shouldShowBlueBorder = isHovered || activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+  const shouldShowBlueBorder = activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
@@ -515,7 +514,7 @@ export const PagesSidebarNavigation = ({
           navRef.current = el;
           navigationRef.current = el;
         }}
-        className={cx('navigation-area', {
+        className={cx('navigation-area navigation-hover-trigger', {
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
@@ -554,8 +553,6 @@ export const PagesSidebarNavigation = ({
           })(),
         }}
         onClick={handleSidebarClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
           {(collapsable || !headerHidden || !logoHidden) && (
@@ -640,8 +637,10 @@ export const PagesSidebarNavigation = ({
           </div>
         )}
       </div>
-      {shouldShowBlueBorder && (
+      {/* Show tooltip when tab is active */}
+      {activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
         <div
+          className="navigation-tooltip"
           style={{
             position: 'absolute',
             top: position === 'top' ? 'calc(100% + 8px)' : '7px',
@@ -670,6 +669,37 @@ export const PagesSidebarNavigation = ({
           </div>
         </div>
       )}
+
+      {/* Show tooltip on hover (always present, controlled by CSS) */}
+      <div
+        className="navigation-tooltip-hover"
+        style={{
+          position: 'absolute',
+          top: position === 'top' ? 'calc(100% + 8px)' : '7px',
+          left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '46px',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          display: 'none',
+          alignItems: 'center',
+          gap: '6px',
+          background: '#1b1f24',
+          padding: '2px 6px',
+          borderRadius: '6px',
+          whiteSpace: 'nowrap',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
+        <div
+          style={{
+            color: '#f6f8fa',
+            fontSize: '11px',
+            fontWeight: '500',
+          }}
+        >
+          Page and nav
+        </div>
+      </div>
     </div>
   );
 };
