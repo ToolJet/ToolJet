@@ -20,17 +20,49 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise fallback to main
-RUN git submodule foreach " \
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+RUN if git submodule update --init --recursive; then \
+  echo "Submodules initialized successfully"; \
+  # Checkout the same branch in submodules if it exists, otherwise fallback to main
+  git submodule foreach " \
+    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+      git checkout ${BRANCH_NAME}; \
+    else \
+      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+      git checkout main; \
+    fi"; \
+else \
+  echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
+  # Clone frontend/ee submodule directly
+  if [ ! -d "frontend/ee" ]; then \
+    mkdir -p frontend/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+  fi; \
+  # Clone server/ee submodule directly  
+  if [ ! -d "server/ee" ]; then \
+    mkdir -p server/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+  fi; \
+  # Checkout the same branch in EE submodules if it exists, otherwise fallback to main
+  cd frontend/ee && \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to main"; \
     git checkout main; \
-  fi"
+  fi && \
+  cd ../../server/ee && \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to main"; \
+    git checkout main; \
+  fi && \
+  cd ../..; \
+fi
 
 # Scripts for building
 COPY ./package.json ./package.json
