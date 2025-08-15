@@ -440,6 +440,7 @@
             "to": "to"
         },
         "noApplicationFound": "No Applications found",
+        "noWorkflowFound": "No workflows found",
         "thisFolderIsEmpty": "This folder is empty",
         "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
         "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
