@@ -25,7 +25,7 @@ import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
-import WorkflowEditorContext from '../../../ee/modules/Workflows/pages/WorkflowEditorPage/context';
+import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
 
 const langSupport = Object.freeze({
   javascript: javascript(),

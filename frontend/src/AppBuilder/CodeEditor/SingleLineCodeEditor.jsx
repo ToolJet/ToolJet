@@ -34,7 +34,7 @@ import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
-import WorkflowEditorContext from '../../../ee/modules/Workflows/pages/WorkflowEditorPage/context';
+import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
