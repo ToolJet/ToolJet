@@ -413,6 +413,7 @@
         "noApplicationFound": "未找到任何应用",
         "thisFolderIsEmpty": "此文件夹为空",
         "deleteAppAndData": "应用 {{appName}} 和相关数据将被永久删除，你还要继续吗？",
+        "deleteWorkflowAndData": "工作流程 {{appName}} 和相关数据将被永久删除，是否继续",
         "removeAppFromFolder": "应用将从该文件夹中移除，你还要继续吗？",
         "change": "更改",
         "templateCard": {
