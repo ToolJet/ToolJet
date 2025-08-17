@@ -16,13 +16,15 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationWithPlan } from '@modules/organizations/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
+import { LicenseUserService } from '@modules/licensing/services/user.service';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
   constructor(
     protected organizationRepository: OrganizationRepository,
     protected readonly licenseOrganizationService: LicenseOrganizationService,
-    protected readonly licenseTermsService: LicenseTermsService
+    protected readonly licenseTermsService: LicenseTermsService,
+    protected readonly licenseUserService: LicenseUserService
   ) {}
 
   async fetchOrganizations(
@@ -112,6 +114,7 @@ export class OrganizationsService implements IOrganizationsService {
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
       if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
         await this.licenseOrganizationService.validateOrganization(manager, organizationId); //Check for only unarchiving
+        await this.licenseUserService.validateUser(manager, organizationId);
       }
 
       //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit

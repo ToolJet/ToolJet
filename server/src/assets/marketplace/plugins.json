@@ -247,6 +247,38 @@
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
   },
   {
+    "name": "Google Cloud Spanner",
+    "description": "Plugin to query relational database using GoogleSQL or PostgreSQL.",
+    "version": "1.0.0",
+    "id": "spanner",
+    "author": "Tooljet",
+    "timestamp": "Mon, 14 Jul 2025 07:03:25 GMT"
+  },
+  {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
+    "name": "UPS",
+    "description": "Integrate with UPS API to create and track shipments",
+    "version": "1.0.0",
+    "id": "ups",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
+  },
+  {
+    "name": "Microsoft Graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
+    "version": "1.0.0",
+    "id": "microsoft_graph",
+    "author": "Tooljet",
+    "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
     "name": "Hubspot",
     "description": "Integrate with HubSpot API for CRM and sales automation",
     "version": "1.0.0",

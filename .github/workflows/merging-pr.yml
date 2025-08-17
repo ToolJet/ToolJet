@@ -12,29 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Extract Branch Name
-        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+      - name: Extract Branch Name and Base Branch
+        run: |
+          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
 
       - name: Merge PR in ee-server (if exists)
         run: |
-          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
           if [ -n "$PR" ]; then
-            echo "Found ee-server PR: #$PR"
+            echo "Found ee-server PR: #$PR targeting $BASE_BRANCH"
             gh pr merge -R ToolJet/ee-server "$PR" --merge --admin
           else
-            echo "No open ee-server PR for branch $BRANCH_NAME"
+            echo "No open ee-server PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
           fi
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
 
       - name: Merge PR in ee-frontend (if exists)
         run: |
-          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
           if [ -n "$PR" ]; then
-            echo "Found ee-frontend PR: #$PR"
+            echo "Found ee-frontend PR: #$PR targeting $BASE_BRANCH"
             gh pr merge -R ToolJet/ee-frontend "$PR" --merge --admin
           else
-            echo "No open ee-frontend PR for branch $BRANCH_NAME"
+            echo "No open ee-frontend PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
           fi
         env:
           GH_TOKEN: ${{ secrets.TOKEN_PR }}
@@ -55,13 +57,41 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}
           submodules: recursive
 
-      - name: Update submodules to latest main
+      - name: Wait for merge completion
+        run: |
+          echo "Waiting for submodule merges to complete..."
+          sleep 30
+
+      - name: Update submodules to latest ${{ github.event.pull_request.base.ref }}
         run: |
           git config user.name "adishM98 Bot"
           git config user.email "adish.madhu@gmail.com"
 
-          git submodule update --remote frontend/ee
-          git submodule update --remote server/ee
+          # Update submodules to match the base branch
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          echo "Updating submodules to latest commit SHA from $BASE_BRANCH branch"
+          
+          # Get latest commit SHA from ee-frontend repository
+          echo "Fetching latest commit from ToolJet/ee-frontend:$BASE_BRANCH"
+          FRONTEND_SHA=$(gh api repos/ToolJet/ee-frontend/branches/$BASE_BRANCH --jq '.commit.sha' 2>/dev/null || gh api repos/ToolJet/ee-frontend/branches/main --jq '.commit.sha')
+          echo "Frontend SHA: $FRONTEND_SHA"
+          
+          # Get latest commit SHA from ee-server repository  
+          echo "Fetching latest commit from ToolJet/ee-server:$BASE_BRANCH"
+          SERVER_SHA=$(gh api repos/ToolJet/ee-server/branches/$BASE_BRANCH --jq '.commit.sha' 2>/dev/null || gh api repos/ToolJet/ee-server/branches/main --jq '.commit.sha')
+          echo "Server SHA: $SERVER_SHA"
+          
+          # Update submodule pointers to specific commit SHAs
+          cd frontend/ee
+          git fetch origin
+          git checkout "$FRONTEND_SHA"
+          cd ../..
+          
+          cd server/ee  
+          git fetch origin
+          git checkout "$SERVER_SHA"
+          cd ../..
 
           git add frontend/ee server/ee
 
