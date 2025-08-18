@@ -14,6 +14,7 @@ on:
         options:
           - ./docker/LTS/ee/ee-production.Dockerfile
           - ./docker/pre-release/ee/ee-production.Dockerfile
+          - ./docker/LTS/cloud/cloud-server.Dockerfile
       docker_tag:
         description: 'Docker tag suffix (e.g., pre-release-14)'
         required: true
