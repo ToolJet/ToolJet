@@ -101,30 +101,4 @@ gcloud run deploy tooljet \
 
 This approach uses Google's Cloud SQL Unix domain socket, which is automatically encrypted and doesn't require SSL certificates.
 
-### Step 3: Set up Custom Domain (Optional)
-
-```bash
-# Map custom domain to Cloud Run service
-gcloud run domain-mappings create \
-  --service=tooljet \
-  --domain=your-domain.com \
-  --region=your-region
-```
-
-### Step 4: Verify Deployment
-
-```bash
-# Check service status
-gcloud run services describe tooljet --region=your-region
-
-# View logs
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=tooljet" \
-  --limit=50 \
-  --format="table(timestamp,textPayload)"
-
-# Test the service
-curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
-  https://tooljet-xxxxx-xx.a.run.app/api/health
-```
-
 **Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.ai/docs/setup/google-cloud-run)
