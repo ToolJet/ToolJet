@@ -277,5 +277,13 @@
     "id": "microsoft_graph",
     "author": "Tooljet",
     "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
+    "name": "Xero",
+    "description": "Integrate with Xero API to manage financial accounting data",
+    "version": "1.0.0",
+    "id": "xero",
+    "author": "Tooljet",
+    "timestamp": "Mon, 18 Aug 2025 11:22:39 GMT"
   }
 ]
