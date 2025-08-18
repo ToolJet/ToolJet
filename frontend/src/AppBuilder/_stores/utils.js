@@ -469,7 +469,12 @@ export function replaceQueryOptionsEntityReferencesWithIds(
   return options;
 }
 
-export function createReferencesLookup(currentState, forQueryParams = false, initalLoad = false) {
+export function createReferencesLookup(
+  currentState,
+  forQueryParams = false,
+  initalLoad = false,
+  forWorkflowsSuggestions = false
+) {
   if (forQueryParams && _.isEmpty(currentState['parameters'])) {
     return { suggestionList: [] };
   }
@@ -540,7 +545,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   map.forEach((__, key) => {
     return suggestionList.push({ hint: key, type: __.type });
   });
-  if (!forQueryParams) {
+  if (!forQueryParams && !forWorkflowsSuggestions) {
     actions.forEach((action) => {
       suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
     });
