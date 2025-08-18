@@ -274,6 +274,7 @@ export class JSONTreeViewer extends React.Component {
             inspectorTree={this.props.treeType === 'inspector'}
             debuggerTree={this.props.treeType === 'debugger'}
             renderCurrentNodeInfoIcon={this.renderCurrentNodeInfoIcon}
+            showFullNodeValue={this.props.showFullNodeValue ?? false}
           />
         </ErrorBoundary>
       </div>

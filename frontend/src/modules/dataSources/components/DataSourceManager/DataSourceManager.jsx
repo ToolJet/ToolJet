@@ -1008,7 +1008,7 @@ class DataSourceManagerComponent extends React.Component {
                   )}
                   <Modal.Title className="mt-3">
                     {selectedDataSource && !isSampleDb ? (
-                      <div className="row selected-ds">
+                      <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                         <div className="input-icon" style={{ width: '160px' }}>
                           <input
@@ -1032,7 +1032,7 @@ class DataSourceManagerComponent extends React.Component {
                     ) : (
                       <div className="row">
                         <div className="col-md-2">
-                          <SolidIcon name="tooljet" />
+                          <img src="assets/images/tj-logo.svg" />
                         </div>
                         <div className="col-md-10" data-cy="sample-data-source-title">
                           {' '}
