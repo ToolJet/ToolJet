@@ -74,6 +74,8 @@ export function Authorize({ navigate }) {
   const extractUtmParams = (router) => {
     const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
     const utmParams = {};
+
+    // Check URL hash parameters first
     if (window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       UTM_FIELDS.forEach((param) => {
@@ -82,10 +84,24 @@ export function Authorize({ navigate }) {
           utmParams[param] = value;
         }
       });
+    }
 
-      // If no direct UTM params found, check inside the 'state' parameter
-      const stateParam = hashParams.get('state');
-      if (stateParam && Object.keys(utmParams).length === 0) {
+    // Check query parameters if no UTM params found in hash
+    if (Object.keys(utmParams).length === 0) {
+      UTM_FIELDS.forEach((param) => {
+        if (router.query[param]) {
+          utmParams[param] = router.query[param];
+        }
+      });
+    }
+
+    // If still no UTM params, check inside the 'state' parameter (both in hash and query)
+    if (Object.keys(utmParams).length === 0) {
+      let stateParam = window.location.hash
+        ? new URLSearchParams(window.location.hash.substring(1)).get('state')
+        : router.query.state;
+
+      if (stateParam) {
         try {
           const decodedState = decodeURIComponent(stateParam);
           const stateParams = new URLSearchParams(decodedState);
@@ -100,14 +116,8 @@ export function Authorize({ navigate }) {
           console.warn('Error parsing state parameter:', error);
         }
       }
-    } else {
-      // Fallback to router.query if no hash
-      UTM_FIELDS.forEach((param) => {
-        if (router.query[param]) {
-          utmParams[param] = router.query[param];
-        }
-      });
     }
+
     return utmParams;
   };
   const signIn = (authParams, configs, utmParams) => {
