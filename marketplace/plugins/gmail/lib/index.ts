@@ -264,7 +264,7 @@ export default class Gmail implements QueryService {
       const bodyParams = params.request || {};
 
       for (const param of Object.keys(pathParams)) {
-        url = url.replace(`{${param}}`, pathParams[param]);
+        url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
       }
 
       let requestOptions;
