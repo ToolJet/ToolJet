@@ -81,24 +81,4 @@ spec:
 gcloud run services replace service.yaml --region=your-region
 ```
 
-### Step 2: Alternative - Using Cloud SQL Proxy with Cloud Run (Recommended)
-
-**Cloud Run with built-in Cloud SQL connection:**
-```bash
-# Deploy Cloud Run service with Cloud SQL connector
-gcloud run deploy tooljet \
-  --image=tooljet/tooljet:latest \
-  --platform=managed \
-  --region=your-region \
-  --allow-unauthenticated \
-  --memory=2Gi \
-  --cpu=2 \
-  --max-instances=10 \
-  --add-cloudsql-instances=your-project-id:your-region:your-instance-id \
-  --set-env-vars="PG_HOST=/cloudsql/your-project-id:your-region:your-instance-id,PG_PORT=5432,PG_DB=your-database-name,PG_USER=postgres" \
-  --set-secrets="PG_PASS=db-password:latest"
-```
-
-This approach uses Google's Cloud SQL Unix domain socket, which is automatically encrypted and doesn't require SSL certificates.
-
 **Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.ai/docs/setup/google-cloud-run)
