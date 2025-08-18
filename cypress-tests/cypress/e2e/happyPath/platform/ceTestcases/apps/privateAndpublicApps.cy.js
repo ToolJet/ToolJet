@@ -278,6 +278,8 @@ describe(
       data.slug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
       cy.createApp(data.appName);
+
+      cy.wait(2000);
       cy.dragAndDropWidget("Text", 500, 500);
       releaseApp();
       setUpSlug(data.slug);

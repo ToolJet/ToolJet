@@ -15,10 +15,13 @@
     cursor: pointer;
 }
 
-.form-check>.form-check-input:not(:checked) {
-    background-color: var(--slider-track);
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e")
-}
+// This is overriding theme.scss file which it shouldnt as per cloud henceforth commenting out the below code
+
+// .form-check>.form-check-input:not(:checked) {
+//     background-color: #ffffff;
+//     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e")
+// }
+
 .text-wrappers{
     display: flex;
     flex-direction: column;

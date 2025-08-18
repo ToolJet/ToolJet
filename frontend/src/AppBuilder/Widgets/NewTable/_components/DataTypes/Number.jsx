@@ -7,6 +7,21 @@ import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight
 import useTextColor from '../DataTypes/_hooks/useTextColor';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
+// Utility function to generate input step for decimal places
+const getInputStep = (allowedDecimalPlaces) => {
+  if (allowedDecimalPlaces === null || allowedDecimalPlaces === undefined) {
+    return 'any';
+  }
+  
+  const num = Number(allowedDecimalPlaces);
+  if (!Number.isFinite(num) || num < 0) {
+    return 'any';
+  }
+  
+  const validDecimalPlaces = Math.floor(num);
+  return validDecimalPlaces === 0 ? '1' : `0.${'0'.repeat(validDecimalPlaces - 1)}1`;
+};
+
 export const NumberColumn = ({
   id,
   isEditable,
@@ -129,7 +144,7 @@ export const NumberColumn = ({
           className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
-          step={allowedDecimalPlaces !== null ? `0.${'0'.repeat(allowedDecimalPlaces - 1)}1` : 'any'}
+          step={getInputStep(allowedDecimalPlaces)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               if (displayValue !== cellValue) {

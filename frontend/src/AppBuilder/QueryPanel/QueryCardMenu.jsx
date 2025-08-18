@@ -105,14 +105,33 @@ const QueryCardMenu = ({ darkMode }) => {
       rootClose
       onHide={() => toggleQueryHandlerMenu(false)}
       popperConfig={{
+        strategy: 'absolute',
         modifiers: [
           {
             name: 'flip',
+            enabled: true,
             options: {
-              fallbackPlacements: ['top-start'],
-              flipVariations: true,
-              allowedAutoPlacements: ['top', 'bottom'],
+              fallbackPlacements: ['top-start', 'top-end', 'bottom-start', 'bottom-end', 'left-start', 'right-start'],
               boundary: 'viewport',
+            },
+          },
+          {
+            name: 'preventOverflow',
+            enabled: true,
+            options: {
+              boundary: 'viewport',
+              rootBoundary: 'viewport',
+              padding: 8,
+              altAxis: true,
+              altBoundary: true,
+            },
+          },
+          {
+            name: 'shift',
+            enabled: true,
+            options: {
+              boundary: 'viewport',
+              padding: 8,
             },
           },
           {

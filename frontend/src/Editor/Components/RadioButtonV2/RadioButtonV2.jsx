@@ -4,6 +4,7 @@ import cx from 'classnames';
 import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject } from 'lodash';
+import { getSafeRenderableValue } from '../utils';
 
 export const RadioButtonV2 = ({
   properties,
@@ -238,7 +239,7 @@ export const RadioButtonV2 = ({
                             : 'var(--text-primary)',
                       }}
                     >
-                      {option.label}
+                      {getSafeRenderableValue(option.label)}
                     </span>
                     <input
                       style={{

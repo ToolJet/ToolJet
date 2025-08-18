@@ -8,7 +8,7 @@ export class DeprecateLocalStaticDataSources1745318714733 implements MigrationIn
     const organizationIds = organizationsResult.map((row) => row.id);
 
     console.log(`Found ${organizationIds.length} organizations to process`);
-    
+
     if (organizationIds.length === 0) {
       console.log('No organizations found. Migration will not proceed.');
       return;

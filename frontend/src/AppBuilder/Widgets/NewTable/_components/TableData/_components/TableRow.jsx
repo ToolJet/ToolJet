@@ -54,10 +54,6 @@ export const TableRow = ({
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
-          width:
-            cell.column.id === 'rightActions' || cell.column.id === 'leftActions'
-              ? 'fit-content'
-              : cell.column.getSize(),
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
             cellValue: cell.getValue(),
@@ -66,10 +62,8 @@ export const TableRow = ({
           display: 'flex',
           alignItems: 'center',
           textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          width: cell.column.getSize(),
         };
-        if (cell.column.id === 'rightActions' || cell.column.id === 'leftActions') {
-          cellStyles.maxWidth = 'fit-content';
-        }
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
           rowData: row.original,

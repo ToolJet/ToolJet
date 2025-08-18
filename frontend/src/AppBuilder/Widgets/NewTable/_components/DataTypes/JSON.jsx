@@ -23,8 +23,7 @@ export const JsonColumn = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
-
-  const ref = React.useRef(null);
+  const ref = React.useRef(null); 
 
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -112,19 +111,21 @@ export const JsonColumn = ({
       {String(formatCellValue(cellValue))}
     </div>
   );
-
   const getOverlay = () => {
     return (
       <div
-        className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table scrollbar-tranck-transparent ${darkMode && 'dark-theme'}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{ color: 'var(--text-primary)' }}
       >
         <span
           style={{
-            width: `${containerWidth}px`,
-            whiteSpace: 'pre-wrap',
+            maxWidth: `250px`,
+            maxHeight: '100px',
+            textOverflow: 'ellipsis',
+            overflowY: 'scroll',
+            paddingRight: '5px',
           }}
         >
           {String(formatCellValue(cellValue, true))}

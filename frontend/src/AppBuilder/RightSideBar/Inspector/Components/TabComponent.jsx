@@ -13,6 +13,9 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';;
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -31,6 +34,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     component?.component?.definition?.properties?.useDynamicOptions?.value,
     currentState
   );
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
@@ -217,6 +221,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const iconVisibility =
+      item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
+
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body onClick={(e) => e.stopPropagation()}>
@@ -270,6 +277,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onVisibilityChange={(value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
               fieldMeta={{ type: 'icon', displayName: 'Icon' }}
               paramType={'icon'}
+              iconVisibility={iconVisibility}
             />
           </div>
 
@@ -420,7 +428,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {resolveReferences(item.title, currentState)}
+                                    {getSafeRenderableValue(resolveReferences(item.title, currentState))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredTabItemIndex && (

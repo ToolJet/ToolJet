@@ -34,6 +34,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     inspectorTree,
     renderCurrentNodeInfoIcon,
     debuggerTree,
+    showFullNodeValue,
   } = restProps;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const pathToBeInspected = useStore((state) => state.pathToBeInspected);
@@ -146,7 +147,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Undefined':
     case 'Function':
     case 'Date':
-      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
+      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} showFullNodeValue={showFullNodeValue} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
 
