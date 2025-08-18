@@ -1,5 +1,8 @@
 // AvatarGroup Component Styles
 // Based on Figma design variables
+.tw-custom-popover {
+  border: 1px solid var(--border-default) !important;
+}
 
 .avatar-group-multiplayer {
   display: flex;

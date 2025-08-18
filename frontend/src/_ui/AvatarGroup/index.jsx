@@ -18,23 +18,21 @@ const AvatarGroup = ({
   const hasOverflow = hiddenCount > 0;
 
   const defaultPopoverContent = () => {
-    return avatars.slice(maxDisplay, avatars.length).map((avatar, index) => (
-      <div key={`hidden-${avatar.id || `avatar-${index}`}`} className="list-group">
-        <div className="list-group-item border-0">
-          <div className="row align-items-center">
-            <div className="col-auto">{renderAvatar(avatar, index + maxDisplay)}</div>
-            <div className={`col text-truncate ${darkMode && 'text-white'}`}>
-              {avatar.title}
-              {avatar.subtitle && (
-                <div className={`d-block ${darkMode ? 'text-light' : 'text-muted'} text-truncate mt-n1`}>
-                  {avatar.subtitle}
-                </div>
-              )}
+    return (
+      <div className="tw-space-y-1 tw-text-sm ">
+        {avatars.slice(maxDisplay, avatars.length).map((avatar, index) => (
+          <div
+            key={`hidden-${avatar.id || `avatar-${index}`}`}
+            className="tw-flex tw-items-center tw-p-1 hover:tw-bg-interactive-hover tw-cursor-pointer tw-rounded-md"
+          >
+            {renderAvatar(avatar, index + maxDisplay)}
+            <div className="tw-ml-2 tw-text-truncate tw-mt-1">
+              <div className="tw-text-sm tw-font-medium">{avatar.title}</div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
-    ));
+    );
   };
 
   const renderAvatar = (avatar, index) => (
@@ -47,7 +45,7 @@ const AvatarGroup = ({
       borderShape={''}
       indexId={avatar.id || index}
       realtime={avatar.realtime || false}
-      className={`${avatar.className} tw-w-8 tw-h-8`}
+      className={`${avatar.className} tw-w-5 tw-h-5`}
       onClick={onAvatarClick ? () => onAvatarClick(avatar, index) : undefined}
     />
   );
@@ -69,12 +67,14 @@ const AvatarGroup = ({
           placement="top"
           rootClose
           overlay={
-            <Popover id="avatar-group-popover" className="shadow">
-              <Popover.Body>{popoverContent || defaultPopoverContent()}</Popover.Body>
+            <Popover id="avatar-group-popover" className={`shadow tw-custom-popover ${darkMode ? 'dark-theme' : ''}`}>
+              <Popover.Body className={`tw-p-1 tw-bg-background-surface-layer-01 tw-min-w-[200px]`}>
+                {popoverContent || defaultPopoverContent()}
+              </Popover.Body>
             </Popover>
           }
         >
-          <div className="tw-border-2 tw-border-solid tw-bg-surface-layer-02 tw-border-border-strong tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10">
+          <div className="tw-border-2 tw-border-solid tw-bg-background-surface-layer-02 tw-border-border-default tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10">
             +{hiddenCount}
           </div>
         </OverlayTrigger>

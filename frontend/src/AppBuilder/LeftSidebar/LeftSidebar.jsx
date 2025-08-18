@@ -14,9 +14,8 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import RealtimeAvatars from '@/Editor/RealtimeAvatars';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-// import lucide icons
-// import { Settings, LayoutDashboard, Code, Bug, MessageCircle, FileText, Settings, Bug, Code, LayoutDashboard } from 'lucide-react';
 import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
 
@@ -274,6 +273,7 @@ export const BaseLeftSidebar = ({
           className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
           tip: 'Build with AI',
           ref: setSideBarBtnRefs('tooljetai'),
+          children: <SolidIcon width="16" height="16" name="tooljetai" className="tw-text-icon-strong" />,
         })}
 
         {!isUserInZeroToOneFlow && (
@@ -340,6 +340,7 @@ export const BaseLeftSidebar = ({
                 avatars={sampleAvatars}
                 maxDisplay={2}
                 variant="multiplayer"
+                darkMode={darkMode}
                 // onAvatarClick={handleAvatarClick}
               />
             </div>

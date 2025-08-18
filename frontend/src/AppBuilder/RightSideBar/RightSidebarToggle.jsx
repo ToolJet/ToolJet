@@ -29,7 +29,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
 
   return (
     <div
-      className="tw-flex tw-flex-col tw-p-2 tw-gap-1.5 right-sidebar-toggle right-sidebar"
+      className={`tw-flex tw-flex-col tw-p-2 tw-gap-1.5 right-sidebar-toggle right-sidebar tw-bg-background-surface-layer-01 ${
+        darkMode ? 'dark-theme' : ''
+      }`}
       data-cy="right-sidebar-inspector"
     >
       <SidebarItem
