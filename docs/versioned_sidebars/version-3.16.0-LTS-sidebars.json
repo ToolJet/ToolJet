@@ -174,53 +174,85 @@
         "app-builder/overview",
         {
           "type": "category",
-          "label": "Building the UI",
+          "label": "UI and Themes",
           "items": [
-            "app-builder/building-ui/canvas",
-            "app-builder/building-ui/component-library",
-            "app-builder/building-ui/component-properties",
-            "app-builder/building-ui/pages",
-            "app-builder/building-ui/component-state"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Connecting Data Sources",
-          "items": [
-            "app-builder/connecting-with-data-sources/creating-managing-queries",
-            "app-builder/connecting-with-data-sources/accessing-query-results",
-            "app-builder/connecting-with-data-sources/transforming-data",
-            "app-builder/connecting-with-data-sources/binding-data-to-components"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Events and Actions",
-          "items": [
-            "app-builder/events/overview",
-            "app-builder/events/event-triggers",
-            "app-builder/events/use-case/csa",
-            "app-builder/events/use-case/page-nav",
-            "app-builder/events/use-case/variables"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Writing Custom Code",
-          "items": [
-            "app-builder/custom-code/fx-dynamic-behaviour",
-            "app-builder/custom-code/control-components",
-            "app-builder/custom-code/transform-data",
-            "app-builder/custom-code/managing-variables",
             {
               "type": "category",
-              "label": "Importing External Libraries",
+              "label": "Building the UI",
               "items": [
-                "app-builder/import-libraries/runjs",
-                "app-builder/import-libraries/runpy"
+                "app-builder/building-ui/canvas",
+                "app-builder/building-ui/component-library",
+                "app-builder/building-ui/component-properties",
+                "app-builder/building-ui/pages",
+                "app-builder/building-ui/component-state"
               ]
             },
-            "app-builder/custom-code/constants-secrets"
+            "app-builder/custom-theme",
+            {
+              "type": "category",
+              "label": "Modules",
+              "items": [
+                "app-builder/modules/overview",
+                "app-builder/modules/create-module",
+                "app-builder/modules/input-output",
+                "app-builder/modules/data-flow",
+                "app-builder/modules/using-modules",
+                "app-builder/modules/import-export-modules"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Data and Logic",
+          "items": [
+            {
+              "type": "category",
+              "label": "Connecting Data Sources",
+              "items": [
+                "app-builder/connecting-with-data-sources/creating-managing-queries",
+                "app-builder/connecting-with-data-sources/accessing-query-results",
+                "app-builder/connecting-with-data-sources/transforming-data",
+                "app-builder/connecting-with-data-sources/binding-data-to-components"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Events and Actions",
+              "items": [
+                "app-builder/events/overview",
+                "app-builder/events/event-triggers",
+                "app-builder/events/use-case/csa",
+                "app-builder/events/use-case/page-nav",
+                "app-builder/events/use-case/variables"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Writing Custom Code",
+              "items": [
+                "app-builder/custom-code/fx-dynamic-behaviour",
+                "app-builder/custom-code/control-components",
+                "app-builder/custom-code/transform-data",
+                "app-builder/custom-code/managing-variables",
+                {
+                  "type": "category",
+                  "label": "Importing External Libraries",
+                  "items": [
+                    "app-builder/import-libraries/runjs",
+                    "app-builder/import-libraries/runpy"
+                  ]
+                },
+                "app-builder/custom-code/constants-secrets"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Role Based Applications",
+              "items": [
+                "app-builder/walkthrough/row-level-security"
+              ]
+            }
           ]
         },
         {
@@ -228,7 +260,15 @@
           "label": "Debugging",
           "items": [
             "app-builder/debugging/inspector",
-            "app-builder/debugging/understanding-logs"
+            "app-builder/debugging/understanding-logs",
+            "app-builder/anti-patterns"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Share Application",
+          "items": [
+            "app-builder/importing-exporting-applications"
           ]
         },
         {
@@ -369,26 +409,10 @@
                 "actions/set-localstorage",
                 "actions/copy-to-clipboard"
               ]
-            }
+            },
+            "tutorial/keyboard-shortcuts"
           ]
-        },
-        "app-builder/custom-theme",
-        {
-          "type": "category",
-          "label": "Modules",
-          "items": [
-            "app-builder/modules/overview",
-            "app-builder/modules/create-module",
-            "app-builder/modules/input-output",
-            "app-builder/modules/data-flow",
-            "app-builder/modules/using-modules",
-            "app-builder/modules/import-export-modules"
-          ]
-        },
-        "app-builder/walkthrough/row-level-security",
-        "app-builder/anti-patterns",
-        "app-builder/importing-exporting-applications",
-        "tutorial/keyboard-shortcuts"
+        }
       ]
     },
     {
