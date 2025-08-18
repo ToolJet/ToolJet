@@ -109,6 +109,18 @@
                       "setup/postgresql-13-16/gcp/verification",
                       "setup/postgresql-13-16/gcp/best-practices"
                     ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "ToolJet Postgres Upgrade Guide",
+                    "items": [
+                      "setup/postgresql-13-16/tj/overview",
+                      "setup/postgresql-13-16/tj/steps",
+                      "setup/postgresql-13-16/tj/troubleshooting",
+                      "setup/postgresql-13-16/tj/post-upgrade",
+                      "setup/postgresql-13-16/tj/security",
+                      "setup/postgresql-13-16/tj/checklist"
+                    ]
                   }
               ]
             },
