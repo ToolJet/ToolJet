@@ -44,10 +44,10 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                   }}
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
-                    <h1 className="navbar-brand d-none-navbar-horizontal p-0" data-cy="editor-page-logo">
+                    <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
-                    <div className="d-flex flex-row">
+                    <div className="d-flex flex-row tw-mr-1">
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>

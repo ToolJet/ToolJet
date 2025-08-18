@@ -74,7 +74,7 @@ const AvatarGroup = ({
             </Popover>
           }
         >
-          <div className="tw-border-2 tw-border-solid tw-bg-interactive-selected tw-border-background-surface-layer-01 tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10">
+          <div className="tw-border-2 tw-border-solid tw-bg-surface-layer-02 tw-border-border-strong tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10">
             +{hiddenCount}
           </div>
         </OverlayTrigger>

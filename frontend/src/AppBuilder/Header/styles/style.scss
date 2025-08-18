@@ -246,3 +246,12 @@
 .release-buttons .license-tooltip+.navbar-seperator {
   display: block;
 }
+
+.edit-app-name-button {
+  &:hover {
+    border-top: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    border-left: 1px solid var(--border-strong);
+    border-right: 1px solid var(--border-strong);
+  }
+}
