@@ -6,6 +6,7 @@ import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 function ControlledTabs({
   options,
@@ -29,7 +30,11 @@ function ControlledTabs({
         <div className="keys d-flex justify-content-between query-pane-tabs-header">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
-              <ListGroup.Item key={tab} eventKey={tab.toLowerCase()} data-cy={`restapi-tab-${tab.toLowerCase()}-button`}>
+              <ListGroup.Item
+                key={tab}
+                eventKey={tab.toLowerCase()}
+                data-cy={generateCypressDataCy(`restapi-tab-${tab}-button`)}
+              >
                 <span>{tab}</span>
               </ListGroup.Item>
             ))}
@@ -90,7 +95,8 @@ function ControlledTabs({
             <Tab.Pane
               eventKey="body"
               bsPrefix={`rest-api-tabpanes ${bodyToggle && 'rest-api-tabpanes-body'}`}
-              transition={false} data-cy="restapi-tab-body-pane" 
+              transition={false}
+              data-cy="restapi-tab-body-pane"
             >
               <Body
                 removeKeyValuePair={removeKeyValuePair}

@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 function Header({
   featureAccess,
@@ -145,7 +146,10 @@ function Header({
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label tw-flex tw-items-center "   data-cy={`breadcrumb-header-${pathname.replace(/\s+/g, '-').toLowerCase()}`}>
+            <div
+              className="app-header-label tw-flex tw-items-center "
+              data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
+            >
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div

@@ -149,7 +149,7 @@ export function AppModal({
           <ButtonSolid
             form="createAppForm"
             type="submit"
-            data-cy={generateCypressDataCy(actionButton.toLowerCase().replace(/\s+/g, '-'))}
+            data-cy={generateCypressDataCy(actionButton)}
             disabled={createBtnDisableState}
           >
             {isLoading ? actionLoadingButton : actionButton}
@@ -165,7 +165,7 @@ export function AppModal({
         <FormWrapper callback={handleAction} id="createAppForm">
           <div className="row workspace-folder-modal custom-gap-16">
             <div className="col modal-main tj-app-input">
-              <label className="tj-input-label" data-cy={`${appTypeName.toLowerCase()}-name-label`}>
+              <label className="tj-input-label" data-cy={`${generateCypressDataCy(appTypeName)}-name-label`}>
                 {`${appTypeName} name`}
               </label>
               <input
@@ -174,7 +174,7 @@ export function AppModal({
                 className={`form-control ${errorText ? 'input-error-border' : ''}`}
                 placeholder={`Enter ${appTypeName.toLowerCase()} name`}
                 value={newAppName}
-                data-cy={`${appTypeName.toLowerCase()}-name-input`}
+                data-cy={`${generateCypressDataCy(appTypeName)}-name-input`}
                 maxLength={50}
                 autoFocus
                 ref={inputRef}
@@ -190,7 +190,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#DB4324',
                   }}
-                  data-cy={`${appTypeName.toLowerCase()}-name-error-label`}
+                  data-cy={`${generateCypressDataCy(appTypeName)}-name-error-label`}
                 >
                   {errorText}
                 </small>
@@ -201,7 +201,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#ED5F00',
                   }}
-                  data-cy={`${appTypeName.toLowerCase()}-name-error-label`}
+                  data-cy={`${generateCypressDataCy(appTypeName)}-name-error-label`}
                 >
                   {infoText || 'Maximum length has been reached'}
                 </small>
@@ -212,7 +212,7 @@ export function AppModal({
                     fontSize: '10px',
                     color: '#7E868C',
                   }}
-                  data-cy={`${appTypeName.toLowerCase()}-name-info-label`}
+                  data-cy={`${generateCypressDataCy(appTypeName)}-name-info-label`}
                 >
                   {`${appTypeName} name must be unique and max 50 characters`}
                 </small>

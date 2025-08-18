@@ -345,8 +345,8 @@ class Restapi extends React.Component {
                   <div className="font-weight-medium color-slate12">URL</div>
                   <div className="d-flex h-100 w-100">
                     {dataSourceURL && (
-                      <BaseUrl 
-                      data-cy="base-url"
+                      <BaseUrl
+                        data-cy="base-url"
                         theme={this.props.darkMode ? 'monokai' : 'default'}
                         dataSourceURL={dataSourceURL}
                         style={{
@@ -364,7 +364,7 @@ class Restapi extends React.Component {
                       className={` flex-grow-1 rest-api-url-codehinter ${dataSourceURL ? 'url-input-group' : ''}`}
                     >
                       <CodeHinter
-                      data-cy="url-input"
+                        data-cy="url-input"
                         type="basic"
                         initialValue={options.url}
                         onChange={(value) => {
@@ -379,7 +379,11 @@ class Restapi extends React.Component {
                   </div>
                 </div>
               </div>
-              <div className={`query-pane-restapi-tabs`} data-cy="restapi-tabs" data-workflow={isWorkflowNode ? 'true' : 'false'}>
+              <div
+                className={`query-pane-restapi-tabs`}
+                data-cy="restapi-tabs"
+                data-workflow={isWorkflowNode ? 'true' : 'false'}
+              >
                 <Tabs
                   data-cy="tabs-component"
                   theme={this.props.darkMode ? 'monokai' : 'default'}
