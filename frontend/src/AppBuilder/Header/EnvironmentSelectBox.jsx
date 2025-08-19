@@ -35,7 +35,7 @@ function EnvironmentSelectBox(props) {
     return null;
   }
 
-  const darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
+  const darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
   return (
     <div

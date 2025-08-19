@@ -68,7 +68,7 @@ const EnvironmentManager = (props) => {
   };
 
   // if any app is in production, then it is also in staging. So, we need to check if there is any version in production
-  const darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
+  const darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
   const options = useMemo(() => {
     if (!environments.length) return [];

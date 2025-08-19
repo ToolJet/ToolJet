@@ -162,7 +162,7 @@ export const AllComponents = {
   ModuleViewer,
 };
 if (isPDFSupported()) {
-  AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
+  // AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
 }
 
 export const getComponentToRender = (componentName) => {

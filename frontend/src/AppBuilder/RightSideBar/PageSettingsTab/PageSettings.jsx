@@ -21,7 +21,7 @@ import { PageMenuItem } from './PageMenu/PageMenuItem';
 import { camelCase, get, startCase, toLower, upperFirst } from 'lodash';
 import { Button } from '@/components/ui/Button/Button';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
-import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
+// import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
