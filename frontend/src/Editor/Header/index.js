@@ -16,6 +16,8 @@ import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import RightTopHeaderButtons from './RightTopHeaderButtons';
 import EnvironmentManager from './EnvironmentManager';
 import { useEnvironmentsAndVersionsStore } from '../../_stores/environmentsAndVersionsStore';
+import { Button } from '@/components/ui/Button/Button';
+import { GitBranch } from 'lucide-react';
 
 export default function EditorHeader({
   canUndo,
@@ -154,7 +156,9 @@ export default function EditorHeader({
                     />
                   )}
                 </div>
-                <div
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={
                     featureAccess?.gitSync &&
                     selectedEnvironment?.priority === 1 &&
@@ -178,10 +182,10 @@ export default function EditorHeader({
                       show={featureAccess?.gitSync}
                       placement="bottom"
                     >
-                      <SolidIcon name="gitsync" />
+                      <GitBranch width="16" height="16" className="tw-text-icon-strong" />
                     </ToolTip>
                   </LicenseTooltip>
-                </div>
+                </Button>
               </div>
             </div>
             <RightTopHeaderButtons onVersionRelease={onVersionRelease} appEnvironmentChanged={appEnvironmentChanged} />

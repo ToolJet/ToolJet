@@ -109,6 +109,10 @@
 	background-color: #2b3547;
 }
 
+
+	.app-environment-menu+.navbar-seperator {
+		display: flex;
+	}
 .env-container {
 	font-family: 'IBM Plex Sans';
 	box-sizing: border-box;
@@ -120,10 +124,8 @@
 	gap: 4px;
 	position: relative;
 	width: 100%;
-	min-width: 176px;
 	z-index: 1;
 	color: #11181C;
-	padding-right: 12px;
 	height: 32px;
 	border-top-left-radius: 4px;
 	border-bottom-left-radius: 4px;
@@ -148,7 +150,7 @@
 
 	.env-popover {
 		position: absolute;
-		top: 128%;
+		top: 36px;
 		left: 0;
 		width: 100%;
 		width: 176px;
@@ -163,15 +165,16 @@
 	}
 
 	.env-popover>.selected-env {
-		height: 40px;
-		padding: 16px 14px;
+		height: 36px;
+		padding: 8px 16px;
 		font-style: normal;
-		font-weight: 400;
-		font-size: 14px;
+		font-weight: 500;
+		font-size: 11px;
 		line-height: 20px;
+		color: var(--text-placeholder);
 		display: flex;
 		align-items: center;
-		border-bottom: 1px solid #F1F3F5;
+		border-bottom: 1px solid var(--border-weak);
 	}
 
 	.env-popover>.popover-options {
@@ -228,4 +231,14 @@
 	color: var(--purple9);
 	margin-left: 2px !important;
 	margin-right: 8px !important;
+}
+
+.version-manager-container {
+	.app-environment-menu {
+		min-width: unset;
+	}
+
+	.env-container {
+		min-width: unset;
+	}
 }

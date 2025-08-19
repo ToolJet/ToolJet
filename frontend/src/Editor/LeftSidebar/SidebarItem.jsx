@@ -13,7 +13,7 @@ export const LeftSidebarItem = forwardRef(
       selectedSidebarItem,
       className,
       icon,
-      iconFill = 'var(--slate8)',
+      iconFill = 'var(--icon-strong)',
       commentBadge,
       text,
       onClick,
