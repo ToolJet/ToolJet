@@ -53,9 +53,29 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
 
    Read **[environment variables reference](/docs/setup/env-vars)**
 
-   :::info
-   If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+   #### SSL Configuration for AWS RDS PostgreSQL
+
+   :::warning
+   **Important**: When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
    :::
+
+   For AWS RDS PostgreSQL connections, first download the certificate bundle:
+   ```bash
+   # Create directory and download certificate
+   sudo mkdir -p /home/ubuntu/certs/
+   cd /home/ubuntu/certs/
+   sudo wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+   sudo chmod 644 /home/ubuntu/certs/global-bundle.pem
+   ```
+
+   Then add these variables to your `.env` file:
+   ```bash
+   PG_HOST=your-rds-endpoint.region.rds.amazonaws.com
+   PGSSLMODE=require
+   NODE_EXTRA_CA_CERTS=/home/ubuntu/certs/global-bundle.pem
+   ```
+
+   After updating the `.env` file, restart the application with `./setup_app`.
 
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
 
@@ -68,12 +88,13 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    :::
 
-   :::info
-   Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-   :::
-
 9. Once you've configured the `.env` file, run `./setup_app`. This script will install all the dependencies of ToolJet and then will start the required services.
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
+
+:::info
+Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+:::
+
 11. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
 
 #### Deploying ToolJet Database
@@ -81,6 +102,12 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
 ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you'd only have to setup the environment variables in `~/app/.env` file and run `./setup_app` script.
 
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+## References
+
+- [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
+- [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
 
 ## Workflows
 
