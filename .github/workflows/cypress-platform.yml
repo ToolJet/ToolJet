@@ -3,7 +3,7 @@ name: Cypress Platform
 on:
   pull_request_target:
     types: [labeled]
-  workflow_dispatch:
+  # workflow_dispatch:
 
 env:
   PR_NUMBER: ${{ github.event.number }}
