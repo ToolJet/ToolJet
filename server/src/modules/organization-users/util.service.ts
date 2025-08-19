@@ -448,21 +448,22 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           manager
         );
       }
-      const isPersonalWorkspaceAllowed = await this.checkPersonalWorkspaceAllowed();
-      const defaultOrganization =
-        !user && isPersonalWorkspaceAllowed ? await this.createDefaultOrganization(manager) : null;
+      // const isPersonalWorkspaceAllowed = await this.checkPersonalWorkspaceAllowed();
+      // const defaultOrganization =
+      //   !user && isPersonalWorkspaceAllowed ? await this.createDefaultOrganization(manager) : null;
 
       const updatedUser = await this.createOrUpdateUser(
         userParams,
         user,
-        isPersonalWorkspaceAllowed ? defaultOrganization?.id : null,
+        null,
+        // isPersonalWorkspaceAllowed ? defaultOrganization?.id : null,
         manager
       );
 
-      if (defaultOrganization) {
-        await this.addUserAsAdmin(updatedUser.id, defaultOrganization.id, manager);
-        await this.organizationUsersRepository.createOne(updatedUser, defaultOrganization, true, manager);
-      }
+      // if (defaultOrganization) {
+      //   await this.addUserAsAdmin(updatedUser.id, defaultOrganization.id, manager);
+      //   await this.organizationUsersRepository.createOne(updatedUser, defaultOrganization, true, manager);
+      // }
 
       if (inviteNewUserDto.userMetadata) {
         await this.updateUserMetadata(
