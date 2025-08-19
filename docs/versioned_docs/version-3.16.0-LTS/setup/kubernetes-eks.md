@@ -6,7 +6,7 @@ title: Kubernetes (EKS)
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
 :::
 
 :::info
@@ -17,67 +17,61 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
 
-2. Create a k8s Deployment:
+2. Create a k8s Deployment: <br/>
+    The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+    ```
+    kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+    ```
+    Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](/docs/setup/env-vars). <br/>
+    For the setup, ToolJet requires:
+    ```
+    TOOLJET_HOST=<Endpoint url>
+    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+    PG_USER=<username>
+    PG_HOST=<postgresql-database-host>
+    PG_PASS=<password>
+    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+    ```
+    Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
-```
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
-```
+    #### SSL Configuration for AWS RDS PostgreSQL
 
-Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](/docs/setup/env-vars).
+    :::warning
+    **Important**: When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
+    :::
 
-For the setup, ToolJet requires:
+    For AWS RDS PostgreSQL connections, create a ConfigMap with the certificate:
+    ```bash
+    # Download the AWS RDS global certificate bundle
+    curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
-```
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+    # Create a ConfigMap with the certificate
+    kubectl create configmap aws-rds-certs --from-file=global-bundle.pem
+    ```
 
-PG_USER=<username>
-PG_HOST=<postgresql-database-host>
-PG_PASS=<password>
-PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-```
+    Then update your deployment YAML to include:
+    ```yaml
+    # Add these environment variables
+    env:
+    - name: PGSSLMODE
+      value: "require"
+    - name: NODE_EXTRA_CA_CERTS
+      value: "/certs/global-bundle.pem"
 
-Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
+    # Add volume mount
+    volumeMounts:
+    - name: ssl-certs
+      mountPath: /certs
+      readOnly: true
 
-#### SSL Configuration for AWS RDS PostgreSQL
-
-:::warning
-**Important**: When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
-:::
-
-For AWS RDS PostgreSQL connections, create a ConfigMap with the certificate:
-```bash
-# Download the AWS RDS global certificate bundle
-curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-
-# Create a ConfigMap with the certificate
-kubectl create configmap aws-rds-certs --from-file=global-bundle.pem
-```
-
-Then update your deployment YAML to include:
-```yaml
-# Add these environment variables
-env:
-- name: PGSSLMODE
-  value: "require"
-- name: NODE_EXTRA_CA_CERTS
-  value: "/certs/global-bundle.pem"
-
-# Add volume mount
-volumeMounts:
-- name: ssl-certs
-  mountPath: /certs
-  readOnly: true
-
-# Add volume
-volumes:
-- name: ssl-certs
-  configMap:
-    name: aws-rds-certs
-```
+    # Add volume
+    volumes:
+    - name: ssl-certs
+      configMap:
+        name: aws-rds-certs
+    ```
 
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 

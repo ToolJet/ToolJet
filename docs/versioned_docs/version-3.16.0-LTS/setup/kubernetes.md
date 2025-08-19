@@ -6,7 +6,7 @@ title: Kubernetes
 # Deploying ToolJet on Kubernetes
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
 :::
 
 :::info
@@ -19,47 +19,33 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
 1. **Setup a PostgreSQL database**
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
-
 2. **Create a Kubernetes secret with name `server`.**
    For the setup, ToolJet requires:
+   ```
+   TOOLJET_HOST=<Endpoint url>
+   LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+   SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-```
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
-
-PG_USER=<username>
-PG_HOST=<postgresql-database-host>
-PG_PASS=<password>
-PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-```
-
-Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
-
+   PG_USER=<username>
+   PG_HOST=<postgresql-database-host>
+   PG_PASS=<password>
+   PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+   ```
+   Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
 3. Create a Kubernetes deployment
-
-```bash
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
-```
-
-:::info
-The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
-:::
-
-:::info
-If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
-:::
-
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+   ```
+   :::info
+   1. The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+   2. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
+   :::
 4. Verify if ToolJet is running
-
-```bash
-kubectl get pods
-```
-
-5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
-
+   ```bash
+   kubectl get pods
+   ```
+5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer. <br/>
    **Examples:**
-
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 

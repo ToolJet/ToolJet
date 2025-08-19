@@ -26,7 +26,7 @@ helm install tooljet tooljet/tooljet
 Remember to replace the variables with your specific configuration values.
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
 :::
 
 ## ToolJet Database

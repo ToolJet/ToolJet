@@ -6,7 +6,7 @@ title: Kubernetes (AKS)
 # Deploying ToolJet on Kubernetes (AKS)
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
 :::
 
 :::info
@@ -18,40 +18,30 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 
 1. Create an AKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned on the [Azure's documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal).
-
 2. Create k8s deployment
+   ```bash
+   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
+   ```
+   For the setup, ToolJet requires:
+   ```
+   TOOLJET_HOST=<Endpoint url>
+   LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+   SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
-```
-
-For the setup, ToolJet requires:
-
-```
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
-
-PG_USER=<username>
-PG_HOST=<postgresql-database-host>
-PG_PASS=<password>
-PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-```
-
-Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
-
-:::info
-If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
-:::
-
+   PG_USER=<username>
+   PG_HOST=<postgresql-database-host>
+   PG_PASS=<password>
+   PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+   ```
+   Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
+   :::info
+   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
+   :::
 3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
-
    ```bash
     curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/service.yaml
    ```
-
 4. Apply YAML configs
-
    ```bash
     kubectl apply -f deployment.yaml, service.yaml
    ```

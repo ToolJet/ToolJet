@@ -6,7 +6,7 @@ title: Google Cloud Run
 # Deploying ToolJet on Google Cloud Run
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
 :::
 
 :::info
@@ -27,52 +27,29 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 | **Cloud SQL** | `TOOLJET_DB`  | Stores ToolJet-created tables and app data. |
 | **Cloud SQL** | `PG_DB`       | Database used to store application data     |
 
-**1. Create a new Google Cloud Run Service:**
+1. **Create a new Google Cloud Run Service:**
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
+2. **Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.**
+    <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
+3. **Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:**
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
+    - If the above command is not compatible, please use the following command structure instead: <br/>
+      <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
+    - If you encounter any migration issues, please execute the following command. Be aware that executing this command may cause the revision to break. However, modifying the command back to `npm, run, start:prod` will successfully reboot the instance:
+      <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
+4. **Under environmental variables, please add the below ToolJet application variables:** <br/>
+    You can use these variables for: tooljet-app:
+    ```env
+    TOOLJET_HOST=<Endpoint url>
+    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-<div style={{textAlign: 'left'}}>
-  <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
-</div>
-
-**2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.**
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
-  </div>
-
-**3. Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:**
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
-  </div>
-
-- If the above command is not compatible, please use the following command structure instead:
-
- <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
-  </div>
-
-- If you encounter any migration issues, please execute the following command. Be aware that executing this command may cause the revision to break. However, modifying the command back to `npm, run, start:prod` will successfully reboot the instance:
-
- <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
-  </div>
-
-**4. Under environmental variables, please add the below ToolJet application variables:**
-
-You can use these variables for: tooljet-app:
-
-```env
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
-
-PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
-PG_PASS=<password>
-PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-```
-
-Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
+    PG_USER=<username>
+    PG_HOST=<postgresql-instance-ip>
+    PG_PASS=<password>
+    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+    ```
+    Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
 ## ToolJet Database
 
@@ -131,14 +108,9 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::
 
-5. Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
-  </div>
-
-Click on deploy once the above parameters are set.
-
+5. **Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.**
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" /> <br/>
+    Click on deploy once the above parameters are set.
     :::info
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
@@ -165,24 +137,14 @@ TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
 ```
 
 Under the containers tab, please make sure the command `npm, run, worker:prod` is set.
-
-<div style={{textAlign: 'left'}}>
-  <img className="screenshot-full" src="/img/cloud-run/tooljet-worker-settings.png" alt="ToolJet Worker Settings" />
-</div>
+<img className="screenshot-full img-m" src="/img/cloud-run/tooljet-worker-settings.png" alt="ToolJet Worker Settings" />
 
 #### Temporal server container:
 
 1. Set the image tag as `temporalio/auto-setup:1.25.1`
-
-<div style={{textAlign: 'left'}}>
-  <img className="screenshot-full" src="/img/cloud-run/temporal-settings.png" alt="Temporal Settings" />
-</div>
-
+    <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-settings.png" alt="Temporal Settings" />
 2. Add the below env variables to the temporal container:
-
-<div style={{textAlign: 'left'}}>
-  <img className="screenshot-full" src="/img/cloud-run/temporal-variables-and-secrets.png" alt="Temporal Variables and Secrets" />
-</div>
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-variables-and-secrets.png" alt="Temporal Variables and Secrets" />
 
 ## Upgrading to the Latest LTS Version
 
