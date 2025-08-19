@@ -265,7 +265,7 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
-    
+
     // Select snake_case for marketplace plugins if camelCase is undefined
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
@@ -489,6 +489,7 @@ const DynamicForm = ({
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
         };
       case 'filters':
         return {

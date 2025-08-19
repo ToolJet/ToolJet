@@ -28,6 +28,7 @@ const OpenapiAuth = ({
   workspaceConstants,
   isDisabled,
   isSaving,
+  optionsChanged,
 }) => {
   const apiKeyChanges = (key, value) => {
     const apiKeys = api_keys ?? [];
@@ -189,6 +190,7 @@ const OpenapiAuth = ({
                 bearer: ['bearer_token'],
               },
             }}
+            optionsChanged={optionsChanged}
           />
         </>
       );

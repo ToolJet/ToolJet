@@ -33,6 +33,7 @@ const OpenApi = ({
   currentAppEnvironmentId,
   selectedDataSource,
   isSaving,
+  optionsChanged,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -260,6 +261,7 @@ const OpenApi = ({
             selectedDataSource={selectedDataSource}
             isDisabled={isDisabled}
             isSaving={isSaving}
+            optionsChanged={optionsChanged}
           />
         </>
       )}
