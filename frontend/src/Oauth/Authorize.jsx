@@ -234,6 +234,3 @@ export function Authorize({ navigate }) {
     </div>
   );
 }
-
-// https://accounts.google.com/o/oauth2/v2/auth?response_type=id_token&client_id=294205837601-ugfgfesarj4um3uutnm89apbvhd47mv8.apps.googleusercontent.com&redirect_uri=https://gcpstage.tooljet.ai/sso/google&scope=email%20profile&nonce=GpVBNJBf0e&
-// state=tj_api_source%3Dai_onboarding
