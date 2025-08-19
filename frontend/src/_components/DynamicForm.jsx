@@ -17,7 +17,7 @@ import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import ApiEndpointInputOld from './ApiEndpointInputOld';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
-import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
+import { orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
@@ -234,7 +234,8 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText,
+    helpText: helpTextProp, // For marketplace compatibility
+    help_text,
     description,
     type,
     placeholder = '',
@@ -248,10 +249,12 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType = 'basic',
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
     spec_url = '',
     disabled = false,
-    buttonText,
+    buttonText: buttonTextProp,
+    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
     text,
     subtext,
     oauth_configs,
@@ -262,6 +265,11 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
+    
+    // Select snake_case for marketplace plugins if camelCase is undefined
+    const buttonText = buttonTextProp || button_text;
+    const editorType = editorTypeProp || editor_type;
+    const helpText = helpTextProp || help_text;
 
     switch (type) {
       case 'password':
@@ -598,6 +606,7 @@ const DynamicForm = ({
             'tooljetdb-operations',
             'react-component-api-endpoint',
             'react-component-api-endpoint-old',
+            'react-component-oauth',
           ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
@@ -607,8 +616,9 @@ const DynamicForm = ({
           return (
             enabled && (
               <div
-                className={cx('my-2', {
-                  'col-md-12': !className && !isHorizontalLayout,
+                className={cx({
+                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
+                  'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
                   [className]: !!className,
                   'd-flex': isHorizontalLayout,
                   'dynamic-form-row': isHorizontalLayout,
