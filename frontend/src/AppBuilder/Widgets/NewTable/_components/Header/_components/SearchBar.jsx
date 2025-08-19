@@ -1,9 +1,16 @@
 import React, { useMemo, useState, memo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { debounce } from 'lodash';
+import useTableStore from '../../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
 // Table Search
-export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
+export const SearchBar = memo(({ globalFilter = '', setGlobalFilter, id }) => {
+  const searchInputPlaceholder = useTableStore(
+    (state) => state.getTableProperties(id)?.searchInputPlaceholder,
+    shallow
+  );
+
   const [value, setValue] = useState(globalFilter);
 
   const onChange = (filterValue) => {
@@ -28,7 +35,7 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
             setValue(e.target.value);
             debouncedChange(e.target.value);
           }}
-          placeholder="Search"
+          placeholder={searchInputPlaceholder}
           data-cy="search-input-field"
           style={{
             border: '0',
