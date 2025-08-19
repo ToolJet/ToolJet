@@ -14,6 +14,7 @@ import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import './styles/tabs.scss';
 const tinycolor = require('tinycolor2');
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
@@ -332,7 +333,7 @@ export const Tabs = function Tabs({
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
+        '--cc-tabs-border-color': border,
       }}
       data-cy={dataCy}
       ref={containerRef}
