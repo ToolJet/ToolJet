@@ -1,0 +1,105 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Hubspot",
+  "description": "Integrate with HubSpot API for CRM and sales automation",
+  "type": "api",
+  "source": {
+    "name": "Hubspot",
+    "kind": "hubspot",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "account": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "schema": {
+      "value": ""
+    },
+    "warehouse": {
+      "value": ""
+    },
+    "role": {
+      "value": ""
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://api.hubapi.com/oauth/v1/token"
+    },
+    "redirect_url": {
+      "value": "http://localhost:8082/oauth2/authorize"
+    },
+    "auth_url": {
+      "value": "https://app.hubspot.com/oauth/authorize"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "access_token_custom_headers": {
+        "value": [
+          ["Content-Type", "application/x-www-form-urlencoded"]
+        ]
+      },
+    "scopes": {
+      "value": "oauth"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for Hubspot",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ],
+          "basic": [
+            "password",
+            "username"
+          ]
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": true
+      }
+    }
+  },
+  "required": []
+}
