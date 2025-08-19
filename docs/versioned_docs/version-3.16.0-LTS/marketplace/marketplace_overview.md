@@ -66,6 +66,7 @@ To remove a plugin, follow these steps:
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[Google Calendar](/docs/marketplace/plugins/marketplace-plugin-googlecalendar)**
+- **[Google Cloud Spanner](/docs/marketplace/plugins/marketplace-plugin-spanner)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
@@ -81,6 +82,7 @@ To remove a plugin, follow these steps:
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[UPS](/docs/marketplace/plugins/marketplace-plugin-ups)**
 - **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
 
 :::info For Plugin Developers

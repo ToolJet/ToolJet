@@ -81,6 +81,7 @@ To remove a plugin, follow these steps:
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[UPS](/docs/marketplace/plugins/marketplace-plugin-ups)**
 - **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
 
 :::info For Plugin Developers
