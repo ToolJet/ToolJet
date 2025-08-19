@@ -86,9 +86,15 @@ export default defineConfig(({ command, mode }) => {
 
   const plugins = [
     react({
+      // Use Babel for JSX transformation and Fast Refresh
+      include: /\.(jsx?|tsx?)$/,
+      exclude: /node_modules/,
       fastRefresh: isDev,
       babel: {
+        babelrc: false, // Ignore external babel config
+        configFile: false, // Ignore babel.config.js
         plugins: [
+          // Lodash tree-shaking (equivalent to the webpack babel-plugin-import)
           [
             'import',
             {
@@ -189,6 +195,10 @@ export default defineConfig(({ command, mode }) => {
       port: 8082,
       host: '0.0.0.0',
       open: false,
+      hmr: {
+        overlay: true,
+        port: 8082,
+      },
     },
 
     build: {
@@ -327,6 +337,8 @@ export default defineConfig(({ command, mode }) => {
       loader: 'jsx',
       include: /.*\.(jsx?|tsx?)$/,
       exclude: [],
+      jsxFactory: 'React.createElement',
+      jsxFragment: 'React.Fragment',
     },
 
     css: {
@@ -432,7 +444,16 @@ export default defineConfig(({ command, mode }) => {
     optimizeDeps: {
       // Pre-bundle heavy dependencies for faster dev startup
       include: [
-        'lodash',
+        // Lodash - pre-bundle specific functions for tree-shaking
+        'lodash/debounce',
+        'lodash/isEmpty',
+        'lodash/isEqual',
+        'lodash/get',
+        'lodash/set',
+        'lodash/merge',
+        'lodash/cloneDeep',
+        'lodash/pick',
+        'lodash/omit',
         'moment',
         'axios',
         'react',
