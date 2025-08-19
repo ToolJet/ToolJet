@@ -285,7 +285,7 @@ export const tableConfig = {
   },
   defaultSize: {
     width: 25,
-    height: 456,
+    height: 460,
   },
   events: {
     onRowHovered: { displayName: 'Row hovered' },
