@@ -158,7 +158,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' ? secrets.CYPRESS_SECRETS : secrets.CYPRESS_EE_SECRETS }}
+          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SECRETS || secrets.CYPRESS_EE_SECRETS }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests for CE
@@ -168,7 +168,6 @@ jobs:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: cypress-platform.config.js
-
 
       - name: Run Cypress tests for EE
         if: matrix.edition == 'ee'
@@ -331,7 +330,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' ? secrets.CYPRESS_SUBPATH_SECRETS : secrets.CYPRESS_EE_SUBPATH_SECRETS }}
+          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SUBPATH_SECRETS || secrets.CYPRESS_EE_SUBPATH_SECRETS }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests
@@ -504,7 +503,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' ? secrets.CYPRESS_PROXY_SECRETS : secrets.CYPRESS_EE_PROXY_SECRETS }}
+          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_PROXY_SECRETS || secrets.CYPRESS_EE_PROXY_SECRETS }}
           dir: "./cypress-tests"
       
 
@@ -678,20 +677,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: |
-            ${{ 
-              (matrix.edition == 'ce' && 
-                (job.name == 'Cypress-Platform' && secrets.CYPRESS_SUBPATH_PROXY_SECRETS) ||
-              (matrix.edition == 'ee' && 
-                (job.name == 'Cypress-Platform' && secrets.
-                - name: Create Cypress environment file
-                  id: create-json-tj-proxy-subpath
-                  uses: jsdaniell/create-json@1.1.2
-                  with:
-                    name: "cypress.env.json"
-                    json: ${{ matrix.edition == 'ce' ? secrets.CYPRESS_SUBPATH_PROXY_SECRETS : secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS }}
-                    dir: "./cypress-tests")
-            }}
+          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SUBPATH_PROXY_SECRETS || secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS }}
           dir: "./cypress-tests"
 
 
