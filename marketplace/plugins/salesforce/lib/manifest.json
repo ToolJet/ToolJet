@@ -53,6 +53,9 @@
     },
     "scopes": {
       "value": "full"
+    },
+    "oauth_type": {
+      "value": "custom_app"
     }
   },
   "properties": {

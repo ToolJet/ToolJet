@@ -314,6 +314,13 @@ class OrganizationLogin extends React.Component {
   enablePasswordLogin = async () => {
     this.setState({ isSaving: true });
     const { options } = this.state;
+    const prevAutomaticSsoLoginEnabled = options.automaticSsoLogin;
+    const prevPasswordLoginEnabled = options.passwordLoginEnabled;
+
+    if (prevPasswordLoginEnabled && !prevAutomaticSsoLoginEnabled) {
+      this.setState({ isSaving: false });
+      return; //Already enabled password login
+    }
     options.passwordLoginEnabled = true;
     options.automaticSsoLogin = false;
     const passwordLoginData = {

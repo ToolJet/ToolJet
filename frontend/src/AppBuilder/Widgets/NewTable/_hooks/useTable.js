@@ -32,11 +32,11 @@ export function useTable({
   const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
   useEffect(() => {
-    setPagination({
-      pageIndex: 0,
+    setPagination((prev) => ({
+      pageIndex: serverSidePagination ? prev.pageIndex ?? 0 : 0,
       pageSize: enablePagination ? rowsPerPage : data.length,
-    });
-  }, [enablePagination, rowsPerPage, data.length]);
+    }));
+  }, [enablePagination, rowsPerPage, data.length, serverSidePagination]);
 
   // When the columns change, the data is not getting re-rendered. So, we need to create a new data array
   // eslint-disable-next-line react-hooks/exhaustive-deps
