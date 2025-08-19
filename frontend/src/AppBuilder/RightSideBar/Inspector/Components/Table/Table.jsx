@@ -20,6 +20,7 @@ import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 import {
   TextTypeIcon,
@@ -256,15 +257,14 @@ class TableComponent extends React.Component {
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
             </label>
-            <input
+            <CodeHinter
+              currentState={this.state.currentState}
+              initialValue={action.buttonText}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              onChange={(value) => this.onActionButtonPropertyChanged(index, 'buttonText', value)}
               data-cy={`action-button-text-input-field`}
-              type="text"
-              className="form-control text-field"
-              onChange={(e) => {
-                e.stopPropagation();
-                this.onActionButtonPropertyChanged(index, 'buttonText', e.target.value);
-              }}
-              value={action.buttonText}
             />
           </div>
           <div className="field" data-cy={`dropdown-action-button-position`}>
@@ -825,6 +825,13 @@ class TableComponent extends React.Component {
       'disabledState',
       'dynamicHeight',
     ];
+    const advancedCustomizations = [
+      'filterPopupHeading',
+      'filterPopupPlaceholder',
+      'addFilterBtnLabel',
+      'removeFilterBtnLabel',
+      'searchInputPlaceholder',
+    ];
 
     items.push({
       title: 'Events',
@@ -863,6 +870,11 @@ class TableComponent extends React.Component {
     items.push({
       title: 'Additional actions',
       children: additionalActions.map((option) => renderCustomElement(option)),
+    });
+
+    items.push({
+      title: 'Advanced customizations',
+      children: advancedCustomizations.map((option) => renderCustomElement(option)),
     });
 
     items.push({
