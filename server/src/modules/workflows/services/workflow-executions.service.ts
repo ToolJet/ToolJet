@@ -23,7 +23,13 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     response: Response,
     throwOnError?: boolean,
     executionStartTime?: Date,
-    extraOptions?: { startNodeId?: string; injectedState?: object; executeUsing?: string; isAppQueryPreview?: boolean }
+    extraOptions?: {
+      startNodeId?: string;
+      injectedState?: object;
+      executeUsing?: string;
+      isAppQueryPreview?: boolean;
+      isAsyncWebhookTrigger?: boolean;
+    }
   ): Promise<QueryResult> {
     throw new Error('Method not implemented.');
   }
