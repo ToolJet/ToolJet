@@ -155,11 +155,17 @@ jobs:
 
       - name: Create Cypress environment file for CE
         if: matrix.edition == 'ce'
-        id: create-json
+        id: create-json-tj
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: |
+            ${{ 
+              (matrix.edition == 'ce' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_SECRETS) ||
+              (matrix.edition == 'ee' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_EE_SECRETS)
+            }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests for CE
@@ -170,13 +176,6 @@ jobs:
           config: "baseUrl=http://localhost:3000"
           config-file: cypress-platform.config.js
 
-      - name: Create Cypress environment file for EE
-        if: matrix.edition == 'ee'
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_EE_SECRETS }}
-          dir: "./cypress-tests"
 
       - name: Run Cypress tests for EE
         if: matrix.edition == 'ee'
@@ -335,11 +334,17 @@ jobs:
           done'
           
       - name: Create Cypress environment file
-        id: create-json
+        id: create-json-tj-subpath
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS_SUBPATH }}
+          json: |
+            ${{ 
+              (matrix.edition == 'ce' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_SUBPATH_SECRETS) ||
+              (matrix.edition == 'ee' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_EE_SUBPATH_SECRETS)
+            }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests
@@ -508,12 +513,19 @@ jobs:
           timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/; do sleep 5; done'
 
       - name: Create Cypress environment file
-        id: create-json
+        id: create-json-tj-proxy
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS_PROXY }}
+          json: |
+            ${{ 
+              (matrix.edition == 'ce' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_PROXY_SECRETS) ||
+              (matrix.edition == 'ee' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_EE_PROXY_SECRETS)
+            }}
           dir: "./cypress-tests"
+      
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -681,12 +693,19 @@ jobs:
           timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/apps/; do sleep 5; done'
 
       - name: Create Cypress environment file
-        id: create-json
+        id: create-json-tj-proxy-subpath
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS_PROXY_SUBPATH }}
+          json: |
+            ${{ 
+              (matrix.edition == 'ce' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_SUBPATH_PROXY_SECRETS) ||
+              (matrix.edition == 'ee' && 
+                (job.name == 'Cypress-Platform' && secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)
+            }}
           dir: "./cypress-tests"
+
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
