@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional } from 'class-validator';
 import { isUndefined } from 'lodash';
 
 export class CreateWorkflowExecutionDto {
