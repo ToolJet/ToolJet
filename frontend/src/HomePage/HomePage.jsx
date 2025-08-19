@@ -1,6 +1,6 @@
-import React from 'react';
-import cx from 'classnames';
-import moment from 'moment';
+import React from "react";
+import cx from "classnames";
+import moment from "moment";
 import {
   appsService,
   folderService,
@@ -10,53 +10,58 @@ import {
   licenseService,
   pluginsService,
   aiOnboardingService,
-} from '@/_services';
-import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
-import Select from '@/_ui/Select';
-import _, { sample, isEmpty, capitalize, has } from 'lodash';
-import { Folders } from './Folders';
-import { BlankPage } from './BlankPage';
-import { toast } from 'react-hot-toast';
-import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-import Layout from '@/_ui/Layout';
-import AppList from './AppList';
-import TemplateLibraryModal from './TemplateLibraryModal/';
-import HomeHeader from './Header';
-import Modal from './Modal';
-import configs from './Configs/AppIcon.json';
-import { withTranslation } from 'react-i18next';
-import ExportAppModal from './ExportAppModal';
-import Footer from './Footer';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { getWorkspaceId } from '@/_helpers/utils';
-import { getQueryParams } from '@/_helpers/routes';
-import { withRouter } from '@/_hoc/withRouter';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
-import { LicenseTooltip } from '@/LicenseTooltip';
-import ModalBase from '@/_ui/Modal';
-import FolderFilter from './FolderFilter';
-import { useLicenseStore } from '@/_stores/licenseStore';
-import { shallow } from 'zustand/shallow';
-import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
-import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
+} from "@/_services";
+import { ConfirmDialog, AppModal, ToolTip } from "@/_components";
+import Select from "@/_ui/Select";
+import _, { sample, isEmpty, capitalize, has } from "lodash";
+import { Folders } from "./Folders";
+import { BlankPage } from "./BlankPage";
+import { toast } from "react-hot-toast";
+import CreateAppButton from "./components/CreateAppButton";
+import CreateWorkflowButton from "./components/CreateAppButton/CreateWorkflowButton";
+import CreateModuleButton from "./components/CreateAppButton/CreateModuleButton";
+import Layout from "@/_ui/Layout";
+import AppList from "./AppList";
+import TemplateLibraryModal from "./TemplateLibraryModal/";
+import HomeHeader from "./Header";
+import Modal from "./Modal";
+import configs from "./Configs/AppIcon.json";
+import { withTranslation } from "react-i18next";
+import ExportAppModal from "./ExportAppModal";
+import Footer from "./Footer";
+import { ButtonSolid } from "@/_ui/AppButton/AppButton";
+import BulkIcon from "@/_ui/Icon/bulkIcons/index";
+import { getWorkspaceId } from "@/_helpers/utils";
+import { getQueryParams } from "@/_helpers/routes";
+import { withRouter } from "@/_hoc/withRouter";
+import LicenseBanner from "@/modules/common/components/LicenseBanner";
+import { LicenseTooltip } from "@/LicenseTooltip";
+import ModalBase from "@/_ui/Modal";
+import FolderFilter from "./FolderFilter";
+import { useLicenseStore } from "@/_stores/licenseStore";
+import { shallow } from "zustand/shallow";
+import {
+  fetchAndSetWindowTitle,
+  pageTitles,
+} from "@white-label/whiteLabelling";
+import HeaderSkeleton from "@/_ui/FolderSkeleton/HeaderSkeleton";
 import {
   ImportAppMenu,
   AppActionModal,
   OrganizationList,
   ConsultationBanner,
   AppTypeTab,
-} from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
-import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-import { v4 as uuidv4 } from 'uuid';
-import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import posthogHelper from '@/modules/common/helpers/posthogHelper';
+} from "@/modules/dashboard/components";
+import CreateAppWithPrompt from "@/modules/AiBuilder/components/CreateAppWithPrompt";
+import SolidIcon from "@/_ui/Icon/SolidIcons";
+import { isWorkflowsFeatureEnabled } from "@/modules/common/helpers/utils";
+import EmptyModuleSvg from "../../assets/images/icons/empty-modules.svg";
+import { v4 as uuidv4 } from "uuid";
+import { TJLoader } from "@/_ui/TJLoader/TJLoader";
+import posthogHelper from "@/modules/common/helpers/posthogHelper";
 const { iconList, defaultIcon } = configs;
-import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
-import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { PermissionDeniedModal } from "./PermissionDeniedModal/PermissionDeniedModal";
+import { updateCurrentSession } from "@/_helpers/authorizeWorkspace";
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -82,7 +87,7 @@ class HomePageComponent extends React.Component {
       isDeletingAppFromFolder: false,
       currentFolder: {},
       currentPage: 1,
-      appSearchKey: '',
+      appSearchKey: "",
       appToBeDeleted: false,
       showAppDeletionConfirmation: false,
       showRemoveAppFromFolderConfirmation: false,
@@ -98,7 +103,7 @@ class HomePageComponent extends React.Component {
       app: {},
       appsLimit: {},
       featureAccess: null,
-      newAppName: '',
+      newAppName: "",
       commitEnabled: false,
       fetchingOrgGit: false,
       orgGit: null,
@@ -114,8 +119,8 @@ class HomePageComponent extends React.Component {
       showImportAppModal: false,
       showCloneAppModal: false,
       showRenameAppModal: false,
-      fileContent: '',
-      fileName: '',
+      fileContent: "",
+      fileName: "",
       selectedTemplate: null,
       deploying: false,
       workflowWorkspaceLevelLimit: {},
@@ -136,15 +141,17 @@ class HomePageComponent extends React.Component {
   }
 
   setQueryParameter = () => {
-    const showImportTemplateModal = getQueryParams('fromtemplate');
+    const showImportTemplateModal = getQueryParams("fromtemplate");
     this.setState({
-      showTemplateLibraryModal: showImportTemplateModal ? showImportTemplateModal : false,
+      showTemplateLibraryModal: showImportTemplateModal
+        ? showImportTemplateModal
+        : false,
     });
   };
 
   checkIfUserHasBuilderAccess = () => {
     const role = authenticationService.currentSessionValue?.role.name;
-    const hasBuilderAccess = role === 'admin' || role === 'builder';
+    const hasBuilderAccess = role === "admin" || role === "builder";
     return hasBuilderAccess;
   };
 
@@ -169,15 +176,23 @@ class HomePageComponent extends React.Component {
         // });
         // Optional: Clear the cookie after showing toast
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.createApp(
+          `Untitled App: ${uuidv4()}`,
+          undefined,
+          `${decodeURIComponent(latestPrompt)}`
+        );
         break;
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
         if (templateId) {
           /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
-          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
-            id: templateId,
-          });
+          this.deployApp(
+            new Event("deploy"),
+            `${templateId.replace(/-/g, " ")}`,
+            {
+              id: templateId,
+            }
+          );
         }
         break;
       }
@@ -188,14 +203,17 @@ class HomePageComponent extends React.Component {
 
   componentDidMount() {
     this.handleAiOnboarding();
-    if (this.props.appType === 'workflow') {
+    if (this.props.appType === "workflow") {
       if (!this.canViewWorkflow()) {
-        toast.error('You do not have permission to view workflows');
+        toast.error("You do not have permission to view workflows");
         this.setState({ shouldRedirect: true });
         return;
       }
     }
-    if (this.props.appType === 'module' && authenticationService.currentSessionValue?.role?.name == 'end-user') {
+    if (
+      this.props.appType === "module" &&
+      authenticationService.currentSessionValue?.role?.name == "end-user"
+    ) {
       //Restrict route
       this.setState({ shouldRedirect: true });
       return;
@@ -213,7 +231,9 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
-    const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
+    const hasClosedBanner = localStorage.getItem(
+      "hasClosedGroupMigrationBanner"
+    );
 
     //Only show the banner once
     if (hasClosedBanner) {
@@ -226,8 +246,14 @@ class HomePageComponent extends React.Component {
       this.fetchFolders();
       this.fetchApps(1);
     }
-    if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
-      this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+    if (
+      Object.keys(this.props.featureAccess).length &&
+      !this.state.featureAccess
+    ) {
+      this.setState({
+        featureAccess: this.props.featureAccess,
+        featuresLoaded: this.props.featuresLoaded,
+      });
     }
     if (this.state.shouldRedirect && !prevState.shouldRedirect) {
       const workspaceId = getWorkspaceId();
@@ -251,47 +277,59 @@ class HomePageComponent extends React.Component {
   }
 
   fetchWorkflowsInstanceLimit() {
-    appsService.getWorkflowLimit('instance').then((data) => {
+    appsService.getWorkflowLimit("instance").then((data) => {
       this.setState({ workflowInstanceLevelLimit: data?.appsCount });
     });
   }
 
   fetchWorkflowsWorkspaceLimit() {
-    appsService.getWorkflowLimit('workspace').then((data) => {
+    appsService.getWorkflowLimit("workspace").then((data) => {
       this.setState({ workflowWorkspaceLevelLimit: data?.appsCount });
     });
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
-    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
+    const appSearchKey =
+      searchKey !== "" ? searchKey || this.state.appSearchKey : "";
     this.setState({
       apps: [],
       isLoading: true,
       currentPage: page,
       appSearchKey,
     });
-    appsService.getAll(page, folder, appSearchKey, this.props.appType).then((data) => {
-      this.setState({
-        apps: data.apps,
-        meta: { ...this.state.meta, ...data.meta },
-        searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
-        isLoading: false,
+    appsService
+      .getAll(page, folder, appSearchKey, this.props.appType)
+      .then((data) => {
+        this.setState({
+          apps: data.apps,
+          meta: { ...this.state.meta, ...data.meta },
+          searchedAppCount: appSearchKey
+            ? data.apps.length
+            : this.state.currentFolder.count,
+          isLoading: false,
+        });
       });
-    });
   };
 
   fetchFolders = (searchKey) => {
-    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
+    const appSearchKey =
+      searchKey !== "" ? searchKey || this.state.appSearchKey : "";
     this.setState({
       foldersLoading: true,
       appSearchKey: appSearchKey,
     });
 
     folderService.getAll(appSearchKey, this.props.appType).then((data) => {
-      const folder_slug = new URL(window.location.href)?.searchParams?.get('folder');
-      const folder = data?.folders?.find((folder) => folder.name === folder_slug);
+      const folder_slug = new URL(window.location.href)?.searchParams?.get(
+        "folder"
+      );
+      const folder = data?.folders?.find(
+        (folder) => folder.name === folder_slug
+      );
       const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
-      const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
+      const currentFolder = data?.folders?.find(
+        (folder) => currentFolderId && folder.id === currentFolderId
+      );
       this.setState({
         folders: data.folders,
         foldersLoading: false,
@@ -316,10 +354,10 @@ class HomePageComponent extends React.Component {
 
   getAppType = () => {
     const { appType } = this.props;
-    if (appType === 'front-end') return 'App';
-    if (appType === 'workflow') return 'Workflow';
-    if (appType === 'module') return 'Module';
-    return 'app';
+    if (appType === "front-end") return "App";
+    if (appType === "workflow") return "Workflow";
+    if (appType === "module") return "Module";
+    return "app";
   };
 
   createApp = async (appName, type, prompt) => {
@@ -333,24 +371,35 @@ class HomePageComponent extends React.Component {
         prompt,
       });
       /* Posthog Event */
-      posthogHelper.captureEvent('click_new_app', {
+      posthogHelper.captureEvent("click_new_app", {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
           authenticationService?.currentSessionValue?.current_organization_id,
         app_id: data?.id,
-        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
+        button_name:
+          this.state.posthog_from === "blank_page"
+            ? "click_new_app_from_scratch"
+            : "click_new_app_button",
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
       });
       this.eraseAIOnboardingRelatedCookies();
-      this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
-      _self.setState({ creatingApp: false, posthog_from: null, showAIOnboardingLoadingScreen: false });
+      this.props.appType !== "front-end" &&
+        toast.success(`${capitalize(this.getAppType())} created successfully!`);
+      _self.setState({
+        creatingApp: false,
+        posthog_from: null,
+        showAIOnboardingLoadingScreen: false,
+      });
       return true;
     } catch (errorResponse) {
       this.eraseAIOnboardingRelatedCookies();
-      _self.setState({ creatingApp: false, showAIOnboardingLoadingScreen: false });
+      _self.setState({
+        creatingApp: false,
+        showAIOnboardingLoadingScreen: false,
+      });
       if (errorResponse.statusCode === 409) {
         return false;
       } else if (errorResponse.statusCode !== 451) {
@@ -363,7 +412,11 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
+      await appsService.saveApp(
+        appId,
+        { name: newAppName },
+        this.props.appType
+      );
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -393,9 +446,12 @@ class HomePageComponent extends React.Component {
         this.props.appType
       );
       toast.success(`${this.getAppType()} cloned successfully!`);
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`, {
-        state: { commitEnabled: this.state.commitEnabled },
-      });
+      this.props.navigate(
+        `/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`,
+        {
+          state: { commitEnabled: this.state.commitEnabled },
+        }
+      );
       this.setState({ isCloningApp: false });
       return true;
     } catch (_error) {
@@ -417,10 +473,12 @@ class HomePageComponent extends React.Component {
       const fetchVersions = await appsService.getVersions(app.id);
       const { versions } = fetchVersions;
 
-      const currentEditingVersion = versions?.filter((version) => version?.isCurrentEditingVersion)[0];
+      const currentEditingVersion = versions?.filter(
+        (version) => version?.isCurrentEditingVersion
+      )[0];
       if (!currentEditingVersion) {
-        toast.error('Could not find current editing version.', {
-          position: 'top-center',
+        toast.error("Could not find current editing version.", {
+          position: "top-center",
         });
         return;
       }
@@ -450,25 +508,28 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.exportResource(requestBody);
 
-      const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+      const appName = app.name.replace(/\s+/g, "-").toLowerCase();
       const fileName = `${appName}-export-${new Date().getTime()}`;
       const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
+      const blob = new Blob([json], { type: "application/json" });
       const href = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = href;
-      link.download = fileName + '.json';
+      link.download = fileName + ".json";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      toast.success('Workflow exported successfully!', {
-        position: 'top-center',
+      toast.success("Workflow exported successfully!", {
+        position: "top-center",
       });
     } catch (error) {
-      toast.error(`Could not export workflow: ${error?.data?.message || error.message}`, {
-        position: 'top-center',
-      });
+      toast.error(
+        `Could not export workflow: ${error?.data?.message || error.message}`,
+        {
+          position: "top-center",
+        }
+      );
     }
   };
 
@@ -478,8 +539,8 @@ class HomePageComponent extends React.Component {
       if (!file) return;
 
       const fileReader = new FileReader();
-      const fileName = file.name.replace('.json', '').substring(0, 50);
-      fileReader.readAsText(file, 'UTF-8');
+      const fileName = file.name.replace(".json", "").substring(0, 50);
+      fileReader.readAsText(file, "UTF-8");
       fileReader.onload = async (event) => {
         const result = event.target.result;
         let fileContent;
@@ -493,13 +554,17 @@ class HomePageComponent extends React.Component {
         const importedAppDef = fileContent.app || fileContent.appV2;
         const dataSourcesUsedInApps = [];
         importedAppDef.forEach((appDefinition) => {
-          appDefinition?.definition?.appV2?.dataSources.forEach((dataSource) => {
-            dataSourcesUsedInApps.push(dataSource);
-          });
+          appDefinition?.definition?.appV2?.dataSources.forEach(
+            (dataSource) => {
+              dataSourcesUsedInApps.push(dataSource);
+            }
+          );
         });
 
-        const dependentPluginsResponse = await pluginsService.findDependentPlugins(dataSourcesUsedInApps);
-        const { pluginsToBeInstalled = [], pluginsListIdToDetailsMap = {} } = dependentPluginsResponse.data;
+        const dependentPluginsResponse =
+          await pluginsService.findDependentPlugins(dataSourcesUsedInApps);
+        const { pluginsToBeInstalled = [], pluginsListIdToDetailsMap = {} } =
+          dependentPluginsResponse.data;
         this.setState({
           fileContent,
           fileName,
@@ -515,7 +580,7 @@ class HomePageComponent extends React.Component {
       };
       event.target.value = null;
     } catch (error) {
-      let errorMessage = 'Some Error Occured';
+      let errorMessage = "Some Error Occured";
       if (error?.error) {
         errorMessage = error.error;
       } else if (error?.message) {
@@ -525,7 +590,11 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+  importFile = async (
+    importJSON,
+    appName,
+    skipPermissionsGroupCheck = false
+  ) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
@@ -546,47 +615,67 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
-          this.state.dependentPlugins,
-          true
-        ));
+        ({ installedPluginsInfo = [] } =
+          await pluginsService.installDependentPlugins(
+            this.state.dependentPlugins,
+            true
+          ));
       }
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
-            this.props.appType === 'module' ? 'modules' : 'apps'
-          } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
-          { style: { maxWidth: '425px' } }
+          `${
+            this.props.appType === "module" ? "App" : "Module"
+          } could not be imported in ${
+            this.props.appType === "module" ? "modules" : "apps"
+          } section. Switch to ${
+            this.props.appType === "module" ? "apps" : "modules"
+          } section and try again.`,
+          { style: { maxWidth: "425px" } }
         );
         this.setState({ isImportingApp: false });
         return;
       }
 
-      const data = await appsService.importResource(requestBody, this.props.appType);
+      const data = await appsService.importResource(
+        requestBody,
+        this.props.appType
+      );
       toast.success(`${this.getAppType()} imported successfully.`);
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
-        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`, {
-          state: { commitEnabled: this.state.commitEnabled },
-        });
+        this.props.navigate(
+          `/${getWorkspaceId()}/apps/${data.imports.app[0].id}`,
+          {
+            state: { commitEnabled: this.state.commitEnabled },
+          }
+        );
       } else if (!isEmpty(data.imports.tooljet_database)) {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
-      if (error?.error?.type === 'permission-check') {
-        this.setState({ showMissingGroupsModal: true, missingGroups: error?.error?.data });
+      if (error?.error?.type === "permission-check") {
+        this.setState({
+          showMissingGroupsModal: true,
+          missingGroups: error?.error?.data,
+        });
         return;
       }
       if (installedPluginsInfo.length) {
-        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        const pluginsId = installedPluginsInfo.map(
+          (pluginInfo) => pluginInfo.id
+        );
         await pluginsService.uninstallPlugins(pluginsId);
       }
 
       this.setState({ isImportingApp: false });
       if (error.statusCode === 409) return false;
-      toast.error(error?.error || error?.message || `${capitalize(this.getAppType())} import failed`);
+      toast.error(
+        error?.error ||
+          error?.message ||
+          `${capitalize(this.getAppType())} import failed`
+      );
     }
   };
 
@@ -602,7 +691,9 @@ class HomePageComponent extends React.Component {
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
-      toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
+      toast.success(`${this.getAppType()} created successfully!`, {
+        position: "top-center",
+      });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -623,10 +714,13 @@ class HomePageComponent extends React.Component {
     aiOnboardingService
       .deleteAiCookies()
       .then(() => {
-        console.log('AI onboarding server side cookies deleted successfully');
+        console.log("AI onboarding server side cookies deleted successfully");
       })
       .catch((error) => {
-        console.error('Deleting AI onboarding server side cookies failed', error);
+        console.error(
+          "Deleting AI onboarding server side cookies failed",
+          error
+        );
       })
       .finally(() => {
         updateCurrentSession({
@@ -639,16 +733,25 @@ class HomePageComponent extends React.Component {
   };
 
   canViewWorkflow = () => {
-    return this.canUserPerform(this.state.currentUser, 'view') && isWorkflowsFeatureEnabled();
+    return (
+      this.canUserPerform(this.state.currentUser, "view") &&
+      isWorkflowsFeatureEnabled()
+    );
   };
 
   canUserPerform(user, action, app) {
     const currentSession = authenticationService.currentSessionValue;
-    const { user_permissions, app_group_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
+    const {
+      user_permissions,
+      app_group_permissions,
+      workflow_group_permissions,
+      super_admin,
+      admin,
+    } = currentSession;
 
     if (super_admin) return true;
 
-    if (this.props.appType === 'workflow') {
+    if (this.props.appType === "workflow") {
       const canCreateWorkflow = admin || user_permissions?.workflow_create;
       const canUpdateWorkflow =
         workflow_group_permissions?.is_all_editable ||
@@ -660,15 +763,20 @@ class HomePageComponent extends React.Component {
       const canDeleteWorkflow = user_permissions?.workflow_delete || admin;
 
       switch (action) {
-        case 'create':
+        case "create":
           return canCreateWorkflow;
-        case 'read':
-          return canCreateWorkflow || canUpdateWorkflow || canDeleteWorkflow || canExecuteWorkflow;
-        case 'update':
+        case "read":
+          return (
+            canCreateWorkflow ||
+            canUpdateWorkflow ||
+            canDeleteWorkflow ||
+            canExecuteWorkflow
+          );
+        case "update":
           return canUpdateWorkflow;
-        case 'delete':
+        case "delete":
           return canDeleteWorkflow;
-        case 'view':
+        case "view":
           return (
             canCreateWorkflow ||
             canUpdateWorkflow ||
@@ -683,21 +791,24 @@ class HomePageComponent extends React.Component {
     } else {
       const canUpdateApp =
         app_group_permissions &&
-        (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
+        (app_group_permissions.is_all_editable ||
+          app_group_permissions.editable_apps_id.includes(app?.id));
       const canReadApp =
         (app_group_permissions && canUpdateApp) ||
         app_group_permissions.is_all_viewable ||
         app_group_permissions.viewable_apps_id.includes(app?.id);
 
       switch (action) {
-        case 'create':
+        case "create":
           return user_permissions.app_create;
-        case 'read':
+        case "read":
           return this.isUserOwnerOfApp(user, app) || canReadApp;
-        case 'update':
+        case "update":
           return canUpdateApp || this.isUserOwnerOfApp(user, app);
-        case 'delete':
-          return user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
+        case "delete":
+          return (
+            user_permissions.app_delete || this.isUserOwnerOfApp(user, app)
+          );
         default:
           return false;
       }
@@ -709,27 +820,30 @@ class HomePageComponent extends React.Component {
   }
 
   canCreateApp = () => {
-    return this.canUserPerform(this.state.currentUser, 'create');
+    return this.canUserPerform(this.state.currentUser, "create");
   };
 
   canUpdateApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'update', app);
+    return this.canUserPerform(this.state.currentUser, "update", app);
   };
 
   canDeleteApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'delete', app);
+    return this.canUserPerform(this.state.currentUser, "delete", app);
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions
+      ?.folder_c_r_u_d;
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions
+      ?.folder_c_r_u_d;
   };
 
   canUpdateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions
+      ?.folder_c_r_u_d;
   };
 
   cancelDeleteAppDialog = () => {
@@ -755,7 +869,7 @@ class HomePageComponent extends React.Component {
           this.state.currentFolder.id
         );
         this.fetchFolders();
-        if (this.props.appType === 'workflow') {
+        if (this.props.appType === "workflow") {
           this.fetchWorkflowsInstanceLimit();
           this.fetchWorkflowsWorkspaceLimit();
         } else {
@@ -763,7 +877,7 @@ class HomePageComponent extends React.Component {
         }
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+        toast.error("Could not delete the app.");
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -771,22 +885,25 @@ class HomePageComponent extends React.Component {
   };
 
   isExistingPlanUser = (date) => {
-    return new Date(date) < new Date('2025-04-01');
+    return new Date(date) < new Date("2025-04-01");
   };
 
   pageCount = () => {
-    return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
+    return this.state.currentFolder.id
+      ? this.state.meta.folder_count
+      : this.state.meta.total_count;
   };
 
   onSearchSubmit = (key) => {
     if (this.state.appSearchKey === key) {
       return;
     }
-    this.fetchApps(1, this.state.currentFolder.id, key || '');
+    this.fetchApps(1, this.state.currentFolder.id, key || "");
   };
 
   fetchOrgGit = () => {
-    const workspaceId = authenticationService.currentSessionValue.current_organization_id;
+    const workspaceId =
+      authenticationService.currentSessionValue.current_organization_id;
     this.setState({ fetchingOrgGit: true });
     gitSyncService
       .getGitStatus(workspaceId)
@@ -799,7 +916,11 @@ class HomePageComponent extends React.Component {
   };
 
   fetchRepoApps = () => {
-    this.setState({ fetchingAppsFromRepos: true, selectedAppRepo: null, importingGitAppOperations: {} });
+    this.setState({
+      fetchingAppsFromRepos: true,
+      selectedAppRepo: null,
+      importingGitAppOperations: {},
+    });
     gitSyncService
       .gitPull()
       .then((data) => {
@@ -816,8 +937,14 @@ class HomePageComponent extends React.Component {
   importGitApp = () => {
     const { appsFromRepos, selectedAppRepo, orgGit } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
-    const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
-      appToImport;
+    const {
+      git_app_name,
+      git_version_id,
+      git_version_name,
+      last_commit_message,
+      last_commit_user,
+      lastpush_date,
+    } = appToImport;
 
     this.setState({ importingApp: true });
     const body = {
@@ -849,17 +976,17 @@ class HomePageComponent extends React.Component {
   addAppToFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
-      return toast.error('Select a folder');
+      return toast.error("Select a folder");
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
-        toast.success('Added to folder.');
+        toast.success("Added to folder.");
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
-        posthogHelper.captureEvent('click_add_to_folder_button', {
+        posthogHelper.captureEvent("click_add_to_folder_button", {
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
@@ -876,14 +1003,17 @@ class HomePageComponent extends React.Component {
   removeAppFromFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
-      return toast.error('Select a folder');
+      return toast.error("Select a folder");
     }
     this.setState({ isDeletingAppFromFolder: true });
 
     folderService
-      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
+      .removeAppFromFolder(
+        appOperations.selectedApp.id,
+        appOperations.selectedFolder.id
+      )
       .then(() => {
-        toast.success('Removed from folder.');
+        toast.success("Removed from folder.");
 
         this.fetchApps(1, appOperations.selectedFolder.id);
         this.fetchFolders();
@@ -904,28 +1034,43 @@ class HomePageComponent extends React.Component {
     const { appOperations } = this.state;
 
     switch (action) {
-      case 'add-to-folder':
-        this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
-        break;
-      case 'change-icon':
+      case "add-to-folder":
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          appOperations: { ...appOperations, selectedApp: app },
+          showAddToFolderModal: true,
+        });
+        break;
+      case "change-icon":
+        this.setState({
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedIcon: app?.icon,
+          },
           showChangeIconModal: true,
         });
         break;
-      case 'remove-app-from-folder':
+      case "remove-app-from-folder":
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedFolder: folder },
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedFolder: folder,
+          },
           showRemoveAppFromFolderConfirmation: true,
         });
         break;
-      case 'clone-app':
+      case "clone-app":
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedIcon: app?.icon,
+          },
           showCloneAppModal: true,
         });
         break;
-      case 'rename-app':
+      case "rename-app":
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,
@@ -936,11 +1081,20 @@ class HomePageComponent extends React.Component {
 
   getIcons = () => {
     const { appOperations } = this.state;
-    const selectedIcon = appOperations.selectedIcon || appOperations.selectedApp?.icon || defaultIcon;
+    const selectedIcon =
+      appOperations.selectedIcon ||
+      appOperations.selectedApp?.icon ||
+      defaultIcon;
     return iconList.map((icon, index) => (
       <li
-        className={`p-3 ms-1 me-2 mt-1 mb-2${selectedIcon === icon ? ' selected' : ''}`}
-        onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
+        className={`p-3 ms-1 me-2 mt-1 mb-2${
+          selectedIcon === icon ? " selected" : ""
+        }`}
+        onClick={() =>
+          this.setState({
+            appOperations: { ...appOperations, selectedIcon: icon },
+          })
+        }
         key={index}
       >
         <BulkIcon name={icon} data-cy={`${icon}-icon`} />
@@ -952,18 +1106,18 @@ class HomePageComponent extends React.Component {
     const { appOperations, apps } = this.state;
 
     if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
-      return toast.error('Select an icon');
+      return toast.error("Select an icon");
     }
     if (appOperations.selectedIcon === appOperations.selectedApp.icon) {
       this.setState({ appOperations: {}, showChangeIconModal: false });
-      return toast.success('Icon updated.');
+      return toast.success("Icon updated.");
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     appsService
       .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
       .then(() => {
-        toast.success('Icon updated.');
+        toast.success("Icon updated.");
 
         const updatedApps = apps.map((app) => {
           if (app.id === appOperations.selectedApp.id) {
@@ -971,7 +1125,11 @@ class HomePageComponent extends React.Component {
           }
           return app;
         });
-        this.setState({ appOperations: {}, showChangeIconModal: false, apps: updatedApps });
+        this.setState({
+          appOperations: {},
+          showChangeIconModal: false,
+          apps: updatedApps,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -996,11 +1154,11 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
-    posthogHelper.captureEvent('click_import_from_template', {
+    posthogHelper.captureEvent("click_import_from_template", {
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,
-      button_name: 'click_import_from_template',
+      button_name: "click_import_from_template",
     });
     this.setState({ showTemplateLibraryModal: true });
   };
@@ -1013,13 +1171,17 @@ class HomePageComponent extends React.Component {
   };
   toggleGitRepositoryImportModal = (e) => {
     if (!this.state.showGitRepositoryImportModal) this.fetchRepoApps();
-    this.setState({ showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal });
+    this.setState({
+      showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal,
+    });
   };
 
   openCreateAppFromTemplateModal = async (template) => {
     try {
       const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
-        (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
+        (await libraryAppService.findDependentPluginsInTemplate?.(
+          template.id
+        )) || {};
 
       this.setState({
         showCreateAppFromTemplateModal: true,
@@ -1031,7 +1193,7 @@ class HomePageComponent extends React.Component {
         }),
       });
     } catch (error) {
-      console.error('Error checking template plugins:', error);
+      console.error("Error checking template plugins:", error);
       // Continue with template creation without plugins
       this.setState({
         showCreateAppFromTemplateModal: true,
@@ -1060,11 +1222,11 @@ class HomePageComponent extends React.Component {
 
   openImportAppModal = async () => {
     /* Posthog Events */
-    posthogHelper.captureEvent('click_import_button', {
+    posthogHelper.captureEvent("click_import_button", {
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,
-      button_name: 'click_import_dropdown_button',
+      button_name: "click_import_dropdown_button",
     });
     this.setState({ showImportAppModal: true });
   };
@@ -1080,7 +1242,8 @@ class HomePageComponent extends React.Component {
 
   isWithinSevenDaysOfSignUp = (date) => {
     const currentDate = new Date().toISOString();
-    const differenceInTime = new Date(currentDate).getTime() - new Date(date).getTime();
+    const differenceInTime =
+      new Date(currentDate).getTime() - new Date(date).getTime();
     const differenceInDays = differenceInTime / (1000 * 3600 * 24);
     return differenceInDays <= 7;
   };
@@ -1091,7 +1254,7 @@ class HomePageComponent extends React.Component {
 
   setShowGroupMigrationBanner = () => {
     this.setState({ showGroupMigrationBanner: false });
-    localStorage.setItem('hasClosedGroupMigrationBanner', 'true');
+    localStorage.setItem("hasClosedGroupMigrationBanner", "true");
   };
   // We are using this method to get notified from the child component that commit enabled status has been changed
   // To be removed once all git related functionalities are moved to specific components
@@ -1104,8 +1267,9 @@ class HomePageComponent extends React.Component {
     return (
       currentSessionValue?.admin &&
       this.state.showGroupMigrationBanner &&
-      new Date(currentSessionValue?.current_user?.created_at) < new Date('2025-02-01') &&
-      appType !== 'workflow'
+      new Date(currentSessionValue?.current_user?.created_at) <
+        new Date("2025-02-01") &&
+      appType !== "workflow"
     );
   };
   handleAppNameChange = (e) => {
@@ -1113,13 +1277,15 @@ class HomePageComponent extends React.Component {
     const { appsFromRepos } = this.state;
     let validationMessage = {};
     if (!newAppName.trim()) {
-      validationMessage = { message: 'App name cannot be empty' };
+      validationMessage = { message: "App name cannot be empty" };
     } else if (newAppName.length > 50) {
-      validationMessage = { message: 'App name cannot exceed 50 characters' };
+      validationMessage = { message: "App name cannot exceed 50 characters" };
     } else {
-      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
-      if (matchingApp?.app_name_exist === 'EXIST') {
-        validationMessage = { message: 'App name already exists' };
+      const matchingApp = Object.values(appsFromRepos).find(
+        (app) => app.git_app_name === newAppName.trim()
+      );
+      if (matchingApp?.app_name_exist === "EXIST") {
+        validationMessage = { message: "App name already exists" };
       }
     }
     this.setState({
@@ -1130,10 +1296,12 @@ class HomePageComponent extends React.Component {
 
   // Helper functions for workflow limit checks
   hasWorkflowLimitReached = () => {
-    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } = this.state;
+    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } =
+      this.state;
 
     const instanceLimitReached =
-      workflowInstanceLevelLimit.total === 0 || workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total;
+      workflowInstanceLevelLimit.total === 0 ||
+      workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total;
     const workspaceLimitReached =
       workflowWorkspaceLevelLimit.total === 0 ||
       workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total;
@@ -1142,7 +1310,8 @@ class HomePageComponent extends React.Component {
   };
 
   hasWorkflowLimitWarning = () => {
-    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } = this.state;
+    const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } =
+      this.state;
     return this.hasInstanceLimitWarning() || this.hasWorkspaceLimitWarning();
   };
 
@@ -1153,7 +1322,8 @@ class HomePageComponent extends React.Component {
     return (
       workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
       (percentage >= 90 && percentage < 100) ||
-      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+      workflowInstanceLevelLimit.current ===
+        workflowInstanceLevelLimit.total - 1
     );
   };
 
@@ -1162,9 +1332,11 @@ class HomePageComponent extends React.Component {
     const percentage = workflowWorkspaceLevelLimit.percentage;
 
     return (
-      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
+      workflowWorkspaceLevelLimit.current >=
+        workflowWorkspaceLevelLimit.total ||
       (percentage >= 90 && percentage < 100) ||
-      workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1
+      workflowWorkspaceLevelLimit.current ===
+        workflowWorkspaceLevelLimit.total - 1
     );
   };
 
@@ -1177,6 +1349,71 @@ class HomePageComponent extends React.Component {
   onPermissionDeniedModalHide = () => {
     this.setState({ showInsufficentPermissionModal: false });
     this.eraseAIOnboardingRelatedCookies();
+  };
+
+  getCreateAppButton = () => {
+    const { featureAccess, appsLimit } = this.state;
+    const invalidLicense =
+      featureAccess?.licenseStatus?.isExpired ||
+      !featureAccess?.licenseStatus?.isLicenseValid;
+
+    const getDisabledState = () => {
+      if (this.props.appType === "module") {
+        return invalidLicense;
+      }
+      if (this.props.appType === "workflow") {
+        return this.hasWorkflowLimitReached();
+      }
+      if (this.props.appType === "front-end") {
+        return appsLimit?.percentage >= 100;
+      }
+      // For regular apps
+      return appsLimit?.percentage >= 100;
+    };
+
+    if (this.props.appType === "workflow") {
+      return (
+        <CreateWorkflowButton
+          canCreateApp={this.canCreateApp()}
+          appsLimit={this.state.appsLimit}
+          creatingApp={this.state.creatingApp}
+          isImportingApp={this.state.isImportingApp}
+          disabled={getDisabledState()}
+          onShowCreateAppModal={this.openCreateAppModal}
+          onReadAndImport={this.readAndImport}
+          t={this.props.t}
+        />
+      );
+    }
+
+    if (this.props.appType === "module") {
+      return (
+        <CreateModuleButton
+          canCreateApp={this.canCreateApp()}
+          appsLimit={this.state.appsLimit}
+          creatingApp={this.state.creatingApp}
+          isImportingApp={this.state.isImportingApp}
+          disabled={getDisabledState()}
+          onShowCreateAppModal={this.openCreateAppModal}
+          onReadAndImport={this.readAndImport}
+          t={this.props.t}
+        />
+      );
+    }
+
+    return (
+      <CreateAppButton
+        canCreateApp={this.canCreateApp()}
+        appsLimit={this.state.appsLimit}
+        creatingApp={this.state.creatingApp}
+        isImportingApp={this.state.isImportingApp}
+        disabled={getDisabledState()}
+        onShowCreateAppModal={this.openCreateAppModal}
+        createApp={this.createApp}
+        onReadAndImport={this.readAndImport}
+        t={this.props.t}
+      />
+    );
   };
 
   render() {
@@ -1234,50 +1471,53 @@ class HomePageComponent extends React.Component {
       return <TJLoader />;
     }
 
-    const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const invalidLicense =
+      featureAccess?.licenseStatus?.isExpired ||
+      !featureAccess?.licenseStatus?.isLicenseValid;
     const deleteModuleText =
-      'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
+      "This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?";
 
     const getDisabledState = () => {
-      if (this.props.appType === 'module') {
+      if (this.props.appType === "module") {
         return invalidLicense;
-      } else if (this.props.appType === 'front-end') {
+      } else if (this.props.appType === "front-end") {
         return appsLimit?.percentage >= 100;
       } else {
         return this.hasWorkflowLimitReached();
       }
     };
+
     const modalConfigs = {
       create: {
-        modalType: 'create',
+        modalType: "create",
         closeModal: this.closeCreateAppModal,
         processApp: (name) => this.createApp(name),
         show: this.openCreateAppModal,
         title: `Create ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
-        actionLoadingButton: 'Creating',
+        actionLoadingButton: "Creating",
         appType: this.props.appType,
       },
       clone: {
-        modalType: 'clone',
+        modalType: "clone",
         closeModal: () => this.setState({ showCloneAppModal: false }),
         processApp: this.cloneApp,
         show: () => this.setState({ showCloneAppModal: true }),
         title: `Clone ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `Clone ${this.getAppType().toLocaleLowerCase()}`,
-        actionLoadingButton: 'Cloning',
+        actionLoadingButton: "Cloning",
         selectedAppId: appOperations?.selectedApp?.id,
         selectedAppName: appOperations?.selectedApp?.name,
         appType: this.props.appType,
       },
       import: {
-        modalType: 'import',
+        modalType: "import",
         closeModal: () => this.setState({ showImportAppModal: false }),
         processApp: this.importFile,
         show: this.openImportAppModal,
         title: `Import ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `Import ${this.getAppType().toLocaleLowerCase()}`,
-        actionLoadingButton: 'Importing',
+        actionLoadingButton: "Importing",
         fileContent: fileContent,
         selectedAppName: fileName,
         dependentPluginsDetail: dependentPluginsDetail,
@@ -1285,13 +1525,13 @@ class HomePageComponent extends React.Component {
         appType: this.props.appType,
       },
       template: {
-        modalType: 'template',
+        modalType: "template",
         closeModal: this.closeCreateAppFromTemplateModal,
         processApp: this.deployApp,
         show: this.openCreateAppFromTemplateModal,
-        title: 'Create new app from template',
-        actionButton: '+ Create app',
-        actionLoadingButton: 'Creating',
+        title: "Create new app from template",
+        actionButton: "+ Create app",
+        actionLoadingButton: "Creating",
         templateDetails: this.state.selectedTemplate,
         dependentPluginsDetail: dependentPluginsDetail,
         dependentPlugins: dependentPlugins,
@@ -1303,10 +1543,15 @@ class HomePageComponent extends React.Component {
     //import app missing groups modal config
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
-    const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
+    const displayedGroups = missingGroupsExpanded
+      ? missingGroups
+      : missingGroups.slice(0, threshold);
 
     return (
-      <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
+      <Layout
+        switchDarkMode={this.props.switchDarkMode}
+        darkMode={this.props.darkMode}
+      >
         <div className="wrapper home-page">
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
@@ -1334,20 +1579,26 @@ class HomePageComponent extends React.Component {
             isLoading={importingApp}
             handleClose={() => this.setState({ showMissingGroupsModal: false })}
             confirmBtnProps={{
-              title: 'Import',
-              tooltipMessage: '',
+              title: "Import",
+              tooltipMessage: "",
             }}
             className="missing-groups-modal"
             darkMode={this.props.darkMode}
           >
             <div className="missing-groups-modal-body">
               <div className="flex items-start">
-                <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
+                <SolidIcon
+                  name="warning"
+                  width="40px"
+                  fill="var(--icon-warning)"
+                />
                 <div>
-                  <div className="header">Warning: Missing user groups for permissions</div>
+                  <div className="header">
+                    Warning: Missing user groups for permissions
+                  </div>
                   <p className="sub-header">
-                    Permissions for the following user group(s) won’t be applied since they do not exist in this
-                    workspace.
+                    Permissions for the following user group(s) won’t be applied
+                    since they do not exist in this workspace.
                   </p>
                 </div>
               </div>
@@ -1355,56 +1606,73 @@ class HomePageComponent extends React.Component {
               <div className="groups-list">
                 <div
                   className={`border rounded text-sm container ${
-                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                    missingGroupsExpanded ? "max-h-48 overflow-y-auto" : ""
                   }`}
                 >
-                  <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
+                  <div
+                    style={{ color: "var(--text-placeholder)" }}
+                    className="tj-text-xsm font-weight-500"
+                  >
                     User groups
                   </div>
                   <div className="mt-1">
                     {displayedGroups.map((group, idx) => (
                       <span className="tj-text-xsm font-weight-500" key={idx}>
                         {group}
-                        {idx < displayedGroups.length - 1 ? ', ' : ''}
+                        {idx < displayedGroups.length - 1 ? ", " : ""}
                       </span>
                     ))}
-                    {!missingGroupsExpanded && isLong && '...'}
+                    {!missingGroupsExpanded && isLong && "..."}
                   </div>
                 </div>
 
                 {isLong && (
                   <button
                     class="toggle-button"
-                    onClick={() => this.setState({ missingGroupsExpanded: !missingGroupsExpanded })}
+                    onClick={() =>
+                      this.setState({
+                        missingGroupsExpanded: !missingGroupsExpanded,
+                      })
+                    }
                   >
                     <span className="chevron">
                       <SolidIcon
                         fill="var(--icon-brand)"
-                        name={missingGroupsExpanded ? 'cheveronup' : 'cheverondown'}
+                        name={
+                          missingGroupsExpanded ? "cheveronup" : "cheverondown"
+                        }
                       />
                     </span>
-                    <span class="label">{missingGroupsExpanded ? 'See less' : 'See more'}</span>
+                    <span class="label">
+                      {missingGroupsExpanded ? "See less" : "See more"}
+                    </span>
                   </button>
                 )}
               </div>
 
               <p className="info">
-                Restricted pages, queries, or components will become accessible to all users or to existing groups with
-                permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after
-                import.
+                Restricted pages, queries, or components will become accessible
+                to all users or to existing groups with permissions. To avoid
+                this, create the missing groups before importing, or reconfigure
+                permissions after import.
               </p>
 
               <div className="mt-6 d-flex justify-between action-btns">
                 <ButtonSolid
                   className="secondary-action"
-                  variant={'tertiary'}
-                  onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
+                  variant={"tertiary"}
+                  onClick={() =>
+                    this.setState({
+                      showMissingGroupsModal: false,
+                      isImportingApp: false,
+                    })
+                  }
                 >
                   Cancel import
                 </ButtonSolid>
                 <ButtonSolid
                   isLoading={importingApp}
-                  variant={'primary'}
+                  variant={"primary"}
                   onClick={() => this.importFile(fileContent, fileName, true)}
                   className="primary-action"
                 >
@@ -1422,17 +1690,17 @@ class HomePageComponent extends React.Component {
               selectedAppName={appOperations.selectedApp.name}
               title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
-              actionLoadingButton={'Renaming'}
+              actionLoadingButton={"Renaming"}
               appType={this.props.appType}
             />
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
-              this.props.appType === 'workflow'
-                ? 'homePage.deleteWorkflowAndData'
-                : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
+              this.props.appType === "workflow"
+                ? "homePage.deleteWorkflowAndData"
+                : this.props.appType === "front-end"
+                ? "homePage.deleteAppAndData"
                 : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
@@ -1448,8 +1716,8 @@ class HomePageComponent extends React.Component {
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}
             message={this.props.t(
-              'homePage.removeAppFromFolder',
-              'The app will be removed from this folder, do you want to continue?'
+              "homePage.removeAppFromFolder",
+              "The app will be removed from this folder, do you want to continue?"
             )}
             confirmButtonLoading={isDeletingAppFromFolder}
             onConfirm={() => this.removeAppFromFolder()}
@@ -1463,14 +1731,19 @@ class HomePageComponent extends React.Component {
             darkMode={this.props.darkMode}
           />
           <ModalBase
-            title={selectedAppRepo ? 'Import app' : 'Import app from git repository'}
+            title={
+              selectedAppRepo ? "Import app" : "Import app from git repository"
+            }
             show={showGitRepositoryImportModal}
             handleClose={this.toggleGitRepositoryImportModal}
             handleConfirm={this.importGitApp}
             confirmBtnProps={{
-              title: 'Import app',
+              title: "Import app",
               isLoading: importingApp,
-              disabled: importingApp || !selectedAppRepo || importingGitAppOperations?.message,
+              disabled:
+                importingApp ||
+                !selectedAppRepo ||
+                importingGitAppOperations?.message,
             }}
             darkMode={this.props.darkMode}
           >
@@ -1481,7 +1754,10 @@ class HomePageComponent extends React.Component {
             ) : (
               <>
                 <div className="form-group">
-                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
+                  <label
+                    className="mb-1 tj-text-sm tj-text font-weight-500"
+                    data-cy="create-app-from-label"
+                  >
                     Create app from
                   </label>
                   <div className="tj-app-input" data-cy="app-select">
@@ -1490,19 +1766,29 @@ class HomePageComponent extends React.Component {
                       disabled={importingApp}
                       onChange={(newVal) => {
                         this.setState(
-                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
+                          {
+                            selectedAppRepo: newVal,
+                            importedAppName:
+                              appsFromRepos[newVal]?.git_app_name,
+                          },
                           () => {
-                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                            if (
+                              appsFromRepos[newVal]?.app_name_exist === "EXIST"
+                            ) {
+                              this.setState({
+                                importingGitAppOperations: {
+                                  message: "App name already exists",
+                                },
+                              });
                             } else {
                               this.setState({ importingGitAppOperations: {} });
                             }
                           }
                         );
                       }}
-                      width={'100%'}
+                      width={"100%"}
                       value={selectedAppRepo}
-                      placeholder={'Select app from git repository...'}
+                      placeholder={"Select app from git repository..."}
                       closeMenuOnSelect={true}
                       customWrap={true}
                     />
@@ -1511,15 +1797,19 @@ class HomePageComponent extends React.Component {
                 {selectedAppRepo && (
                   <div className="commit-info">
                     <div className="form-group mb-3">
-                      <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500" data-cy="app-name-label">
+                      <label
+                        className="mb-1 info-label mt-3 tj-text-xsm font-weight-500"
+                        data-cy="app-name-label"
+                      >
                         App name
                       </label>
                       <div className="tj-app-input">
                         <input
                           type="text"
                           value={this.state.importedAppName}
-                          className={cx('form-control font-weight-400', {
-                            'tj-input-error-state': importingGitAppOperations?.message,
+                          className={cx("form-control font-weight-400", {
+                            "tj-input-error-state":
+                              importingGitAppOperations?.message,
                           })}
                           onChange={this.handleAppNameChange}
                         />
@@ -1527,8 +1817,11 @@ class HomePageComponent extends React.Component {
                       <div>
                         <div
                           className={cx(
-                            { 'tj-input-error': importingGitAppOperations?.message },
-                            'tj-text-xxsm info-text'
+                            {
+                              "tj-input-error":
+                                importingGitAppOperations?.message,
+                            },
+                            "tj-text-xxsm info-text"
                           )}
                           data-cy="app-name-helper-text"
                         >
@@ -1542,32 +1835,45 @@ class HomePageComponent extends React.Component {
                         checked={this.state.isAppImportEditable}
                         type="checkbox"
                         onChange={() =>
-                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                          this.setState((prevState) => ({
+                            isAppImportEditable: !prevState.isAppImportEditable,
+                          }))
                         }
                       />
                       Make application editable
                       <div className="helper-text">
                         <div className="tj-text tj-text-xsm"></div>
                         <div className="tj-text-xxsm">
-                          Enabling this allows editing and git sync push/pull access in development.
+                          Enabling this allows editing and git sync push/pull
+                          access in development.
                         </div>
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
+                      <label
+                        className="mb-1 tj-text-xsm font-weight-500"
+                        data-cy="last-commit-label"
+                      >
                         Last commit
                       </label>
                       <div className="last-commit-info form-control">
                         <div className="message-info">
                           <div data-cy="las-commit-message">
-                            {appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}
+                            {appsFromRepos[selectedAppRepo]
+                              ?.last_commit_message ?? "No commits yet"}
                           </div>
-                          <div data-cy="last-commit-version">{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
+                          <div data-cy="last-commit-version">
+                            {appsFromRepos[selectedAppRepo]?.git_version_name}
+                          </div>
                         </div>
                         <div className="author-info" data-cy="auther-info">
-                          {`Done by ${appsFromRepos[selectedAppRepo]?.last_commit_user} at ${moment(
-                            new Date(appsFromRepos[selectedAppRepo]?.lastpush_date)
-                          ).format('DD MMM YYYY, h:mm a')}`}
+                          {`Done by ${
+                            appsFromRepos[selectedAppRepo]?.last_commit_user
+                          } at ${moment(
+                            new Date(
+                              appsFromRepos[selectedAppRepo]?.lastpush_date
+                            )
+                          ).format("DD MMM YYYY, h:mm a")}`}
                         </div>
                       </div>
                     </div>
@@ -1578,31 +1884,50 @@ class HomePageComponent extends React.Component {
           </ModalBase>
           <Modal
             show={showAddToFolderModal && !!appOperations.selectedApp}
-            closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-            title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+            closeModal={() =>
+              this.setState({ showAddToFolderModal: false, appOperations: {} })
+            }
+            title={this.props.t(
+              "homePage.appCard.addToFolder",
+              "Add to folder"
+            )}
           >
             <div className="row">
               <div className="col modal-main">
-                <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
+                <div
+                  className="mb-3 move-selected-app-to-text "
+                  data-cy="move-selected-app-to-text"
+                >
                   <p>
-                    {this.props.t('homePage.appCard.move', 'Move')}
+                    {this.props.t("homePage.appCard.move", "Move")}
                     <span>{` "${appOperations?.selectedApp?.name}" `}</span>
                   </p>
 
-                  <span>{this.props.t('homePage.appCard.to', 'to')}</span>
+                  <span>{this.props.t("homePage.appCard.to", "to")}</span>
                 </div>
-                <div data-cy="select-folder" className="select-folder-container">
+                <div
+                  data-cy="select-folder"
+                  className="select-folder-container"
+                >
                   <Select
                     options={this.state.folders.map((folder) => {
                       return { name: folder.name, value: folder.id };
                     })}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
-                      this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
+                      this.setState({
+                        appOperations: {
+                          ...appOperations,
+                          selectedFolder: newVal,
+                        },
+                      });
                     }}
-                    width={'100%'}
+                    width={"100%"}
                     value={appOperations?.selectedFolder}
-                    placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
+                    placeholder={this.props.t(
+                      "homePage.appCard.selectFolder",
+                      "Select folder"
+                    )}
                     closeMenuOnSelect={true}
                   />
                 </div>
@@ -1612,17 +1937,25 @@ class HomePageComponent extends React.Component {
               <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   variant="tertiary"
-                  onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+                  onClick={() =>
+                    this.setState({
+                      showAddToFolderModal: false,
+                      appOperations: {},
+                    })
+                  }
                   data-cy="cancel-button"
                 >
-                  {this.props.t('globals.cancel', 'Cancel')}
+                  {this.props.t("globals.cancel", "Cancel")}
                 </ButtonSolid>
                 <ButtonSolid
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
                   isLoading={appOperations?.isAdding}
                 >
-                  {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+                  {this.props.t(
+                    "homePage.appCard.addToFolder",
+                    "Add to folder"
+                  )}
                 </ButtonSolid>
               </div>
             </div>
@@ -1630,8 +1963,10 @@ class HomePageComponent extends React.Component {
 
           <Modal
             show={showChangeIconModal && !!appOperations.selectedApp}
-            closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
-            title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
+            closeModal={() =>
+              this.setState({ showChangeIconModal: false, appOperations: {} })
+            }
+            title={this.props.t("homePage.appCard.changeIcon", "Change Icon")}
           >
             <div className="row">
               <div className="col modal-main icon-change-modal">
@@ -1641,101 +1976,45 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
-                  onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+                  onClick={() =>
+                    this.setState({
+                      showChangeIconModal: false,
+                      appOperations: {},
+                    })
+                  }
                   data-cy="cancel-button"
                   variant="tertiary"
                 >
-                  {this.props.t('globals.cancel', 'Cancel')}
+                  {this.props.t("globals.cancel", "Cancel")}
                 </ButtonSolid>
                 <ButtonSolid
-                  className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                  className={`btn btn-primary ${
+                    appOperations?.isAdding ? "btn-loading" : ""
+                  }`}
                   onClick={this.changeIcon}
                   data-cy="change-button"
                 >
-                  {this.props.t('homePage.change', 'Change')}
+                  {this.props.t("homePage.change", "Change")}
                 </ButtonSolid>
               </div>
             </div>
           </Modal>
-          {isExportingApp && app.hasOwnProperty('id') && (
+          {isExportingApp && app.hasOwnProperty("id") && (
             <ExportAppModal
               show={isExportingApp}
               closeModal={() => {
                 this.setState({ isExportingApp: false, app: {} });
               }}
               customClassName="modal-version-lists"
-              title={'Select a version to export'}
+              title={"Select a version to export"}
               app={app}
               darkMode={this.props.darkMode}
             />
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              <div className="create-new-app-license-wrapper">
-                {this.canCreateApp() && (
-                  <LicenseTooltip
-                    limits={appsLimit}
-                    feature={
-                      this.props.appType === 'workflow'
-                        ? 'workflows'
-                        : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
-                    }
-                    isAvailable={true}
-                    noTooltipIfValid={true}
-                  >
-                    <div className="create-new-app-wrapper">
-                      <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
-                        <Button
-                          disabled={getDisabledState()}
-                          className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() =>
-                            this.setState({
-                              showCreateAppModal: true,
-                            })
-                          }
-                          data-cy="create-new-app-button"
-                        >
-                          <>
-                            {isImportingApp && (
-                              <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                            )}
-                            {this.props.appType === 'module'
-                              ? 'Create new module'
-                              : this.props.t(
-                                  `${
-                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                  }.header.createNewApplication`,
-                                  'Create new app'
-                                )}
-                          </>
-                        </Button>
-                        <Dropdown.Toggle
-                          disabled={getDisabledState()}
-                          split
-                          className="d-inline"
-                          data-cy="import-dropdown-menu"
-                        />
-                        <ImportAppMenu
-                          darkMode={this.props.darkMode}
-                          showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
-                          }
-                          featureAccess={featureAccess}
-                          orgGit={orgGit}
-                          toggleGitRepositoryImportModal={
-                            this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
-                          }
-                          readAndImport={this.readAndImport}
-                          appType={this.props.appType}
-                        />
-                      </Dropdown>
-                    </div>
-                  </LicenseTooltip>
-                )}
-              </div>
-              {this.props.appType === 'module' ? (
+              {this.getCreateAppButton()}
+              {this.props.appType === "module" ? (
                 <div>
                   <p></p>
                 </div>
@@ -1754,23 +2033,34 @@ class HomePageComponent extends React.Component {
                   appType={this.props.appType}
                 />
               )}
-              {this.props.appType === 'front-end' && (
-                <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+              {this.props.appType === "front-end" && (
+                <LicenseBanner
+                  classes="mb-3 small"
+                  limits={appsLimit}
+                  type="apps"
+                  size="small"
+                />
               )}
-              {this.props.appType === 'workflow' &&
-                (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+              {this.props.appType === "workflow" &&
+                (workflowInstanceLevelLimit.current >=
+                  workflowInstanceLevelLimit.total ||
                   100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                  workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1 ||
-                  workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
+                  workflowInstanceLevelLimit.current ===
+                    workflowInstanceLevelLimit.total - 1 ||
+                  workflowWorkspaceLevelLimit.current >=
+                    workflowWorkspaceLevelLimit.total ||
                   100 > workflowWorkspaceLevelLimit.percentage >= 90 ||
-                  workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1) && (
+                  workflowWorkspaceLevelLimit.current ===
+                    workflowWorkspaceLevelLimit.total - 1) && (
                   <>
                     <LicenseBanner
                       classes="mb-3 small"
                       limits={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                        workflowInstanceLevelLimit.current >=
+                          workflowInstanceLevelLimit.total ||
                         100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        workflowInstanceLevelLimit.current ===
+                          workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1780,16 +2070,30 @@ class HomePageComponent extends React.Component {
                   </>
                 )}
               {authenticationService.currentSessionValue?.super_admin &&
-                this.isWithinSevenDaysOfSignUp(authenticationService.currentSessionValue?.consultation_banner_date) && (
+                this.isWithinSevenDaysOfSignUp(
+                  authenticationService.currentSessionValue
+                    ?.consultation_banner_date
+                ) && (
                   <ConsultationBanner
-                    classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
+                    classes={`${
+                      this.props.darkMode
+                        ? "theme-dark dark-theme m-3 trial-banner"
+                        : "m-3 trial-banner"
+                    }`}
                   />
                 )}
 
-              <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
+              <OrganizationList
+                customStyle={{
+                  marginBottom: isAdmin || isBuilder ? "" : "0px",
+                }}
+              />
             </div>
 
-            <div className={cx('col home-page-content')} data-cy="home-page-content">
+            <div
+              className={cx("col home-page-content")}
+              data-cy="home-page-content"
+            >
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -1804,9 +2108,11 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
-                  <CreateAppWithPrompt createApp={this.createApp} />
-                )}
+                {this.props.appType !== "workflow" &&
+                  this.props.appType !== "module" &&
+                  this.canCreateApp() && (
+                    <CreateAppWithPrompt createApp={this.createApp} />
+                  )}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
@@ -1815,11 +2121,15 @@ class HomePageComponent extends React.Component {
                         onSearchSubmit={this.onSearchSubmit}
                         darkMode={this.props.darkMode}
                         appType={this.props.appType}
-                        disabled={this.props.appType === 'module' && invalidLicense}
+                        disabled={
+                          this.props.appType === "module" && invalidLicense
+                        }
                       />
                     )}
                     <div className="filter-container">
-                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <span>
+                        {currentFolder?.count ?? meta?.total_count} APPS
+                      </span>
                       <div className="d-flex align-items-center">
                         <div className="mx-2">Filter by</div>
                         <FolderFilter
@@ -1846,7 +2156,7 @@ class HomePageComponent extends React.Component {
                   meta?.total_count === 0 &&
                   !currentFolder.id &&
                   !appSearchKey &&
-                  (['front-end', 'workflow'].includes(this.props.appType) ? (
+                  (["front-end", "workflow"].includes(this.props.appType) ? (
                     <BlankPage
                       canCreateApp={this.canCreateApp}
                       isLoading={true}
@@ -1855,17 +2165,23 @@ class HomePageComponent extends React.Component {
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={this.openCreateAppModal}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      openCreateAppFromTemplateModal={
+                        this.openCreateAppFromTemplateModal
+                      }
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}
-                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+                      showTemplateLibraryModal={
+                        this.state.showTemplateLibraryModal
+                      }
                       viewTemplateLibraryModal={this.showTemplateLibraryModal}
                       hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                       appType={this.props.appType}
                       workflowsLimit={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                        workflowInstanceLevelLimit.current >=
+                          workflowInstanceLevelLimit.total ||
                         100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        workflowInstanceLevelLimit.current ===
+                          workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1873,9 +2189,21 @@ class HomePageComponent extends React.Component {
                   ) : (
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
-                      <div className="empty-title mt-3" style={{ display: 'block' }}>
-                        <div>Create reusable groups of components and queries via modules.</div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div
+                        className="empty-title mt-3"
+                        style={{ display: "block" }}
+                      >
+                        <div>
+                          Create reusable groups of components and queries via
+                          modules.
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
                           <a
                             href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
                             target="_blank"
@@ -1902,8 +2230,13 @@ class HomePageComponent extends React.Component {
                           message="Modules are available only on paid plans"
                           placement="bottom"
                         >
-                          <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
-                            {'Create new module'}
+                          <label
+                            style={{
+                              visibility: isImportingApp ? "hidden" : "visible",
+                            }}
+                            data-cy="create-module"
+                          >
+                            {"Create new module"}
                           </label>
                         </ToolTip>
                       </ButtonSolid>
@@ -1911,12 +2244,21 @@ class HomePageComponent extends React.Component {
                   ))}
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
-                    <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
-                      {this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                    <span
+                      className={`d-block text-center text-body pt-5 ${
+                        this.props.darkMode && "text-white-50"
+                      }`}
+                    >
+                      {this.props.t(
+                        "homePage.noApplicationFound",
+                        "No Applications found"
+                      )}
                     </span>
                   </div>
                 )}
-                {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
+                {(isLoading ||
+                  meta.total_count > 0 ||
+                  !_.isEmpty(currentFolder)) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
@@ -1924,7 +2266,11 @@ class HomePageComponent extends React.Component {
                     canUpdateApp={this.canUpdateApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
-                    exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}
+                    exportApp={
+                      this.props.appType === "workflow"
+                        ? this.exportAppDirectly
+                        : this.exportApp
+                    }
                     meta={meta}
                     currentFolder={currentFolder}
                     isLoading={isLoading || !featuresLoaded}
@@ -1959,7 +2305,9 @@ class HomePageComponent extends React.Component {
           <TemplateLibraryModal
             show={this.state.showTemplateLibraryModal}
             onHide={() => this.setState({ showTemplateLibraryModal: false })}
-            onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+            onCloseButtonClick={() =>
+              this.setState({ showTemplateLibraryModal: false })
+            }
             darkMode={this.props.darkMode}
             openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
             appCreationDisabled={!this.canCreateApp()}
@@ -1979,7 +2327,10 @@ const withStore = (Component) => (props) => {
     }),
     shallow
   );
-  const { checkModuleAccess } = useLicenseStore((state) => state.actions, shallow);
+  const { checkModuleAccess } = useLicenseStore(
+    (state) => state.actions,
+    shallow
+  );
 
   return (
     <Component
@@ -1992,4 +2343,6 @@ const withStore = (Component) => (props) => {
   );
 };
 
-export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));
+export const HomePage = withTranslation()(
+  withStore(withRouter(HomePageComponent))
+);
