@@ -764,7 +764,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options.workflowId,
             query.options.blocking,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            true // Indicating this is a preview query
           );
         } else {
           queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
@@ -1202,7 +1203,15 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: undefined, status: 'failed' };
       }
     },
-    triggerWorkflow: async (moduleId, query, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+    triggerWorkflow: async (
+      moduleId,
+      query,
+      workflowAppId,
+      _blocking = false,
+      params = {},
+      appEnvId,
+      isAppQueryPreview
+    ) => {
       const { getAllExposedValues } = get();
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
@@ -1229,7 +1238,12 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        const executionResponse = await workflowExecutionsService.trigger(
+          workflowAppId,
+          resolvedParams,
+          appEnvId,
+          isAppQueryPreview
+        );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
         return { data: e?.message, status: 'failed' };

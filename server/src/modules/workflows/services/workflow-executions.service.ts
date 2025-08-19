@@ -22,7 +22,8 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     envId: string,
     response: Response,
     throwOnError?: boolean,
-    executionStartTime?: Date
+    executionStartTime?: Date,
+    extraOptions?: { startNodeId?: string; injectedState?: object; executeUsing?: string; isAppQueryPreview?: boolean }
   ): Promise<QueryResult> {
     throw new Error('Method not implemented.');
   }
@@ -63,7 +64,11 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     throw new Error('Method not implemented.');
   }
 
-  async getWorkflowExecutionsLogs(appVersionId: string, page: number = 1, limit: number = 10): Promise<{
+  async getWorkflowExecutionsLogs(
+    appVersionId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{
     data: WorkflowExecution[];
     page: number;
     per_page: number;
@@ -73,7 +78,11 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     throw new Error('Method not implemented.');
   }
 
-  async getWorkflowExecutionNodes(workflowExecutionId: string, page: number = 1, limit: number = 10): Promise<{
+  async getWorkflowExecutionNodes(
+    workflowExecutionId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{
     data: WorkflowExecutionNode[];
     page: number;
     per_page: number;
