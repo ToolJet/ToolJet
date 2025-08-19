@@ -53,6 +53,12 @@ export const textinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -212,6 +218,7 @@ export const textinputConfig = {
     isVisible: true,
     isDisabled: false,
     isLoading: false,
+    isRtl: false,
   },
   actions: [
     {
@@ -276,6 +283,7 @@ export const textinputConfig = {
       placeholder: { value: 'Enter your input' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
     },

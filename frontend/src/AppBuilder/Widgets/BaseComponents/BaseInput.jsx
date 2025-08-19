@@ -58,7 +58,7 @@ export const BaseInput = ({
     icon,
   } = styles;
 
-  const { label, placeholder } = properties;
+  const { label, placeholder, rtl } = properties;
   const _width = (width / 100) * 70;
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
@@ -89,21 +89,26 @@ export const BaseInput = ({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow,
-    padding: showLeftIcon ? '8px 10px 8px 29px' : '8px 10px',
+    padding: showLeftIcon ? (rtl ? '8px 29px 8px 10px' : '8px 10px 8px 29px') : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textAlign: rtl ? 'right' : 'left',
   };
 
   let loaderStyle;
   // for textarea loader position is fixed on top right of input box.
   if (inputType !== 'textarea') {
     loaderStyle = {
-      right:
-        direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-          ? `${labelWidth + 11}px`
-          : '11px',
+      right: rtl
+        ? 'auto'
+        : direction === 'right' &&
+          defaultAlignment === 'side' &&
+          ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11}px`
+        : '11px',
+      left: rtl
+        ? '11px' // Simple fixed position from left when RTL
+        : 'auto',
       top:
         defaultAlignment === 'top'
           ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
@@ -117,12 +122,16 @@ export const BaseInput = ({
     };
   } else {
     loaderStyle = {
-      right:
-        direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-          ? `${labelWidth + 11}px`
-          : '11px',
+      right: rtl
+        ? 'auto'
+        : direction === 'right' &&
+          defaultAlignment === 'side' &&
+          ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11}px`
+        : '11px',
+      left: rtl
+        ? '11px' // Simple fixed position from left when RTL
+        : 'auto',
       top: defaultAlignment === 'top' ? '30px' : '10px',
       transform: 'none',
       zIndex: 3,
@@ -173,14 +182,26 @@ export const BaseInput = ({
             style={{
               width: '16px',
               height: '16px',
-              left:
-                direction === 'right'
-                  ? '11px'
-                  : defaultAlignment === 'top'
-                  ? '11px'
-                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? `${labelWidth + 11}px`
-                  : '11px',
+              // RTL: Position from right, but account for label when direction is 'right'
+              ...(rtl
+                ? {
+                    right:
+                      direction === 'right' &&
+                      defaultAlignment === 'side' &&
+                      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+                        ? `${labelWidth + 11}px`
+                        : '11px',
+                  }
+                : {
+                    left:
+                      direction === 'right'
+                        ? '11px'
+                        : defaultAlignment === 'top'
+                        ? '11px'
+                        : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                        ? `${labelWidth + 11}px`
+                        : '11px',
+                  }),
               position: 'absolute',
               top:
                 inputType === 'textarea'
@@ -215,6 +236,7 @@ export const BaseInput = ({
           // disabled={disable || loading}
           placeholder={placeholder}
           style={finalStyles}
+          dir={rtl ? 'rtl' : 'ltr'}
           {...additionalInputProps}
         />
 
