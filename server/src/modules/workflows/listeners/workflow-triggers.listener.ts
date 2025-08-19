@@ -30,12 +30,10 @@ export class WorkflowTriggersListener {
     createWorkflowExecutionDto,
     workflowExecution,
     response,
-    isAsyncWebhookTrigger = false,
   }: {
     createWorkflowExecutionDto: CreateWorkflowExecutionDto;
     workflowExecution: WorkflowExecution;
     response: Response;
-    isAsyncWebhookTrigger: boolean;
   }): Promise<void> {
     throw new Error('Not implemented.');
   }

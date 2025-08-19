@@ -39,8 +39,4 @@ export class CreateWorkflowExecutionDto {
   @IsOptional()
   @IsObject()
   injectedState?: object;
-
-  @IsBoolean()
-  @IsOptional()
-  isAppQueryPreview?: boolean;
 }
