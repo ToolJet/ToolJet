@@ -1,68 +1,17 @@
 // AvatarGroup Component Styles
-// Based on Figma design variables
+// Only keeping styles that can't be easily moved to JSX
+
 .tw-custom-popover {
-  border: 1px solid var(--border-default) !important;
+  @apply tw-border tw-border-border-default;
 }
 
-.avatar-group-multiplayer {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-
-  .avatar {
-    border: 2px solid #ffffff;
-    transition: all 0.2s ease;
-    border-radius: 999px;
-    margin-top: -6px;
-
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  .multiplayer-overflow {
-    background-color: #c3c7df;
-    color: #2d343b;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 16px;
-    border: 2px solid #ffffff;
-
-    &:hover {
-      background-color: #8890992e;
-    }
-  }
-}
-
-// Dark mode support
-.theme-dark {
-  .avatar-group-multiplayer {
-    .avatar {
-      border-color: #2d343b;
-    }
-
-    .multiplayer-overflow {
-      background-color: #8890992e;
-      color: #ffffff;
-      border-color: #2d343b;
-
-      &:hover {
-        background-color: #c3c7df;
-        color: #2d343b;
-      }
-    }
-  }
-}
-
-// Responsive adjustments
+// Responsive adjustments for multiplayer variant
 @media (max-width: 768px) {
   .avatar-group-multiplayer {
-    gap: 1px;
+    @apply tw-gap-px;
 
     .avatar {
-      border-width: 1px;
+      @apply tw-border;
     }
   }
 }

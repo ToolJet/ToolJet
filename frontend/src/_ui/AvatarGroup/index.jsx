@@ -45,17 +45,30 @@ const AvatarGroup = ({
       borderShape={''}
       indexId={avatar.id || index}
       realtime={avatar.realtime || false}
-      className={`${avatar.className} tw-w-5 tw-h-5`}
+      className={cx(
+        avatar.className,
+        'tw-w-5 tw-h-5',
+        variant === 'multiplayer' &&
+          'tw-border-2 tw-border-white tw-transition-all tw-duration-200 tw-ease-in-out tw-rounded-full tw--mt-1.5 hover:tw-transform hover:tw--translate-y-0.5 hover:tw-shadow-elevation-200',
+        darkMode && variant === 'multiplayer' && 'tw-border-[#2d343b]'
+      )}
       onClick={onAvatarClick ? () => onAvatarClick(avatar, index) : undefined}
     />
   );
 
   const containerClasses = cx(
     'avatar-list-stacked',
-    {
-      'avatar-group-multiplayer': variant === 'multiplayer',
-    },
+    variant === 'multiplayer' && 'tw-flex tw-items-center tw-flex-col',
     className
+  );
+
+  const overflowClasses = cx(
+    'tw-border-2 tw-border-solid tw-bg-background-surface-layer-02 tw-border-border-default tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10',
+    variant === 'multiplayer' &&
+      "tw-bg-[#c3c7df] tw-text-[#2d343b] tw-font-['IBM_Plex_Sans'] tw-text-sm tw-font-medium tw-leading-4 tw-border-2 tw-border-white hover:tw-bg-[#8890992e]",
+    darkMode &&
+      variant === 'multiplayer' &&
+      'tw-bg-[#8890992e] tw-text-white tw-border-[#2d343b] hover:tw-bg-[#c3c7df] hover:tw-text-[#2d343b]'
   );
 
   return (
@@ -74,9 +87,7 @@ const AvatarGroup = ({
             </Popover>
           }
         >
-          <div className="tw-border-2 tw-border-solid tw-bg-background-surface-layer-02 tw-border-border-default tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-medium tw-text-text-medium tw-cursor-pointer -tw-mt-1.5 tw-z-10">
-            +{hiddenCount}
-          </div>
+          <div className={overflowClasses}>+{hiddenCount}</div>
         </OverlayTrigger>
       )}
     </div>
