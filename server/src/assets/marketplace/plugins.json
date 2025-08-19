@@ -279,7 +279,7 @@
     "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
   },
   {
-    "name": "Hubspot",
+    "name": "HubSpot",
     "description": "Integrate with HubSpot API for CRM and sales automation",
     "version": "1.0.0",
     "id": "hubspot",

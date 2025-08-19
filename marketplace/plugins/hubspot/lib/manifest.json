@@ -5,7 +5,7 @@
   "description": "Integrate with HubSpot API for CRM and sales automation",
   "type": "api",
   "source": {
-    "name": "Hubspot",
+    "name": "HubSpot",
     "kind": "hubspot",
     "exposedVariables": {
       "isLoading": false,

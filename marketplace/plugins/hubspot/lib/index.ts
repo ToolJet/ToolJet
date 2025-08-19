@@ -23,8 +23,8 @@ export default class Hubspot implements QueryService {
   ): Promise<QueryResult> {
     let result = {};
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
-      sourceOptions['client_id'] = process.env.GOOGLE_CLIENT_ID;
-      sourceOptions['client_secret'] = process.env.GOOGLE_CLIENT_SECRET;
+      sourceOptions['client_id'] = process.env.HUBSPOT_CLIENT_ID;
+      sourceOptions['client_secret'] = process.env.HUBSPOT_CLIENT_SECRET;
     }
     const operation = queryOptions.operation;
     const accessToken = sourceOptions['access_token'];
