@@ -1552,7 +1552,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 12.8rem);
+    height: calc(100vh - 8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
