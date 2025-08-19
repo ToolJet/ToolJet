@@ -301,6 +301,7 @@ const ApiEndpointInput = (props) => {
 
   const handleSpecTypeChange = (val) => {
     setSelectedSpecType(val);
+    console.log('selected spec type', val);
     // When spec type changes, immediately update options with new specType
     const newOptions = {
       ...options,
@@ -322,7 +323,10 @@ const ApiEndpointInput = (props) => {
   const specTypeOptions = isMultiSpec
     ? Object.keys(props.specUrl).map((key) => ({
         value: key,
-        label: key.charAt(0).toUpperCase() + key.slice(1),
+        label: key
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
       }))
     : [];
 
@@ -339,7 +343,10 @@ const ApiEndpointInput = (props) => {
               options={specTypeOptions}
               value={{
                 value: selectedSpecType,
-                label: selectedSpecType.charAt(0).toUpperCase() + selectedSpecType.slice(1),
+                label: selectedSpecType
+                  .split('_')
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(' '),
               }}
               onChange={(val) => handleSpecTypeChange(val)}
               width={'100%'}
