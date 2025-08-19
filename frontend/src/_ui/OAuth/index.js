@@ -60,8 +60,8 @@ const OAuth = ({
   return (
     <>
       {authOptions(isGrpc).length > 1 && (
-        <div>
-          <label className="form-label">Connection type</label>
+        <>
+          <label className="form-label">Authentication type</label>
           <Select
             options={authOptions(isGrpc)}
             value={auth_type}
@@ -70,7 +70,7 @@ const OAuth = ({
             useMenuPortal={false}
             isDisabled={isDisabled}
           />
-        </div>
+        </>
       )}
       <ElementToRender
         add_token_to={add_token_to}

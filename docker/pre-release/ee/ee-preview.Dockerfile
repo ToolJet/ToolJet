@@ -20,17 +20,49 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise fallback to main
-RUN git submodule foreach " \
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+RUN if git submodule update --init --recursive; then \
+  echo "Submodules initialized successfully"; \
+  # Checkout the same branch in submodules if it exists, otherwise fallback to main
+  git submodule foreach " \
+    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+      git checkout ${BRANCH_NAME}; \
+    else \
+      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+      git checkout main; \
+    fi"; \
+else \
+  echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
+  # Clone frontend/ee submodule directly
+  if [ ! -d "frontend/ee" ]; then \
+    mkdir -p frontend/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+  fi; \
+  # Clone server/ee submodule directly  
+  if [ ! -d "server/ee" ]; then \
+    mkdir -p server/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+  fi; \
+  # Checkout the same branch in EE submodules if it exists, otherwise fallback to main
+  cd frontend/ee && \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
+    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to main"; \
     git checkout main; \
-  fi"
+  fi && \
+  cd ../../server/ee && \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to main"; \
+    git checkout main; \
+  fi && \
+  cd ../..; \
+fi
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -116,23 +148,23 @@ WORKDIR /app
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+RUN apt update && apt -y install postgresql-16 postgresql-client-16 supervisor --fix-missing
 
 
 # Explicitly create PG main directory with correct ownership
-RUN mkdir -p /var/lib/postgresql/13/main && \
+RUN mkdir -p /var/lib/postgresql/16/main && \
     chown -R postgres:postgres /var/lib/postgresql
 
 RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
 
 # Remove existing data and create directory with proper ownership
-RUN rm -rf /var/lib/postgresql/13/main && \
-    mkdir -p /var/lib/postgresql/13/main && \
+RUN rm -rf /var/lib/postgresql/16/main && \
+    mkdir -p /var/lib/postgresql/16/main && \
     chown -R postgres:postgres /var/lib/postgresql
 
 # Initialize PostgreSQL
-RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
+RUN su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D /var/lib/postgresql/16/main"
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
