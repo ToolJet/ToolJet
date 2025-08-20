@@ -1,6 +1,6 @@
 ---
-title: "Configuring Inputs and Outputs"
-id: "input-output"
+title: Configuring Inputs and Outputs
+id: input-output
 ---
 
 Modules have their own inputs and outputs which enable them to interact with the parent application. You can configure inputs and outputs of a module from the properties panel. 
