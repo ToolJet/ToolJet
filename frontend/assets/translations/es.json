@@ -414,6 +414,7 @@
             "to": "hasta"
         },
         "noApplicationFound": "No se encontraron aplicaciones",
+        "noWorkflowFound": "No se encontraron flujos de trabajo",
         "thisFolderIsEmpty": "Esta carpeta está vacía",
         "deleteAppAndData": "La aplicación {{appName}} y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
         "deleteWorkflowAndData": "El flujo de trabajo {{appName}} y sus datos asociados se eliminarán permanentemente. ¿Continuar?",

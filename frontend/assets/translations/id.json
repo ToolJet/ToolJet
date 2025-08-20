@@ -380,9 +380,9 @@
       "to": "ke"
     },
     "noApplicationFound": "Tidak ada aplikasi yang ditemukan",
+    "noWorkflowFound": "Tidak ada alur kerja yang ditemukan",
     "thisFolderIsEmpty": "Folder ini kosong",
     "deleteAppAndData": "Aplikasi dan data terkait akan dihapus secara permanen, apakah Anda ingin melanjutkan?",
-    "deleteWorkflowAndData": "Alur kerja {{appName}} dan data terkaitnya akan dihapus secara permanen. Lanjutkan?",
     "removeAppFromFolder": "Aplikasi ini akan dihapus dari folder ini, apakah Anda ingin melanjutkan?",
     "change": "Mengubah",
     "templateCard": {
