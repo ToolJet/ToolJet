@@ -158,7 +158,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SECRETS || secrets.CYPRESS_EE_SECRETS }}
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests for CE
