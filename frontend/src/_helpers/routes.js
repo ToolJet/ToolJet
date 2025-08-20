@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
 import _ from 'lodash';
 import { eraseCookie, getCookie } from '.';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -194,7 +195,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   }
   return `/${getWorkspaceId()}`;
 };
-export const getRedirectURL = (path) => {
+export const getRedirectURL = (path, isUserLoggingIn = false) => {
   let redirectLoc = '/';
   const instanceLevelRoutes = [
     '/all-users',
@@ -205,6 +206,16 @@ export const getRedirectURL = (path) => {
     '/smtp',
     '/license',
   ];
+  if (isUserLoggingIn) {
+    const role = authenticationService?.currentSessionValue?.role?.name;
+    const isEndUser = role === 'end-user';
+    const isCommunityEdition = fetchEdition() === 'ce';
+
+    if (isEndUser || isCommunityEdition) {
+      path = '/'; // End-users and CE Edon't have access to Home route
+    }
+  }
+
   if (path) {
     if (instanceLevelRoutes.includes(path)) {
       redirectLoc = `/settings${path}`;
@@ -227,7 +238,7 @@ export const getRedirectTo = (paramObj) => {
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');
-  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/';
+  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/home'; //default redirect to
 };
 
 export const getPreviewQueryParams = () => {
