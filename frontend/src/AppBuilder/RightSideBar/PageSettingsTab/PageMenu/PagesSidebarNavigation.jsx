@@ -426,6 +426,9 @@ export const PagesSidebarNavigation = ({
   };
 
   const handleSidebarClick = (e) => {
+    // Only handle sidebar clicks in edit mode, as there's no right sidebar in view mode
+    if (currentMode !== 'edit') return;
+
     // Check if click is on the navigation area but not on navigation items
     const clickedElement = e.target;
     const isNavigationItem = clickedElement.closest(
@@ -440,7 +443,7 @@ export const PagesSidebarNavigation = ({
     }
   };
 
-  const shouldShowBlueBorder = activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
@@ -514,7 +517,8 @@ export const PagesSidebarNavigation = ({
           navRef.current = el;
           navigationRef.current = el;
         }}
-        className={cx('navigation-area navigation-hover-trigger', {
+        className={cx('navigation-area', {
+          'navigation-hover-trigger': currentMode === 'edit',
           close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
@@ -638,7 +642,7 @@ export const PagesSidebarNavigation = ({
         )}
       </div>
       {/* Show tooltip when tab is active */}
-      {activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
+      {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
         <div
           className="navigation-tooltip"
           style={{
@@ -670,36 +674,38 @@ export const PagesSidebarNavigation = ({
         </div>
       )}
 
-      {/* Show tooltip on hover (always present, controlled by CSS) */}
-      <div
-        className="navigation-tooltip-hover"
-        style={{
-          position: 'absolute',
-          top: position === 'top' ? 'calc(100% + 8px)' : '7px',
-          left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '46px',
-          zIndex: 1000,
-          pointerEvents: 'none',
-          display: 'none',
-          alignItems: 'center',
-          gap: '6px',
-          background: '#1b1f24',
-          padding: '2px 6px',
-          borderRadius: '6px',
-          whiteSpace: 'nowrap',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-        }}
-      >
-        <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
+      {/* Show tooltip on hover (only in edit mode, controlled by CSS) */}
+      {currentMode === 'edit' && (
         <div
+          className="navigation-tooltip-hover"
           style={{
-            color: '#f6f8fa',
-            fontSize: '11px',
-            fontWeight: '500',
+            position: 'absolute',
+            top: position === 'top' ? 'calc(100% + 8px)' : '7px',
+            left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '46px',
+            zIndex: 1000,
+            pointerEvents: 'none',
+            display: 'none',
+            alignItems: 'center',
+            gap: '6px',
+            background: '#1b1f24',
+            padding: '2px 6px',
+            borderRadius: '6px',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
           }}
         >
-          Page and nav
+          <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
+          <div
+            style={{
+              color: '#f6f8fa',
+              fontSize: '11px',
+              fontWeight: '500',
+            }}
+          >
+            Page and nav
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

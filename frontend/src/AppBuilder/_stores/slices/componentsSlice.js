@@ -1289,10 +1289,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1643,6 +1643,7 @@ export const createComponentsSlice = (set, get) => ({
       setActiveRightSideBarTab,
       setRightSidebarOpen,
       isRightSidebarPinned,
+      isRightSidebarOpen,
     } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
@@ -1654,9 +1655,9 @@ export const createComponentsSlice = (set, get) => ({
       !selectedText
     ) {
       clearSelectedComponents();
-      // if (!isRightSidebarPinned) {
-      //   setRightSidebarOpen(false);
-      // }
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
     }
   },
 
