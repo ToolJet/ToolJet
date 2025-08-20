@@ -152,37 +152,47 @@ class AuthorizeComponent extends React.Component {
                 >
                   <VerifiedShield fill="#1E823B" width="32" height="32" />
                 </div>
-                <h4
-                  style={{
-                    fontSize: '36px',
-                    fontFamily: 'IBM Plex Sans, sans-serif',
-                    fontWeight: '500',
-                    lineHeight: '44px',
-                    margin: '0',
-                    color: '#000000',
-                  }}
-                >
-                  Authorisation successful!
-                </h4>
                 <div
                   style={{
-                    fontSize: '20px',
-                    fontFamily: 'IBM Plex Sans, sans-serif',
-                    fontWeight: '400',
-                    lineHeight: '32px',
-                    color: '#000000',
-                    textAlign: 'center',
+                    width: '580px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
                   }}
                 >
-                  <div>
-                    Authorization successful! You will be redirected in a few seconds. Don’t want to wait?{' '}
-                    <span
-                      style={{ textDecoration: 'underline', color: '#000000', cursor: 'pointer' }}
-                      onClick={() => window.close()}
-                    >
-                      Click here
-                    </span>{' '}
-                    to go now.
+                  <h4
+                    style={{
+                      fontSize: '36px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '500',
+                      lineHeight: '44px',
+                      margin: '0',
+                      color: '#000000',
+                    }}
+                  >
+                    Authorisation successful!
+                  </h4>
+                  <div
+                    style={{
+                      fontSize: '20px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '400',
+                      lineHeight: '32px',
+                      color: '#000000',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div>
+                      Authorization successful! You will be redirected in a few seconds. Don’t want to wait?{' '}
+                      <span
+                        style={{ textDecoration: 'underline', color: '#000000', cursor: 'pointer' }}
+                        onClick={() => window.close()}
+                      >
+                        Click here
+                      </span>{' '}
+                      to go now.
+                    </div>
                   </div>
                 </div>
               </div>
