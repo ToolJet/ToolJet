@@ -1,13 +1,15 @@
 import React from 'react';
-import { Tab, ListGroup, Row } from 'react-bootstrap';
+import { Tab, ListGroup, Row, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import cx from 'classnames';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ArrowUpDown from '@/_ui/Icon/solidIcons/ArrowUpDown';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
 import './grpcv2.scss';
 
-const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled }) => {
+const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled, darkMode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [expandedServices, setExpandedServices] = React.useState(() =>
     new Set(options.map(service => service.label))
@@ -64,7 +66,9 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled 
   };
 
   return (
-    <div ref={dropdownRef} className="grpcv2-dropdown">
+    <div ref={dropdownRef} className={cx('grpcv2-dropdown', {
+      'grpcv2-dropdown--dark': darkMode
+    })}>
       <button
         type="button"
         disabled={disabled}
@@ -95,50 +99,67 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled 
 
       {isOpen && (
         <div className="grpcv2-dropdown__menu">
-          {options.map((service) => (
-            <div key={service.value}>
-              <div
-                onClick={() => toggleService(service.label)}
-                className="grpcv2-dropdown__service"
-              >
-                <span className="grpcv2-dropdown__service__name">{service.label}</span>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  className={cx('grpcv2-dropdown__service__arrow', {
-                    'grpcv2-dropdown__service__arrow--collapsed': !expandedServices.has(service.label)
-                  })}
-                >
-                  <path
-                    d="M5 8l5-5 5 5"
-                    stroke="#687076"
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              {expandedServices.has(service.label) && service.methods.map((method) => (
+          {options.map((service, index) => (
+            <React.Fragment key={service.value}>
+              {index > 0 && (
+                <div className="grpcv2-dropdown__separator" />
+              )}
+              <div>
                 <div
-                  key={method.value}
-                  onClick={() => selectMethod(method)}
-                  title={method.disabled ? "Streaming methods are not supported" : ""}
-                  className={cx('grpcv2-dropdown__method', {
-                    'grpcv2-dropdown__method--disabled': method.disabled,
-                    'grpcv2-dropdown__method--selected': method.value === value
-                  })}
+                  onClick={() => toggleService(service.label)}
+                  className="grpcv2-dropdown__service"
                 >
-                  <ArrowUpDown
+                  <span className="grpcv2-dropdown__service__name">{service.label}</span>
+                  <svg
                     width="20"
-                    fill={method.isStreaming ? "#889096" : "#4368e3"}
-                  />
-                  <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                    height="20"
+                    viewBox="0 0 20 20"
+                    className={cx('grpcv2-dropdown__service__arrow', {
+                      'grpcv2-dropdown__service__arrow--collapsed': !expandedServices.has(service.label)
+                    })}
+                  >
+                    <path
+                      d="M5 8l5-5 5 5"
+                      stroke="#687076"
+                      strokeWidth="1.5"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
-              ))}
-            </div>
+
+                {expandedServices.has(service.label) && service.methods.map((method) => (
+                  <div
+                    key={method.value}
+                    onClick={() => !method.disabled && selectMethod(method)}
+                    className={cx('grpcv2-dropdown__method', {
+                      'grpcv2-dropdown__method--disabled': method.disabled,
+                      'grpcv2-dropdown__method--selected': method.value === value
+                    })}
+                  >
+                    <ArrowUpDown
+                      width="20"
+                      fill={method.isStreaming ? "#889096" : "#4368e3"}
+                    />
+                    {method.disabled ? (
+                      <OverlayTrigger
+                        placement="right"
+                        overlay={
+                          <Tooltip id={`tooltip-${method.value}`} className="grpcv2-streaming-tooltip">
+                            Streaming RPCs are not supported currently
+                          </Tooltip>
+                        }
+                      >
+                        <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                      </OverlayTrigger>
+                    ) : (
+                      <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </React.Fragment>
           ))}
         </div>
       )}
@@ -157,7 +178,16 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const currentRequestRef = React.useRef(null);
   const [metadata, setMetadata] = React.useState(() => {
     if (options?.metadata) {
-      return JSON.parse(options?.metadata);
+      // Handle both array format (new) and JSON string format (backward compatibility)
+      if (Array.isArray(options.metadata)) {
+        return options.metadata;
+      } else if (typeof options.metadata === 'string') {
+        try {
+          return JSON.parse(options.metadata);
+        } catch (error) {
+          console.warn('Failed to parse metadata JSON, using default:', error);
+        }
+      }
     }
     return [['', '']];
   });
@@ -167,11 +197,18 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   React.useEffect(() => {
     // Update metadata when options change
     if (options?.metadata) {
-      try {
-        const newMetadata = JSON.parse(options.metadata);
-        setMetadata(newMetadata);
-      } catch (error) {
-        console.warn('Invalid metadata JSON:', error);
+      // Handle both array format (new) and JSON string format (backward compatibility)
+      if (Array.isArray(options.metadata)) {
+        setMetadata(options.metadata);
+      } else if (typeof options.metadata === 'string') {
+        try {
+          const newMetadata = JSON.parse(options.metadata);
+          setMetadata(newMetadata);
+        } catch (error) {
+          console.warn('Invalid metadata JSON:', error);
+          setMetadata([['', '']]);
+        }
+      } else {
         setMetadata([['', '']]);
       }
     } else {
@@ -229,7 +266,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       if (currentRequestRef.current !== requestId) {
         return;
       }
-      
+
       console.error('Failed to load services:', error);
       const errorMessage = error.errorMessage || error.message || 'Failed to load services';
       toast.error(errorMessage);
@@ -289,22 +326,38 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     const currentMetadata = [...metadata];
     currentMetadata.push(['', '']);
     setMetadata(currentMetadata);
+    // Persist the change to options (send as array like REST API headers)
+    optionsChanged({
+      ...options,
+      metadata: currentMetadata,
+    });
   };
 
   const removeMetadata = (index) => {
     const currentMetadata = [...metadata];
     currentMetadata.splice(index, 1);
     setMetadata(currentMetadata);
+    // Persist the change to options (send as array like REST API headers)
+    optionsChanged({
+      ...options,
+      metadata: currentMetadata,
+    });
   };
 
   const updateMetadata = (type, index, value) => {
-    const currentMetadata = [...metadata];
-    currentMetadata[index][type === 'key' ? 0 : 1] = value;
+    const currentMetadata = metadata.map((item, i) => {
+      if (i === index) {
+        const newItem = [...item]; // Create new array for this item
+        newItem[type === 'key' ? 0 : 1] = value;
+        return newItem;
+      }
+      return [...item]; // Create new array for all items to avoid mutation
+    });
 
     setMetadata(currentMetadata);
     optionsChanged({
       ...options,
-      metadata: JSON.stringify(currentMetadata),
+      metadata: currentMetadata,
     });
   };
 
@@ -348,7 +401,9 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         </div>
         <div className="d-flex flex-column align-items-start grpcv2-request-section__content">
           <div className="d-flex grpcv2-request-section__fields">
-            <div className="grpcv2-server-url">
+            <div className={cx('grpcv2-server-url', {
+              'grpcv2-server-url--dark': darkMode
+            })}>
               <span className="grpcv2-server-url__text">
                 {serverUrl || 'localhost:50051'}
               </span>
@@ -365,6 +420,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                       "Select service"
                 }
                 disabled={isLoadingServices || hierarchicalOptions.length === 0}
+                darkMode={darkMode}
               />
             </div>
           </div>
@@ -404,21 +460,36 @@ const ControlledTabs = ({
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="request">
-      <Row>
-        <div className="keys">
-          <ListGroup className="query-pane-rest-api-keys-list-group mx-1" variant="flush">
+      <Row className="tw-ml-0">
+        <div className="keys d-flex justify-content-between query-pane-tabs-header">
+          <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
                 <span>{tab}</span>
               </ListGroup.Item>
             ))}
           </ListGroup>
+          <div className="text-nowrap d-flex align-items-center">
+            {key === 'metadata' && (
+              <ButtonSolid
+                onClick={() => addNewKeyValuePair()}
+                id="grpc-metadata-add-btn"
+                data-cy="grpc-add-metadata-button"
+                variant="ghostBlack"
+                size="sm"
+                leftIcon="plus"
+                fill={darkMode ? 'var(--icons-default)' : '#6A727C'}
+                iconWidth="18"
+                className="tw-px-[6px]"
+              />
+            )}
+          </div>
         </div>
 
-        <div className={cx('col', { 'theme-dark': darkMode })}>
+        <div className="col tw-pl-0">
           <Tab.Content
             bsPrefix="rest-api-tab-content"
-            className="border overflow-hidden query-manager-border-color rounded"
+            className="query-manager-border-color rounded"
           >
             <Tab.Pane eventKey="metadata" bsPrefix="rest-api-tabpanes" transition={false}>
               <GRPCv2Component.TabContent
@@ -465,14 +536,39 @@ const TabContent = ({
   addNewKeyValuePair,
   darkMode,
 }) => {
+  // Check if we have an empty state
+  if (options.length === 0) {
+    return (
+      <div className="tab-content-wrapper">
+        <div className="d-flex align-items-center justify-content-center" style={{ height: '100px' }}>
+          <button
+            onClick={() => addNewKeyValuePair()}
+            className="add-params-btn empty-paramlist-btn"
+            style={{ background: 'transparent', border: 'none', color: darkMode ? '#D1D5DB' : '#6B7280' }}
+          >
+            <p className="d-flex m-0">
+              <svg width="20" height="20" viewBox="0 0 24 25" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M12 4.5C12.5523 4.5 13 4.94772 13 5.5V11.5H19C19.5523 11.5 20 11.9477 20 12.5C20 13.0523 19.5523 13.5 19 13.5H13V19.5C13 20.0523 12.5523 20.5 12 20.5C11.4477 20.5 11 20.0523 11 19.5V13.5H5C4.44772 13.5 4 13.0523 4 12.5C4 11.9477 4.44772 11.5 5 11.5H11V5.5C11 4.94772 11.4477 4.5 12 4.5Z"
+                />
+              </svg>
+              <span className="ms-2">Add metadata</span>
+            </p>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tab-content-wrapper">
       {options?.map((option, index) => {
         return (
-          <div className="row-container border-bottom query-manager-border-color" key={index}>
-            <div className="fields-container ">
-              <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
-              <div className="field col-4 overflow-hidden">
+          <div className="row-container query-manager-border-color" key={index}>
+            <div className="fields-container mb-1 restapi-key-value">
+              <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                 <CodeHinter
                   type="basic"
                   initialValue={option[0]}
@@ -481,7 +577,7 @@ const TabContent = ({
                   componentName={`${componentName}/${tabType}::key::${index}`}
                 />
               </div>
-              <div className="field col overflow-hidden">
+              <div className="field col rest-api-options-codehinter" style={{ width: '200px' }}>
                 <CodeHinter
                   type="basic"
                   initialValue={option[1]}
@@ -490,56 +586,20 @@ const TabContent = ({
                   componentName={`${componentName}/${tabType}::value::${index}`}
                 />
               </div>
-              <div
-                className="d-flex justify-content-center align-items-center delete-field-option"
+              <button
+                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${darkMode ? 'delete-field-option-dark' : ''
+                  }`}
                 role="button"
                 onClick={() => {
                   removeKeyValuePair(index);
                 }}
               >
-                <span className="rest-api-delete-field-option query-icon-wrapper d-flex">
-                  <svg width="100%" height="100%" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M5.58579 0.585786C5.96086 0.210714 6.46957 0 7 0H11C11.5304 0 12.0391 0.210714 12.4142 0.585786C12.7893 0.960859 13 1.46957 13 2V4H15.9883C15.9953 3.99993 16.0024 3.99993 16.0095 4H17C17.5523 4 18 4.44772 18 5C18 5.55228 17.5523 6 17 6H16.9201L15.9997 17.0458C15.9878 17.8249 15.6731 18.5695 15.1213 19.1213C14.5587 19.6839 13.7957 20 13 20H5C4.20435 20 3.44129 19.6839 2.87868 19.1213C2.32687 18.5695 2.01223 17.8249 2.00035 17.0458L1.07987 6H1C0.447715 6 0 5.55228 0 5C0 4.44772 0.447715 4 1 4H1.99054C1.9976 3.99993 2.00466 3.99993 2.0117 4H5V2C5 1.46957 5.21071 0.960859 5.58579 0.585786ZM3.0868 6L3.99655 16.917C3.99885 16.9446 4 16.9723 4 17C4 17.2652 4.10536 17.5196 4.29289 17.7071C4.48043 17.8946 4.73478 18 5 18H13C13.2652 18 13.5196 17.8946 13.7071 17.7071C13.8946 17.5196 14 17.2652 14 17C14 16.9723 14.0012 16.9446 14.0035 16.917L14.9132 6H3.0868ZM11 4H7V2H11V4ZM6.29289 10.7071C5.90237 10.3166 5.90237 9.68342 6.29289 9.29289C6.68342 8.90237 7.31658 8.90237 7.70711 9.29289L9 10.5858L10.2929 9.29289C10.6834 8.90237 11.3166 8.90237 11.7071 9.29289C12.0976 9.68342 12.0976 10.3166 11.7071 10.7071L10.4142 12L11.7071 13.2929C12.0976 13.6834 12.0976 14.3166 11.7071 14.7071C11.3166 15.0976 10.6834 15.0976 10.2929 14.7071L9 13.4142L7.70711 14.7071C7.31658 15.0976 6.68342 15.0976 6.29289 14.7071C5.90237 14.3166 5.90237 13.6834 6.29289 13.2929L7.58579 12L6.29289 10.7071Z"
-                      fill="#DB4324"
-                    />
-                  </svg>
-                </span>
-              </div>
+                <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+              </button>
             </div>
           </div>
         );
       })}
-
-      <div className="d-flex" style={{ maxHeight: '32px' }}>
-        <div
-          className={cx('d-flex align-items-center justify-content-center add-tabs grpcv2-add-button', {
-            'grpcv2-add-button--dark': darkMode
-          })}
-          onClick={() => addNewKeyValuePair()}
-          role="button"
-        >
-          <span className="rest-api-add-field-svg">
-            <svg width="100%" height="100%" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M12 4.5C12.5523 4.5 13 4.94772 13 5.5V11.5H19C19.5523 11.5 20 11.9477 20 12.5C20 13.0523 19.5523 13.5 19 13.5H13V19.5C13 20.0523 12.5523 20.5 12 20.5C11.4477 20.5 11 20.0523 11 19.5V13.5H5C4.44772 13.5 4 13.0523 4 12.5C4 11.9477 4.44772 11.5 5 11.5H11V5.5C11 4.94772 11.4477 4.5 12 4.5Z"
-                fill="#3E63DD"
-              />
-            </svg>
-          </span>
-        </div>
-        <div
-          className="col"
-          style={{
-            flex: '1',
-            background: darkMode ? '' : '#ffffff'
-          }}
-        ></div>
-      </div>
     </div>
   );
 };

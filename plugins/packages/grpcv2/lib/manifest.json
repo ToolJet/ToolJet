@@ -234,7 +234,6 @@
         "title": "AUTHENTICATION",
         "inputs": {
           "auth_type": {
-            "label": "Authentication type",
             "key": "auth_type",
             "type": "react-component-oauth-authentication",
             "description": "Authentication method for gRPC calls"
@@ -242,19 +241,19 @@
         }
       },
       "sslInputs": {
-        "title": "SECURE SOCKETS LAYER",
+        "title": "TRANSPORT LAYER SECURITY",
         "inputs": {
           "ssl_enabled": {
-            "label": "SSL",
+            "label": "SSL/TLS",
             "key": "ssl_enabled",
             "type": "toggle",
             "description": "Enable SSL/TLS connection"
           },
           "ssl_certificate": {
-            "label": "SSL Certificate",
+            "label": "SSL/TLS Certificate",
             "key": "ssl_certificate",
             "type": "dropdown-component-flip",
-            "description": "SSL certificate type",
+            "description": "SSL/TLS certificate type",
             "list": [
               {
                 "value": "none",
