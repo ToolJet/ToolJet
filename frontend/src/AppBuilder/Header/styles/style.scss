@@ -178,7 +178,7 @@
   padding: 7px 12px;
   height: 32px;
   background: var(--surfaces-surface-01);
-  border: 1px solid var(--border-weak);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   font-weight: 500;
   font-size: 12px;
@@ -190,7 +190,6 @@
   transition: background 0.15s, border 0.15s, box-shadow 0.15s, color 0.15s;
 
   svg {
-    color: #9747FF;
     flex-shrink: 0;
   }
 
@@ -243,7 +242,8 @@
   margin-right: 4px;
 }
 
-.release-buttons .license-tooltip+.navbar-seperator {
+.release-buttons .license-tooltip+.navbar-seperator,
+.release-buttons .git-sync-manager+.navbar-seperator {
   display: block;
 }
 
