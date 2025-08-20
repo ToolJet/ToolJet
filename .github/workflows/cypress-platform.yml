@@ -330,7 +330,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SUBPATH_SECRETS || secrets.CYPRESS_EE_SUBPATH_SECRETS }}
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
       - name: Run Cypress tests
@@ -503,7 +503,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_PROXY_SECRETS || secrets.CYPRESS_EE_PROXY_SECRETS }}
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
       
 
@@ -677,7 +677,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ matrix.edition == 'ce' && secrets.CYPRESS_SUBPATH_PROXY_SECRETS || secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS }}
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS) }}
           dir: "./cypress-tests"
 
 
