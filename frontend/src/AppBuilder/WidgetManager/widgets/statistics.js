@@ -57,7 +57,7 @@ export const statisticsConfig = {
     secondaryValueLabel: {
       type: 'code',
       displayName: 'Label',
-      validation: { schema: { type: 'string' }, defaultValue: 'mom growth' },
+      validation: { schema: { type: 'string' }, defaultValue: 'Last month' },
     },
     secondaryValue: {
       type: 'code',
@@ -325,7 +325,7 @@ export const statisticsConfig = {
       primaryValue: { value: '682.3' },
       primaryPrefixText: { value: '' },
       primarySuffixText: { value: '' },
-      secondaryValueLabel: { value: 'mom growth' },
+      secondaryValueLabel: { value: 'Last month' },
       secondaryValue: { value: '2.85' },
       secondaryPrefixText: { value: '' },
       secondarySuffixText: { value: '' },
