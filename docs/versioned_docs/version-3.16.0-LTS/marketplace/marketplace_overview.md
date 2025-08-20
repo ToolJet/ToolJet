@@ -58,6 +58,7 @@ To remove a plugin, follow these steps:
 
 - **[AfterShip](/docs/marketplace/plugins/marketplace-plugin-aftership)**
 - **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
+- **[AWS Bedrock](/docs/marketplace/plugins/marketplace-plugin-aws-bedrock)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
