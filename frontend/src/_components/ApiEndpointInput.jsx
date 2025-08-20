@@ -160,27 +160,17 @@ const ApiEndpointInput = (props) => {
     if (value === '') {
       removeParam(paramType, paramName);
     } else {
-      let parsedValue = value;
-
-      if (paramType === 'request') {
-        try {
-          parsedValue = JSON.parse(value);
-        } catch (e) {
-          console.error(`Invalid JSON for request param "${paramName}":`, e);
-          parsedValue = value;
-        }
-      }
-
+      // Store the value as-is for all param types
       const newOptions = {
         ...options,
         params: {
           ...options.params,
           [paramType]: {
             ...options.params[paramType],
-            [paramName]: parsedValue,
+            [paramName]: value,
           },
         },
-        ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
+        ...(isMultiSpec && { specType: selectedSpecType }),
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);

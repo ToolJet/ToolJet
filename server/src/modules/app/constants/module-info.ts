@@ -42,8 +42,11 @@ import { FEATURES as MODULE_FEATURES } from '@modules/modules/constants/feature'
 import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git-sync/constants/feature';
 
+const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
-  getTooljetEdition() === TOOLJET_EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
+  tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud
+    ? GROUP_PERMISSIONS_FEATURES_EE
+    : GROUP_PERMISSIONS_FEATURES_CE;
 
 //every module should be here
 export const MODULE_INFO: { [key: string]: any } = {
