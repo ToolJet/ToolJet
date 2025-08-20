@@ -106,7 +106,8 @@ export default class RestapiQueryService implements QueryService {
     const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
-      _requestOptions
+      _requestOptions,
+      { kind: 'hubspot' }
     );
     return authValidatedRequestOptions;
   }
