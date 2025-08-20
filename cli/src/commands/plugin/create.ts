@@ -11,10 +11,17 @@ export default class Create extends Command {
   static flags = {
     type: Flags.string({ options: ['database', 'api', 'cloud-storage'] }),
     build: Flags.boolean({ char: 'b' }),
+    marketplace: Flags.boolean({ char: 'm', description: 'Create as a marketplace plugin' }),
+    name: Flags.string({ char: 'n', description: 'Plugin display name' }),
+    'repo-url': Flags.string({ description: 'Repository URL for marketplace plugin' }),
+    'non-interactive': Flags.boolean({ description: 'Skip all prompts and use provided flags' }),
   };
   static description = 'Create a new tooljet plugin';
 
-  static examples = [`$ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]`];
+  static examples = [
+    `$ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]`,
+    `$ tooljet plugin create myapi --type=api --name="My API" --marketplace --non-interactive`
+  ];
 
   static args = [{ name: 'plugin_name', description: 'Name of the plugin', required: true }];
 
@@ -27,14 +34,34 @@ export default class Create extends Command {
     }
 
     let { type } = flags;
+    let name = flags.name;
+    const isNonInteractive = flags['non-interactive'];
+    const isMarketplace = flags.marketplace;
+    const repoUrl = flags['repo-url'];
 
-    const name = await CliUx.ux.prompt('Enter plugin display name');
+    // In non-interactive mode, validate that all required flags are provided
+    if (isNonInteractive) {
+      if (!name) {
+        this.log('\x1b[41m%s\x1b[0m', 'Error : --name flag is required in non-interactive mode');
+        process.exit(1);
+      }
+      if (!type) {
+        this.log('\x1b[41m%s\x1b[0m', 'Error : --type flag is required in non-interactive mode');
+        process.exit(1);
+      }
+    }
+
+    // Prompt for name if not provided
+    if (!name) {
+      name = await CliUx.ux.prompt('Enter plugin display name');
+    }
 
     if (Number(name)) {
       this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin Display name can not be a number');
       process.exit(1);
     }
 
+    // Prompt for type if not provided
     if (!type) {
       const responses: any = await inquirer.prompt([
         {
@@ -71,6 +98,16 @@ export default class Create extends Command {
       '--plugins_path',
       `${pluginsPath}`,
     ];
+
+    // Add marketplace flag if provided
+    if (isMarketplace) {
+      hygenArgs.push('--marketplace', 'true');
+    }
+
+    // Add repo URL if provided
+    if (repoUrl) {
+      hygenArgs.push('--repo_url', repoUrl);
+    }
 
     const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
     const pluginsJson = JSON.parse(buffer);

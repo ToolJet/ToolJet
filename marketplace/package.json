@@ -9,6 +9,8 @@
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^2.1.1",
     "aws-sdk": "^2.1692.0",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
@@ -28,7 +30,9 @@
     "build": "npm run build --workspaces",
     "start:dev": "npm run build && npm run start:watch",
     "lint": "eslint .  '**/*.ts'",
-    "format": "eslint . --fix '**/*.ts'"
-  },
-  "dependencies": {}
+    "format": "eslint . --fix '**/*.ts'",
+    "validate": "node scripts/validate-schemas.js",
+    "validate:plugin": "node scripts/validate-schemas.js",
+    "validate:file": "node scripts/validate-schemas.js"
+  }
 }
