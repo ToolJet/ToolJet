@@ -383,6 +383,7 @@
     "noWorkflowFound": "Aucun flux de travail trouvé",
     "thisFolderIsEmpty": "Ce dossier est vide",
     "deleteAppAndData": "L'application et les données associées seront supprimées en permanence, voulez-vous continuer ?",
+    "deleteWorkflowAndData": "Le workflow {{appName}} et ses données associées seront définitivement supprimés. Continuer ?",
     "removeAppFromFolder": "L'application sera supprimée de ce dossier, voulez-vous continuer ?",
     "change": "Changer",
     "templateCard": {

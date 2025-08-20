@@ -26,6 +26,7 @@ import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
 
 // Import helper functions
 import {
@@ -93,7 +94,7 @@ async function bootstrap() {
 
     // Setup application middleware and pipes
     logger.log('Setting up application middleware and pipes...');
-    setupApplicationMiddleware(app);
+    await setupApplicationMiddleware(app);
     logger.log('✅ Application middleware configured');
 
     // Configure URL prefix and excluded paths
@@ -162,12 +163,17 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 }
 
-function setupApplicationMiddleware(app: NestExpressApplication) {
+async function setupApplicationMiddleware(app: NestExpressApplication) {
   app.useLogger(app.get(Logger));
   app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), app.get(Logger), app.get(EventEmitter2)));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
+
+  if (process.env.ENABLE_OTEL === 'true') {
+    await startOpenTelemetry();
+    app.use(otelMiddleware);
+  }
 }
 
 function configureUrlPrefix() {
