@@ -3,8 +3,6 @@ id: grpcv2
 title: gRPC 2.0
 ---
 
-<div className='badge badge--primary heading-badge'>Self-hosted only</div>
-
 :::info New gRPC 2.0
 This documentation covers the new **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
 :::
