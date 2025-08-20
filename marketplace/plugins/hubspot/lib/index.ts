@@ -2,16 +2,12 @@ import {
   QueryError,
   QueryResult,
   QueryService,
-  constructSourceOptions,
-  convertQueryOptions,
-  encodeOAuthScope,
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from '@tooljet-marketplace/common';
-import { SourceOptions } from './types';
+import { SourceOptions, ConvertedFormat, AuthSourceDetails } from './types';
 import got, { Headers, OptionsOfTextResponseBody } from 'got';
-import { AuthSourceDetails } from 'plugins/common/dist/types';
 
 export default class Hubspot implements QueryService {
   async run(
@@ -49,8 +45,8 @@ export default class Hubspot implements QueryService {
         accessTokenUrl: 'https://api.hubapi.com/oauth/v1/token',
         accessTokenCustomHeaders: [['Content-Type', 'application/x-www-form-urlencoded']],
       };
-      const newSourcOptions = constructSourceOptions(sourceOptions, authSourceDetails);
-      const authValidatedRequestOptions = convertQueryOptions(queryOptions, customHeaders);
+      const newSourcOptions = this.constructSourceOptions(sourceOptions, authSourceDetails);
+      const authValidatedRequestOptions = this.convertQueryOptions(queryOptions, customHeaders);
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
         newSourcOptions,
         context,
@@ -85,8 +81,13 @@ export default class Hubspot implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
-      const errorMessage = error?.message === 'Query could not be completed' ? error?.description : error?.message;
-      throw new QueryError('Query could not be completed', errorMessage, error?.data || {});
+      const errorMessage = error.response.statusMessage ?? 'Query could not be completed';
+      const errorResponse = {
+        statusCode: error.response.statusCode,
+        statusMessage: error.response.statusMessage,
+        body: JSON.parse(error.response.body),
+      };
+      throw new QueryError('Query could not be completed', errorMessage, errorResponse || {});
     }
     return {
       status: 'ok',
@@ -101,21 +102,8 @@ export default class Hubspot implements QueryService {
   }
 
   authUrl(source_options: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const { clientId, clientSecret, scopes, redirectUri } = this.getOAuthCredentials(source_options);
     const oauth_type = source_options.oauth_type.value;
-    let clientId: string;
-    let clientSecret: string;
-    const scope: string = source_options.scopes.value;
-
-    if (oauth_type === 'tooljet_app') {
-      clientId = process.env.HUBSPOT_CLIENT_ID;
-      clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
-    } else {
-      clientId = source_options?.client_id?.value;
-      clientSecret = source_options?.client_secret?.value;
-    }
 
     if (!clientId) {
       throw new Error(
@@ -129,16 +117,20 @@ export default class Hubspot implements QueryService {
       );
     }
 
-    if (!scope) {
+    if (!scopes) {
       throw new Error(`HubSpot OAuth "scope" config is missing`);
     }
 
-    const encodedScope = encodeOAuthScope(scope);
-    const baseUrl =
-      'https://app.hubspot.com/oauth/authorize' +
-      `?response_type=code&client_id=${clientId}` +
-      `&redirect_uri=${encodeURIComponent(fullUrl + 'oauth2/authorize')}`;
-    const authUrl = `${baseUrl}&scope=${encodedScope}`;
+    const baseUrl = 'https://app.hubspot.com/oauth/authorize';
+
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: scopes,
+    });
+
+    const authUrl = `${baseUrl}?${params.toString()}`;
     return authUrl;
   }
 
@@ -149,33 +141,9 @@ export default class Hubspot implements QueryService {
         ['refresh_token', ''],
       ];
     }
-
-    let clientId = '';
-    let clientSecret = '';
-    const oauth_type = source_options.find((item) => item.key === 'oauth_type')?.value;
-
-    if (oauth_type === 'tooljet_app') {
-      clientId = process.env.HUBSPOT_CLIENT_ID;
-      clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
-    } else {
-      clientId = source_options.find((item) => item.key === 'client_id')?.value;
-      clientSecret = source_options.find((item) => item.key === 'client_secret')?.value;
-    }
-
-    for (const item of source_options) {
-      if (item.key === 'client_id') {
-        clientId = item.value;
-      }
-      if (item.key === 'client_secret') {
-        clientSecret = item.value;
-      }
-    }
+    const { clientId, clientSecret, redirectUri } = this.getOAuthCredentials(source_options);
 
     const accessTokenUrl = 'https://api.hubapi.com/oauth/v1/token';
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const redirectUri = `${fullUrl}oauth2/authorize`;
     const grantType = 'authorization_code';
 
     const data = new URLSearchParams({
@@ -217,4 +185,120 @@ export default class Hubspot implements QueryService {
     }
     return authDetails;
   }
+
+  private normalizeSourceOptions(source_options: any): Record<string, any> {
+    if (!Array.isArray(source_options)) {
+      return source_options;
+    }
+
+    const normalized = {};
+    source_options.forEach((item) => {
+      normalized[item.key] = item.value;
+    });
+    return normalized;
+  }
+
+  private getOptionValue(option: any): any {
+    if (option?.value !== undefined) {
+      return option.value;
+    }
+    return option;
+  }
+
+  getOAuthCredentials(source_options: any) {
+    const options = this.normalizeSourceOptions(source_options);
+    const oauthType = this.getOptionValue(options.oauth_type);
+    let clientId = this.getOptionValue(options.client_id);
+    let clientSecret = this.getOptionValue(options.client_secret);
+    const tenantId = this.getOptionValue(options.tenant_id);
+    const accessTokenUrl = this.getOptionValue(options.access_token_url);
+    const scopes = this.getOptionValue(options.scopes);
+
+    if (oauthType === 'tooljet_app') {
+      clientId = process.env.HUBSPOT_CLIENT_ID;
+      clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
+    }
+
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
+
+    return { clientId, clientSecret, tenantId, accessTokenUrl, scopes, redirectUri };
+  }
+
+  constructSourceOptions = (sourceOptions, props: AuthSourceDetails) => {
+    const baseUrl = props.baseUrl;
+    const authUrl = props.authUrl;
+    const scope = props.scope;
+    const accessTokenUrl = props.accessTokenUrl;
+    const headerPrefix = props.headerPrefix ? props.headerPrefix : 'Bearer ';
+    const accessTokenCustomHeaders = props.accessTokenCustomHeaders ? props.accessTokenCustomHeaders : [['', '']];
+    const addSourceOptions = {
+      url: baseUrl,
+      auth_url: authUrl,
+      add_token_to: 'header',
+      header_prefix: headerPrefix,
+      access_token_url: accessTokenUrl,
+      audience: '',
+      username: '',
+      password: '',
+      bearer_token: '',
+      client_auth: 'header',
+      headers: [
+        ['', ''],
+        ['tj-x-forwarded-for', '::1'],
+      ],
+      custom_query_params: [['', '']],
+      custom_auth_params: [['', '']],
+      access_token_custom_headers: accessTokenCustomHeaders,
+      ssl_certificate: 'none',
+      retry_network_errors: true,
+
+      scopes: this.encodeOAuthScope(scope),
+    };
+    const newSourcOptions = {
+      ...sourceOptions,
+      ...addSourceOptions,
+    };
+    return newSourcOptions;
+  };
+
+  encodeOAuthScope = (scope: string): string => {
+    return encodeURIComponent(scope);
+  };
+
+  convertQueryOptions = (queryOptions: any, customHeaders?: Record<string, string>): any => {
+    // Extract operation and params
+    const { operation, params } = queryOptions;
+
+    // Start building the result
+    const result: ConvertedFormat = {
+      method: operation.toLowerCase(),
+      headers: customHeaders || {},
+    };
+
+    // Convert query params to URLSearchParams if they exist
+    if (params.query && Object.keys(params.query).length > 0) {
+      const urlParams = new URLSearchParams();
+
+      Object.entries(params.query).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            value.forEach((v) => urlParams.append(key, String(v)));
+          } else {
+            urlParams.append(key, String(value));
+          }
+        }
+      });
+
+      result.searchParams = urlParams;
+    }
+
+    if (!['get', 'delete'].includes(result.method) && params.request) {
+      result.json = params.request;
+    }
+
+    return result;
+  };
 }

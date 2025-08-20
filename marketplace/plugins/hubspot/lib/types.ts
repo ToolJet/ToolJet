@@ -28,3 +28,12 @@ export type QueryResult = {
   data: Array<object> | object | OptionsOfTextResponseBody;
   metadata?: Array<object> | object;
 };
+
+export type AuthSourceDetails = {
+  baseUrl: string;
+  authUrl: string;
+  scope: string;
+  accessTokenUrl: string;
+  headerPrefix?: string;
+  accessTokenCustomHeaders?: [string, string][];
+};

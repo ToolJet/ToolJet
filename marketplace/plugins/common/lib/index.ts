@@ -15,9 +15,6 @@ import {
   fetchHttpsCertsForCustomCA,
   sanitizeSortPairs,
   fromEntries,
-  convertQueryOptions,
-  encodeOAuthScope,
-  constructSourceOptions,
 } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
 import { User, App } from './types';
@@ -55,7 +52,4 @@ export {
   sanitizeSortPairs,
   fromEntries,
   initializeOAuth,
-  constructSourceOptions,
-  convertQueryOptions,
-  encodeOAuthScope,
 };

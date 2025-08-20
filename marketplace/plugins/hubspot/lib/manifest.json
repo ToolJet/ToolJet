@@ -1,7 +1,7 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Hubspot",
+  "title": "HubSpot",
   "description": "Integrate with HubSpot API for CRM and sales automation",
   "type": "api",
   "source": {
@@ -28,27 +28,6 @@
       "value": ""
     },
     "client_secret": {
-      "value": ""
-    },
-    "username": {
-      "value": ""
-    },
-    "account": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "database": {
-      "value": ""
-    },
-    "schema": {
-      "value": ""
-    },
-    "warehouse": {
-      "value": ""
-    },
-    "role": {
       "value": ""
     },
     "oauth_type": {
@@ -85,17 +64,29 @@
     "oauth": {
       "key": "oauth",
       "type": "react-component-oauth",
-      "description": "A component for Hubspot",
+      "description": "A component for HubSpot",
       "oauth_configs": {
         "allowed_field_groups": {
           "authorization_code": [
             "client_id",
             "client_secret"
-          ],
-          "basic": [
-            "password",
-            "username"
           ]
+        },
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app",
+              "tooljet_app"
+            ]
+          }
         },
         "allowed_auth_types": [
           "oauth2"

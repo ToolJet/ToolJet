@@ -1,8 +1,8 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "Hubspot datasource",
-  "description": "A schema defining Hubspot datasource",
+  "title": "HubSpot datasource",
+  "description": "A schema defining HubSpot datasource",
   "type": "api",
   "defaults": {},
   "properties": {
