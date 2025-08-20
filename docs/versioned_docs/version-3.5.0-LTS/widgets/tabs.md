@@ -24,11 +24,15 @@ If the builder attempts to add any of the aforementioned components inside the T
 This property lets you add and remove containers from the Tabs component. Each container in the tab has its unique `id` , `title` and `disabled` for disabling individual tabs . This field expects an array of objects.
 
 ```js
-{{[
-    { title: 'Home', id: '0' },
-    { title: 'Profile', id: '1',disabled:'true' },
-    { title: 'Settings', id: '2' }
-]}}
+{
+  {
+    [
+      { title: "Home", id: "0" },
+      { title: "Profile", id: "1", disabled: "true" },
+      { title: "Settings", id: "2" },
+    ];
+  }
+}
 ```
 
 #### Adding background color to Tabs
@@ -36,11 +40,15 @@ This property lets you add and remove containers from the Tabs component. Each c
 You can specify the different color for each tab using the `backgroundColor` property and use hex color code or color name as the value.
 
 ```js
-{{[ 
-		{ title: 'Home', id: '0', backgroundColor: '#81D4FA' }, 
-		{ title: 'Profile', id: '1', backgroundColor: 'blue' }, 
-		{ title: 'Settings', id: '2', backgroundColor: '#ecf0f1'} 
- ]}}
+{
+  {
+    [
+      { title: "Home", id: "0", backgroundColor: "#81D4FA" },
+      { title: "Profile", id: "1", backgroundColor: "blue" },
+      { title: "Settings", id: "2", backgroundColor: "#ecf0f1" },
+    ];
+  }
+}
 ```
 
 ### Default tab
@@ -62,11 +70,11 @@ This property is enabled by default. When enabled, only the active tab will be r
 ## Events
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| On tab switch | This event is triggered when the tab is switched. |
+| :------------------------------------------- | :------------------------------------------------ |
+| On tab switch                                | This event is triggered when the tab is switched. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.5.0-LTS/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>
@@ -77,9 +85,9 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of Tabs component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:--------- |
-| setTab | Set the current tab of the Tabs component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                                                   | <div style={{ width:"135px"}}> How To Access </div>                                                   |
+| :-------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| setTab                                        | Set the current tab of the Tabs component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |
 
 </div>
 
@@ -87,9 +95,9 @@ Following actions of Tabs component can be controlled using the component specif
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:--------- |
-| currentTab | This variable holds the id of the current tab selected on the Tabs component. | Access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
+| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div>                             | <div style={{ width:"135px"}}> How To Access </div>                      |
+| :---------------------------------------------- | :---------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| currentTab                                      | This variable holds the id of the current tab selected on the Tabs component. | Access the value dynamically using JS: `{{components.tabs1.currentTab}}` |
 
 </div>
 
@@ -97,9 +105,9 @@ Following actions of Tabs component can be controlled using the component specif
 
 ## Actions
 
-| <div style={{ width:"100px"}}> Action   </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Properties </div> |
-|:----------- |:----------- |:------------------ |
-| setTab | Set current tab. | `id` |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Properties </div> |
+| :------------------------------------------- | :------------------------------------------------ | :----------------------------------------------- |
+| setTab                                       | Set current tab.                                  | `id`                                             |
 
 </div>
 
@@ -107,25 +115,25 @@ Following actions of Tabs component can be controlled using the component specif
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                              |
+| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
-----
+---
 
 ## Styles
 
-| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Highlight color | You can change the highlight color of the selected tab by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Tab width | Tab width can be set as **auto** or **equally split**. |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the  component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                                                                                       |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Highlight color                             | You can change the highlight color of the selected tab by entering the Hex color code or choosing a color of your choice from the color picker.                                                                                                                                                                         |
+| Tab width                                   | Tab width can be set as **auto** or **equally split**.                                                                                                                                                                                                                                                                  |
+| Visibility                                  | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`.                                                     |
+| Disable                                     | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

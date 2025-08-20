@@ -33,7 +33,7 @@ To connect to Sharepoint, you need the following details:
 2. Choose the operation you want to perform on your Sharepoint instance.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/beta/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
 
 ## Supported Operations

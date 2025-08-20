@@ -48,11 +48,82 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/index"
-          },
           "items": [
+            {
+              "type": "category",
+              "label": "PostgreSQL 13 → 16 Upgrade",
+              "items": [
+                  {
+                    "type": "category",
+                    "label": "AWS",
+                    "items": [
+                      "setup/postgresql-13-16/aws/overview",
+                      "setup/postgresql-13-16/aws/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/aws/deployment/docker",
+                              "setup/postgresql-13-16/aws/deployment/ami",
+                              "setup/postgresql-13-16/aws/deployment/ecs",
+                              "setup/postgresql-13-16/aws/deployment/eks"
+                          ]
+                      },
+                      "setup/postgresql-13-16/aws/verification",
+                      "setup/postgresql-13-16/aws/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "Azure",
+                    "items": [
+                      "setup/postgresql-13-16/azure/overview",
+                      "setup/postgresql-13-16/azure/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/azure/deployment/aks",
+                              "setup/postgresql-13-16/azure/deployment/container"
+                          ]
+                      },
+                      "setup/postgresql-13-16/azure/verification",
+                      "setup/postgresql-13-16/azure/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "GCP",
+                    "items": [
+                      "setup/postgresql-13-16/gcp/overview",
+                      "setup/postgresql-13-16/gcp/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/gcp/deployment/docker",
+                              "setup/postgresql-13-16/gcp/deployment/gke",
+                              "setup/postgresql-13-16/gcp/deployment/cloud-run"
+                          ]
+                      },
+                      "setup/postgresql-13-16/gcp/verification",
+                      "setup/postgresql-13-16/gcp/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "ToolJet Postgres Upgrade Guide",
+                    "items": [
+                      "setup/postgresql-13-16/tj/overview",
+                      "setup/postgresql-13-16/tj/steps",
+                      "setup/postgresql-13-16/tj/troubleshooting",
+                      "setup/postgresql-13-16/tj/post-upgrade",
+                      "setup/postgresql-13-16/tj/security",
+                      "setup/postgresql-13-16/tj/checklist"
+                    ]
+                  }
+              ]
+            },
             "setup/try-tooljet",
             "setup/choose-your-tooljet",
             "setup/system-requirements",
@@ -427,7 +498,11 @@
                 "marketplace/plugins/marketplace-plugin-qdrant",
                 "marketplace/plugins/marketplace-plugin-azurerepos",
                 "marketplace/plugins/marketplace-plugin-googlecalendar",
-                "marketplace/plugins/marketplace-plugin-aws-bedrock"
+                "marketplace/plugins/marketplace-plugin-aws-bedrock",
+                "marketplace/plugins/marketplace-plugin-ups",
+                "marketplace/plugins/marketplace-plugin-spanner",
+                "marketplace/plugins/marketplace-plugin-aftership",
+                "marketplace/plugins/marketplace-plugin-microsoft_graph"
               ]
             }
           ]
@@ -626,7 +701,8 @@
               "type": "category",
               "label": "Workspace level",
               "items": [
-                "user-management/group-sync/workspace-level/oidc"
+                "user-management/group-sync/workspace-level/oidc",
+                "user-management/group-sync/workspace-level/saml"
               ]
             }
           ]
@@ -664,8 +740,23 @@
           "label": "GitSync",
           "items": [
             "development-lifecycle/gitsync/overview",
-            "development-lifecycle/gitsync/gitsync-config",
-            "development-lifecycle/gitsync/ssh-config",
+            {
+              "type": "category",
+              "label": "Connect to Git Repo",
+              "items": [
+                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
+                {
+                  "type": "category",
+                  "label": "Git SSH Protocol",
+                  "items": [
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config",
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
+                  ]
+                },
+                "development-lifecycle/gitsync/connect-to-git-repo/github-config",
+                "development-lifecycle/gitsync/connect-to-git-repo/gitlab-config"
+              ]
+            },
             "development-lifecycle/gitsync/delete-gitsync",
             "development-lifecycle/gitsync/push",
             "development-lifecycle/gitsync/pull"

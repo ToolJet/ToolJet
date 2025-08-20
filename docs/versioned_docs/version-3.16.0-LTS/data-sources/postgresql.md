@@ -75,7 +75,9 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
+
 SQL Parameters: <br/>
+
 - Key: username <br/>
 - Value: oliver or `{{ components.username.value }}`
 
@@ -131,7 +133,7 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 
 :::tip
 
-- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/beta/app-builder/custom-code/transform-data)**
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/app-builder/custom-code/transform-data)**
 - Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
   :::
 

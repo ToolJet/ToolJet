@@ -56,6 +56,7 @@ To remove a plugin, follow these steps:
 
 ## Available Plugins
 
+- **[AfterShip](/docs/marketplace/plugins/marketplace-plugin-aftership)**
 - **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
 - **[AWS Bedrock](/docs/marketplace/plugins/marketplace-plugin-aws-bedrock)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
@@ -66,9 +67,11 @@ To remove a plugin, follow these steps:
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[Google Calendar](/docs/marketplace/plugins/marketplace-plugin-googlecalendar)**
+- **[Google Cloud Spanner](/docs/marketplace/plugins/marketplace-plugin-spanner)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
+- **[Microsoft Graph](/docs/marketplace/plugins/marketplace-plugin-microsoft_graph)**
 - **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
@@ -80,6 +83,7 @@ To remove a plugin, follow these steps:
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[UPS](/docs/marketplace/plugins/marketplace-plugin-ups)**
 - **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
 
 :::info For Plugin Developers

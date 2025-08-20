@@ -47,7 +47,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 </div>
 
 :::tip
-Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/app-builder/custom-code/transform-data).
 :::
 
 </div>
