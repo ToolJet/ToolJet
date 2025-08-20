@@ -118,6 +118,8 @@ export const ModalWidget = ({ ...restProps }) => {
           setSelectedComponentAsModal={onSelectModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {showHeader && (

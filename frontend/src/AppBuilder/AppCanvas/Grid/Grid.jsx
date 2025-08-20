@@ -860,6 +860,42 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
             return false;
           }
+
+          const parentId = boxList.find((box) => box.id === e.target.id)?.parent?.substring(0, 36);
+          const parentComponent = boxList.find((box) => box.id === parentId);
+          const isParentLegacyModal = parentComponent?.componentType === 'Modal';
+
+          // Special case for Modal. This is added to prevent widget from being dragged out of the modal.
+          if (parentComponent?.componentType === 'ModalV2' || parentComponent?.componentType === 'Modal') {
+            const modalContainer = e.target.closest('.tj-modal--container');
+            const mainCanvas = document.getElementById('real-canvas');
+            const mainRect = mainCanvas.getBoundingClientRect();
+            const modalRect = modalContainer.getBoundingClientRect();
+            const relativePosition = {
+              top: modalRect.top - mainRect.top + (isParentLegacyModal ? 56 : 0), // 56 is the height of the legacy modal header
+              right: mainRect.right - modalRect.right + modalContainer.offsetWidth,
+              bottom: modalRect.height + (modalRect.top - mainRect.top),
+              left: modalRect.left - mainRect.left,
+            };
+            setCanvasBounds({ ...relativePosition });
+          } else if (isModuleEditor) {
+            const moduleContainer = e.target.closest('.module-container-canvas');
+            const mainCanvas = document.getElementById('real-canvas');
+
+            const mainRect = mainCanvas.getBoundingClientRect();
+            const modalRect = moduleContainer.getBoundingClientRect();
+            const relativePosition = {
+              top: modalRect.top - mainRect.top,
+              // right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
+
+              right: modalRect.left - mainRect.left + moduleContainer.offsetWidth,
+              bottom: modalRect.height + (modalRect.top - mainRect.top),
+              left: modalRect.left - mainRect.left,
+            };
+
+            setCanvasBounds({ ...relativePosition });
+          }
+
           //  This flag indicates whether the drag event originated on a child element within a component
           //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
           //  When true, it prevents the parent component from being dragged, allowing the inner elements
@@ -1017,41 +1053,28 @@ export default function Grid({ gridWidth, currentLayout }) {
           const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent;
           const parentId = oldParentId?.length > 36 ? oldParentId.slice(0, 36) : oldParentId;
           const parentComponent = boxList.find((box) => box.id === parentId);
-          const parentWidgetType = parentComponent?.component?.component;
-          const isOnHeaderOrFooter = oldParentId
-            ? oldParentId.includes('-header') || oldParentId.includes('-footer')
-            : false;
-          const isParentModalSlot = parentWidgetType === 'ModalV2' && isOnHeaderOrFooter;
-          const isParentNewModal = parentComponent?.component?.component === 'ModalV2';
-          const isParentLegacyModal = parentComponent?.component?.component === 'Modal';
-          const isParentModal = isParentNewModal || isParentLegacyModal || isParentModalSlot;
 
-          if (isParentModal) {
-            const modalContainer = e.target.closest('.tj-modal--container');
-            const mainCanvas = document.getElementById('real-canvas');
-            const mainRect = mainCanvas.getBoundingClientRect();
-            const modalRect = modalContainer.getBoundingClientRect();
-            const relativePosition = {
-              top: modalRect.top - mainRect.top + (isParentLegacyModal ? 56 : 0), // 56 is the height of the legacy modal header
-              right: mainRect.right - modalRect.right + modalContainer.offsetWidth,
-              bottom: modalRect.height + (modalRect.top - mainRect.top),
-              left: modalRect.left - mainRect.left,
-            };
-            setCanvasBounds({ ...relativePosition });
-          } else if (isModuleEditor) {
-            const moduleContainer = e.target.closest('.module-container-canvas');
-            const mainCanvas = document.getElementById('real-canvas');
+          // if (isModuleEditor) {
+          //   const moduleContainer = e.target.closest('.module-container-canvas');
+          //   const mainCanvas = document.getElementById('real-canvas');
 
-            const mainRect = mainCanvas.getBoundingClientRect();
-            const modalRect = moduleContainer.getBoundingClientRect();
-            const relativePosition = {
-              top: modalRect.top - mainRect.top,
-              right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
-              bottom: modalRect.height + (modalRect.top - mainRect.top),
-              left: modalRect.left - mainRect.left,
-            };
-            setCanvasBounds({ ...relativePosition });
-          }
+          //   const mainRect = mainCanvas.getBoundingClientRect();
+          //   const modalRect = moduleContainer.getBoundingClientRect();
+          //   const relativePosition = {
+          //     top: modalRect.top - mainRect.top,
+          //     right: mainRect.right - modalRect.right + moduleContainer.offsetWidth,
+          //     bottom: modalRect.height + (modalRect.top - mainRect.top),
+          //     left: modalRect.left - mainRect.left,
+          //   };
+          //   console.log(
+          //     'relativePosition',
+          //     relativePosition,
+          //     mainRect.right,
+          //     modalRect.right,
+          //     moduleContainer.offsetWidth
+          //   );
+          //   setCanvasBounds({ ...relativePosition });
+          // }
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
           let newParentId = getDroppableSlotIdOnScreen(e, boxList) || 'canvas';
