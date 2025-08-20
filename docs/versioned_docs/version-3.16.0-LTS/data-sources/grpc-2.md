@@ -1,12 +1,12 @@
 ---
-id: grpc-2
+id: grpcv2
 title: gRPC 2.0
 ---
 
 <div className='badge badge--primary heading-badge'>Self-hosted only</div>
 
 :::info New gRPC 2.0
-This documentation covers the new **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The legacy gRPC data source is still available but is deprecated.
+This documentation covers the new **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
 :::
 
 ## What's New in gRPC 2.0
@@ -64,7 +64,7 @@ const reflection = require('@grpc/reflection');
 reflection.loadSync(server);
 ```
 
-*[DevRel Note: Add new screenshot showing server reflection option selected in the UI]*
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/server-reflection.png" alt="gRPC 2.0: connection configuration" />
 
 ### Proto File URL Import
 
@@ -76,7 +76,7 @@ If server reflection is not available or you prefer to use a specific proto file
 - `https://raw.githubusercontent.com/user/repo/main/api.proto`
 - Any publicly accessible HTTPS URL serving a `.proto` file
 
-*[DevRel Note: Add screenshot showing proto file URL input field and configuration]*
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/proto.png" alt="gRPC 2.0: connection configuration" />
 
 ## Connecting to gRPC 2.0
 After configuring your proto schema, establish a connection by going to the [data source](/docs/data-sources/overview) page.
@@ -89,11 +89,7 @@ ToolJet gRPC 2.0 requires the following configuration:
 - **Proto Files**: Choose between "Server Reflection" or "Import Proto File URL"
 - **Custom Metadata**: Key-value pairs for custom headers (optional)
 
-<!-- Placeholder for new connection configuration image -->
-
-*[DevRel Note: Replace with new gRPC 2.0 connection screenshot showing the updated interface]*
-
-<img className="screenshot-full" src="/img/datasource-reference/grpc/connection-v2.png" alt="gRPC 2.0: connection configuration" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/config.png" alt="gRPC 2.0: connection configuration" />
 
 #### Authentication Options
 
@@ -116,7 +112,7 @@ gRPC 2.0 supports comprehensive authentication methods:
     - Use custom metadata headers for API key authentication
     - Support for multiple header formats
 
-*[DevRel Note: Add screenshot showing the OAuth2 authentication options]*
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/oauth.png" alt="gRPC 2.0: connection configuration" />
 
 #### SSL/TLS Configuration
 
@@ -133,7 +129,7 @@ Enhanced security options for encrypted connections:
     - Support for PEM format certificates
     - Separate fields for CA cert, client cert, and private key
 
-*[DevRel Note: Add screenshot showing SSL/TLS configuration options]*
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/ssl.png" alt="gRPC 2.0: connection configuration" />
 
 ## Custom Metadata Headers
 
@@ -150,28 +146,24 @@ gRPC 2.0 supports custom metadata headers for flexible authentication and reques
     - Support for encrypted values
     - Dynamic values using ToolJet variables
 
-*[DevRel Note: Add screenshot showing the metadata headers configuration interface]*
-
 ## Creating Queries
 
 Once configured, the gRPC 2.0 data source will be available in your application's query panel.
 
 ### Service and Method Selection
 
-With **Server Reflection**:
+1. With **Server Reflection**:
+    1. Select your gRPC 2.0 data source
+    2. Choose from automatically discovered services
+    3. Select available methods for the chosen service
+    4. Method parameters are dynamically generated based on the proto schema
 
-1. Select your gRPC 2.0 data source
-2. Choose from automatically discovered services
-3. Select available methods for the chosen service
-4. Method parameters are dynamically generated based on the proto schema
-With **Proto File URL**:
-1. Import completes automatically after URL validation
-2. Services and methods populate from the imported proto file
-3. Parameter forms are generated from the proto definitions
-<!-- Placeholder for new query interface image -->
-*[DevRel Note: Replace with new query interface screenshot showing service/method selection]*
+2. With **Proto File URL**:
+    1. Import completes automatically after URL validation
+    2. Services and methods populate from the imported proto file
+    3. Parameter forms are generated from the proto definitions
 
-<img className="screenshot-full" src="/img/datasource-reference/grpc/query-v2.png" alt="gRPC 2.0: query interface" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/service.png" alt="gRPC 2.0: query interface" />
 
 ### Request Configuration
 
@@ -219,7 +211,7 @@ If you're currently using the legacy gRPC data source, here's how to migrate:
    - Remove volume mounts from docker-compose.yml
    - Remove legacy gRPC data source
 
-:::warning 
+:::note 
 Legacy Support
 The legacy gRPC data source remains available but is deprecated. New projects should use gRPC 2.0, and existing projects are encouraged to migrate.
 :::
