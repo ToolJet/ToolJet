@@ -5,39 +5,73 @@ title: Kubernetes (EKS)
 
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+:::
+
 :::info
-You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements)
+You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
+
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
 
-2. Create a k8s Deployment:
+2. Create a k8s Deployment: <br/>
+    The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+    ```
+    kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+    ```
+    Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](/docs/setup/env-vars). <br/>
+    For the setup, ToolJet requires:
+    ```
+    TOOLJET_HOST=<Endpoint url>
+    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-_The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs._
+    PG_USER=<username>
+    PG_HOST=<postgresql-database-host>
+    PG_PASS=<password>
+    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+    ```
+    Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
-```
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
-```
+    #### SSL Configuration for AWS RDS PostgreSQL
 
-Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](/docs/setup/env-vars).
+    :::warning
+    **Important**: When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
+    :::
 
-:::info
-For the setup, ToolJet requires:
-<ul> 
-- **TOOLJET_DB** 
-- **TOOLJET_DB_HOST** 
-- **TOOLJET_DB_USER** 
-- **TOOLJET_DB_PASS** 
-- **PG_HOST** 
-- **PG_DB** 
-- **PG_USER** 
-- **PG_PASS** 
-- **SECRET_KEY_BASE** 
-- **LOCKBOX_KEY**
-</ul>
-<br/>
-Read **[environment variables reference](/docs/setup/env-vars)**
-:::
+    For AWS RDS PostgreSQL connections, create a ConfigMap with the certificate:
+    ```bash
+    # Download the AWS RDS global certificate bundle
+    curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
+    # Create a ConfigMap with the certificate
+    kubectl create configmap aws-rds-certs --from-file=global-bundle.pem
+    ```
+
+    Then update your deployment YAML to include:
+    ```yaml
+    # Add these environment variables
+    env:
+    - name: PGSSLMODE
+      value: "require"
+    - name: NODE_EXTRA_CA_CERTS
+      value: "/certs/global-bundle.pem"
+
+    # Add volume mount
+    volumeMounts:
+    - name: ssl-certs
+      mountPath: /certs
+      readOnly: true
+
+    # Add volume
+    volumes:
+    - name: ssl-certs
+      configMap:
+        name: aws-rds-certs
+    ```
 
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 
@@ -47,15 +81,60 @@ Read **[environment variables reference](/docs/setup/env-vars)**
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database).
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-1. Set up PostgREST server
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+
+#### Setting Up ToolJet Database
+
+To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+
+```env
+TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
-kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/postgrest.yaml
+
+:::note
+Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+:::
+
+Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+
+:::tip
+If you have openssl installed, you can run the
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified, PostgREST will refuse authentication requests.
+:::
+
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
 ```
 
-Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml) and apply the changes.
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet deployment.**
+
+## References
+
+- [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
+- [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
 
 ## Workflows
 

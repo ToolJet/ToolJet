@@ -55,6 +55,8 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
+
+- **[Aftership](/docs/marketplace/plugins/marketplace-plugin-aftership)**
 - **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
@@ -67,6 +69,7 @@ To remove a plugin, follow these steps:
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
+- **[Microsoft Graph](/docs/marketplace/plugins/marketplace-plugin-microsoft_graph)**
 - **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
@@ -78,6 +81,7 @@ To remove a plugin, follow these steps:
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[UPS](/docs/marketplace/plugins/marketplace-plugin-ups)**
 - **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
 
 :::info For Plugin Developers
