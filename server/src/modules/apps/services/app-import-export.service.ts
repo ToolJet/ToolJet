@@ -2587,14 +2587,15 @@ function migrateProperties(
         delete properties.steps;
       }
     }
+  }
 
-    // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
-    if (INPUT_WIDGET_TYPES.includes(componentType)) {
-      if (!styles.widthType) {
-        styles.widthType = 'ofField';
-      }
+  // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
+  if (INPUT_WIDGET_TYPES.includes(componentType)) {
+    if (!styles.widthType) {
+      styles.widthType = 'ofField';
     }
   }
+
   return { properties, styles, general, generalStyles, validation };
 }
 
