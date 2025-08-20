@@ -262,6 +262,7 @@ const OpenApi = ({
             isDisabled={isDisabled}
             isSaving={isSaving}
             optionsChanged={optionsChanged}
+            securities={securities}
           />
         </>
       )}

@@ -29,6 +29,7 @@ const OpenapiAuth = ({
   isDisabled,
   isSaving,
   optionsChanged,
+  securities,
 }) => {
   const apiKeyChanges = (key, value) => {
     const apiKeys = api_keys ?? [];
@@ -75,7 +76,7 @@ const OpenapiAuth = ({
 
   /* To populate the fields from the spec */
   useEffect(() => {
-    if (authObject && authObject?.flows['authorizationCode']) {
+    if (authObject && authObject.type === 'oauth2' && authObject?.flows?.authorizationCode) {
       const { flows, general_scopes } = authObject;
       const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
       optionchanged('access_token_url', tokenUrl);
@@ -97,7 +98,101 @@ const OpenapiAuth = ({
     return scopes_str;
   };
 
-  if (authObject && !authObject?.flows['authorizationCode']) return null;
+  if (
+    authObject &&
+    authObject.type === 'oauth2' &&
+    !authObject?.flows?.authorizationCode &&
+    !authObject?.flows?.clientCredentials
+  ) {
+    return null;
+  }
+
+  // Function to extract available auth types from the spec
+  const extractAuthTypesFromSpec = (securities) => {
+    const authTypes = new Set(['none']);
+
+    if (!securities || !Array.isArray(securities)) return Array.from(authTypes);
+
+    securities.forEach((security) => {
+      if (Array.isArray(security)) {
+        // Multiple auth schemes
+        security.forEach((scheme) => {
+          if (scheme.type === 'http') {
+            if (scheme.scheme === 'basic') authTypes.add('basic');
+            if (scheme.scheme === 'bearer') authTypes.add('bearer');
+          } else if (scheme.type === 'oauth2') {
+            authTypes.add('oauth2');
+          }
+        });
+      } else {
+        // Single auth scheme
+        if (security.type === 'http') {
+          if (security.scheme === 'basic') authTypes.add('basic');
+          if (security.scheme === 'bearer') authTypes.add('bearer');
+        } else if (security.type === 'oauth2') {
+          authTypes.add('oauth2');
+        }
+      }
+    });
+
+    return Array.from(authTypes);
+  };
+
+  // Function to extract available OAuth grant types from the spec
+  const extractGrantTypesFromSpec = (securities) => {
+    const grantTypes = new Set();
+
+    if (!securities || !Array.isArray(securities)) return Array.from(grantTypes);
+
+    securities.forEach((security) => {
+      const schemes = Array.isArray(security) ? security : [security];
+      schemes.forEach((scheme) => {
+        if (scheme.type === 'oauth2' && scheme.flows) {
+          Object.keys(scheme.flows).forEach((flowType) => {
+            if (flowType === 'authorizationCode') grantTypes.add('authorization_code');
+            if (flowType === 'clientCredentials') grantTypes.add('client_credentials');
+          });
+        }
+      });
+    });
+
+    return Array.from(grantTypes);
+  };
+
+  // Generate dynamic oauth_configs based on the spec
+  const generateOAuthConfigs = () => {
+    const allowedAuthTypes = extractAuthTypesFromSpec(securities);
+    const allowedGrantTypes = extractGrantTypesFromSpec(securities);
+
+    return {
+      allowed_scope_field: true,
+      allowed_auth_types: allowedAuthTypes,
+      allowed_grant_types: allowedGrantTypes,
+      allowed_field_groups: {
+        authorization_code: [
+          'client_id',
+          'client_secret',
+          'auth_url',
+          'access_token_url',
+          'client_auth',
+          'access_token_custom_headers',
+          'custom_query_params',
+          'custom_auth_params',
+          'add_token_to',
+          'header_prefix',
+        ],
+        client_credentials: [
+          'client_id',
+          'client_secret',
+          'access_token_url',
+          'access_token_custom_headers',
+          'audience',
+        ],
+        basic: ['username', 'password'],
+        bearer: ['bearer_token'],
+      },
+    };
+  };
 
   const renderApiKeyField = (auth, index) => {
     if (auth) {
@@ -133,6 +228,7 @@ const OpenapiAuth = ({
     case 'oauth2':
     case 'bearer':
     case 'basic': {
+      const dynamicOAuthConfigs = generateOAuthConfigs();
       return (
         <>
           <OAuthWrapper
@@ -162,34 +258,7 @@ const OpenapiAuth = ({
             multiple_auth_enabled={multiple_auth_enabled}
             scopes={scopes}
             currentAppEnvironmentId={currentAppEnvironmentId}
-            oauth_configs={{
-              allowed_scope_field: true,
-              allowed_auth_types: ['oauth2', 'basic', 'bearer'],
-              allowed_grant_types: ['authorization_code', 'client_credentials'],
-              allowed_field_groups: {
-                authorization_code: [
-                  'client_id',
-                  'client_secret',
-                  'auth_url',
-                  'access_token_url',
-                  'client_auth',
-                  'access_token_custom_headers',
-                  'custom_query_params',
-                  'custom_auth_params',
-                  'add_token_to',
-                  'header_prefix',
-                ],
-                client_credentials: [
-                  'client_id',
-                  'client_secret',
-                  'access_token_url',
-                  'access_token_custom_headers',
-                  'audience',
-                ],
-                basic: ['username', 'password'],
-                bearer: ['bearer_token'],
-              },
-            }}
+            oauth_configs={dynamicOAuthConfigs}
             optionsChanged={optionsChanged}
           />
         </>
