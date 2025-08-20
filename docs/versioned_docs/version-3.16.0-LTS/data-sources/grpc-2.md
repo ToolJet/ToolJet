@@ -3,8 +3,8 @@ id: grpcv2
 title: gRPC 2.0
 ---
 
-:::info New gRPC 2.0
-This documentation covers the new **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
+:::info gRPC 2.0
+This documentation covers the **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
 :::
 
 ## What's New in gRPC 2.0
