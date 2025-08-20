@@ -1,0 +1,62 @@
+{
+  "servers": {
+    "postgres-db": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${DATABASE_URL:-postgresql://postgres:postgres@localhost:5431}"
+      ]
+    },
+    "clickup": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@taazkareem/clickup-mcp-server@latest"
+      ],
+      "env": {
+        "CLICKUP_API_KEY": "${CLICKUP_API_KEY}",
+        "CLICKUP_TEAM_ID": "${CLICKUP_TEAM_ID}",
+        "DOCUMENT_SUPPORT": "true"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cloudmcp/mcp-server-fetch@latest"
+      ]
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "${CLAUDE_PROJECT_DIR}"
+      ]
+    },
+    "deepwiki": {
+      "command": "node",
+      "args": [
+        "${HOME}/.cache/claude/mcp-server-deepwiki/dist/index.js"
+      ],
+      "env": {
+        "MCP_SERVER_URL": "https://mcp.deepwiki.com/mcp"
+      }
+    }
+  }
+}

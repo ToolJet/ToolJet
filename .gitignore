@@ -37,3 +37,23 @@
 
 .idea/*
 ti-*
+
+# Claude Code configuration
+.claude/.env
+.claude/.mcp.json
+.claude/settings.local.json
+.claude/logs/*.log
+.claude/logs/plugin-issues.log
+.claude/logs/agent-activity.log
+.claude/logs/screenshots/
+*.local.md
+CLAUDE.local.md
+
+# Claude Code generated files
+.claude/work/
+.claude/temp/
+.claude/*.tmp
+.claude/**/*.bak
+
+# VS Code MCP configuration
+.vscode/mcp.json

@@ -1,0 +1,371 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v2-schema.json",
+  "title": "ToolJet DynamicForm v2 Schema (manifest.json)",
+  "description": "JSON Schema for ToolJet plugin manifest.json files used by DynamicFormV2 component",
+  "type": "object",
+  "required": ["tj:version", "tj:source", "properties"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "JSON Schema reference URL"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title for the plugin"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the plugin"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of the plugin (for backward compatibility)",
+      "enum": ["object"]
+    },
+    "tj:version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version (e.g., '1.0.0')"
+    },
+    "tj:source": {
+      "type": "object",
+      "description": "Source metadata for the plugin",
+      "required": ["name", "kind", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the plugin"
+        },
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Unique identifier for the plugin type"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["api", "database", "cloud-storage"],
+          "description": "Category of the plugin"
+        }
+      }
+    },
+    "tj:encrypted": {
+      "type": "array",
+      "description": "List of field names that should be encrypted",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "tj:ui:properties": {
+      "type": "object",
+      "description": "UI component definitions for form rendering",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/uiFieldDefinition"
+            },
+            {
+              "$ref": "#/$defs/uiGroupDefinition"
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/uiFieldDefinition"
+                  },
+                  {
+                    "$ref": "#/$defs/uiGroupDefinition"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "properties": {
+      "type": "object",
+      "description": "JSON Schema properties for validation",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "$ref": "#/$defs/jsonSchemaProperty"
+        }
+      }
+    },
+    "required": {
+      "type": "array",
+      "description": "List of required property names",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default values for properties",
+      "additionalProperties": true
+    },
+    "allOf": {
+      "type": "array",
+      "description": "Conditional validation rules",
+      "items": {
+        "$ref": "#/$defs/conditionalRule"
+      }
+    }
+  },
+  "$defs": {
+    "uiFieldDefinition": {
+      "type": "object",
+      "description": "UI field definition for form rendering",
+      "additionalProperties": true,
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "JSON Schema reference"
+        },
+        "widget": {
+          "type": "string",
+          "enum": [
+            "text",
+            "text-v3",
+            "password-v3",
+            "password-v3-textarea",
+            "textarea",
+            "dropdown",
+            "dropdown-component-flip",
+            "toggle",
+            "checkbox",
+            "checkbox-group",
+            "react-component-headers",
+            "react-component-oauth-authentication",
+            "react-component-google-sheets",
+            "tooljetdb-operations"
+          ],
+          "description": "Widget type for form rendering"
+        },
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for the field"
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label for the field"
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text for the field"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Placeholder text for input fields"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the field is required"
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Whether the field is disabled"
+        },
+        "encrypted": {
+          "type": "boolean",
+          "description": "Whether the field should be encrypted"
+        },
+        "width": {
+          "type": "string",
+          "description": "Width of the input field (e.g., '320px')"
+        },
+        "height": {
+          "type": "string",
+          "description": "Height of the input field (e.g., '150px')"
+        },
+        "tooltip": {
+          "type": "string",
+          "description": "Tooltip text for additional help"
+        },
+        "list": {
+          "type": "array",
+          "description": "Options for dropdown fields",
+          "items": {
+            "$ref": "#/$defs/dropdownOption"
+          }
+        },
+        "commonFields": {
+          "type": "object",
+          "description": "Common fields shown for all dropdown options",
+          "additionalProperties": {
+            "$ref": "#/$defs/uiFieldDefinition"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "widget": {
+                "enum": ["dropdown", "dropdown-component-flip"]
+              }
+            },
+            "required": ["widget"]
+          },
+          "then": {
+            "anyOf": [
+              { "required": ["list"] },
+              { "required": ["$ref"] }
+            ]
+          }
+        }
+      ]
+    },
+    "uiGroupDefinition": {
+      "type": "object",
+      "description": "UI group definition for conditional form sections",
+      "additionalProperties": {
+        "$ref": "#/$defs/uiFieldDefinition"
+      }
+    },
+    "jsonSchemaProperty": {
+      "type": "object",
+      "description": "JSON Schema property definition",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "integer", "boolean", "array", "object"],
+          "description": "Data type of the property"
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable title for the property"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the property"
+        },
+        "default": {
+          "description": "Default value for the property"
+        },
+        "enum": {
+          "type": "array",
+          "description": "Allowed values for the property",
+          "items": true
+        },
+        "const": {
+          "description": "Constant value for the property"
+        },
+        "minimum": {
+          "type": "number",
+          "description": "Minimum value for numeric properties"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "Maximum value for numeric properties"
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum length for string properties"
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum length for string properties"
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex",
+          "description": "Regular expression pattern for string properties"
+        },
+        "format": {
+          "type": "string",
+          "description": "Format hint for string properties"
+        }
+      }
+    },
+    "conditionalRule": {
+      "type": "object",
+      "description": "Conditional validation rule",
+      "required": ["if", "then"],
+      "additionalProperties": false,
+      "properties": {
+        "if": {
+          "type": "object",
+          "description": "Condition to check",
+          "required": ["properties"],
+          "additionalProperties": false,
+          "properties": {
+            "properties": {
+              "type": "object",
+              "description": "Properties to check in the condition",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-zA-Z][a-zA-Z0-9_]*$": {
+                  "type": "object",
+                  "required": ["const"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "const": {
+                      "description": "Value to match for the condition"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "then": {
+          "type": "object",
+          "description": "Action to take when condition is met",
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "type": "array",
+              "description": "Fields to make required",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "properties": {
+              "type": "object",
+              "description": "Additional property definitions",
+              "additionalProperties": true
+            },
+            "allOf": {
+              "type": "array",
+              "description": "Nested conditional rules",
+              "items": {
+                "$ref": "#/$defs/conditionalRule"
+              }
+            }
+          }
+        }
+      }
+    },
+    "dropdownOption": {
+      "type": "object",
+      "description": "Option for dropdown fields",
+      "required": ["value", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Internal value for the option"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name for the option"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v1-schema.json",
+  "title": "{{PLUGIN_NAME}} Operations",
+  "description": "Available operations for {{PLUGIN_DISPLAY_NAME}}",
+  "type": "api",
+  "defaults": {
+    "operation": "{{DEFAULT_OPERATION}}"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select operation",
+      "list": [
+        { "value": "create", "name": "Create Record" },
+        { "value": "read", "name": "Read Record" },
+        { "value": "update", "name": "Update Record" },
+        { "value": "delete", "name": "Delete Record" },
+        { "value": "list", "name": "List Records" }
+      ]
+    },
+    "create": {
+      "data": {
+        "label": "Record Data",
+        "key": "data",
+        "type": "codehinter",
+        "description": "Enter record data as JSON",
+        "placeholder": "{\n  \"name\": \"Example\",\n  \"value\": \"{{variables.example}}\"\n}",
+        "height": "150px",
+        "mandatory": true
+      }
+    },
+    "read": {
+      "id": {
+        "label": "Record ID",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter the record ID",
+        "placeholder": "{{variables.recordId}}",
+        "height": "36px",
+        "mandatory": true
+      }
+    },
+    "update": {
+      "id": {
+        "label": "Record ID",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter the record ID to update",
+        "placeholder": "{{variables.recordId}}",
+        "height": "36px",
+        "mandatory": true
+      },
+      "data": {
+        "label": "Update Data",
+        "key": "data",
+        "type": "codehinter",
+        "description": "Enter updated data as JSON",
+        "placeholder": "{\n  \"name\": \"Updated Name\"\n}",
+        "height": "150px",
+        "mandatory": true
+      }
+    },
+    "delete": {
+      "id": {
+        "label": "Record ID",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter the record ID to delete",
+        "placeholder": "{{variables.recordId}}",
+        "height": "36px",
+        "mandatory": true
+      }
+    },
+    "list": {
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Number of records to return",
+        "placeholder": "10",
+        "height": "36px",
+        "mandatory": false
+      },
+      "offset": {
+        "label": "Offset",
+        "key": "offset",
+        "type": "codehinter",
+        "description": "Number of records to skip",
+        "placeholder": "0",
+        "height": "36px",
+        "mandatory": false
+      }
+    }
+  }
+}

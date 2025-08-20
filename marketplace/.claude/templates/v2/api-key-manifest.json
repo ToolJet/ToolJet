@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v2-schema.json",
+  "title": "{{PLUGIN_NAME}} Plugin",
+  "description": "A schema defining {{PLUGIN_NAME}} datasource",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_DISPLAY_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "api"
+  },
+  "tj:encrypted": ["api_key"],
+  "tj:ui:properties": {
+    "api_key": {
+      "widget": "password-v3",
+      "key": "api_key",
+      "label": "API Key",
+      "description": "Enter your {{PLUGIN_DISPLAY_NAME}} API Key",
+      "encrypted": true,
+      "required": true,
+      "tooltip": "For generating API Key, visit: {{API_KEY_URL}}"
+    },
+    "base_url": {
+      "widget": "text-v3",
+      "key": "base_url",
+      "label": "Base URL",
+      "description": "Enter the base URL for the API",
+      "placeholder": "{{DEFAULT_BASE_URL}}"
+    }
+  },
+  "properties": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Your {{PLUGIN_DISPLAY_NAME}} API Key"
+    },
+    "base_url": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "Base URL for the API",
+      "default": "{{DEFAULT_BASE_URL}}"
+    }
+  },
+  "required": ["api_key"],
+  "defaults": {
+    "base_url": "{{DEFAULT_BASE_URL}}"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v2-schema.json",
+  "title": "{{PLUGIN_NAME}} Plugin",
+  "description": "A schema defining {{PLUGIN_NAME}} datasource with multiple authentication methods",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_DISPLAY_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "api"
+  },
+  "tj:encrypted": ["api_key", "password", "bearer_token"],
+  "tj:ui:properties": {
+    "auth_type": {
+      "widget": "dropdown-component-flip",
+      "key": "auth_type",
+      "label": "Authentication Type",
+      "description": "Select authentication method",
+      "required": true,
+      "list": [
+        { "value": "api_key", "name": "API Key" },
+        { "value": "basic", "name": "Basic Auth (Username/Password)" },
+        { "value": "bearer", "name": "Bearer Token" }
+      ]
+    },
+    "api_key": {
+      "api_key": {
+        "widget": "password-v3",
+        "key": "api_key",
+        "label": "API Key",
+        "description": "Enter your {{PLUGIN_DISPLAY_NAME}} API Key",
+        "encrypted": true,
+        "required": true,
+        "tooltip": "For generating API Key, visit: {{API_KEY_URL}}"
+      }
+    },
+    "basic": {
+      "username": {
+        "widget": "text-v3",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter your username",
+        "required": true
+      },
+      "password": {
+        "widget": "password-v3",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter your password",
+        "encrypted": true,
+        "required": true
+      }
+    },
+    "bearer": {
+      "bearer_token": {
+        "widget": "password-v3",
+        "key": "bearer_token",
+        "label": "Bearer Token",
+        "description": "Enter your Bearer token",
+        "encrypted": true,
+        "required": true
+      }
+    },
+    "base_url": {
+      "widget": "text-v3",
+      "key": "base_url",
+      "label": "Base URL",
+      "description": "Enter the base URL for the API",
+      "placeholder": "{{DEFAULT_BASE_URL}}",
+      "required": true
+    }
+  },
+  "properties": {
+    "auth_type": {
+      "type": "string",
+      "title": "Authentication Type",
+      "description": "Authentication method to use",
+      "enum": ["api_key", "basic", "bearer"],
+      "default": "api_key"
+    },
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "API Key for authentication"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Username for basic authentication"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Password for basic authentication"
+    },
+    "bearer_token": {
+      "type": "string",
+      "title": "Bearer Token",
+      "description": "Bearer token for authentication"
+    },
+    "base_url": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "Base URL for the API",
+      "default": "{{DEFAULT_BASE_URL}}"
+    }
+  },
+  "required": ["auth_type", "base_url"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "auth_type": { "const": "api_key" }
+        }
+      },
+      "then": {
+        "required": ["api_key"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auth_type": { "const": "basic" }
+        }
+      },
+      "then": {
+        "required": ["username", "password"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auth_type": { "const": "bearer" }
+        }
+      },
+      "then": {
+        "required": ["bearer_token"]
+      }
+    }
+  ],
+  "defaults": {
+    "auth_type": "api_key",
+    "base_url": "{{DEFAULT_BASE_URL}}"
+  }
+}
