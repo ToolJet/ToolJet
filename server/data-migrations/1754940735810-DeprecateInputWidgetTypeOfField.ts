@@ -2,13 +2,14 @@ import { Component } from 'src/entities/component.entity';
 import { processDataInBatches } from '@helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-const componentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DateRangePicker', 'Timepicker', 'DatetimePicker', 'DaterangePicker', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'FilePicker', 'RangeSliderV2'];
+const INPUT_WIDGET_TYPES = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DaterangePicker', 'TimePicker', 'DatetimePickerV2', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'RangeSliderV2'];
+
 const batchSize = 100;
 
 export class DeprecateInputWidgetTypeOfField1754940735810 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         const entityManager = queryRunner.manager;
-        for (const componentType of componentTypes) {
+        for (const componentType of INPUT_WIDGET_TYPES) {
             await processDataInBatches(
                 entityManager,
                 async (entityManager: EntityManager) => {
@@ -30,7 +31,7 @@ export class DeprecateInputWidgetTypeOfField1754940735810 implements MigrationIn
             const styles = component.styles;
 
             if (!styles.widthType) {
-                styles.widthType = 'ofField';
+                styles.widthType = { value: 'ofField' };
             }
 
             await entityManager.update(Component, component.id, {

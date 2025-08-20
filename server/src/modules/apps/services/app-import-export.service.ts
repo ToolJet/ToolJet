@@ -111,7 +111,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Steps',
 ];
 
-const INPUT_WIDGET_TYPES = ['CurrencyInput', 'PhoneInput', 'DatePickerV2', 'DateRangePicker', 'Timepicker', 'DatetimePicker', 'DaterangePicker', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'FilePicker', 'RangeSliderV2'];
+const INPUT_WIDGET_TYPES = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DaterangePicker', 'TimePicker', 'DatetimePickerV2', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'RangeSliderV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -2588,11 +2588,10 @@ function migrateProperties(
       }
     }
   }
-
   // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
-      styles.widthType = 'ofField';
+      styles.widthType = { value: 'ofField' };
     }
   }
 
