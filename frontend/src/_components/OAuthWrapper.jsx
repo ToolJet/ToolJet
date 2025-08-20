@@ -127,7 +127,7 @@ const OAuthWrapper = ({
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
-          helpText={`In ${dataSourceNameCapitalize}, use the URL above when prompted to enter an OAuth callback or redirect URL`}
+          helpText="Save this URL as callback or redirect URL in you OAuth app."
           type="copyToClipboard"
           disabled={true}
           className="form-control"
