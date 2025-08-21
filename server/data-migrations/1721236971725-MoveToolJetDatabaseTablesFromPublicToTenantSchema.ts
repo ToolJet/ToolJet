@@ -15,8 +15,9 @@ import {
   syncTenantSchemaWithPostgrest,
   revokeAccessToPublicSchema,
   grantTenantRoleToTjdbAdminRole,
+  generateTJDBPasswordForRole,
 } from '@helpers/tooljet_db.helper';
-import * as crypto from 'crypto';
+// import * as crypto from 'crypto';
 
 export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -101,7 +102,8 @@ export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 impl
     for (const workspaceDetail of workspaceDetailList) {
       const workspaceId = workspaceDetail.id;
       const dbUser = `user_${workspaceId}`;
-      const dbPassword = crypto.randomBytes(8).toString('hex');
+      // const dbPassword = crypto.randomBytes(8).toString('hex');
+      const dbPassword = generateTJDBPasswordForRole();
       const dbSchema = `workspace_${workspaceId}`;
       const dbName = envData.TOOLJET_DB;
       const tooljetDbAdminUser = envData.TOOLJET_DB_USER;
