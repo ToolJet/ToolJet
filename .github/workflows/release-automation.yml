@@ -91,7 +91,7 @@ jobs:
       - name: Configure Git
         run: |
           git config user.name "GitHub Actions Bot"
-          git config user.email "noreply@github.com"
+          git config user.email "adish.madhu@gmail.com"
 
       - name: Create Version Bump Branch
         id: create-branch
@@ -103,13 +103,22 @@ jobs:
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           git checkout -b "$BRANCH_NAME"
 
-      - name: Update Version File
+      - name: Update Version Files
         run: |
           TAG="${{ steps.extract-version.outputs.version }}"
-          # Remove 'v' prefix for .version file if present
+          # Remove 'v' prefix for .version files if present
           VERSION="${TAG#v}"
+          
+          # Update all three .version files
           echo "$VERSION" > .version
-          echo "Updated .version file to: $VERSION (from tag: $TAG)"
+          echo "$VERSION" > server/.version
+          echo "$VERSION" > frontend/.version
+          
+          echo "Updated all .version files to: $VERSION (from tag: $TAG)"
+          echo "Files updated:"
+          echo "  - ./.version"
+          echo "  - ./server/.version"
+          echo "  - ./frontend/.version"
 
 
       - name: Update Submodules to Latest
@@ -151,8 +160,8 @@ jobs:
           cd ../..
           
           # Check if there are any changes
-          if ! git diff --quiet .version frontend/ee server/ee; then
-            echo "Changes detected in version file and/or submodules"
+          if ! git diff --quiet .version server/.version frontend/.version frontend/ee server/ee; then
+            echo "Changes detected in version files and/or submodules"
           else
             echo "No changes detected"
           fi
@@ -163,18 +172,15 @@ jobs:
         run: |
           TAG="${{ steps.extract-version.outputs.version }}"
           VERSION="${TAG#v}"  # Remove 'v' prefix for display
-          git add .version frontend/ee server/ee
+          git add .version server/.version frontend/.version frontend/ee server/ee
           
           # Only commit if there are changes
           if ! git diff --cached --quiet; then
             git commit -m "Version bump to $TAG
           
-          - Update .version file to $VERSION
+          - Update .version files to $VERSION
           - Update submodules to latest commit SHA
-          
-          🤖 Generated with [Claude Code](https://claude.ai/code)
-          
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+
           else
             echo "No changes to commit"
           fi
@@ -189,16 +195,15 @@ jobs:
           body: |
             ## Version Bump to ${{ steps.extract-version.outputs.version }}
             
-            This PR updates the version file and submodules for the pre-release version ${{ steps.extract-version.outputs.version }}.
+            This PR updates the version files and submodules for the release version ${{ steps.extract-version.outputs.version }}.
             
             ### Changes:
-            - ✅ Updated `.version` file to `${{ steps.extract-version.outputs.version }}`
+            - ✅ Updated `.version` files (root, server, frontend) to `${{ steps.extract-version.outputs.version }}`
             - ✅ Updated submodules to latest commits
             
             ### Auto-generated
             This PR was automatically created by the release automation workflow.
             
-            🤖 Generated with [Claude Code](https://claude.ai/code)
           base: ${{ github.event.pull_request.base.ref }}
           # When lts-3.16 is enabled, this will use the correct base branch
 
@@ -230,8 +235,29 @@ jobs:
         id: create-tag
         run: |
           TAG="${{ steps.extract-version.outputs.version }}"
-          echo "Creating tag: $TAG"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           
+          # Determine correct branch for tag creation based on tag type
+          if [[ "$TAG" == *"lts"* ]]; then
+            TARGET_BRANCH="lts-3.16"
+            echo "LTS tag detected - creating tag from lts-3.16 branch"
+          elif [[ "$TAG" == *"beta"* ]]; then
+            TARGET_BRANCH="main"
+            echo "Beta tag detected - creating tag from main branch"
+          else
+            # Default to the base branch of the PR
+            TARGET_BRANCH="$BASE_BRANCH"
+            echo "Using PR base branch: $TARGET_BRANCH"
+          fi
+          
+          echo "Creating tag: $TAG from branch: $TARGET_BRANCH"
+          
+          # Ensure we're on the correct branch and it's up to date
+          git fetch origin "$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH"
+          
+          # Create and push the tag
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           
