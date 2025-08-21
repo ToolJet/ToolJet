@@ -33,7 +33,6 @@ export const Statistics = function Statistics({
     icon,
     iconDirection,
     secondaryValueAlignment,
-    disabledState,
   } = properties;
   const {
     primaryLabelSize,
@@ -77,7 +76,6 @@ export const Statistics = function Statistics({
       secondarySignDisplay,
       isLoading: loadingState,
       isVisible: visibility,
-      isDisabled: disabledState,
       setPrimaryValue: async function (newValue) {
         setExposedVariable('primaryValue', newValue);
         updateExposedVariablesState('primaryValue', newValue);
@@ -85,9 +83,6 @@ export const Statistics = function Statistics({
       setSecondaryValue: async function (newValue) {
         setExposedVariable('secondaryValue', newValue);
         updateExposedVariablesState('secondaryValue', newValue);
-      },
-      setDisable: async function (disable) {
-        setExposedVariable('isDisabled', !!disable);
       },
       setLoading: async function (loading) {
         setExposedVariable('isLoading', !!loading);
@@ -147,12 +142,6 @@ export const Statistics = function Statistics({
       sideEffect: () => {
         setExposedVariable('isVisible', visibility);
         updateExposedVariablesState('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        setExposedVariable('isDisabled', disabledState);
       },
     },
   ]);
