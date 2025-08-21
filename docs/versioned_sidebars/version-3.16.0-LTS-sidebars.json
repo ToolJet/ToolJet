@@ -446,6 +446,7 @@
             "data-sources/googlesheets",
             "data-sources/graphql",
             "data-sources/grpc",
+            "data-sources/grpcv2",
             "data-sources/influxdb",
             "data-sources/mailgun",
             "data-sources/mariadb",
