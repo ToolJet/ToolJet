@@ -4,8 +4,8 @@ export const statisticsConfig = {
   description: 'Show key metrics',
   component: 'Statistics',
   defaultSize: {
-    width: 9,
-    height: 160,
+    width: 10,
+    height: 152,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -145,12 +145,6 @@ export const statisticsConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
-    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -284,7 +278,6 @@ export const statisticsConfig = {
     primaryValue: '682.3',
     secondaryValue: '2.85',
     secondarySignDisplay: 'positive',
-    isDisabled: false,
     isLoading: false,
     isVisible: true,
   },
@@ -298,11 +291,6 @@ export const statisticsConfig = {
       handle: 'setSecondaryValue',
       displayName: 'Set secondary value',
       params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
-    },
-    {
-      handle: 'setDisable',
-      displayName: 'Set disable',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
@@ -331,12 +319,11 @@ export const statisticsConfig = {
       secondarySuffixText: { value: '' },
       secondarySignDisplay: { value: 'positive' },
       dataAlignment: { value: 'left' },
-      secondaryValueAlignment: { value: 'vertical' },
+      secondaryValueAlignment: { value: 'horizontal' },
       icon: { value: 'IconDatabaseDollar' },
-      iconDirection: { value: 'left' },
+      iconDirection: { value: 'right' },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
-      disabledState: { value: `{{false}}` },
       tooltip: { value: '' },
     },
     events: [],
