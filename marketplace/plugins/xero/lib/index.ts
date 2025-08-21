@@ -136,11 +136,11 @@ export default class Xero implements QueryService {
     try {
       const response = await got('https://identity.xero.com/connect/token', {
         method: 'post',
-        body: data.toString(),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        form: data,
+        responseType: 'json'
       });
 
-      const result = JSON.parse(response.body);
+      const result = response.body as { access_token?: string; refresh_token?: string };
 
       if (result.access_token) {
         return {
@@ -209,16 +209,15 @@ export default class Xero implements QueryService {
     try {
       const response = await got('https://identity.xero.com/connect/token', {
         method: 'post',
-        body: data.toString(),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        form: data,
+        responseType: 'json'
       });
 
-      const tokenResponse = JSON.parse(response.body);
-
-      return [
-        ['access_token', tokenResponse.access_token],
-        ['refresh_token', tokenResponse.refresh_token],
-      ];
+       const tokenResponse = response.body as { access_token: string; refresh_token: string };
+       return [
+         ['access_token', tokenResponse.access_token],
+         ['refresh_token', tokenResponse.refresh_token],
+       ];
     } catch (error: any) {
       let parsed;
       try {
@@ -226,12 +225,11 @@ export default class Xero implements QueryService {
       } catch {
         parsed = error?.response?.body || error;
       }
-      const errorMessage = parsed?.error_description || parsed?.error || error?.message || 'Failed to exchange token with Xero';
+      const errorMessage = parsed?.error || error?.message || 'Failed to exchange token with Xero';
       const errorDetails = {
         message: errorMessage,
         name: 'XeroTokenExchangeError',
         code: parsed?.code || 'XERO_TOKEN_EXCHANGE_FAILED',
-        received: parsed,
       };
       throw new QueryError('Failed to retrieve access tokens', errorMessage, errorDetails);
     }
@@ -259,7 +257,7 @@ export default class Xero implements QueryService {
     }
 
     for (const param in pathParams) {
-      url = url.replace(`{${param}}`, pathParams[param]);
+      url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
     }
 
     let requestOptions;
@@ -301,23 +299,6 @@ export default class Xero implements QueryService {
     }
     try {
       const response = await got(url, requestOptions);
-      if (response.statusCode !== 200) {
-        const errorMessage = `Xero request failed with status ${response.statusCode}`;
-
-        let xeroError = null;
-        try {
-          xeroError = JSON.parse(response.body);
-        } catch {
-          xeroError = null;
-        }
-        const errorDetails: any = {
-          statusCode: response.statusCode,
-          responseBody: response.body,
-          xeroError,
-        };
-        throw new QueryError('Xero API Error', errorMessage, errorDetails);
-      }
-
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
       return {
         status: 'ok',
@@ -330,15 +311,15 @@ export default class Xero implements QueryService {
       } catch {
         parsed = error?.response?.body || error;
       }
-      const errorMessage =
-        parsed?.Title ||
-        parsed?.error_description ||
-        parsed?.error ||
-        'Xero API request failed';
-
+      const errorMessage = parsed?.Message || parsed?.Title || 'Xero API request failed';
       const errorDetails = {
         statusCode: error?.response?.statusCode,
-        response: parsed,
+        ErrorNumber: parsed?.ErrorNumber || 'Unknown',
+        Type: parsed?.Type || 'Unknown',
+        Message: parsed?.Message || 'Unknown error',
+        Detail: parsed?.Detail,
+        code: error?.code,
+        Instance : parsed?.Instance
       };
       throw new QueryError('Query execution failed', errorMessage, errorDetails);
     }

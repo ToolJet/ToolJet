@@ -45,17 +45,11 @@
     "oauth_type": {
       "value": "custom_app"
     },
+    "client_secret": {
+      "encrypted": true
+    },
     "access_token_url": {
       "value": "https://identity.xero.com/connect/token"
-    },
-    "database": {
-      "value": ""
-    },
-    "schema": {
-      "value": ""
-    },
-    "warehouse": {
-      "value": ""
     },
     "tenant_id": {
       "value": ""
@@ -77,10 +71,6 @@
           "authorization_code": [
             "client_id",
             "client_secret"
-          ],
-          "basic": [
-            "password",
-            "username"
           ]
         },
         "allowed_auth_types": [
