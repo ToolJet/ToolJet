@@ -234,7 +234,8 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
 
       if (result.status === 'failed') {
-        throw new Error(result.errorMessage || 'Failed to discover services');
+        console.error('Failed to discover services:', result.errorMessage);
+        throw new Error('Failed to discover services');
       }
 
       const servicesArray = Array.isArray(result.data) ? result.data : (result.data || []);
@@ -405,7 +406,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
               'grpcv2-server-url--dark': darkMode
             })}>
               <span className="grpcv2-server-url__text">
-                {serverUrl || 'localhost:50051'}
+                {serverUrl}
               </span>
             </div>
 
