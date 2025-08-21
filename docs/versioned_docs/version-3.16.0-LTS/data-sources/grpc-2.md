@@ -166,7 +166,6 @@ Once configured, the gRPC 2.0 data source will be available in your application'
 ### Request Configuration
 
 - **Method Parameters:**
-    - Auto-generated forms based on proto message types
     - Support for nested objects and repeated fields
     - JSON or form-based input modes
 - **Request Metadata:**
