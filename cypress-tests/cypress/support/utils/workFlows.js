@@ -145,3 +145,13 @@ Cypress.Commands.add("backToWorkFlows", () => {
   cy.get(commonSelectors.pageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
 });
+
+Cypress.Commands.add("revealWorkflowToken", (selectors) => {
+  cy.get(selectors.workflowTokenField).invoke("text").then((tokenText) => {
+    if (tokenText.includes("*")) {
+      cy.get(selectors.workflowTokenEyeIcon).click({ force: true });
+      cy.wait(300);
+      cy.revealWorkflowToken(selectors); 
+    }
+  });
+})

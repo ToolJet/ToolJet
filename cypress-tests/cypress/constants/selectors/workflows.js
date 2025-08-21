@@ -19,6 +19,12 @@ export const workflowSelector = {
   restapiUrlInputField: '[data-cy="url-input-field"]',
   workFlowNameInputField: '[data-cy="workflow-name-input"]',
   responseNodeOutput: '[data-cy="response1-node-name"]',
+  workflowTriggerIcon: '[data-cy="icon-trigger"]',
+  workflowWebhookListRow: '[data-cy="webhook-list-row"]',
+  workflowWebhookToggle: '[data-cy="webhook-toggle"]',
+  workflowTokenEyeIcon: '[data-cy="workflow-token-eye-icon"]',
+  workflowEndpointUrl: '[data-cy="endpoint-url-field"]',
+  workflowTokenField: '[data-cy="workflow-token-field"]',
 
   nodeName: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node"]`,
 
