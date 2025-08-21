@@ -50,7 +50,8 @@ export default class Hubspot implements QueryService {
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
         newSourcOptions,
         context,
-        authValidatedRequestOptions as any
+        authValidatedRequestOptions as any,
+        { kind: 'hubspot' }
       );
       if (_requestOptions.status === 'needs_oauth') return _requestOptions;
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
