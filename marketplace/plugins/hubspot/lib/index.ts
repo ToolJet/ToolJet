@@ -284,9 +284,13 @@ export default class Hubspot implements QueryService {
 
       Object.entries(params.query).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            value.forEach((v) => urlParams.append(key, String(v)));
+          // Check if value is an array or object (matching Function 1's approach)
+          if (Array.isArray(value) || Object.prototype.toString.call(value) === '[object Object]') {
+            // Stringify arrays and objects
+            const stringifiedValue = JSON.stringify(value);
+            urlParams.append(key, stringifiedValue);
           } else {
+            // For primitive values, just convert to string
             urlParams.append(key, String(value));
           }
         }
