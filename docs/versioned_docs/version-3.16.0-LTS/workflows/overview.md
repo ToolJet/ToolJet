@@ -13,11 +13,21 @@ title: Overview
 
 ToolJet Workflows enable users to create complex, data-centric automations using a visual, node-based interface. It extends ToolJet's capabilities beyond building user interfaces, allowing developers and business users to automate processes, integrate data from various sources, and execute custom logic without writing extensive code.
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/workflows-preview.png" alt="Workflows Preview" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/workflows-preview.png" alt="Workflows Preview" />
 
 Workflows complements the app-building features by providing a way to handle backend processes, data transformations, and integrations. This makes ToolJet a more comprehensive solution for creating internal tools and automations.
+
+## Customizing Workflow Configuration
+
+You can control workflow execution behavior using the following environment variables:
+
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
+| `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
+| `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+
+These variables can be configured in your `.env` file to suit your performance and resource needs.
 
 ## Create Your First Workflow
 
@@ -37,9 +47,7 @@ You'll start by fetching employee data from a ToolJetDB table named *employees*.
 - Create an outgoing node from the **Start** node, and select the **ToolJetDB** node. Rename the node to *getEmployees*.
 - Select Table name as *employees* and Operation as List view.
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-step-1.png" alt="Add a DB Query Node" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-step-1.png" alt="Add a DB Query Node" />
 
 ### Step 2: Transform Data Using RunJS Node
 
@@ -53,11 +61,9 @@ return getEmployees.data.filter(employee =>
   employee.location === "California")
  ```
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-step-2.png" alt="Transform Data Using RunJS" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-step-2.png" alt="Transform Data Using RunJS" />
 
- ### Step 3: Send Notifications
+### Step 3: Send Notifications
 
 Next, you'll implement a loop to send SMS notifications to the filtered employees. The Loop node allows you to iterate through an array and perform an operation on each element.
 
@@ -72,9 +78,7 @@ conference in California.
 https://tooljet.com/events/{{value.location}}
 ```
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-step-3.png" alt="Send Notifications Through Twilio" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-step-3.png" alt="Send Notifications Through Twilio" />
 
 ### Step 4: Configure the Response Node
 
@@ -89,29 +93,19 @@ Finally, you'll set up conditions to handle the success or failure of the SMS se
 - Similarly, create an outgoing **Response** node from the red arrow to configure the response when the **If condition** node returns false. Enter the following code:
 `return ({output: "failure"})`
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-step-4.png" alt="Configure The Response Node" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-step-4.png" alt="Configure The Response Node" />
 
 ### Step 5: Executing the Workflow
 
 Click on the **Run** button on the top-right to execute the workflow. The logs panel will expand and provide an overview of all the nodes executed in this workflow.
 
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-execution.png" alt="Executing The Workflow" />
-</div>
+<img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-execution.png" alt="Executing The Workflow" />
 
 - The **Input** section of the log will display all the incoming data to a node. 
-
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-logs-input.png" alt="Input Logs" />
-</div>
+    <img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-logs-input.png" alt="Input Logs" />
 
 - The **Output** section will display the data that is transferred to the next node while Logs will display the sequence of execution, and success and error messages. 
-
-<div style={{textAlign: 'center', paddingBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-logs-output.png" alt="Output Logs" />
-</div>
+    <img className="screenshot-full img-full" src="/img/workflows/overview/v2/event-notification-logs-output.png" alt="Output Logs" />
 
 Congratulations on creating your first workflow! This workflow fetches data, transforms the data, sends SMS notifications, and handles success or failure responses.
 
