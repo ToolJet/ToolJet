@@ -75,7 +75,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress.Dockerfile
+          file: cypress-tests/cypress-lts.Dockerfile
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
@@ -242,7 +242,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress.Dockerfile
+          file: cypress-tests/cypress-lts.Dockerfile
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
@@ -405,7 +405,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress.Dockerfile
+          file: cypress-tests/cypress-lts.Dockerfile
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
@@ -579,7 +579,7 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress.Dockerfile
+          file: cypress-tests/cypress-lts.Dockerfile
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
