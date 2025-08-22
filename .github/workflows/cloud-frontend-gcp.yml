@@ -70,7 +70,11 @@ jobs:
             else
               echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
               PREV=$(git rev-parse --short HEAD || echo "unknown")
-              git checkout lts-3.16 && git pull origin lts-3.16 || {
+              git fetch origin lts-3.16:lts-3.16 || {
+                echo "❌ $name: fetch failed for lts-3.16"
+                exit 1
+              }
+              git checkout lts-3.16 || {
                 echo "❌ $name: fallback to lts-3.16 failed"
                 exit 1
               }
