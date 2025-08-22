@@ -501,12 +501,6 @@ export const createAnAppWithSlug = (appName, slug) => {
     cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-export const updateLicense = (key) => {
-    cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `update instance_settings set value='${key}', updated_at= NOW() where key='LICENSE_KEY';`,
-    });
-};
 
 export const openInstanceSettings = () => {
     cy.get(commonSelectors.settingsIcon).click();
@@ -587,5 +581,18 @@ export const updateInstanceSettings = (key, value) => {
     cy.task("updateSetting", {
         dbconfig: Cypress.env("app_db"),
         sql: `UPDATE instance_settings SET value = ${value} WHERE key = ${key};`,
+    });
+};
+
+
+export const updateLicense = (keyType = 'valid') => {
+    const query = Cypress.env('queries').updateLicense.replace(
+        '%KEY%',
+        Cypress.env('license_keys')[keyType]
+    );
+
+    cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: query
     });
 };
