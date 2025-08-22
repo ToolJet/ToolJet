@@ -80,7 +80,8 @@ type NewRevampedComponent =
   | 'Image'
   | 'FilePicker'
   | 'Icon'
-  | 'Steps';
+  | 'Steps'
+  | 'Statistics';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -109,6 +110,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'FilePicker',
   'Icon',
   'Steps',
+  'Statistics',
 ];
 
 @Injectable()
@@ -2583,6 +2585,20 @@ function migrateProperties(
       if (properties.steps && !properties.schema) {
         properties.schema = properties.steps;
         delete properties.steps;
+      }
+    }
+
+    // Statistics
+    if (componentType === 'Statistics') {
+      properties.dataAlignment ??= { value: 'center' };
+      properties.secondaryValueAlignment ??= { value: 'vertical' };
+
+      styles.iconVisibility ??= { value: false };
+
+      if (styles.secondaryTextColour) {
+        styles.positiveSecondaryValueColor = styles.secondaryTextColour;
+        styles.negativeSecondaryValueColor = styles.secondaryTextColour;
+        delete styles.secondaryTextColour;
       }
     }
   }
