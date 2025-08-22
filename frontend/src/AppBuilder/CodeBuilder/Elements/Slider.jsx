@@ -31,11 +31,11 @@ function Slider1({ value, onChange, component, styleDefinition }) {
   };
 
   return (
-    <div className="d-flex flex-column " style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
+    <div className="d-flex flex-column" style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
       <CustomInput
         disabled={isDisabled}
         value={sliderValue}
-        staticText="% of the field"
+        staticText="%"
         onInputChange={onInputChange}
         dataCy="width"
       />
