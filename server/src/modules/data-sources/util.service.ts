@@ -645,6 +645,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       googlecalendar: 'GOOGLE',
       snowflake: 'SNOWFLAKE',
       microsoft_graph: 'MICROSFT',
+      hubspot: 'HUBSPOT',
     };
     const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
     return key;
