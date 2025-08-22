@@ -17,7 +17,7 @@ By embedding applications, you reduce context switching, accelerate user adoptio
 When embedding applications, ToolJet ensures that only the right users can access your app and its data. You can choose from two security modes based on your use case.
 
 | **Feature** | **Public Applications** | **Private & Data-Sensitive Applications** |
-| ------------| ----------------------- | ------------------------------------------|
+|:------------|:----------------------- |:------------------------------------------|
 | **Access Control** | None – anyone with the embed link or iframe can view | Requires a valid Personal Access Token (PAT) to load the app. |
 | **Granularity** | Not applicable | Tokens can be scoped to individual user and application |
 | **Best For** | Public dashboards, demos, or open-data applications | Authenticated portals, customer-specific views, internal tools |
