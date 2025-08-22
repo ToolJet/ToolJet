@@ -13,29 +13,24 @@ title: Permissions
 
 Permissions in **ToolJet Workflows** provide a structured approach to access control, ensuring precise management of who can view, edit, or execute workflows. The below table gives a detailed summary of permissions in context of ToolJet Workflows. 
 
-| Permission                                      | Admins | Builders | End Users | Custom Groups |
-|:------------------------------------------------|:------:|:----------------------------------:|:---------:|:-------------------------------------------:|
-| Workflows Dashboard Access                      | ✅     | ❌                                      | ❌        | Configurable                         |
-| Create/Edit Workflows                           | ✅     | ✅                                      | ❌        | Configurable                          |
-| Execute Workflows                               | ✅     | ✅                                      | ✅        | Configurable                          |
-| Using Workflows in ToolJet App Builder          | ✅     | ✅                                      | ❌        | Configurable                          |
-| Enable/Disable Workflows                        | ✅     | ❌                                      | ❌        | Configurable                         |
-
+| Permission | Admins | Builders | End Users | Custom Groups |
+|:-----------|:------:|:--------:|:---------:|:-------------:|
+| Workflows Dashboard Access | ✅ | ❌ | ❌ | Configurable |
+| Create/Edit Workflows | ✅ | ✅ | ❌ | Configurable |
+| Execute Workflows | ✅ | ✅ | ✅ | Configurable |
+| Using Workflows in ToolJet App Builder | ✅ | ✅ | ❌ | Configurable |
+| Enable/Disable Workflows | ✅ | ❌ | ❌ | Configurable |
 
 :::note
 To trigger workflows from the App Builder, users need both Workflow permissions (to create and edit workflows) and Data Source: Create/Delete permissions (to execute them within apps), ensuring secure end-to-end workflow functionality.
 :::
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Admins
+
 **Admins** can create, edit, and manage workflows, access the workflow dashboard and flow builder, and use them in ToolJet's **App Builder**. They also have the option to use the **Enable** toggle on the top-right to enable or disable the execution of workflows in ToolJet applications.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Builders
+
 **Builders** can create the existing workflows in ToolJet's **App Builder**. 
 
 Example:
@@ -47,10 +42,6 @@ Imagine a company using ToolJet to build internal applications. The HR departmen
 
 While they can harness existing workflows and integrate them into app functionalities, Groups with App Editing Permissions can't create or modify the workflows themselves like **Admins**.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## End Users
 
 **End Users** can only execute workflows in the application. 
@@ -61,5 +52,3 @@ Taking the same company scenario, an employee(end user) from the Sales departmen
 - The employee fills in a *Leave Request* form.
 - Upon submission, they click the *Request Leave* button (which is linked to a workflow that sends this request to the HR department).
 - Once HR approves the leave using the *Approve Leave* button (created by the "Groups with App Editing Permissions"), the employee receives an automated email notification, which is triggered by another workflow.
-
-</div>
