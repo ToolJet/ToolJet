@@ -82,7 +82,7 @@ function BaseSettingsMenu({
     const currentVersion = localStorage.getItem('currentVersion');
     return (
       <div className={`settings-card tj-text card ${darkMode ? 'dark-theme' : ''}`}>
-        <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-disabled">
+        <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-placeholder">
           <span>Version {currentVersion}</span>
         </div>
         <div className="divider" />
