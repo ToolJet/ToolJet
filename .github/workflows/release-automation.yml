@@ -250,17 +250,46 @@ jobs:
             echo "Using PR base branch: $TARGET_BRANCH"
           fi
           
-          echo "Creating tag: $TAG from branch: $TARGET_BRANCH"
+          echo "Creating tag: $TAG from branch: $TARGET_BRANCH in base repo and submodules"
           
           # Ensure we're on the correct branch and it's up to date
           git fetch origin "$TARGET_BRANCH"
           git checkout "$TARGET_BRANCH"
           git pull origin "$TARGET_BRANCH"
           
-          # Create and push the tag
+          # Create and push the tag in the base repository
+          echo "Creating tag in base repository..."
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           
+          # Create tags in submodules
+          echo "Creating tag in ee-frontend submodule..."
+          cd frontend/ee
+          git fetch origin
+          if [[ "$TAG" == *"lts"* ]]; then
+            git checkout lts-3.16 2>/dev/null || git checkout main
+          else
+            git checkout main
+          fi
+          git pull origin HEAD
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          cd ../..
+          
+          echo "Creating tag in ee-server submodule..."
+          cd server/ee
+          git fetch origin
+          if [[ "$TAG" == *"lts"* ]]; then
+            git checkout lts-3.16 2>/dev/null || git checkout main
+          else
+            git checkout main
+          fi
+          git pull origin HEAD
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          cd ../..
+          
+          echo "Tags created successfully in all repositories"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Generate Release Notes
