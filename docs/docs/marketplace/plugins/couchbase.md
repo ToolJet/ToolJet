@@ -130,11 +130,12 @@ This operation executes SQL++ queries against your Couchbase database.
 
 #### Required Parameters
 
-- **SQL++ Query**: The SQL++ statement to execute (use `?` placeholders for parameters)
+- **SQL++ Query**: The SQL++ statement to execute (use `$parameter` placeholders for named parameters)
 
 #### Optional Parameters
 
-- **Arguments**: Array of arguments to replace `?` placeholders in the query
+- **Arguments (Key-Value)**: Key-value object for named parameters that replace `$parameter` placeholders in the query
+- **Query Options**: JSON object containing additional query options like `readonly`, `timeout`, etc.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/couchbase/query.png" alt="Query Operation" />
 
@@ -142,10 +143,14 @@ This operation executes SQL++ queries against your Couchbase database.
 <summary>**Example Query**</summary>
 
 ```sql
-SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = ? LIMIT 10
+SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = $country LIMIT 10
 ```
 
-**Arguments**: `["France"]`
+**Arguments (Key-Value)**: `{ "$country": "France" }`
+
+**Query Options**: `{ "readonly": true, "query_context": "travel-sample.inventory" }`
+
+Refer to the [request paramters](https://docs.couchbase.com/server/current/n1ql-rest-query/index.html#Request) for supported query options.
 
 </details>
 

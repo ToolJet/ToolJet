@@ -108,7 +108,7 @@ export async function deleteDocument(options: QueryOptions, sourceOptions: Sourc
 
 // Query with SQL++ query and parameters
 export async function queryDocument(options: QueryOptions, sourceOptions: SourceOptions) {
-  const { query, args } = options;
+  const { query, args, query_options } = options;
   const { username, password, data_api_url } = sourceOptions;
   if (!query) {
     throw new Error('Missing required query parameter');
@@ -119,9 +119,16 @@ export async function queryDocument(options: QueryOptions, sourceOptions: Source
     parsedArgs = typeof args === 'string' ? JSON.parse(args) : args;
   }
 
+  let parsedQueryOptions;
+  if (query_options) {
+    parsedQueryOptions = typeof query_options === 'string' ? JSON.parse(query_options) : query_options;
+  }
+
+  // Build the query body with statement and all parameters
   const queryBody = {
     statement: query,
-    args: parsedArgs,
+    ...(parsedArgs ? parsedArgs : {}),
+    ...(parsedQueryOptions ? parsedQueryOptions : {}),
   };
 
   const dapi_url = `${data_api_url}/_p/query/query/service`;

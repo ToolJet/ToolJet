@@ -233,18 +233,28 @@
         "key": "query",
         "type": "codehinter",
         "mode": "sql",
-        "placeholder": "SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = ? LIMIT 10",
-        "description": "Enter SQL++ statement with ? placeholders for parameters",
+        "placeholder": "SELECT * FROM `travel-sample`.`inventory`.`airline` WHERE country = $country LIMIT 10",
+        "description": "Enter SQL++ statement with $parameter placeholders",
         "height": "150px",
         "editorType": "extendedSingleLine"
       },
       "args": {
-        "label": "Arguments",
+        "label": "Arguments (Key-Value)",
         "key": "args",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "[\"France\"]",
-        "description": "Enter array of arguments to replace ? placeholders in statement (optional)",
+        "placeholder": "{ \"$country\": \"France\" }",
+        "description": "Enter key-value object for named parameters (optional)",
+        "height": "100px",
+        "editorType": "extendedSingleLine"
+      },
+      "query_options": {
+        "label": "Query Options",
+        "key": "query_options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"readonly\": true, \"timeout\": \"30s\" }",
+        "description": "Enter query options as JSON (optional)",
         "height": "100px",
         "editorType": "extendedSingleLine"
       }

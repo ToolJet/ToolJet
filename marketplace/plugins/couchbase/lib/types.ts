@@ -21,6 +21,7 @@ export type QueryOptions = {
   document?: any;
   query?: any;
   args?: any;
+  query_options?: any;
   index_name?: string;
   search_query?: any;
   options?: any;
