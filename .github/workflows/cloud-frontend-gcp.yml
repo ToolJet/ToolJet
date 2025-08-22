@@ -42,6 +42,11 @@ jobs:
           git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
           cd repo
 
+          echo "🔎 Main repo: verifying checkout"
+          MAIN_CURRENT=$(git rev-parse --abbrev-ref HEAD)
+          echo "✅ Main repo: successfully checked out branch $MAIN_CURRENT"
+          echo "📍 Main repo: current commit $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
+
           echo "🔁 Updating submodules"
           git submodule update --init --recursive
 
