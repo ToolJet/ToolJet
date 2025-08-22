@@ -3,7 +3,7 @@ id: marketplace-plugin-hubspot
 title: HubSpot
 ---
 
-Integrating HubSpot with ToolJet enables you to seamlessly connect your HubSpot account with your ToolJet applications, allowing you to access, manage, and automate your CRM data without leaving the application.
+Integrating HubSpot with ToolJet allows you to access, manage, and automate your HubSpot CRM data within the ToolJet application.
 
 ## Connection
 
