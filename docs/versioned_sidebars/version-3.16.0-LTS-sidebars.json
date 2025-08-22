@@ -268,7 +268,8 @@
           "type": "category",
           "label": "Share Application",
           "items": [
-            "app-builder/importing-exporting-applications"
+            "app-builder/importing-exporting-applications",
+            "app-builder/embed-application"
           ]
         },
         {
