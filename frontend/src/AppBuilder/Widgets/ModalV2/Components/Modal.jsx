@@ -118,6 +118,8 @@ export const ModalWidget = ({ ...restProps }) => {
           setSelectedComponentAsModal={onSelectModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {showHeader && (
@@ -153,7 +155,10 @@ export const ModalWidget = ({ ...restProps }) => {
             <SubContainer
               id={`${id}`}
               canvasHeight={modalBodyHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{
+                backgroundColor: customStyles.modalBody.backgroundColor,
+                overflowY: isDisabled ? 'hidden' : 'auto',
+              }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
               componentType="ModalV2"

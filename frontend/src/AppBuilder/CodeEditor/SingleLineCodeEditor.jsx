@@ -21,7 +21,7 @@ import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { getAutocompletion } from './autocompleteExtensionConfig';
+import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 // import { EditorContext } from '../Context/EditorContextWrapper';
@@ -34,6 +34,7 @@ import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
+import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
@@ -238,57 +239,61 @@ const EditorInput = ({
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
+  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
+
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
   );
   function autoCompleteExtensionConfig(context) {
-    const hintsWithoutParamHints = getSuggestions();
+    const hintsWithoutParamHints = getWorkflowSuggestions ?? getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
-
-    let word = context.matchBefore(/\w*/);
 
     const hints = {
       ...hintsWithoutParamHints,
       appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
-    const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
+    if (!getWorkflowSuggestions) {
+      let word = context.matchBefore(/\w*/);
 
-    let queryInput = context.state.doc.toString();
-    const originalQueryInput = queryInput;
+      const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
-    if (totalReferences > 0) {
-      const currentCursor = context.state.selection.main.head;
-      const currentCursorPos = context.pos;
+      let queryInput = context.state.doc.toString();
+      const originalQueryInput = queryInput;
 
-      let currentWord = queryInput.substring(currentCursor, currentCursorPos);
+      if (totalReferences > 0) {
+        const currentCursor = context.state.selection.main.head;
+        const currentCursorPos = context.pos;
 
-      if (currentWord?.length === 0) {
-        const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
-        currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
-        //remove curly braces from the current word as will append it later
-        currentWord = removeNestedDoubleCurlyBraces(currentWord);
+        let currentWord = queryInput.substring(currentCursor, currentCursorPos);
+
+        if (currentWord?.length === 0) {
+          const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
+          currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
+          //remove curly braces from the current word as will append it later
+          currentWord = removeNestedDoubleCurlyBraces(currentWord);
+        }
+
+        if (currentWord.includes(' ')) {
+          currentWord = currentWord.split(' ').pop();
+        }
+
+        // remove \n from the current word if it is present
+        currentWord = currentWord.replace(/\n/g, '');
+
+        queryInput = '{{' + currentWord + '}}';
       }
 
-      if (currentWord.includes(' ')) {
-        currentWord = currentWord.split(' ').pop();
-      }
+      let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
 
-      // remove \n from the current word if it is present
-      currentWord = currentWord.replace(/\n/g, '');
-
-      queryInput = '{{' + currentWord + '}}';
-    }
-
-    let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
-
-    return {
-      from: word.from,
-      options: completions,
-      validFor: /^\{\{.*\}\}$/,
-      filter: false,
-    };
+      return {
+        from: word.from,
+        options: completions,
+        validFor: /^\{\{.*\}\}$/,
+        filter: false,
+      };
+    } else return getSuggestionsForMultiLine(context, hints, hintsWithoutParamHints, lang, paramHints); //Need multiline behaviour inside workflows editor, where suggestions are shown on each keystroke
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -361,7 +366,6 @@ const EditorInput = ({
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
-
 
   // when full screen editor is closed, show the preview box
   useEffect(() => {
@@ -477,11 +481,11 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
                   : [javascript({ jsx: lang === 'jsx' })]
               }
               onChange={(val) => {
@@ -536,6 +540,7 @@ const DynamicEditorBridge = (props) => {
     component,
     onVisibilityChange,
     isEventManagerParam = false,
+    iconVisibility,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -547,7 +552,6 @@ const DynamicEditorBridge = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue,
     shouldResolve = true;
-
   // This is to handle the case when the initial value is a string and contains components or queries
   // and we need to replace the ids with names
   // but we don't want to resolve the references as it needs to be displayed as it is
@@ -580,8 +584,9 @@ const DynamicEditorBridge = (props) => {
 
     return (
       <div
-        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-          }`}
+        className={`col-auto pt-0 fx-common fx-button-container ${
+          (isEventManagerParam || codeShow) && 'show-fx-button-container'
+        }`}
       >
         <FxButton
           active={codeShow}
@@ -613,8 +618,9 @@ const DynamicEditorBridge = (props) => {
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
             {isDeprecated && (
               <span className={'list-item-deprecated-column-type'}>
@@ -645,6 +651,7 @@ const DynamicEditorBridge = (props) => {
         styleDefinition={styleDefinition}
         component={component}
         onVisibilityChange={onVisibilityChange}
+        iconVisibility={iconVisibility}
       />
     );
   };

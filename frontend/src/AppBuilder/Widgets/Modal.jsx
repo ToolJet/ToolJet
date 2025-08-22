@@ -214,8 +214,6 @@ export const Modal = function Modal({
       height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
-      overflowX: 'hidden',
-      overflowY: 'auto',
     },
     modalHeader: {
       backgroundColor:
@@ -320,7 +318,11 @@ export const Modal = function Modal({
             <SubContainer
               id={`${id}`}
               canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{
+                backgroundColor: customStyles.modalBody.backgroundColor,
+                overflowX: 'hidden',
+                overflowY: 'auto',
+              }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -373,6 +375,8 @@ const Component = ({ children, ...restProps }) => {
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {!hideTitleBar && (

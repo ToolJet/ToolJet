@@ -23,7 +23,14 @@ import config from 'config';
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout, optionsChanged }) => {
+const ToolJetDbOperations = ({
+  optionchanged,
+  options,
+  darkMode,
+  isHorizontalLayout,
+  optionsChanged,
+  renderCopilot,
+}) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
@@ -717,6 +724,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
             componentName="TooljetDatabase"
             delayOnChange={false}
             className="w-100"
+            renderCopilot={renderCopilot}
           />
         </div>
       )}

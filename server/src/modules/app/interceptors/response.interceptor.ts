@@ -49,7 +49,7 @@ export class ResponseInterceptor implements NestInterceptor {
         // Check if the status code indicates success (2xx)
         const isSuccess = response.statusCode >= 200 && response.statusCode < 300;
 
-        if (isSuccess) {
+        if (isSuccess || featureInfo.allowFailedAuditLogs) {
           try {
             const clientIp = (request as any)?.clientIp;
 

@@ -197,9 +197,10 @@ export const datePickerV2Config = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    labelWidth: {
-      type: 'slider',
+    auto: {
+      type: 'checkbox',
       displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
         key: 'alignment',
@@ -207,17 +208,45 @@ export const datePickerV2Config = {
       },
       isFxNotRequired: true,
     },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
+    labelWidth: {
+      type: 'slider',
       showLabel: false,
-      validation: { schema: { type: 'boolean' } },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
       isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
     fieldBackgroundColor: {
       type: 'colorSwatches',
@@ -351,6 +380,7 @@ export const datePickerV2Config = {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
       iconColor: { value: 'var(--cc-default-icon)' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };
