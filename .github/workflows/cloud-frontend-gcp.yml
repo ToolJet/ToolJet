@@ -42,6 +42,11 @@ jobs:
           git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
           cd repo
 
+          echo "🔎 Main repo: verifying checkout"
+          MAIN_CURRENT=$(git rev-parse --abbrev-ref HEAD)
+          echo "✅ Main repo: successfully checked out branch $MAIN_CURRENT"
+          echo "📍 Main repo: current commit $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
+
           echo "🔁 Updating submodules"
           git submodule update --init --recursive
 
@@ -70,7 +75,11 @@ jobs:
             else
               echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
               PREV=$(git rev-parse --short HEAD || echo "unknown")
-              git checkout lts-3.16 && git pull origin lts-3.16 || {
+              git fetch origin lts-3.16:lts-3.16 || {
+                echo "❌ $name: fetch failed for lts-3.16"
+                exit 1
+              }
+              git checkout lts-3.16 || {
                 echo "❌ $name: fallback to lts-3.16 failed"
                 exit 1
               }
