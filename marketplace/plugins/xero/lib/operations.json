@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Xero datasource",
+  "description": "A schema defining Xero datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "xero_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl":{
+        "Accounts":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-accounting.json",
+        "Contacts":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-contacts.json",
+        "Invoices":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-invoice.json",
+        "Payments":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-payments.json",
+        "Reports":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-report.json",
+        "Finance":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero_finance.yaml"
+      }
+    }
+  }
+}
