@@ -66,6 +66,12 @@ export const createInitSlice = (set, get) => ({
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
+        state.components[id].properties.filterPopupHeading = properties?.filterPopupHeading ?? 'Filters';
+        state.components[id].properties.filterPopupPlaceholder =
+          properties?.filterPopupPlaceholder ?? 'no filters yet.';
+        state.components[id].properties.addFilterBtnLabel = properties?.addFilterBtnLabel ?? '+ add filter';
+        state.components[id].properties.removeFilterBtnLabel = properties?.removeFilterBtnLabel ?? 'clear filters';
+        state.components[id].properties.searchInputPlaceholder = properties?.searchInputPlaceholder ?? 'Search';
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;

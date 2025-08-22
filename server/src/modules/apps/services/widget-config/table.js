@@ -278,6 +278,51 @@ export const tableConfig = {
       },
       section: 'additionalActions',
     },
+    filterPopupHeading: {
+      type: 'code',
+      displayName: 'Filter popup heading',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Filters',
+      },
+      section: 'advancedCustomizations',
+    },
+    filterPopupPlaceholder: {
+      type: 'code',
+      displayName: 'Filter popup placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'no filters yet.',
+      },
+      section: 'advancedCustomizations',
+    },
+    addFilterBtnLabel: {
+      type: 'code',
+      displayName: 'Add filter button label',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '+ add filter',
+      },
+      section: 'advancedCustomizations',
+    },
+    removeFilterBtnLabel: {
+      type: 'code',
+      displayName: 'Remove filter button label',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'clear filters',
+      },
+      section: 'advancedCustomizations',
+    },
+    searchInputPlaceholder: {
+      type: 'code',
+      displayName: 'Search placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Search',
+      },
+      section: 'advancedCustomizations',
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -691,6 +736,11 @@ export const tableConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: `{{false}}` },
+      filterPopupHeading: { value: 'Filters' },
+      filterPopupPlaceholder: { value: 'no filters yet.' },
+      addFilterBtnLabel: { value: '+ add filter' },
+      removeFilterBtnLabel: { value: 'clear filters' },
+      searchInputPlaceholder: { value: 'Search' },
     },
     events: [],
     styles: {

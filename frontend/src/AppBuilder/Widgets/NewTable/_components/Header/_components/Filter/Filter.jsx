@@ -5,10 +5,16 @@ import { FilterRow } from './FilterRow';
 import { FilterFooter } from './FilterFooter';
 import { FilterHeader } from './FilterHeader';
 import { debounce, isEqual } from 'lodash';
+import useTableStore from '../../../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
 export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) => {
   const { t } = useTranslation();
   const [localFilters, setLocalFilters] = useState(table.getState().columnFilters);
+  const filterPopupPlaceholder = useTableStore(
+    (state) => state.getTableProperties(id)?.filterPopupPlaceholder,
+    shallow
+  );
 
   // Memoize columns
   const columns = useMemo(
@@ -149,7 +155,7 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
 
   return (
     <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}>
-      <FilterHeader setShowFilter={setShowFilter} />
+      <FilterHeader id={id} setShowFilter={setShowFilter} />
       <div className="card-body">
         {localFilters.map((filter, index) => (
           <FilterRow
@@ -168,12 +174,12 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
         {localFilters.length === 0 && (
           <div>
             <center>
-              <span data-cy={`label-no-filters`}>no filters yet.</span>
+              <span data-cy={`label-no-filters`}>{filterPopupPlaceholder}</span>
             </center>
           </div>
         )}
       </div>
-      <FilterFooter addFilter={addFilter} clearFilters={clearFilters} />
+      <FilterFooter id={id} addFilter={addFilter} clearFilters={clearFilters} />
     </div>
   );
 });
