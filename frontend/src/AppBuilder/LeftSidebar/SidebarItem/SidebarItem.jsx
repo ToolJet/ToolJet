@@ -18,6 +18,8 @@ export const SidebarItem = forwardRef(
       onClick,
       badge = false,
       count,
+      classes,
+      iconProps,
       ...rest
     },
     ref
@@ -29,7 +31,7 @@ export const SidebarItem = forwardRef(
       <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
         {icon && (
           <div
-            className={`sidebar-svg-icon  position-relative ${
+            className={`sidebar-svg-icon  position-relative ${icon}-icon ${
               selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
             }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
@@ -38,6 +40,7 @@ export const SidebarItem = forwardRef(
               name={displayIcon}
               width={icon == 'settings' ? 22.4 : 20}
               fill={selectedSidebarItem === icon ? '#3E63DD' : iconFill}
+              {...iconProps}
             />
             {commentBadge && <SidebarItem.CommentBadge />}
           </div>
@@ -53,7 +56,11 @@ export const SidebarItem = forwardRef(
         trigger={['click', 'hover', 'focus']}
         placement="right"
         delay={{ show: 250, hide: 200 }}
-        overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
+        overlay={
+          <Tooltip id="button-tooltip" className={classes?.tooltip}>
+            {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
+          </Tooltip>
+        }
       >
         {content}
       </OverlayTrigger>

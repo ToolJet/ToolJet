@@ -16262,43 +16262,6 @@ fieldset:disabled {
   padding: 30px 0;
 
   header {
-    display: flex;
-    gap: 12px;
-    // padding: 16px 24px;
-    background: var(--bg-surface-layer-01);
-
-    .left {
-      border-radius: 24px;
-      display: flex;
-      width: 44px;
-      height: 44px;
-      padding: 3px 3px 6px 3px;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .right {
-      h3 {
-        margin: 0;
-        color: var(--text-placeholder, #6A727C);
-        font-family: "IBM Plex Sans";
-        font-size: 12px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 18px;
-      }
-
-      h2 {
-        margin: 0;
-        color: var(--text-default, #1B1F24);
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 24px;
-      }
-    }
-
     .learn-about-tooljet-ai {
       align-self: flex-end;
       margin-left: auto;
@@ -17875,23 +17838,6 @@ section.ai-message-prompt-input-wrapper {
     align-items: center;
     justify-content: space-between;
 
-
-    .text {
-      color: var(--text-default, #1B1F24);
-      display: flex;
-      align-items: center;
-      /* large/medium */
-      font-family: "IBM Plex Sans";
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 20px;
-      gap: 4px;
-
-      /* 142.857% */
-
-    }
-
     button {
       border: none;
       outline: none;
@@ -18762,7 +18708,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  
+
 
   &::-webkit-scrollbar {
     width: 16px;

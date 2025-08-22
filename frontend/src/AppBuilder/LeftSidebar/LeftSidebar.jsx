@@ -217,8 +217,13 @@ export const BaseLeftSidebar = ({
           darkMode: darkMode,
           icon: 'tooljetai',
           className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-          tip: 'Build with AI',
+          tip: <GenerateAppTooltipContent />,
           ref: setSideBarBtnRefs('tooljetai'),
+          iconProps: {
+            width: '20',
+            height: '20',
+          },
+          classes: { tooltip: '[&_.tooltip-inner]:tw-text-left [&_.tooltip-inner]:tw-p-3' },
         })}
 
         {!isUserInZeroToOneFlow && (
@@ -280,3 +285,13 @@ export const BaseLeftSidebar = ({
 };
 
 export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
+
+function GenerateAppTooltipContent() {
+  return (
+    <>
+      <h5 className="tw-font-medium">Generate app</h5>
+
+      <p className="tw-text-base tw-mb-0">Build a complete application by simply describing your requirements</p>
+    </>
+  );
+}
