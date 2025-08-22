@@ -1,13 +1,16 @@
 import { User } from '@entities/user.entity';
+import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
   GetDataSourceOauthUrlDto,
+  InvokeDataSourceMethodDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from '../dto';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesController {
   fetchGlobalDataSources(user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
@@ -48,4 +51,10 @@ export interface IDataSourcesController {
   ): Promise<void>;
 
   decryptOptions(options: Record<string, any>): Promise<any>;
+
+  invokeDataSourceMethod(
+    user: User,
+    invokeDto: InvokeDataSourceMethodDto,
+    dataSource: DataSourceEntity
+  ): Promise<QueryResult>;
 }
