@@ -5,7 +5,7 @@ import AiBuilder from './AiBuilder';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
 import toast from 'react-hot-toast';
-import { appsService } from '@/_services';
+import { appsService, authenticationService } from '@/_services';
 import { v4 as uuidv4 } from 'uuid';
 import { sample } from 'lodash';
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +46,11 @@ function Hero() {
   const createApp = useCallback(
     async (appName, _unused, prompt) => {
       try {
+        const canCreateApp = authenticationService?.currentSessionValue?.user_permissions?.app_create;
+        if (!canCreateApp) {
+          toast.error('You do not have permission to create an app', { style: { maxWidth: '339px' } });
+          return;
+        }
         const data = await appsService.createApp({
           icon: sample(iconList) || defaultIcon,
           name: appName,
