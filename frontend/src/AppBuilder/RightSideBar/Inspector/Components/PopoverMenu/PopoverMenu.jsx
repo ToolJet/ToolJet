@@ -13,17 +13,17 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import useStore from '@/AppBuilder/_stores/store';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { shallow } from 'zustand/shallow';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import './styles.scss';
 
 export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
-  let properties = [];
-  let additionalActions = [];
-  let optionsProperties = [];
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  // ===== STATE AND VARIABLES =====
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
+
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const {
     layoutPropertyChanged,
@@ -36,17 +36,14 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     allComponents,
     pages,
   } = restProps;
+
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
 
-  for (const [key] of Object.entries(componentMeta?.properties)) {
-    if (componentMeta?.properties[key]?.section === 'additionalActions') {
-      additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
-      optionsProperties.push(key);
-    } else {
-      properties.push(key);
-    }
-  }
+  // ===== HELPER FUNCTIONS =====
+  const updateOptions = (options) => {
+    setOptions(options);
+    paramUpdated({ name: 'options' }, 'value', options, 'properties', false);
+  };
 
   const constructOptions = () => {
     let optionsValue = component?.component?.definition?.properties?.options?.value;
@@ -73,16 +70,96 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     });
   };
 
-  useEffect(() => {
-    setOptions(constructOptions());
-  }, [component?.component?.definition?.properties?.options?.value, isDynamicOptionsEnabled]);
+  const generateNewOptions = () => {
+    let found = false;
+    let label = '';
+    let currentNumber = options.length + 1;
+    let value = currentNumber;
+    while (!found) {
+      label = `option${currentNumber}`;
+      value = currentNumber.toString();
+      if (options.find((option) => option.label === label) === undefined) {
+        found = true;
+      }
+      currentNumber += 1;
+    }
+
+    return {
+      format: 'plain',
+      label,
+      description: '',
+      value,
+      icon: { value: 'IconCirclePlus' },
+      iconVisibility: false,
+      visible: { value: '{{true}}' },
+      disable: { value: '{{false}}' },
+    };
+  };
 
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
   });
 
+  // ===== EVENT HANDLERS =====
+  const handleOptionChange = (propertyPath, value, index) => {
+    const newOptions = options.map((option, i) => {
+      if (i === index) {
+        if (propertyPath.includes('.')) {
+          const [parentKey, childKey] = propertyPath.split('.');
+          return {
+            ...option,
+            [parentKey]: {
+              ...option[parentKey],
+              [childKey]: value,
+            },
+          };
+        }
+        return {
+          ...option,
+          [propertyPath]: value,
+        };
+      }
+      return option;
+    });
+    updateOptions(newOptions);
+  };
+
+  const handleDeleteOption = (index) => {
+    const newOptions = options.filter((option, i) => i !== index);
+    console.log('newOptions', newOptions);
+    updateOptions(newOptions);
+  };
+
+  const handleAddOption = () => {
+    let _option = generateNewOptions();
+    const newOptions = [...options, _option];
+    updateOptions(newOptions);
+  };
+
+  const reorderOptions = async (startIndex, endIndex) => {
+    const result = [...options];
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    updateOptions(result);
+  };
+
+  const onDragEnd = ({ source, destination }) => {
+    if (!destination || source?.index === destination?.index) {
+      return;
+    }
+    reorderOptions(source.index, destination.index);
+  };
+
+  // ===== SIDE EFFECTS =====
+  useEffect(() => {
+    const newOptions = constructOptions();
+    updateOptions(newOptions);
+  }, [isDynamicOptionsEnabled]);
+
+  // ===== RENDER FUNCTIONS =====
   const _renderOverlay = (item, index) => {
+    const iconVisibility = item?.iconVisibility;
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'} pm-option-popover`} style={{ minWidth: '248px' }}>
         <Popover.Body>
@@ -90,20 +167,32 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
             <div className="pm-option-header">
               <span className="pm-option-header-title">Option details</span>
               <div className="pm-option-details-actions">
-                <SolidIcon name="copy" width="14px" fill="#6A727C" />
-                <SolidIcon name="trash" width="14px" fill="#6A727C" />
+                <ButtonComponent
+                  variant="ghost"
+                  iconOnly
+                  onClick={function noRefCheck() {}}
+                  trailingIcon="copy"
+                  size="medium"
+                />
+                <ButtonComponent
+                  variant="ghost"
+                  iconOnly
+                  onClick={() => handleDeleteOption(index)}
+                  trailingIcon="trash"
+                  size="medium"
+                />
               </div>
             </div>
             <div className="pm-option-details">
               <div className="field mb-2">
                 <CodeHinter
                   type={'fxEditor'}
-                  initialValue={''}
+                  initialValue={item?.format || 'plain'}
                   paramLabel={'Data format'}
                   theme={darkMode ? 'monokai' : 'default'}
                   paramName={'dataFormat'}
                   onChange={(value) => {
-                    console.log('value', value);
+                    handleOptionChange('format', value, index);
                   }}
                   fieldMeta={{
                     type: 'select',
@@ -120,15 +209,15 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
               </div>
 
               <div className="field mb-2">
-                <label className="font-weight-500 mb-1 font-size-12">Option title</label>
+                <label className="font-weight-500 mb-1 font-size-12">Label</label>
                 <CodeHinter
                   type={'basic'}
-                  initialValue={item?.title}
+                  initialValue={item?.label}
                   theme={darkMode ? 'monokai' : 'default'}
                   mode="javascript"
                   lineNumbers={false}
                   onChange={(value) => {
-                    console.log('value', value);
+                    handleOptionChange('label', value, index);
                   }}
                 />
               </div>
@@ -141,7 +230,20 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   mode="javascript"
                   lineNumbers={false}
                   onChange={(value) => {
-                    console.log('value', value);
+                    handleOptionChange('description', value, index);
+                  }}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="font-weight-500 mb-1 font-size-12">Value</label>
+                <CodeHinter
+                  type={'basic'}
+                  initialValue={item?.value}
+                  theme={darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  onChange={(value) => {
+                    handleOptionChange('value', value, index);
                   }}
                 />
               </div>
@@ -157,18 +259,22 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   paramLabel={'Icon'}
                   paramName={'icon'}
                   onChange={(value) => {
-                    // onChangeIcon(item, { value }, 'icon', index);
-                    console.log('value', value);
+                    handleOptionChange('icon.value', value, index);
                   }}
-                  // onVisibilityChange={(value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
+                  onVisibilityChange={(value) => {
+                    const transformedValue = getResolvedValue(value);
+                    handleOptionChange('iconVisibility', transformedValue, index);
+                  }}
+                  onFxPress={(active) => handleOptionChange('icon.fxActive', active, index)}
+                  fxActive={item?.icon?.fxActive}
                   fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                   paramType={'icon'}
-                  // iconVisibility={iconVisibility}
+                  iconVisibility={iconVisibility}
                 />
               </div>
               <div className="field mb-2">
                 <CodeHinter
-                  initialValue={item?.optionVisibility?.value}
+                  initialValue={item?.visible?.value}
                   theme={darkMode ? 'monokai' : 'default'}
                   mode="javascript"
                   lineNumbers={false}
@@ -176,16 +282,17 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   paramLabel={'Option visibility'}
                   paramName={'optionVisibility'}
                   onChange={(value) => {
-                    // handleValueChange(item, { value }, 'loading', index);
-                    console.log('value', value);
+                    handleOptionChange('visible.value', value, index);
                   }}
+                  onFxPress={(active) => handleOptionChange('visible.fxActive', active, index)}
+                  fxActive={item?.visible?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Option visibility' }}
                   paramType={'toggle'}
                 />
               </div>
               <div className="field mb-2">
                 <CodeHinter
-                  initialValue={item?.optionDisabled?.value}
+                  initialValue={item?.disable?.value}
                   theme={darkMode ? 'monokai' : 'default'}
                   mode="javascript"
                   lineNumbers={false}
@@ -193,9 +300,10 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   paramLabel={'Disable option'}
                   paramName={'optionDisabled'}
                   onChange={(value) => {
-                    // handleValueChange(item, { value }, 'loading', index);
-                    console.log('value', value);
+                    handleOptionChange('disable.value', value, index);
                   }}
+                  onFxPress={(active) => handleOptionChange('disable.fxActive', active, index)}
+                  fxActive={item?.disable?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Disable option' }}
                   paramType={'toggle'}
                 />
@@ -207,12 +315,28 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     );
   };
 
+  // ===== PROPERTY ORGANIZATION =====
+  let properties = [];
+  let additionalActions = [];
+  let optionsProperties = [];
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
+      optionsProperties.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
+
+  // ===== RENDER FUNCTIONS =====
   const _renderOptions = () => {
     return (
       <List style={{ marginBottom: '20px' }}>
         <DragDropContext
           onDragEnd={(result) => {
-            // onDragEnd(result);
+            onDragEnd(result);
           }}
         >
           <Droppable droppableId="droppable">
@@ -233,12 +357,6 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                             trigger="click"
                             placement="left"
                             rootClose
-                            onExited={() => {
-                              //   if (isSortingEnabled && sort !== 'none') {
-                              //     const sortedOptions = sortArray([...options], sort);
-                              //     updateOptions(sortedOptions);
-                              //   }
-                            }}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(isOpen) => {
                               if (!isOpen) {
@@ -258,8 +376,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {/* {getSafeRenderableValue(getResolvedValue(item?.label))} */}
-                                    {item?.label}
+                                    {getSafeRenderableValue(getResolvedValue(item?.label))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (
@@ -268,8 +385,8 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                                         size="xs"
                                         className={'delete-icon-btn'}
                                         onClick={(e) => {
-                                          //   e.stopPropagation();
-                                          //   handleDeleteOption(index);
+                                          e.stopPropagation();
+                                          handleDeleteOption(index);
                                         }}
                                       >
                                         <span className="d-flex">
@@ -292,135 +409,97 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
             )}
           </Droppable>
         </DragDropContext>
-        <AddNewButton
-          //  onClick={handleAddOption}
-          dataCy="add-new-dropdown-option"
-          className="mt-0"
-        >
+        <AddNewButton onClick={handleAddOption} dataCy="add-new-dropdown-option" className="mt-0">
           Add new option
         </AddNewButton>
       </List>
     );
   };
 
-  let items = [];
+  // ===== MAIN RENDER =====
+  // Helper function to create renderElement with common parameters
+  const createRenderElement = (property, type = 'properties', extraProps = {}) => {
+    return renderElement(
+      component,
+      componentMeta,
+      extraProps.paramUpdated || paramUpdated,
+      dataQueries,
+      property,
+      type,
+      currentState,
+      allComponents,
+      extraProps.darkMode || darkMode,
+      extraProps.placeholder || ''
+    );
+  };
 
-  items.push({
-    title: 'Trigger',
-    isOpen: true,
-    children: properties
-      .filter((property) => !optionsProperties.includes(property))
-      ?.map((property) =>
-        renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          property,
-          'properties',
-          currentState,
-          allComponents,
-          darkMode
-        )
+  // Helper function to create accordion items
+  const createAccordionItem = (title, children, isOpen = true) => ({
+    title,
+    isOpen,
+    children,
+  });
+
+  // Section configurations
+  const sections = [
+    {
+      title: 'Trigger',
+      type: 'properties',
+      properties: properties.filter((property) => !optionsProperties.includes(property)),
+    },
+    {
+      title: 'Options',
+      custom: () => (
+        <>
+          {createRenderElement('advanced')}
+          {isDynamicOptionsEnabled ? createRenderElement('schema') : _renderOptions()}
+        </>
       ),
-  });
+    },
+    {
+      title: 'Events',
+      custom: () => (
+        <EventManager
+          sourceId={component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
+          dataQueries={dataQueries}
+          components={allComponents}
+          eventsChanged={eventsChanged}
+          apps={apps}
+          darkMode={darkMode}
+          pages={pages}
+        />
+      ),
+    },
+    {
+      title: 'Additional Actions',
+      type: 'properties',
+      properties: additionalActions,
+      extraProps: (property) => ({
+        placeholder: componentMeta.properties?.[property]?.placeholder,
+      }),
+    },
+    {
+      title: 'Devices',
+      type: 'others',
+      properties: ['showOnDesktop', 'showOnMobile'],
+      extraProps: () => ({ paramUpdated: layoutPropertyChanged }),
+    },
+  ];
 
-  console.log('isDynamicOptionsEnabled', isDynamicOptionsEnabled);
-  items.push({
-    title: 'Options',
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'advanced',
-          'properties',
-          currentState,
-          allComponents
-        )}
-        {isDynamicOptionsEnabled
-          ? renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'schema',
-              'properties',
-              currentState,
-              allComponents
-            )
-          : _renderOptions()}
-      </>
-    ),
-  });
+  // Build accordion items
+  const items = sections.map((section) => {
+    if (section.custom) {
+      return createAccordionItem(section.title, section.custom());
+    }
 
-  items.push({
-    title: 'Events',
-    isOpen: true,
-    children: (
-      <EventManager
-        sourceId={component?.id}
-        eventSourceType="component"
-        eventMetaDefinition={componentMeta}
-        dataQueries={dataQueries}
-        components={allComponents}
-        eventsChanged={eventsChanged}
-        apps={apps}
-        darkMode={darkMode}
-        pages={pages}
-      />
-    ),
-  });
+    const children = section.properties.map((property) => {
+      const extraProps = section.extraProps ? section.extraProps(property) : {};
+      return createRenderElement(property, section.type, extraProps);
+    });
 
-  items.push({
-    title: `Additional Actions`,
-    isOpen: true,
-    children: additionalActions.map((property) => {
-      return renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode,
-        componentMeta.properties?.[property]?.placeholder
-      );
-    }),
-  });
-
-  items.push({
-    title: 'Devices',
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'showOnDesktop',
-          'others',
-          currentState,
-          allComponents
-        )}
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'showOnMobile',
-          'others',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
+    return createAccordionItem(section.title, children);
   });
 
   return <Accordion items={items} />;
