@@ -204,7 +204,7 @@ export const List = ({ updateSelectedDatasource }) => {
       </Modal>
       <ConfirmDialog
         show={isDeleteModalVisible}
-        message={'You will lose all the queries created from this data source. Do you really want to delete?'}
+        message={'Do you want to delete?'}
         confirmButtonLoading={isDeletingDatasource}
         onConfirm={() => executeDataSourceDeletion()}
         onCancel={() => cancelDeleteDataSource()}
