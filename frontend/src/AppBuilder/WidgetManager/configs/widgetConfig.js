@@ -65,6 +65,7 @@ import {
   phoneinputConfig,
   currencyinputConfig,
   chatConfig,
+  popoverMenuConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -106,6 +107,7 @@ export const widgets = [
   toggleSwitchV2Config,
   radiobuttonV2Config,
   treeSelectConfig,
+  popoverMenuConfig,
 
   //Date and time inputs
   datePickerV2Config,

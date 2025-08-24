@@ -1,0 +1,27 @@
+.pm-option-popover {
+    width: 300px;
+    .popover-body {
+        padding: 0 !important;
+    }
+    .pm-option-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 44px;
+        border-bottom: 1px solid var(--border-weak);
+        padding: 0 16px;
+        .pm-option-title {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pm-option-details-actions {
+            display: flex;
+            gap: 7px;
+        }
+    }
+
+    .pm-option-details {
+        padding: 12px 16px;
+    }
+}

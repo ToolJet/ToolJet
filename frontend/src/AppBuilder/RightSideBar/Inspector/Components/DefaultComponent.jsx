@@ -57,6 +57,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Tabs: 'Data',
   RangeSlider: 'Data',
   Link: 'Data',
+  PopoverMenu: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
