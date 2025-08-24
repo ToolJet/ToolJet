@@ -1207,7 +1207,7 @@ export const validateName = (
       };
     }
 
-    if (newName.length > 50) {
+    if (newName.length >= 50) {
       errorMsg = `Maximum length has been reached.`;
       showError &&
         toast.error(errorMsg, {
