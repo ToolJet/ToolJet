@@ -65,8 +65,7 @@ export const BaseLeftSidebar = ({
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
-  // const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
-  const shouldEnableMultiplayer = true;
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
@@ -292,12 +291,7 @@ export const BaseLeftSidebar = ({
             />
           </div> */}
           <SupportButton />
-          {shouldEnableMultiplayer && (
-            <div className="">
-              {/* <RealtimeAvatars /> */}
-              <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />
-            </div>
-          )}
+          {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
           {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
