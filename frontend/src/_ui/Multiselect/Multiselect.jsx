@@ -7,9 +7,15 @@ const Multiselect = (props) => {
 
   const renameKeys = (data) => {
     data?.map((item) => {
-      tempOptionData.push({ label: item.name, value: item.value });
+      tempOptionData.push({
+      label: item.label ?? item.name,     // keep label or fallback to name
+      value: item.value,
+      default: item.default ?? false,     // default to false if not provided
+      disabled: item.disable ?? false,    // default to false
+      visible: item.visible ?? true       // default to true
     });
-    setOptionData(tempOptionData);
+    });
+    setOptionData(tempOptionData.filter(option => option.visible));
   };
 
   useEffect(() => {
