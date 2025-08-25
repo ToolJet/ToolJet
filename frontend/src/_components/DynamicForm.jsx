@@ -47,6 +47,7 @@ const DynamicForm = ({
   onBlur,
   layout = 'vertical',
   renderCopilot,
+  elementsProps = null,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
