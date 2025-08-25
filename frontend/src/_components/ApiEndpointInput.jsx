@@ -150,6 +150,7 @@ const ApiEndpointInput = (props) => {
       operation,
       selectedOperation: specJson.paths[path][operation],
       params: savedParams,
+      ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
 
     setOptions(newOptions);
@@ -186,6 +187,9 @@ const ApiEndpointInput = (props) => {
 
     newParams[paramType] = newParamType;
     newOptions.params = newParams;
+    if (isMultiSpec) {
+      newOptions.specType = selectedSpecType; // Include specType if multiSpec
+    }
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
