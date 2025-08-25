@@ -31,12 +31,16 @@ export default class EasyPostQueryService implements QueryService {
     const jsonBody = Object.keys(bodyParams).length > 0 ? bodyParams : undefined;
 
     try {
-      const response = await got(url, {
+     const options: any = {
         method: operation.toLowerCase(),
         headers: this.authHeader(apiKey),
         searchParams: queryParams,
-        json: jsonBody
-      });
+      };
+      if (Object.keys(bodyParams).length > 0) {
+        options.json = bodyParams;
+      }
+
+      const response = await got(url, options);
 
       return {
         status: 'ok',
