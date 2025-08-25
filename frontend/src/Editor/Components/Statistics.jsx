@@ -1,6 +1,21 @@
+import React, { useEffect, useState } from 'react';
+import * as Icons from '@tabler/icons-react';
+
+import { cn } from '@/lib/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import WidgetIcon from '@/../assets/images/icons/widgets';
-import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
+
+export const Statistics = function Statistics({
+  width,
+  height,
+  properties,
+  styles,
+  darkMode,
+  dataCy,
+  setExposedVariable,
+  setExposedVariables,
+}) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -9,45 +24,168 @@ export const Statistics = function Statistics({ width, height, properties, style
     secondarySignDisplay,
     hideSecondary,
     loadingState,
+    visibility,
+    primaryPrefixText,
+    primarySuffixText,
+    secondaryPrefixText,
+    secondarySuffixText,
+    dataAlignment,
+    icon,
+    iconDirection,
+    secondaryValueAlignment,
   } = properties;
-  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility, boxShadow } =
-    styles;
+  const {
+    primaryLabelSize,
+    primaryLabelColour,
+    primaryValueSize,
+    primaryTextColour,
+    iconColor,
+    secondaryLabelSize,
+    secondaryLabelColour,
+    secondaryValueSize,
+    positiveSecondaryValueColor,
+    negativeSecondaryValueColor,
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    boxShadow,
+    padding,
+    iconVisibility,
+  } = styles;
+
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+    primaryValue: primaryValue,
+    secondaryValue: secondaryValue,
+    isLoading: loadingState,
+    isVisible: visibility,
+  });
+
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+
+  useEffect(() => {
+    const exposedVariables = {
+      primaryLabel: primaryValueLabel,
+      secondaryLabel: secondaryValueLabel,
+      primaryValue,
+      secondaryValue,
+      secondarySignDisplay,
+      isLoading: loadingState,
+      isVisible: visibility,
+      setPrimaryValue: async function (newValue) {
+        setExposedVariable('primaryValue', newValue);
+        updateExposedVariablesState('primaryValue', newValue);
+      },
+      setSecondaryValue: async function (newValue) {
+        setExposedVariable('secondaryValue', newValue);
+        updateExposedVariablesState('secondaryValue', newValue);
+      },
+      setLoading: async function (loading) {
+        setExposedVariable('isLoading', !!loading);
+        updateExposedVariablesState('isLoading', !!loading);
+      },
+      setVisibility: async function (visibility) {
+        setExposedVariable('isVisible', !!visibility);
+        updateExposedVariablesState('isVisible', !!visibility);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+  }, []);
+
+  useBatchedUpdateEffectArray([
+    {
+      dep: primaryValueLabel,
+      sideEffect: () => {
+        setExposedVariable('primaryLabel', primaryValueLabel);
+      },
+    },
+    {
+      dep: secondaryValueLabel,
+      sideEffect: () => {
+        setExposedVariable('secondaryLabel', secondaryValueLabel);
+      },
+    },
+    {
+      dep: primaryValue,
+      sideEffect: () => {
+        setExposedVariable('primaryValue', primaryValue);
+        updateExposedVariablesState('primaryValue', primaryValue);
+      },
+    },
+    {
+      dep: secondaryValue,
+      sideEffect: () => {
+        setExposedVariable('secondaryValue', secondaryValue);
+        updateExposedVariablesState('secondaryValue', secondaryValue);
+      },
+    },
+    {
+      dep: secondarySignDisplay,
+      sideEffect: () => {
+        setExposedVariable('secondarySignDisplay', secondarySignDisplay);
+      },
+    },
+    {
+      dep: loadingState,
+      sideEffect: () => {
+        setExposedVariable('isLoading', loadingState);
+        updateExposedVariablesState('isLoading', loadingState);
+      },
+    },
+    {
+      dep: visibility,
+      sideEffect: () => {
+        setExposedVariable('isVisible', visibility);
+        updateExposedVariablesState('isVisible', visibility);
+      },
+    },
+  ]);
 
   const baseStyle = {
-    borderRadius: 4,
-    backgroundColor: 'var(--cc-surface1-surface)',
-    alignItems: 'center',
-    flexDirection: 'column',
+    borderRadius: `${borderRadius ?? 4}px`,
+    backgroundColor: backgroundColor ?? 'var(--cc-surface1-surface)',
     margin: '0px auto',
-    border: darkMode ? ' 0.75px solid #232A35' : ' 0.75px solid #A6B6CC',
+    border: `0.75px solid ${borderColor ?? 'var(--cc-default-border)'}`,
     fontFamily: 'Inter',
-    justifyContent: 'center',
-    display: visibility ? 'flex' : 'none',
+    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    gap: '1.5rem 2rem',
     wordBreak: 'break-all',
-    textAlign: 'center',
     overflow: 'hidden',
-    height,
+    height: padding === 'default' ? height : height + BOX_PADDING * 2,
     boxShadow,
+    padding: '1.5rem',
+    ...((dataAlignment === 'center' || exposedVariablesTemporaryState.isLoading === true) && {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }),
+    ...(iconDirection === 'right' &&
+      dataAlignment !== 'center' && {
+        flexDirection: 'row-reverse',
+      }),
   };
 
   const letterStyle = {
     fontSize: '14px',
-    fontWeight: '500',
     wordBreak: 'break-all',
-    padding: '12px 20px 0px 20px ',
+    lineHeight: 1.3,
+    textAlign: dataAlignment,
+    marginBottom: 0,
   };
 
   const primaryStyle = {
-    fontSize: '34px',
+    fontSize: `${primaryValueSize ?? 34}px`,
     color: primaryTextColour !== '#000000' ? primaryTextColour : darkMode && '#FFFFFC',
     fontWeight: '700',
     marginBottom: '0px',
     wordBreak: 'break-all',
-    padding: '0 10px',
-  };
-
-  const marginStyle = {
-    marginBottom: '0px',
+    textAlign: dataAlignment,
+    lineHeight: 1.3,
   };
 
   const secondaryContainerStyle = {
@@ -55,26 +193,28 @@ export const Statistics = function Statistics({ width, height, properties, style
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: ' center',
-    padding: '5px 8px',
-    margin: '14px 20px 0px 0px ',
-    minWidth: '61px',
     wordBreak: 'break-all',
-    minHeight: '24px',
-    background:
-      secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
     borderRadius: '58px',
-    color:
-      secondaryTextColour !== '#36AF8B'
-        ? secondaryTextColour
-        : secondarySignDisplay !== 'negative'
-        ? '#36AF8B'
-        : '#EE2C4D',
+    color: secondarySignDisplay !== 'negative' ? positiveSecondaryValueColor : negativeSecondaryValueColor,
     fontWeight: '700',
+    lineHeight: 1.3,
+    fontSize: `${secondaryValueSize ?? 14}px`,
+    marginBottom: 0,
   };
+
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[icon] ?? Icons['IconHome2'];
+  const derivedPrimaryValue = `
+    ${primaryPrefixText ?? ''}${String(exposedVariablesTemporaryState.primaryValue)}${primarySuffixText ?? ''}
+  `;
+  const derivedSecondaryValue = `
+    ${secondaryPrefixText ?? ''}${exposedVariablesTemporaryState.secondaryValue}${secondarySuffixText ?? ''}
+  `;
+  const trendIconSize = (secondaryValueSize ?? 14) * 1.3;
 
   return (
     <div style={baseStyle} data-cy={dataCy}>
-      {loadingState === true ? (
+      {exposedVariablesTemporaryState.isLoading === true ? (
         <div style={{ width }} className="p-2">
           <center>
             <div className="spinner-border" role="status"></div>
@@ -82,44 +222,65 @@ export const Statistics = function Statistics({ width, height, properties, style
         </div>
       ) : (
         <>
-          <p
-            style={{
-              ...letterStyle,
-              ...marginStyle,
-              color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
-            }}
+          {Boolean(iconVisibility) && (
+            <IconElement className="tw-shrink-0" size={(primaryValueSize ?? 34) * 1.3} stroke={1.5} color={iconColor} />
+          )}
+
+          <div
+            className={cn('tw-flex-1 tw-grid tw-content-between', {
+              'tw-flex-grow-0 tw-justify-center tw-content-start tw-gap-y-6': dataAlignment === 'center',
+              'tw-justify-end': dataAlignment === 'right',
+            })}
           >
-            {primaryValueLabel}
-          </p>
-          <h2 style={primaryStyle}>{String(primaryValue)}</h2>
-          {hideSecondary ? (
-            ''
-          ) : (
             <div>
-              <div className="d-flex flex-row justify-content-center align-items-baseline">
-                {secondarySignDisplay !== 'negative' ? (
-                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
-                    <WidgetIcon name={'upstatistics'} />
-                  </span>
-                ) : (
-                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
-                    <WidgetIcon name={'downstatistics'} />
-                  </span>
-                )}
-                <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
-              </div>
               <p
                 style={{
                   ...letterStyle,
-                  color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
-                  padding: '6px 20px 12px 20px ',
-                  marginBottom: '0px',
+                  color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
+                  fontSize: `${primaryLabelSize ?? 14}px`,
                 }}
               >
-                {secondaryValueLabel}
+                {primaryValueLabel}
               </p>
+
+              <h2 style={primaryStyle}>{derivedPrimaryValue}</h2>
             </div>
-          )}
+
+            {!hideSecondary && (
+              <div
+                className={cn('tw-flex tw-gap-1', {
+                  'tw-flex-col': secondaryValueAlignment === 'vertical',
+                  'tw-justify-center': dataAlignment === 'center',
+                  'tw-justify-end': dataAlignment === 'right',
+                })}
+              >
+                <div
+                  className={cn('tw-flex tw-items-center tw-gap-2', {
+                    'tw-justify-center': dataAlignment === 'center',
+                    'tw-justify-end': dataAlignment === 'right',
+                  })}
+                >
+                  <WidgetIcon
+                    name={secondarySignDisplay !== 'negative' ? 'upstatistics' : 'downstatistics'}
+                    width={trendIconSize}
+                    height={trendIconSize}
+                  />
+
+                  <p style={secondaryContainerStyle}>{derivedSecondaryValue}</p>
+                </div>
+
+                <p
+                  style={{
+                    ...letterStyle,
+                    color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
+                    fontSize: `${secondaryLabelSize ?? 14}px`,
+                  }}
+                >
+                  {secondaryValueLabel}
+                </p>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

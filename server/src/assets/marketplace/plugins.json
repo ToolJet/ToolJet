@@ -288,5 +288,13 @@
     "id": "microsoft_graph",
     "author": "Tooljet",
     "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
+    "name": "HubSpot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
   }
 ]
