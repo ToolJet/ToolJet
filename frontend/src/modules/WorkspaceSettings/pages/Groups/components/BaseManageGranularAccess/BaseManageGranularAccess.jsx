@@ -129,7 +129,7 @@ class BaseManageGranularAccess extends React.Component {
       this.setState({
         granularPermissions: data,
         isLoading: false,
-        showEmptyResourceContainer: !data.length || (data.length === 1 && data[0].type === 'workflow'),
+        showEmptyResourceContainer: !data.length,
       });
     });
   };
@@ -647,6 +647,7 @@ class BaseManageGranularAccess extends React.Component {
       resourceType,
       hasChanges,
     } = this.state;
+    console.log(granularPermissions, 'granularPermissions');
 
     const { addableDs = [], resourcesOptions } = this.props;
 
