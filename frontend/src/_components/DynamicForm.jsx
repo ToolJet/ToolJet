@@ -265,7 +265,7 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
-    
+
     // Select snake_case for marketplace plugins if camelCase is undefined
     const buttonText = buttonTextProp || button_text;
     const editorType = editorTypeProp || editor_type;
@@ -461,6 +461,10 @@ const DynamicForm = ({
       }
       case 'react-component-openapi-validator':
         return {
+          selectedDataSource,
+          isSaving,
+          currentAppEnvironmentId,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           format: options.format?.value,
           definition: options.definition?.value,
           auth_type: options.auth_type?.value,
@@ -485,6 +489,7 @@ const DynamicForm = ({
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
         };
       case 'filters':
         return {

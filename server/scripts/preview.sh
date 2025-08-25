@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-redis-server /etc/redis/redis.conf &
+# redis-server /etc/redis/redis.conf &
 
 # Fix ownership and permissions
 chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
