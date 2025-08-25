@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v2-schema.json",
+  "title": "{{PLUGIN_NAME}} Plugin",
+  "description": "A schema defining {{PLUGIN_NAME}} datasource with OAuth",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_DISPLAY_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "api"
+  },
+  "tj:encrypted": ["client_secret"],
+  "tj:ui:properties": {
+    "client_id": {
+      "widget": "text-v3",
+      "key": "client_id",
+      "label": "Client ID",
+      "description": "Enter your {{PLUGIN_DISPLAY_NAME}} Client ID",
+      "required": true,
+      "tooltip": "For creating OAuth app, visit: {{OAUTH_APP_URL}}"
+    },
+    "client_secret": {
+      "widget": "password-v3",
+      "key": "client_secret",
+      "label": "Client Secret",
+      "description": "Enter your {{PLUGIN_DISPLAY_NAME}} Client Secret",
+      "encrypted": true,
+      "required": true
+    },
+    "scope": {
+      "widget": "text-v3",
+      "key": "scope",
+      "label": "Scope",
+      "description": "OAuth scope for permissions",
+      "placeholder": "{{DEFAULT_SCOPE}}"
+    },
+    "base_url": {
+      "widget": "text-v3",
+      "key": "base_url",
+      "label": "Base URL",
+      "description": "Enter the base URL for the API",
+      "placeholder": "{{DEFAULT_BASE_URL}}"
+    }
+  },
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "title": "Client ID",
+      "description": "OAuth Client ID"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client Secret",
+      "description": "OAuth Client Secret"
+    },
+    "scope": {
+      "type": "string",
+      "title": "Scope",
+      "description": "OAuth scope for permissions",
+      "default": "{{DEFAULT_SCOPE}}"
+    },
+    "base_url": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "Base URL for the API",
+      "default": "{{DEFAULT_BASE_URL}}"
+    }
+  },
+  "required": ["client_id", "client_secret"],
+  "defaults": {
+    "base_url": "{{DEFAULT_BASE_URL}}",
+    "scope": "{{DEFAULT_SCOPE}}"
+  }
+}

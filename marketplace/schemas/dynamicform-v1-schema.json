@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v1-schema.json",
+  "title": "ToolJet DynamicForm v1 Schema (operations.json)",
+  "description": "JSON Schema for ToolJet plugin operations.json files used by DynamicForm component",
+  "type": "object",
+  "required": ["title", "description", "type", "properties"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "JSON Schema reference URL"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title for the plugin operations"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the plugin operations"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["api", "database", "cloud-storage"],
+      "description": "Type of plugin operations"
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default values for operation parameters",
+      "additionalProperties": true
+    },
+    "properties": {
+      "type": "object",
+      "description": "Operation definitions and their parameters",
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/operationSelector"
+        }
+      },
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/operationGroup"
+            },
+            {
+              "$ref": "#/$defs/fieldDefinition"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "operationSelector": {
+      "type": "object",
+      "description": "Main operation selector dropdown",
+      "required": ["label", "key", "type", "list"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Display label for the operation selector"
+        },
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for the operation selector"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["dropdown-component-flip"],
+          "description": "Widget type for dynamic operation switching"
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text for the operation selector"
+        },
+        "list": {
+          "type": "array",
+          "description": "List of available operations",
+          "items": {
+            "$ref": "#/$defs/dropdownOption"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "operationGroup": {
+      "type": "object",
+      "description": "Group of fields for a specific operation",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9_]*$": {
+          "$ref": "#/$defs/fieldDefinition"
+        }
+      }
+    },
+    "fieldDefinition": {
+      "type": "object",
+      "description": "Individual field definition for operation parameters",
+      "required": ["label", "key", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Display label for the field"
+        },
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for the field"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "password", 
+            "textarea",
+            "dropdown",
+            "dropdown-component-flip",
+            "toggle",
+            "codehinter",
+            "checkbox",
+            "checkbox-group",
+            "react-component-headers",
+            "react-component-headers-multiKeyValue",
+            "react-component-oauth-authentication",
+            "react-component-google-sheets",
+            "react-component-api-endpoint",
+            "tooljetdb-operations"
+          ],
+          "description": "Widget type for form rendering"
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text for the field"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Placeholder text for input fields"
+        },
+        "height": {
+          "type": "string",
+          "description": "Height of the input field (e.g., '150px')"
+        },
+        "width": {
+          "type": "string",
+          "description": "Width of the input field (e.g., '320px')"
+        },
+        "mandatory": {
+          "type": "boolean",
+          "description": "Whether the field is required"
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Whether the field is disabled"
+        },
+        "default": {
+          "type": ["string", "number", "boolean"],
+          "description": "Default value for the field"
+        },
+        "tooltip": {
+          "type": "string",
+          "description": "Tooltip text for additional help"
+        },
+        "list": {
+          "type": "array",
+          "description": "Options for dropdown fields",
+          "items": {
+            "$ref": "#/$defs/dropdownOption"
+          }
+        },
+        "spec_url": {
+          "type": "string",
+          "description": "URL for OpenAPI specification (for react-component-api-endpoint)"
+        },
+        "lineNumbers": {
+          "type": "boolean",
+          "description": "Show line numbers (for code editors)"
+        },
+        "className": {
+          "type": "string",
+          "description": "CSS class name for styling"
+        },
+        "buttonText": {
+          "type": "string", 
+          "description": "Text for button elements"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["dropdown", "dropdown-component-flip"]
+              }
+            }
+          },
+          "then": {
+            "required": ["list"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "react-component-api-endpoint"
+              }
+            }
+          },
+          "then": {
+            "required": ["spec_url"]
+          }
+        }
+      ]
+    },
+    "dropdownOption": {
+      "type": "object",
+      "description": "Option for dropdown fields",
+      "required": ["value", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Internal value for the option"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name for the option"
+        }
+      }
+    }
+  }
+}

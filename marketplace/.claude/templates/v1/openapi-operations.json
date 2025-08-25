@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "{{PLUGIN_NAME}} datasource",
+  "description": "A schema defining {{PLUGIN_NAME}} datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "{{PLUGIN_KEY}}_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": "{{OPENAPI_SPEC_URL}}"
+    }
+  }
+}
