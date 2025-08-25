@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { SidebarItem } from './SidebarItem';
 import cx from 'classnames';
@@ -12,12 +12,14 @@ import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-import RealtimeAvatars from '@/Editor/RealtimeAvatars';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
 import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
+// eslint-disable-next-line import/no-unresolved
+import { useOthers, useSelf } from '@y-presence/react';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -60,49 +62,6 @@ export const BaseLeftSidebar = ({
     ],
     shallow
   );
-
-  const sampleAvatars = [
-    {
-      id: "1",
-      text: "JD",
-      title: "John Doe",
-      subtitle: "john.doe@example.com",
-      borderColor: "#3b82f6",
-      image: null,
-    },
-    {
-      id: "2",
-      text: "JS",
-      title: "Jane Smith",
-      subtitle: "jane.smith@example.com",
-      borderColor: "#10b981",
-      image: null,
-    },
-    {
-      id: "3",
-      text: "MJ",
-      title: "Mike Johnson",
-      subtitle: "mike.johnson@example.com",
-      borderColor: "#f59e0b",
-      image: null,
-    },
-    {
-      id: "4",
-      text: "SL",
-      title: "Sarah Lee",
-      subtitle: "sarah.lee@example.com",
-      borderColor: "#ef4444",
-      image: null,
-    },
-    {
-      id: "5",
-      text: "DW",
-      title: "David Wilson",
-      subtitle: "david.wilson@example.com",
-      borderColor: "#8b5cf6",
-      image: null,
-    },
-  ];
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
@@ -336,21 +295,53 @@ export const BaseLeftSidebar = ({
           {shouldEnableMultiplayer && (
             <div className="">
               {/* <RealtimeAvatars /> */}
-              <AvatarGroup
-                avatars={sampleAvatars}
-                maxDisplay={2}
-                variant="multiplayer"
-                darkMode={darkMode}
-                // onAvatarClick={handleAvatarClick}
-              />
+              <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />
             </div>
           )}
-          {/* {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />} */}
+          {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>
     </div>
   );
+};
+
+const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
+  const self = useSelf();
+  const others = useOthers();
+  const othersOnSameVersionAndPage = others.filter(
+    (other) =>
+      other?.presence &&
+      self?.presence &&
+      other?.presence?.editingVersionId === self?.presence?.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence?.editingPageId
+  );
+
+  const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
+  const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;
+
+  const mergedAvatars = [self, ...othersOnSameVersionAndPage];
+
+  const transformedAvatars = useMemo(() => {
+    return mergedAvatars.map((other) => ({
+      ...other.presence,
+      text: getAvatarText(other.presence),
+      title: getAvatarTitle(other.presence),
+    }));
+  }, [JSON.stringify(mergedAvatars)]);
+
+  const { updateState } = useAppDataActions();
+  const { areOthersOnSameVersionAndPage, currentVersionId } = useAppInfo();
+
+  useEffect(() => {
+    const areActiveUsersOnSameVersionAndPage = othersOnSameVersionAndPage.length > 0;
+    const shouldUpdateState = areActiveUsersOnSameVersionAndPage !== areOthersOnSameVersionAndPage;
+
+    if (shouldUpdateState) updateState({ areOthersOnSameVersionAndPage: areActiveUsersOnSameVersionAndPage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ others, self, currentVersionId })]);
+
+  return <AvatarGroup avatars={transformedAvatars} maxDisplay={maxDisplay} variant="multiplayer" darkMode={darkMode} />;
 };
 
 export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
