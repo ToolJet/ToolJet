@@ -5,6 +5,8 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { withTranslation } from 'react-i18next';
 import { getCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
+import VerifiedShield from '@/_ui/Icon/solidIcons/VerifiedShield';
+import WarningOctagon from '@/_ui/Icon/solidIcons/WarningOctagon';
 class AuthorizeComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -57,73 +59,140 @@ class AuthorizeComponent extends React.Component {
   render() {
     const { isLoading, authSuccess, error } = this.state;
     return (
-      <div>
+      <div
+        style={{
+          width: '100%',
+          height: '100vh',
+          backgroundColor: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         {isLoading ? (
           <TJLoader />
         ) : (
           <div>
             {!authSuccess ? (
-              <div className="container-tight auth-main px-lg-4">
-                <h4 style={{ fontSize: '32px' }}>
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="icon"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                      <circle cx="12" cy="12" r="9"></circle>
-                      <line x1="9" y1="10" x2="9.01" y2="10"></line>
-                      <line x1="15" y1="10" x2="15.01" y2="10"></line>
-                      <path d="M9.5 15.25a3.5 3.5 0 0 1 5 0"></path>
-                    </svg>
-                  </span>
-                  Error
-                </h4>
-                <div>
-                  <div>Details: {error || ''}</div>
+              <div
+                style={{
+                  width: '580px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '24px',
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#fff0ee',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <WarningOctagon fill="#d72d39" width="32" height="32" />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textAlign: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: '36px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '500',
+                      lineHeight: '44px',
+                      margin: '0',
+                      color: '#000000',
+                    }}
+                  >
+                    Error
+                  </h4>
+                  <div
+                    style={{
+                      fontSize: '20px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '400',
+                      lineHeight: '32px',
+                      color: '#000000',
+                    }}
+                  >
+                    {error || 'An error occurred during authorization'}
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="container-tight auth-main px-lg-4">
-                <h4 style={{ fontSize: '32px' }}>
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="icon"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                      <circle cx="12" cy="12" r="9"></circle>
-                      <line x1="9" y1="10" x2="9.01" y2="10"></line>
-                      <line x1="15" y1="10" x2="15.01" y2="10"></line>
-                      <path d="M9.5 15a3.5 3.5 0 0 0 5 0"></path>
-                    </svg>
-                  </span>
-                  Success
-                </h4>
-                <div>
-                  <div>Authorization successful! You will be redirected in a few seconds.</div>
-                  <div>
-                    Don’t want to wait?{' '}
-                    <span style={{ color: 'blue', cursor: 'pointer' }} onClick={() => window.close()}>
-                      Click here
-                    </span>{' '}
-                    to go now.
+              <div
+                style={{
+                  width: '580px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '24px',
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#E8F3EB',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  <VerifiedShield fill="#1E823B" width="32" height="32" />
+                </div>
+                <div
+                  style={{
+                    width: '580px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: '36px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '500',
+                      lineHeight: '44px',
+                      margin: '0',
+                      color: '#000000',
+                    }}
+                  >
+                    Authorisation successful!
+                  </h4>
+                  <div
+                    style={{
+                      fontSize: '20px',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      fontWeight: '400',
+                      lineHeight: '32px',
+                      color: '#000000',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div>
+                      Authorization successful! You will be redirected in a few seconds. Don’t want to wait?{' '}
+                      <span
+                        style={{ textDecoration: 'underline', color: '#000000', cursor: 'pointer' }}
+                        onClick={() => window.close()}
+                      >
+                        Click here
+                      </span>{' '}
+                      to go now.
+                    </div>
                   </div>
                 </div>
               </div>
