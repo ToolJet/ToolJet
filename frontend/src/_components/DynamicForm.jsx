@@ -343,6 +343,7 @@ const DynamicForm = ({
           encrypted: options?.[key]?.encrypted,
           buttonText,
           width: width,
+          ...elementsProps?.[key],
         };
       }
       case 'react-component-sort': {

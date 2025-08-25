@@ -3,15 +3,7 @@ id: customstyles
 title: Custom Styles
 ---
 
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 The Custom Styles feature in ToolJet allows users to apply their own CSS, overriding the default app styles. This enables easy customization of app appearance, and maintains consistent themes across all ToolJet apps. By using standardized styles, users avoid the repetitive task of manually styling components for each new app, enhancing development efficiency and ensuring visual coherence for a seamless user experience
 

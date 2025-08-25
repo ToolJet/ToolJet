@@ -28,7 +28,7 @@ export const createDataSourceSlice = (set) => ({
     });
   },
 
-  fetchGlobalDataSources: (organizationId, appVersionId, environmentId) => {
+  fetchGlobalDataSources: (organizationId, appVersionId, environmentId, options) => {
     set({ loadingDataSources: true });
     globalDatasourceService.getForApp(organizationId, appVersionId, environmentId).then((data) => {
       set({
@@ -36,6 +36,8 @@ export const createDataSourceSlice = (set) => ({
         sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
         loadingDataSources: false,
       });
+
+      options?.onSuccess?.(data);
     });
   },
 });

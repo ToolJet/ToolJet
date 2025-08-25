@@ -63,7 +63,7 @@ This operation retrieves all available Sharepoint sites. For more details, see t
     <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-all-sites.png" alt="Get All Sites" />
 </div>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -103,7 +103,7 @@ This operation retrieves information about a specific site.
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -144,7 +144,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 Time Interval: Last 7 Days
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -188,7 +188,7 @@ This operation retrieves all pages from a specific site.
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -261,7 +261,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 Page: 1
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -325,7 +325,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -479,7 +479,7 @@ Body:
 }
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -536,7 +536,7 @@ Top: 1
 Page: 1
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -631,7 +631,7 @@ Body:
 }
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -666,7 +666,7 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 Item ID: 1
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -703,7 +703,7 @@ Body:
 }
 ```
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json

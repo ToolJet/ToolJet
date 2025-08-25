@@ -3,7 +3,7 @@ id: marketplace-plugin-openai
 title: OpenAI
 ---
 
-ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, create images tailored to specific inputs, and generate vector embeddings.
+ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, and create images tailored to specific inputs.
 
 :::note
 Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
@@ -17,21 +17,20 @@ For connecting to OpenAI, the following credentials are required:
 - **Organization ID**: Find the Organization ID [here](https://platform.openai.com/account/org-settings).
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/connection-v4.png" alt="Configuring OpenAI in ToolJet" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/openai/connection-v3.png" alt="Configuring OpenAI in ToolJet" />
 </div>
 
-## Supported Operations
+## Supported queries
 
 - **[Chat](#chat)**
 - **[Completions](#completions)**
 - **[Generate AI Image(s)](#generate-ai-images)**
-- **[Generate embedding](#generate-embedding)**
 
 ### Chat
 
-The function of this operation is to examine the user's input and generate a suitable response that simulates human-like conversation.
+The function of this query is to examine the user's input and generate a suitable response that simulates human-like conversation.
 
-#### Required Parameters
+#### Required parameters:
 
 - **Model**: The model to use for generating the chat response. The available models are:
     - GPT-4.0
@@ -40,7 +39,7 @@ The function of this operation is to examine the user's input and generate a sui
     - GPT-3.5 Turbo
 - **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
 
-#### Optional Parameters
+#### Optional parameters: 
 
 - **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 2, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -48,10 +47,10 @@ The function of this operation is to examine the user's input and generate a sui
 - **Suffix**: The suffix that follows the inserted text completion.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/chat-v3.png" alt="Chat Operation" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/openai/chat-v2.png" alt="Chat Operation" />
 </div>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Values**</summary>
 
 ```yaml
@@ -65,7 +64,7 @@ Suffix: \n
 
 </details>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -76,15 +75,15 @@ Suffix: \n
 
 ### Completions
 
-The purpose of this operation is to generate text completions based on a given prompt.
+The purpose of this query is to generate text completions based on a given prompt.
 
-#### Required Parameters
+#### Required parameters: 
 
 - **Model**: The model to use for generating the text completion. The available models are:
     - GPT-3.5 Turbo
 - **Prompt**: OpenAI uses the prompt as a starting point to generate a continuation or completion of the text, which can be in the form of a sentence, paragraph, or even an entire article. The quality and relevance of the generated text output can depend on the quality and specificity of the prompt provided.
 
-#### Optional Parameters
+#### Optional parameters: 
 
 - **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 1, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -92,10 +91,10 @@ The purpose of this operation is to generate text completions based on a given p
 - **Suffix**: The suffix that follows the inserted text completion.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/completions-v3.png" alt="Completions Operation" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/openai/completions-v2.png" alt="Completions Operation" />
 </div>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Values**</summary>
 
 ```yaml
@@ -109,7 +108,7 @@ Suffix: \n
 
 </details>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ``` json
@@ -120,26 +119,26 @@ Suffix: \n
 
 ### Generate AI Image(s)
 
-This operation generates AI images based on the given prompt.
+This query generates AI images based on the given prompt.
 
-#### Required Parameters
+#### Required parameters:
 
 - **Model**: The model to use for generating the image. The available models are:
     - DALL-E 3
     - DALL-E 2
 - **Prompt**: The prompt is the initial message or question that is provided as input to the AI model to generate an image.
 
-#### Optional Parameters
+#### Optional parameters:
 
 - **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
     - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
     - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images-v2.png" alt="Generate AI Images Operation" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images.png" alt="Generate AI Images Operation" />
 </div>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Values**</summary>
 
 ```yaml
@@ -150,7 +149,7 @@ Size(in pixels): 1024x1024
 
 </details>
 
-<details id="tj-dropdown">
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -163,57 +162,4 @@ Size(in pixels): 1024x1024
 }
 ```
 
-</details>
-
-### Generate Embedding
-
-This operation is used to generate vector embeddings from the given text, which can be used to build AI applications.
-
-#### Required Parameters
-
-- **Model**: The model to use for generating the vector embedding. The available models are:
-    - text-embedding-3-small
-    - text-embedding-3-large
-    - text-embedding-ada-002
-
-- **Input**: The text input used for generating the vector embedding.
-
-#### Optional Parameters
-
-- **Encoding format**: Specifies the output format of the vector embedding from the dropdown, float or base64.
-- **Dimensions**: Defines the number of values in the generated embedding vector, affecting its size and level of detail.
-
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/embedding-v2.png" alt="Generate Vector Embedding" />
-
-<details id="tj-dropdown">
-<summary>**Example Values**</summary>
-
-```yaml
-Model: text-embedding-3-large
-Input: ToolJet is a low code platform used to build internal tools
-Encoding format: Float
-Dimensions: 10
-```
-
-</details>
-
-<details id="tj-dropdown">
-<summary>**Response Example**</summary>
-
-```json
-{
-  "embedding": [
-    -0.49750686,
-    -0.7019393,
-    -0.23043627,
-    -0.12421317,
-    -0.076866604,
-    0.2191516,
-    0.2548046,
-    0.1453106,
-    -0.20050736,
-    0.10516006
-  ]
-}
-```
 </details>

@@ -12,6 +12,7 @@ import ArrowSortRectangle from './ArrowSortRectangle.jsx';
 import AddNavItemURL from './AddNavItemURL.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
+import ArrowUpRightIcon from './ArrowUpRightIcon.jsx';
 import ArrowUpDown from './ArrowUpDown.jsx';
 import BulbIcon from './Bulb.jsx';
 import BookSearch from './BookSearch.jsx';
@@ -19,6 +20,7 @@ import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
 import Debugger from './Debugger.jsx';
 import Calender from './Calender.jsx';
+import CheckCircle from './CheckCircle.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
@@ -199,6 +201,7 @@ import Capitalize from './Capitalize.jsx';
 import Oblique from './Oblique.jsx';
 import TooljetIcon from './TooljetIcon.jsx';
 import PrimaryKey from './PrimaryKey.jsx';
+import PostgreSQLIcon from './PostgreSQLIcon.jsx';
 import ForeignKey from './ForeignKey.jsx';
 import TriangleUpCenter from './TriangleUpCenter.jsx';
 import TriangleDownCenter from './TriangleDownCenter.jsx';
@@ -331,6 +334,8 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'arrow-up-right':
+      return <ArrowUpRightIcon {...props} />;
     case 'arrowupdown':
       return <ArrowUpDown {...props} />;
     case 'asterix':
@@ -353,6 +358,8 @@ const Icon = (props) => {
       return <CaretDown {...props} />;
     case 'caretup':
       return <CaretUp {...props} />;
+    case 'check-circle':
+      return <CheckCircle {...props} />;
     case 'checkrectangle':
       return <CheckRectangle {...props} />;
     case 'cheverondown':
@@ -567,6 +574,8 @@ const Icon = (props) => {
       return <PlusRectangle {...props} />;
     case 'primarykey':
       return <PrimaryKey {...props} />;
+    case 'postgresql':
+      return <PostgreSQLIcon {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'read':

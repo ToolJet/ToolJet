@@ -189,7 +189,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     return `calc(100% + ${offset})`;
   }
-
   return (
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}

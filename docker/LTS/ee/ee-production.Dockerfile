@@ -108,17 +108,6 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install Neo4j + APOC
-RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
-    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
-    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
-    mkdir -p /var/lib/neo4j/plugins && \
-    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
