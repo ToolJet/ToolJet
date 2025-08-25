@@ -13,6 +13,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
+import { scrollToAvoidSidebarOverlap } from './canvasScrollUtils';
 
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
@@ -92,24 +93,9 @@ export const useCanvasDropHandler = () => {
     setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
     setRightSidebarOpen(true);
 
-    const canvas = document.querySelector('.canvas-container');
-    const sidebar = document.querySelector('.editor-sidebar');
-    const droppedElem = document.getElementById(addedComponent?.[0]?.id);
+    // Ensure the dropped component is not hidden by the sidebar
+    scrollToAvoidSidebarOverlap(addedComponent?.[0]?.id);
 
-    if (!canvas || !sidebar || !droppedElem) return;
-
-    const droppedRect = droppedElem.getBoundingClientRect();
-    const sidebarRect = sidebar.getBoundingClientRect();
-
-    const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-    if (isOverlapping) {
-      const overlap = droppedRect.right - sidebarRect.left;
-      canvas.scrollTo({
-        left: canvas.scrollLeft + overlap,
-        behavior: 'smooth',
-      });
-    }
     // Reset canvas ID when dropping
     setCurrentDragCanvasId(null);
   };
