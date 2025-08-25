@@ -18798,3 +18798,13 @@ section.ai-message-prompt-input-wrapper {
 .accordion-body-custom {
   padding: 0rem 1rem 1rem 1rem !important;
 }
+
+.editor-sidebar {
+  .components-container {
+    .search-box-wrapper {
+      .input-icon-addon {
+        top: 2px;
+      }
+    }
+  }
+}
