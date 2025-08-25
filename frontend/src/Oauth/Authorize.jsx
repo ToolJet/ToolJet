@@ -33,6 +33,7 @@ export function Authorize({ navigate }) {
 
     const configs = Configs[router.query.origin];
     const authParams = {};
+    const utmParams = extractUtmParams(router);
 
     if (configs.responseType === 'hash') {
       if (!window.location.hash) {
@@ -59,19 +60,67 @@ export function Authorize({ navigate }) {
       subsciption = authenticationService.currentSession.subscribe((session) => {
         //logged users should send tj-workspace-id when login to unauthorized workspace
         if (session.authentication_status === false || session.current_organization_id) {
-          signIn(authParams, configs);
+          signIn(authParams, configs, utmParams);
           subsciption.unsubscribe();
         }
       });
     } else {
-      signIn(authParams, configs);
+      signIn(authParams, configs, utmParams);
     }
 
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const extractUtmParams = (router) => {
+    const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+    const utmParams = {};
 
-  const signIn = (authParams, configs) => {
+    // Check URL hash parameters first
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      UTM_FIELDS.forEach((param) => {
+        const value = hashParams.get(param);
+        if (value) {
+          utmParams[param] = value;
+        }
+      });
+    }
+
+    // Check query parameters if no UTM params found in hash
+    if (Object.keys(utmParams).length === 0) {
+      UTM_FIELDS.forEach((param) => {
+        if (router.query[param]) {
+          utmParams[param] = router.query[param];
+        }
+      });
+    }
+
+    // If still no UTM params, check inside the 'state' parameter (both in hash and query)
+    if (Object.keys(utmParams).length === 0) {
+      let stateParam = window.location.hash
+        ? new URLSearchParams(window.location.hash.substring(1)).get('state')
+        : router.query.state;
+
+      if (stateParam) {
+        try {
+          const decodedState = decodeURIComponent(stateParam);
+          const stateParams = new URLSearchParams(decodedState);
+
+          UTM_FIELDS.forEach((param) => {
+            const value = stateParams.get(param);
+            if (value) {
+              utmParams[param] = value;
+            }
+          });
+        } catch (error) {
+          console.warn('Error parsing state parameter:', error);
+        }
+      }
+    }
+
+    return utmParams;
+  };
+  const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
 
@@ -151,7 +200,7 @@ export function Authorize({ navigate }) {
       } else {
         /* For ai onboarding */
         aiOnboardingService
-          .signInViaOAuth(router.query.origin, authParams)
+          .signInViaOAuth(router.query.origin, authParams, utmParams)
           .then(handleAuthResponse)
           .catch(handleAuthError);
       }
