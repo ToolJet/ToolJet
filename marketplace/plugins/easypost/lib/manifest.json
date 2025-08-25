@@ -20,32 +20,18 @@
   },
   "defaults": {},
   "properties": {
-    "credentials": {
-      "label": "Authentication",
-      "key": "auth_type",
-      "type": "dropdown-component-flip",
-      "description": "Authentication method for EasyPost API",
-      "list": [
-        {
-          "value": "api_key",
-          "name": "API Key Authentication"
-        }
-      ]
-    },
     "api_key": {
-      "key": {
-        "label": "API Key",
-        "key": "api_key",
-        "type": "password",
-        "description": "Your EasyPost API key (starts with EZAK)",
-        "hint": "Copy exactly from EasyPost dashboard",
-        "validate": {
-          "required": true,
-          "pattern": "^EZAK",
-          "patternError": "Key must start with EZAK"
-        }
+      "label": "API Key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Your EasyPost API key (starts with EZAK)",
+      "hint": "Copy exactly from EasyPost dashboard. Find your API key at easypost.com/dashboard",
+      "validate": {
+        "required": true,
+        "pattern": "^EZAK",
+        "patternError": "API key must start with EZAK"
       }
     }
   },
-  "required": []
+  "required": ["api_key"]
 }
