@@ -32,12 +32,12 @@ export class SampleDataSourceService {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('PG_HOST'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('PG_PORT'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
       {
@@ -46,12 +46,12 @@ export class SampleDataSourceService {
       },
       {
         key: 'username',
-        value: this.configService.get<string>('PG_USER'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('PG_PASS'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
       {
@@ -91,12 +91,12 @@ export class SampleDataSourceService {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('PG_HOST'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('PG_PORT'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
       {
@@ -105,17 +105,17 @@ export class SampleDataSourceService {
       },
       {
         key: 'username',
-        value: this.configService.get<string>('PG_USER'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('PG_PASS'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
       {
         key: 'ssl_enabled',
-        value: false,
+        value: this.configService.get<string>('PGSSLMODE') === 'require' ? 'true' : 'false',
         encrypted: true,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
