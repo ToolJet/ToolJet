@@ -278,18 +278,23 @@
   .homepage-app-card-list-item-wrap {
     display: flex;
     justify-content: center;
+    flex-direction: column;
     width: 100%;
     gap: 24px;
+    margin: 22px auto 0 auto;
+    padding: 0 10px;
+    width: 100%;
   }
 
   .homepage-app-card-list-item {
-    // max-width: 304px !important;
-    max-width: calc(50% - 12px);
+    max-width: 320px !important;
     flex-basis: 100%;
+    flex-shrink: 0;
+    flex-grow: 0;
 
     .edit-button,
     .launch-button {
-      width: 129px !important;
+      width: 115px !important;
     }
   }
 }

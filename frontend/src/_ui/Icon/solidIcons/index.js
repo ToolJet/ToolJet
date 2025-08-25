@@ -13,6 +13,7 @@ import AddNavItemURL from './AddNavItemURL.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
 import ArrowUpRightIcon from './ArrowUpRightIcon.jsx';
+import ArrowUpDown from './ArrowUpDown.jsx';
 import BulbIcon from './Bulb.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
@@ -335,6 +336,8 @@ const Icon = (props) => {
       return <ArrowUp {...props} />;
     case 'arrow-up-right':
       return <ArrowUpRightIcon {...props} />;
+    case 'arrowupdown':
+      return <ArrowUpDown {...props} />;
     case 'asterix':
       return <Asterix {...props} />;
     case 'auditlogs':

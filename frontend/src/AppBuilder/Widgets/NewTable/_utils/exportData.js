@@ -9,15 +9,20 @@ import moment from 'moment';
 // Helper function to get table data
 const getData = (table) => {
   // Get headers from all visible columns
-  const headers = table
+  const headers = [];
+  const accessorKeys = [];
+  table
     .getAllColumns()
     .filter((column) => !column.columnDef.meta?.skipExport)
-    .map((column) => column.columnDef.header);
+    .forEach((column) => {
+      headers.push(column.columnDef.header);
+      accessorKeys.push(column.columnDef.accessorKey || column.columnDef.header);
+    });
 
   // Get data rows
   const data = table.getCoreRowModel().rows.map((row) => {
     const rowData = [];
-    headers.forEach((header) => rowData.push(row.original[header]));
+    accessorKeys.forEach((accessorKey) => rowData.push(row.original[accessorKey]));
     return rowData;
   });
 

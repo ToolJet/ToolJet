@@ -156,6 +156,15 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
+# Set group write permissions for frontend build files to support RedHat arbitrary user assignment
+RUN chmod -R g+w /app/frontend/build
+
+RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
+    chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 770 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
+    chmod -R 644 /var/lib/neo4j/plugins/*.jar && \
+    chown -R appuser:0 /var/lib/neo4j/plugins && \
+    chmod 755 /var/lib/neo4j/plugins
 
 # Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \

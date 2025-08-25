@@ -1552,7 +1552,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 12.8rem);
+    height: calc(100vh - 8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -3005,8 +3005,8 @@ input:focus-visible {
 }
 
 .widget-documentation-link {
-  // position: relative;
-  // top: 0px;
+  position: fixed;
+  bottom: 0;
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 999;
@@ -5233,6 +5233,10 @@ input[type="text"] {
       width: 32px;
       height: 32px;
     }
+
+    &.inspector-action-container {
+      align-items: unset;
+    }
   }
 }
 
@@ -5334,7 +5338,7 @@ div#driver-page-overlay {
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
   color: var(--slate12);
-  border: 1px solid transparent;
+  border: 1px solid transparent !important;
   border-radius: 6px;
   background-color: var(--base);
 
@@ -8939,7 +8943,7 @@ tbody {
       margin: 2rem 1rem;
     }
 
-    .footer-container {
+   .footer-container {
       position: absolute;
       width: 100%;
       bottom: 0px;
@@ -11885,6 +11889,11 @@ tbody {
 
 .selected-ds.row>img {
   padding: 0 !important;
+}
+
+.selected-ds.img-container>img {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
 }
 
 .tj-user-table-wrapper {

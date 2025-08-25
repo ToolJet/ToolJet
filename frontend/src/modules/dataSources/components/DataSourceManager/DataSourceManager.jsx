@@ -256,7 +256,7 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'hubspot'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -943,9 +943,18 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'snowflake'];
+      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'snowflake',
+      'microsoft_graph',
+      'hubspot',
+    ];
     return (
       pluginsLoaded && (
         <div>
@@ -980,7 +989,7 @@ class DataSourceManagerComponent extends React.Component {
                   )}
                   <Modal.Title className={cn('mt-3', classes?.modalTitleContainer)}>
                     {selectedDataSource && !isSampleDb ? (
-                      <div className="row selected-ds">
+                      <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                         <div className="input-icon" style={{ width: '160px' }}>
                           <input
@@ -1002,17 +1011,14 @@ class DataSourceManagerComponent extends React.Component {
                         </div>
                       </div>
                     ) : (
-                      <div
-                        className={cn(
-                          'tw-flex tw-items-center tw-gap-2 tw-pt-3 tw-pb-6',
-                          classes?.sampleDbTitleWrapper
-                        )}
-                      >
-                        {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 24, 24, selectedDataSourceIcon)}
-
-                        <h3 className="tw-font-medium tw-mb-0" data-cy="sample-data-source-title">
-                          {selectedDataSource?.name ?? 'Sample data source'}
-                        </h3>
+                      <div className="row">
+                        <div className="col-md-2">
+                          <img src="assets/images/tj-logo.svg" />
+                        </div>
+                        <div className="col-md-10" data-cy="sample-data-source-title">
+                          {' '}
+                          Sample data source
+                        </div>
                       </div>
                     )}
                     {!selectedDataSource && (

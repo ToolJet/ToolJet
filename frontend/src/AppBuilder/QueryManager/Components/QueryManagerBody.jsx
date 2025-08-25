@@ -27,6 +27,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
+  const currentEnvironment = useStore((state) => state.selectedEnvironment);
   const paramListContainerRef = useRef(null);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
@@ -196,6 +197,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           darkMode={darkMode}
           isEditMode={true} // Made TRUE always to avoid setting default options again
           queryName={queryName}
+          currentEnvironment={currentEnvironment}
           onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
         />
       </div>

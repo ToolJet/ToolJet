@@ -57,7 +57,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
-    localStorage.getItem('isPagesSidebarPinned') !== 'false'
+    localStorage.getItem('isPagesSidebarPinned') === null
+      ? false
+      : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
   const { globalSettings, pageSettings, switchPage } = useStore(
