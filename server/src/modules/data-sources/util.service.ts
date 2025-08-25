@@ -646,6 +646,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       gmail: 'GOOGLE',
       snowflake: 'SNOWFLAKE',
       microsoft_graph: 'MICROSFT',
+      hubspot: 'HUBSPOT',
     };
     const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
     return key;

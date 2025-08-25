@@ -1289,10 +1289,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1643,6 +1643,8 @@ export const createComponentsSlice = (set, get) => ({
       setActiveRightSideBarTab,
       setRightSidebarOpen,
       isRightSidebarPinned,
+      isRightSidebarOpen,
+      activeRightSideBarTab,
     } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
@@ -1654,9 +1656,20 @@ export const createComponentsSlice = (set, get) => ({
       !selectedText
     ) {
       clearSelectedComponents();
-      // if (!isRightSidebarPinned) {
-      //   setRightSidebarOpen(false);
-      // }
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
+    }
+    
+    // If page settings tab is active and user clicks on canvas, switch to components tab
+    if (
+      !isClickedOnSubcontainer &&
+      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+      !selectedText &&
+      isRightSidebarOpen &&
+      activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+    ) {
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     }
   },
 
