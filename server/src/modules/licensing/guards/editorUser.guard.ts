@@ -27,7 +27,10 @@ export class EditorUserCountGuard implements CanActivate {
     }
     const isPersonalWorkspaceEnabled =
       (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
-    if (isWorkspaceSignup && !isPersonalWorkspaceEnabled) return true;
+
+    if (!isPersonalWorkspaceEnabled) {
+      return true; //Personal workspace is not enabled user will be counted as End-user
+    }
 
     const editorsCount = await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.EDITORS);
     if (editorsCount === LICENSE_LIMIT.UNLIMITED) {
