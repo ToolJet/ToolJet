@@ -3,7 +3,7 @@ id: statistics
 title: Statistics
 ---
 
-**Statistics** component is used to display key metrics in a visually prominent format. It’s ideal for highlighting important numbers such as revenue, user count, or task completion rates.
+**Statistics** component is used to display key metrics in a visually prominent format. It is ideal for highlighting important numbers such as revenue, user count, or task completion rates.
 
 **Why use it?**
 - Offers at-a-glance insights without analyzing raw data.
