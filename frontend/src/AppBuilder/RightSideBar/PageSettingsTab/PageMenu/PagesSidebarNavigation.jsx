@@ -447,8 +447,8 @@ export const PagesSidebarNavigation = ({
 
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
-  const headerHidden = isLicensed ? hideHeader : true;
-  const logoHidden = isLicensed ? hideLogo : true;
+  const headerHidden = isLicensed ? hideHeader : false;
+  const logoHidden = isLicensed ? hideLogo : false;
 
   if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
@@ -589,6 +589,7 @@ export const PagesSidebarNavigation = ({
                         className="cursor-pointer"
                         fill="var(--icon-strong)"
                         width="14px"
+                        viewBox="0 0 15 15"
                         name={isSidebarPinned ? 'remove03' : 'menu'}
                       />
                     </div>
