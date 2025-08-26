@@ -39,6 +39,7 @@ import {
   RadioTypeIcon,
 } from './_assets';
 import { getColumnIcon } from './utils';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
@@ -625,7 +626,7 @@ class TableComponent extends React.Component {
                   {({ innerRef, droppableProps, placeholder }) => (
                     <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
                       {filteredColumns.map((item, index) => {
-                        const resolvedItemName = resolveReferences(item.name);
+                        const resolvedItemName = getSafeRenderableValue(resolveReferences(item.name));
                         const isEditable = resolveReferences(item.isEditable);
                         const columnVisibility = item?.columnVisibility ?? true;
                         const getSecondaryText = (text) => {

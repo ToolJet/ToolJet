@@ -57,7 +57,7 @@
   z-index: 1000;
 
   .preview-chip {
-    color: var(--text-on-solid) !important;
+    // color: var(--text-on-solid) ;
   }
   .preview-settings {
     margin-left: 6px;
@@ -145,7 +145,7 @@
 
 .powered-with-tj {
   cursor: pointer;
-  background-color: var(--base);
+  background-color: var(--background-surface-layer-01);
   padding: 10px;
   text-align: center;
   position: fixed;

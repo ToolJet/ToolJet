@@ -231,6 +231,17 @@
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   },
   {
+    "name": "AWS Bedrock",
+    "description": "Plugin to use AI foundation models available on AWS",
+    "version": "1.0.0",
+    "id": "aws-bedrock",
+    "author": "Tooljet",
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
     "name": "EasyPost",
     "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
     "version": "1.0.0",
@@ -253,5 +264,45 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "Google Cloud Spanner",
+    "description": "Plugin to query relational database using GoogleSQL or PostgreSQL.",
+    "version": "1.0.0",
+    "id": "spanner",
+    "author": "Tooljet",
+    "timestamp": "Mon, 14 Jul 2025 07:03:25 GMT"
+  },
+  {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
+    "name": "UPS",
+    "description": "Integrate with UPS API to create and track shipments",
+    "version": "1.0.0",
+    "id": "ups",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
+  },
+  {
+    "name": "Microsoft Graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
+    "version": "1.0.0",
+    "id": "microsoft_graph",
+    "author": "Tooljet",
+    "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
+    "name": "HubSpot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
   }
 ]

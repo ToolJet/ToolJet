@@ -1,16 +1,18 @@
 import { DataSource, EntityManager } from 'typeorm';
 import { updateTimestampForAppVersion } from './utils.helper';
+import { createLogger } from './bootstrap.helper';
 
 let CONNECTION_INSTANCE: DataSource;
-export const getGetConnectionInstance = (): DataSource => {
+const getConnectionInstance = (): DataSource => {
   if (!CONNECTION_INSTANCE) {
-    throw new Error('CONNECTION_INSTANCE not initialized');
+    throw new Error('Database connection not initialized');
   }
   return CONNECTION_INSTANCE;
 };
 
 export function setConnectionInstance(dataSource: DataSource) {
-  console.log('CONNECTION_INSTANCE initialized');
+  const logger = createLogger('setConnectionInstance');
+  logger.log('Database connection initialized');
   CONNECTION_INSTANCE = dataSource;
 }
 
@@ -18,7 +20,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   if (manager) {
     return await operation(manager);
   } else {
-    const connection = await getGetConnectionInstance();
+    const connection = await getConnectionInstance();
     const manager = connection.manager;
     return await manager.transaction(async (manager) => {
       return await operation(manager);
@@ -30,7 +32,7 @@ export async function dbTransactionForAppVersionAssociationsUpdate(
   operation: (...args) => any,
   appVersionId: string
 ): Promise<any> {
-  const connection = await getGetConnectionInstance();
+  const connection = await getConnectionInstance();
   const manager = connection.manager;
   return await manager.transaction(async (manager) => {
     const result = await operation(manager);
@@ -40,5 +42,3 @@ export async function dbTransactionForAppVersionAssociationsUpdate(
     return result;
   });
 }
-
-export const getManager = (dataSource: DataSource) => dataSource.manager;

@@ -38,7 +38,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) {}
+  ) { }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -109,14 +109,14 @@ export class VersionService implements IVersionService {
         updatedVersionId = appVersion.id;
       }
 
-      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId, user.organizationId);
+      const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
       const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
       if (
         appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT,app.organizationId))
+        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId))
       ) {
         const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
         appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
@@ -203,7 +203,7 @@ export class VersionService implements IVersionService {
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
-  
+
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -214,19 +214,6 @@ export class VersionService implements IVersionService {
       metadata: { data: { updatedGlobalSettings: appVersion } },
     });
     return;
-  }
- 
-  async updateAppMode(appId: string, versionId: string, appMode: 'light' | 'dark' | 'auto') {
-    const appVersion = await this.versionRepository.findById(versionId, appId);
-    const updateDto: Partial<AppVersionUpdateDto> = {
-      globalSettings: {
-        theme: {
-          appMode,
-        },
-      },
-    };
-
-    return await this.versionsUtilService.updateVersion(appVersion, updateDto as AppVersionUpdateDto);
   }
 
 

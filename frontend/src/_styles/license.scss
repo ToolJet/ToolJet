@@ -1103,7 +1103,10 @@
     border-radius: 17px;
     padding: 5px;
     font-size: 10px;
-    padding: 1px 8px;
+    padding-left: 5px !important;
+    padding: 3px 8px;
     margin-left: auto;
     text-transform: capitalize;
-  }
+    position: absolute;
+    right: 10%;
+}

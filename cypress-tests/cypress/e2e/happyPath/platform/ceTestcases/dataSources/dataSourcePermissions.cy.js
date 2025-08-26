@@ -67,27 +67,27 @@ describe("Datasource Manager", () => {
       {
         selector: dataSourceSelector.commonDsLabelAndCount,
         text: "Commonly used (5)",
-        title: " Commonly used",
+        title: "Commonly used",
       },
       {
         selector: dataSourceSelector.databaseLabelAndCount,
         text: allDatabase,
-        title: " Databases",
+        title: "Databases",
       },
       {
         selector: dataSourceSelector.apiLabelAndCount,
         text: dataSourceText.allApis,
-        title: " APIs",
+        title: "APIs",
       },
       {
         selector: dataSourceSelector.cloudStorageLabelAndCount,
         text: dataSourceText.allCloudStorage,
-        title: " Cloud Storages",
+        title: "Cloud Storages",
       },
       {
         selector: dataSourceSelector.pluginsLabelAndCount,
         text: dataSourceText.pluginsLabelAndCount,
-        title: " Plugins",
+        title: "Plugins",
       },
     ];
 
@@ -141,7 +141,7 @@ describe("Datasource Manager", () => {
     cy.get(commonSelectors.yesButton).click();
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " Databases"
+      "Databases"
     );
     cy.get(`[data-cy="cypress-${data.dsName1}-postgresql-button"]`).click();
     cy.clearAndType(

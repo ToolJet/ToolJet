@@ -14,13 +14,14 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
+const BUFFER_OFFSET = 15;
+
 export const useCanvasDropHandler = () => {
-  const { moduleId, isModuleEditor, appType } = useModuleContext();
+  const { isModuleEditor } = useModuleContext();
 
   const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
-  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
@@ -30,17 +31,18 @@ export const useCanvasDropHandler = () => {
       !canvasId || canvasId === 'canvas'
         ? document.getElementById(`real-canvas`)
         : document.getElementById(`canvas-${canvasId}`);
-
+    const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
     handleDeactivateTargets();
     hideGridLines();
 
     setShowModuleBorder(false); // Hide the module border when dropping
-    if (
-      currentMode === 'view' ||
-      (!isModuleEditor && appType === 'module' && draggedComponentType !== 'ModuleContainer') ||
-      (isModuleEditor && canvasId === 'canvas')
-    ) {
+
+    if (isModuleEditor && canvasId === 'canvas') {
       return;
+    }
+
+    if (!isModuleEditor && isParentModuleContainer) {
+      return toast.error('Modules cannot be edited inside an app');
     }
 
     if (draggedComponentType === 'PDF' && !isPDFSupported()) {
@@ -49,6 +51,9 @@ export const useCanvasDropHandler = () => {
       );
       return;
     }
+
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    setRightSidebarOpen(true);
 
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
@@ -89,9 +94,6 @@ export const useCanvasDropHandler = () => {
       await addComponentToCurrentPage(addedComponent);
     }
 
-    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-    setRightSidebarOpen(true);
-
     const canvas = document.querySelector('.canvas-container');
     const sidebar = document.querySelector('.editor-sidebar');
     const droppedElem = document.getElementById(addedComponent?.[0]?.id);
@@ -106,7 +108,7 @@ export const useCanvasDropHandler = () => {
     if (isOverlapping) {
       const overlap = droppedRect.right - sidebarRect.left;
       canvas.scrollTo({
-        left: canvas.scrollLeft + overlap,
+        left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
         behavior: 'smooth',
       });
     }

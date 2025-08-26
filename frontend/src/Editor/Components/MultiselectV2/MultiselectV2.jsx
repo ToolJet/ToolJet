@@ -12,7 +12,11 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 export const MultiselectV2 = ({
   id,
@@ -59,6 +63,7 @@ export const MultiselectV2 = ({
     iconColor,
     padding,
     accentColor,
+    widthType,
   } = styles;
   const isInitialRender = useRef(true);
   const [selected, setSelected] = useState([]);
@@ -96,7 +101,7 @@ export const MultiselectV2 = ({
           .filter((data) => data?.visible ?? true)
           .map((data) => ({
             ...data,
-            label: data?.label,
+            label: getSafeRenderableValue(data?.label),
             value: data?.value,
             isDisabled: data?.disable ?? false,
           }))
@@ -430,8 +435,9 @@ export const MultiselectV2 = ({
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
+      opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'transparent',
         borderRadius: '8px',
       },
       cursor: 'pointer',
@@ -452,7 +458,7 @@ export const MultiselectV2 = ({
       borderRadius: '8px',
     }),
   };
-  const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
       <div
@@ -491,8 +497,16 @@ export const MultiselectV2 = ({
           isMandatory={isMandatory}
           _width={_width}
           top={'1px'}
+          widthType={widthType}
         />
-        <div className="w-100 px-0 h-100" onClick={handleClickInsideSelect} onTouchEnd={handleClickInsideSelect}>
+        <div
+          className="px-0 h-100"
+          onClick={handleClickInsideSelect}
+          onTouchEnd={handleClickInsideSelect}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
+          }}
+        >
           <Select
             ref={selectRef}
             menuId={id}

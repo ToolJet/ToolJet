@@ -440,10 +440,11 @@
             "to": "to"
         },
         "noApplicationFound": "No Applications found",
+        "noWorkflowFound": "No workflows found",
         "thisFolderIsEmpty": "This folder is empty",
         "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
         "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
-        "deleteWorkflowAndData": "Are you sure you want to delete the workflow {{appName}}? This action will not only remove it from the system but also from all the apps where it is currently in use. Please confirm to proceed.",
+        "deleteWorkflowAndData": "The workflow {{appName}} and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {

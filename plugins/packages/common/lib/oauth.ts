@@ -41,7 +41,7 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
   switch (sourceOptions['auth_type']) {
     case 'oauth2':
     case 'oauth':
-      return handleOAuthAuthentication(sourceOptions, context, requestOptions);
+      return handleOAuthAuthentication(sourceOptions, context, requestOptions, additionalOptions);
     case 'bearer':
       return handleBearerAuthentication(sourceOptions, requestOptions);
     case 'apiKey':
@@ -56,10 +56,16 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
 async function handleOAuthAuthentication(
   sourceOptions: any,
   context: { user?: User; app?: App },
-  requestOptions: any
+  requestOptions: any,
+  additionalOptions?: any
 ): Promise<QueryResult> {
   const headers = { ...requestOptions.headers };
-  const oAuthValidatedResult = await validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers);
+  const oAuthValidatedResult = await validateAndMaybeSetOAuthHeaders(
+    sourceOptions,
+    context,
+    headers,
+    additionalOptions
+  );
   if (oAuthValidatedResult.status !== 'ok') {
     return oAuthValidatedResult;
   }
@@ -103,7 +109,12 @@ function handleBasicAuthentication(sourceOptions: any, requestOptions: any): Que
   };
 }
 
-async function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Promise<QueryResult> {
+async function validateAndMaybeSetOAuthHeaders(
+  sourceOptions,
+  context,
+  headers,
+  additionalOptions?: any
+): Promise<QueryResult> {
   const authType = sourceOptions['auth_type'];
   const requiresOauth = authType === 'oauth2' || authType === 'oauth';
 
@@ -123,7 +134,7 @@ async function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers):
       if (grantType === 'client_credentials') {
         return handleClientCredentialsGrant(sourceOptions, headers);
       } else {
-        return handleAuthorizationCodeGrant(sourceOptions);
+        return handleAuthorizationCodeGrant(sourceOptions, additionalOptions);
       }
     } else {
       const accessToken = currentToken['access_token'];
@@ -150,10 +161,10 @@ async function handleClientCredentialsGrant(sourceOptions: any, headers: any): P
   }
 }
 
-function handleAuthorizationCodeGrant(sourceOptions: any): QueryResult {
+function handleAuthorizationCodeGrant(sourceOptions: any, additionalOptions?: any): QueryResult {
   return {
     status: 'needs_oauth',
-    data: { auth_url: getAuthUrl(sourceOptions) },
+    data: { auth_url: getAuthUrl(sourceOptions, additionalOptions) },
   };
 }
 
@@ -192,14 +203,29 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
   }
 }
 
-export function getAuthUrl(sourceOptions: any): string {
+function fetchEnvVariables(pluginKind, keyAppend) {
+  const dataSourcePrefix = {
+    googlecalendar: 'GOOGLE',
+    snowflake: 'SNOWFLAKE',
+    microsoft_graph: 'MICROSOFT',
+    hubspot: 'HUBSPOT',
+  };
+  const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
+  return key;
+}
+
+export function getAuthUrl(sourceOptions: any, additionalOptions?): string {
   const customQueryParams = sanitizeParams(sourceOptions['custom_query_params']);
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   const fullUrl = `${host}${subpath ? subpath : '/'}`;
+  let client_id = sourceOptions['client_id'];
+  if (sourceOptions.oauth_type === 'tooljet_app') {
+    client_id = fetchEnvVariables(additionalOptions.kind, 'CLIENT_ID');
+  }
 
   const authUrl = new URL(
-    `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${fullUrl}oauth2/authorize&scope=${sourceOptions['scopes']}`
+    `${sourceOptions['auth_url']}?response_type=code&client_id=${client_id}&redirect_uri=${fullUrl}oauth2/authorize&scope=${sourceOptions['scopes']}`
   );
   Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
   return authUrl.toString();
