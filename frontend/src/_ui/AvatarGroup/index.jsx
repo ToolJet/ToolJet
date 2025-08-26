@@ -49,7 +49,7 @@ const AvatarGroup = ({
         avatar.className,
         'tw-w-5 tw-h-5 tw-inline-flex',
         variant === 'multiplayer' &&
-          'tw-border-2 tw-border-solid tw-border-background-surface-layer-01 tw-transition-all tw-duration-200 tw-ease-in-out !tw-rounded-full hover:tw-transform hover:tw--translate-y-0.5 hover:tw-shadow-elevation-200'
+          'tw-border-2 tw-border-solid tw-border-background-surface-layer-01 tw-transition-all tw-duration-200 tw-ease-in-out !tw-rounded-full hover:tw-z-50 hover:tw-shadow-elevation-200'
       )}
       onClick={onAvatarClick ? () => onAvatarClick(avatar, index) : undefined}
     />
