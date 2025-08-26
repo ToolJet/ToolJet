@@ -375,7 +375,7 @@ export const createFormComponentSlice = (set, get) => ({
         saveComponentChanges(combinedDiff, 'components/batch', 'update');
 
         // Broadcast updates for multiplayer
-        get().multiplayer.broadcastUpdates({ operations }, 'components', 'update');
+        get().multiplayer.broadcastUpdates({ operations }, 'components', 'batch');
       }
     } catch (error) {
       console.error('Error performing batch component operations:', error);

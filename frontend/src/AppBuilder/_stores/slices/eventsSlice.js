@@ -131,19 +131,23 @@ export const createEventsSlice = (set, get) => ({
       const componentEvents = events.filter((event) => event.sourceId === id);
       executeActionsForEventId('onClick', componentEvents, mode, moduleId);
     },
-    addEvent: (event, moduleId = 'canvas') =>
+    addEvent: (event, moduleId = 'canvas', shouldBroadcast = true) => {
       set((state) => {
         const events = state.eventsSlice.module[moduleId].events;
         events.push(event);
-      }),
-    removeEvent: (eventId, moduleId = 'canvas') =>
+      });
+      shouldBroadcast && get().multiplayer.broadcastUpdates(event, 'events', 'create');
+    },
+    removeEvent: (eventId, moduleId = 'canvas', shouldBroadcast = true) => {
       set((state) => {
         const events = state.eventsSlice.module[moduleId].events;
         events.splice(
           events.findIndex((event) => event.id === eventId),
           1
         );
-      }),
+      });
+      shouldBroadcast && get().multiplayer.broadcastUpdates(eventId, 'events', 'delete');
+    },
     setEventToDeleteLoaderIndex: (index, moduleId = 'canvas') =>
       set(
         (state) => {
@@ -188,7 +192,13 @@ export const createEventsSlice = (set, get) => ({
         get().eventsSlice.removeEvent(eventId, moduleId);
       }
     },
-    updateAppVersionEventHandlers: async (events, updateType = 'update', param, moduleId = 'canvas') => {
+    updateAppVersionEventHandlers: async (
+      events,
+      updateType = 'update',
+      param,
+      moduleId = 'canvas',
+      broadcastUpdates = true
+    ) => {
       if (param === 'actionId') {
         get().eventsSlice.updateEventsField('actionsUpdatedLoader', true, moduleId);
       }
@@ -216,6 +226,7 @@ export const createEventsSlice = (set, get) => ({
 
         // state.eventsSlice.setEvents(newEvents);
         state.eventsSlice.module[moduleId].events = newEvents;
+        broadcastUpdates && get().multiplayer.broadcastUpdates({ events, updateType, param }, 'events', 'update');
       });
     },
     setTablePageIndex: (tableId, index, eventObj) => {
@@ -445,8 +456,9 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
-            }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
+            event.actionId ? `[Action ${event.actionId}]` : ''
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };

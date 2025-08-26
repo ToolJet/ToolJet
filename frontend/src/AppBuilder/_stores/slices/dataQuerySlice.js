@@ -81,9 +81,10 @@ export const createDataQuerySlice = (set, get) => ({
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
+      let newlyCreatedQuery = {};
 
       let cleanSelectedQuery = { ...selectedQuery };
-      if(selectedQuery?.permissions) {
+      if (selectedQuery?.permissions) {
         delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
       }
 
@@ -112,11 +113,12 @@ export const createDataQuerySlice = (set, get) => ({
             state.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
               if (query.id === tempId) {
-                return {
+                newlyCreatedQuery = {
                   ...query,
                   id: data.id,
                   data_source_id: dataSourceId,
                 };
+                return newlyCreatedQuery;
               }
               return query;
             });
@@ -166,7 +168,10 @@ export const createDataQuerySlice = (set, get) => ({
           setSelectedQuery(null);
           toast.error(`Failed to create query: ${error.message ?? error.error}`);
         })
-        .finally(() => setIsAppSaving(false));
+        .finally(() => {
+          setIsAppSaving(false);
+          get().multiplayer.broadcastUpdates(newlyCreatedQuery, 'queries', 'create');
+        });
     },
     renameQuery: (id, newName, moduleId = 'canvas') => {
       /** If query creation in progress, skips call and pushes the update to queue */
@@ -254,6 +259,7 @@ export const createDataQuerySlice = (set, get) => ({
 
       get().removeNode(`queries.${queryId}`, moduleId);
       get().updateDependencyValues(`queries.${queryId}`, moduleId);
+      get().multiplayer.broadcastUpdates(queryId, 'queries', 'delete');
     },
     duplicateQuery: (id, appId, moduleId = 'canvas') => {
       set((state) => {
@@ -417,20 +423,23 @@ export const createDataQuerySlice = (set, get) => ({
         componentNameIdMapping,
         queryNameIdMapping
       );
+      let updatedQuery = {};
 
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = false;
         state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
           if (query.id === selectedQuery.id) {
-            return {
+            updatedQuery = {
               ...query,
               options: { ...newOptions },
             };
+            return updatedQuery;
           }
           return query;
         });
       });
       setSelectedQuery(selectedQuery?.id);
+      get().multiplayer.broadcastUpdates(updatedQuery, 'queries', 'update');
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {
       /** If query creation in progress, skips call and pushes the update to queue */
