@@ -12,8 +12,8 @@ ToolJet server is a Node.js API application. Server is responsible for authentic
 
 **Dependencies:**
 - **PostgreSQL** - ToolJet server persists data to a postgres database. 
-- **Email service** (SMTP/Sendgrid/Mailgun/etc) - Required to send user invitations and password reset emails.
-- **PostgREST** - Standalone web server that converts PostgreSQL database into queryable RESTful APIs for ToolJet Database.
+- **Email service** (SMTP/Sendgrid/Mailgun/etc) - Required to send user invitations and password reset emails.   
+- **PostgREST (Optional)** - Standalone web server that converts PostgreSQL database into queryable RESTful APIs for ToolJet Database.
     
 ### 2. ToolJet Client  
 
