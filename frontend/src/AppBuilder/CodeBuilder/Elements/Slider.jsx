@@ -38,6 +38,8 @@ function Slider1({ value, onChange, component, styleDefinition }) {
         staticText="% of the field"
         onInputChange={onInputChange}
         dataCy="width"
+        type="number"
+        min={0}
       />
       <div style={{ position: 'absolute', top: '34px' }}>
         <Slider.Root
