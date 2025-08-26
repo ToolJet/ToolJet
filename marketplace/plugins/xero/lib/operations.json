@@ -21,7 +21,7 @@
         "BankFeeds":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-banks.yaml",
         "AppStore":"https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/refs/heads/master/xero-app-store.yaml",
         "Assets":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-assets.yaml",
-        "PayrollAu":"https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/refs/heads/master/xero-payroll-au.yaml",
+        "PayrollAu":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payroll-au.yaml",
         "PayrollUk":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payroll-uk.yaml",
         "PayrollNz":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payroll-nz.yaml",
         "Projects":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-projects.yaml",
