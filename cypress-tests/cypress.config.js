@@ -64,7 +64,28 @@ module.exports = defineConfig({
           });
         },
       });
-
+      
+      on("task", {
+        deleteFile(filePath) {
+          return new Promise((resolve, reject) => {
+            const fullPath = path.resolve(filePath);
+            if (fs.existsSync(fullPath)) {
+              fs.unlink(fullPath, (err) => {
+                if (err) {
+                  console.error("Failed to delete file:", fullPath, err);
+                  return reject(err);
+                }
+                console.log("Deleted file:", fullPath);
+                resolve(true);
+              });
+            } else {
+              console.log("File not found, skipping delete:", fullPath);
+              resolve(false);
+            }
+          });
+        },
+      });
+      
       on("task", {
         dbConnection ({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);

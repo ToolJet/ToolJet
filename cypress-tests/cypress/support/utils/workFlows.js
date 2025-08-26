@@ -3,6 +3,7 @@ import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
 import { deleteDatasource } from "Support/utils/dataSource";
+import { selectAppCardOption, closeModal } from "Support/utils/common";
 
 Cypress.Commands.add("createWorkflowApp", (wfName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
@@ -58,7 +59,10 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
     "A few seconds ago"
   );
 
-  cy.get(workflowSelector.responseNodeOutput).click();
+  // cy.get(workflowSelector.responseNodeOutput).click();
+  cy.contains('div.row-content .node-name', 'response1')
+  .should('be.visible')
+  .click();
   cy.wait(500);
   cy.get(workflowSelector.optionsColumn).contains("Output").click();
 
@@ -145,3 +149,50 @@ Cypress.Commands.add("backToWorkFlows", () => {
   cy.get(commonSelectors.pageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
 });
+
+Cypress.Commands.add("deleteWorkflowfromDashboard", (wfName) => {
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.get(commonSelectors.appCard(wfName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
+    .click();
+  cy.get(workflowSelector.deleteWorkFlowOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
+});
+
+Cypress.Commands.add(
+  "exportWorkflowApp",
+  (wfName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
+    cy.backToWorkFlows();
+
+    selectAppCardOption(
+      wfName,
+      commonSelectors.appCardOptions(workflowsText.exportWFOption)
+    );
+    cy.wait(2000);
+
+    cy.exec("ls -t ./cypress/downloads/ | head -1").then((result) => {
+      const downloadedAppExportFileName = result.stdout.trim();
+      const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
+      cy.readFile(filePath, { timeout: 15000 }).then((json) => {
+        const exportedName = json.app[0].definition.appV2.name;
+        cy.writeFile(fixtureFile, json);
+      });
+    });
+    cy.deleteWorkflowfromDashboard(wfName);
+  }
+);
+
+Cypress.Commands.add(
+  "importWorkflowApp",
+  (wfName, fixturePath = "cypress/fixtures/exportedApp.json") => {
+    cy.get(workflowSelector.importWorkFlowsOption).click();
+    cy.get(workflowSelector.importWorkFlowsLabel).click();
+    cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
+    cy.wait(2000);
+    cy.get(workflowSelector.workFlowNameInputField).clear().type(wfName);
+    cy.get(workflowSelector.importWorkFlowsButton).click();
+  }
+);
