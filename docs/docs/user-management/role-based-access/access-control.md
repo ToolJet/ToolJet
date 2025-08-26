@@ -3,7 +3,7 @@ id: access-control
 title: Access Control
 ---
 
-ToolJet enables you to manage access control by configuring permissions like create and delete. Access control can be applied to all of your resources such as apps, data sources and workflows. Additionally, ToolJet supports granular access control, allowing you to configure permissions for individual resources to ensure precise and secure management.
+ToolJet enables you to manage access control by configuring permissions like create and delete. Access control can be applied to all of your resources such as apps and data sources. Additionally, ToolJet supports granular access control, allowing you to configure permissions for individual resources to ensure precise and secure management.
 
 ## Permissions
 
@@ -12,14 +12,10 @@ The following permissions can be configured for the given resources:
 |:----------------------------|:----------------------|:--------------------------------------------------------------------------------------------|
 | **Apps**                    | Create                | Allows users of the group to create new applications within the workspace.                  |
 |                             | Delete                | Allows users of the group to delete applications from the workspace.                        |
-|                             | Promote               | Allows users of the group to promote the applications from one environment to the other.    |
-|                             | Release               | Allows users of the group to release the applications from the production environment.      |
 | **Data sources**            | Create                | Allows users of the group to add new data sources in the workspace.                         |
 |                             | Delete                | Allows users of the group to remove data sources from the workspace.                        |
 | **Folder**                  | Create/Update/Delete  | Allows users of the group to create, update, or delete folders to organize resources.       |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
-| **Workflows**              | Create                | Allows users of the group to create new workflows within the workspace.                     |
-|                             | Delete                | Allows users of the group to delete workflows from the workspace.                           |
 
 To configure view or edit access, please refer to **[Granular Access Control](#granular-access-control)**.
 
@@ -40,7 +36,7 @@ Role Required: **Admin** <br/>
 3. Select the group to configure permissions.
 
 4. Switch to the **Permissions** tab and configure the required permissions.
-    <img className="screenshot-full img-full" src="/img/user-management/rbac/access-control/workflow_config.png" alt="Create Custom Group" />
+    <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-permission.png" alt="Create Custom Group" />
 
 
 ## Granular Access Control
@@ -74,14 +70,6 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
     <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/ds-permission.png" alt="Create Custom Group" />
 
-### Workflows
-- **Build**: Users in this group can build or edit the workflows they are granted access to. 
-- **Execute**: Users in this group can run/execute the selected workflows. This access does not allow users to edit or make changes to the workflows.
-- **All workflows**: Provides the selected access (Build or Execute) to all the workflows in the workspace, including any newly created workflows.
-- **Custom**: Provide the selected access (Build or Execute) only to the specified workflows.
-
-<img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/workflow.png" alt="Create Custom Group" />
-
 ### Configuring Granular Access Permission
 
 Role Required: **Admin** <br/>
@@ -98,5 +86,3 @@ Role Required: **Admin** <br/>
 5. Select the resource (Apps/Data source) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
 
     <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />
-
-

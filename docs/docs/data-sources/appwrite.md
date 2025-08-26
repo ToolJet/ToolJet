@@ -1,18 +1,17 @@
 ---
 id: appwrite
-title: Appwrite
+title: Appwrite 
 ---
 
 ToolJet can connect to appwrite database to read/write data.
 
 <div style={{paddingTop:'24px'}}>
 
-## Connection
+## Connection 
 
 To establish a connection with the Appwrite data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Appwrite:
-
 - **Host (API endpoint)**
 - **Project ID**
 - **Secret Key**
@@ -33,7 +32,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying Appwrite
+## Querying Appwrite 
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **Appwrite** datasource added in previous step.
@@ -44,10 +43,10 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
 
-</div>
+</div> 
 
 :::tip
-Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/tutorial/transformations).
 :::
 
 </div>
@@ -56,11 +55,11 @@ Query results can be transformed using Transformations. Read our **Transformatio
 
 ## Supported Operations
 
-- **[List Documents](#list-documents)**
-- **[Get Document](#get-document)**
-- **[Add Document to Collection](#add-document-to-collection)**
-- **[Update Document](#update-document)**
-- **[Delete Document](#delete-document)**
+-  **[List Documents](#list-documents)**
+-  **[Get Document](#get-document)**
+-  **[Add Document to Collection](#add-document-to-collection)**
+-  **[Update Document](#update-document)** 
+-  **[Delete Document](#delete-document)**
 
 ### List Documents
 
@@ -87,7 +86,7 @@ This operation is used to get a list of all the user documents.
 
 ### Get Document
 
-Use this operation to get a document from a collection by its unique ID.
+Use this operation to get a document from a collection by its unique ID. 
 
 #### Required Parameters
 
@@ -137,7 +136,7 @@ Use this operation for deleting a document in the collection.
 
 #### Required Parameters
 
-- **Collection ID**
+- **Collection ID** 
 - **Document ID**
 
 <div style={{textAlign: 'center'}}>

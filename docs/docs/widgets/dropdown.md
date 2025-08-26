@@ -2,6 +2,7 @@
 id: dropdown
 title: Dropdown
 ---
+# Dropdown
 
 The Dropdown component can be used to collect user input from a list of options. This document goes through all the properties related to the **Dropdown** component.
 
@@ -10,14 +11,12 @@ To get the configuration of legacy Dropdown component, please refer to **[this](
 :::
 
 ## Data
-
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
 | Label         | Text to display as the label for the field.           | String (e.g., `Country`).         |
 | Placeholder   | A hint displayed to guide the user on what to enter.  | String (e.g., `Choose an option`).          |
 
 ## Options
-
 Allows you to add options to the dropdown field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
 
 ### Example Code for Dynamic Columns
@@ -46,38 +45,35 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
 }} 
 ```
 
-### Options Loading State
-
+### Options loading state
 Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
-
-### Sort Options
-
-Sort all the options in the selected pattern. Choose from **None**, **a-z** or **z-a**.
 
 ## Events
 
-| <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------------- | :--------------------------------------------- |
-| On select | Triggers whenever an option is selected. |
-| On search text changed | Triggers whenever the search text is changed. |
-| On focus     | Triggers whenever the user clicks inside the input field.                                        |
-| On blur      | Triggers whenever the user clicks outside the input field.                                       |
+**On select** <br/>
+Triggers when an option is selected.
 
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
-:::
+**On search text changed** <br/>
+Triggers when search text changes.
+
+**On focus** <br/>
+Triggers whenever the user clicks inside the component.
+
+**On blur** <br/>
+Triggers whenever the user clicks outside the component.
 
 ## Component specific actions (CSA)
 
-The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+Following actions of the component can be controlled using the component specific actions(CSA):
+
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| clear( )        | Clears the selected option.  | `components.dropdown1.clear()` |
-| setVisibility( )| Sets the visibility of the component.  | `components.dropdown1.setVisibility(false)` |
-| setLoading( )   | Sets the loading state of the component. | `components.dropdown1.setLoading(true)` |
-| setDisable( )   | Disables the component. | `components.dropdown1.setDisable(true)` |
-| selectOption( ) | Selects an option.      | `components.dropdown1.selectOption(2)` |
+| clear()        | Clears the selected option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.clear()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.dropdown1.setDisable(true)`) or trigger it using an event. |
+| selectOption()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.dropdown1.selectOption(2)`) or trigger it using an event. |
 
 **Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption(['2'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
 
@@ -102,16 +98,16 @@ components.dropdown1.selectOption([2])
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |:----------|:----------|:------------|
-| searchText | This variable is initially empty and holds the value whenever the user searches on the dropdown. | `{{components.dropdown1.searchText}}` |
-| label | Holds the label name of the dropdown. | `{{components.dropdown1.label}}` |
-| value | Holds the value selected by the user in the component. | `{{components.dropdown1.value}}` |
-| selectedOption | Holds the label and value of the selected option in array form. | `{{components.dropdown1.selectedOption.label}}` |
-| isValid | Indicates if the input meets validation criteria. | `{{components.dropdown1.isValid}}` |
-| options | Holds all the option values of the dropdown in array form. | `{{components.dropdown1.options}}` |
-| isVisible | Indicates if the component is visible. | `{{components.dropdown1.isVisible}}` |
-| isLoading | Indicates if the component is loading. | `{{components.dropdown1.isLoading}}` |
-| isDisabled | Indicates if the component is disabled. | `{{components.dropdown1.isDisabled}}` |
-| isMandatory | Indicates if the field is required. | `{{components.dropdown1.isMandatory}}` |
+| searchText          | This variable is initially empty and holds the value whenever the user searches on the dropdown.      | Accessible dynamically with JS (for e.g., `{{components.dropdown1.searchText}}`).                                     |
+| label               | Holds the label name of the dropdown.                                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.label}}`).                                          |
+| value               | Holds the value selected by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.value}}`).                                          |
+| selectedOption        | Holds the label and value of the selected option in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.selectedOption.label}}` or <br/>`{{components.dropdown1.selectedOption.value}}`). |
+| isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isValid}}`).                                        |
+| options        | Holds all the option values of the dropdown in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.dropdown1.options}}` or <br/>`{{components.dropdown1.options[0].label}}` for a specific option). |
+| isVisible           | Indicates if the component is visible.                                                                | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isVisible}}`).                                      |
+| isLoading           | Indicates if the component is loading.                                                                | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isLoading}}`).                                      |
+| isDisabled          | Indicates if the component is disabled.                                                               | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isDisabled}}`).                                     |
+| isMandatory         | Indicates if the field is required.                                                                   | Accessible dynamically with JS (for e.g., `{{components.dropdown1.isMandatory}}`).                                    |
 
 ## Validation
 
@@ -125,12 +121,12 @@ components.dropdown1.selectOption([2])
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Show clear selection button | Gives a button to clear all selections. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show search in options | Enables a search option. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
+
+<div style={{paddingTop:'24px'}}>
 
 ## Devices
 
@@ -139,9 +135,11 @@ components.dropdown1.selectOption([2])
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-## Styles
+</div>
 
-### Label
+---
+
+## Label
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
@@ -149,7 +147,7 @@ components.dropdown1.selectOption([2])
 | Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
 | Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value. |
 
-### Field
+## Field
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
@@ -163,7 +161,7 @@ components.dropdown1.selectOption([2])
 | Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
 
 
-### Container
+## Container
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.

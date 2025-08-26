@@ -27,11 +27,7 @@ ToolJet requires the following to connect to Snowflake database.
 You can also configure for **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
 :::
 
-You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
-
-Note: After completing the OAuth flow, the query must be triggered again to load the data.
-
-<img className="screenshot-full img-m" src="/img/datasource-reference/snowflake/snowflake-connect-v3.png" alt="ToolJet - Snowflake connection" />
+<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-connect-v2.png" alt="ToolJet - Snowflake connection" />
 
 </div>
 
@@ -51,7 +47,7 @@ select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our [transformations](/docs/beta/app-builder/custom-code/transform-data) documentation to learn more.
+Query results can be transformed using transformations. Read our [transformations](/docs/tutorial/transformations) documentation to learn more.
 :::
 
 </div>

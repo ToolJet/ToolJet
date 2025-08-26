@@ -2,100 +2,82 @@
 id: range-slider
 title: Range Slider
 ---
+# Range Slider
 
-The **Range Slider** component allows users to select a value or a range of values by sliding a handle along a track. It’s perfect for adjusting numeric inputs like price, rating, or volume in an intuitive and interactive way.
+The **Range Slider** component is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
+
+:::tip
+Range Sliders have **Two handles** option which allows users to select a range.
+:::
+
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
-### Slider
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | 
+|:------------ |:-------------|
+| Minimum value | Set the minimum value for the slider. This field accepts any numerical value. |
+| Maximum value | Set the maximum value for the slider. This field accepts any numerical value. |
+| Value | Set the default value when the component loads. This can be used to pre-fill the value based on your data and requirements. |
+| Two handles | The slider will now have 2 dragging handles. It is used to define a range of values versus a single given value. |
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
-|:---------------|:-------------------------------------------------|:-----------------------------|
-| Label         | Text to display as the label for the field.           | String          |
-| Min value | Set the minimum value for the slider. | This field accepts any numerical value. |
-| Max value | Set the maximum value for the slider. | This field accepts any numerical value. |
-| Default value | Set the default value when the component loads. This can be used to pre-fill the value based on your data and requirements. | This field accepts any numerical value. |
-| Step size | Choose the step size for the slider. | This field accepts any numerical value. |
-| Set marks | Set marking on the slider. | Accepts an array of objects with `label` and `value` as properties. |
+</div>
 
-### Range slider
-
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
-|:---------------|:-------------------------------------------------|:-----------------------------|
-| Label         | Text to display as the label for the field.           | String          |
-| Min value | Set the minimum value for the slider. | This field accepts any numerical value. |
-| Max value | Set the maximum value for the slider. | This field accepts any numerical value. |
-| Default start value | Set the default start value when the component loads. This can be used to pre-fill the value based on your data and requirements. | This field accepts any numerical value. |
-| Default end value | Set the end default value when the component loads. This can be used to pre-fill the value based on your data and requirements. | This field accepts any numerical value. |
-| Step size | Choose the step size for the slider. | This field accepts any numerical value. |
-| Set marks | Set marking on the slider. | Accepts an array of objects with `label` and `value` as properties. |
-
-## Events
-
-| Event            | Description         |
-|:------------------|:---------------------|
-| On change    | Triggers whenever the value is changed.   |
-
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
-:::
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
-The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
 
-| <div style={{ width:"130px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :------------ | :---------- | :------------ |
-| setValue( ) | Sets the value of the component. | `components.rangeslider1.setValue()` |
-| setRangeValue( ) | Sets the range of the component. | `components.rangeslider1.setRangeValue()` |
-| setVisibility( )| Sets the visibility of the component.     | `components.rangeslider1.setVisibility(false)` |
-| setLoading( )   | Sets the loading state of the component.  | `components.rangeslider1.setLoading(true)` |
-| setDisable( )   | Disables the component.                   | `components.rangeslider1.setDisable(true)` |
-| reset( ) | Resets the component to default state. | `components.rangeslider1.reset()` |
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
-|  Variables  | Description | How To Access |
+| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| value | Holds the value of the slider, or an array when using range slider. | `{{components.rangeslider1.value}}` |
-| label | Holds the value of the component's label. | `{{components.rangeslider1.label}}`|
+| value | Holds an object when `two handles` option is disabled or an array when `two handles` is enabled from the component properties. | The value can be accessed dynamically using JS: `{{components.rangeslider1.value}}` or `{{components.rangeslider1.value[1]}}` |
 
-## Additional Actions
+</div>
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
-|:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String                        |
+<div style={{paddingTop:'24px'}}>
+
+## General
+### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
+
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Devices
 
-|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
-|:---------- |:----------- |:----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view.| You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+---
 
 ## Styles
 
-### Label
-
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
-|:---------------|:------------|:---------------|
-| Text     | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
-| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value.  |
-
-### Slider
-
-| Property | Description | Configuration Options |
-|:---------------|:------------|:---------------|
-| Track | Sets the color for slider track. | Select a theme or choose from color picker. |
-| Accent | Sets the accent color. | Select a theme or choose from color picker. |
-| Handle | Sets the handle color. | Select a theme or choose from color picker. |
-| Handle border | Sets the handle border color. | Select a theme or choose from color picker. |
-| Market label | Sets the marker label color. | Select a theme or choose from color picker. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | 
+|:------------ |:-------------|
+| Line color | Enter the hex code to set the default color for the slider's track. |
+| Handle color | Enter the hex code to set the color for the slider's handler. |
+| Track color | Enter the hex code to set the color for the slider's active portion on the track. |
+| Visibility | Set the visibility of the slider programmatically. The default value is `{{true}}`. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
+
+</div>

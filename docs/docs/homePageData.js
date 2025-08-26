@@ -70,7 +70,7 @@ export const setupCards = [
 export const deployOptions = [
     { icon: Cloud, title: "DigitalOcean", href: "/docs/beta/setup/digitalocean" },
     { icon: Container, title: "Docker", href: "/docs/beta/setup/docker" },
-    { icon: Server, title: "AWS AMI", href: "/docs/beta/setup/ami" },
+    { icon: Server, title: "AWS EC2", href: "/docs/beta/setup/ec2" },
     { icon: Server, title: "AWS ECS", href: "/docs/beta/setup/ecs" },
     { icon: Server, title: "Openshift", href: "/docs/beta/setup/openshift" },
     { icon: Telescope, title: "Helm", href: "/docs/beta/setup/helm" },
@@ -104,7 +104,7 @@ export const dataCards = [
         title: "Data Source Library",
         color: "text-blue-500",
         content: "Browse ToolJet's data source library to connect with databases, APIs, and external services seamlessly.",
-        href: "/docs/beta/data-sources/overview"
+        href: "/docs/beta/tooljet-concepts/what-are-datasources/"
     },
     {
         icon: Wand2,

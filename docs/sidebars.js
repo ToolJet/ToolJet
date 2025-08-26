@@ -22,6 +22,28 @@ const sidebars = {
         'getting-started/quickstart-guide',
         {
           'type': 'category',
+          'label': 'ToolJet Concepts',
+          'items': [
+            'tooljet-concepts/what-are-components',
+            'tooljet-concepts/what-are-datasources',
+            'tooljet-concepts/what-are-queries',
+            'tooljet-concepts/inspector',
+            'tooljet-concepts/what-are-events',
+            'tooljet-concepts/actions',
+            'tooljet-concepts/variables',
+            'tooljet-concepts/how-to-access-values',
+            'tooljet-concepts/component-specific-actions',
+            'tooljet-concepts/exposed-variables',
+            'tooljet-concepts/pages',
+            'tooljet-concepts/run-js',
+            'tooljet-concepts/styling-components',
+            'tooljet-concepts/workspace-constants',
+            'tooljet-concepts/permissions',
+            'tooljet-concepts/super-admin',
+          ],
+        },
+        {
+          'type': 'category',
           'label': 'How To',
           'items': [
             'how-to/use-url-params-on-load',
@@ -40,6 +62,8 @@ const sidebars = {
             'how-to/use-server-side-pagination',
             'how-to/access-currentuser',
             'how-to/use-axios-in-runjs',
+            'how-to/import-external-libraries-using-runpy',
+            'how-to/import-external-libraries-using-runjs',
             'how-to/run-actions-from-runjs',
             'how-to/intentionally-fail-js-query',
             'how-to/run-query-at-specified-intervals',
@@ -68,7 +92,7 @@ const sidebars = {
             'setup/system-requirements',
             'setup/digitalocean',
             'setup/docker',
-            'setup/ami',
+            'setup/ec2',
             'setup/ecs',
             'setup/openshift',
             'setup/helm',
@@ -85,8 +109,6 @@ const sidebars = {
             'setup/upgrade-to-lts',
             'setup/upgrade-to-v3',
             'setup/cloud-v3-migration',
-            'setup/upgrade-to-v3.16',
-
           ]
         }
       ],
@@ -100,8 +122,7 @@ const sidebars = {
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
-        "build-with-ai/ai-docs-assistant",
-        "build-with-ai/tooljet-mcp",
+        "build-with-ai/ai-docs-assistant"
       ]
     },
     {
@@ -114,61 +135,14 @@ const sidebars = {
         'app-builder/overview',
         {
           'type': 'category',
-          'label': 'Building the UI',
+          'label': 'Build Apps',
           'items': [
-            'app-builder/building-ui/canvas',
-            'app-builder/building-ui/component-library',
-            'app-builder/building-ui/component-properties',
-            'app-builder/building-ui/pages',
-            'app-builder/building-ui/component-state'
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Connecting Data Sources',
-          'items': [
-            'app-builder/connecting-with-data-sources/creating-managing-queries',
-            'app-builder/connecting-with-data-sources/accessing-query-results',
-            'app-builder/connecting-with-data-sources/transforming-data',
-            'app-builder/connecting-with-data-sources/binding-data-to-components'
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Events and Actions',
-          'items': [
-            'app-builder/events/overview',
-            'app-builder/events/event-triggers',
-            'app-builder/events/use-case/csa',
-            'app-builder/events/use-case/page-nav',
-            'app-builder/events/use-case/variables'
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Writing Custom Code',
-          'items': [
-            'app-builder/custom-code/fx-dynamic-behaviour',
-            'app-builder/custom-code/control-components',
-            'app-builder/custom-code/transform-data',
-            'app-builder/custom-code/managing-variables',
-            {
-              'type': 'category',
-              'label': 'Importing External Libraries',
-              'items': [
-                'app-builder/import-libraries/runjs',
-                'app-builder/import-libraries/runpy',
-              ],
-            },
-            'app-builder/custom-code/constants-secrets',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Debugging',
-          'items': [
-            'app-builder/debugging/inspector',
-            'app-builder/debugging/understanding-logs'
+            'app-builder/walkthrough/create-ui',
+            'app-builder/walkthrough/create-queries',
+            'app-builder/walkthrough/using-code',
+            'app-builder/walkthrough/accessing-values',
+            'app-builder/walkthrough/variables',
+            'app-builder/importing-exporting-applications',
           ],
         },
         {
@@ -177,157 +151,156 @@ const sidebars = {
           'items': [
             {
               'type': 'category',
-              'label': 'Component Catalog',
+              'label': 'Layout Guide',
               'items': [
-                'widgets/bounded-box',
-                'widgets/button',
-                'widgets/button-group',
-                'widgets/calendar',
-                {
-                  'type': 'category',
-                  'label': 'Chart',
-                  'items': [
-                    'widgets/chart/chart-properties',
-                    'widgets/chart/chart-examples',
-                    'widgets/chart/transforming-data-for-charts'
-                  ]
-                },
-                {
-                  'type': 'category',
-                  'label': 'Chat',
-                  'items': [
-                    'widgets/chat/overview',
-                    'widgets/chat/properties',
-                    'widgets/chat/csa',
-                    'widgets/chat/markdown'
-                  ]
-                },
-                'widgets/checkbox',
-                'widgets/circular-progress-bar',
-                'widgets/code-editor',
-                'widgets/color-picker',
-                'widgets/container',
-                'widgets/currency-input',
-                'widgets/custom-component',
-                'widgets/date-range-picker',
-                'widgets/date-picker-v2',
-                'widgets/datetime-picker-v2',
-                'widgets/datepicker',
-                'widgets/divider',
-                'widgets/dropdown',
-                'widgets/email-input',
-                'widgets/file-picker',
-                {
-                  'type': 'category',
-                  'label': 'Form',
-                  'items': [
-                    'widgets/form/generate-form',
-                    'widgets/form/properties',
-                    'widgets/form/csa',
-                    'widgets/form/schema'
-                  ]
-                },
-                'widgets/html',
-                'widgets/icon',
-                'widgets/iframe',
-                'widgets/image',
-                'widgets/kanban',
-                'widgets/link',
-                'widgets/listview',
-                'widgets/map',
-                'widgets/modal-v2',
-                'widgets/multiselect',
-                'widgets/number-input',
-                'widgets/password-input',
-                'widgets/pdf',
-                'widgets/pagination',
-                'widgets/phone-input',
-                'widgets/qr-scanner',
-                'widgets/radio-button-v2',
-                'widgets/range-slider',
-                'widgets/spinner',
-                'widgets/star-rating',
-                'widgets/statistics',
-                'widgets/steps',
-                'widgets/svg-image',
-                {
-                  'type': 'category',
-                  'label': 'Table',
-                  'items': [
-                    'widgets/table/table-properties',
-                    'widgets/table/table-columns',
-                    'widgets/table/table-csa-and-variables',
-                    {
-                      'type': 'category',
-                      'label': 'Serverside Operations',
-                      'items': [
-                        'widgets/table/serverside-operations/overview',
-                        'widgets/table/serverside-operations/search',
-                        'widgets/table/serverside-operations/sort',
-                        'widgets/table/serverside-operations/filter',
-                        'widgets/table/serverside-operations/pagination'
-                      ]
-                    },
-                    'widgets/table/dynamic-column'
-                  ]
-                },
-                'widgets/tabs',
-                'widgets/tags',
-                'widgets/text-input',
-                'widgets/text',
-                'widgets/text-area',
-                'widgets/rich-text-editor',
-                'widgets/timeline',
-                'widgets/timer',
-                'widgets/time-picker',
-                'widgets/toggle-switch-v2',
-                'widgets/tree-select',
-                'widgets/vertical-divider',
+                'app-builder/components-library',
+                'app-builder/query-panel',
+                'tutorial/pages',
+                'app-builder/topbar',
+                'app-builder/left-sidebar',
+                'app-builder/canvas',
+                'app-builder/preview',
+                'app-builder/share',
+                'app-builder/customstyles',
               ],
             },
             {
               'type': 'category',
-              'label': 'Actions Reference',
+              'label': 'Components Catalog',
               'items': [
-                'actions/run-query',
-                'actions/show-alert',
-                'actions/control-component',
-                'actions/show-modal',
-                'actions/close-modal',
-                'actions/set-table-page',
-                'actions/switch-page',
-                'actions/go-to-app',
-                'actions/open-webpage',
-                'actions/set-page-variable',
-                'actions/unset-page-variable',
-                'actions/unset-all-page-var',
-                'actions/set-variable',
-                'actions/unset-variable',
-                'actions/unset-all-var',
-                'actions/logout',
-                'actions/generate-file',
-                'actions/set-localstorage',
-                'actions/copy-to-clipboard',
+                'widgets/overview',
+                {
+                  'type': 'category',
+                  'label': 'Components',
+                  'items': [
+                    'widgets/bounded-box',
+                    'widgets/button',
+                    'widgets/button-group',
+                    'widgets/calendar',
+                    {
+                      'type': 'category',
+                      'label': 'Chart',
+                      'items': [
+                        'widgets/chart/chart-properties',
+                        'widgets/chart/chart-examples',
+                        'widgets/chart/transforming-data-for-charts'
+                      ]
+                    },
+                    {
+                      'type': 'category',
+                      'label': 'Chat',
+                      'items': [
+                        'widgets/chat/overview',
+                        'widgets/chat/properties',
+                        'widgets/chat/csa',
+                        'widgets/chat/markdown'
+                      ]
+                    },
+                    'widgets/checkbox',
+                    'widgets/circular-progress-bar',
+                    'widgets/code-editor',
+                    'widgets/color-picker',
+                    'widgets/container',
+                    'widgets/custom-component',
+                    'widgets/date-range-picker',
+                    'widgets/datepicker',
+                    'widgets/divider',
+                    'widgets/dropdown',
+                    'widgets/file-picker',
+                    'widgets/form',
+                    'widgets/html',
+                    'widgets/icon',
+                    'widgets/iframe',
+                    'widgets/image',
+                    'widgets/kanban',
+                    'widgets/link',
+                    'widgets/listview',
+                    'widgets/map',
+                    'widgets/modal',
+                    'widgets/multiselect',
+                    'widgets/number-input',
+                    'widgets/password-input',
+                    'widgets/pdf',
+                    'widgets/pagination',
+                    'widgets/qr-scanner',
+                    'widgets/radio-button',
+                    'widgets/range-slider',
+                    'widgets/spinner',
+                    'widgets/star-rating',
+                    'widgets/statistics',
+                    'widgets/steps',
+                    'widgets/svg-image',
+                    {
+                      'type': 'category',
+                      'label': 'Table',
+                      'items': [
+                        'widgets/table/table-properties',
+                        'widgets/table/table-columns',
+                        'widgets/table/table-csa-and-variables',
+                        {
+                          'type': 'category',
+                          'label': 'Serverside Operations',
+                          'items': [
+                            'widgets/table/serverside-operations/overview',
+                            'widgets/table/serverside-operations/search',
+                            'widgets/table/serverside-operations/sort',
+                            'widgets/table/serverside-operations/filter',
+                            'widgets/table/serverside-operations/pagination'
+                          ]
+                        },
+                        'widgets/table/dynamic-column'
+                      ]
+                    },
+                    'widgets/tabs',
+                    'widgets/tags',
+                    'widgets/text-input',
+                    'widgets/text',
+                    'widgets/textarea',
+                    'widgets/rich-text-editor',
+                    'widgets/timeline',
+                    'widgets/timer',
+                    'widgets/toggle-switch-v2',
+                    'widgets/tree-select',
+                    'widgets/vertical-divider',
+                  ],
+                },
+                {
+                  'type': 'category',
+                  'label': 'Actions Reference',
+                  'link': {
+                    'type': 'generated-index',
+                    'title': 'Actions Reference',
+                    'description': 'All the actions that can be performed through event handlers',
+                    'keywords': [
+                      'actions',
+                      'events',
+                    ],
+                  },
+                  'items': [
+                    'actions/show-alert',
+                    'actions/logout',
+                    'actions/run-query',
+                    'actions/open-webpage',
+                    'actions/go-to-app',
+                    'actions/show-modal',
+                    'actions/close-modal',
+                    'actions/copy-to-clipboard',
+                    'actions/set-localstorage',
+                    'actions/generate-file',
+                    'actions/set-table-page',
+                    'actions/set-variable',
+                    'actions/unset-variable',
+                    'actions/switch-page',
+                    'actions/set-page-variable',
+                    'actions/unset-page-variable',
+                    'actions/control-component',
+                  ],
+                },
               ],
             },
           ],
         },
-        'app-builder/custom-theme',
-        {
-          'type': 'category',
-          'label': 'Modules',
-          'items': [
-            'app-builder/modules/overview',
-            'app-builder/modules/create-module',
-            'app-builder/modules/input-output',
-            'app-builder/modules/data-flow',
-            'app-builder/modules/using-modules',
-            'app-builder/modules/import-export-modules',
-          ]
-        },
-        'app-builder/walkthrough/row-level-security',
         'app-builder/anti-patterns',
-        'app-builder/importing-exporting-applications',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -339,9 +312,10 @@ const sidebars = {
       'collapsible': false,
       'items': [
         'data-sources/overview',
+        'data-sources/sample-data-sources',
         {
           'type': 'category',
-          'label': 'Data Sources Library',
+          'label': 'Data Sources library',
           'items': [
             'data-sources/airtable',
             'data-sources/s3',
@@ -370,7 +344,6 @@ const sidebars = {
             'data-sources/mssql',
             'data-sources/mysql',
             'data-sources/n8n',
-            'data-sources/nocodb',
             'data-sources/notion',
             'data-sources/openapi',
             'data-sources/oracledb',
@@ -404,6 +377,8 @@ const sidebars = {
             'data-sources/zendesk',
           ],
         },
+        'tutorial/transformations',
+        'data-sources/local-data-sources-migration',
         {
           'type': 'category',
           'label': 'Marketplace',
@@ -436,15 +411,11 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-hugging_face',
                 'marketplace/plugins/marketplace-plugin-cohere',
                 'marketplace/plugins/marketplace-plugin-weaviate',
-                'marketplace/plugins/marketplace-plugin-qdrant',
-                'marketplace/plugins/marketplace-plugin-azurerepos',
-                'marketplace/plugins/marketplace-plugin-googlecalendar'
+                'marketplace/plugins/marketplace-plugin-qdrant'
               ],
             },
           ],
         },
-        'data-sources/permissions',
-        'data-sources/sample-data-sources',
       ],
     },
     {
@@ -563,8 +534,7 @@ const sidebars = {
               'items': [
                 'user-management/authentication/self-hosted/overview',
                 'user-management/authentication/self-hosted/instance-login',
-                'user-management/authentication/self-hosted/workspace-login',
-                'user-management/authentication/self-hosted/pat'
+                'user-management/authentication/self-hosted/workspace-login'
               ]
             },
             'user-management/authentication/cloud-login',
@@ -602,8 +572,7 @@ const sidebars = {
                 'user-management/sso/oidc/setup',
                 'user-management/sso/oidc/azuread',
                 'user-management/sso/oidc/okta',
-                'user-management/sso/oidc/google',
-                'user-management/sso/oidc/ssouserinfo'
+                'user-management/sso/oidc/google'
               ]
             },
             'user-management/sso/ldap',
@@ -625,20 +594,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Group Sync',
           'items': [
-            {
-              'type': 'category',
-              'label': 'Instance level',
-              'items': [
-                'user-management/group-sync/instance-level/oidc',
-              ]
-            },
-            {
-              'type': 'category',
-              'label': 'Workspace level',
-              'items': [
-                'user-management/group-sync/workspace-level/oidc',
-              ]
-            },
+            'user-management/group-sync/oidc'
           ]
         },
         {
@@ -679,15 +635,6 @@ const sidebars = {
             'development-lifecycle/gitsync/delete-gitsync',
             'development-lifecycle/gitsync/push',
             'development-lifecycle/gitsync/pull'
-          ]
-        },
-        {
-          'type': 'category',
-          'label': 'GitSync CI/CD',
-          'items': [
-            'development-lifecycle/cicd/overview',
-            'development-lifecycle/cicd/gitsync-api',
-            'development-lifecycle/cicd/example',
           ]
         },
         {

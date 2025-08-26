@@ -13,11 +13,10 @@ Once you have connected to the REST API data source, you can easily write querie
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/beta/app-builder/custom-code/transform-data)** feature.
+You can also transform the query results using the **[Transformations](/docs/tutorial/transformations)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods:
-
 - **GET**
 - **POST**
 - **PUT**
@@ -25,11 +24,6 @@ ToolJet supports the following REST HTTP methods:
 - **DELETE**
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
-
-:::info
-To receive the string `"undefined"` instead of an actual `undefined` value, it must be explicitly handled in the query manager. <br/>
-Example: `"address": "{{components.table1.selectedRow?.address ?? 'undefined'}}"`
-:::
 
 <div style={{paddingTop:'24px'}}>
 
@@ -40,6 +34,7 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API"/>
 
 </div>
+
 
 ## Request/Content Types
 
@@ -60,6 +55,7 @@ For example, to send a **multipart/form-data** body, you can add the following h
 To obtain an OAuth token via REST API, add the following custom header: <br/>
 `Content-Type: application/x-www-form-urlencoded`
 :::
+
 
 ## Response Types and Handling
 
@@ -159,14 +155,12 @@ ToolJet provides an option to automatically retry REST API requests in case of c
 You can configure this feature at two levels:
 
 ### Data Source Level
-
-In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
+ In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/rest-api-data-source.png" alt="ToolJet - Data source - REST API" />
 
 ### Query Level
-
-In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
+ In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/query-builder-retry.png" alt="ToolJet - Data source - REST API" />
 

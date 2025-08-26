@@ -117,6 +117,14 @@ actions.setPageVariable("data", data);
 
 ---
 
+## 12. Naming Component/Query with Hyphen or Space
+
+- **Anti-Pattern**: Naming components or queries with hyphens or spaces in between, such as `run-py1` or `my query`.
+- **Solution**: **Use names without hyphens or spaces**, or reference them using bracket notation (e.g., `{{queries['run-py1'].isLoading}}`).
+- **Reason**: Hyphens and spaces can cause syntax issues. Using bracket notation or avoiding these characters ensures consistency and prevents errors in query or component references.
+
+---
+
 ## Conclusion
 
 Avoiding these anti-patterns when using ToolJet ensures that your applications are efficient, responsive, and maintainable. By following these best practices, you can enhance user experience and simplify app management. Always consider the impact of your development choices on both performance and scalability.

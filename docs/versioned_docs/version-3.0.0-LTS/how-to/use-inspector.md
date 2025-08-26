@@ -83,7 +83,7 @@ Page lets you view page-specific properties like page name, handle and variables
 
 ### Constants
 
-Under **[Constants](/docs/org-management/workspaces/workspace_constants/)**, you can find the predefined values (usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. 
+Under **[Constants](/docs/security/constants/)**, you can find the predefined values (usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. 
 
 :::info
 The **environment** and **mode** variables are only available in **ToolJet Enterprise Edition v2.2.3** and above.
