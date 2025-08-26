@@ -1,0 +1,257 @@
+.app-name {
+  .form-control-plaintext {
+    background-color: var(--surfaces-surface-01);
+    border-radius: 6px;
+    border-color: transparent !important;
+  }
+
+  input:hover {
+    outline: none;
+    background: var(--surfaces-surface-02);
+    border-color: var(--border-default);
+  }
+
+  .form-control-plaintext:focus {
+    outline: none;
+    border: 1px solid var(--indigo9) !important;
+    background: var(--surfaces-surface-01);
+  }
+}
+
+.app-name:hover {
+  background: var(--surfaces-surface-01);
+
+  input:disabled {
+    outline-style: none;
+  }
+}
+
+.global-settings-app-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 350px;
+  margin-right: 10px;
+}
+
+.nav-auto-save {
+  width: 325px;
+  left: 485px;
+  position: absolute;
+  color: #36af8b;
+}
+
+.editor-header-actions {
+  @media screen and (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.undo-button,
+.redo-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  gap: 10px;
+  width: 28px;
+  height: 28px;
+  background: #eceef0;
+  border-radius: 6px;
+  margin-right: 5px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.theme-dark {
+  .undo-button,
+  .redo-button {
+    background: 0;
+  }
+}
+
+.app-version-menu {
+  position: absolute;
+  right: 220px;
+  padding: 4px 8px;
+  min-width: 100px;
+  max-width: 300px;
+}
+
+.app-version-menu-sm {
+  height: 30px;
+  display: flex;
+  font-size: 12px;
+}
+
+.app-version-menu .dropdown-menu {
+  left: -65px;
+  width: 283px;
+}
+
+.app-version-menu .released {
+  color: #36af8b;
+}
+
+.app-version-menu .released-subtext {
+  font-size: 12px;
+  color: #36af8b;
+  padding: 0 8px;
+}
+
+.app-version-menu .create-link {
+  margin: auto;
+  width: 50%;
+  padding-left: 10px;
+}
+
+.app-versions-selector {
+  display: inline-flex;
+  align-items: center;
+  min-width: 100px;
+  width: auto;
+  height: 32px;
+  border-radius: 6px;
+
+  .react-select__control {
+    background-color: var(--page-default);
+    border: none !important;
+  }
+
+  .react-select__value-container {
+    height: 32px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+
+    & + .react-select__indicators {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
+}
+
+.app-version-list-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-version-name,
+.app-version-released {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.app-version-name {
+  max-width: 80px;
+}
+
+.custom-version-selector__option:hover .app-version-delete {
+  display: block;
+}
+
+
+.canvas-background-holder {
+  display: flex;
+  min-width: 120px;
+  margin: auto;
+}
+
+.canvas-background-picker {
+  position: fixed;
+}
+
+.preview-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  height: 32px;
+  background: var(--surfaces-surface-01);
+  border: 1px solid var(--border-weak);
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-default);
+  box-shadow: var(--elevation-100-box-shadow);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border 0.15s, box-shadow 0.15s, color 0.15s;
+
+  svg {
+    color: #9747FF;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--button-secondary-hover);
+    color: var(--text-default);
+    text-decoration: none;
+  }
+
+  &:active {
+    background: var(--button-secondary-pressed);
+    color: var(--text-default);
+    text-decoration: none;
+  }
+
+  &:focus {
+    outline: 2px solid #3e63dd;
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &.disabled {
+    background: var(--button-secondary-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+    svg {
+      color: var(--icon-default);
+    }
+  }
+}
+
+.release-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px;
+}
+
+.release-buttons {
+  .promote-release-btn .release-button {
+    height: 32px;
+  }
+}
+.header-container .navbar-seperator {
+  border: 0;
+  border-right: 1px solid var(--border-weak);
+  width: 0;
+  height: 16px;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.release-buttons .license-tooltip+.navbar-seperator {
+  display: block;
+}
+
+.edit-app-name-button {
+  &:hover {
+    border-top: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    border-left: 1px solid var(--border-strong);
+    border-right: 1px solid var(--border-strong);
+  }
+}
