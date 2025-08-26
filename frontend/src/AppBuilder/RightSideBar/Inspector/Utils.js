@@ -2,6 +2,7 @@ import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
+import { LabeledDivider } from './Components/Form/_components';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -57,7 +58,15 @@ export function renderCustomStyles(
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
-    componentConfig.component == 'FilePicker'
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'DatetimePickerV2' ||
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'DatePickerV2' ||
+    componentConfig.component == 'TextArea' ||
+    componentConfig.component == 'Timepicker' ||
+    componentConfig.component == 'PhoneInput' ||
+    componentConfig.component == 'CurrencyInput' ||
+    componentConfig.component == 'DaterangePicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -148,7 +157,8 @@ export function renderElement(
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'RangeSliderV2'
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'Statistics'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -158,9 +168,14 @@ export function renderElement(
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
         const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
-        if (resolvedValue?.value !== value) return;
+
+        if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) return;
       }
     }
+  }
+
+  if (meta?.type === 'sectionSubHeader') {
+    return <LabeledDivider label={meta.displayName} />;
   }
 
   return (
