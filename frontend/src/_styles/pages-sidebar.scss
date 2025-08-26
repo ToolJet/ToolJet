@@ -824,18 +824,12 @@
     display: none;
 }
 
-.navigation-with-tooltip-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    
+.navigation-hover-trigger {
     &:hover {
-        .navigation-area.navigation-hover-trigger {
-            box-shadow: 0 0 0 1px #3E63DD !important;
-        }
+        box-shadow: 0 0 0 1px #3E63DD !important;
         
         // Only show hover tooltip if active tooltip is not present
-        .navigation-tooltip-hover {
+        & + .navigation-tooltip-hover {
             display: flex !important;
         }
     }

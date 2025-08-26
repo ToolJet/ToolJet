@@ -426,9 +426,6 @@ export const PagesSidebarNavigation = ({
   };
 
   const handleSidebarClick = (e) => {
-    // Only handle sidebar clicks in edit mode, as there's no right sidebar in view mode
-    if (currentMode !== 'edit') return;
-
     // Check if click is on the navigation area but not on navigation items
     const clickedElement = e.target;
     const isNavigationItem = clickedElement.closest(
@@ -443,7 +440,7 @@ export const PagesSidebarNavigation = ({
     }
   };
 
-  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+  const shouldShowBlueBorder = activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
@@ -512,218 +509,197 @@ export const PagesSidebarNavigation = ({
           <div style={{ marginLeft: '6px' }}>More</div>
         </button>
       </button>
-      {/* Wrapper div to maintain hover state between navigation and tooltip */}
-      <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
-        <div
-          ref={(el) => {
-            navRef.current = el;
-            navigationRef.current = el;
-          }}
-          className={cx('navigation-area', {
-            'navigation-hover-trigger': currentMode === 'edit',
-            close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-            'icon-only':
-              (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
-              (style === 'texticon' &&
-                (collapsable ? !isSidebarPinned : false) &&
+      <div
+        ref={(el) => {
+          navRef.current = el;
+          navigationRef.current = el;
+        }}
+        className={cx('navigation-area navigation-hover-trigger', {
+          close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
+          'icon-only':
+            (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
+            (style === 'texticon' &&
+              (collapsable ? !isSidebarPinned : false) &&
+              position === 'side' &&
+              !isPagesSidebarHidden),
+          'position-top': position === 'top' || isPagesSidebarHidden,
+          'text-only': style === 'text',
+          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          'no-preview-settings': isReleasedVersionId,
+        })}
+        style={{
+          width: 226,
+          position: 'sticky',
+          height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
+          top: '0px',
+          bottom: '0px',
+          background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
+          border: `${styles?.pillRadius?.value}px`,
+          borderRight:
+            !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
+              ? `1px solid ${styles?.borderColor?.value}`
+              : '',
+          borderBottom:
+            !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
+              ? `1px solid ${styles?.borderColor?.value}`
+              : '',
+          overflow: 'scroll',
+          boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
+          maxWidth: (() => {
+            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
+              return canvasMaxWidth;
+            }
+          })(),
+        }}
+        onClick={handleSidebarClick}
+      >
+        <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
+          {(collapsable || !headerHidden || !logoHidden) && (
+            <div
+              ref={headerRef}
+              style={{
+                marginRight: headerHidden && logoHidden && position == 'top' && '0px',
+              }}
+              className="app-name"
+            >
+              {!logoHidden && (
+                <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+                  <AppLogo isLoadingFromHeader={false} />
+                </div>
+              )}
+              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
+                <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
+                  {name?.trim() ? name : appName}
+                </div>
+              )}
+              {collapsable &&
+                !isTopPositioned &&
+                style == 'texticon' &&
                 position === 'side' &&
-                !isPagesSidebarHidden),
-            'position-top': position === 'top' || isPagesSidebarHidden,
-            'text-only': style === 'text',
-            // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-            // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-            'no-preview-settings': isReleasedVersionId,
-          })}
-          style={{
-            width: 226,
-            position: 'sticky',
-            height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
-            top: '0px',
-            bottom: '0px',
-            background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
-            border: `${styles?.pillRadius?.value}px`,
-            borderRight:
-              !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
-                ? `1px solid ${styles?.borderColor?.value}`
-                : '',
-            borderBottom:
-              !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
-                ? `1px solid ${styles?.borderColor?.value}`
-                : '',
-            overflow: 'scroll',
-            boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
-            maxWidth: (() => {
-              if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
-                return canvasMaxWidth;
-              }
-            })(),
-          }}
-          onClick={handleSidebarClick}
-        >
-          <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
-            {(collapsable || !headerHidden || !logoHidden) && (
-              <div
-                ref={headerRef}
-                style={{
-                  marginRight: headerHidden && logoHidden && position == 'top' && '0px',
-                }}
-                className="app-name"
-              >
-                {!logoHidden && (
-                  <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
-                    <AppLogo isLoadingFromHeader={false} />
+                !isPagesSidebarHidden && (
+                  <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
+                    <SolidIcon
+                      className="cursor-pointer"
+                      fill="var(--icon-strong)"
+                      width="14px"
+                      name={isSidebarPinned ? 'remove03' : 'menu'}
+                    />
                   </div>
                 )}
-                {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
-                  <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
-                    {name?.trim() ? name : appName}
-                  </div>
-                )}
-                {collapsable &&
-                  !isTopPositioned &&
-                  style == 'texticon' &&
-                  position === 'side' &&
-                  !isPagesSidebarHidden && (
-                    <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
-                      <SolidIcon
-                        className="cursor-pointer"
-                        fill="var(--icon-strong)"
-                        width="14px"
-                        name={isSidebarPinned ? 'remove03' : 'menu'}
-                      />
-                    </div>
-                  )}
-              </div>
-            )}
-            {isLicensed && !isPagesSidebarHidden ? (
-              <RenderPageAndPageGroup
-                switchPageWrapper={switchPageWrapper}
-                pages={pages}
-                labelStyle={labelStyle}
-                computeStyles={computeStyles}
-                darkMode={darkMode}
-                switchPage={switchPage}
-                linkRefs={linkRefs}
-                visibleLinks={visibleLinks}
-                overflowLinks={overflowLinks}
-                moreBtnRef={moreRef}
-                navRef={navRef}
-                position={position}
-                isSidebarPinned={isSidebarPinned}
-                currentMode={currentMode}
-              />
-            ) : (
-              !isPagesSidebarHidden && (
-                <RenderPagesWithoutGroup
-                  darkMode={darkMode}
-                  homePageId={homePageId}
-                  labelStyle={labelStyle}
-                  isSidebarPinned={isSidebarPinned}
-                  pages={pages}
-                  currentPageId={currentPageId}
-                  computeStyles={computeStyles}
-                  switchPageWrapper={switchPageWrapper}
-                  moreBtnRef={moreRef}
-                  visibleLinks={visibleLinks}
-                  overflowLinks={overflowLinks}
-                  position={position}
-                  currentMode={currentMode}
-                />
-              )
-            )}
-          </div>
-          {appMode === 'auto' && (
-            <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-              <DarkModeToggle
-                toggleForCanvas={true}
-                switchDarkMode={switchDarkMode}
-                darkMode={darkMode}
-                tooltipPlacement="right"
-              />
             </div>
           )}
+          {isLicensed && !isPagesSidebarHidden ? (
+            <RenderPageAndPageGroup
+              switchPageWrapper={switchPageWrapper}
+              pages={pages}
+              labelStyle={labelStyle}
+              computeStyles={computeStyles}
+              darkMode={darkMode}
+              switchPage={switchPage}
+              linkRefs={linkRefs}
+              visibleLinks={visibleLinks}
+              overflowLinks={overflowLinks}
+              moreBtnRef={moreRef}
+              navRef={navRef}
+              position={position}
+              isSidebarPinned={isSidebarPinned}
+              currentMode={currentMode}
+            />
+          ) : (
+            !isPagesSidebarHidden && (
+              <RenderPagesWithoutGroup
+                darkMode={darkMode}
+                homePageId={homePageId}
+                labelStyle={labelStyle}
+                isSidebarPinned={isSidebarPinned}
+                pages={pages}
+                currentPageId={currentPageId}
+                computeStyles={computeStyles}
+                switchPageWrapper={switchPageWrapper}
+                moreBtnRef={moreRef}
+                visibleLinks={visibleLinks}
+                overflowLinks={overflowLinks}
+                position={position}
+                currentMode={currentMode}
+              />
+            )
+          )}
         </div>
-        {/* Show tooltip when tab is active */}
-        {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
-          <div
-            className="navigation-tooltip"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              zIndex: 1000,
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#4368E3',
-              padding: '2px 6px',
-              borderRadius: '6px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                setRightSidebarOpen(true);
-              }}
-            >
-              <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
-            </div>
-            <div
-              style={{
-                color: '#f6f8fa',
-                fontSize: '11px',
-                fontWeight: '500',
-              }}
-            >
-              Page and nav
-            </div>
+        {appMode === 'auto' && (
+          <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+            <DarkModeToggle
+              toggleForCanvas={true}
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              tooltipPlacement="right"
+            />
           </div>
         )}
+      </div>
+      {/* Show tooltip when tab is active */}
+      {activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
+        <div
+          className="navigation-tooltip"
+          style={{
+            position: 'absolute',
+            top: position === 'top' ? 'calc(100% + 8px)' : '7px',
+            left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '46px',
+            zIndex: 1000,
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: '#1b1f24',
+            padding: '2px 6px',
+            borderRadius: '6px',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          }}
+        >
+          <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
+          <div
+            style={{
+              color: '#f6f8fa',
+              fontSize: '11px',
+              fontWeight: '500',
+            }}
+          >
+            Page and nav
+          </div>
+        </div>
+      )}
 
-        {/* Show tooltip on hover (only in edit mode, controlled by CSS) */}
-        {currentMode === 'edit' && (
-          <div
-            className="navigation-tooltip-hover"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              zIndex: 1000,
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              display: 'none',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#4368E3',
-              padding: '2px 6px',
-              borderRadius: '6px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                setRightSidebarOpen(true);
-              }}
-            >
-              <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
-            </div>
-            <div
-              style={{
-                color: '#f6f8fa',
-                fontSize: '11px',
-                fontWeight: '500',
-              }}
-            >
-              Page and nav
-            </div>
-          </div>
-        )}
-      </div>{' '}
-      {/* Close navigation-with-tooltip-wrapper */}
+      {/* Show tooltip on hover (always present, controlled by CSS) */}
+      <div
+        className="navigation-tooltip-hover"
+        style={{
+          position: 'absolute',
+          top: position === 'top' ? 'calc(100% + 8px)' : '7px',
+          left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '46px',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          display: 'none',
+          alignItems: 'center',
+          gap: '6px',
+          background: '#1b1f24',
+          padding: '2px 6px',
+          borderRadius: '6px',
+          whiteSpace: 'nowrap',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
+        <div
+          style={{
+            color: '#f6f8fa',
+            fontSize: '11px',
+            fontWeight: '500',
+          }}
+        >
+          Page and nav
+        </div>
+      </div>
     </div>
   );
 };
