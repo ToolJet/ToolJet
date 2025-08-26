@@ -582,7 +582,9 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">
                 {paramDetails(param)}
-                <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
+                <div className="col field overflow-hidden code-hinter-borderless" style={{
+                  width: "min-content",
+                }}>{inputField(param)}</div>
                 {((type === 'request' && options['params'][type][param]) || options['params'][type][param?.name]) &&
                   clearButton(param)}
               </div>
