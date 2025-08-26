@@ -476,7 +476,7 @@ export const createQueryPanelSlice = (set, get) => ({
           moduleId
         );
 
-        onEvent('onDataQuerySuccess', queryEvents, mode);
+        onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
         return { status: 'ok', data: finalData };
       };
 
