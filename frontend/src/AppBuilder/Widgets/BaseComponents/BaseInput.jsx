@@ -3,7 +3,7 @@ import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { getModifiedColor } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 const RenderInput = forwardRef((props, ref) => {
   return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
@@ -56,10 +56,11 @@ export const BaseInput = ({
     accentColor,
     iconVisibility: showLeftIcon,
     icon,
+    widthType,
   } = styles;
 
   const { label, placeholder } = properties;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
@@ -165,6 +166,7 @@ export const BaseInput = ({
           _width={_width}
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
+          widthType={widthType}
         />
 
         {showLeftIcon && (
@@ -214,7 +216,10 @@ export const BaseInput = ({
           onKeyUp={handleKeyUp}
           // disabled={disable || loading}
           placeholder={placeholder}
-          style={finalStyles}
+          style={{
+            ...finalStyles,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
+          }}
           {...additionalInputProps}
         />
 
