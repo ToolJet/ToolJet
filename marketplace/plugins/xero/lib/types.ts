@@ -7,6 +7,7 @@ export type SourceOptions = {
   oauth_type: OptionData;
   tenant_id: OptionData;
   access_token?: string;
+  select_scope?: OptionData;
 };
 export type QueryOptions = {
   operation: string;

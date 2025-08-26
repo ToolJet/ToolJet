@@ -40,7 +40,7 @@
       "value": "authorization_code"
     },
     "scopes": {
-      "value": "openid profile email offline_access accounting.transactions accounting.contacts accounting.reports.read accounting.settings"
+      "value": ""
     },
     "oauth_type": {
       "value": "custom_app"
@@ -54,13 +54,19 @@
     "tenant_id": {
       "value": ""
     }
-  },
+    },
   "properties": {
     "tenant_id": {
       "key": "tenant_id",
       "type": "text",
       "label": "Tenant ID",
       "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
+      },
+      "scopes": {
+        "key": "scopes",
+        "type": "text",
+        "label": "Scopes",
+        "description": "Enter the scopes for the Xero API (e.g. accounting.transactions.read)"
       },
     "oauth": {
       "key": "oauth",
@@ -83,5 +89,5 @@
       }
     }
   },
-  "required": ["client_id", "client_secret", "tenant_id"]
+  "required": ["client_id", "client_secret", "tenant_id","scopes"]
 }

@@ -27,8 +27,6 @@ export default class Xero implements QueryService {
       clientSecret = source_options?.client_secret?.value;
     }
 
-    const scope = `openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`;
-
     if (!clientId || !clientSecret) {
       const errorMessage = 'Missing OAuth credentials: "clientId" or "clientSecret" not provided.';
       const errorDetails = {
@@ -43,6 +41,7 @@ export default class Xero implements QueryService {
       throw new QueryError('Invalid configuration', errorMessage, errorDetails);
     }
 
+    const scope = source_options?.scopes?.value;
     const encodedScope = encodeURIComponent(scope);
     const baseUrl = `https://login.xero.com/identity/connect/authorize?response_type=code&client_id=${clientId}` +
       `&redirect_uri=${fullUrl}oauth2/authorize`;
@@ -92,6 +91,7 @@ export default class Xero implements QueryService {
   }
 
   private constructSourceOptions(sourceOptions: any) {
+    const scope = sourceOptions[`scopes`];
     return {
       ...sourceOptions,
       url: 'https://api.xero.com',
@@ -107,7 +107,7 @@ export default class Xero implements QueryService {
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      scopes: encodeURIComponent(`openid profile email offline_access accounting.transactions accounting.transactions.read accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.budgets.read finance.statements.read finance.accountingactivity.read finance.cashvalidation.read finance.bankstatementsplus.read`)
+      scopes: encodeURIComponent(scope)
     };
   }
 
@@ -250,11 +250,53 @@ export default class Xero implements QueryService {
     const bodyParams = queryOptions['params']['request'];
 
 
-    let url = `https://api.xero.com/api.xro/2.0${path}`;
+    let baseUrl: string;
 
-    if (specType === "finance") {
-      url = `https://api.xero.com/finance.xro/1.0${path}`
+    switch (specType.toLowerCase()) { 
+      case "accounts":
+      case "contacts":
+      case "invoices":
+      case "payments":
+      case "reports":
+        baseUrl = "https://api.xero.com/api.xro/2.0";
+        break;
+      case "finance":
+        baseUrl = "https://api.xero.com/finance.xro/1.0";
+        break;
+      case "files":
+        baseUrl = "https://api.xero.com/files.xro/1.0";
+        break;
+      case "identity":
+        baseUrl = "https://api.xero.com";
+        break;
+      case "bank_feeds":
+        baseUrl = "https://api.xero.com/bankfeeds.xro/1.0";
+        break;
+      case "projects":
+        baseUrl = "https://api.xero.com/projects.xro/2.0";
+        break;
+      case "payroll_au":
+        baseUrl = "https://api.xero.com/payroll.xro/1.0";
+        break;
+      case "payroll_uk":
+        baseUrl = "https://api.xero.com/payroll.xro/2.0";
+        break;
+      case "payroll_nz":
+        baseUrl = "https://api.xero.com/payroll.xro/2.0";
+        break;
+      case "app_store":
+        baseUrl = "https://api.xero.com/appstore.xro/1.0";
+        break;
+      case "assets":
+        baseUrl = "https://api.xero.com/assets.xro/1.0";
+        break;
+
+      default:
+        throw new QueryError(`Unknown specType/entity: ${specType}`, `Unknown specType/entity: ${specType}`, {});
     }
+
+    let url = `${baseUrl}${path}`;
+
 
     for (const param in pathParams) {
       url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
@@ -311,15 +353,16 @@ export default class Xero implements QueryService {
       } catch {
         parsed = error?.response?.body || error;
       }
-      const errorMessage = parsed?.Message || parsed?.Title || 'Xero API request failed';
+      const errorMessage = parsed?.Message || parsed?.Title || parsed?.message ||'Xero API request failed';
       const errorDetails = {
         statusCode: error?.response?.statusCode,
-        ErrorNumber: parsed?.ErrorNumber || 'Unknown',
-        Type: parsed?.Type || 'Unknown',
-        Message: parsed?.Message || 'Unknown error',
+        ErrorNumber: parsed?.ErrorNumber,
+        Type: parsed?.Type ,
+        Message: parsed?.Message || parsed?.message || parsed?.Detail || parsed,
         Detail: parsed?.Detail,
         code: error?.code,
-        Instance : parsed?.Instance
+        Instance : parsed?.Instance,
+        modelState: parsed?.modelState
       };
       throw new QueryError('Query execution failed', errorMessage, errorDetails);
     }

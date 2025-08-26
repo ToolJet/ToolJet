@@ -16,7 +16,16 @@
         "Invoices":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-invoice.json",
         "Payments":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-payments.json",
         "Reports":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero-report.json",
-        "Finance":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero_finance.yaml"
+        "Finance":"https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/xero_finance.yaml",
+        "identity":"https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-identity.yaml",
+        "BankFeeds":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-banks.yaml",
+        "AppStore":"https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/refs/heads/master/xero-app-store.yaml",
+        "Assets":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-assets.yaml",
+        "PayrollAu":"https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/refs/heads/master/xero-payroll-au.yaml",
+        "PayrollUk":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payroll-uk.yaml",
+        "PayrollNz":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-payroll-nz.yaml",
+        "Projects":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-projects.yaml",
+        "Files":"https://raw.githubusercontent.com/devanshu-gupta2002/OpenAPI/refs/heads/master/xero/xero-files.yaml"
       }
     }
   }
