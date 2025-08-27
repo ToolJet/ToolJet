@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
+import Icon from '@/_ui/Icon/solidIcons';
 // import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
@@ -40,6 +41,9 @@ export const BaseLeftSidebar = ({
     toggleLeftSidebar,
     isSidebarOpen,
     isDraggingQueryPane,
+    aiGenerationActiveStep,
+    isAppGeneratedFromPrompt,
+    didUserSwitchedToVisualBuilder,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -53,6 +57,9 @@ export const BaseLeftSidebar = ({
       state.toggleLeftSidebar,
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
+      state.appStore.modules[moduleId].app?.aiGenerationMetadata?.active_step ?? '',
+      state.appStore.modules[moduleId].app?.appGeneratedFromPrompt ?? false,
+      state.ai.didUserSwitchedToVisualBuilder,
     ],
     shallow
   );
@@ -162,10 +169,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-          // toggleAppMaintenance={toggleAppMaintenance}
-          // isMaintenanceOn={isMaintenanceOn}
-          // app={app}
-          // backgroundFxQuery={backgroundFxQuery}
+            // toggleAppMaintenance={toggleAppMaintenance}
+            // isMaintenanceOn={isMaintenanceOn}
+            // app={app}
+            // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -217,8 +224,19 @@ export const BaseLeftSidebar = ({
           darkMode: darkMode,
           icon: 'tooljetai',
           className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-          tip: <GenerateAppTooltipContent />,
+          tip: (
+            <GenerateAppTooltipContent
+              isSidebarOpen={isSidebarOpen}
+              aiGenerationActiveStep={aiGenerationActiveStep}
+              isAppGeneratedFromPrompt={isAppGeneratedFromPrompt}
+              didUserSwitchedToVisualBuilder={didUserSwitchedToVisualBuilder}
+            />
+          ),
           ref: setSideBarBtnRefs('tooljetai'),
+          keepTooltipOpen:
+            !isSidebarOpen &&
+            (aiGenerationActiveStep === 'design_layout' ||
+              (isAppGeneratedFromPrompt && didUserSwitchedToVisualBuilder)),
           iconProps: {
             width: '20',
             height: '20',
@@ -267,7 +285,7 @@ export const BaseLeftSidebar = ({
       />
       <div className="left-sidebar-stack-bottom">
         <div className="">
-          {/* <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
+            {/* <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
             <LeftSidebarComment
               selectedSidebarItem={showComments ? 'comments' : ''}
               currentPageId={currentPageId}
@@ -286,7 +304,24 @@ export const BaseLeftSidebar = ({
 
 export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
 
-function GenerateAppTooltipContent() {
+function GenerateAppTooltipContent({
+  isSidebarOpen,
+  aiGenerationActiveStep,
+  isAppGeneratedFromPrompt,
+  didUserSwitchedToVisualBuilder,
+}) {
+  if (
+    !isSidebarOpen &&
+    (aiGenerationActiveStep === 'design_layout' || (isAppGeneratedFromPrompt && didUserSwitchedToVisualBuilder))
+  )
+    return (
+      <div className="tw-flex tw-items-center tw-gap-1">
+        <Icon name="interactive" width="16" />
+
+        <span>Click to continue building</span>
+      </div>
+    );
+
   return (
     <>
       <h5 className="tw-font-medium">Generate app</h5>
