@@ -46,7 +46,7 @@ export const DarkModeToggle = function DarkModeToggle({
     <OverlayTrigger
       placement={tooltipPlacement}
       delay={{ show: 250, hide: 400 }}
-      trigger={('hover', 'focus')}
+      trigger={['hover', 'focus']}
       overlay={
         <Tooltip id="button-tooltip">
           {darkMode
