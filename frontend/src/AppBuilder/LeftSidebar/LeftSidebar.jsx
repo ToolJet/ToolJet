@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
-import Icon from '@/_ui/Icon/solidIcons';
+import Icon from '@/_ui/Icon/SolidIcons';
 // import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
