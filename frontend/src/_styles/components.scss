@@ -532,12 +532,3 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-//[Container-widget]Show scrollbar only on hover
-.widget-type-container {
-  overflow: hidden auto;
-  scrollbar-width: none;
-
-  &:hover {
-    scrollbar-width: auto;
-  }
-}

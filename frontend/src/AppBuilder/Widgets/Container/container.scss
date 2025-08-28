@@ -11,15 +11,6 @@
     }
   }
 
-//[Container-widget]Show scrollbar only on hover
-.widget-type-container {
-  .sub-canvas {
-    overflow: hidden auto;
-    scrollbar-width: none;
-    &:hover {
-      scrollbar-width: auto;
-   }
-  }
 
-}
+
   

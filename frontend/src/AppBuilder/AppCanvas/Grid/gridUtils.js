@@ -544,9 +544,7 @@ export const handleDeactivateTargets = () => {
 export const computeScrollDelta = ({ source }) => {
   // Only need to calculate scroll delta when moving from a sub-container
   if (source.slotId !== 'real-canvas') {
-    const subContainerWrap = document
-      .querySelector(`#canvas-${source.slotId}`)
-      ?.closest('.sub-container-overflow-wrap');
+    const subContainerWrap = document.querySelector(`#canvas-${source.slotId}`);
 
     return subContainerWrap?.scrollTop || 0;
   }

@@ -320,8 +320,6 @@ export const Modal = function Modal({
               canvasHeight={modalHeight}
               styles={{
                 backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowX: 'hidden',
-                overflowY: 'auto',
               }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
