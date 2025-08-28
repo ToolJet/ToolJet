@@ -113,21 +113,27 @@
   align-items: center;
   min-width: 100px;
   width: auto;
-  height: 32px;
+  height: 40px;
   border-radius: 6px;
+
+  >div {
+    height: fit-content;
+  }
 
   .react-select__control {
     background-color: var(--page-default);
     border: none !important;
+    height: fit-content;
   }
 
   .react-select__value-container {
-    height: 32px;
-    padding: 0 !important;
+    height: 36px;
+    padding: 0 2px !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
+    margin: 0;
 
     & + .react-select__indicators {
       display: none;

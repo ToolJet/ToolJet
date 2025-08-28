@@ -28,7 +28,7 @@ export function ToggleLayoutButtons({
             iconOnly
             aria-label="Switch to desktop layout"
             aria-selected={currentLayout === 'desktop'}
-            tabIndex={0}
+            tabIndex={currentLayout === 'desktop' ? 0 : -1}
             type="button"
             onClick={() => {
               toggleCurrentLayout('desktop');
@@ -48,7 +48,7 @@ export function ToggleLayoutButtons({
             iconOnly
             aria-label="Switch to mobile layout"
             aria-selected={currentLayout === 'mobile'}
-            tabIndex={-1}
+            tabIndex={currentLayout === 'mobile' ? 0 : -1}
             type="button"
             onClick={() => {
               toggleCurrentLayout('mobile');
