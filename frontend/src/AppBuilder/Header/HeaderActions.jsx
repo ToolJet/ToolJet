@@ -70,52 +70,6 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth }) {
         <Play width="16" height="16" />
         Preview
       </Link>
-      {false && (
-        <div className="undo-redo-container" data-cy="undo-redo-container">
-          <button
-            onClick={() => {
-              handleUndo();
-            }}
-            className="tj-ghost-black-btn"
-            data-tooltip-id="tooltip-for-undo"
-            data-tooltip-content="Undo"
-            data-cy={'editor-undo-button'}
-          >
-            <SolidIcon
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill={darkMode ? '#fff' : '#2c3e50'}
-              name="arrowforwardup"
-              className={cx('cursor-pointer', {
-                disabled: !canUndo,
-              })}
-              data-cy="undo-icon"
-            />
-          </button>
-          <button
-            onClick={() => {
-              handleRedo();
-            }}
-            className="tj-ghost-black-btn"
-            data-tooltip-id="tooltip-for-redo"
-            data-tooltip-content="Redo"
-            data-cy={`editor-redo-button`}
-          >
-            <SolidIcon
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill={darkMode ? '#fff' : '#2c3e50'}
-              name="arrowbackup"
-              className={cx('cursor-pointer', {
-                disabled: !canRedo,
-              })}
-              data-cy="redo-icon"
-            />
-          </button>
-        </div>
-      )}
       <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
     </div>
