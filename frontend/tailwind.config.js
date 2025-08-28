@@ -98,7 +98,7 @@ module.exports = {
         'switch-background-on': 'var(--switch-background-on)',
         'slider-handle': 'var(--slider-handle)',
         'slider-track': 'var(--slider-track)',
-        'slider-fill': 'var(--slider-fill)',
+        'slider-fill': 'var(--slider-fill)'
       },
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',
