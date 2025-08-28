@@ -61,6 +61,12 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -114,7 +120,6 @@ export const currencyinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
-      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -220,6 +225,7 @@ export const currencyinputConfig = {
     isVisible: true,
     isDisabled: false,
     isLoading: false,
+    isRtl: false,
   },
   actions: [
     {
@@ -277,6 +283,7 @@ export const currencyinputConfig = {
       placeholder: { value: 'Enter amount' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       isCountryChangeEnabled: { value: '{{true}}' },

@@ -4,6 +4,9 @@ import { useInput } from './BaseComponents/hooks/useInput';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
+  const { rtl } = props.properties;
+  const { setExposedVariable } = props;
+
   const inputLogic = useInput({
     ...props,
     properties: {
@@ -53,7 +56,8 @@ export const NumberInput = (props) => {
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: '20px', // Make room for number controls
+      paddingRight: rtl ? '8px' : '20px', // Make room for number controls
+      paddingLeft: rtl ? '20px' : baseStyles.paddingLeft || '8px',
     };
   };
 
@@ -61,18 +65,24 @@ export const NumberInput = (props) => {
     <div
       style={{
         position: 'absolute',
-        right:
-          inputLogic.labelWidth === 0
-            ? 0
-            : props.styles.alignment === 'side' && props.styles.direction === 'right'
-            ? `${inputLogic.labelWidth}px`
-            : 0,
+        right: rtl ? 'auto' : 0,
+        left: rtl ? '2px' : 'auto',
         top: 0,
         height: '100%',
         width: '20px',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 2,
+        // Ensure controls stay within input bounds when label is present
+        transform:
+          rtl && props.styles.alignment === 'side' && props.styles.direction === 'left' && inputLogic.labelWidth > 0
+            ? `translateX(${inputLogic.labelWidth}px)`
+            : !rtl &&
+              props.styles.alignment === 'side' &&
+              props.styles.direction === 'right' &&
+              inputLogic.labelWidth > 0
+            ? `translateX(-${inputLogic.labelWidth}px)`
+            : 'none',
       }}
     >
       <div
@@ -93,10 +103,13 @@ export const NumberInput = (props) => {
               props.styles.alignment === 'top' && props.properties.label?.length > 0 && props.styles.width > 0
                 ? '21px'
                 : '1px',
-            right: '1px',
-            borderLeft: '1px solid var(--cc-default-border)',
+            right: rtl ? 'auto' : '1px',
+            left: rtl ? '1px' : 'auto',
+            borderLeft: rtl ? 'none' : '1px solid var(--cc-default-border)',
+            borderRight: rtl ? '1px solid var(--cc-default-border)' : 'none',
             borderBottom: '.5px solid var(--cc-default-border)',
-            borderTopRightRadius: props.styles.borderRadius - 1,
+            borderTopRightRadius: rtl ? 0 : props.styles.borderRadius - 1,
+            borderTopLeftRadius: rtl ? props.styles.borderRadius - 1 : 0,
             backgroundColor: 'transparent',
           }}
           className="numberinput-up-arrow arrow number-input-arrow"
@@ -115,11 +128,14 @@ export const NumberInput = (props) => {
           fill={'var(--icons-default)'}
           style={{
             position: 'absolute',
-            right: '1px',
+            right: rtl ? 'auto' : '1px',
+            left: rtl ? '1px' : 'auto',
             bottom: '1px',
-            borderLeft: '1px solid var(--cc-default-border)',
+            borderLeft: rtl ? 'none' : '1px solid var(--cc-default-border)',
+            borderRight: rtl ? '1px solid var(--cc-default-border)' : 'none',
             borderTop: '.5px solid var(--cc-default-border)',
-            borderBottomRightRadius: props.styles.borderRadius - 1,
+            borderBottomRightRadius: rtl ? 0 : props.styles.borderRadius - 1,
+            borderBottomLeftRadius: rtl ? props.styles.borderRadius - 1 : 0,
             backgroundColor: 'transparent',
           }}
           width={props.styles.padding === 'default' ? `${props.height / 2 - 1}px` : `${props.height / 2 + 1}px`}
@@ -133,9 +149,9 @@ export const NumberInput = (props) => {
 
   useEffect(() => {
     if (isNaN(inputLogic.value) || inputLogic.value === '') {
-      props.setExposedVariable('value', null);
+      setExposedVariable('value', null);
     }
-  }, [inputLogic.value]);
+  }, [inputLogic.value, setExposedVariable]);
 
   return (
     <BaseInput

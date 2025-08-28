@@ -56,6 +56,12 @@ export const numberinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -98,7 +104,6 @@ export const numberinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
-      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -238,6 +243,7 @@ export const numberinputConfig = {
     isVisible: true,
     isDisabled: false,
     isLoading: false,
+    isRtl: false,
   },
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
@@ -273,6 +279,7 @@ export const numberinputConfig = {
       visibility: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
     },
     events: [],
     styles: {

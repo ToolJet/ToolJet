@@ -39,7 +39,6 @@ export const filepickerConfig = {
       displayName: 'Set Disable',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
-
   ],
   properties: {
     label: {
@@ -225,6 +224,16 @@ export const filepickerConfig = {
     },
   },
   styles: {
+    direction: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      options: [
+        { displayName: 'Left', value: 'left' },
+        { displayName: 'Right', value: 'right' },
+      ],
+      accordian: 'File Drop Area',
+    },
     dropzoneTitleColor: {
       type: 'colorSwatches',
       displayName: 'Title',
@@ -318,6 +327,7 @@ export const filepickerConfig = {
     },
     events: [],
     styles: {
+      direction: { value: 'left' },
       borderRadius: { value: '{{6}}' },
       dropzoneTitleColor: { value: 'var(--cc-primary-text)' },
       // dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },

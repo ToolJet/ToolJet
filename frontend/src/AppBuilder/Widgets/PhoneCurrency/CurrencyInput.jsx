@@ -35,7 +35,7 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US', rtl } = properties;
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -105,16 +105,27 @@ export const CurrencyInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderLeft: 'none',
+    borderLeft: rtl ? '1px solid var(--cc-default-border)' : 'none',
+    borderRight: rtl ? 'none' : '1px solid var(--cc-default-border)',
+    textAlign: rtl ? 'right' : 'left',
+    direction: rtl ? 'rtl' : 'ltr',
   };
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+    right: rtl
+      ? 'auto'
+      : direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+      ? `${labelWidth + 11}px`
+      : '11px',
+    left: rtl
+      ? direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
         ? `${labelWidth + 11}px`
-        : '11px',
+        : '11px'
+      : 'auto',
     top:
       defaultAlignment === 'top'
         ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
@@ -205,7 +216,14 @@ export const CurrencyInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100 w-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            flexDirection: rtl ? 'row-reverse' : 'row',
+          }}
+        >
           <CountrySelect
             value={{
               label: `${CurrencyMap?.[country]?.prefix} (${CurrencyMap?.[country]?.currency})`,
@@ -268,7 +286,7 @@ export const CurrencyInput = (props) => {
           data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
-            textAlign: direction == 'left' && 'end',
+            textAlign: rtl ? 'right' : direction == 'left' && 'end',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',

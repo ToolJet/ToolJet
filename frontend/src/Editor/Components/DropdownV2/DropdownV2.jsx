@@ -71,6 +71,7 @@ export const DropdownV2 = ({
     sort,
     showClearBtn,
     showSearchInput,
+    rtl,
   } = properties;
   const {
     selectedTextColor,
@@ -106,6 +107,7 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  const [isRtl, setIsRtl] = useState(rtl);
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
@@ -265,6 +267,16 @@ export const DropdownV2 = ({
   }, [currentValue]);
 
   useEffect(() => {
+    if (isRtl !== rtl) setIsRtl(rtl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rtl]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isRtl', isRtl);
+  }, [isRtl]);
+
+  useEffect(() => {
     if (isInitialRender.current) return;
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
@@ -361,9 +373,9 @@ export const DropdownV2 = ({
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
+      overflow: 'visible',
       whiteSpace: 'nowrap',
+      textAlign: isRtl ? 'right' : 'left',
     }),
     input: (provided, _state) => ({
       ...provided,
@@ -380,7 +392,8 @@ export const DropdownV2 = ({
     indicatorsContainer: (provided, _state) => ({
       ...provided,
       height: _height,
-      marginRight: '10px',
+      marginRight: isRtl ? '0px' : '10px',
+      marginLeft: isRtl ? '10px' : '0px',
     }),
     clearIndicator: (provided, _state) => ({
       ...provided,
@@ -449,7 +462,7 @@ export const DropdownV2 = ({
           whiteSpace: 'nowrap',
           width: '100%',
         }}
-        onMouseDown={(event) => {
+        onMouseDown={(_event) => {
           onComponentClick(id);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
@@ -518,6 +531,7 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
+            isRtl={isRtl}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {
                 setIsMenuOpen(true);
@@ -541,6 +555,7 @@ export const DropdownV2 = ({
           style={{
             color: errTextColor,
             justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            textAlign: isRtl ? 'right' : direction === 'right' ? 'left' : 'right',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',

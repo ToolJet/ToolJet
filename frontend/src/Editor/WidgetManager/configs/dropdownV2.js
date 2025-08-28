@@ -106,6 +106,12 @@ export const dropdownV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -255,6 +261,7 @@ export const dropdownV2Config = {
   exposedVariables: {
     searchText: '',
     label: 'Select',
+    isRtl: false,
   },
   actions: [
     {
@@ -330,6 +337,7 @@ export const dropdownV2Config = {
       showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
     },

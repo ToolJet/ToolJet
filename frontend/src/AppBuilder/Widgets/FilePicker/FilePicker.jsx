@@ -11,6 +11,7 @@ import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { getModifiedColor } from '@/Editor/Components/utils';
+import Label from '@/_ui/Label';
 
 const FilePicker = (props) => {
   const {
@@ -62,6 +63,7 @@ const FilePicker = (props) => {
     dropzoneTitleColor,
     dropzoneActiveColor,
     dropzoneErrorColor,
+    direction,
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
 
   const rootRef = useRef(null);
@@ -195,7 +197,13 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
+            <h3
+              className="file-picker-title"
+              style={{
+                color: 'var(--file-picker-text-primary)',
+                textAlign: direction === 'right' ? 'right' : 'left',
+              }}
+            >
               {labelText}
             </h3>
             <ValidationBar

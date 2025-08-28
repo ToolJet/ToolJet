@@ -20,7 +20,10 @@ export const numberinputConfig = {
     value: {
       type: 'code',
       displayName: 'Default value',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 0,
+      },
     },
     placeholder: {
       type: 'code',
@@ -56,6 +59,12 @@ export const numberinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -72,9 +81,9 @@ export const numberinputConfig = {
   },
   styles: {
     color: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
     alignment: {
@@ -124,33 +133,33 @@ export const numberinputConfig = {
     },
 
     backgroundColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       accordian: 'field',
     },
     borderColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
       accordian: 'field',
     },
     textColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
     },
     icon: {
@@ -161,9 +170,9 @@ export const numberinputConfig = {
       visibility: false,
     },
     iconColor: {
-      type: 'colorSwatches',
+      type: 'color',
       displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
       accordian: 'field',
       visibility: false,
       showLabel: false,
@@ -238,6 +247,7 @@ export const numberinputConfig = {
     isVisible: true,
     isDisabled: false,
     isLoading: false,
+    isRtl: false,
   },
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
@@ -273,17 +283,18 @@ export const numberinputConfig = {
       visibility: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
     },
     events: [],
     styles: {
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-default-border)' },
-      accentColor: { value: 'var(--cc-primary-brand)' },
-      errTextColor: { value: 'var(--cc-error-systemStatus)' },
-      textColor: { value: 'var(--cc-primary-text)' },
-      color: { value: 'var(--cc-primary-text)' },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      backgroundColor: { value: '#fff' },
+      borderColor: { value: '#CCD1D5' },
+      accentColor: { value: '#4368E3' },
+      errTextColor: { value: '#D72D39' },
+      textColor: { value: '#1B1F24' },
+      color: { value: '#1B1F24' },
+      iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },

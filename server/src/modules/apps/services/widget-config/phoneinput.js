@@ -58,6 +58,12 @@ export const phoneinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    rtl: {
+      type: 'toggle',
+      displayName: 'RTL',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -111,7 +117,6 @@ export const phoneinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
-      isFxNotRequired: true,
     },
     width: {
       type: 'slider',
@@ -202,6 +207,7 @@ export const phoneinputConfig = {
     isVisible: true,
     isDisabled: false,
     isLoading: false,
+    isRtl: false,
   },
   actions: [
     {
@@ -264,6 +270,7 @@ export const phoneinputConfig = {
       placeholder: { value: 'Enter your phone' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      rtl: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       isCountryChangeEnabled: { value: '{{true}}' },

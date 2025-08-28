@@ -114,7 +114,6 @@ export const currencyinputConfig = {
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
-      isFxNotRequired: true,
     },
     width: {
       type: 'slider',

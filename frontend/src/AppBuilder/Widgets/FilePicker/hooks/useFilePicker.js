@@ -46,6 +46,7 @@ export const useFilePicker = ({
   const boxShadow = styles?.boxShadow ?? 'none';
   const containerPadding = styles?.padding ?? 'default';
   const borderRadius = styles?.borderRadius ?? 8;
+  const direction = styles?.direction ?? 'left';
 
   const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
   const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--primary-brand)';
@@ -606,6 +607,7 @@ export const useFilePicker = ({
     dropzoneTitleColor,
     dropzoneActiveColor,
     dropzoneErrorColor,
+    direction,
     height, // Needed for styling
     minSize,
     maxSize,

@@ -39,7 +39,7 @@ export const PhoneInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', rtl } = properties;
 
   const {
     textColor,
@@ -121,6 +121,16 @@ export const PhoneInput = (props) => {
 
   const disabledState = disable || loading;
 
+  const computedBorderColor = isFocused
+    ? accentColor != '4368E3'
+      ? accentColor
+      : 'var(--primary-accent-strong)'
+    : borderColor != '#CCD1D5'
+    ? borderColor
+    : disabledState
+    ? 'var(--borders-disabled-on-white)'
+    : 'var(--borders-default)';
+
   const loaderStyle = {
     right:
       direction === 'right' &&
@@ -142,21 +152,13 @@ export const PhoneInput = (props) => {
 
   const computedStyles = {
     height: '100%',
-    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
+    borderRadius: rtl ? `${borderRadius}px 0px 0px ${borderRadius}px` : `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
       ? 'var(--text-disabled)'
       : 'var(--text-primary)',
-    borderColor: isFocused
-      ? accentColor != '4368E3'
-        ? accentColor
-        : 'var(--primary-accent-strong)'
-      : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+    borderColor: computedBorderColor,
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
@@ -169,7 +171,10 @@ export const PhoneInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderLeft: 'none',
+    borderLeft: rtl ? `1px solid ${computedBorderColor}` : 'none',
+    borderRight: rtl ? 'none' : `1px solid ${computedBorderColor}`,
+    direction: rtl ? 'rtl' : 'ltr',
+    textAlign: rtl ? 'right' : 'left',
   };
 
   return (
@@ -204,7 +209,14 @@ export const PhoneInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100 w-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            direction: rtl ? 'rtl' : 'ltr',
+          }}
+        >
           <CountrySelect
             value={{ label: `${en[country]} +${getCountryCallingCodeSafe(country)}`, value: country }}
             options={options}
@@ -247,7 +259,7 @@ export const PhoneInput = (props) => {
           data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
-            textAlign: direction == 'left' && 'end',
+            textAlign: rtl ? 'right' : 'left',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',

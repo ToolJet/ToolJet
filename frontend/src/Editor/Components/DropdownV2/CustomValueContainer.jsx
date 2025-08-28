@@ -25,7 +25,7 @@ const CustomValueContainer = ({ children, ...props }) => {
             />
           </div>
         )}
-        <span className="d-flex" {...props}>
+        <span className="d-flex flex-grow-1" style={{ minWidth: 0 }} {...props}>
           {React.Children.map(children, (child) => {
             return child ? (
               child
