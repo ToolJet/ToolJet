@@ -231,6 +231,17 @@
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   },
   {
+    "name": "AWS Bedrock",
+    "description": "Plugin to use AI foundation models available on AWS",
+    "version": "1.0.0",
+    "id": "aws-bedrock",
+    "author": "Tooljet",
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
     "name": "Prometheus",
     "description": "Plugin to query metrics using PromQL",
     "version": "1.0.0",
@@ -285,5 +296,13 @@
     "id": "xero",
     "author": "Tooljet",
     "timestamp": "Mon, 18 Aug 2025 11:22:39 GMT"
+  },
+  {
+    "name": "HubSpot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
   }
 ]
