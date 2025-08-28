@@ -27,8 +27,8 @@ export default class EasyPostQueryService implements QueryService {
     const queryParams = queryOptions['params']['query'] || {};
 
     // Handle body parameters
-    const bodyParams = queryOptions['params']['request'] || {};
-    const jsonBody = Object.keys(bodyParams).length > 0 ? bodyParams : undefined;
+    const requestBody = queryOptions['params']['request'] || {};
+    const jsonBody = Object.keys(requestBody).length > 0 ? requestBody : undefined;
 
     try {
      const options: any = {
@@ -36,8 +36,8 @@ export default class EasyPostQueryService implements QueryService {
         headers: this.authHeader(apiKey),
         searchParams: queryParams,
       };
-      if (Object.keys(bodyParams).length > 0) {
-        options.json = bodyParams;
+      if (Object.keys(requestBody).length > 0) {
+        options.json = requestBody;
       }
 
       const response = await got(url, options);

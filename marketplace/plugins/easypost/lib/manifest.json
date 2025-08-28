@@ -13,7 +13,7 @@
     },
     "options": {
        "api_key": {
-        "type": "password",
+        "type": "string",
         "encrypted": true
       }
     }
