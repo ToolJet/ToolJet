@@ -623,7 +623,8 @@
             "tj-setup/smtp-setup/configuration",
             "tj-setup/smtp-setup/email-providers"
           ]
-        }
+        },
+        "tj-setup/whitelist-cdn-domains"
       ]
     },
     {
