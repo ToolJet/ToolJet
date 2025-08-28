@@ -118,7 +118,7 @@ const OAuthWrapper = ({
           />
           {oauth_configs?.scopeHelperText?.length > 0 && (
             <span className="text-muted" style={{ fontSize: '12px' }}>
-              {oauth_configs?.scopeHelperText}
+              {oauth_configs.scopeHelperText}
             </span>
           )}
         </div>
@@ -127,7 +127,7 @@ const OAuthWrapper = ({
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
-          helpText="Save this URL as callback or redirect URL in you OAuth app."
+          helpText="Save this URL as callback or redirect URL in your OAuth app."
           type="copyToClipboard"
           disabled={true}
           className="form-control"
