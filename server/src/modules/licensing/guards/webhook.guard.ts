@@ -38,6 +38,9 @@ export class WebhookGuard implements CanActivate {
     // Webhook API token validation
     if (request.headers.authorization.split(' ')[1] !== workflowApp.workflowApiToken) throw new UnauthorizedException();
 
+    // Workflow must be enabled inorder to use it
+    if (!workflowApp.isMaintenanceOn) throw new HttpException(`Workflow is disabled or does not exist`, 403);
+
     // WebHook endpoint must be enabled inorder to use it
     if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
 
