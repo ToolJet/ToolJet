@@ -11,7 +11,12 @@
       "data": {},
       "rawData": {}
     },
-    "options": {},
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
     "customTesting": true
   },
   "defaults": {
@@ -22,16 +27,13 @@
       "value": [["Content-Type", "application/x-www-form-urlencoded"]]
     },
     "redirect_url": {
-      "value": "http://localhost:8082/oauth2/authorize",
-      "encrypted": false
+      "value": "http://localhost:8082/oauth2/authorize"
     },
     "auth_url": {
-      "value": "https://login.xero.com/identity/connect/authorize",
-      "encrypted": false
+      "value": "https://login.xero.com/identity/connect/authorize"
     },
     "allowed_auth_types": {
-      "value": "oauth2",
-      "encrypted": false
+      "value": "oauth2"
     },
     "auth_type": {
       "value": "oauth2"
@@ -44,9 +46,6 @@
     },
     "oauth_type": {
       "value": "custom_app"
-    },
-    "client_secret": {
-      "encrypted": true
     },
     "access_token_url": {
       "value": "https://identity.xero.com/connect/token"
@@ -61,12 +60,6 @@
       "type": "text",
       "label": "Tenant ID",
       "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
-      },
-      "scopes": {
-        "key": "scopes",
-        "type": "text",
-        "label": "Scopes",
-        "description": "Enter the scopes for the Xero API (e.g. accounting.transactions.read)"
       },
     "oauth": {
       "key": "oauth",
@@ -85,7 +78,7 @@
         "allowed_grant_types": [
           "authorization_code"
         ],
-        "allowed_scope_field": false
+        "allowed_scope_field": true
       }
     }
   },

@@ -311,7 +311,8 @@ export default class Xero implements QueryService {
       const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
         newSourceOptions,
         context,
-        authValidatedRequestOptions as any
+        authValidatedRequestOptions as any,
+        { kind: 'xero' }
       );
       if (_requestOptions.status === 'needs_oauth') return _requestOptions;
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
