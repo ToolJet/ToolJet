@@ -39,11 +39,6 @@ const RESIZABLE_CONFIG = {
   renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
 };
 
-const HORIZONTAL_CONFIG = {
-  edge: ['e', 'w'],
-  renderDirections: ['w', 'e'],
-};
-
 export const GRID_HEIGHT = 10;
 
 export default function Grid({ gridWidth, currentLayout }) {
@@ -57,11 +52,9 @@ export default function Grid({ gridWidth, currentLayout }) {
   const selectedComponents = useStore((state) => state.selectedComponents, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
-  const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const temporaryHeight = useStore((state) => state.temporaryLayouts?.[selectedComponents?.[0]]?.height, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
-  const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
@@ -74,6 +67,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getTemporaryLayouts = useStore((state) => state.getTemporaryLayouts, shallow);
   const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
+  const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   // const [dragParentId, setDragParentId] = useState(null);
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
@@ -84,15 +78,14 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
-  const [isVerticalExpansionRestricted, setIsVerticalExpansionRestricted] = useState(false);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
 
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
     }
-    return isVerticalExpansionRestricted ? HORIZONTAL_CONFIG : RESIZABLE_CONFIG;
-  }, [isVerticalExpansionRestricted, virtualTarget]);
+    return RESIZABLE_CONFIG;
+  }, [virtualTarget]);
 
   const getMoveableTarget = useCallback(() => {
     if (virtualTarget) {
@@ -446,16 +439,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         return;
       }
       useStore.getState().setHoveredComponentBoundaryId(targetId);
-      const isHorizontallyExpandable = checkHoveredComponentDynamicHeight(targetId);
-      const moveableControlBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
-      if (moveableControlBox) {
-        if (isHorizontallyExpandable) {
-          moveableControlBox.classList.add('moveable-horizontal-only');
-        } else {
-          moveableControlBox.classList.remove('moveable-horizontal-only');
-        }
-      }
-      setIsVerticalExpansionRestricted(!!isHorizontallyExpandable);
     };
     const hideConfigHandle = () => {
       useStore.getState().setHoveredComponentBoundaryId('');
@@ -634,7 +617,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           handleActivateTargets(currentWidget.component?.parent);
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
-          const diffHeight = e.height - currentWidget.height;
+          const diffHeight = e.height - (temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height);
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
@@ -693,14 +676,29 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeEnd={(e) => {
           try {
             useStore.getState().setResizingComponentId(null);
+            const temporaryLayouts = getTemporaryLayouts();
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
             hideGridLines();
+            const isVerticalExpansionRestricted = checkHoveredComponentDynamicHeight(e.target.id);
+            let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            const directions = e.lastEvent?.direction;
+            if (isVerticalExpansionRestricted && directions[1] !== 0) {
+              const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
+              const width = currentWidget.width * _gridWidth;
+              const transformX = currentWidget.left * _gridWidth;
+
+              const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
+              e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+              e.target.style.width = `${width}px`;
+              e.target.style.height = `${height}px`;
+              toast.error('Component with dynamic height enabled \n cannot be resized vertically');
+              return false;
+            }
             if (!e.lastEvent) {
               return;
             }
-            let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
             const currentWidth = currentWidget.width * _gridWidth;
@@ -745,6 +743,10 @@ export default function Grid({ gridWidth, currentLayout }) {
               x: transformX,
               y: transformY,
             };
+            if (isVerticalExpansionRestricted) {
+              resizeData.height = currentWidget.height;
+              resizeData.y = currentWidget.top;
+            }
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
