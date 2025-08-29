@@ -30,6 +30,7 @@ const OpenapiAuth = ({
   isSaving,
   optionsChanged,
   securities,
+  audience,
 }) => {
   const apiKeyChanges = (key, value) => {
     const apiKeys = api_keys ?? [];
@@ -76,19 +77,30 @@ const OpenapiAuth = ({
 
   /* To populate the fields from the spec */
   useEffect(() => {
-    if (authObject && authObject.type === 'oauth2' && authObject?.flows?.authorizationCode) {
-      const { flows, general_scopes } = authObject;
-      const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
-      optionchanged('access_token_url', tokenUrl);
-      setTimeout(() => {
-        optionchanged('auth_url', authorizationUrl);
-        if (!scopes || scopes.trim === '') {
-          optionchanged('scopes', convertScopesToString(general_scopes));
-        }
-      }, 500);
+    if (authObject && authObject.type === 'oauth2') {
+      if (authObject?.flows?.authorizationCode) {
+        const { flows, general_scopes } = authObject;
+        const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
+        optionchanged('access_token_url', tokenUrl);
+        setTimeout(() => {
+          optionchanged('auth_url', authorizationUrl);
+          if (!scopes || scopes.trim === '') {
+            optionchanged('scopes', convertScopesToString(general_scopes));
+          }
+        }, 500);
+      } else if (authObject?.flows?.clientCredentials) {
+        // Handle clientCredentials flow
+        const { tokenUrl, scopes: flowScopes } = authObject.flows.clientCredentials;
+        setTimeout(() => {
+          optionchanged('access_token_url', tokenUrl);
+          optionchanged('grant_type', 'client_credentials');
+          if (!scopes && flowScopes) {
+            optionchanged('scopes', Object.keys(flowScopes).join(' '));
+          }
+        }, 100);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authObject, grant_type, scopes]);
+  }, [authObject, grant_type, optionchanged, scopes]);
 
   const convertScopesToString = (scopes) => {
     let scopes_str = '';
@@ -250,6 +262,7 @@ const OpenapiAuth = ({
               custom_auth_params: { value: custom_auth_params },
               custom_query_params: { value: custom_query_params },
               scopes: { value: scopes },
+              audience: { value: audience },
             }}
             isSaving={isSaving}
             selectedDataSource={selectedDataSource}

@@ -34,6 +34,7 @@ const OpenApi = ({
   selectedDataSource,
   isSaving,
   optionsChanged,
+  audience,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -263,6 +264,7 @@ const OpenApi = ({
             isSaving={isSaving}
             optionsChanged={optionsChanged}
             securities={securities}
+            audience={audience}
           />
         </>
       )}
