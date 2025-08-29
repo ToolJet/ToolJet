@@ -10,7 +10,7 @@ title: Steps
 cd /path/to/your/tooljet-directory
 
 # Download the upgrade script
-curl -O https://raw.githubusercontent.com/your-repo/upgrade_postgres_13_to_16.sh
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/upgrade_postgres_13_to_16.sh
 
 # Make the script executable
 chmod +x upgrade_postgres_13_to_16.sh
