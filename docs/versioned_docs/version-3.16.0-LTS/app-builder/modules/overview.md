@@ -11,7 +11,7 @@ Once created, modules can be reused across your workspace. Any updates you make 
 
 Use modules when:
 
-- You need a shared UI element, like a customer profile or navigation bar, across multiple apps.
+- You need a shared UI element, like a customer profile or navigation bar, across multiple applications within the same workspace.
 - You’re building repeatable flows such as approval forms, data filters, or input panels.
 - You want to simplify complex logic so others can use it with minimal setup.
 
