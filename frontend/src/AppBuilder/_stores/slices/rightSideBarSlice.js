@@ -8,7 +8,9 @@ const initialState = {
 
 export const createRightSideBarSlice = (set, get) => ({
   ...initialState,
-  setActiveRightSideBarTab: (tab) => set(() => ({ activeRightSideBarTab: tab }), false, 'setActiveRightSideBarTab'),
+  setActiveRightSideBarTab: (tab) => {
+    set(() => ({ activeRightSideBarTab: tab }), false, 'setActiveRightSideBarTab');
+  },
   toggleRightSidebar: () =>
     set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen }), false, 'toggleRightSidebar'),
   setRightSidebarOpen: (open) => set(() => ({ isRightSidebarOpen: open }), false, 'setRightSidebarOpen'),
