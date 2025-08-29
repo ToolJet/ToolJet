@@ -12,7 +12,7 @@ Inputs allow the parent application to send data or trigger actions inside the m
 - **Data**: Use this to pass values like string, number, boolean, array, or object.
 - **Query**: Use this to trigger queries inside the module from the parent app.
 
-<img className="screenshot-full img-m" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/input-type.png" alt="Input Types" />
+<img className="screenshot-full img-m" src="/img/app-builder/modules/input-type.png" alt="Input Types" />
 
 ### How to Define Inputs
 In the properties panel, go to the **Inputs** section and click **Add new**. Then, provide the following:
@@ -39,12 +39,10 @@ For our case, we’ll use `{{input.formTitle}}` to access the form title in the 
 ```js
 {{input.formTitle}}
 ```
-<!-- 
-<img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/consume-input.png" alt="Input Consumption" /> -->
 
 When you import this module into an application, you’ll see the input field in the module settings. If you set the **formTitle** value to **User Details**, the form will display that as the title.
 
-<img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/module-input-in-app.png" alt="Input Settings" /> 
+<img className="screenshot-full img-full" src="/img/app-builder/modules/module-input-in-app.png" alt="Input Settings" /> 
 
 #### Query Input
 

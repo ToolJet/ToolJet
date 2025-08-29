@@ -15,7 +15,7 @@ Follow these steps to get started with creating a module:
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/modules/create-module-modal.png" alt="Create Module" />
 3. Add components, queries, and actions just like you would in a normal app. place and resize your components on the **Module container**. 
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/app-builder/modules/module-builder.png" alt="Module Builder" />
-4. Click on the module container to open the properties panel Here you can see the **Input** and **Output** that help in defining how the module communicates with the parent application. These settings define how the module communicates with the parent app, making it easier to build dynamic, reusable modules that work across different data sets and queries.
+4. Click on the module container to open the properties panel Here you can see the **Input** and **Output** that help in defining how the module communicates with the parent application. These settings define how the module communicates with the parent app, making it easier to build dynamic, reusable modules that work across different data sets and queries. Checkout [Configuring Inputs and Outputs](/docs/app-builder/modules/input-output) guide to learn more.
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/modules/module-container-property.png" alt="Properties Panel" /> 
 
 ### Use a Module
