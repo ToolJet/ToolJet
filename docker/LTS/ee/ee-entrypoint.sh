@@ -44,8 +44,8 @@ fi
 
 
 # Check WORKLOW_WORKER and skip SETUP_CMD if true
-if [ "${WORKFLOW_WORKER}" == "true" ]; then
-  echo "WORKFLOW_WORKER is set to true. Running worker process."
+if [ "${WORKER}" == "true" ]; then
+  echo "WORKER is set to true. Running worker process."
   npm run worker:prod
 else
   # Determine setup command based on the presence of ./server/dist
