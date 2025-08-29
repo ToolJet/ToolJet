@@ -13,7 +13,7 @@ import {
 
 const data = {};
 
-describe("Workflows with Datasource", () => {
+describe("Workflows with Webhooks", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");

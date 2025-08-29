@@ -12,6 +12,9 @@ export const workflowSelector = {
   startNode: '[data-cy="start-node"]',
   startNodeHandleRight: '[data-cy="start-node-handle-right"]',
   optionsColumn: '[data-cy="options-column"]',
+  importWorkFlowsOption: '[data-cy="import-dropdown-menu"]',
+  importWorkFlowsLabel:'[data-cy="import-option-label"]',
+  importWorkFlowsButton: '[data-cy="import-workflow"]',
   runjsInputField:
     '[data-cy="runjs-input-field"] .cm-content[contenteditable="true"]',
   pgsqlQueryInputField: '[data-cy="query-input-field"]',

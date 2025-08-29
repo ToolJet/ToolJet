@@ -8,4 +8,5 @@ export const workflowsText = {
   harperdbInputField: "sql-query-input-field",
   restapiUrlInputField: "url-input-field",
   workflowNameInputField: "workflow-name-input",
+  exportWFOption: "export-workflow"
 };
