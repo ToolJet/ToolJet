@@ -75,9 +75,9 @@ Following actions of component can be controlled using the component specific ac
 
 ### Container
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                 |
-| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Background                                  | Add a background color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
+| :------------------------------------------ | :------------------------| 
+| Background | Add a background color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker. |
 | Border                                      | Add a border color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker.     |
 | Border radius                               | Add the border radius to the component.                                                                                           |
 | Padding                                     | Adds padding between the image and component border.                                                                              |
