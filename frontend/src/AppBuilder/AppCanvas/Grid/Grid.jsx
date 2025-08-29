@@ -24,6 +24,7 @@ import {
   getDraggingWidgetWidth,
   positionGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
+  getInitialPosition,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
@@ -675,6 +676,8 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onResizeEnd={(e) => {
           try {
+            handleDeactivateTargets();
+            clearActiveTargetClassNamesAfterSnapping(selectedComponents);
             useStore.getState().setResizingComponentId(null);
             const temporaryLayouts = getTemporaryLayouts();
             const currentWidget = boxList.find(({ id }) => {
@@ -685,16 +688,16 @@ export default function Grid({ gridWidth, currentLayout }) {
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             const directions = e.lastEvent?.direction;
             if (isVerticalExpansionRestricted && directions[1] !== 0) {
-              const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
-              const width = currentWidget.width * _gridWidth;
-              const transformX = currentWidget.left * _gridWidth;
-
-              const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
+              const { height, width, transformX, transformY } = getInitialPosition(
+                currentWidget,
+                temporaryLayouts,
+                _gridWidth
+              );
               e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
               e.target.style.width = `${width}px`;
               e.target.style.height = `${height}px`;
               toast.error('Component with dynamic height enabled \n cannot be resized vertically');
-              return false;
+              return;
             }
             if (!e.lastEvent) {
               return;
@@ -755,9 +758,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
-          handleDeactivateTargets();
           toggleCanvasUpdater();
-          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
         }}
         onResizeGroupStart={({ events }) => {
           showGridLines();
