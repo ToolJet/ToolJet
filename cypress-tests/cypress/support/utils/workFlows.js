@@ -58,9 +58,9 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
     "A few seconds ago"
   );
 
-  cy.get('[data-cy="node-name"]').contains('response1').click();
+  cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
-  cy.get(workflowSelector.optionsColumn).contains("Output").click();
+  cy.get('[data-cy="tab-output"]').click();
 
   cy.wait(500);
   cy.get("body").then(($body) => {
@@ -145,3 +145,13 @@ Cypress.Commands.add("backToWorkFlows", () => {
   cy.get(commonSelectors.pageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
 });
+
+Cypress.Commands.add("revealWorkflowToken", (selectors) => {
+  cy.get(selectors.workflowTokenField).invoke("text").then((tokenText) => {
+    if (tokenText.includes("*")) {
+      cy.get(selectors.workflowTokenEyeIcon).click({ force: true });
+      cy.wait(300);
+      cy.revealWorkflowToken(selectors); 
+    }
+  });
+})
