@@ -1552,7 +1552,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 12.8rem);
+    height: calc(100vh - 8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -3005,8 +3005,8 @@ input:focus-visible {
 }
 
 .widget-documentation-link {
-  // position: relative;
-  // top: 0px;
+  position: fixed;
+  bottom: 0;
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 999;
@@ -5233,6 +5233,10 @@ input[type="text"] {
       width: 32px;
       height: 32px;
     }
+
+    &.inspector-action-container {
+      align-items: unset;
+    }
   }
 }
 
@@ -5334,7 +5338,7 @@ div#driver-page-overlay {
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
   color: var(--slate12);
-  border: 1px solid transparent;
+  border: 1px solid transparent !important;
   border-radius: 6px;
   background-color: var(--base);
 
@@ -18797,4 +18801,14 @@ section.ai-message-prompt-input-wrapper {
 
 .accordion-body-custom {
   padding: 0rem 1rem 1rem 1rem !important;
+}
+
+.editor-sidebar {
+  .components-container {
+    .search-box-wrapper {
+      .input-icon-addon {
+        top: 2px;
+      }
+    }
+  }
 }
