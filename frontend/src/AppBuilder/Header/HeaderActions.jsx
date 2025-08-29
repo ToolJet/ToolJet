@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 
-const HeaderActions = function HeaderActions({ darkMode, showFullWidth }) {
+const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
     canUndo,
@@ -59,17 +59,19 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth }) {
           darkMode={darkMode}
         />
       )}
-      <Link
-        title="Preview"
-        to={appPreviewLink}
-        target="_blank"
-        rel="noreferrer"
-        data-cy="preview-link-button"
-        className="preview-link-btn"
-      >
-        <Play width="16" height="16" />
-        Preview
-      </Link>
+      {showPreviewBtn && (
+        <Link
+          title="Preview"
+          to={appPreviewLink}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="preview-link-button"
+          className="preview-link-btn"
+        >
+          <Play width="16" height="16" />
+          Preview
+        </Link>
+      )}
       <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
     </div>
