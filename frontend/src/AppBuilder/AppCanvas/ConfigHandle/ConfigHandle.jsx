@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -29,6 +29,7 @@ export const ConfigHandle = ({
   const { moduleId } = useModuleContext();
   const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const configHandleRef = useRef(null);
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
@@ -41,7 +42,6 @@ export const ConfigHandle = ({
     shallow
   );
   const position = widgetTop < 15 ? 'bottom' : 'top';
-
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
   const _showHandle = useStore((state) => {
@@ -55,6 +55,9 @@ export const ConfigHandle = ({
     );
   }, shallow);
 
+  const configHandleRect = configHandleRef.current?.getBoundingClientRect();
+  const canvasRect = document.getElementById('real-canvas')?.getBoundingClientRect();
+  const isOverflowingOutOfCanvas = configHandleRect?.right > canvasRect?.right;
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -94,6 +97,7 @@ export const ConfigHandle = ({
   return (
     <div
       className={`config-handle ${customClassName}`}
+      ref={configHandleRef}
       widget-id={id}
       style={{
         top:
@@ -103,7 +107,7 @@ export const ConfigHandle = ({
             ? '-20px'
             : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
-        left: '-1px',
+        ...(isOverflowingOutOfCanvas ? { right: '-1px' } : { left: '-1px' }),
       }}
       onClick={(e) => {
         e.stopPropagation();
