@@ -2,6 +2,7 @@ import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@to
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
+import fs from "fs";
 import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
 
@@ -16,7 +17,7 @@ export default class MongodbService implements QueryService {
         case 'list_collections':
           result = await db.listCollections().toArray();
           break;
-         case 'create_collection':
+        case 'create_collection':
           const collection = await db.createCollection(queryOptions.collection, this.parseEJSON(queryOptions.options));
           result = {
             collectionName: collection.collectionName,
@@ -231,7 +232,16 @@ export default class MongodbService implements QueryService {
 
       const encodedConnectionString = connectionString.replace(password, encodedPassword);
 
-      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+      client = new MongoClient(encodedConnectionString, {
+        auth: {
+          username: process.env.DB_USER!,
+          password: process.env.DB_PASS!,
+        },
+        authSource: "admin",
+        authMechanism: "SCRAM-SHA-1",
+        tls: true,
+        tlsCAFile: process.env.DOCUMENTDB_CA_FILE || "/path/to/rds-combined-ca-bundle.pem",
+      });
       await client.connect();
       db = client.db();
     }
