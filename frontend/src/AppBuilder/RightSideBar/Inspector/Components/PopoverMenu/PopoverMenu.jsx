@@ -76,7 +76,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     let currentNumber = options.length + 1;
     let value = currentNumber;
     while (!found) {
-      label = `option${currentNumber}`;
+      label = `Option${currentNumber}`;
       value = currentNumber.toString();
       if (options.find((option) => option.label === label) === undefined) {
         found = true;
@@ -87,10 +87,10 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     return {
       format: 'plain',
       label,
-      description: '',
+      description: `Description${currentNumber}`,
       value,
       icon: { value: 'IconCirclePlus' },
-      iconVisibility: false,
+      iconVisibility: true,
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
     };

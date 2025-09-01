@@ -4,8 +4,8 @@ export const popoverMenuConfig = {
     description: 'Popover Menu',
     component: 'PopoverMenu',
     defaultSize: {
-        width: 12,
-        height: 43,
+        width: 4,
+        height: 40,
     },
     others: {
         showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -89,14 +89,17 @@ export const popoverMenuConfig = {
         },
     },
     events: {
-        onClick: { displayName: 'On click' },
-        onHover: { displayName: 'On hover' },
+        onSelect: { displayName: 'On select' },
     },
     styles: {
         backgroundColor: {
             type: 'colorSwatches',
             displayName: 'Background',
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            conditionallyRender: {
+                key: 'buttonType',
+                value: 'primary',
+            },
             accordian: 'Trigger button',
         },
         textColor: {
@@ -104,7 +107,7 @@ export const popoverMenuConfig = {
             displayName: 'Text',
             validation: {
                 schema: { type: 'string' },
-                defaultValue: '#ffffff',
+                defaultValue: '#FFFFFF',
             },
             accordian: 'Trigger button',
         },
@@ -159,19 +162,23 @@ export const popoverMenuConfig = {
                 schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
                 defaultValue: '0px 0px 0px 0px #00000040',
             },
+            conditionallyRender: {
+                key: 'buttonType',
+                value: 'primary',
+            },
             accordian: 'Trigger button',
         },
 
         optionsTextColor: {
             type: 'colorSwatches',
             displayName: 'Text',
-            validation: { schema: { type: 'string' }, defaultValue: '#000000' },
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
             accordian: 'Options',
         },
         optionsIconColor: {
             type: 'colorSwatches',
             displayName: 'Icon',
-            validation: { schema: { type: 'string' }, defaultValue: '#000000' },
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
             accordian: 'Trigger button',
             visibility: false,
             accordian: 'Options',
@@ -216,14 +223,14 @@ export const popoverMenuConfig = {
             advanced: { value: '{{false}}' },
             schema: {
                 value:
-                    '{{[{"label":"option1","description":"Description1", "value":"1", "disable":false,"visible":true},{"label":"option2","description":"Description1","value":"2","disable":false,"visible":true},{"label":"option3","description":"Description1","value":"3","disable":false,"visible":true}]}}',
+                    '{{[{"label":"Option1","description":"Description1","value":"1","icon":"IconUser", "iconVisibility":true, "disable":false,"visible":true},{"label":"Option2","description":"Description2","value":"2","icon":"IconHome2", "iconVisibility":true, "disable":false,"visible":true},{"label":"Option3","description":"Description3","value":"3","icon":"IconBulb", "iconVisibility":true, "disable":false,"visible":true}]}}',
             },
             options: {
                 value: [
                     {
                         format: 'plain',
-                        label: 'option1',
-                        description: '',
+                        label: 'Option1',
+                        description: 'Description1',
                         value: '1',
                         icon: { value: 'IconUser' },
                         iconVisibility: true,
@@ -232,8 +239,8 @@ export const popoverMenuConfig = {
                     },
                     {
                         format: 'plain',
-                        label: 'option2',
-                        description: '',
+                        label: 'Option2',
+                        description: 'Description2',
                         value: '2',
                         icon: { value: 'IconHome2' },
                         iconVisibility: true,
@@ -242,8 +249,8 @@ export const popoverMenuConfig = {
                     },
                     {
                         format: 'plain',
-                        label: 'option3',
-                        description: '',
+                        label: 'Option3',
+                        description: 'Description3',
                         value: '3',
                         icon: { value: 'IconBulb' },
                         iconVisibility: true,
@@ -261,16 +268,16 @@ export const popoverMenuConfig = {
         events: [],
         styles: {
             backgroundColor: { value: 'var(--cc-primary-brand)' },
-            textColor: { value: '#ffffff' },
+            textColor: { value: '#FFFFFF' },
             borderColor: { value: 'var(--cc-primary-brand)' },
             loaderColor: { value: 'var(--cc-surface1-surface)' },
             icon: { value: 'IconAlignBoxBottomLeft' },
-            iconColor: { value: 'var(--cc-default-icon)' },
+            iconColor: { value: '#FFFFFF' },
             direction: { value: 'left' },
             borderRadius: { value: '6' },
             boxShadow: { value: '0px 0px 0px 0px #00000040' },
-            optionsTextColor: { value: '#000000' },
-            optionsIconColor: { value: '#000000' },
+            optionsTextColor: { value: 'var(--cc-primary-text)' },
+            optionsIconColor: { value: 'var(--cc-default-icon)' },
         },
     },
 };
