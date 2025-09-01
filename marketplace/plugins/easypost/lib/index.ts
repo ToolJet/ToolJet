@@ -26,22 +26,22 @@ export default class EasyPostQueryService implements QueryService {
     // Handle query parameters
     const queryParams = queryOptions['params']['query'] || {};
 
-    // Handle body parameters
+    // Handle body parameters - parse JSON strings to objects
     const requestBody = queryOptions['params']['request'] || {};
-    const jsonBody = Object.keys(requestBody).length > 0 ? requestBody : undefined;
+    const processedBody = this.processRequestBody(requestBody);
 
     try {
-     const options: any = {
+      const options: any = {
         method: operation.toLowerCase(),
         headers: this.authHeader(apiKey),
         searchParams: queryParams,
       };
-      if (Object.keys(requestBody).length > 0) {
-        options.json = requestBody;
+
+      if (Object.keys(processedBody).length > 0) {
+        options.json = processedBody;
       }
 
       const response = await got(url, options);
-
       return {
         status: 'ok',
         data: JSON.parse(response.body)
@@ -62,5 +62,32 @@ export default class EasyPostQueryService implements QueryService {
 
       throw new QueryError(errorMessage, error.message, errorDetails);
     }
+  }
+
+  private processRequestBody(body: any): any {
+    if (typeof body !== 'object' || body === null) {
+      return body;
+    }
+
+    const processed: any = {};
+
+    for (const [key, value] of Object.entries(body)) {
+      if (typeof value === 'string') {
+        try {
+          // Try to parse JSON strings
+          processed[key] = JSON.parse(value);
+        } catch (e) {
+          // If it's not valid JSON, keep as string
+          processed[key] = value;
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        // Recursively process nested objects
+        processed[key] = this.processRequestBody(value);
+      } else {
+        processed[key] = value;
+      }
+    }
+
+    return processed;
   }
 }
