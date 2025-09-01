@@ -142,6 +142,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
+    // Metadata is required to listServices, so added to the call options.
     const callOptions = createCallOptionsFromSourceMetadata(sourceOptions);
     const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
