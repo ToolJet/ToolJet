@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
 import * as Icons from '@tabler/icons-react';
 import Spinner from '@/_ui/Spinner';
 
-export const Tags = function Tags({ width, height, properties, styles, dataCy, setExposedVariable }) {
+export const Tags = function Tags({
+  width,
+  height,
+  properties,
+  styles,
+  dataCy,
+  setExposedVariable,
+  setExposedVariables,
+}) {
   const {
     data,
     advanced,
@@ -17,8 +25,7 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
   } = properties;
   const { boxShadow, alignment, borderRadius, size } = styles;
 
-  console.log('Tags component properties:', properties);
-
+  const isInitialRender = useRef(true);
   const [isTagsVisible, setIsTagsVisible] = useState(visibility);
   const [isTagsLoading, setIsTagsLoading] = useState(tagsLoadingState);
   const [isTagsDisabled, setIsTagsDisabled] = useState(disabledState);
@@ -46,8 +53,6 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
     // In dynamic mode, prefer data over schema (data seems to be the primary source)
     if (Array.isArray(data) && data.length > 0) {
       tagsData = data;
-    } else if (Array.isArray(schema) && schema.length > 0) {
-      tagsData = schema;
     } else {
       tagsData = data || schema || [];
     }
@@ -58,13 +63,11 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
     tagsData = resolveWidgetFieldValue(tagsData);
   }
 
-  // Filter visible tags and ensure proper structure - same as tabs filtering
   let parsedTags = tagsData;
+  console.log({ parsedTags });
   if (Array.isArray(parsedTags)) {
     parsedTags = parsedTags
       ?.filter((tag) => {
-        // For dynamic data: visible is undefined or true (default to visible)
-        // For static data: visible.value should be checked
         const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
         return isVisible;
       })
@@ -74,17 +77,51 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
       }));
   }
 
-  console.log({
-    advanced,
-    schema,
-    data,
-    options,
-    tagsData,
-    parsedTags,
-    schemaLength: Array.isArray(schema) ? schema.length : 'not array',
-    dataLength: Array.isArray(data) ? data.length : 'not array',
-    optionsLength: Array.isArray(options) ? options.length : 'not array',
-  });
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', isTagsVisible);
+  }, [isTagsVisible, setExposedVariable]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', isTagsLoading);
+  }, [isTagsLoading, setExposedVariable]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', isTagsDisabled);
+  }, [isTagsDisabled, setExposedVariable]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
+    setExposedVariable('tags', _tags);
+  }, [parsedTags, setExposedVariable]);
+
+  useEffect(() => {
+    const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
+    const exposedVariables = {
+      tags: _tags,
+      setVisibility: async function (value) {
+        setIsTagsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setLoading: async function (value) {
+        setIsTagsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
+      },
+      setDisable: async function (value) {
+        setIsTagsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+      isVisible: visibility,
+      isLoading: tagsLoadingState,
+      isDisabled: disabledState,
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const computedStyles = {
     width,
@@ -94,17 +131,18 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
     textAlign: alignment || 'left',
     opacity: isTagsDisabled ? 0.5 : 1,
     pointerEvents: isTagsDisabled ? 'none' : 'auto',
-    // Handle overflow behavior
     ...(overflow === 'wrap'
       ? {
-          // Wrap tags within available width
           display: 'flex',
           flexWrap: 'wrap',
           overflowY: 'auto',
           overflowX: 'hidden',
+          justifyContent: 'flex-start',
+          alignContent: 'flex-start',
+          alignItems: 'flex-start',
+          margin: '0 -3px -3px 0',
         }
       : {
-          // Horizontal scroll (default behavior)
           display: 'flex',
           flexWrap: 'nowrap',
           overflowX: 'auto',
@@ -115,8 +153,13 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
 
   function getTagIcon(tag) {
     const iconName = tag?.icon?.value || tag?.icon;
-    const iconVisible = tag?.visible !== undefined ? tag.visible : false;
-    console.log({ iconVisible });
+    const iconVisible =
+      tag?.iconVisibility?.value !== undefined
+        ? tag.iconVisibility.value
+        : tag?.iconVisibility !== undefined
+        ? tag.iconVisibility
+        : false;
+    console.log({ iconVisible, iconName, tag });
 
     if (!iconName || !iconVisible) return null;
 
@@ -126,9 +169,9 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
     return (
       <IconElement
         style={{
-          width: '16px',
-          height: '16px',
-          marginRight: '6px',
+          width: size === 'small' ? '12px' : '16px',
+          height: size === 'small' ? '12px' : '16px',
+          marginRight: '4px',
         }}
         stroke={1.5}
       />
@@ -136,25 +179,17 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
   }
 
   function renderTag(item, index) {
-    // Handle both 'color' and 'backgroundColor' properties for different data structures
-    const backgroundColor =
-      item.fieldBackgroundColor?.value || item.backgroundColor?.value || item.backgroundColor || item.color;
+    const backgroundColor = item.backgroundColor || item.color;
+    console.log({ backgroundColor });
 
-    // Check if individual tag is visible - handle both simple and complex structures
-    // For simple structure: item.visible (boolean)
-    // For complex structure: item.visible.value (boolean)
     const isTagVisible = item.visible?.value !== undefined ? item.visible.value : item.visible !== false;
     console.log({ isTagVisible, item });
     if (!isTagVisible) return null;
 
-    // Component-level states (apply to all tags)
     const isComponentDisabled = isTagsDisabled;
-    const isComponentLoading = isTagsLoading;
 
-    // Handle textColor for both structures
-    const textColor = item.textColor?.value || item.textColor;
+    const textColor = item.textColor;
 
-    // Size-based styling
     const getSizeStyles = () => {
       if (size === 'small') {
         return {
@@ -171,7 +206,6 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
           fontWeight: 500,
         };
       } else {
-        // Default/medium size
         return {
           padding: '4px 10px',
           height: '16px',
@@ -192,32 +226,18 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
       display: 'inline-flex',
       alignItems: 'center',
       cursor: isComponentDisabled ? 'not-allowed' : 'default',
-      // Ensure tags don't shrink in horizontal scroll mode
       flexShrink: overflow === 'wrap' ? 1 : 0,
-      // Add margin for spacing between tags (3px gap)
-      margin: '0 3px 3px 0',
-      // Apply border radius from styles
+      margin: overflow === 'wrap' ? '0 3px 3px 0' : '0 3px 0 0',
       borderRadius: borderRadius + 'px' || '0.25rem',
-      // Apply size-based styles
       ...sizeStyles,
-      // Ensure proper box-sizing
       boxSizing: 'border-box',
-      // Ensure minimum dimensions
       minHeight: sizeStyles.height,
     };
 
-    // Show spinner for global component loading
-    if (isComponentLoading) {
-      return (
-        <span className="badge" style={tagComputedStyles} key={index}>
-          <Spinner size="sm" />
-          <span style={{ marginLeft: '4px' }}>{getSafeRenderableValue(item.title)}</span>
-        </span>
-      );
-    }
+    console.log({ tagComputedStyles, item });
 
     return (
-      <span className="badge" style={tagComputedStyles} key={index}>
+      <span className="badge" style={tagComputedStyles} key={index + item.title}>
         {getTagIcon(item)}
         {getSafeRenderableValue(item.title)}
       </span>
@@ -226,11 +246,17 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy, s
 
   return (
     <div className="tag-comp-wrapper" style={computedStyles} data-cy={dataCy}>
-      {parsedTags &&
+      {isTagsLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+          <Spinner size="sm" />
+        </div>
+      ) : (
+        parsedTags &&
         Array.isArray(parsedTags) &&
         parsedTags.map((item, index) => {
           return renderTag(item, index);
-        })}
+        })
+      )}
     </div>
   );
 };

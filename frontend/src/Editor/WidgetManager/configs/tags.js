@@ -23,49 +23,6 @@ export const tagsConfig = {
     },
     data: {
       type: 'code',
-      displayName: 'Tags',
-      conditionallyRender: {
-        key: 'advanced',
-        value: false,
-      },
-      validation: {
-        schema: {
-          type: 'array',
-          element: {
-            type: 'object',
-            object: { title: { type: 'string' }, color: { type: 'string' }, textColor: { type: 'string' } },
-          },
-        },
-        defaultValue:
-          "{{ [{ title: 'success', color: '#2fb344', textColor: '#fff' }, { title: 'info', color: '#206bc4', textColor: '#fff'  }] }}",
-      },
-    },
-    options: {
-      type: 'optionsList',
-      displayName: 'Options',
-      accordian: 'Options',
-      conditionallyRender: {
-        key: 'advanced',
-        value: false,
-      },
-      validation: {
-        schema: {
-          type: 'array',
-          element: {
-            type: 'object',
-            object: { title: { type: 'string' }, backgroundColor: { type: 'string' }, textColor: { type: 'string' } },
-          },
-        },
-        defaultValue: [
-          { title: 'success', backgroundColor: { value: '#2fb344' }, textColor: { value: '#fff' }, icon: { value: '' }, iconVisibility: { value: false }, visible: { value: true } },
-          { title: 'info', backgroundColor: { value: '#206bc4' }, textColor: { value: '#fff' }, icon: { value: '' }, iconVisibility: { value: false }, visible: { value: true } },
-          { title: 'warning', backgroundColor: { value: '#f59f00' }, textColor: { value: '#fff' }, icon: { value: '' }, iconVisibility: { value: false }, visible: { value: true } },
-          { title: 'danger', backgroundColor: { value: '#d63939' }, textColor: { value: '#fff' }, icon: { value: '' }, iconVisibility: { value: false }, visible: { value: true } },
-        ],
-      },
-    },
-    schema: {
-      type: 'code',
       displayName: 'Schema',
       conditionallyRender: {
         key: 'advanced',
@@ -125,7 +82,11 @@ export const tagsConfig = {
       placeholder: 'Enter tooltip text',
     },
   },
-  events: {},
+  events: {
+    setVisibility: { displayName: 'Set visibility' },
+    setLoading: { displayName: 'Set loading' },
+    setDisable: { displayName: 'Set disable' },
+  },
   styles: {
     size: {
       type: 'switch',
@@ -170,88 +131,36 @@ export const tagsConfig = {
       advanced: { value: '{{false}}' },
       data: {
         value:
-          "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
-      },
-      schema: {
-        value:
-          "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
+          "{{ [ \n\t\t{ title: 'success', color: '#34A94733', textColor: '#34A947' }, \n\t\t{ title: 'info', color: '#405DE61A', textColor: '#405DE6'  }, \n\t\t{ title: 'warning', color: '#F357171A', textColor: '#F35717'  }, \n\t\t{ title: 'danger', color: '#EB2E3933', textColor: '#EB2E39' } ] }}",
       },
       options: {
         value: [
           {
-            label: 'success',
-            value: 'success',
-            backgroundColor: { value: '#2fb344' },
-            textColor: { value: '#fff' },
-            icon: { value: 'IconHome2' },
-            iconVisibility: { value: false },
-            visible: { value: true },
-            disable: { value: false },
-          },
-          {
-            label: 'info',
-            value: 'info',
-            backgroundColor: { value: '#206bc4' },
-            textColor: { value: '#fff' },
-            icon: { value: 'IconInfo' },
-            iconVisibility: { value: false },
-            visible: { value: true },
-            disable: { value: false },
-          },
-          {
-            label: 'warning',
-            value: 'warning',
-            backgroundColor: { value: '#f59f00' },
-            textColor: { value: '#fff' },
-            icon: { value: 'IconWarning' },
-            iconVisibility: { value: false },
-            visible: { value: true },
-            disable: { value: false },
-          },
-          {
-            label: 'danger',
-            value: 'danger',
-            backgroundColor: { value: '#d63939' },
-            textColor: { value: '#fff' },
-            icon: { value: 'IconDanger' },
-            iconVisibility: { value: false },
-            visible: { value: true },
-            disable: { value: false },
-          },
-        ],
-      },
-      tagItems: {
-        value: [
-          {
             title: 'success',
-            backgroundColor: { value: '#2fb344' },
-            textColor: { value: '#fff' },
+            textColor: { value: '#34A947' },
+            backgroundColor: { value: '#34A94733' },
             icon: { value: 'IconHome2' },
-            iconVisibility: { value: false },
             visible: { value: true },
           },
           {
             title: 'info',
-            backgroundColor: { value: '#206bc4' },
-            textColor: { value: '#fff' },
+            textColor: { value: '#405DE6' },
+            backgroundColor: { value: '#405DE61A' },
             icon: { value: 'IconInfo' },
-            iconVisibility: { value: false },
             visible: { value: true },
           },
           {
             title: 'warning',
-            backgroundColor: { value: '#f59f00' },
-            textColor: { value: '#fff' },
+            textColor: { value: '#F35717' },
+            backgroundColor: { value: '#F357171A' },
             icon: { value: 'IconWarning' },
-            iconVisibility: { value: false },
             visible: { value: true },
           },
           {
             title: 'danger',
-            backgroundColor: { value: '#d63939' },
-            textColor: { value: '#fff' },
+            textColor: { value: '#EB2E39' },
+            backgroundColor: { value: '#EB2E3933' },
             icon: { value: 'IconDanger' },
-            iconVisibility: { value: false },
             visible: { value: true },
           },
         ],
@@ -266,7 +175,7 @@ export const tagsConfig = {
     events: [],
     styles: {
       padding: { value: 'default' },
-      size: { value: 'large' },
+      size: { value: 'small' },
       borderRadius: { value: '8' },
     },
   },

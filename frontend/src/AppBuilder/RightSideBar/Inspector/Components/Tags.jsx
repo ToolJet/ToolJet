@@ -71,6 +71,27 @@ export const Tags = ({
   };
 
   const generateNewTagOption = () => {
+    const colorPalette = [
+      { hex: '#40474D', textColor: '#40474D' },
+      { hex: '#CE2761', textColor: '#CE2761' },
+      { hex: '#6745E2', textColor: '#6745E2' },
+      { hex: '#2576CE', textColor: '#2576CE' },
+      { hex: '#1A9C6D', textColor: '#1A9C6D' },
+      { hex: '#69AF20', textColor: '#69AF20' },
+      { hex: '#F35717', textColor: '#F35717' },
+      { hex: '#EB2E39', textColor: '#EB2E39' },
+      { hex: '#A438C0', textColor: '#A438C0' },
+      { hex: '#405DE6', textColor: '#405DE6' },
+      { hex: '#1E8FA3', textColor: '#1E8FA3' },
+      { hex: '#34A947', textColor: '#34A947' },
+      { hex: '#F19119', textColor: '#F19119' },
+    ];
+
+    const colorIndex = currentOptions.length % colorPalette.length;
+    const selectedColor = colorPalette[colorIndex];
+    const backgroundColor = `${selectedColor.hex}1A`;
+    const textColor = selectedColor.textColor;
+
     let found = false;
     let title = '';
     let id = '';
@@ -85,13 +106,13 @@ export const Tags = ({
     }
     return {
       title,
-      id,
-      icon: { value: '' },
-      backgroundColor: { value: 'Surface/Surface1' },
+      icon: { value: 'IconHome' },
+      iconVisibility: { value: '{{false}}' },
+      backgroundColor: { value: backgroundColor },
       loading: { value: '{{false}}' },
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
-      textColor: { value: '#fff' },
+      textColor: { value: textColor },
     };
   };
 
@@ -127,7 +148,8 @@ export const Tags = ({
     const updatedOptions = currentOptions.map((option, i) => {
       if (i === index) {
         let newVisibilityValue = resolveReferences(option[property]);
-        newVisibilityValue = typeof newVisibilityValue === 'boolean' ? newVisibilityValue : newVisibilityValue['value'];
+        newVisibilityValue =
+          typeof newVisibilityValue === 'boolean' ? newVisibilityValue : newVisibilityValue?.['value'];
         return {
           ...option,
           [property]: !newVisibilityValue,
@@ -144,7 +166,7 @@ export const Tags = ({
         return {
           ...option,
           [property]: value,
-          visible: { value: true },
+          iconVisibility: { value: true },
         };
       }
       return option;
@@ -169,7 +191,12 @@ export const Tags = ({
   };
 
   const _renderOverlay = (item, index) => {
-    const iconVisibility = item?.visible?.value !== undefined ? getResolvedValue(item?.visible?.value) : item?.visible;
+    const iconVisibility =
+      item?.iconVisibility?.value !== undefined
+        ? getResolvedValue(item?.iconVisibility?.value)
+        : item?.iconVisibility !== undefined
+        ? item?.iconVisibility
+        : false;
 
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
@@ -241,7 +268,7 @@ export const Tags = ({
               onChange={(value) => {
                 onChangeIcon(item, { value }, 'icon', index);
               }}
-              onVisibilityChange={(_value) => onChangeVisibility(item, { value: true }, 'visible', index)}
+              onVisibilityChange={(_value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
               fieldMeta={{ type: 'icon', displayName: 'Icon' }}
               paramType={'icon'}
               iconVisibility={iconVisibility}
@@ -363,7 +390,6 @@ export const Tags = ({
 
   const items = [];
 
-  // Properties section (including advanced toggle)
   items.push({
     title: 'Options',
     isOpen: true,
@@ -387,10 +413,11 @@ export const Tags = ({
               componentMeta,
               paramUpdated,
               dataQueries,
-              'schema',
+              'data',
               'properties',
               currentState,
-              allComponents
+              allComponents,
+              componentMeta.properties?.data?.displayName
             )
           : _renderOptions()}
         {renderElement(
