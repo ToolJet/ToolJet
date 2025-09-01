@@ -10,7 +10,7 @@ import {
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { cloneDeep, merge, set as lodashSet } from 'lodash';
+import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import {
   computeComponentName,
   getAllChildComponents,
@@ -1660,7 +1660,7 @@ export const createComponentsSlice = (set, get) => ({
         setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       }
     }
-    
+
     // If page settings tab is active and user clicks on canvas, switch to components tab
     if (
       !isClickedOnSubcontainer &&
@@ -2195,5 +2195,48 @@ export const createComponentsSlice = (set, get) => ({
         state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
       });
     }
+  },
+  performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+    set(() => {
+      const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } =
+        get();
+
+      const currentPageId = getCurrentPageId(moduleId);
+
+      pagesInfo?.length &&
+        pagesInfo.forEach((page) => {
+          if (page.id === currentPageId) {
+            const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+            const componentsToUpdate =
+              page.components?.update?.reduce((acc, comp) => {
+                acc[comp.id] = comp;
+
+                return acc;
+              }, {}) ?? {};
+
+            // Convert create operations format to match addComponentToCurrentPage expectations
+            const componentsToCreate = (page.components?.create ?? []).map((component) => ({
+              id: component.id,
+              name: component.component?.name,
+              component: component.component,
+              layouts: component.layouts,
+            }));
+
+            // Delete Components
+            componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+
+            // Update Components
+            !isEmpty(componentsToUpdate) &&
+              setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+
+            // Create Components
+            componentsToCreate.length &&
+              addComponentToCurrentPage(componentsToCreate, moduleId, {
+                saveAfterAction: false,
+                skipFormUpdate: true,
+              });
+          }
+        });
+    });
   },
 });

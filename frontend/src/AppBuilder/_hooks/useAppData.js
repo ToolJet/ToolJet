@@ -32,7 +32,7 @@ import toast from 'react-hot-toast';
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
  **/
-const normalizeQueryTransformationOptions = (query) => {
+export const normalizeQueryTransformationOptions = (query) => {
   if (query?.options) {
     if (query.options.enable_transformation) {
       const enableTransformation = query.options.enable_transformation;
@@ -140,7 +140,9 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const appBuilderMode = useStore((state) => state.appStore.modules[moduleId].app?.appBuilderMode);
+  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
+    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
+  );
 
   const location = useRouter().location;
 
@@ -232,7 +234,7 @@ const useAppData = (
     const isPublicAccess = moduleMode
       ? false
       : (currentSession?.load_app && currentSession?.authentication_failed) ||
-      (!queryParams.version && mode !== 'edit');
+        (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -287,9 +289,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                  slug,
-                  viewerEnvironment?.environment?.id
-                )
+                    slug,
+                    viewerEnvironment?.environment?.id
+                  )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -342,8 +344,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -536,7 +538,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, appBuilderMode]);
+  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
@@ -618,8 +620,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

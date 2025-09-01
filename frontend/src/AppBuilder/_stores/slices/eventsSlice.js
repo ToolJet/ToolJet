@@ -446,7 +446,7 @@ export const createEventsSlice = (set, get) => ({
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
-            }`,
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -1280,6 +1280,35 @@ export const createEventsSlice = (set, get) => ({
     },
     getEventToDeleteLoaderIndex: (moduleId = 'canvas') => {
       return get().eventsSlice.module[moduleId].eventToDeleteLoaderIndex;
+    },
+    performDeletionUpdationAndCreationOfEvents: (eventsInfo, moduleId = 'canvas') => {
+      if (!(eventsInfo?.delete?.length || eventsInfo?.update?.length || eventsInfo?.create?.length)) return;
+
+      const eventIdsToDelete = new Set(eventsInfo.delete?.map((event) => event.id) ?? []);
+      const eventToUpdate = new Map(eventsInfo.update?.map((event) => [event.id, event]) ?? []);
+      const eventsToCreate = eventsInfo.create ?? [];
+
+      set(
+        (state) => {
+          const eventsValueInState = state.eventsSlice.module[moduleId].events;
+
+          const updatedEventsValue = eventsValueInState;
+
+          // Delete events
+          if (eventIdsToDelete.size) updatedEventsValue.filter((event) => !eventIdsToDelete.has(event.id));
+
+          // Update events
+          if (eventToUpdate.size)
+            updatedEventsValue.map((event) => (eventToUpdate.has(event.id) ? eventToUpdate.get(event.id) : event));
+
+          // Create/Add events
+          eventsToCreate.length && updatedEventsValue.push(...eventsToCreate);
+
+          state.eventsSlice.module[moduleId].events = updatedEventsValue;
+        },
+        false,
+        'performDeletionUpdationAndCreationOfEvents'
+      );
     },
   },
 });
