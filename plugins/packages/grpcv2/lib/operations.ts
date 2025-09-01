@@ -142,7 +142,8 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const serviceNames: string[] = await reflectionClient.listServices();
+    const callOptions = createCallOptionsFromSourceMetadata(sourceOptions);
+    const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
       throw new GrpcOperationError('No services found via reflection');
@@ -152,7 +153,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
 
     for (const serviceName of serviceNames) {
       try {
-        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName);
+        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, callOptions);
 
         const grpcMethods: GrpcMethod[] = methods.map((methodInfo: ListMethodsType) => {
           if (!methodInfo || typeof methodInfo.name !== 'string') {
@@ -416,6 +417,23 @@ export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryOptions: Qu
   });
 
   return metadata;
+};
+
+const createCallOptionsFromSourceMetadata = (sourceOptions: SourceOptions): grpc.CallOptions => {
+  if (!sourceOptions.metadata || sourceOptions.metadata.length === 0) {
+    return {};
+  }
+
+  const metadata = new grpc.Metadata();
+  sourceOptions.metadata.forEach(([key, value]) => {
+    metadata.set(key, value);
+  });
+
+  return {
+    credentials: grpc.CallCredentials.createFromMetadataGenerator((context, callback) => {
+      callback(null, metadata);
+    })
+  };
 };
 
 const createReflectionClient = async (sourceOptions: SourceOptions): Promise<GrpcReflection> => {
