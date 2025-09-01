@@ -317,9 +317,11 @@ export const PopoverMenu = function PopoverMenu(props) {
                 if (e.key === 'ArrowDown') {
                   e.preventDefault();
                   handleArrowKeyNavigation('down');
+                  e.stopPropagation();
                 } else if (e.key === 'ArrowUp') {
                   e.preventDefault();
                   handleArrowKeyNavigation('up');
+                  e.stopPropagation();
                 }
               }}
               onClick={() => handleOptionClick(option)}
@@ -386,15 +388,6 @@ export const PopoverMenu = function PopoverMenu(props) {
         }}
         onMouseLeave={() => {
           updateExposedVariablesState('hovered', false);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowDown' && exposedVariablesTemporaryState.showPopover) {
-            e.preventDefault();
-            handleArrowKeyNavigation('down');
-          } else if (e.key === 'ArrowUp' && exposedVariablesTemporaryState.showPopover) {
-            e.preventDefault();
-            handleArrowKeyNavigation('up');
-          }
         }}
       >
         {!exposedVariablesTemporaryState.isLoading ? (
