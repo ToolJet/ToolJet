@@ -163,18 +163,14 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'} pm-option-popover`} style={{ minWidth: '248px' }}>
         <Popover.Body>
-          <div>
-            <div className="pm-option-header">
-              <span className="pm-option-header-title">Option details</span>
-              <div className="pm-option-details-actions">
+          <div data-cy="inspector-popover-menu-option-details-container">
+            <div data-cy="inspector-popover-menu-option-details-header" className="pm-option-header">
+              <span data-cy="inspector-popover-menu-option-details-title" className="pm-option-header-title">
+                Option details
+              </span>
+              <div data-cy="inspector-popover-menu-option-details-actions" className="pm-option-details-actions">
                 <ButtonComponent
-                  variant="ghost"
-                  iconOnly
-                  onClick={function noRefCheck() {}}
-                  trailingIcon="copy"
-                  size="medium"
-                />
-                <ButtonComponent
+                  data-cy="inspector-popover-menu-option-details-delete-button"
                   variant="ghost"
                   iconOnly
                   onClick={() => handleDeleteOption(index)}
@@ -183,9 +179,10 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                 />
               </div>
             </div>
-            <div className="pm-option-details">
-              <div className="field mb-2">
+            <div data-cy="inspector-popover-menu-option-details-fields" className="pm-option-details">
+              <div data-cy="inspector-popover-menu-option-details-format-field" className="field mb-2">
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-format-input"
                   type={'fxEditor'}
                   initialValue={item?.format || 'plain'}
                   paramLabel={'Data format'}
@@ -208,9 +205,15 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                 />
               </div>
 
-              <div className="field mb-2">
-                <label className="font-weight-500 mb-1 font-size-12">Label</label>
+              <div data-cy="inspector-popover-menu-option-details-label-field" className="field mb-2">
+                <label
+                  data-cy="inspector-popover-menu-option-details-label-label"
+                  className="font-weight-500 mb-1 font-size-12"
+                >
+                  Label
+                </label>
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-label-input"
                   type={'basic'}
                   initialValue={item?.label}
                   theme={darkMode ? 'monokai' : 'default'}
@@ -221,9 +224,15 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   }}
                 />
               </div>
-              <div className="field mb-2">
-                <label className="font-weight-500 mb-1 font-size-12">Description</label>
+              <div data-cy="inspector-popover-menu-option-details-description-field" className="field mb-2">
+                <label
+                  data-cy="inspector-popover-menu-option-details-description-label"
+                  className="font-weight-500 mb-1 font-size-12"
+                >
+                  Description
+                </label>
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-description-input"
                   type={'basic'}
                   initialValue={item?.description}
                   theme={darkMode ? 'monokai' : 'default'}
@@ -234,9 +243,15 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   }}
                 />
               </div>
-              <div className="field mb-2">
-                <label className="font-weight-500 mb-1 font-size-12">Value</label>
+              <div data-cy="inspector-popover-menu-option-details-value-field" className="field mb-2">
+                <label
+                  data-cy="inspector-popover-menu-option-details-value-label"
+                  className="font-weight-500 mb-1 font-size-12"
+                >
+                  Value
+                </label>
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-value-input"
                   type={'basic'}
                   initialValue={item?.value}
                   theme={darkMode ? 'monokai' : 'default'}
@@ -247,8 +262,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   }}
                 />
               </div>
-              <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
+              <div data-cy="inspector-popover-menu-option-details-icon-field" className="field mb-3">
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-icon-input"
                   currentState={currentState}
                   initialValue={item?.icon?.value || ''}
                   theme={darkMode ? 'monokai' : 'default'}
@@ -272,8 +288,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   iconVisibility={iconVisibility}
                 />
               </div>
-              <div className="field mb-2">
+              <div data-cy="inspector-popover-menu-option-details-visibility-field" className="field mb-2">
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-visibility-input"
                   initialValue={item?.visible?.value}
                   theme={darkMode ? 'monokai' : 'default'}
                   mode="javascript"
@@ -290,8 +307,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                   paramType={'toggle'}
                 />
               </div>
-              <div className="field mb-2">
+              <div data-cy="inspector-popover-menu-option-details-disable-field" className="field mb-2">
                 <CodeHinter
+                  data-cy="inspector-popover-menu-option-details-disable-input"
                   initialValue={item?.disable?.value}
                   theme={darkMode ? 'monokai' : 'default'}
                   mode="javascript"
@@ -333,7 +351,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // ===== RENDER FUNCTIONS =====
   const _renderOptions = () => {
     return (
-      <List style={{ marginBottom: '20px' }}>
+      <List data-cy="inspector-popover-menu-options-list" style={{ marginBottom: '20px' }}>
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result);
@@ -341,13 +359,19 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         >
           <Droppable droppableId="droppable">
             {({ innerRef, droppableProps, placeholder }) => (
-              <div className="w-100" {...droppableProps} ref={innerRef}>
+              <div
+                data-cy="inspector-popover-menu-options-droppable"
+                className="w-100"
+                {...droppableProps}
+                ref={innerRef}
+              >
                 {options?.map((item, index) => {
                   return (
                     <Draggable key={item?.value} draggableId={item?.value} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-cy={`inspector-popover-menu-option-${index}`}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -371,16 +395,24 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
                                 onMouseLeave={() => setHoveredOptionIndex(null)}
                                 {...restProps}
                               >
-                                <div className="row">
-                                  <div className="col-auto d-flex align-items-center">
+                                <div data-cy="inspector-popover-menu-option-row" className="row">
+                                  <div
+                                    data-cy="inspector-popover-menu-option-drag-handle"
+                                    className="col-auto d-flex align-items-center"
+                                  >
                                     <SortableList.DragHandle show />
                                   </div>
-                                  <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
+                                  <div
+                                    data-cy="inspector-popover-menu-option-label"
+                                    className="col text-truncate cursor-pointer"
+                                    style={{ padding: '0px' }}
+                                  >
                                     {getSafeRenderableValue(getResolvedValue(item?.label))}
                                   </div>
-                                  <div className="col-auto">
+                                  <div data-cy="inspector-popover-menu-option-actions" className="col-auto">
                                     {index === hoveredOptionIndex && (
                                       <ButtonSolid
+                                        data-cy="inspector-popover-menu-option-delete-button"
                                         variant="danger"
                                         size="xs"
                                         className={'delete-icon-btn'}
@@ -409,7 +441,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
             )}
           </Droppable>
         </DragDropContext>
-        <AddNewButton onClick={handleAddOption} dataCy="add-new-dropdown-option" className="mt-0">
+        <AddNewButton onClick={handleAddOption} dataCy="inspector-popover-menu-add-new-option" className="mt-0">
           Add new option
         </AddNewButton>
       </List>

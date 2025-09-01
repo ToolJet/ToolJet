@@ -246,6 +246,7 @@ export const PopoverMenu = function PopoverMenu(props) {
     if (exposedVariablesTemporaryState.areOptionsLoading) {
       return (
         <div
+          data-cy="popover-menu-options-loading"
           className="d-flex justify-content-center p-3"
           style={{ alignItems: 'center', justifyContent: 'center' }}
           role="status"
@@ -259,7 +260,12 @@ export const PopoverMenu = function PopoverMenu(props) {
 
     if (!transformedOptions || !Array.isArray(transformedOptions) || transformedOptions.length === 0) {
       return (
-        <div className="p-3 text-center text-muted" role="status" aria-label="No options available">
+        <div
+          data-cy="popover-menu-no-options"
+          className="p-3 text-center text-muted"
+          role="status"
+          aria-label="No options available"
+        >
           No options
         </div>
       );
@@ -267,6 +273,7 @@ export const PopoverMenu = function PopoverMenu(props) {
 
     return (
       <div
+        data-cy="popover-menu-options-listbox"
         style={{ width: '100%', maxHeight: '400px', overflowY: 'auto' }}
         role="listbox"
         aria-label="Menu options"
@@ -308,6 +315,7 @@ export const PopoverMenu = function PopoverMenu(props) {
               aria-selected={index === exposedVariablesTemporaryState.selectedOptionIndex}
               aria-disabled={disable}
               tabIndex={disable ? -1 : 0}
+              data-cy={`popover-menu-option-${index}`}
               onMouseEnter={() => {
                 if (!disable) {
                   updateExposedVariablesState('selectedOptionIndex', index);
@@ -327,16 +335,22 @@ export const PopoverMenu = function PopoverMenu(props) {
               onClick={() => handleOptionClick(option)}
             >
               {iconVisibility && IconElement && (
-                <div className="popover-option-icon" aria-hidden="true">
+                <div data-cy="popover-menu-option-icon" className="popover-option-icon" aria-hidden="true">
                   <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
                 </div>
               )}
-              <div className="popover-option-content">
-                <div className="popover-option-label" style={{ color: optionsTextColor || '#000000' }}>
+              <div data-cy="popover-menu-option-content" className="popover-option-content">
+                <div
+                  data-cy="popover-menu-option-label"
+                  className="popover-option-label"
+                  style={{ color: optionsTextColor || '#000000' }}
+                >
                   {renderFormattedText(option.label, format)}
                 </div>
                 {option.description && (
-                  <div className="popover-option-description">{renderFormattedText(option.description, format)}</div>
+                  <div data-cy="popover-menu-option-description" className="popover-menu-option-description">
+                    {renderFormattedText(option.description, format)}
+                  </div>
                 )}
               </div>
             </div>
@@ -348,6 +362,7 @@ export const PopoverMenu = function PopoverMenu(props) {
 
   const renderButton = () => (
     <div
+      data-cy="popover-menu-button-container"
       className={`widget-button d-flex align-items-center`}
       style={{
         position: 'relative',
@@ -376,7 +391,6 @@ export const PopoverMenu = function PopoverMenu(props) {
             }
           },
         })}
-        data-cy={dataCy}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={exposedVariablesTemporaryState.showPopover}
@@ -417,7 +431,7 @@ export const PopoverMenu = function PopoverMenu(props) {
               </span>
             </div>
             {icon && (
-              <div className="d-flex" aria-hidden="true">
+              <div data-cy="popover-menu-button-icon-container" className="d-flex" aria-hidden="true">
                 {!exposedVariablesTemporaryState.isLoading && (
                   <IconElement
                     style={{
@@ -524,6 +538,7 @@ export const PopoverMenu = function PopoverMenu(props) {
           updateExposedVariablesState('showPopover', false);
         },
       })}
+      data-cy={dataCy}
     >
       <Popover.Root
         open={exposedVariablesTemporaryState.showPopover}
@@ -531,10 +546,11 @@ export const PopoverMenu = function PopoverMenu(props) {
       >
         <Popover.Trigger asChild>{renderButton()}</Popover.Trigger>
         <Popover.Portal>
-          <div className="popover-menu-container">
+          <div data-cy="popover-menu-portal-container" className="popover-menu-container">
             <Popover.Content
               id={`popover-menu-${id}`}
               className={cx('popover-content', { 'dark-theme': darkMode })}
+              data-cy="popover-menu-content"
               sideOffset={0}
               align="start"
               style={{
@@ -554,7 +570,9 @@ export const PopoverMenu = function PopoverMenu(props) {
               aria-label="Menu options"
               aria-modal="false"
             >
-              <div className="p-0 w-100">{renderOptions()}</div>
+              <div data-cy="popover-menu-options-container" className="p-0 w-100">
+                {renderOptions()}
+              </div>
             </Popover.Content>
           </div>
         </Popover.Portal>

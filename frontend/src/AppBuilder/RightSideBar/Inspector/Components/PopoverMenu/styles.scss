@@ -22,5 +22,10 @@
 
     .pm-option-details {
         padding: 12px 16px;
+        div {
+            label {
+                font-weight: 400 !important;
+            }
+        }
     }
 }
