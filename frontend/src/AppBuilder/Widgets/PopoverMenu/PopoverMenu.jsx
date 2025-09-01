@@ -68,6 +68,7 @@ export const PopoverMenu = function PopoverMenu(props) {
     areOptionsLoading: optionsLoadingState,
     hovered: false,
     showPopover: false,
+    selectedOptionIndex: -1,
   });
 
   // ===== REFS =====
@@ -111,6 +112,68 @@ export const PopoverMenu = function PopoverMenu(props) {
           };
         })
       : [];
+  };
+
+  const findFirstAvailableOptionIndex = () => {
+    if (!transformedOptions || !Array.isArray(transformedOptions)) {
+      return -1;
+    }
+
+    const visibleOptions = transformedOptions.filter((option) => option.visible !== false);
+    if (visibleOptions.length === 0) return -1;
+
+    // Find the first non-disabled option
+    for (let i = 0; i < visibleOptions.length; i++) {
+      if (!visibleOptions[i].disable) {
+        // Find the actual index in the original array
+        return transformedOptions.findIndex((option) => option.value === visibleOptions[i]?.value);
+      }
+    }
+
+    // If all options are disabled, return -1
+    return -1;
+  };
+
+  const handleArrowKeyNavigation = (direction) => {
+    if (!exposedVariablesTemporaryState.showPopover || !transformedOptions || !Array.isArray(transformedOptions)) {
+      return;
+    }
+
+    const visibleOptions = transformedOptions.filter((option) => option.visible !== false);
+    if (visibleOptions.length === 0) return;
+
+    let newIndex = exposedVariablesTemporaryState.selectedOptionIndex;
+
+    if (direction === 'up') {
+      // Find the previous available option
+      let attempts = 0;
+      do {
+        newIndex--;
+        if (newIndex < 0) {
+          newIndex = visibleOptions.length - 1; // Wrap to bottom
+        }
+        attempts++;
+        // Prevent infinite loop if all options are disabled
+        if (attempts >= visibleOptions.length) break;
+      } while (visibleOptions[newIndex]?.disable === true);
+    } else if (direction === 'down') {
+      // Find the next available option
+      let attempts = 0;
+      do {
+        newIndex++;
+        if (newIndex >= visibleOptions.length) {
+          newIndex = 0; // Wrap to top
+        }
+        attempts++;
+        // Prevent infinite loop if all options are disabled
+        if (attempts >= visibleOptions.length) break;
+      } while (visibleOptions[newIndex]?.disable === true);
+    }
+
+    // Find the actual index in the original array
+    const actualIndex = transformedOptions.findIndex((option) => option.value === visibleOptions[newIndex]?.value);
+
+    updateExposedVariablesState('selectedOptionIndex', actualIndex);
   };
 
   // ===== COMPUTED STYLES =====
@@ -182,18 +245,44 @@ export const PopoverMenu = function PopoverMenu(props) {
   const renderOptions = () => {
     if (exposedVariablesTemporaryState.areOptionsLoading) {
       return (
-        <div className="d-flex justify-content-center p-3" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          className="d-flex justify-content-center p-3"
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+          role="status"
+          aria-live="polite"
+          aria-label="Loading options"
+        >
           <Loader color={'var(--cc-primary-brand)' || '#000000'} width="24" />
         </div>
       );
     }
 
     if (!transformedOptions || !Array.isArray(transformedOptions) || transformedOptions.length === 0) {
-      return <div className="p-3 text-center text-muted">No options</div>;
+      return (
+        <div className="p-3 text-center text-muted" role="status" aria-label="No options available">
+          No options
+        </div>
+      );
     }
 
     return (
-      <div style={{ width: '100%', maxHeight: '400px', overflowY: 'auto' }}>
+      <div
+        style={{ width: '100%', maxHeight: '400px', overflowY: 'auto' }}
+        role="listbox"
+        aria-label="Menu options"
+        aria-expanded={exposedVariablesTemporaryState.showPopover}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (
+              exposedVariablesTemporaryState.selectedOptionIndex !== -1 &&
+              transformedOptions[exposedVariablesTemporaryState.selectedOptionIndex]
+            ) {
+              handleOptionClick(transformedOptions[exposedVariablesTemporaryState.selectedOptionIndex]);
+            }
+          }
+        }}
+      >
         {transformedOptions.map((option, index) => {
           if (option.visible?.value === false) return null;
           const iconName = option.icon;
@@ -204,15 +293,39 @@ export const PopoverMenu = function PopoverMenu(props) {
           const disable = option.disable ?? false;
           const visible = option.visible ?? true;
           if (!visible) return null;
+
+          const optionId = `popover-option-${id}-${index}`;
+
           return (
             <div
-              className={cx('popover-option', { 'popover-option-disabled': disable })}
+              className={cx('popover-option', {
+                'popover-option-disabled': disable,
+                'popover-option-selected': index === exposedVariablesTemporaryState.selectedOptionIndex,
+              })}
               key={option.value || index}
-              disabled={disable}
+              id={optionId}
+              role="option"
+              aria-selected={index === exposedVariablesTemporaryState.selectedOptionIndex}
+              aria-disabled={disable}
+              tabIndex={disable ? -1 : 0}
+              onMouseEnter={() => {
+                if (!disable) {
+                  updateExposedVariablesState('selectedOptionIndex', index);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  handleArrowKeyNavigation('down');
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  handleArrowKeyNavigation('up');
+                }
+              }}
               onClick={() => handleOptionClick(option)}
             >
               {iconVisibility && IconElement && (
-                <div className="popover-option-icon">
+                <div className="popover-option-icon" aria-hidden="true">
                   <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
                 </div>
               )}
@@ -220,7 +333,9 @@ export const PopoverMenu = function PopoverMenu(props) {
                 <div className="popover-option-label" style={{ color: optionsTextColor || '#000000' }}>
                   {renderFormattedText(option.label, format)}
                 </div>
-                <div className="popover-option-description">{renderFormattedText(option.description, format)}</div>
+                {option.description && (
+                  <div className="popover-option-description">{renderFormattedText(option.description, format)}</div>
+                )}
               </div>
             </div>
           );
@@ -248,16 +363,38 @@ export const PopoverMenu = function PopoverMenu(props) {
         style={computedStyles}
         {...(trigger == 'click' && {
           onClick: () => {
-            updateExposedVariablesState('showPopover', !exposedVariablesTemporaryState.showPopover);
+            const newPopoverState = !exposedVariablesTemporaryState.showPopover;
+            updateExposedVariablesState('showPopover', newPopoverState);
+            // Reset selected option when opening popover - find first available option
+            if (newPopoverState) {
+              const firstAvailableIndex = findFirstAvailableOptionIndex();
+              updateExposedVariablesState('selectedOptionIndex', firstAvailableIndex);
+            } else {
+              updateExposedVariablesState('selectedOptionIndex', -1);
+            }
           },
         })}
         data-cy={dataCy}
-        type="default"
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={exposedVariablesTemporaryState.showPopover}
+        aria-controls={`popover-menu-${id}`}
+        aria-label={label || 'Toggle menu'}
+        aria-live="polite"
         onMouseOver={() => {
           updateExposedVariablesState('hovered', true);
         }}
         onMouseLeave={() => {
           updateExposedVariablesState('hovered', false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown' && exposedVariablesTemporaryState.showPopover) {
+            e.preventDefault();
+            handleArrowKeyNavigation('down');
+          } else if (e.key === 'ArrowUp' && exposedVariablesTemporaryState.showPopover) {
+            e.preventDefault();
+            handleArrowKeyNavigation('up');
+          }
         }}
       >
         {!exposedVariablesTemporaryState.isLoading ? (
@@ -287,7 +424,7 @@ export const PopoverMenu = function PopoverMenu(props) {
               </span>
             </div>
             {icon && (
-              <div className="d-flex">
+              <div className="d-flex" aria-hidden="true">
                 {!exposedVariablesTemporaryState.isLoading && (
                   <IconElement
                     style={{
@@ -302,7 +439,7 @@ export const PopoverMenu = function PopoverMenu(props) {
             )}
           </div>
         ) : (
-          <Loader color={computedLoaderColor} width="16" />
+          <Loader color={computedLoaderColor} width="16" aria-label="Loading" />
         )}
       </button>
     </div>
@@ -387,6 +524,8 @@ export const PopoverMenu = function PopoverMenu(props) {
   return (
     <div
       style={{ display: visibility ? 'block' : 'none' }}
+      role="region"
+      aria-label="Popover menu"
       {...(trigger == 'hover' && {
         onMouseLeave: () => {
           updateExposedVariablesState('showPopover', false);
@@ -401,6 +540,7 @@ export const PopoverMenu = function PopoverMenu(props) {
         <Popover.Portal>
           <div className="popover-menu-container">
             <Popover.Content
+              id={`popover-menu-${id}`}
               className={cx('popover-content', { 'dark-theme': darkMode })}
               sideOffset={0}
               align="start"
@@ -417,6 +557,9 @@ export const PopoverMenu = function PopoverMenu(props) {
               collisionPadding={8}
               onEscapeKeyDown={() => updateExposedVariablesState('showPopover', false)}
               onInteractOutside={() => updateExposedVariablesState('showPopover', false)}
+              role="dialog"
+              aria-label="Menu options"
+              aria-modal="false"
             >
               <div className="p-0 w-100">{renderOptions()}</div>
             </Popover.Content>

@@ -22,9 +22,10 @@
         border-radius: 6px;
         cursor: pointer;
 
-        &:hover {
-            background-color: var(--interactive-hover);
-        }
+    }
+
+    .popover-option-selected {
+        background-color: var(--interactive-hover);
     }
 
     .popover-option-disabled {
