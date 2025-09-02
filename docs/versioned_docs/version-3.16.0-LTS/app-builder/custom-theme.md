@@ -101,11 +101,11 @@ Here’s an example showing how an application interface looks before and after 
 ### Before (Default Theme)
 
 This is the default ToolJet UI without any custom theme applied. It uses the standard branding and neutral colors.
-<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/default-theme-app.png" alt="Configure custom theme" />
+<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/default-theme-app-v1.png" alt="Configure custom theme" />
 
 ### After (Custom Theme Applied)
 
-<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/custom-theme-app.png" alt="Configure custom theme" />
+<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/custom-theme-app-v1.png" alt="Configure custom theme" />
 
 This is the same application after applying the "Coral" custom theme. Notice the button color, primary accents, and overall visual alignment now reflect the chosen palette.
 

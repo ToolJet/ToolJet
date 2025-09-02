@@ -3,7 +3,7 @@ title: "Overview"
 id: overview
 ---
 
-**Modules** in ToolJet are reusable user interfaces that bundle components, queries, actions, and logic. Think of them as mini-apps you can plug into multiple applications within the same workspace. They help eliminate duplication, ensure consistency, and speed up development—especially for repeatable patterns like headers, forms, dashboards, or table views.
+**Modules** in ToolJet are reusable user interfaces that bundle components, queries, actions, and logic. Think of them as mini-apps you can plug into multiple applications within the same workspace. They help eliminate duplication, ensure consistency, and speed up development, especially for repeatable patterns like headers, forms, dashboards, or table views.
 
 Once created, modules can be reused across your workspace. Any updates you make to a module automatically reflect in every app where it's used. This ensures a single source of truth and significantly reduces maintenance effort.
 
