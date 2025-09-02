@@ -10,9 +10,9 @@ Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**
 :::
 
 This guide covers the different ways to generate a form in ToolJet. For detailed information on properties, CSAs, and schema customization, refer to the following guides:
-- [Form Component Properties](#)
-- [Component Specific Actions (CSAs) and Exposed Variables](#)
-- [Custom Schema](#)
+- [Form Component Properties](/docs/widgets/form/properties)
+- [Component Specific Actions (CSAs) and Exposed Variables](/docs/widgets/form/csa)
+- [Custom Schema](/docs/widgets/form/schema)
 
 ## Generating Form
 
@@ -26,15 +26,11 @@ In ToolJet, you can generate a **Form** using any of the following methods:
 
 ### Using JSON Schema
 
-Using JSON Schema, you can build dynamic forms that automatically update their structure based on different conditions.
+Using JSON Schema, you can build dynamic forms that automatically update their structure (fields, styles, etc.) based on different conditions.
 
 For example, if you're creating an onboarding form where fields like Name, Email, or Department change based on team input or API responses, JSON Schema helps you generate the entire form without manually adding each field. This is especially useful in admin panels or internal tools where form can change frequently.
 
-To use JSON Schema, select **JSON Schema** from the **Generate form from** dropdown in the form’s property panel.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/json-schema-dropdown.png" alt="Component Event Handler" />
-
-Then, provide a JSON object containing `title`, `properties`, and `submitButton` in the following format:
+To use JSON Schema, select **JSON Schema** from the **Generate form from** dropdown in the form’s property panel. Then, provide a JSON object containing `title`, `properties`, and `submitButton` in the following format:
 
 ```js
 {{{
@@ -58,19 +54,15 @@ Then, provide a JSON object containing `title`, `properties`, and `submitButton`
 
 Refer to the [Custom Schema](#) guide for schema examples of commonly used components.
 
+<img className="screenshot-full img-full" src="/img/widgets/form/json-schema-dropdown.png" alt="Component Event Handler" />
+
 ### Using Raw JSON
 
 With Raw JSON, you can generate a form by simply passing a JSON object with key–value pairs. ToolJet automatically detects the field types and generates the corresponding input components.
 
-For example, if a value is a string, it renders a text input; for a boolean, it renders a checkbox; for arrays, it shows multi-select, and so on.
+For example, if a value is a string, it renders a text input; for a boolean, it renders a checkbox; for arrays, and so on. This method is useful when you already have sample data (from an API or static object) and want to quickly generate a form.
 
-This method is useful when you already have sample data (from an API or static object) and want to quickly generate a form.
-
-To use Raw JSON, select **Raw JSON** from the **Generate form from** dropdown in the form’s property panel.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/raw-json-dropdown.png" alt="Component Event Handler" />
-
-After entering the JSON object, you can manage the input fields directly from the form's property panel, including customizing the input type, label, placeholder, default value, and more.
+To use Raw JSON, select **Raw JSON** from the **Generate form from** dropdown in the form’s property panel. After entering the JSON object, you can manage the input fields directly from the form's property panel, including customizing the input type, label, placeholder, default value, and more.
 
 **Example JSON Object**:
 ```js
@@ -89,15 +81,21 @@ After entering the JSON object, you can manage the input fields directly from th
 }
 ```
 
+<img className="screenshot-full img-full" src="/img/widgets/form/raw-json-dropdown.png" alt="Component Event Handler" />
+
 ### Using Query Output
 
 You can generate form using the output of a query (for example, fetching user details from an API or database). ToolJet reads the structure of the query response and automatically creates input fields based on the returned key–value pairs.
+
+Let's say you have a query output in the following format:
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/query-output.png" alt="Component Event Handler" />
 
 To generate a form using query output, select the query name from the **Generate form from** dropdown in the form’s property panel.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/query-dropdown.png" alt="Component Event Handler" />
 
-After selecting the query, a modal will appear where you can map each key from the query response to a specific input component and label. You can also choose whether a field should be mandatory. Once done, click the **+ Generate Form** button at the bottom of the modal to create the form.
+After selecting the query, a modal will appear that automatically maps all the query output fields to their respective input components based on the input type. You can modify the component type or the input label if needed. Additionally, you can choose whether a field should be mandatory. Once you’ve made the necessary adjustments, click the **+ Generate Form** button at the bottom of the modal to create the form.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/query-modal.png" alt="Component Event Handler" />
 
@@ -107,9 +105,11 @@ After the form is generated, you can further manage each input field from the fo
 
 You can generate a form using the **Form** component's property panel. Click on the **+** icon next to the Fields section in the panel. A modal will open where you can select the input component type, set the label, placeholder, default value, and mark the field as mandatory.
 
-After configuring the properties, click the **+ Add Field** button at the bottom to add the new input field to the form. Once the form is generated, you can further manage each input field from the form's property panel, including changing the input type, label, placeholder, default value, and more.
+After configuring the properties, click the **+ Add Field** button at the bottom to add the new input field to the form.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/widgets/form/form-property-panel.png" alt="Component Event Handler" />
+
+Once the form is generated, you can further manage each input field from the form's property panel, including changing the input type, label, placeholder, default value, and more.
 
 ### By Dragging Components into the Form
 
