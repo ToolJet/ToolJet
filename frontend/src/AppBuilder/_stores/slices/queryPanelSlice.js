@@ -475,6 +475,8 @@ export const createQueryPanelSlice = (set, get) => ({
             metadata: data?.metadata,
             request: data?.metadata?.request,
             response: data?.metadata?.response,
+            responseHeaders: data?.metadata?.responseHeaders,
+            error: undefined,
           },
           moduleId
         );
