@@ -1,3 +1,5 @@
+<!-- removing this for now we might need to add this back later - 02/09/25 -->
+
 ---
 id: overview
 title: ToolJet PostgreSQL 13 to 16 Upgrade Script Guide

@@ -1,3 +1,5 @@
+<!-- removing this for now we might need to add this back later - 02/09/25 -->
+
 ---
 id: troubleshooting
 title: Troubleshooting Guide
