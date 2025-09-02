@@ -63,9 +63,9 @@ export const DarkModeToggle = function DarkModeToggle({
         iconOnly
       >
         {darkMode ? (
-          <Moon width="16" height="16" className="tw-text-icon-strong" />
-        ) : (
           <Sun width="16" height="16" className="tw-text-icon-strong" />
+        ) : (
+          <Moon width="16" height="16" className="tw-text-icon-strong" />
         )}
       </Button>
     </OverlayTrigger>
