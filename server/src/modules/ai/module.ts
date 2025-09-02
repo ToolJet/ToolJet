@@ -16,6 +16,7 @@ import { DataQueryRepository } from "@modules/data-queries/repository";
 import { DataSourcesModule } from "@modules/data-sources/module";
 import { AppEnvironmentsModule } from "@modules/app-environments/module";
 import { VersionRepository } from "@modules/versions/repository";
+import { OrganizationRepository } from "@modules/organizations/repository";
 
 export class AiModule extends SubModule {
   static async register(configs: {
@@ -37,6 +38,7 @@ export class AiModule extends SubModule {
     const { EventsService } = await import(
       `${importPath}/apps/services/event.service`
     );
+    const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
 
     return {
       module: AiModule,
@@ -62,11 +64,12 @@ export class AiModule extends SubModule {
         AiConversationMessageRepository,
         AppsRepository,
         AiResponseVoteRepository,
+        OrganizationRepository,
         FeatureAbilityFactory,
         ArtifactRepository,
         DataQueryRepository,
-
         EventsService,
+        AppsUtilService,
       ],
       exports: [AiUtilService],
     };
