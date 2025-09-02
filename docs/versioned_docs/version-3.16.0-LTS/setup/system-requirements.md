@@ -38,5 +38,5 @@ Note: Adjustments can be made based on specific needs and the expected load on t
 - It is recommended that your PostgreSQL database is of version 16.x.
 
 :::info
-If you are currently on PostgreSQL 13.x, you may continue using it; however, upgrading to version 16.x is advised for improved performance and features. Additionally, PostgreSQL 13.x officially reached end-of-life in November 2023.
+If you are currently on PostgreSQL 13.x, you may continue using it; however, upgrading to version 16.x is advised for improved performance and features. Additionally, PostgreSQL 13.x officially reached end-of-life in November 2025.
 :::
