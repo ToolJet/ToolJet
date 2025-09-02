@@ -2,11 +2,13 @@ import React from 'react';
 import { animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
-
 import StarSvg from './icons/star';
 import HalfStarSvg from './icons/half-star';
-import OutlineStarSvg from './icons/star-outline';
-
+import EmptyStarSvg from './icons/star-empty';
+import HalfHeartSvg from './icons/half-heart';
+import HeartSvg from './icons/heart';
+import HeartEmptySvg from './icons/heart-empty';
+import classNames from 'classnames';
 /**
  1. on hover show filled icon
  2. on dismiss show outline icon
@@ -14,31 +16,45 @@ import OutlineStarSvg from './icons/star-outline';
  4. on dismiss show outline icon for half filled icon
  5. on click set the half-filled icon if precision = 0.5 else set the filled icon
  */
-const Star = ({
+const RatingIcon = ({
   index,
   active,
   color,
-  isHalfStar,
+  isHalfIcon,
   onClick,
   maxRating,
   setHoverIndex,
   tooltip,
   allowHalfStar,
+  unselectedBackground,
+  iconType,
+  allowEditing,
   ...rest
 }) => {
-  const star = <StarSvg fill={color} />;
-  const halfStar = <HalfStarSvg fill={color} />;
-  const starOutline = <OutlineStarSvg fill={color} />;
+  // if the icon is star
+  const star = iconType === 'hearts' ? <HeartSvg fill={color} /> : <StarSvg fill={color} />;
+  const halfIcon =
+    iconType === 'hearts' ? (
+      <HalfHeartSvg fill={color} unselected={unselectedBackground} />
+    ) : (
+      <HalfStarSvg fill={color} unselected={unselectedBackground} />
+    );
+  const emptyIcon =
+    iconType === 'hearts' ? (
+      <HeartEmptySvg fill={unselectedBackground} />
+    ) : (
+      <EmptyStarSvg fill={unselectedBackground} />
+    );
 
   const [icon, setIcon] = React.useState(star);
-  const [outlineIcon, setOutlineIcon] = React.useState(starOutline);
+  const [outlineIcon, setOutlineIcon] = React.useState(emptyIcon);
   const [currentPrecision, setPrecision] = React.useState(0);
 
   React.useEffect(() => {
-    setIcon(isHalfStar ? halfStar : star);
-    setOutlineIcon(isHalfStar ? halfStar : starOutline);
+    setIcon(isHalfIcon ? halfIcon : star);
+    setOutlineIcon(isHalfIcon ? halfIcon : emptyIcon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [color]);
+  }, [iconType, isHalfIcon, color]);
 
   const ref = React.useRef(null);
 
@@ -64,12 +80,12 @@ const Star = ({
     const isHalfStarHover = roundValueToPrecision(maxRating * percent + precision / 2, precision);
 
     if (isHalfStarHover === 0.5) {
-      setIcon(halfStar);
-      setOutlineIcon(halfStar);
+      setIcon(halfIcon);
+      setOutlineIcon(halfIcon);
       setPrecision(0.5);
     } else {
       setIcon(star);
-      setOutlineIcon(starOutline);
+      setOutlineIcon(emptyIcon);
       setPrecision(0);
     }
   };
@@ -78,7 +94,7 @@ const Star = ({
     setHoverIndex(null);
     setPrecision(0);
     setIcon(star);
-    setOutlineIcon(starOutline);
+    setOutlineIcon(emptyIcon);
   };
 
   const handleClick = (e) => {
@@ -99,7 +115,7 @@ const Star = ({
   };
 
   const getIcon = () => {
-    if (isHalfStar) return halfStar;
+    if (isHalfIcon) return halfIcon;
     if (active) return icon;
     return outlineIcon;
   };
@@ -107,13 +123,15 @@ const Star = ({
   const getAnimatedStar = () => {
     return (
       <animated.span
+        className={classNames('rating-icon-widget', {
+          'pointer-events-none': !allowEditing,
+        })}
         onClick={handleClick}
         ref={ref}
         {...rest}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...conditionalProps}
-        className="star"
         role="button"
       >
         {getIcon(color)}
@@ -132,4 +150,4 @@ const Star = ({
   return <>{getAnimatedStar()}</>;
 };
 
-export default Star;
+export default RatingIcon;

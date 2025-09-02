@@ -1,5 +1,6 @@
 @import '../colors.scss';
 
+// Legacy rating
 .star-rating {
   display: flex;
   padding: 3px;
@@ -7,7 +8,24 @@
   .label {
     flex: 1;
   }
-  .star {
+  .rating-icon-widget {
     margin-bottom: 1px;
+  }
+}
+
+
+ .rating-icon-widget {
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    
+    &:hover {
+      transform: scale(1.2) !important;
+      .show-opacity-on-hover {
+        opacity: 0.5 !important;
+      }
+    }
+
+  svg {
+    transition: transform 0.2s ease;
   }
 }

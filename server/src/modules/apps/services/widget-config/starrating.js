@@ -20,6 +20,16 @@ export const starratingConfig = {
         defaultValue: 'Select your rating',
       },
     },
+    iconType: {
+      type: 'switch',
+      displayName: 'Icon Type',
+      validation: { schema: { type: 'string' }, defaultValue: 'stars' },
+      options: [
+        { displayName: 'Stars', value: 'stars' },
+        { displayName: 'Hearts', value: 'hearts' },
+      ],
+      accordian: 'label',
+    },
     maxRating: {
       type: 'code',
       displayName: 'Number of stars',
@@ -36,9 +46,17 @@ export const starratingConfig = {
         defaultValue: 5,
       },
     },
+    allowEditing: {
+      type: 'toggle',
+      displayName: 'Allow editing',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     allowHalfStar: {
       type: 'toggle',
-      displayName: 'Enable half star',
+      displayName: 'Allow half rating',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -52,42 +70,196 @@ export const starratingConfig = {
         defaultValue: '[]',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Show loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   events: {
     onChange: { displayName: 'On Change' },
   },
   styles: {
+    labelStyle: {
+      type: 'select',
+      options: [
+        { name: 'Standard', value: 'standard' },
+        { name: 'Legacy', value: 'legacy' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'standard',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
+    color: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    alignment: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'side' },
+      options: [
+        { displayName: 'Side', value: 'side' },
+        { displayName: 'Top', value: 'top' },
+      ],
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'labelStyle',
+          value: 'standard',
+        },
+      ],
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'labelStyle',
+          value: 'standard',
+        },
+      ],
+    },
+    auto: {
+      type: 'checkbox',
+      displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'labelStyle',
+          value: 'standard',
+        },
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    labelWidth: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'labelStyle',
+          value: 'standard',
+        },
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'labelStyle',
+          value: 'standard',
+        },
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+    },
+    // keeping textColor for backward compatibility
     textColor: {
       type: 'colorSwatches',
-      displayName: 'Star color',
+      displayName: 'Selected background',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#ffb400',
       },
+      accordian: 'Icon',
+      conditionallyRender: [
+        {
+          key: 'iconType',
+          value: 'stars',
+          parentObjectKey: 'properties',
+        },
+      ],
     },
-    labelColor: {
+    selectedBackgroundHearts: {
       type: 'colorSwatches',
-      displayName: 'Label color',
+      displayName: 'Selected background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-primary-text)',
+        defaultValue: '#EE5B67',
       },
+      conditionallyRender: [
+        {
+          key: 'iconType',
+          value: 'hearts',
+          parentObjectKey: 'properties',
+        },
+      ],
+      accordian: 'Icon',
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    unselectedBackground: {
+      type: 'colorSwatches',
+      displayName: 'Unselected background',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
+        schema: { type: 'string' },
+        defaultValue: '#ffb400',
       },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
+      accordian: 'Icon',
     },
     padding: {
       type: 'switch',
@@ -101,6 +273,16 @@ export const starratingConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -113,19 +295,33 @@ export const starratingConfig = {
     },
     properties: {
       label: { value: 'Select your rating' },
+      iconType: { value: 'stars' },
       maxRating: { value: '5' },
-      defaultSelected: { value: '5' },
+      defaultSelected: { value: '3' },
       allowHalfStar: { value: '{{false}}' },
       visible: { value: '{{true}}' },
-      tooltips: { value: '{{[]}}' },
+      allowEditing: { value: '{{true}}' },
+      tooltips: { value: '{{["Very Poor","Poor","Average", "Good","Excellent"]}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       textColor: { value: '#ffb400' },
-      labelColor: { value: 'var(--cc-primary-text)' },
+      color: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      labelStyle: { value: 'standard' },
+      alignment: { value: 'side' },
+      direction: { value: 'left' },
+      auto: { value: '{{true}}' },
+      widthType: { value: 'ofComponent' },
+      labelWidth: { value: '{{33}}' },
+      selectedBackgroundHearts: { value: '#EE5B67' },
     },
   },
 };
