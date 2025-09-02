@@ -3,6 +3,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
 import * as Icons from '@tabler/icons-react';
 import Spinner from '@/_ui/Spinner';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 
 export const Tags = function Tags({
   width,
@@ -26,23 +27,18 @@ export const Tags = function Tags({
   const { boxShadow, alignment, borderRadius, size } = styles;
 
   const isInitialRender = useRef(true);
-  const [isTagsVisible, setIsTagsVisible] = useState(visibility);
-  const [isTagsLoading, setIsTagsLoading] = useState(tagsLoadingState);
-  const [isTagsDisabled, setIsTagsDisabled] = useState(disabledState);
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+    isVisible: visibility,
+    isLoading: tagsLoadingState,
+    isDisabled: disabledState,
+  });
 
-  useEffect(() => {
-    if (isTagsVisible !== visibility) setIsTagsVisible(visibility);
-    if (isTagsLoading !== tagsLoadingState) setIsTagsLoading(tagsLoadingState);
-    if (isTagsDisabled !== disabledState) setIsTagsDisabled(disabledState);
-  }, [visibility, tagsLoadingState, disabledState, isTagsVisible, isTagsLoading, isTagsDisabled]);
-
-  useEffect(() => {
-    if (setExposedVariable) {
-      setExposedVariable('isVisible', isTagsVisible);
-      setExposedVariable('isLoading', isTagsLoading);
-      setExposedVariable('isDisabled', isTagsDisabled);
-    }
-  }, [setExposedVariable, isTagsVisible, isTagsLoading, isTagsDisabled]);
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   // Follow the exact same pattern as Tabs: use tagItems for static, schema/data for dynamic
   let tagsData;
@@ -64,7 +60,6 @@ export const Tags = function Tags({
   }
 
   let parsedTags = tagsData;
-  console.log({ parsedTags });
   if (Array.isArray(parsedTags)) {
     parsedTags = parsedTags
       ?.filter((tag) => {
@@ -77,42 +72,52 @@ export const Tags = function Tags({
       }));
   }
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isVisible', isTagsVisible);
-  }, [isTagsVisible, setExposedVariable]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isLoading', isTagsLoading);
-  }, [isTagsLoading, setExposedVariable]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', isTagsDisabled);
-  }, [isTagsDisabled, setExposedVariable]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
-    setExposedVariable('tags', _tags);
-  }, [parsedTags, setExposedVariable]);
+  useBatchedUpdateEffectArray([
+    {
+      dep: visibility,
+      sideEffect: () => {
+        setExposedVariable('isVisible', visibility);
+        updateExposedVariablesState('isVisible', visibility);
+      },
+    },
+    {
+      dep: tagsLoadingState,
+      sideEffect: () => {
+        setExposedVariable('isLoading', tagsLoadingState);
+        updateExposedVariablesState('isLoading', tagsLoadingState);
+      },
+    },
+    {
+      dep: disabledState,
+      sideEffect: () => {
+        setExposedVariable('isDisabled', disabledState);
+        updateExposedVariablesState('isDisabled', disabledState);
+      },
+    },
+    {
+      dep: JSON.stringify(parsedTags ?? []),
+      sideEffect: () => {
+        const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
+        setExposedVariable('tags', _tags);
+      },
+    },
+  ]);
 
   useEffect(() => {
     const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
     const exposedVariables = {
       tags: _tags,
       setVisibility: async function (value) {
-        setIsTagsVisible(!!value);
         setExposedVariable('isVisible', !!value);
+        updateExposedVariablesState('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsTagsLoading(!!value);
         setExposedVariable('isLoading', !!value);
+        updateExposedVariablesState('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsTagsDisabled(!!value);
         setExposedVariable('isDisabled', !!value);
+        updateExposedVariablesState('isDisabled', !!value);
       },
       isVisible: visibility,
       isLoading: tagsLoadingState,
@@ -126,11 +131,11 @@ export const Tags = function Tags({
   const computedStyles = {
     width,
     height,
-    display: isTagsVisible ? '' : 'none',
+    display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
     boxShadow,
     textAlign: alignment || 'left',
-    opacity: isTagsDisabled ? 0.5 : 1,
-    pointerEvents: isTagsDisabled ? 'none' : 'auto',
+    opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
+    pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
       ? {
           display: 'flex',
@@ -159,7 +164,6 @@ export const Tags = function Tags({
         : tag?.iconVisibility !== undefined
         ? tag.iconVisibility
         : false;
-    console.log({ iconVisible, iconName, tag });
 
     if (!iconName || !iconVisible) return null;
 
@@ -180,13 +184,11 @@ export const Tags = function Tags({
 
   function renderTag(item, index) {
     const backgroundColor = item.backgroundColor || item.color;
-    console.log({ backgroundColor });
 
     const isTagVisible = item.visible?.value !== undefined ? item.visible.value : item.visible !== false;
-    console.log({ isTagVisible, item });
     if (!isTagVisible) return null;
 
-    const isComponentDisabled = isTagsDisabled;
+    const isComponentDisabled = exposedVariablesTemporaryState.isDisabled;
 
     const textColor = item.textColor;
 
@@ -234,8 +236,6 @@ export const Tags = function Tags({
       minHeight: sizeStyles.height,
     };
 
-    console.log({ tagComputedStyles, item });
-
     return (
       <span className="badge" style={tagComputedStyles} key={index + item.title}>
         {getTagIcon(item)}
@@ -246,7 +246,7 @@ export const Tags = function Tags({
 
   return (
     <div className="tag-comp-wrapper" style={computedStyles} data-cy={dataCy}>
-      {isTagsLoading ? (
+      {exposedVariablesTemporaryState.isLoading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
           <Spinner size="sm" />
         </div>
