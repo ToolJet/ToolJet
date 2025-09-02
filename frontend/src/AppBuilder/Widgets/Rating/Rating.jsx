@@ -27,7 +27,7 @@ export const Rating = ({
   const {
     iconType = 'stars',
     label,
-    defaultSelected = 5,
+    defaultSelected = 3,
     maxRating = 5,
     allowHalfStar = false,
     tooltips = [],
@@ -82,12 +82,6 @@ export const Rating = ({
 
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
 
-  React.useEffect(() => {
-    setRatingIndex(defaultSelected - 1);
-    setExposedVariable('value', defaultSelected);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultSelected]);
-
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
     setExposedVariable('value', idx + 1);
@@ -108,6 +102,17 @@ export const Rating = ({
     if (tooltips && Array.isArray(tooltips) && tooltips.length > 0) return tooltips[index];
     return '';
   };
+
+  const resetRating = () => {
+    setRatingIndex(defaultSelected - 1);
+    setExposedVariable('value', defaultSelected);
+  };
+
+  React.useEffect(() => {
+    resetRating();
+    setExposedVariable('resetRating', resetRating);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSelected]);
 
   const _renderRatingWidget = () => {
     return (
@@ -132,6 +137,7 @@ export const Rating = ({
             unselectedBackground={unselectedBackground}
             iconType={iconType}
             allowEditing={allowEditing}
+            currentRatingIndex={currentRatingIndex}
           />
         ))}
       </>

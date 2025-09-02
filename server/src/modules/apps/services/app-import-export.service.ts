@@ -81,7 +81,7 @@ type NewRevampedComponent =
   | 'FilePicker'
   | 'Icon'
   | 'Steps'
-  | 'Statistics' |
+  | 'Statistics'
   | 'StarRating';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
