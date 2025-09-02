@@ -270,11 +270,15 @@ export const createQueryPanelSlice = (set, get) => ({
             );
           },
           onError: (e) => {
+            const cleanData = typeof e?.error === 'object' ? { ...e.error } : e?.error;
+            if (cleanData?.metadata) delete cleanData.metadata; // Remove metadata from the data object if present
+
             handleFailure({
               status: 'failed',
               message: e?.error?.message || 'Error running workflow',
               description: e?.error?.description || null,
-              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
+              data: cleanData,
+              metadata: e?.error?.metadata,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
@@ -520,6 +524,8 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata }
               : {}),
           },
           moduleId
