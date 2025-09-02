@@ -30,10 +30,33 @@ const initialState = {
         app: {},
         isViewer: false,
         isComponentLayoutReady: false,
+        isAppModeSwitchedToVisualPostLayoutGeneration: false,
       },
     },
   },
 };
+
+function isDesignLayoutStepDone(steps, activeStepId) {
+  const designLayoutIndex = steps.findIndex((step) => step.id === 'design_layout');
+  const activeStepIndex = steps.findIndex((step) => step.id === activeStepId);
+
+  if (designLayoutIndex === -1 || activeStepIndex === -1) {
+    return false; // invalid input
+  }
+
+  return activeStepIndex >= designLayoutIndex;
+}
+
+function checkIsAppSwitchedToVisualModePostLayoutGeneration(prevAppState, dataToUpdate) {
+  if (prevAppState?.appBuilderMode === 'ai' && dataToUpdate?.appBuilderMode === 'visual') {
+    return isDesignLayoutStepDone(
+      prevAppState?.aiGenerationMetadata?.steps || [],
+      prevAppState?.aiGenerationMetadata?.active_step
+    );
+  }
+
+  return false;
+}
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
@@ -321,6 +344,10 @@ export const createAppSlice = (set, get) => ({
 
   updateAppData: (dataToUpdate, moduleId = 'canvas') => {
     set((state) => {
+      if (checkIsAppSwitchedToVisualModePostLayoutGeneration(state.appStore.modules[moduleId].app, dataToUpdate)) {
+        state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration = true;
+      }
+
       state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
     });
   },

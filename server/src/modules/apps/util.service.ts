@@ -267,6 +267,7 @@ export class AppsUtilService implements IAppsUtilService {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
+    const appBuilderMode = appUpdateDto.app_builder_mode
     const { name, slug, icon } = appUpdateDto;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
@@ -277,6 +278,7 @@ export class AppsUtilService implements IAppsUtilService {
       isMaintenanceOn,
       currentVersionId,
       icon,
+      appBuilderMode,
     };
 
     // removing keys with undefined values
