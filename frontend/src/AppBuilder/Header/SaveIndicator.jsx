@@ -1,5 +1,6 @@
 import React from 'react';
-import { CloudCheck, CloudAlert, LoaderCircle } from 'lucide-react';
+import { CloudCheck, CloudAlert } from 'lucide-react';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 const SaveIndicator = ({ isSaving, saveError }) => {
   if (isSaving) {
@@ -10,8 +11,10 @@ const SaveIndicator = ({ isSaving, saveError }) => {
         data-tooltip-id="editor-header-tooltip"
         data-tooltip-content="Saving in progress! Don't close the app yet."
       >
-        <LoaderCircle width={16} height={16} className="tw-animate-spin" />
-        <p className="mb-0 text-center tw-text-text-default">Saving...</p>
+        <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
+          <Loader width={16} height={16} reverse={true} />
+        </div>
+        <p className="mb-0 mx-1 text-center tw-text-text-default">Saving...</p>
       </div>
     );
   }
