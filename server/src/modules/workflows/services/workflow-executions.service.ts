@@ -22,6 +22,7 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     envId: string,
     response: Response,
     throwOnError?: boolean,
+    isFromAppbuilder?: boolean,
     executionStartTime?: Date,
     extraOptions?: {
       startNodeId?: string;

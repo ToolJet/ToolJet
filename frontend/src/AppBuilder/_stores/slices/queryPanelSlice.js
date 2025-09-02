@@ -263,8 +263,7 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            const processedResult = { data: result };
-            await processQueryResults(processedResult);
+            await processQueryResults(result);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
