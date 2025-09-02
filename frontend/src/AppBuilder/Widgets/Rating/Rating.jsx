@@ -59,6 +59,10 @@ export const Rating = ({
     setExposedVariable
   );
 
+  // Generate unique ID for ARIA labelling
+  const ratingId = React.useMemo(() => `rating-${Math.random().toString(36).substr(2, 9)}`, []);
+  const [announceValue, setAnnounceValue] = React.useState('');
+
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
   const animatedStars = useTrail(maxRating, {
     config: {
@@ -84,8 +88,13 @@ export const Rating = ({
 
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
-    setExposedVariable('value', idx + 1);
+    const newValue = idx + 1;
+    setExposedVariable('value', newValue);
     fireEvent('onChange');
+
+    // Announce the new rating value for screen readers
+    const ratingText = `${newValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+    setAnnounceValue(ratingText);
   }
 
   const getActive = (index) => {
@@ -117,29 +126,57 @@ export const Rating = ({
   const _renderRatingWidget = () => {
     return (
       <>
-        {animatedStars.map((props, index) => (
-          <RatingIcon
-            tooltip={getTooltip(index)}
-            active={getActive(index)}
-            isHalfIcon={isHalfIcon(index)}
-            maxRating={maxRating}
-            onClick={(e, idx) => {
-              e.stopPropagation();
-              setRatingIndex(idx);
-              handleClick(idx);
-            }}
-            allowHalfStar={allowHalfStar}
-            key={index}
-            index={index}
-            color={iconType === 'stars' ? selectedBgColorStars : selectedBackgroundHearts}
-            style={{ ...props }}
-            setHoverIndex={setHoverIndex}
-            unselectedBackground={unselectedBackground}
-            iconType={iconType}
-            allowEditing={allowEditing}
-            currentRatingIndex={currentRatingIndex}
-          />
-        ))}
+        {/*Accessibility : Live region for announcing rating changes */}
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          {announceValue}
+        </div>
+
+        <div
+          role="radiogroup"
+          aria-labelledby={label ? `${ratingId}-label` : undefined}
+          aria-label={
+            !label ? `Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${maxRating}` : undefined
+          }
+          aria-required="false"
+          aria-disabled={isDisabled}
+          className="rating-widget-group"
+        >
+          {animatedStars.map((props, index) => {
+            const ratingValue = index + 1;
+            const isSelected = index <= currentRatingIndex;
+            const ariaLabel = `${ratingValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
+              getTooltip(index) ? `, ${getTooltip(index)}` : ''
+            }`;
+
+            return (
+              <RatingIcon
+                tooltip={getTooltip(index)}
+                active={getActive(index)}
+                isHalfIcon={isHalfIcon(index)}
+                maxRating={maxRating}
+                onClick={(e, idx) => {
+                  e.stopPropagation();
+                  setRatingIndex(idx);
+                  handleClick(idx);
+                }}
+                allowHalfStar={allowHalfStar}
+                key={index}
+                index={index}
+                color={iconType === 'stars' ? selectedBgColorStars : selectedBackgroundHearts}
+                style={{ ...props }}
+                setHoverIndex={setHoverIndex}
+                unselectedBackground={unselectedBackground}
+                iconType={iconType}
+                allowEditing={allowEditing}
+                currentRatingIndex={currentRatingIndex}
+                ariaLabel={ariaLabel}
+                isSelected={isSelected}
+                ratingValue={ratingValue}
+                isDisabled={isDisabled}
+              />
+            );
+          })}
+        </div>
       </>
     );
   };
@@ -152,7 +189,11 @@ export const Rating = ({
         style={{ display: isVisible ? '' : 'none', boxShadow }}
         data-cy={dataCy}
       >
-        <span className={label && `label form-check-label col-auto`} style={{ color: labelColorStyle }}>
+        <span
+          id={`${ratingId}-label`}
+          className={label && `label form-check-label col-auto`}
+          style={{ color: labelColorStyle }}
+        >
           {label}
         </span>
         <div className="col px-1 py-0 mt-0">
@@ -195,6 +236,7 @@ export const Rating = ({
         isMandatory={false}
         _width={_width}
         widthType={widthType}
+        id={`${ratingId}-label`}
       />
 
       <div

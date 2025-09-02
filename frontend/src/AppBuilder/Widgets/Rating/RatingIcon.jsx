@@ -29,6 +29,10 @@ const RatingIcon = ({
   unselectedBackground,
   iconType,
   allowEditing,
+  ariaLabel,
+  isSelected,
+  ratingValue,
+  isDisabled,
   ...rest
 }) => {
   // if the icon is star
@@ -98,8 +102,19 @@ const RatingIcon = ({
   };
 
   const handleClick = (e) => {
+    if (isDisabled || !allowEditing) return;
+
     if (currentPrecision === 0.5) onClick(e, index - 0.5);
     else onClick(e, index);
+  };
+
+  const handleKeyDown = (e) => {
+    if (isDisabled || !allowEditing) return;
+
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick(e);
+    }
   };
 
   let conditionalProps = {};
@@ -124,15 +139,22 @@ const RatingIcon = ({
     return (
       <animated.span
         className={classNames('rating-icon-widget', {
-          'pointer-events-none': !allowEditing,
+          'pointer-events-none': !allowEditing || isDisabled,
         })}
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
         ref={ref}
         {...rest}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...conditionalProps}
-        role="button"
+        role="radio"
+        tabIndex={allowEditing && !isDisabled ? 0 : -1}
+        aria-label={ariaLabel}
+        aria-checked={isSelected}
+        aria-disabled={isDisabled || !allowEditing}
+        aria-posinset={ratingValue}
+        aria-setsize={maxRating}
       >
         {getIcon(color)}
       </animated.span>
