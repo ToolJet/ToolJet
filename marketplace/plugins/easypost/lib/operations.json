@@ -10,7 +10,7 @@
       "key": "easypost_operation",
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
-      "spec_url": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/easypost_openapi_spec.yaml"
+      "spec_url": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/easypost-openapi.yaml"
     }
   }
 }

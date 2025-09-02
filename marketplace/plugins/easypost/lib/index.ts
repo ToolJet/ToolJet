@@ -13,7 +13,7 @@ export default class EasyPostQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const apiKey = sourceOptions.api_key;
-    const baseUrl = 'https://api.easypost.com';
+    const baseUrl = 'https://api.easypost.com/v2';
     const path = queryOptions['path'];
     let url = `${baseUrl}${path}`;
 
@@ -29,7 +29,6 @@ export default class EasyPostQueryService implements QueryService {
     // Handle body parameters - parse JSON strings to objects
     const requestBody = queryOptions['params']['request'] || {};
     const processedBody = this.processRequestBody(requestBody);
-
     try {
       const options: any = {
         method: operation.toLowerCase(),
