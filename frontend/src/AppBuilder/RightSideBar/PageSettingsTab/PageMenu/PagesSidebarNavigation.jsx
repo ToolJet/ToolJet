@@ -638,7 +638,7 @@ export const PagesSidebarNavigation = ({
                 toggleForCanvas={true}
                 switchDarkMode={switchDarkMode}
                 darkMode={darkMode}
-                tooltipPlacement="right"
+                tooltipPlacement={position === 'top' ? 'left' : 'right'}
               />
             </div>
           )}
