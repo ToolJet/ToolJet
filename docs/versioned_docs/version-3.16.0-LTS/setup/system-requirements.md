@@ -23,7 +23,7 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 - **Operating System:** Ubuntu 22.04 or later
 - **Processor Architecture:** x86 (arm64 is not supported)
-- **RAM:** 2GB
+- **RAM:** 4GB
 - **CPU:** 1 vCPU
 - **Storage:** At least 8GiB, but can increase according to your requirements.
 
