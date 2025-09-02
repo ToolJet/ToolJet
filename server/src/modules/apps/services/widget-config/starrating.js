@@ -104,7 +104,7 @@ export const starratingConfig = {
       type: 'select',
       options: [
         { name: 'Standard', value: 'standard' },
-        { name: 'Legacy', value: 'legacy' },
+        { name: 'Legacy', value: 'legacy'},
       ],
       validation: {
         schema: { type: 'string' },

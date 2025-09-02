@@ -10,6 +10,10 @@ import {
 import classNames from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
+export const checkIfStarRatingLabelTypeIsDeprecated = (value) => {
+  return value === 'legacy';
+};
+
 export const Rating = ({ properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) => {
   const {
     iconType = 'stars',
