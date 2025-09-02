@@ -2197,46 +2197,73 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
-    set(() => {
-      const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } =
-        get();
+    const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
 
-      const currentPageId = getCurrentPageId(moduleId);
+    const currentPageId = getCurrentPageId(moduleId);
 
-      pagesInfo?.length &&
-        pagesInfo.forEach((page) => {
-          if (page.id === currentPageId) {
-            const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
-            const componentsToUpdate =
-              page.components?.update?.reduce((acc, comp) => {
-                acc[comp.id] = comp;
+    pagesInfo?.length &&
+      pagesInfo.forEach((page) => {
+        if (page.id === currentPageId) {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate =
+            page.components?.update?.reduce((acc, comp) => {
+              acc[comp.id] = comp;
+              return acc;
+            }, {}) ?? {};
+          // Convert create operations format to match addComponentToCurrentPage expectations
+          const componentsToCreate = (page.components?.create ?? []).map((component) => ({
+            id: component.id,
+            name: component.component?.name,
+            component: component.component,
+            layouts: component.layouts,
+          }));
 
-                return acc;
-              }, {}) ?? {};
+          // Delete Components
+          componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
 
-            // Convert create operations format to match addComponentToCurrentPage expectations
-            const componentsToCreate = (page.components?.create ?? []).map((component) => ({
-              id: component.id,
-              name: component.component?.name,
-              component: component.component,
-              layouts: component.layouts,
-            }));
+          // Update Components
+          !isEmpty(componentsToUpdate) &&
+            setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
 
-            // Delete Components
-            componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+          // Create Components
+          componentsToCreate.length &&
+            addComponentToCurrentPage(componentsToCreate, moduleId, {
+              saveAfterAction: false,
+              skipFormUpdate: true,
+            });
+        } else {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate = page.components?.update ?? [];
+          const componentsToCreate = page.components?.create ?? [];
 
-            // Update Components
-            !isEmpty(componentsToUpdate) &&
-              setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+          set(
+            (state) => {
+              const componentsInState = state.modules[moduleId].pages.find((p) => p.id === page.id)?.components;
 
-            // Create Components
-            componentsToCreate.length &&
-              addComponentToCurrentPage(componentsToCreate, moduleId, {
-                saveAfterAction: false,
-                skipFormUpdate: true,
+              // Delete components
+              componentIdsToDelete.forEach((id) => {
+                delete componentsInState[id];
               });
-          }
-        });
-    });
+
+              // Update components
+              componentsToUpdate.forEach((componentToUpdate) => {
+                componentsInState[componentToUpdate.id] = componentToUpdate;
+              });
+
+              // Create/Add components
+              componentsToCreate.forEach((component) => {
+                componentsInState[component.id] = {
+                  component: component.component,
+                  layouts: component.layouts,
+                  id: component.id,
+                  name: component.component?.name,
+                };
+              });
+            },
+            undefined,
+            'performDeletionUpdationAndCreationOfComponentsInPages'
+          );
+        }
+      });
   },
 });
