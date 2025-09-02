@@ -39,11 +39,11 @@
     }
   }
 
-  &:focus { 
-    outline: 2px solid #007bff;
-    outline-offset: 2px;
-    border-radius: 2px;
-  }
+  // &:focus { 
+  //   outline: 2px solid #007bff;
+  //   outline-offset: 2px;
+  //   border-radius: 2px;
+  // }
 
   &[aria-disabled="true"] {
     cursor: not-allowed;
