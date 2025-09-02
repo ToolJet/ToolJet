@@ -17,7 +17,9 @@ import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
-import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import CreateAppButton from './components/CreateAppButton';
+import CreateWorkflowButton from './components/CreateAppButton/CreateWorkflowButton';
+import CreateModuleButton from './components/CreateAppButton/CreateModuleButton';
 import Layout from '@/_ui/Layout';
 import AppList from './AppList';
 import TemplateLibraryModal from './TemplateLibraryModal/';
@@ -227,7 +229,10 @@ class HomePageComponent extends React.Component {
       this.fetchApps(1);
     }
     if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
-      this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
+      this.setState({
+        featureAccess: this.props.featureAccess,
+        featuresLoaded: this.props.featuresLoaded,
+      });
     }
     if (this.state.shouldRedirect && !prevState.shouldRedirect) {
       const workspaceId = getWorkspaceId();
@@ -346,11 +351,18 @@ class HomePageComponent extends React.Component {
       });
       this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
-      _self.setState({ creatingApp: false, posthog_from: null, showAIOnboardingLoadingScreen: false });
+      _self.setState({
+        creatingApp: false,
+        posthog_from: null,
+        showAIOnboardingLoadingScreen: false,
+      });
       return true;
     } catch (errorResponse) {
       this.eraseAIOnboardingRelatedCookies();
-      _self.setState({ creatingApp: false, showAIOnboardingLoadingScreen: false });
+      _self.setState({
+        creatingApp: false,
+        showAIOnboardingLoadingScreen: false,
+      });
       if (errorResponse.statusCode === 409) {
         return false;
       } else if (errorResponse.statusCode !== 451) {
@@ -546,7 +558,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -554,7 +566,8 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -575,7 +588,10 @@ class HomePageComponent extends React.Component {
       }
     } catch (error) {
       if (error?.error?.type === 'permission-check') {
-        this.setState({ showMissingGroupsModal: true, missingGroups: error?.error?.data });
+        this.setState({
+          showMissingGroupsModal: true,
+          missingGroups: error?.error?.data,
+        });
         return;
       }
       if (installedPluginsInfo.length) {
@@ -601,7 +617,9 @@ class HomePageComponent extends React.Component {
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
-      toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
+      toast.success(`${this.getAppType()} created successfully!`, {
+        position: 'top-center',
+      });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
@@ -798,7 +816,11 @@ class HomePageComponent extends React.Component {
   };
 
   fetchRepoApps = () => {
-    this.setState({ fetchingAppsFromRepos: true, selectedAppRepo: null, importingGitAppOperations: {} });
+    this.setState({
+      fetchingAppsFromRepos: true,
+      selectedAppRepo: null,
+      importingGitAppOperations: {},
+    });
     gitSyncService
       .gitPull()
       .then((data) => {
@@ -904,23 +926,38 @@ class HomePageComponent extends React.Component {
 
     switch (action) {
       case 'add-to-folder':
-        this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app },
+          showAddToFolderModal: true,
+        });
         break;
       case 'change-icon':
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedIcon: app?.icon,
+          },
           showChangeIconModal: true,
         });
         break;
       case 'remove-app-from-folder':
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedFolder: folder },
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedFolder: folder,
+          },
           showRemoveAppFromFolderConfirmation: true,
         });
         break;
       case 'clone-app':
         this.setState({
-          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedIcon: app?.icon,
+          },
           showCloneAppModal: true,
         });
         break;
@@ -939,7 +976,11 @@ class HomePageComponent extends React.Component {
     return iconList.map((icon, index) => (
       <li
         className={`p-3 ms-1 me-2 mt-1 mb-2${selectedIcon === icon ? ' selected' : ''}`}
-        onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
+        onClick={() =>
+          this.setState({
+            appOperations: { ...appOperations, selectedIcon: icon },
+          })
+        }
         key={index}
       >
         <BulkIcon name={icon} data-cy={`${icon}-icon`} />
@@ -970,7 +1011,11 @@ class HomePageComponent extends React.Component {
           }
           return app;
         });
-        this.setState({ appOperations: {}, showChangeIconModal: false, apps: updatedApps });
+        this.setState({
+          appOperations: {},
+          showChangeIconModal: false,
+          apps: updatedApps,
+        });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -1012,7 +1057,9 @@ class HomePageComponent extends React.Component {
   };
   toggleGitRepositoryImportModal = (e) => {
     if (!this.state.showGitRepositoryImportModal) this.fetchRepoApps();
-    this.setState({ showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal });
+    this.setState({
+      showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal,
+    });
   };
 
   openCreateAppFromTemplateModal = async (template) => {
@@ -1178,6 +1225,69 @@ class HomePageComponent extends React.Component {
     this.eraseAIOnboardingRelatedCookies();
   };
 
+  getCreateAppButton = () => {
+    const { featureAccess, appsLimit } = this.state;
+    const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+
+    const getDisabledState = () => {
+      if (this.props.appType === 'module') {
+        return invalidLicense;
+      }
+      if (this.props.appType === 'workflow') {
+        return this.hasWorkflowLimitReached();
+      }
+      if (this.props.appType === 'front-end') {
+        return appsLimit?.percentage >= 100;
+      }
+      // For regular apps
+      return appsLimit?.percentage >= 100;
+    };
+
+    if (this.props.appType === 'workflow') {
+      return (
+        <CreateWorkflowButton
+          canCreateApp={this.canCreateApp()}
+          appsLimit={this.state.appsLimit}
+          creatingApp={this.state.creatingApp}
+          isImportingApp={this.state.isImportingApp}
+          disabled={getDisabledState()}
+          onShowCreateAppModal={this.openCreateAppModal}
+          onReadAndImport={this.readAndImport}
+          t={this.props.t}
+        />
+      );
+    }
+
+    if (this.props.appType === 'module') {
+      return (
+        <CreateModuleButton
+          canCreateApp={this.canCreateApp()}
+          appsLimit={this.state.appsLimit}
+          creatingApp={this.state.creatingApp}
+          isImportingApp={this.state.isImportingApp}
+          disabled={getDisabledState()}
+          onShowCreateAppModal={this.openCreateAppModal}
+          onReadAndImport={this.readAndImport}
+          t={this.props.t}
+        />
+      );
+    }
+
+    return (
+      <CreateAppButton
+        canCreateApp={this.canCreateApp()}
+        appsLimit={this.state.appsLimit}
+        creatingApp={this.state.creatingApp}
+        isImportingApp={this.state.isImportingApp}
+        disabled={getDisabledState()}
+        onShowCreateAppModal={this.openCreateAppModal}
+        createApp={this.createApp}
+        onReadAndImport={this.readAndImport}
+        t={this.props.t}
+      />
+    );
+  };
+
   render() {
     const {
       apps,
@@ -1246,6 +1356,7 @@ class HomePageComponent extends React.Component {
         return this.hasWorkflowLimitReached();
       }
     };
+
     const modalConfigs = {
       create: {
         modalType: 'create',
@@ -1353,8 +1464,9 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                    }`}
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1373,7 +1485,11 @@ class HomePageComponent extends React.Component {
                 {isLong && (
                   <button
                     class="toggle-button"
-                    onClick={() => this.setState({ missingGroupsExpanded: !missingGroupsExpanded })}
+                    onClick={() =>
+                      this.setState({
+                        missingGroupsExpanded: !missingGroupsExpanded,
+                      })
+                    }
                   >
                     <span className="chevron">
                       <SolidIcon
@@ -1396,7 +1512,12 @@ class HomePageComponent extends React.Component {
                 <ButtonSolid
                   className="secondary-action"
                   variant={'tertiary'}
-                  onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
+                  onClick={() =>
+                    this.setState({
+                      showMissingGroupsModal: false,
+                      isImportingApp: false,
+                    })
+                  }
                 >
                   Cancel import
                 </ButtonSolid>
@@ -1430,8 +1551,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1488,10 +1609,17 @@ class HomePageComponent extends React.Component {
                       disabled={importingApp}
                       onChange={(newVal) => {
                         this.setState(
-                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
+                          {
+                            selectedAppRepo: newVal,
+                            importedAppName: appsFromRepos[newVal]?.git_app_name,
+                          },
                           () => {
                             if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+                              this.setState({
+                                importingGitAppOperations: {
+                                  message: 'App name already exists',
+                                },
+                              });
                             } else {
                               this.setState({ importingGitAppOperations: {} });
                             }
@@ -1525,7 +1653,9 @@ class HomePageComponent extends React.Component {
                       <div>
                         <div
                           className={cx(
-                            { 'tj-input-error': importingGitAppOperations?.message },
+                            {
+                              'tj-input-error': importingGitAppOperations?.message,
+                            },
                             'tj-text-xxsm info-text'
                           )}
                           data-cy="app-name-helper-text"
@@ -1540,7 +1670,9 @@ class HomePageComponent extends React.Component {
                         checked={this.state.isAppImportEditable}
                         type="checkbox"
                         onChange={() =>
-                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                          this.setState((prevState) => ({
+                            isAppImportEditable: !prevState.isAppImportEditable,
+                          }))
                         }
                       />
                       Make application editable
@@ -1596,7 +1728,12 @@ class HomePageComponent extends React.Component {
                     })}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
-                      this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
+                      this.setState({
+                        appOperations: {
+                          ...appOperations,
+                          selectedFolder: newVal,
+                        },
+                      });
                     }}
                     width={'100%'}
                     value={appOperations?.selectedFolder}
@@ -1610,7 +1747,12 @@ class HomePageComponent extends React.Component {
               <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
                   variant="tertiary"
-                  onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+                  onClick={() =>
+                    this.setState({
+                      showAddToFolderModal: false,
+                      appOperations: {},
+                    })
+                  }
                   data-cy="cancel-button"
                 >
                   {this.props.t('globals.cancel', 'Cancel')}
@@ -1639,7 +1781,12 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col d-flex modal-footer-btn justify-content-end">
                 <ButtonSolid
-                  onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+                  onClick={() =>
+                    this.setState({
+                      showChangeIconModal: false,
+                      appOperations: {},
+                    })
+                  }
                   data-cy="cancel-button"
                   variant="tertiary"
                 >
@@ -1669,69 +1816,7 @@ class HomePageComponent extends React.Component {
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
-              <div className="create-new-app-license-wrapper">
-                {this.canCreateApp() && (
-                  <LicenseTooltip
-                    limits={appsLimit}
-                    feature={
-                      this.props.appType === 'workflow'
-                        ? 'workflows'
-                        : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
-                    }
-                    isAvailable={true}
-                    noTooltipIfValid={true}
-                  >
-                    <div className="create-new-app-wrapper">
-                      <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
-                        <Button
-                          disabled={getDisabledState()}
-                          className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() =>
-                            this.setState({
-                              showCreateAppModal: true,
-                            })
-                          }
-                          data-cy="create-new-app-button"
-                        >
-                          <>
-                            {isImportingApp && (
-                              <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                            )}
-                            {this.props.appType === 'module'
-                              ? 'Create new module'
-                              : this.props.t(
-                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
-                          </>
-                        </Button>
-                        <Dropdown.Toggle
-                          disabled={getDisabledState()}
-                          split
-                          className="d-inline"
-                          data-cy="import-dropdown-menu"
-                        />
-                        <ImportAppMenu
-                          darkMode={this.props.darkMode}
-                          showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
-                          }
-                          featureAccess={featureAccess}
-                          orgGit={orgGit}
-                          toggleGitRepositoryImportModal={
-                            this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
-                          }
-                          readAndImport={this.readAndImport}
-                          appType={this.props.appType}
-                        />
-                      </Dropdown>
-                    </div>
-                  </LicenseTooltip>
-                )}
-              </div>
+              {this.getCreateAppButton()}
               {this.props.appType === 'module' ? (
                 <div>
                   <p></p>
@@ -1766,8 +1851,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1783,7 +1868,11 @@ class HomePageComponent extends React.Component {
                   />
                 )}
 
-              <OrganizationList customStyle={{ marginBottom: isAdmin || isBuilder ? '' : '0px' }} />
+              <OrganizationList
+                customStyle={{
+                  marginBottom: isAdmin || isBuilder ? '' : '0px',
+                }}
+              />
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
@@ -1861,8 +1950,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1872,7 +1961,13 @@ class HomePageComponent extends React.Component {
                       <EmptyModuleSvg />
                       <div className="empty-title mt-3" style={{ display: 'block' }}>
                         <div>Create reusable groups of components and queries via modules.</div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <a
                             href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
                             target="_blank"
@@ -1899,7 +1994,12 @@ class HomePageComponent extends React.Component {
                           message="Modules are available only on paid plans"
                           placement="bottom"
                         >
-                          <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
+                          <label
+                            style={{
+                              visibility: isImportingApp ? 'hidden' : 'visible',
+                            }}
+                            data-cy="create-module"
+                          >
                             {'Create new module'}
                           </label>
                         </ToolTip>
@@ -1909,10 +2009,7 @@ class HomePageComponent extends React.Component {
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
-                      {
-                        this.props.appType === 'workflow' ?
-                          this.props.t('homePage.noWorkflowFound', 'No Workflows found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                      {this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}
