@@ -9,12 +9,21 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import classNames from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 
 export const checkIfStarRatingLabelTypeIsDeprecated = (value) => {
   return value === 'legacy';
 };
 
-export const Rating = ({ properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) => {
+export const Rating = ({
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  setExposedVariables,
+  darkMode,
+  dataCy,
+}) => {
   const {
     iconType = 'stars',
     label,
@@ -41,6 +50,14 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
     selectedBackgroundHearts,
     unselectedBackground,
   } = styles;
+
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    loadingState,
+    visibility,
+    disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
 
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
   const animatedStars = useTrail(maxRating, {
@@ -70,13 +87,6 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
     setExposedVariable('value', defaultSelected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
-
-  React.useEffect(() => {
-    setTimeout(() => {
-      setExposedVariable('value', defaultSelected);
-    }, 1000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
@@ -131,9 +141,9 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
   if (labelStyle === 'legacy') {
     return (
       <div
-        data-disabled={disabledState}
+        data-disabled={isDisabled}
         className="star-rating"
-        style={{ display: visibility ? '' : 'none', boxShadow }}
+        style={{ display: isVisible ? '' : 'none', boxShadow }}
         data-cy={dataCy}
       >
         <span className={label && `label form-check-label col-auto`} style={{ color: labelColorStyle }}>
@@ -152,7 +162,7 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
 
   return (
     <div
-      data-disabled={disabledState}
+      data-disabled={isDisabled}
       className={classNames('star-rating-container d-flex', {
         'flex-column':
           defaultAlignment === 'top' &&
@@ -160,7 +170,7 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
         'align-items-center': defaultAlignment !== 'top',
         'flex-row-reverse': direction === 'right' && defaultAlignment === 'side',
         'text-right': direction === 'right' && defaultAlignment === 'top',
-        invisible: !visibility,
+        invisible: !isVisible,
       })}
       style={{
         boxShadow,
@@ -188,7 +198,7 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
           ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
         }}
       >
-        {loadingState ? (
+        {isLoading ? (
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute', top: 0 }} width="20" />
         ) : (
           _renderRatingWidget()

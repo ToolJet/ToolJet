@@ -54,7 +54,7 @@ const RatingIcon = ({
     setIcon(isHalfIcon ? halfIcon : star);
     setOutlineIcon(isHalfIcon ? halfIcon : emptyIcon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iconType, isHalfIcon, color]);
+  }, [iconType, isHalfIcon, color, unselectedBackground]);
 
   const ref = React.useRef(null);
 
