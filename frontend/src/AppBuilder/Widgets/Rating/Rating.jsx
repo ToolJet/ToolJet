@@ -20,13 +20,13 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
     tooltips = [],
     allowEditing = true,
     loadingState = false,
+    visibility = true,
+    disabledState,
   } = properties;
 
   const {
     labelStyle,
-    visibility,
-    disabledState,
-    textColor,
+    textColor: selectedBgColorStars,
     boxShadow,
     alignment,
     direction,
@@ -38,7 +38,6 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
     unselectedBackground,
   } = styles;
 
-  const selectedBgColorStars = textColor ?? '#ffb400';
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
   const animatedStars = useTrail(maxRating, {
     config: {
@@ -157,9 +156,9 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
         'align-items-center': defaultAlignment !== 'top',
         'flex-row-reverse': direction === 'right' && defaultAlignment === 'side',
         'text-right': direction === 'right' && defaultAlignment === 'top',
+        invisible: !visibility,
       })}
       style={{
-        display: visibility ? '' : 'none',
         boxShadow,
         position: 'relative',
       }}
@@ -186,7 +185,7 @@ export const Rating = ({ properties, styles, fireEvent, setExposedVariable, dark
         }}
       >
         {loadingState ? (
-          <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
+          <Loader style={{ right: '50%', zIndex: 3, position: 'absolute', top: 0 }} width="20" />
         ) : (
           _renderRatingWidget()
         )}
