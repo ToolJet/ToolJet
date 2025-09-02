@@ -15,8 +15,6 @@ const initialState = {
   showCreateQuery: false,
   nameInputFocussed: false,
   previewPanelExpanded: false,
-  nodeIdToBeDeleted: null, // New state
-  showNodeDeletionModal: false, // New state
 };
 
 export const useQueryPanelStore = create(
@@ -43,21 +41,6 @@ export const useQueryPanelStore = create(
         setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
         setNameInputFocussed: (nameInputFocussed) => set({ nameInputFocussed }),
         setPreviewPanelExpanded: (previewPanelExpanded) => set({ previewPanelExpanded }),
-        setNodeIdToBeDeleted: (nodeId) => set({ nodeIdToBeDeleted: nodeId }), // New action
-        showNodeDeletionModal: (show) => set({ showNodeDeletionModal: show }), // New action
-        // Placeholder for onCancel and onConfirm, these will likely be passed as props to the modal component
-        // and trigger other store actions (e.g., deleteNode from workflowStore)
-        onNodeDeletionModalCancel: () => {
-          console.log('Node deletion modal cancelled.');
-          get().actions.showNodeDeletionModal(false);
-          get().actions.setNodeIdToBeDeleted(null);
-        },
-        onNodeDeletionModalConfirm: () => {
-          console.log(`Confirming deletion for node: ${get().nodeIdToBeDeleted}`);
-          // TODO: Trigger actual node deletion logic (e.g., call deleteNode from workflowStore)
-          get().actions.showNodeDeletionModal(false);
-          get().actions.setNodeIdToBeDeleted(null);
-        },
       },
     }),
     { name: 'Query Panel Store' }
@@ -77,7 +60,3 @@ export const useShowCreateQuery = () =>
 export const useNameInputFocussed = () =>
   useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);
 export const usePreviewPanelExpanded = () => useQueryPanelStore((state) => state.previewPanelExpanded);
-
-// New exports for modal state and actions
-export const useNodeIdToBeDeleted = () => useQueryPanelStore((state) => state.nodeIdToBeDeleted);
-export const useShowNodeDeletionModal = () => useQueryPanelStore((state) => state.showNodeDeletionModal);

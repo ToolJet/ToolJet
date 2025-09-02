@@ -126,17 +126,6 @@ export const useEditorStore = create(
       },
       setAppMode: (appMode) => set({ appMode }),
       setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
-      // New actions for Phase 3
-      setIsCollapsed: (isCollapsed) => {
-        // This action can be used for general UI elements that can be collapsed/expanded
-        // For example, if there's a state like 'isPanelCollapsed' in initialState
-        // set({ isPanelCollapsed: isCollapsed });
-        console.log(`Action: setIsCollapsed to ${isCollapsed}`);
-      },
-      hideLeftDrawer: () => {
-        set({ showLeftSidebar: false }); // Assuming showLeftSidebar controls the left drawer
-        console.log('Action: hideLeftDrawer');
-      },
     },
   }),
   { name: STORE_NAME }
