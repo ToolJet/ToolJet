@@ -36,7 +36,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
   });
 
   const redirectPath = redirectTo || getCookie('redirectPath');
-  const path = getRedirectURL(redirectPath);
+  const path = getRedirectURL(redirectPath, true);
   const archivedCase = isCurrentOrganizationArchived && !noActiveWorkspaces;
 
   eraseRedirectUrl();

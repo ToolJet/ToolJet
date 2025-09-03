@@ -43,7 +43,9 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
+import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
+import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppWrapper = (props) => {
@@ -226,6 +228,7 @@ class AppComponent extends React.Component {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
     const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
+    const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
@@ -381,6 +384,19 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
+                <Route
+                  exact
+                  path="/:workspaceId/home"
+                  element={
+                    <PrivateRoute>
+                      <GuardedHomePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        version={this.state.tooljetVersion}
+                      />
+                    </PrivateRoute>
+                  }
+                />
 
                 <Route
                   exact
@@ -449,6 +465,19 @@ class AppComponent extends React.Component {
                   element={
                     <PrivateRoute>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/home"
+                  element={
+                    <PrivateRoute>
+                      <GuardedHomePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        version={this.state.tooljetVersion}
+                      />
                     </PrivateRoute>
                   }
                 />
