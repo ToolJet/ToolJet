@@ -220,6 +220,51 @@ export const StylesTabElements = ({
           </div>
         </>
       )}
+
+      {column.columnType === 'rating' && (
+        <div className="d-flex flex-column custom-gap-16">
+          <div className="field px-3">
+            <Color
+              param={{ name: 'Selected color' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Selected color' } } }}
+              definition={{ value: column?.selectedColor || '#FFCB05' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'selectedColor', color)}
+              shouldFlexDirectionBeRow={true}
+            />
+          </div>
+          <div className="field px-3">
+            <Color
+              param={{ name: 'Unselected color' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Unselected color' } } }}
+              definition={{ value: column?.unselectedColor || '#D1D5DB' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'unselectedColor', color)}
+              shouldFlexDirectionBeRow={true}
+            />
+          </div>
+          <div className="field px-3">
+            <label className="form-label">{t('widget.Table.iconType', 'Icon type')}</label>
+            <Select
+              className={'select-search'}
+              meta={{
+                options: [
+                  { label: 'Stars', value: 'stars' },
+                  { label: 'Hearts', value: 'hearts' },
+                ],
+              }}
+              value={column.iconType || 'stars'}
+              search={false}
+              closeOnSelect={true}
+              onChange={(value) => {
+                onColumnItemChange(index, 'iconType', value);
+              }}
+              placeholder={t('Select') + '...'}
+              width={'100%'}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };

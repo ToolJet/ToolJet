@@ -21,6 +21,7 @@ import {
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
+  RatingColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import SelectSearch from 'react-select-search';
@@ -397,6 +398,24 @@ export default function generateColumnsData({
               );
             }
 
+            case 'rating': {
+              return (
+                <RatingColumn
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  row={row}
+                  id={id}
+                />
+              );
+            }
+
             default:
               return cellValue || '';
           }
@@ -404,7 +423,7 @@ export default function generateColumnsData({
       };
 
       // Add sorting configuration for specific column types
-      if (columnType === 'number') {
+      if (columnType === 'number' || columnType === 'rating') {
         columnDef.sortingFn = (rowA, rowB, columnId) => {
           const a = rowA.getValue(columnId);
           const b = rowB.getValue(columnId);

@@ -101,6 +101,7 @@ export const PropertiesTabElements = ({
             { label: 'JSON', value: 'json' },
             { label: 'Markdown', value: 'markdown' },
             { label: 'HTML', value: 'html' },
+            { label: 'Rating', value: 'rating' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },
@@ -354,7 +355,7 @@ export const PropertiesTabElements = ({
         </div>
       </div>
 
-      {['select', 'newMultiSelect', 'datepicker'].includes(column.columnType) && <hr className="mx-0 my-2" />}
+      {['select', 'newMultiSelect', 'datepicker', 'rating'].includes(column.columnType) && <hr className="mx-0 my-2" />}
       {column.columnType === 'datepicker' && (
         <div className="field" style={{ marginTop: '-24px' }}>
           <DatepickerProperties
@@ -365,6 +366,63 @@ export const PropertiesTabElements = ({
             onColumnItemChange={onColumnItemChange}
             component={component}
           />
+        </div>
+      )}
+      {column.columnType === 'rating' && (
+        <div className="field" style={{ marginTop: '-24px' }}>
+          <div className="px-3 mb-3">
+            <label className="form-label" style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>
+              Options
+            </label>
+          </div>
+          <div className="field mb-2 px-3">
+            <label className="form-label">{t('widget.Table.maxRating', 'Max rating')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.maxRating || '{{5}}'}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{5}}'}
+              onChange={(value) => onColumnItemChange(index, 'maxRating', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'maxRating')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('maxRating', showing);
+              }}
+            />
+          </div>
+          <div className="field mb-2 px-3">
+            <label className="form-label">{t('widget.Table.defaultRating', 'Default rating')}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.defaultRating || '{{3}}'}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{3}}'}
+              onChange={(value) => onColumnItemChange(index, 'defaultRating', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'defaultRating')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('defaultRating', showing);
+              }}
+            />
+          </div>
+          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '8px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+              <ProgramaticallyHandleProperties
+                label="Allow half rating"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="allowHalfStar"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'toggle', displayName: 'Allow half rating' }}
+                paramType="properties"
+              />
+            </div>
+          </div>
         </div>
       )}
       {['select', 'newMultiSelect'].includes(column.columnType) && (
