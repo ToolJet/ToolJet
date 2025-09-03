@@ -77,7 +77,7 @@ OIDC_CUSTOM_SCOPES=groups
 
 ### Configuration
 
-You can override or extend the default scopes using the `OIDC_CUSTOM_SCOPES` environment variable.
+You can override or extend the default scopes using the `OIDC_CUSTOM_SCOPES` environment variable in the self-hosted version of ToolJet.
 
 Set scopes in your `.env` file using comma-separated values:
 ```
