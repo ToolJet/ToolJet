@@ -57,6 +57,9 @@ import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { EventListenerService } from './services/event-listener-listing.service';
+import { AppGitListenerModule } from '@modules/app-git/listeners/module';
+import { WorkflowsListenerModule } from '@modules/workflows/listeners/module';
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -118,6 +121,8 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await AppGitListenerModule.register(configs),
+      await WorkflowsListenerModule.register(configs),
     ];
 
     const conditionalImports = [];
@@ -138,6 +143,7 @@ export class AppModule implements OnModuleInit {
         SampleDBScheduler,
         SessionScheduler,
         AuditLogsClearScheduler,
+        EventListenerService,
       ],
     };
   }
