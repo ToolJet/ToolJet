@@ -38,10 +38,13 @@ export type SourceOptions = {
   url: string;
   proto_files: 'server_reflection' | 'import_proto_file';
   proto_file_url?: string;
-  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2';
+  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'api_key';
   username?: string;
   password?: string;
   bearer_token?: string;
+  // API Key auth
+  grpc_apikey_key?: string;
+  grpc_apikey_value?: string;
   // OAuth2 fields
   grant_type?: 'authorization_code' | 'client_credentials';
   add_token_to?: 'header' | 'metadata';
