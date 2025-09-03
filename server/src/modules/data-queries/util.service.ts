@@ -448,8 +448,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }
+        } else if (/^\{\{\s*\{[\s\S]*\}\s*\}\}$/.test(resolvedValue.trim())) {
+          // This is a single nested object template like {{ { ... } }} special case for nested objects
+          resolvedValue = options[resolvedValue.trim()];
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
         }
-
         // c: Replace all occurrences of {{ }} variables
         else if (
           typeof resolvedValue === 'string' &&
