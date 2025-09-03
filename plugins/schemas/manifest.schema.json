@@ -52,6 +52,13 @@
               "type": "string"
             }
           }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for categorizing the plugin (e.g., legacy, ai)"
         }
       }
     }

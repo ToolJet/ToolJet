@@ -1,0 +1,144 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v1-schema.json",
+  "title": "{{PLUGIN_NAME}} Operations",
+  "description": "Available database operations for {{PLUGIN_DISPLAY_NAME}}",
+  "type": "database",
+  "defaults": {
+    "operation": "select"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select database operation",
+      "list": [
+        { "value": "select", "name": "SELECT Query" },
+        { "value": "insert", "name": "INSERT Query" },
+        { "value": "update", "name": "UPDATE Query" },
+        { "value": "delete", "name": "DELETE Query" },
+        { "value": "raw", "name": "Raw SQL Query" }
+      ]
+    },
+    "select": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "text",
+        "description": "Table name",
+        "placeholder": "users",
+        "mandatory": true
+      },
+      "columns": {
+        "label": "Columns",
+        "key": "columns",
+        "type": "text",
+        "description": "Columns to select (comma-separated, or * for all)",
+        "placeholder": "id, name, email",
+        "mandatory": false
+      },
+      "where": {
+        "label": "WHERE Clause",
+        "key": "where",
+        "type": "codehinter",
+        "description": "WHERE conditions",
+        "placeholder": "status = 'active' AND created_at > '{{variables.dateFilter}}'",
+        "height": "100px",
+        "mandatory": false
+      },
+      "order_by": {
+        "label": "ORDER BY",
+        "key": "order_by",
+        "type": "text",
+        "description": "Order by clause",
+        "placeholder": "created_at DESC",
+        "mandatory": false
+      },
+      "limit": {
+        "label": "LIMIT",
+        "key": "limit",
+        "type": "text",
+        "description": "Maximum number of rows",
+        "placeholder": "100",
+        "mandatory": false
+      }
+    },
+    "insert": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "text",
+        "description": "Table name",
+        "placeholder": "users",
+        "mandatory": true
+      },
+      "data": {
+        "label": "Data",
+        "key": "data",
+        "type": "codehinter",
+        "description": "Data to insert as JSON",
+        "placeholder": "{\n  \"name\": \"{{variables.userName}}\",\n  \"email\": \"{{variables.userEmail}}\",\n  \"status\": \"active\"\n}",
+        "height": "150px",
+        "mandatory": true
+      }
+    },
+    "update": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "text",
+        "description": "Table name",
+        "placeholder": "users",
+        "mandatory": true
+      },
+      "data": {
+        "label": "Data",
+        "key": "data",
+        "type": "codehinter",
+        "description": "Data to update as JSON",
+        "placeholder": "{\n  \"name\": \"{{variables.newName}}\",\n  \"updated_at\": \"NOW()\"\n}",
+        "height": "150px",
+        "mandatory": true
+      },
+      "where": {
+        "label": "WHERE Clause",
+        "key": "where",
+        "type": "codehinter",
+        "description": "WHERE conditions for update",
+        "placeholder": "id = {{variables.userId}}",
+        "height": "100px",
+        "mandatory": true
+      }
+    },
+    "delete": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "text",
+        "description": "Table name",
+        "placeholder": "users",
+        "mandatory": true
+      },
+      "where": {
+        "label": "WHERE Clause",
+        "key": "where",
+        "type": "codehinter",
+        "description": "WHERE conditions for deletion",
+        "placeholder": "id = {{variables.userId}}",
+        "height": "100px",
+        "mandatory": true
+      }
+    },
+    "raw": {
+      "query": {
+        "label": "SQL Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Raw SQL query",
+        "placeholder": "SELECT u.name, COUNT(o.id) as order_count\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nWHERE u.status = 'active'\nGROUP BY u.id, u.name\nORDER BY order_count DESC\nLIMIT 10",
+        "height": "200px",
+        "mandatory": true
+      }
+    }
+  }
+}

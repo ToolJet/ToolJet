@@ -1,0 +1,113 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/marketplace/schemas/dynamicform-v2-schema.json",
+  "title": "{{PLUGIN_NAME}} Plugin",
+  "description": "A schema defining {{PLUGIN_NAME}} database connection",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_DISPLAY_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "database"
+  },
+  "tj:encrypted": ["password"],
+  "tj:ui:properties": {
+    "host": {
+      "widget": "text-v3",
+      "key": "host",
+      "label": "Host",
+      "description": "Database host address",
+      "placeholder": "localhost",
+      "required": true
+    },
+    "port": {
+      "widget": "text-v3",
+      "key": "port",
+      "label": "Port",
+      "description": "Database port number",
+      "placeholder": "{{DEFAULT_PORT}}"
+    },
+    "database": {
+      "widget": "text-v3",
+      "key": "database",
+      "label": "Database Name",
+      "description": "Name of the database to connect to",
+      "placeholder": "mydb",
+      "required": true
+    },
+    "username": {
+      "widget": "text-v3",
+      "key": "username",
+      "label": "Username",
+      "description": "Database username",
+      "required": true
+    },
+    "password": {
+      "widget": "password-v3",
+      "key": "password",
+      "label": "Password",
+      "description": "Database password",
+      "encrypted": true,
+      "required": true
+    },
+    "ssl": {
+      "widget": "toggle",
+      "key": "ssl",
+      "label": "Enable SSL",
+      "description": "Enable SSL connection"
+    },
+    "connection_timeout": {
+      "widget": "text-v3",
+      "key": "connection_timeout",
+      "label": "Connection Timeout (seconds)",
+      "description": "Connection timeout in seconds",
+      "placeholder": "30"
+    }
+  },
+  "properties": {
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Database host address",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "integer",
+      "title": "Port",
+      "description": "Database port number",
+      "default": "{{DEFAULT_PORT}}"
+    },
+    "database": {
+      "type": "string",
+      "title": "Database Name",
+      "description": "Name of the database to connect to"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Database username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Database password"
+    },
+    "ssl": {
+      "type": "boolean",
+      "title": "SSL",
+      "description": "Enable SSL connection",
+      "default": false
+    },
+    "connection_timeout": {
+      "type": "integer",
+      "title": "Connection Timeout",
+      "description": "Connection timeout in seconds",
+      "default": 30
+    }
+  },
+  "required": ["host", "database", "username", "password"],
+  "defaults": {
+    "host": "localhost",
+    "port": "{{DEFAULT_PORT}}",
+    "ssl": false,
+    "connection_timeout": 30
+  }
+}
