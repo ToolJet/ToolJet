@@ -44,9 +44,15 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     username: data.PG_USER,
     password: data.PG_PASS,
     host: data.PG_HOST,
-    connectTimeoutMS: 5000,
     extra: {
-      max: 25,
+      connectionTimeoutMillis: 30000, // 30 seconds (instead of 0)
+      acquireTimeoutMillis: 30000, // 30 seconds (instead of 60000)
+      idleTimeoutMillis: 300000, // 5 minutes (instead of 10000)
+      query_timeout: 30000, // 30 seconds (instead of 0)
+
+      // Optimize pool size based on your load
+      max: 25, // Increase from default 10
+      min: 2, // Keep some connections warm
     },
     ...dbSslConfig(data),
   };
