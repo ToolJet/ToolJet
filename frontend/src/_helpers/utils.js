@@ -315,9 +315,44 @@ export function resolveReferences(
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
-  return matchedParams;
+  const results = [];
+  let start = -1;
+  let braceBalance = 0;
+
+  for (let i = 0; i < text.length; i++) {
+    // detect opening {{
+    if (text[i] === '{' && text[i + 1] === '{') {
+      if (start === -1) {
+        start = i;
+        braceBalance = 0;
+      }
+      i++; // skip next '{'
+    }
+    // detect closing }}
+    else if (text[i] === '}' && text[i + 1] === '}') {
+      if (start !== -1 && braceBalance === 0) {
+        results.push(text.substring(start, i + 2)); // include }}
+        start = -1; // reset for next block
+      }
+      i++; // skip next '}'
+      braceBalance = braceBalance - 2;
+    }
+    // count inner braces only if inside a block
+    else if (start !== -1) {
+      if (text[i] === '{') braceBalance++;
+      else if (text[i] === '}') braceBalance--;
+    }
+  }
+
+  return results && results.length > 0 ? results : text.match(/\%\%(.*?)\%\%/g);
 }
+
+// export function getDynamicVariables(text) {
+//   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+//   console.log(text, 'text');
+//   console.log(matchedParams, 'matchedParams');
+//   return matchedParams;
+// }
 
 export function computeComponentName(componentType, currentComponents) {
   const currentComponentsForKind = Object.values(currentComponents).filter(
