@@ -5,7 +5,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
 import Label from '@/_ui/Label';
 import './styles.scss';
-
+import { getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 
 export const RangeSliderV2 = ({
   height,
@@ -32,6 +32,7 @@ export const RangeSliderV2 = ({
     color = '#000',
     markerLabel,
     handleBorderColor,
+    widthType,
   } = styles;
 
   const sliderRef = useRef(null);
@@ -45,7 +46,6 @@ export const RangeSliderV2 = ({
   const [loading, setLoading] = useState(properties?.loadingState);
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const _width = auto ? 'auto' : `${(width / 100) * 70}%`;
 
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
@@ -69,10 +69,9 @@ export const RangeSliderV2 = ({
     if (auto) {
       setLabelWidth('auto');
     } else {
-      // setLabelWidth(width > 0 ? `${width}%` : '33%');
-      setLabelWidth((width / 100) * 70);
+      setLabelWidth(getLabelWidthOfInput(widthType, width));
     }
-  }, [auto, width]);
+  }, [auto, width, widthType]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -228,7 +227,7 @@ export const RangeSliderV2 = ({
   };
 
   const sliderContainerStyle = {
-    width: '100%',
+    ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
     visibility: visibility ? 'visible' : 'hidden',
   };
   return (
@@ -247,7 +246,16 @@ export const RangeSliderV2 = ({
         </div>
       ) : (
         <>
-          <Label label={label} auto={auto} width={width} _width={labelWidth} color={color} defaultAlignment={defaultAlignment} direction={direction} />
+          <Label
+            label={label}
+            auto={auto}
+            width={width}
+            _width={labelWidth}
+            color={color}
+            defaultAlignment={defaultAlignment}
+            direction={direction}
+            widthType={widthType}
+          />
 
           <div style={sliderContainerStyle}>
             {enableTwoHandle !== 'slider' ? (

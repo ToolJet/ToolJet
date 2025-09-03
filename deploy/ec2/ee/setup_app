@@ -176,9 +176,9 @@ else
   exit 1
 fi
 
-TOOLJET_EDTION=ee npm --prefix server run db:setup:prod
+TOOLJET_EDTION=ee npm --prefix server run db:setup
 
-if sudo -E systemctl start nest
+if sudo -E systemctl start nest && && sudo journalctl -u nest -f
 then
   echo "The app will be served at ${TOOLJET_HOST}"
 else

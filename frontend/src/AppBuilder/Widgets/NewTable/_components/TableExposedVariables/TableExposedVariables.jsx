@@ -30,6 +30,7 @@ export const TableExposedVariables = ({
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
+  const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
@@ -353,6 +354,14 @@ export const TableExposedVariables = ({
       debouncedSetProperty.cancel();
     };
   }, [columnSizing, columnSizes, debouncedSetProperty, id]);
+
+  useEffect(() => {
+    function discardChanges() {
+      setExposedVariables({ dataUpdates: [], changeSet: {} });
+      clearEditedRows(id);
+    }
+    setExposedVariables({ discardChanges });
+  }, [clearEditedRows, id, setExposedVariables]);
 
   return null;
 };
