@@ -41,17 +41,6 @@ export const tagsConfig = {
       accordian: 'Options',
       isFxNotRequired: true,
     },
-    tagColor: {
-      type: 'switch',
-      displayName: 'Tag color',
-      validation: { schema: { type: 'string' }, defaultValue: 'Color' },
-      options: [
-        { displayName: 'Monochrome', value: 'monochrome' },
-        { displayName: 'Color', value: 'color' },
-      ],
-      accordian: 'Options',
-      isFxNotRequired: true,
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Tag loading state',
@@ -166,7 +155,6 @@ export const tagsConfig = {
         ],
       },
       overflow: { value: 'wrap' },
-      tagColor: { value: 'color' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

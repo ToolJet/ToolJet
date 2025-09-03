@@ -430,16 +430,6 @@ export const Tags = ({
           currentState,
           allComponents
         )}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'tagColor',
-          'properties',
-          currentState,
-          allComponents
-        )}
       </>
     ),
   });
