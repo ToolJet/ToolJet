@@ -368,7 +368,7 @@ const DynamicForm = ({
       }
       case 'react-component-oauth-authentication':
         return {
-          isGrpc: source === 'grpc',
+          isGrpc: source === 'grpc' || source === 'grpcv2',
           grant_type: options?.grant_type?.value,
           auth_type: options?.auth_type?.value,
           add_token_to: options?.add_token_to?.value,
