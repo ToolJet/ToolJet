@@ -15,6 +15,7 @@ export interface IWorkflowExecutionsService {
     envId: string,
     response: Response,
     throwOnError?: boolean,
+    isFromAppbuilder?: boolean,
     executionStartTime?: Date
   ): Promise<QueryResult>;
 
