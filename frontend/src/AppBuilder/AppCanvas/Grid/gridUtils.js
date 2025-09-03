@@ -628,3 +628,11 @@ export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => 
     }
   }
 };
+
+export const getInitialPosition = (currentWidget, temporaryLayouts, _gridWidth) => {
+  const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
+  const width = currentWidget.width * _gridWidth;
+  const transformX = currentWidget.left * _gridWidth;
+  const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
+  return { height, width, transformX, transformY };
+};
