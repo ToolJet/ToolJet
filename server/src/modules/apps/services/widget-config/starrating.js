@@ -102,6 +102,7 @@ export const starratingConfig = {
   styles: {
     labelStyle: {
       type: 'select',
+      displayName: 'Style',
       options: [
         { name: 'Standard', value: 'standard' },
         { name: 'Legacy', value: 'legacy'},
@@ -111,7 +112,6 @@ export const starratingConfig = {
         defaultValue: 'standard',
       },
       accordian: 'label',
-      isFxNotRequired: true,
     },
     color: {
       type: 'colorSwatches',
