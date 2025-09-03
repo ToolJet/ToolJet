@@ -19,7 +19,6 @@ import {
   handleActivateTargets,
   handleDeactivateTargets,
   handleActivateNonDraggingComponents,
-  computeScrollDelta,
   computeScrollDeltaOnDrag,
   getDraggingWidgetWidth,
   positionGhostElement,
@@ -966,12 +965,10 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
-            const componentParentType = target?.widget?.componentType;
 
-            const isParentModal = componentParentType === 'ModalV2' || componentParentType === 'Modal';
             const isModalToCanvas = source.isModal && source.id !== target.id;
 
-            let scrollDelta = computeScrollDelta({ source });
+            let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
             if (isParentChangeAllowed && !isModalToCanvas && !isParentModuleContainer) {
               // Special case for Modal; If source widget is modal, prevent drops to canvas
@@ -1068,6 +1065,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             prevDragParentId.current = newParentId;
             handleActivateTargets(newParentId);
           }
+
+          // let scrollDelta = computeScrollDeltaOnDrag(oldParentId);
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
 

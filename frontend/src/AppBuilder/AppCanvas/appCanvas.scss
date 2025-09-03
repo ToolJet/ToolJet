@@ -73,6 +73,7 @@
     outline: none;  // Rewriting it to replace outline coming from browser styles
   }
 
+//[Container-widget]Show scrollbar only on hover
   .real-canvas:not(.has-no-scroll) {
     overflow: hidden auto;
     scrollbar-width: none;
@@ -82,13 +83,13 @@
    }
 
 
-//[Container-widget]Show scrollbar only on hover
+   // This is required to maintain the height of the subcontainer when dragging a widget inside it
 .real-canvas.is-child-being-dragged:before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 200%;
+  height: 500%;
   overflow: hidden;
 }
