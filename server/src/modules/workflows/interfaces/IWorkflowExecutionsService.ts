@@ -15,8 +15,12 @@ export interface IWorkflowExecutionsService {
     envId: string,
     response: Response,
     throwOnError?: boolean,
-    isFromAppbuilder?: boolean,
-    executionStartTime?: Date
+    executeUsing?: string,
+    executionStartTime?: Date,
+    extraOptions?: {
+      startNodeId?: string;
+      injectedState?: object;
+    }
   ): Promise<QueryResult>;
 
   getStatus(id: string): Promise<{
@@ -45,7 +49,11 @@ export interface IWorkflowExecutionsService {
     response: Response
   ): Promise<any>;
 
-  getWorkflowExecutionsLogs(appVersionId: string, page?: number, limit?: number): Promise<{
+  getWorkflowExecutionsLogs(
+    appVersionId: string,
+    page?: number,
+    limit?: number
+  ): Promise<{
     data: WorkflowExecution[];
     page: number;
     per_page: number;
@@ -53,7 +61,11 @@ export interface IWorkflowExecutionsService {
     total_pages: number;
   }>;
 
-  getWorkflowExecutionNodes(workflowExecutionId: string, page?: number, limit?: number): Promise<{
+  getWorkflowExecutionNodes(
+    workflowExecutionId: string,
+    page?: number,
+    limit?: number
+  ): Promise<{
     data: WorkflowExecutionNode[];
     page: number;
     per_page: number;
