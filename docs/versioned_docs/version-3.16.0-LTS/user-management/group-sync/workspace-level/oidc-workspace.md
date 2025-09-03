@@ -46,19 +46,52 @@ Group mapping in ToolJet follows these principles:
 To set up OIDC group synchronization in ToolJet follow these steps:
 
 1. Navigate to the **Workspace Settings** > **Workspace Login** Tab. <br/>
-   (Example URL: )
+   (Example URL: `https://app.corp.com/nexus/workspace-settings/workspace-login` )
 2. Click on the OpenID Connect under the SSO section.
 3. Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
 4. Enable the **Group Sync** toggle and provide the following information:
 
-- **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
-- **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
-   ```
-   IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
-   ```
-   For example:
-   ```
-   Marketing Team -> marketing, Sales Team -> sales
-   ```
+  - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
+  - **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
+    ```
+    IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
+    ```
+    For example:
+    ```
+    Marketing Team -> marketing, Sales Team -> sales
+    ```
 
-   <img className="screenshot-full" src="/img/user-management/group-sync/oidc/mapping.png" alt="OIDC Group Sync Config" />
+   <img className="screenshot-full img-full" src="/img/user-management/group-sync/oidc/mapping.png" alt="OIDC Group Sync Config" />
+
+## Custom Scopes
+
+OIDC providers often allow requesting additional custom scopes beyond the standard ones. These scopes define what information or permissions an application can access, such as groups, roles, or directory access permissions. 
+ToolJet includes the following scopes by default:
+```
+OIDC_CUSTOM_SCOPES=openid, email, profile
+```
+When group synchronization is enabled and no custom scopes are configured, ToolJet automatically adds:
+```
+OIDC_CUSTOM_SCOPES=groups
+```
+
+### Configuration
+
+You can override or extend the default scopes using the `OIDC_CUSTOM_SCOPES` environment variable.
+
+Set scopes in your `.env` file using comma-separated values:
+```
+OIDC_CUSTOM_SCOPES=groups,roles,offline_access
+```
+
+### Provider-Specific Examples
+
+| **Provider** | **Required Scope** | **Extended Scope Example** |
+|:------------:|:------------------:|:--------------------------:|
+| Okta | `OIDC_CUSTOM_SCOPES=groups` | `OIDC_CUSTOM_SCOPES=groups,roles` |
+| Azure Entra ID (Microsoft) | `OIDC_CUSTOM_SCOPES=Group.Read.All` | `OIDC_CUSTOM_SCOPES= Group.Read.All,Directory.Read.All` |
+
+:::note
+- Custom scopes must be supported by your OIDC provider.
+- Ensure your application has the necessary permissions configured in the identity provider for the specific scopes.
+:::
