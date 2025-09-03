@@ -250,7 +250,8 @@
               "type": "category",
               "label": "Role Based Applications",
               "items": [
-                "app-builder/walkthrough/row-level-security"
+                "app-builder/walkthrough/row-level-security",
+                "app-builder/walkthrough/permissions"
               ]
             }
           ]
