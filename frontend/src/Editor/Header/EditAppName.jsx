@@ -109,7 +109,7 @@ function EditAppName({ appId, appName = '', onNameChanged, appCreationMode, page
   const messageType = pageType === 'workflow' ? 'Workflow' : 'App';
 
   return (
-    <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
+    <div className={`app-name input-icon ${darkMode ? 'theme-dark dark-theme' : ''}`}>
       <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
         <input
           ref={inputRef}
