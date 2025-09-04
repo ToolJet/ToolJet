@@ -1,4 +1,4 @@
-import '@/_styles/widgets/star-rating.scss';
+import './rating.scss';
 import React from 'react';
 import { useTrail } from 'react-spring';
 import Label from '@/_ui/Label';
