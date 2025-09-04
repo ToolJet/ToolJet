@@ -37,8 +37,10 @@ export const PopoverMenu = function PopoverMenu(props) {
     iconColor,
     direction,
     icon,
+    iconVisibility,
     optionsTextColor,
     optionsIconColor,
+    optionsDescriptionColor,
   } = styles;
 
   const {
@@ -205,7 +207,7 @@ export const PopoverMenu = function PopoverMenu(props) {
       : buttonType === 'primary'
       ? backgroundColor
       : 'transparent';
-
+  const computedOptionHoverColor = getModifiedColor('var(--cc-surface1-surface)', 'hover');
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
@@ -213,10 +215,13 @@ export const PopoverMenu = function PopoverMenu(props) {
     borderRadius: `${borderRadius}px`,
     height: height == 36 ? '36px' : height,
     '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
-    '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
+    '--tblr-btn-color-clicked':
+      buttonType === 'primary'
+        ? getModifiedColor(computedBgColor, 'active')
+        : 'var(--interactive-overlay-fill-pressed)',
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
-    boxShadow: buttonType == 'primary' ? boxShadow : 'var(--elevation-000-box-shadow)',
+    boxShadow: buttonType == 'primary' && boxShadow,
     padding: '0px 12px',
     opacity: exposedVariablesTemporaryState.isDisabled && '50%',
     display: exposedVariablesTemporaryState.isVisible
@@ -253,7 +258,7 @@ export const PopoverMenu = function PopoverMenu(props) {
           aria-live="polite"
           aria-label="Loading options"
         >
-          <Loader color={'var(--cc-primary-brand)' || '#000000'} width="24" />
+          <Loader color={'var(--cc-primary-brand)'} width="24" />
         </div>
       );
     }
@@ -302,7 +307,7 @@ export const PopoverMenu = function PopoverMenu(props) {
           if (!visible) return null;
 
           const optionId = `popover-option-${id}-${index}`;
-
+          const isIconVisible = iconVisibility && IconElement;
           return (
             <div
               className={cx('popover-option', {
@@ -334,21 +339,27 @@ export const PopoverMenu = function PopoverMenu(props) {
               }}
               onClick={() => handleOptionClick(option)}
             >
-              {iconVisibility && IconElement && (
-                <div data-cy="popover-menu-option-icon" className="popover-option-icon" aria-hidden="true">
-                  <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
-                </div>
-              )}
               <div data-cy="popover-menu-option-content" className="popover-option-content">
-                <div
-                  data-cy="popover-menu-option-label"
-                  className="popover-option-label"
-                  style={{ color: optionsTextColor || '#000000' }}
-                >
-                  {renderFormattedText(option.label, format)}
+                <div data-cy="popover-menu-option-header" className="popover-option-header">
+                  {isIconVisible && (
+                    <div data-cy="popover-menu-option-icon" className="popover-option-icon" aria-hidden="true">
+                      <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
+                    </div>
+                  )}
+                  <div
+                    data-cy="popover-menu-option-label"
+                    className="popover-option-label"
+                    style={{ color: optionsTextColor || '#000000' }}
+                  >
+                    {renderFormattedText(option.label, format)}
+                  </div>
                 </div>
                 {option.description && (
-                  <div data-cy="popover-menu-option-description" className="popover-menu-option-description">
+                  <div
+                    data-cy="popover-menu-option-description"
+                    className="popover-option-description"
+                    style={{ color: optionsDescriptionColor || '#000000', marginLeft: isIconVisible ? '23px' : '0px' }}
+                  >
                     {renderFormattedText(option.description, format)}
                   </div>
                 )}
@@ -432,7 +443,7 @@ export const PopoverMenu = function PopoverMenu(props) {
             </div>
             {icon && (
               <div data-cy="popover-menu-button-icon-container" className="d-flex" aria-hidden="true">
-                {!exposedVariablesTemporaryState.isLoading && (
+                {!exposedVariablesTemporaryState.isLoading && iconVisibility && (
                   <IconElement
                     style={{
                       width: '16px',
@@ -529,17 +540,7 @@ export const PopoverMenu = function PopoverMenu(props) {
 
   // ===== MAIN RENDER =====
   return (
-    <div
-      style={{ display: visibility ? 'block' : 'none' }}
-      role="region"
-      aria-label="Popover menu"
-      {...(trigger == 'hover' && {
-        onMouseLeave: () => {
-          updateExposedVariablesState('showPopover', false);
-        },
-      })}
-      data-cy={dataCy}
-    >
+    <div style={{ display: visibility ? 'block' : 'none' }} role="region" aria-label="Popover menu" data-cy={dataCy}>
       <Popover.Root
         open={exposedVariablesTemporaryState.showPopover}
         onOpenChange={(open) => updateExposedVariablesState('showPopover', open)}
@@ -551,11 +552,12 @@ export const PopoverMenu = function PopoverMenu(props) {
               id={`popover-menu-${id}`}
               className={cx('popover-content', { 'dark-theme': darkMode })}
               data-cy="popover-menu-content"
-              sideOffset={0}
+              sideOffset={2}
               align="start"
               style={{
                 width: width,
                 maxWidth: width,
+                '--popover-option-hover-color': computedOptionHoverColor,
                 ...((optionsLoadingState || hasNoOptions) && {
                   height: '120px',
                   alignItems: 'center',
@@ -565,7 +567,18 @@ export const PopoverMenu = function PopoverMenu(props) {
               avoidCollisions={true}
               collisionPadding={8}
               onEscapeKeyDown={() => updateExposedVariablesState('showPopover', false)}
-              onInteractOutside={() => updateExposedVariablesState('showPopover', false)}
+              onInteractOutside={() => {
+                if (exposedVariablesTemporaryState.hovered) return;
+                updateExposedVariablesState('showPopover', false);
+              }}
+              {...(trigger == 'hover' && {
+                onMouseEnter: () => {
+                  updateExposedVariablesState('showPopover', true);
+                },
+                onMouseLeave: () => {
+                  updateExposedVariablesState('showPopover', false);
+                },
+              })}
               role="dialog"
               aria-label="Menu options"
               aria-modal="false"
