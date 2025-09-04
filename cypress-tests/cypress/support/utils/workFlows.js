@@ -5,58 +5,51 @@ import { workflowSelector } from "Selectors/workflows";
 import { deleteDatasource } from "Support/utils/dataSource";
 import { selectAppCardOption, closeModal } from "Support/utils/common";
 
-Cypress.Commands.add("createWorkflowApp", (wfName) => {
+export const createWorkflowApp = (wfName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
   cy.get(workflowSelector.workflowsCreateButton).click();
   cy.get(workflowSelector.workFlowNameInputField).type(wfName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
-});
+};
 
-Cypress.Commands.add("fillStartNodeInput", () => {
+export const fillStartNodeJsonInput = () => {
   cy.get(workflowSelector.startNode).click({ force: true });
-
   cy.get(workflowSelector.parametersInputField)
     .click()
     .realType("{")
     .realType('"')
-    .realType("key")
+    .realType(workflowsText.jsonKey)
     .realType('"')
     .realType(":")
     .realType('"')
-    .realType("your value")
+    .realType(workflowsText.jsonValue)
     .realType('"')
     .realType("}");
-
   cy.wait(500);
   cy.get("body").click(50, 50);
   cy.wait(500);
-});
+};
 
-Cypress.Commands.add("dataSourceNode", (nodeType) => {
+export const connectDataSourceNode = (nodeType) => {
   cy.get(workflowSelector.startNodeHandleRight).trigger("mousedown", {
     button: 0,
     force: true,
   });
 
   cy.get(".react-flow__pane")
-    .trigger("mousemove", {
-      clientX: 600,
-      clientY: 300,
-      force: true,
-    })
+    .trigger("mousemove", { clientX: 600, clientY: 300, force: true })
     .wait(500)
     .trigger("mouseup", { force: true });
-
   cy.contains(nodeType, { timeout: 5000 })
     .scrollIntoView()
     .click({ force: true });
-});
+};
 
-Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
+export const verifyTextInResponseOutput = (expectedText) => {
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
     "have.text",
-    "A few seconds ago"
+    workflowsText.workflowRunLogText
   );
 
   cy.get('[data-cy="response1-node-name"]').click();
@@ -66,10 +59,14 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
   cy.wait(500);
   cy.get("body").then(($body) => {
     if (
-      $body.find("span.node-key").filter((_, el) => el.innerText === "data")
+      $body
+        .find("span.node-key")
+        .filter((_, el) => el.innerText === workflowsText.responseNodeKey)
         .length
     ) {
-      cy.contains("span.node-key", "data", { timeout: 3000 })
+      cy.contains("span.node-key", workflowsText.responseNodeKey, {
+        timeout: 3000,
+      })
         .click({ force: true })
         .wait(300);
     }
@@ -94,9 +91,9 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
       `Expected some value to include "${expectedText}", but got:\n\n${texts.join("\n")}`
     ).to.be.true;
   });
-});
+};
 
-Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
+export const connectNodeToResponseNode = (nodeTitle, returnStatement) => {
   cy.get(workflowSelector.nodeName(nodeTitle))
     .should("exist")
     .parents(".react-flow__node")
@@ -113,10 +110,12 @@ Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
 
   cy.wait(500);
 
-  cy.contains("Response", { timeout: 5000 }).click({ force: true });
+  cy.contains(workflowsText.responseNodeLabel, { timeout: 5000 }).click({
+    force: true,
+  });
   cy.wait(500);
 
-  cy.get(workflowSelector.nodeName("response1"))
+  cy.get(workflowSelector.nodeName(workflowsText.responseNodeName))
     .parents(".react-flow__node")
     .click({ force: true });
 
@@ -127,11 +126,11 @@ Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
 
   cy.get("body").click(50, 50);
   cy.wait(500);
-});
+};
 
-Cypress.Commands.add("deleteWorkflow", (wfName) => {
+export const deleteWorkflow = (wfName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.backToWorkFlows();
+  navigateBackToWorkflowsDashboard();
   cy.get(commonSelectors.appCard(wfName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
@@ -140,24 +139,26 @@ Cypress.Commands.add("deleteWorkflow", (wfName) => {
   cy.get(workflowSelector.deleteWorkFlowOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
-});
+};
 
-Cypress.Commands.add("backToWorkFlows", () => {
+export const navigateBackToWorkflowsDashboard = () => {
   cy.get(commonSelectors.pageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
-});
+};
 
-Cypress.Commands.add("revealWorkflowToken", (selectors) => {
-  cy.get(selectors.workflowTokenField).invoke("text").then((tokenText) => {
-    if (tokenText.includes("*")) {
-      cy.get(selectors.workflowTokenEyeIcon).click({ force: true });
-      cy.wait(300);
-      cy.revealWorkflowToken(selectors); 
-    }
-  });
-})
+export const revealWorkflowToken = (selectors) => {
+  cy.get(selectors.workflowTokenField)
+    .invoke("text")
+    .then((tokenText) => {
+      if (tokenText.includes("*")) {
+        cy.get(selectors.workflowTokenEyeIcon).click({ force: true });
+        cy.wait(300);
+        revealWorkflowToken(selectors);
+      }
+    });
+};
 
-Cypress.Commands.add("deleteWorkflowfromDashboard", (wfName) => {
+export const deleteWorkflowfromDashboard = (wfName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   cy.get(commonSelectors.appCard(wfName))
     .realHover()
@@ -167,39 +168,38 @@ Cypress.Commands.add("deleteWorkflowfromDashboard", (wfName) => {
   cy.get(workflowSelector.deleteWorkFlowOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
-});
+};
 
-Cypress.Commands.add(
-  "exportWorkflowApp",
-  (wfName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
-    cy.backToWorkFlows();
+export const exportWorkflowApp = (
+  wfName,
+  fixtureFile = "cypress/fixtures/exportedApp.json"
+) => {
+  navigateBackToWorkflowsDashboard();
 
-    selectAppCardOption(
-      wfName,
-      commonSelectors.appCardOptions(workflowsText.exportWFOption)
-    );
-    cy.wait(2000);
+  selectAppCardOption(
+    wfName,
+    commonSelectors.appCardOptions(workflowsText.exportWFOption)
+  );
+  cy.wait(2000);
 
-    cy.exec("ls -t ./cypress/downloads/ | head -1").then((result) => {
-      const downloadedAppExportFileName = result.stdout.trim();
-      const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
-      cy.readFile(filePath, { timeout: 15000 }).then((json) => {
-        const exportedName = json.app[0].definition.appV2.name;
-        cy.writeFile(fixtureFile, json);
-      });
+  cy.exec("ls -t ./cypress/downloads/ | head -1").then((result) => {
+    const downloadedAppExportFileName = result.stdout.trim();
+    const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
+    cy.readFile(filePath, { timeout: 15000 }).then((json) => {
+      cy.writeFile(fixtureFile, json);
     });
-    cy.deleteWorkflowfromDashboard(wfName);
-  }
-);
+  });
+  deleteWorkflowfromDashboard(wfName);
+};
 
-Cypress.Commands.add(
-  "importWorkflowApp",
-  (wfName, fixturePath = "cypress/fixtures/exportedApp.json") => {
-    cy.get(workflowSelector.importWorkFlowsOption).click();
-    cy.get(workflowSelector.importWorkFlowsLabel).click();
-    cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
-    cy.wait(2000);
-    cy.get(workflowSelector.workFlowNameInputField).clear().type(wfName);
-    cy.get(workflowSelector.importWorkFlowsButton).click();
-  }
-);
+export const importWorkflowApp = (
+  wfName,
+  fixturePath = "cypress/fixtures/exportedApp.json"
+) => {
+  cy.get(workflowSelector.importWorkFlowsOption).click();
+  cy.get(workflowSelector.importWorkFlowsLabel).click();
+  cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
+  cy.wait(2000);
+  cy.get(workflowSelector.workFlowNameInputField).clear().type(wfName);
+  cy.get(workflowSelector.importWorkFlowsButton).click();
+};

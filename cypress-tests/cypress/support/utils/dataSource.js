@@ -7,6 +7,9 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
+import {
+  deleteWorkflow,
+} from "Support/utils/workFlows";
 
 export const verifyCouldnotConnectWithAlert = (dangerText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
@@ -21,7 +24,7 @@ export const resizeQueryPanel = (height = "90") => {
 };
 
 export const deleteWorkflowAndDS = (appName, datasourceName) => {
-  cy.deleteWorkflow(appName);
+  deleteWorkflow(appName);
   deleteDatasource(datasourceName);
 };
 

@@ -7,26 +7,15 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
 
-import { importSelectors } from "Selectors/exportImport";
-import { commonText } from "Texts/common";
-
-import { exportAppModalText } from "Texts/exportImport";
-import {
-  clickOnExportButtonAndVerify,
-  exportAllVersionsAndVerify,
-  verifyElementsOfExportModal,
-} from "Support/utils/exportImport";
-import { selectAppCardOption, closeModal } from "Support/utils/common";
-
 import {
   createWorkflowApp,
-  fillStartNodeInput,
-  dataSourceNode,
-  connectNodeToResponse,
+  fillStartNodeJsonInput,
+  connectDataSourceNode,
+  connectNodeToResponseNode,
   verifyTextInResponseOutput,
   deleteWorkflow,
   importWorkflowApp,
-  exportWorkflowApp
+  exportWorkflowApp,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -44,29 +33,29 @@ describe("Workflows Export/Import Sanity", () => {
   it("RunJS workflow - execute, export/import, re-execute", () => {
     const wfName = `${data.wfName}-runjs`;
 
-    cy.createWorkflowApp(wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode("Run JavaScript code");
+    createWorkflowApp(wfName);
+    fillStartNodeJsonInput();
+    connectDataSourceNode(workflowsText.runjsNode);
 
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({ force: true });
 
     cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
       .click({ force: true })
-      .realType('return "Hello_RunJS"', { delay: 50 });
+      .realType(workflowsText.runjsCode, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(workflowsText.runjs, "return runjs1.data");
-    cy.verifyTextInResponseOutput("Hello_RunJS");
+    connectNodeToResponseNode(workflowsText.runjs, workflowsText.runjsResponse);
+    verifyTextInResponseOutput(workflowsText.runjsExpectedValue);
 
-    cy.exportWorkflowApp(wfName)
+    exportWorkflowApp(wfName);
 
-    cy.importWorkflowApp(wfName, "cypress/fixtures/exportedApp.json");
-    cy.verifyTextInResponseOutput("Hello_RunJS");
+    importWorkflowApp(wfName, workflowsText.exportFixture);
+    verifyTextInResponseOutput(workflowsText.runjsExpectedValue);
 
-    cy.deleteWorkflow(wfName);
-    cy.task("deleteFile", "cypress/fixtures/exportedApp.json");
+    deleteWorkflow(wfName);
+    cy.task("deleteFile", workflowsText.exportFixture);
   });
 
   it("Postgres workflow - execute, export/import, re-execute", () => {
@@ -100,38 +89,29 @@ describe("Workflows Export/Import Sanity", () => {
 
     cy.reload();
 
-    cy.createWorkflowApp(wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode(dsName);
+    createWorkflowApp(wfName);
+    fillStartNodeJsonInput();
+    connectDataSourceNode(dsName);
 
     cy.get(workflowSelector.nodeName(workflowsText.postgresql)).click({ force: true });
 
     cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
-      .realType(
-        `SELECT table_name
-FROM information_schema.tables
-WHERE table_schema = 'public'
-AND table_type = 'BASE TABLE';`,
-        { delay: 50 }
-      );
+      .realType(workflowsText.postgresQuery, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(workflowsText.postgresql, "return postgresql1.data");
-    cy.verifyTextInResponseOutput("employees"); 
+    connectNodeToResponseNode(workflowsText.postgresql, workflowsText.postgresResponse);
+    verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
 
-    cy.exportWorkflowApp(wfName)
+    exportWorkflowApp(wfName);
 
-    cy.importWorkflowApp(wfName, "cypress/fixtures/exportedApp.json");
-     cy.verifyTextInResponseOutput("employees"); 
+    importWorkflowApp(wfName, workflowsText.exportFixture);
+    verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
 
-    deleteWorkflowAndDS(
-        wfName,
-        `cypress-${data.dataSourceName}-manual-pgsql`
-      );
-    cy.task("deleteFile", "cypress/fixtures/exportedApp.json");
+    deleteWorkflowAndDS(wfName, dsName);
+    cy.task("deleteFile", workflowsText.exportFixture);
   });
 });
