@@ -8,6 +8,7 @@ User=ubuntu
 
 WorkingDirectory=/home/ubuntu/app
 Environment="NODE_ENV=production"
+Environment="TOOLJET_EDITION=ee"
 EnvironmentFile=/home/ubuntu/app/.env
 RestartSec=1
 ExecStart=/usr/bin/npm --prefix /home/ubuntu/app run start:prod
