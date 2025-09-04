@@ -78,7 +78,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
-      showBanner: false,
+      showBanner: false, //Show banner
       // isEditorOrViewer: '',
     };
   }
@@ -88,9 +88,7 @@ class AppComponent extends React.Component {
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
-    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
-    const showBannerCondition =
-      (isAdmin || isBuilder) && setupDate && this.isExistingPlanUser(setupDate) && this.state.showBanner;
+    const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -104,6 +102,12 @@ class AppComponent extends React.Component {
       });
       useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
+      // check if version is cloud
+      if (data?.installed_version && data?.installed_version.includes('cloud')) {
+        this.setState({
+          showBanner: true, // show banner if version has "cloud"
+        });
+      }
       this.setState({ tooljetVersion: data.installed_version });
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -122,9 +126,6 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
-    const featureAccess = await licenseService.getFeatureAccess();
-    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
-    this.setState({ showBanner: isBasicPlan });
     this.updateColorScheme();
     let counter = 0;
     let interval;
@@ -186,9 +187,6 @@ class AppComponent extends React.Component {
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
   };
-  isExistingPlanUser = (date) => {
-    return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
-  };
   updateColorScheme = (darkModeValue) => {
     const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
     if (isDark) {
@@ -227,17 +225,12 @@ class AppComponent extends React.Component {
     const isApplicationsPath = window.location.pathname.includes('/applications/');
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.is_builder;
-    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
-          {!isApplicationsPath &&
-            (isAdmin || isBuilder) &&
-            showBanner &&
-            setupDate &&
-            this.isExistingPlanUser(setupDate) && (
-              <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
-            )}
+          {!isApplicationsPath && (isAdmin || isBuilder) && showBanner && (
+            <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
+          )}
           <div
             className={cx('main-wrapper', {
               'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,

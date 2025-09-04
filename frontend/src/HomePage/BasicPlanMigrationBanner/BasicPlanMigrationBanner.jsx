@@ -7,11 +7,8 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
     <div className={`${darkMode ? 'theme-dark dark-theme' : ''} basic-plan-migration-banner`}>
       <div style={{ marginLeft: 'auto' }}>
         <p className="banner-text">
-          We&apos;ve updated your plan limits to align with our{' '}
-          <a href="https://www.tooljet.ai/pricing" className="banner-link" target="_blank" rel="noopener noreferrer">
-            new pricing.
-          </a>{' '}
-          For help in retrieving data or any inquiries,{' '}
+          We will be updating our pricing plan for our AI features on.
+          <span className="banner-link">21st September ‘25</span> To know more{' '}
           <a
             href="https://docs.tooljet.ai/docs/tj-setup/licensing/self-hosted/"
             className="banner-link"
