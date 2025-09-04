@@ -61,6 +61,7 @@ import HorizontalDivider from './horizontalDivider.jsx';
 import PhoneInput from './phoneinput.jsx';
 import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
+import PopoverMenu from './popovermenu.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -157,6 +158,8 @@ const WidgetIcon = (props) => {
       return <Passwordinput {...props} />;
     case 'pdf':
       return <Pdf {...props} />;
+    case 'popovermenu':
+      return <PopoverMenu {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':

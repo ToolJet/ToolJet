@@ -1295,10 +1295,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -2201,5 +2201,21 @@ export const createComponentsSlice = (set, get) => ({
         state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
       });
     }
+  },
+  computeColorForPopoverMenu: (value, meta, componentId) => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId);
+    const buttonType = component?.properties?.buttonType;
+    if (buttonType == 'primary') return value;
+    else {
+      if (meta.displayName == 'Text') {
+        return value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
+      } else if (meta.displayName == 'Border') {
+        return value == 'var(--cc-primary-brand)' ? 'var(--cc-default-border)' : value;
+      } else if (meta.displayName == 'Icon color') {
+        return value == '#FFFFFF' ? 'var(--cc-default-icon)' : value;
+      }
+    }
+    return value;
   },
 });
