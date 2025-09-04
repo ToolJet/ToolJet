@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Easypost datasource",
+  "description": "A schema defining Easypost datasource",
+  "type": "api",
+  "source": {
+    "name": "EasyPost",
+    "kind": "easypost",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+       "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "api_key": {
+      "label": "API Key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Your EasyPost API key (starts with EZAK)",
+      "hint": "Copy exactly from EasyPost dashboard. Find your API key at easypost.com/dashboard",
+      "validate": {
+        "required": true,
+        "pattern": "^EZAK",
+        "patternError": "API key must start with EZAK"
+      }
+    }
+  },
+  "required": ["api_key"]
+}
