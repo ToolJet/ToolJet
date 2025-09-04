@@ -1,6 +1,6 @@
 .popover-menu-container {
     .popover-content {
-        background-color: var(--surfaces-surface-01);
+        background-color: var(--cc-surface1-surface);
         border-radius: 8px;
         box-shadow: var(--elevation-300-box-shadow);
         padding: 8px;
@@ -9,6 +9,7 @@
         overflow-y: auto;
         justify-content: center;
         align-items: flex-start;
+        margin-top: 2px;
     }
 
     .popover-option {
@@ -25,7 +26,7 @@
     }
 
     .popover-option-selected {
-        background-color: var(--interactive-hover);
+        background-color: var(--popover-option-hover-color);
     }
 
     .popover-option-disabled {
@@ -37,6 +38,13 @@
     .popover-option-content {
         display: flex;
         flex-direction: column;
+    }
+
+    .popover-option-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
     }
 
     .popover-option-label {
