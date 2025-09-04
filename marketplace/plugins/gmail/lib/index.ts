@@ -305,6 +305,8 @@ export default class Gmail implements QueryService {
         }
       }
 
+      requestOptions.responseType = 'json';
+
       const response = await got(url, requestOptions);
 
       if (response && response.body) {
