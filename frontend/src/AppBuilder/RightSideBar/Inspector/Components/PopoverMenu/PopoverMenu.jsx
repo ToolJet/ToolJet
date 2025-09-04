@@ -76,7 +76,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     let currentNumber = options.length + 1;
     let value = currentNumber;
     while (!found) {
-      label = `Option${currentNumber}`;
+      label = `option${currentNumber}`;
       value = currentNumber.toString();
       if (options.find((option) => option.label === label) === undefined) {
         found = true;
@@ -87,10 +87,23 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     return {
       format: 'plain',
       label,
-      description: `Description${currentNumber}`,
+      description: ``,
       value,
-      icon: { value: 'IconCirclePlus' },
-      iconVisibility: true,
+      icon: {
+        value: [
+          'IconBriefcase',
+          'IconStar',
+          'IconSettings',
+          'IconUser',
+          'IconHome',
+          'IconSearch',
+          'IconBell',
+          'IconMail',
+          'IconCamera',
+          'IconMusic',
+        ][Math.floor(Math.random() * 10)],
+      },
+      iconVisibility: false,
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
     };
@@ -127,7 +140,6 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
 
   const handleDeleteOption = (index) => {
     const newOptions = options.filter((option, i) => i !== index);
-    console.log('newOptions', newOptions);
     updateOptions(newOptions);
   };
 
@@ -154,7 +166,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // ===== SIDE EFFECTS =====
   useEffect(() => {
     const newOptions = constructOptions();
-    updateOptions(newOptions);
+    setOptions(newOptions);
   }, [isDynamicOptionsEnabled]);
 
   // ===== RENDER FUNCTIONS =====
@@ -351,7 +363,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // ===== RENDER FUNCTIONS =====
   const _renderOptions = () => {
     return (
-      <List data-cy="inspector-popover-menu-options-list" style={{ marginBottom: '20px' }}>
+      <List data-cy="inspector-popover-menu-options-list" style={{ marginBottom: '12px' }}>
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result);
@@ -475,7 +487,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // Section configurations
   const sections = [
     {
-      title: 'Trigger',
+      title: 'Menu',
       type: 'properties',
       properties: properties.filter((property) => !optionsProperties.includes(property)),
     },
@@ -485,6 +497,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         <>
           {createRenderElement('advanced')}
           {isDynamicOptionsEnabled ? createRenderElement('schema') : _renderOptions()}
+          {createRenderElement('optionsLoadingState')}
         </>
       ),
     },

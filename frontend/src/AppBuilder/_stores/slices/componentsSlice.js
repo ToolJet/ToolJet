@@ -2206,7 +2206,6 @@ export const createComponentsSlice = (set, get) => ({
     const { getResolvedComponent } = get();
     const component = getResolvedComponent(componentId);
     const buttonType = component?.properties?.buttonType;
-    console.log('buttonType', buttonType, componentId, component);
     if (buttonType == 'primary') return value;
     else {
       if (meta.displayName == 'Text') {
