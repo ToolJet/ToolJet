@@ -274,6 +274,7 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -815,6 +816,9 @@ const Icon = (props) => {
       return <AICrown {...props} />;
     case 'empty-state-modules':
       return <EmptyStateModules {...props} />;
+    case 'mobile-empty-state':
+      return <MobileEmptyStateIcon {...props} />;
+
     case 'play01':
       return <Play01 {...props} />;
     case 'moon':
