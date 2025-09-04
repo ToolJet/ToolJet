@@ -53,11 +53,15 @@ export const postgreSqlText = {
   firstQueryName: "postgresql1",
   buttonLabelPreview: "Preview",
   buttonLabelCreateAndRun: "Create & Run",
+  buttonLabelRun: "Run⌘↩",
   buttonLabelCreate: "Create",
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
-
+  queryTabSetup: "Setup",
+  queryTabTransformation: "Transformation",
+  queryTabSettings: "Settings",
   headerTransformations: "Enable Transformations",
+  headerTransformation: "Enable transformation",
   json: "JSON",
   raw: "Raw",
 
@@ -66,9 +70,9 @@ export const postgreSqlText = {
   labelPrimaryKeyColumn: "Primary key column",
   labelRecordsToUpdate: "Records to update",
 
-  toggleLabelRunOnPageLoad: "Run this query on application load?",
-  toggleLabelconfirmation: "Request confirmation before running query?",
-  toggleLabelShowNotification: "Show notification on success?",
+  toggleLabelRunOnPageLoad: "Run this query on application load",
+  toggleLabelconfirmation: "Request confirmation before running query",
+  toggleLabelShowNotification: "Show notification on success",
   labelSuccessMessage: "Success Message",
   labelNotificatioDuration: "Notification duration (s)",
 
