@@ -117,6 +117,65 @@ export const Rating = ({
     setExposedVariable('value', defaultSelected);
   };
 
+  const setValue = React.useCallback(
+    (value) => {
+      // Input validation: only accept numbers or numeric strings
+      let numericValue;
+
+      if (typeof value === 'number') {
+        numericValue = value;
+      } else if (typeof value === 'string') {
+        // Check if string represents a valid number
+        const parsed = parseFloat(value);
+        if (isNaN(parsed) || value.trim() === '' || !isFinite(parsed)) {
+          return; // Reject invalid string values
+        }
+        numericValue = parsed;
+      } else {
+        return; // Reject any other data types (objects, arrays, etc.)
+      }
+
+      // Helper function to round to nearest half
+      const roundToNearestHalf = (num) => {
+        return Math.round(num * 2) / 2;
+      };
+
+      // Helper function to round using floor/ceil based on decimal part
+      const roundWithoutHalf = (num) => {
+        const decimal = num % 1;
+        if (decimal === 0) return num;
+
+        // If decimal is >= 0.5, round up (ceil), otherwise round down (floor)
+        return decimal >= 0.5 ? Math.ceil(num) : Math.floor(num);
+      };
+
+      let processedValue = numericValue;
+
+      // Handle decimal values based on allowHalfStar setting
+      if (numericValue % 1 !== 0) {
+        if (allowHalfStar) {
+          // Round to nearest half (e.g., 4.25-4.75 → 4.5)
+          processedValue = roundToNearestHalf(numericValue);
+        } else {
+          // Round using floor/ceil logic
+          processedValue = roundWithoutHalf(numericValue);
+        }
+      }
+
+      // Ensure the value is within valid range
+      processedValue = Math.max(0, Math.min(processedValue, maxRating));
+
+      setRatingIndex(processedValue - 1);
+      setExposedVariable('value', processedValue);
+    },
+    [allowHalfStar, maxRating, setExposedVariable]
+  );
+
+  React.useEffect(() => {
+    setExposedVariable('label', label);
+    setExposedVariable('setValue', setValue);
+  }, [setValue, allowHalfStar, maxRating, label, setExposedVariable]);
+
   React.useEffect(() => {
     resetRating();
     setExposedVariable('resetRating', resetRating);

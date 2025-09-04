@@ -290,6 +290,11 @@ export const starratingConfig = {
   },
    actions: [
     {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'value', displayName: 'value', defaultValue: '0' }],
+    },
+    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
