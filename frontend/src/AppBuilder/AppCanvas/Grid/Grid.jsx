@@ -33,6 +33,7 @@ import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollH
 import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
+import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -80,6 +81,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
@@ -851,10 +853,12 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return true;
           }
+
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
+
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 
@@ -945,6 +949,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           try {
             if (isDraggingRef.current) {
+              setTimeout(() => {
+                useStore.getState().setRightSidebarOpen(true);
+              }, 100);
+
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
@@ -1010,6 +1018,25 @@ export default function Grid({ gridWidth, currentLayout }) {
           hideGridLines();
           clearActiveTargetClassNamesAfterSnapping(selectedComponents);
           toggleCanvasUpdater();
+          // Move this to common function
+          const canvas = document.querySelector('.canvas-container');
+          const sidebar = document.querySelector('.editor-sidebar');
+          const droppedElem = document.getElementById(e.target.id);
+
+          if (!canvas || !sidebar || !droppedElem) return;
+
+          const droppedRect = droppedElem.getBoundingClientRect();
+          const sidebarRect = sidebar.getBoundingClientRect();
+
+          const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
+
+          if (isOverlapping) {
+            const overlap = droppedRect.right - sidebarRect.left;
+            canvas.scrollTo({
+              left: canvas.scrollLeft + overlap + 15,
+              behavior: 'smooth',
+            });
+          }
         }}
         onDrag={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
@@ -1192,6 +1219,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
         snapGridAll={true}
+        onClick={(e) => {
+          useStore.getState().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          useStore.getState().setRightSidebarOpen(true);
+        }}
       />
     </>
   );

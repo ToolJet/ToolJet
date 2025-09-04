@@ -26,6 +26,7 @@ import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/Pag
 import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
+import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -52,6 +53,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
@@ -114,6 +116,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       handleResize.cancel();
     };
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
+
+  useEffect(() => {
+    if (draggingComponentId) {
+      useStore.getState().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+    }
+  }, [draggingComponentId]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
