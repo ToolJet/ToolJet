@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
 import { SourceOptions } from './types';
 
@@ -62,6 +62,30 @@ export default class EasyPostQueryService implements QueryService {
       throw new QueryError(errorMessage, error.message, errorDetails);
     }
   }
+
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+  const apiKey = sourceOptions.api_key;
+  if (!apiKey) {
+    throw new QueryError('Connection failed', 'API key is required', {});
+  }
+  try {
+    await got('https://api.easypost.com/v2/addresses', {
+      method: 'get',
+      headers: this.authHeader(apiKey),
+      searchParams: { page_size: 1 }
+    });
+    return {
+      status: 'ok',
+      message: 'Successfully connected to EasyPost API'
+    };
+  } catch (error) {
+    throw new QueryError(
+      'EasyPost connection test failed',
+      error.response?.body || 'Failed to connect to EasyPost API',
+      {}
+    );
+  }
+}
 
   private processRequestBody(body: any): any {
     if (typeof body !== 'object' || body === null) {
