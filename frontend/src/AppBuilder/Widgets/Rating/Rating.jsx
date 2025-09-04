@@ -46,7 +46,7 @@ export const Rating = ({
     auto,
     labelWidth,
     widthType,
-    color: labelTextColor,
+    labelColor: labelTextColor,
     selectedBackgroundHearts,
     unselectedBackground,
   } = styles;

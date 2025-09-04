@@ -113,7 +113,7 @@ export const starratingConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    color: {
+    labelColor: {
       type: 'colorSwatches',
       displayName: 'Label color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
@@ -332,7 +332,7 @@ export const starratingConfig = {
     events: [],
     styles: {
       textColor: { value: '#ffb400' },
-      color: { value: 'var(--cc-primary-text)' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       padding: { value: 'default' },
