@@ -8,12 +8,11 @@ import * as protoLoader from '@grpc/proto-loader';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import JSON5 from 'json5';
 
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const credentials = createGrpcCredentials(sourceOptions);
+    const credentials = buildClientCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
 
     const client = await serviceHelper({
@@ -47,7 +46,7 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
       throw new GrpcOperationError(`Service ${serviceName} not found in proto file`);
     }
 
-    const credentials = createGrpcCredentials(sourceOptions);
+    const credentials = buildClientCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
 
     if (typeof service !== 'function') {
@@ -142,7 +141,8 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const serviceNames: string[] = await reflectionClient.listServices();
+    const callOptions = {};
+    const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
       throw new GrpcOperationError('No services found via reflection');
@@ -152,7 +152,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
 
     for (const serviceName of serviceNames) {
       try {
-        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName);
+        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, {});
 
         const grpcMethods: GrpcMethod[] = methods.map((methodInfo: ListMethodsType) => {
           if (!methodInfo || typeof methodInfo.name !== 'string') {
@@ -355,7 +355,7 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 };
 
 
-const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions, hasDataSource = true): { [k: string]: string } => {
+const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: Partial<QueryOptions>, hasDataSource = true): { [k: string]: string } => {
   const ensureArrayFormat = (metadata: any) => {
     if (!metadata) return [];
     if (Array.isArray(metadata)) return metadata;
@@ -376,23 +376,29 @@ const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptio
   return sanitizeHeaders(sourceOptionsWithHeaders, queryOptionsWithHeaders, hasDataSource);
 };
 
-export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions): grpc.Metadata => {
-  const metadata = new grpc.Metadata();
+export const buildClientCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
+  const channelCredentials = createGrpcCredentials(sourceOptions);
+  const authMetadata = new grpc.Metadata();
+  const sanitizedMetadata = sanitizeMetadata(sourceOptions, {}, true);
 
-  // Sanitize metadata from arrays to objects
-  const sanitizedMetadata = sanitizeMetadata(sourceOptions, queryOptions, true);
-
+  // Add authentication data to call credentials
   switch (sourceOptions.auth_type) {
-    case 'basic':
-      if (sourceOptions.username && sourceOptions.password) {
-        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        metadata.add('authorization', `Basic ${credentials}`);
+    case 'api_key':
+      if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
+        authMetadata.add(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
       }
       break;
 
     case 'bearer':
       if (sourceOptions.bearer_token) {
-        metadata.add('authorization', `Bearer ${sourceOptions.bearer_token}`);
+        authMetadata.add('authorization', `Bearer ${sourceOptions.bearer_token}`);
+      }
+      break;
+
+    case 'basic':
+      if (sourceOptions.username && sourceOptions.password) {
+        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
+        authMetadata.add('authorization', `Basic ${credentials}`);
       }
       break;
 
@@ -400,22 +406,48 @@ export const buildGrpcMetadata = (sourceOptions: SourceOptions, queryOptions: Qu
       if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
-          metadata.add('authorization', `${prefix}${sanitizedMetadata.access_token}`);
+          authMetadata.add('authorization', `${prefix}${sanitizedMetadata.access_token}`);
         } else {
-          metadata.add('token', sanitizedMetadata.access_token);
+          authMetadata.add('token', sanitizedMetadata.access_token);
         }
       }
       break;
   }
 
-  // Add all sanitized metadata entries
-  Object.entries(sanitizedMetadata).forEach(([key, value]) => {
-    if (key && value && key !== 'access_token') {
-      metadata.add(key.toLowerCase(), String(value));
-    }
-  });
+  // Check if we have auth metadata to combine
+  const authEntries = authMetadata.getMap ? Object.keys(authMetadata.getMap()) : [];
+  const hasAuthMetadata = authEntries.length > 0;
 
-  return metadata;
+  if (hasAuthMetadata) {
+    // Create call credentials from auth metadata
+    const callCredentials = grpc.credentials.createFromMetadataGenerator(
+      (params, callback) => callback(null, authMetadata)
+    );
+
+    // Combine channel and call credentials
+    return grpc.credentials.combineChannelCredentials(
+      channelCredentials,
+      callCredentials
+    );
+  }
+
+  return channelCredentials;
+};
+
+export const buildRequestMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions): grpc.Metadata => {
+  const regularMetadata = new grpc.Metadata();
+  const sanitizedMetadata = sanitizeMetadata(sourceOptions, queryOptions, true);
+
+  // Add only non-auth metadata for this specific request
+  if (queryOptions?.metadata) {
+    Object.entries(sanitizedMetadata).forEach(([key, value]) => {
+      if (key && value) {
+        regularMetadata.add(key.toLowerCase(), String(value));
+      }
+    });
+  }
+
+  return regularMetadata;
 };
 
 const createReflectionClient = async (sourceOptions: SourceOptions): Promise<GrpcReflection> => {
@@ -428,7 +460,7 @@ const createReflectionClient = async (sourceOptions: SourceOptions): Promise<Grp
       throw new GrpcOperationError('Server URL is required to create reflection client. Please configure the server URL in your data source settings.');
     }
 
-    const credentials = createGrpcCredentials(sourceOptions);
+    const credentials = buildClientCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
     const reflectionClient = new GrpcReflection(cleanUrl, credentials);
 

@@ -18207,3 +18207,12 @@ section.ai-message-prompt-input-wrapper {
 
 // To override existing styles,
 @import "../HomePage/styles/homepage.scss";
+.editor-sidebar {
+  .components-container {
+    .search-box-wrapper {
+      .input-icon-addon {
+        top: 2px;
+      }
+    }
+  }
+}
