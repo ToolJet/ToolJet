@@ -15,6 +15,8 @@ You should setup a PostgreSQL database manually to be used by ToolJet. We recomm
 ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
 :::
 
+### ⚙️ Deploy using CloudFormation
+
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
 
 To deploy all the services at once, simply employ the following template:
@@ -28,6 +30,13 @@ If you already have existing services and wish to integrate ToolJet seamlessly i
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-deploy.yml
 ```
+
+### ⚙️ Deploy using Terraform
+
+If you prefer **(IaC)** with Terraform, ToolJet also provides **ECS deployment scripts**.
+
+📂 Repository: [ToolJet Terraform for ECS](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
+
 
 ## ToolJet
 
