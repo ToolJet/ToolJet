@@ -50,7 +50,8 @@ export const addNewWidgetToTheEditor = (
     parentId === 'canvas' ? 'real-canvas' : parentId,
     parentCanvasType
   );
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
+  const scrollTop = realCanvasRef?.scrollTop;
+  let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
