@@ -34,6 +34,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import './PageMenu/style.scss';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);

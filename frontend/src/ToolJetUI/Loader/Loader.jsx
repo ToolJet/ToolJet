@@ -1,7 +1,9 @@
 import React from 'react';
 
-const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
+const Loader = ({ width, style, absolute = true, color = '#3E63DD', reverse = false }) => {
   const viewBoxSize = 240; // Increase the viewBox size as needed
+  const rotateFrom = reverse ? '360 120 120' : '0 120 120';
+  const rotateTo = reverse ? '0 120 120' : '360 120 120';
 
   return (
     <div className="tj-widget-loader d-flex" style={{ ...style, position: absolute ? 'absolute' : 'relative' }}>
@@ -39,8 +41,8 @@ const Loader = ({ width, style, absolute = true, color = '#3E63DD' }) => {
             d={`M 10 ${viewBoxSize / 2} A 96 96 0 0 1 10 ${viewBoxSize / 2 - 2}`}
           />
           <animateTransform
-            from="0 120 120"
-            to="360 120 120"
+            from={rotateFrom}
+            to={rotateTo}
             attributeName="transform"
             type="rotate"
             repeatCount="indefinite"

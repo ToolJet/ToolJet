@@ -1,16 +1,27 @@
-.interactice-focus {
-    &:focus-visible {
-        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368E3), 0px 0px 0px 2px var(--interactive-focus-inner-shadow, #FFF) inset;
-    }
-}
-
-.interactive-focus-nonsolid {
-    &:focus-visible {
-        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368E3);
-        outline-offset: 2px !important;
-    }
-}
+/* Focus ring styles are now handled by Tailwind classes */
+/* Legacy classes removed to prevent conflicts */
 
 .button-content {
-    min-width: 100px;
+  min-width: 100px;
+}
+
+/* Ensure focus ring is visible */
+button:focus-visible {
+  outline: none !important;
+}
+
+/* Fallback focus ring styles */
+.tw-focus-visible\:tw-ring-2:focus-visible {
+  --tw-ring-color: var(--interactive-focus-outline) !important;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+    var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+    calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+    var(--tw-shadow, 0 0 #0000);
+}
+
+/* Ensure CSS custom property has a fallback */
+:root {
+  --interactive-focus-outline: #4368e3;
 }

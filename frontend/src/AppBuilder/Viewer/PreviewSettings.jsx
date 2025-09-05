@@ -42,7 +42,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
-          <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
+          <HeaderActions showToggleLayoutBtn darkMode={darkMode} showPreviewBtn={false} />
         </span>
       </div>
     </div>
@@ -106,7 +106,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 style={{ backgroundColor: !darkMode && '#fcfcfd' }}
               >
                 <span style={{ marginRight: '24px' }}>Layout</span>
-                <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} />
+                <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} showPreviewBtn={false} />
               </div>
             </Offcanvas.Body>
           )}

@@ -5,6 +5,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import useRouter from '@/_hooks/use-router';
+import { Button } from '@/components/ui/Button/Button';
 
 export const LeftSidebarItem = forwardRef(
   (
@@ -13,7 +14,7 @@ export const LeftSidebarItem = forwardRef(
       selectedSidebarItem,
       className,
       icon,
-      iconFill = 'var(--slate8)',
+      iconFill = 'var(--icon-strong)',
       commentBadge,
       text,
       onClick,
@@ -26,27 +27,32 @@ export const LeftSidebarItem = forwardRef(
     const { t } = useTranslation();
     const router = useRouter();
     let displayIcon = icon;
-    if (icon == 'page') displayIcon = 'file01';
+    if (icon === 'page') displayIcon = 'file01';
     const content = (
-      <div
+      <Button
         {...rest}
+        variant="ghost"
+        size="default"
+        iconOnly
+        type="button"
         className={className}
         onClick={(e) => {
           computePosthogEvent(text, router.query.id);
           onClick && onClick(e);
         }}
         ref={ref}
+        aria-label={text ? t(`leftSidebar.${text}.text`, text) : ''}
       >
         {icon && (
           <div
             className={`sidebar-svg-icon  position-relative ${
-              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
+              selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item'
             }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
             <SolidIcon
               name={displayIcon}
-              width={icon == 'settings' ? 22.4 : 20}
+              width={icon === 'settings' ? 22.4 : 20}
               fill={selectedSidebarItem === icon ? '#3E63DD' : iconFill}
             />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
@@ -54,7 +60,7 @@ export const LeftSidebarItem = forwardRef(
         )}
         {badge && <LeftSidebarItem.Badge count={count} />}
         <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-      </div>
+      </Button>
     );
 
     if (!tip) return content;
