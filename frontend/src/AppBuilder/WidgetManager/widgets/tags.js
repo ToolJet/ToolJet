@@ -43,7 +43,7 @@ export const tagsConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Tag loading state',
+      displayName: 'Loading state',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
@@ -71,11 +71,7 @@ export const tagsConfig = {
       placeholder: 'Enter tooltip text',
     },
   },
-  events: {
-    setVisibility: { displayName: 'Set visibility' },
-    setLoading: { displayName: 'Set loading' },
-    setDisable: { displayName: 'Set disable' },
-  },
+  events: {},
   styles: {
     size: {
       type: 'switch',
@@ -108,6 +104,24 @@ export const tagsConfig = {
         { displayName: 'None', value: 'none' },
       ],
       accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'container',
+    },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+      accordian: 'pills',
     },
   },
   exposedVariables: {},
@@ -163,7 +177,9 @@ export const tagsConfig = {
     events: [],
     styles: {
       padding: { value: 'default' },
+      alignment: { value: 'left' },
       size: { value: 'small' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
       borderRadius: { value: '8' },
     },
   },

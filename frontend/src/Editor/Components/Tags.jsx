@@ -100,14 +100,14 @@ export const Tags = function Tags({
     {
       dep: JSON.stringify(parsedTags ?? []),
       sideEffect: () => {
-        const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
+        const _tags = parsedTags?.map(({ title }) => title) || [];
         setExposedVariable('tags', _tags);
       },
     },
   ]);
 
   useEffect(() => {
-    const _tags = parsedTags?.map(({ title, id }) => ({ title, id })) || [];
+    const _tags = parsedTags?.map(({ title }) => title) || [];
     const exposedVariables = {
       tags: _tags,
       setVisibility: async function (value) {
