@@ -14,7 +14,7 @@ export interface IOnboardingUtilService {
     currentOrganizationSlug: string;
     onboardingStatus: string;
   }>;
-  createUserOrPersonalWorkspace(
+  createUserInWorkspace(
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization,
@@ -46,5 +46,5 @@ export interface IOnboardingUtilService {
     existingUser: User,
     defaultWorkspace: Organization,
     manager?: EntityManager
-  )
+  );
 }

@@ -76,12 +76,14 @@ export class AuthService implements IAuthService {
         );
 
         const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-        if (defaultOrgDetails) {
+        const activeOrgs = organizationList?.filter((org) => org.status !== 'archived') || [];
+        // Filter out archived organizations to get only active organizations available for login ---> Prevents users from being assigned to an archived organizations during login
+        if (defaultOrgDetails && defaultOrgDetails?.status !== 'archived') {
           // default organization form login enabled
           organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
+        } else if (activeOrgs.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+          organization = activeOrgs[0];
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
