@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SketchPicker } from 'react-color';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -27,6 +27,28 @@ const BaseColorSwatches = ({
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
+  const pickerRef = useRef(null);
+  const inputBoxRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(e.target) &&
+        inputBoxRef.current &&
+        !inputBoxRef.current.contains(e.target)
+      ) {
+        setShowPicker(false);
+      }
+    };
+    if (showPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPicker]);
+
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -100,16 +122,14 @@ const BaseColorSwatches = ({
           </div>
         )}
         {showPicker && componentType === 'color' && (
-          <div>
+          <div ref={pickerRef} style={pickerStyle}>
             {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
-            <div style={pickerStyle}>
-              <SketchPicker
-                onFocus={() => setShowPicker(true)}
-                color={value}
-                onChangeComplete={handleColorChange}
-                style={{ bottom: 0 }}
-              />
-            </div>
+            <SketchPicker
+              onFocus={() => setShowPicker(true)}
+              color={value}
+              onChangeComplete={handleColorChange}
+              style={{ bottom: 0 }}
+            />
           </div>
         )}
       </div>
@@ -118,6 +138,7 @@ const BaseColorSwatches = ({
   const ColorPickerInputBox = () => {
     return (
       <div
+        ref={inputBoxRef}
         className="row mx-0 color-picker-input d-flex"
         onClick={() => setShowPicker(true)}
         data-cy={`${String(cyLabel)}-picker`}
