@@ -6,7 +6,6 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
-import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import * as uuid from 'uuid';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
@@ -18,7 +17,7 @@ import {
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from '@modules/users/constants/lifecycle';
-import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '../instance-settings/constants';
+import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '@modules/group-permissions/constants';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
