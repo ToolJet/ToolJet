@@ -21,27 +21,26 @@ ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for
     <img src="docs/static/img/readme/flowchart.png"/>
 </p>
 
-## All features
+## Features  
 
-- **Visual App Builder:** 60+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
-- **ToolJet Database:** Built-in no-code database.
-- **Multi-Page:** Build an application with multiple pages.
-- **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **75+ data sources:** Integrate with external databases, cloud storage, and APIs.
-- **Desktop & mobile:** Customize layout widths to fit various screen sizes.
-- **Self-host:** Supports Docker, Kubernetes, AWS EC2, Google Cloud Run, and more.
-- **Collaborate:** Add comments anywhere on the canvas and tag your team members.
-- **Extend with plugins:** Use our [command-line tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
-- **Version control:** Manage multiple application versions with a structured release cycle.
-- **Run JS & Python code:** Execute custom JavaScript and Python snippets.
-- **Granular access control:** Set permissions at both group and app levels.
-- **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with 
-`status === 'success' ? 'green' : 'red'`.
-- **No-code query editors:** Query Editors are available for all supported data sources.
-- **Join and transform data:** Transform query results using JavaScript or Python code.
-- **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
-- **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
-- **SSO:** Supports multiple Single Sign-On providers.
+### Community Edition (CE)  
+- **Visual App Builder:** 60+ responsive components (Tables, Charts, Forms, Lists, Progress Bars, and more).  
+- **ToolJet Database:** Built-in no-code database.  
+- **Multi-page Apps & Multiplayer Editing:** Build complex apps collaboratively.  
+- **75+ Data Sources:** Connect to databases, APIs, cloud storage, and SaaS tools.  
+- **Flexible Deployment:** Self-host with Docker, Kubernetes, AWS, GCP, Azure, and more.  
+- **Collaboration Tools:** Inline comments, mentions, and granular access control.  
+- **Extensibility:** Create plugins and connectors with the [ToolJet CLI](https://www.npmjs.com/package/@tooljet/cli).  
+- **Code Anywhere:** Run JavaScript and Python inside your apps.  
+- **Secure by Design:** AES-256-GCM encryption, proxy-only data flow, SSO support.  
+
+### ToolJet AI (Enterprise)  
+Everything in CE, plus:  
+- **AI App Generation:** Create apps instantly from natural language prompts.  
+- **AI Query Builder:** Generate and transform queries with AI assistance.  
+- **AI Debugging:** Identify and fix issues with one click.  
+- **Agent-driven Workflows:** Automate processes with intelligent agents.  
+- **Enterprise Ready:** Advanced access control, audit logs, dedicated support, and SLAs.  
 
 <hr>
 
