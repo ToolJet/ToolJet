@@ -107,6 +107,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
     const step = filteredSteps.find((item) => item.id == id);
     if (step && !step.disabled && !isDisabled) {
       setActiveStepId(step.id);
+      setExposedVariable('currentStepId', step.id);
       fireEvent('onSelect');
     }
   };
@@ -186,8 +187,9 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
               >
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
-                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
-                    } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${
+                    isDisabled || isStepDisabled ? 'disabled' : ''
+                  } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                 >
                   {theme === 'numbers' ? (
                     index + 1
@@ -196,8 +198,9 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                       <div
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
-                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
-                            }`,
+                          border: `2px solid ${
+                            isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
+                          }`,
                           backgroundColor: isActive ? 'transparent' : isCompleted ? completedAccent : incompletedAccent,
                         }}
                       />
