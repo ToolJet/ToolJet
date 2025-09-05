@@ -39,8 +39,15 @@ Everything in CE, plus:
 - **AI App Generation:** Create apps instantly from natural language prompts.  
 - **AI Query Builder:** Generate and transform queries with AI assistance.  
 - **AI Debugging:** Identify and fix issues with one click.  
-- **Agent-driven Workflows:** Automate processes with intelligent agents.  
-- **Enterprise Ready:** Advanced access control, audit logs, dedicated support, and SLAs.  
+- **Agent Builder:** Create intelligent agents to automate workflows and orchestrate processes.  
+- **Enterprise-grade Security & Compliance:** SOC 2 and GDPR readiness, audit logs, and advanced access control.
+- **User Management:** Role-based access (RBAC), custom groups, and granular app/data permissions.  
+- **Multi-environment Management:** Seamless dev/stage/prod environments.  
+- **GitSync & CI/CD:** Integrate with GitHub/GitLab for version control and streamlined deployments.  
+- **Branding & Customization:** White-labeling, and custom theming for organizational branding.  
+- **Fine-Grained Access Control:** Secure data and actions at the row, component, page, and query levels.  
+- **Embedded Apps:** Embed ToolJet apps securely within other applications or portals.  
+- **Enterprise Support:** SLAs, priority bug fixes, and onboarding assistance.  
 
 <hr>
 
