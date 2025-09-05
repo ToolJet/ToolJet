@@ -135,23 +135,13 @@ export class AuthUtilService implements IAuthUtilService {
   ): Promise<User> {
     // User not exist in the workspace, creating
     let user: User;
-    let defaultOrganization: Organization;
     user = await this.userRepository.findByEmail(email);
-
-    const allowPersonalWorkspace =
-      (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
-
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
     );
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User is archived in the workspace');
-    }
-
-    if (!user && allowPersonalWorkspace) {
-      const { name, slug } = generateNextNameAndSlug('My workspace');
-      defaultOrganization = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
@@ -163,11 +153,11 @@ export class AuthUtilService implements IAuthUtilService {
         firstName,
         lastName,
         email,
-        source: defaultOrganization?.id ? WORKSPACE_USER_SOURCE.SIGNUP : source,
-        status: defaultOrganization?.id ? USER_STATUS.ACTIVE : status,
+        source: source,
+        status: status,
         password,
-        role: defaultOrganization?.id ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
-        defaultOrganizationId: defaultOrganization?.id || organization.id,
+        role: USER_ROLE.END_USER,
+        defaultOrganizationId: organization.id,
       },
       manager
     );
@@ -197,24 +187,6 @@ export class AuthUtilService implements IAuthUtilService {
       false,
       manager
     );
-    if (defaultOrganization?.id) {
-      // Setting up default organization
-      await this.organizationUsersRepository.createOne(
-        user,
-        defaultOrganization,
-        false,
-        manager,
-        WORKSPACE_USER_SOURCE.SIGNUP,
-        true
-      );
-      await this.organizationUsersUtilService.attachUserGroup(
-        [USER_ROLE.ADMIN],
-        defaultOrganization.id,
-        user.id,
-        false,
-        manager
-      );
-    }
     return user;
   }
 
