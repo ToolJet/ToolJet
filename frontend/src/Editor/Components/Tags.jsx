@@ -184,7 +184,6 @@ export const Tags = function Tags({
     width,
     height,
     boxShadow,
-    textAlign: alignment || 'left',
     opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
     pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
@@ -193,7 +192,7 @@ export const Tags = function Tags({
           flexWrap: 'wrap',
           overflowY: 'auto',
           overflowX: 'hidden',
-          justifyContent: 'flex-start',
+          justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
           alignContent: 'flex-start',
           alignItems: 'flex-start',
           margin: '0 -3px -3px 0',
@@ -204,6 +203,7 @@ export const Tags = function Tags({
           overflowX: 'auto',
           overflowY: 'hidden',
           whiteSpace: 'nowrap',
+          justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
         }),
   };
 
