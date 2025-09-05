@@ -8,7 +8,7 @@ import {
   discoverServicesUsingReflection,
   discoverServicesUsingProtoFile,
   loadProtoFromRemoteUrl,
-  buildGrpcMetadata,
+  buildRequestMetadata,
   extractServicesFromGrpcPackage
 } from './operations';
 import { PackageDefinition } from '@grpc/proto-loader';
@@ -24,7 +24,7 @@ export default class Grpcv2QueryService implements QueryService {
     try {
       const client = await this.createGrpcClient(sourceOptions, queryOptions.service);
 
-      const metadata = buildGrpcMetadata(sourceOptions, queryOptions);
+      const metadata = buildRequestMetadata(sourceOptions, queryOptions);
 
       this.validateRequestData(queryOptions);
       this.validateMethodExists(client, queryOptions);
