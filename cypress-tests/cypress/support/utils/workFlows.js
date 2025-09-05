@@ -203,3 +203,28 @@ export const importWorkflowApp = (
   cy.get(workflowSelector.workFlowNameInputField).clear().type(wfName);
   cy.get(workflowSelector.importWorkFlowsButton).click();
 };
+
+export const deleteAppandWorkflowAfterExecution = (wfName, appName) => {
+  cy.backToApps();
+  cy.deleteApp(appName);
+  cy.get(workflowSelector.globalWorkFlowsIcon).click();
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.get(commonSelectors.appCard(wfName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
+    .click();
+  cy.get(workflowSelector.deleteWorkFlowOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
+};
+
+export const addWorkflowInApp = (wfName) => {
+  cy.get(workflowSelector.showDSPopoverButton).click();
+  cy.get(workflowSelector.workflowSearchInput).type(workflowsText.workflowText);
+  cy.contains(`[id*="react-select-"]`, workflowsText.workflowText).click();
+  cy.get(workflowSelector.queryRenameInput).clear().type(wfName);
+  cy.get(workflowSelector.workflowDropdown).click();
+  cy.get(workflowSelector.workflowSelectInput).realType(wfName);
+  cy.get(workflowSelector.workflowSelectOption).contains(wfName).click();
+};

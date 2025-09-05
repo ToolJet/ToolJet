@@ -13,7 +13,7 @@ export const workflowSelector = {
   startNodeHandleRight: '[data-cy="start-node-handle-right"]',
   optionsColumn: '[data-cy="options-column"]',
   importWorkFlowsOption: '[data-cy="import-dropdown-menu"]',
-  importWorkFlowsLabel:'[data-cy="import-option-label"]',
+  importWorkFlowsLabel: '[data-cy="import-option-label"]',
   importWorkFlowsButton: '[data-cy="import-workflow"]',
   runjsInputField:
     '[data-cy="runjs-input-field"] .cm-content[contenteditable="true"]',
@@ -28,6 +28,12 @@ export const workflowSelector = {
   workflowTokenEyeIcon: '[data-cy="workflow-token-eye-icon"]',
   workflowEndpointUrl: '[data-cy="endpoint-url-field"]',
   workflowTokenField: '[data-cy="workflow-token-field"]',
+  showDSPopoverButton: '[data-cy="show-ds-popover-button"]',
+  workflowSearchInput: ".css-4e90k9",
+  queryRenameInput: '[data-cy="query-rename-input"]',
+  workflowDropdown: '[class*="workflow-dropdown"]',
+  workflowSelectInput: 'input[id*="react-select"]',
+  workflowSelectOption: '[class*="workflow-select"]',
 
   nodeName: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node"]`,
 

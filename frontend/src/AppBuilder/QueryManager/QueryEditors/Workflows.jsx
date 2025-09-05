@@ -67,12 +67,9 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        onMenuOpen={() => {
-          setIsMenuOpen(true);
-        }}
-        onMenuClose={() => {
-          setIsMenuOpen(false);
-        }}
+        className="workflow-dropdown"
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
       />
       <label className="my-2">Params</label>
       <div className="grid"></div>
