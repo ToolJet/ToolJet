@@ -86,7 +86,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = [
+export const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
   'TextArea',
@@ -119,6 +119,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'FilePicker',
   'Chat',
   'Statistics',
+  'StarRating',
 ];
 
 export const Inspector = ({

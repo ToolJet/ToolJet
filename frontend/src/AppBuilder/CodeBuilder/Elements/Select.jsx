@@ -8,13 +8,15 @@ import {
   checkIfTableColumnDeprecated,
 } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 import { checkIfInputWidgetTypeIsDeprecated } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { checkIfStarRatingLabelTypeIsDeprecated } from '@/AppBuilder/Widgets/Rating/Rating';
 
 export const Option = (props) => {
-  const isDeprecated = checkIfTableColumnDeprecated(props.value) || checkIfInputWidgetTypeIsDeprecated(props.value);
+  const isDeprecatedStyle =
+    checkIfInputWidgetTypeIsDeprecated(props.value) || checkIfStarRatingLabelTypeIsDeprecated(props.value);
 
   return (
     <components.Option {...props}>
-      <DeprecatedColumnTooltip columnType={props.value} isInputWidget={checkIfInputWidgetTypeIsDeprecated(props.value)}>
+      <DeprecatedColumnTooltip columnType={props.value} isDeprecatedStyle={isDeprecatedStyle}>
         <div className="d-flex justify-content-between">
           <span>{props.label}</span>
           {props.isSelected && (
@@ -22,7 +24,7 @@ export const Option = (props) => {
               <Check width={'20'} fill={'#3E63DD'} />
             </span>
           )}
-          {isDeprecated && (
+          {(checkIfTableColumnDeprecated(props.value) || isDeprecatedStyle) && (
             <span>
               <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
             </span>
@@ -68,6 +70,7 @@ const selectCustomStyles = (width) => {
     }),
     singleValue: (provided) => ({
       ...provided,
+      paddingLeft: '0px',
       color: 'var(--slate12)',
     }),
   };
@@ -96,7 +99,6 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
             IndicatorSeparator: () => null,
             Option,
           }}
-          // menuIsOpen={true}
         />
       </div>
     </div>

@@ -27,7 +27,7 @@ import { ToggleSwitch } from '@/Editor/Components/Toggle';
 import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
 import { RadioButton } from '@/Editor/Components/RadioButton';
 import { RadioButtonV2 } from '@/Editor/Components/RadioButtonV2/RadioButtonV2';
-import { StarRating } from '@/Editor/Components/StarRating';
+import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
