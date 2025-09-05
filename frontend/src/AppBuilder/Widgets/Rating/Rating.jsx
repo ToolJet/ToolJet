@@ -200,41 +200,50 @@ export const Rating = ({
           aria-disabled={isDisabled}
           className="rating-widget-group"
         >
-          {animatedStars.map((props, index) => {
-            const ratingValue = index + 1;
-            const isSelected = index <= currentRatingIndex;
-            const ariaLabel = `${ratingValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
-              getTooltip(index) ? `, ${getTooltip(index)}` : ''
-            }`;
+          <div
+            className="rating-widget-group-inner d-flex"
+            style={{
+              flexWrap: 'wrap',
+              gap: '6px',
+              //  paddingTop: iconType === 'hearts' ? '0.7px' : '0px'
+            }}
+          >
+            {animatedStars.map((props, index) => {
+              const ratingValue = index + 1;
+              const isSelected = index <= currentRatingIndex;
+              const ariaLabel = `${ratingValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
+                getTooltip(index) ? `, ${getTooltip(index)}` : ''
+              }`;
 
-            return (
-              <RatingIcon
-                tooltip={getTooltip(index)}
-                active={getActive(index)}
-                isHalfIcon={isHalfIcon(index)}
-                maxRating={maxRating}
-                onClick={(e, idx) => {
-                  e.stopPropagation();
-                  setRatingIndex(idx);
-                  handleClick(idx);
-                }}
-                allowHalfStar={allowHalfStar}
-                key={index}
-                index={index}
-                color={iconType === 'stars' ? selectedBgColorStars : selectedBackgroundHearts}
-                style={{ ...props }}
-                setHoverIndex={setHoverIndex}
-                unselectedBackground={unselectedBackground}
-                iconType={iconType}
-                allowEditing={allowEditing}
-                currentRatingIndex={currentRatingIndex}
-                ariaLabel={ariaLabel}
-                isSelected={isSelected}
-                ratingValue={ratingValue}
-                isDisabled={isDisabled}
-              />
-            );
-          })}
+              return (
+                <RatingIcon
+                  tooltip={getTooltip(index)}
+                  active={getActive(index)}
+                  isHalfIcon={isHalfIcon(index)}
+                  maxRating={maxRating}
+                  onClick={(e, idx) => {
+                    e.stopPropagation();
+                    setRatingIndex(idx);
+                    handleClick(idx);
+                  }}
+                  allowHalfStar={allowHalfStar}
+                  key={index}
+                  index={index}
+                  color={iconType === 'stars' ? selectedBgColorStars : selectedBackgroundHearts}
+                  style={{ ...props }}
+                  setHoverIndex={setHoverIndex}
+                  unselectedBackground={unselectedBackground}
+                  iconType={iconType}
+                  allowEditing={allowEditing}
+                  currentRatingIndex={currentRatingIndex}
+                  ariaLabel={ariaLabel}
+                  isSelected={isSelected}
+                  ratingValue={ratingValue}
+                  isDisabled={isDisabled}
+                />
+              );
+            })}
+          </div>
         </div>
       </>
     );
@@ -273,7 +282,7 @@ export const Rating = ({
         'flex-column':
           defaultAlignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0)),
-        'align-items-center': defaultAlignment !== 'top',
+        // 'align-items-center': defaultAlignment !== 'top',
         'flex-row-reverse': direction === 'right' && defaultAlignment === 'side',
         'text-right': direction === 'right' && defaultAlignment === 'top',
         invisible: !isVisible,
@@ -296,6 +305,7 @@ export const Rating = ({
         _width={_width}
         widthType={widthType}
         id={`${ratingId}-label`}
+        top={alignment !== 'top' && '3px'}
       />
 
       <div

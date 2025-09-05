@@ -72,7 +72,7 @@ export const starratingConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
@@ -261,6 +261,15 @@ export const starratingConfig = {
       },
       accordian: 'Icon',
     },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
     padding: {
       type: 'switch',
       displayName: 'Padding',
@@ -273,15 +282,6 @@ export const starratingConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Container',
-    },
-    boxShadow: {
-      type: 'boxShadow',
-      displayName: 'Box Shadow',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000040',
-      },
       accordian: 'Container',
     },
   },
@@ -348,7 +348,7 @@ export const starratingConfig = {
       auto: { value: '{{true}}' },
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },
-      selectedBackgroundHearts: { value: '#EE5B67' },
+      selectedBackgroundHearts: { value: '#EFB82D' },
       unselectedBackground: { value: 'var(--cc-default-icon)' },
     },
   },
