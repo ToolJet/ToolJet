@@ -4,7 +4,7 @@ export const tagsConfig = {
   description: 'Display tag labels',
   component: 'Tags',
   defaultSize: {
-    width: 8,
+    width: 9,
     height: 30,
   },
   others: {
