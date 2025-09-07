@@ -1,30 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { renderElement } from '../../Utils';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
-import List from '@/ToolJetUI/List/List';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
-import CodeHinter from '@/AppBuilder/CodeEditor';
-import ListGroup from 'react-bootstrap/ListGroup';
-import SortableList from '@/_components/SortableList';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { OptionsList } from './components';
+import { useOptionsManager } from './hooks/useOptionsManager';
 import './styles.scss';
 
 export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
-  // ===== STATE AND VARIABLES =====
-  const [options, setOptions] = useState([]);
-  const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
-
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
-
   const {
     layoutPropertyChanged,
     component,
@@ -37,313 +19,19 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
-  const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
-
-  // ===== HELPER FUNCTIONS =====
-  const updateOptions = (options) => {
-    setOptions(options);
-    paramUpdated({ name: 'options' }, 'value', options, 'properties', false);
-  };
-
-  const constructOptions = () => {
-    let optionsValue = component?.component?.definition?.properties?.options?.value;
-    if (!Array.isArray(optionsValue)) {
-      optionsValue = Object.values(optionsValue);
-    }
-    let options = [];
-
-    if (isDynamicOptionsEnabled || typeof optionsValue === 'string') {
-      options = getResolvedValue(optionsValue);
-    } else {
-      options = optionsValue?.map((option) => option);
-    }
-    return options.map((option) => {
-      const newOption = { ...option };
-
-      Object.keys(option).forEach((key) => {
-        if (typeof option[key]?.value === 'boolean') {
-          newOption[key]['value'] = `{{${option[key]?.value}}}`;
-        }
-      });
-
-      return newOption;
-    });
-  };
-
-  const generateNewOptions = () => {
-    let found = false;
-    let label = '';
-    let currentNumber = options.length + 1;
-    let value = currentNumber;
-    while (!found) {
-      label = `option${currentNumber}`;
-      value = currentNumber.toString();
-      if (options.find((option) => option.label === label) === undefined) {
-        found = true;
-      }
-      currentNumber += 1;
-    }
-
-    return {
-      format: 'plain',
-      label,
-      description: ``,
-      value,
-      icon: {
-        value: [
-          'IconBriefcase',
-          'IconStar',
-          'IconSettings',
-          'IconUser',
-          'IconHome',
-          'IconSearch',
-          'IconBell',
-          'IconMail',
-          'IconCamera',
-          'IconMusic',
-        ][Math.floor(Math.random() * 10)],
-      },
-      iconVisibility: false,
-      visible: { value: '{{true}}' },
-      disable: { value: '{{false}}' },
-    };
-  };
-
-  const getItemStyle = (isDragging, draggableStyle) => ({
-    userSelect: 'none',
-    ...draggableStyle,
-  });
-
-  // ===== EVENT HANDLERS =====
-  const handleOptionChange = (propertyPath, value, index) => {
-    const newOptions = options.map((option, i) => {
-      if (i === index) {
-        if (propertyPath.includes('.')) {
-          const [parentKey, childKey] = propertyPath.split('.');
-          return {
-            ...option,
-            [parentKey]: {
-              ...option[parentKey],
-              [childKey]: value,
-            },
-          };
-        }
-        return {
-          ...option,
-          [propertyPath]: value,
-        };
-      }
-      return option;
-    });
-    updateOptions(newOptions);
-  };
-
-  const handleDeleteOption = (index) => {
-    const newOptions = options.filter((option, i) => i !== index);
-    updateOptions(newOptions);
-  };
-
-  const handleAddOption = () => {
-    let _option = generateNewOptions();
-    const newOptions = [...options, _option];
-    updateOptions(newOptions);
-  };
-
-  const reorderOptions = async (startIndex, endIndex) => {
-    const result = [...options];
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    updateOptions(result);
-  };
-
-  const onDragEnd = ({ source, destination }) => {
-    if (!destination || source?.index === destination?.index) {
-      return;
-    }
-    reorderOptions(source.index, destination.index);
-  };
-
-  // ===== SIDE EFFECTS =====
-  useEffect(() => {
-    const newOptions = constructOptions();
-    setOptions(newOptions);
-  }, [isDynamicOptionsEnabled]);
-
-  // ===== RENDER FUNCTIONS =====
-  const _renderOverlay = (item, index) => {
-    const iconVisibility = item?.iconVisibility;
-    return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'} pm-option-popover`} style={{ minWidth: '248px' }}>
-        <Popover.Body>
-          <div data-cy="inspector-popover-menu-option-details-container">
-            <div data-cy="inspector-popover-menu-option-details-header" className="pm-option-header">
-              <span data-cy="inspector-popover-menu-option-details-title" className="pm-option-header-title">
-                Option details
-              </span>
-              <div data-cy="inspector-popover-menu-option-details-actions" className="pm-option-details-actions">
-                <ButtonComponent
-                  data-cy="inspector-popover-menu-option-details-delete-button"
-                  variant="ghost"
-                  iconOnly
-                  onClick={() => handleDeleteOption(index)}
-                  trailingIcon="trash"
-                  size="medium"
-                />
-              </div>
-            </div>
-            <div data-cy="inspector-popover-menu-option-details-fields" className="pm-option-details">
-              <div data-cy="inspector-popover-menu-option-details-format-field" className="field mb-2">
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-format-input"
-                  type={'fxEditor'}
-                  initialValue={item?.format || 'plain'}
-                  paramLabel={'Data format'}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  paramName={'dataFormat'}
-                  onChange={(value) => {
-                    handleOptionChange('format', value, index);
-                  }}
-                  fieldMeta={{
-                    type: 'select',
-                    displayName: 'Data format',
-                    options: [
-                      { name: 'Plain', value: 'plain' },
-                      { name: 'HTML', value: 'html' },
-                      { name: 'Markdown', value: 'markdown' },
-                    ],
-                    isFxNotRequired: true,
-                  }}
-                  paramType={'select'}
-                />
-              </div>
-
-              <div data-cy="inspector-popover-menu-option-details-label-field" className="field mb-2">
-                <label
-                  data-cy="inspector-popover-menu-option-details-label-label"
-                  className="font-weight-500 mb-1 font-size-12"
-                >
-                  Label
-                </label>
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-label-input"
-                  type={'basic'}
-                  initialValue={item?.label}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  onChange={(value) => {
-                    handleOptionChange('label', value, index);
-                  }}
-                />
-              </div>
-              <div data-cy="inspector-popover-menu-option-details-description-field" className="field mb-2">
-                <label
-                  data-cy="inspector-popover-menu-option-details-description-label"
-                  className="font-weight-500 mb-1 font-size-12"
-                >
-                  Description
-                </label>
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-description-input"
-                  type={'basic'}
-                  initialValue={item?.description}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  onChange={(value) => {
-                    handleOptionChange('description', value, index);
-                  }}
-                />
-              </div>
-              <div data-cy="inspector-popover-menu-option-details-value-field" className="field mb-2">
-                <label
-                  data-cy="inspector-popover-menu-option-details-value-label"
-                  className="font-weight-500 mb-1 font-size-12"
-                >
-                  Value
-                </label>
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-value-input"
-                  type={'basic'}
-                  initialValue={item?.value}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  onChange={(value) => {
-                    handleOptionChange('value', value, index);
-                  }}
-                />
-              </div>
-              <div data-cy="inspector-popover-menu-option-details-icon-field" className="field mb-3">
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-icon-input"
-                  currentState={currentState}
-                  initialValue={item?.icon?.value || ''}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  component={component}
-                  type={'fxEditor'}
-                  paramLabel={'Icon'}
-                  paramName={'icon'}
-                  onChange={(value) => {
-                    handleOptionChange('icon.value', value, index);
-                  }}
-                  onVisibilityChange={(value) => {
-                    const transformedValue = getResolvedValue(value);
-                    handleOptionChange('iconVisibility', transformedValue, index);
-                  }}
-                  onFxPress={(active) => handleOptionChange('icon.fxActive', active, index)}
-                  fxActive={item?.icon?.fxActive}
-                  fieldMeta={{ type: 'icon', displayName: 'Icon' }}
-                  paramType={'icon'}
-                  iconVisibility={iconVisibility}
-                />
-              </div>
-              <div data-cy="inspector-popover-menu-option-details-visibility-field" className="field mb-2">
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-visibility-input"
-                  initialValue={item?.visible?.value}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  type={'fxEditor'}
-                  paramLabel={'Option visibility'}
-                  paramName={'optionVisibility'}
-                  onChange={(value) => {
-                    handleOptionChange('visible.value', value, index);
-                  }}
-                  onFxPress={(active) => handleOptionChange('visible.fxActive', active, index)}
-                  fxActive={item?.visible?.fxActive}
-                  fieldMeta={{ type: 'toggle', displayName: 'Option visibility' }}
-                  paramType={'toggle'}
-                />
-              </div>
-              <div data-cy="inspector-popover-menu-option-details-disable-field" className="field mb-2">
-                <CodeHinter
-                  data-cy="inspector-popover-menu-option-details-disable-input"
-                  initialValue={item?.disable?.value}
-                  theme={darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  type={'fxEditor'}
-                  paramLabel={'Disable option'}
-                  paramName={'optionDisabled'}
-                  onChange={(value) => {
-                    handleOptionChange('disable.value', value, index);
-                  }}
-                  onFxPress={(active) => handleOptionChange('disable.fxActive', active, index)}
-                  fxActive={item?.disable?.fxActive}
-                  fieldMeta={{ type: 'toggle', displayName: 'Disable option' }}
-                  paramType={'toggle'}
-                />
-              </div>
-            </div>
-          </div>
-        </Popover.Body>
-      </Popover>
-    );
-  };
+  // Use the custom hook for options management
+  const {
+    options,
+    hoveredOptionIndex,
+    setHoveredOptionIndex,
+    handleOptionChange,
+    handleDeleteOption,
+    handleAddOption,
+    onDragEnd,
+    getItemStyle,
+    getResolvedValue,
+    isDynamicOptionsEnabled,
+  } = useOptionsManager(component, paramUpdated);
 
   // ===== PROPERTY ORGANIZATION =====
   let properties = [];
@@ -363,100 +51,20 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // ===== RENDER FUNCTIONS =====
   const _renderOptions = () => {
     return (
-      <List data-cy="inspector-popover-menu-options-list" style={{ marginBottom: '12px' }}>
-        <DragDropContext
-          onDragEnd={(result) => {
-            onDragEnd(result);
-          }}
-        >
-          <Droppable droppableId="droppable">
-            {({ innerRef, droppableProps, placeholder }) => (
-              <div
-                data-cy="inspector-popover-menu-options-droppable"
-                className="w-100"
-                {...droppableProps}
-                ref={innerRef}
-              >
-                {options?.map((item, index) => {
-                  return (
-                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          key={index}
-                          data-cy={`inspector-popover-menu-option-${index}`}
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                        >
-                          <OverlayTrigger
-                            trigger="click"
-                            placement="left"
-                            rootClose
-                            overlay={_renderOverlay(item, index)}
-                            onToggle={(isOpen) => {
-                              if (!isOpen) {
-                                document.activeElement?.blur(); // Manually trigger blur when popover closes
-                              }
-                            }}
-                          >
-                            <div key={item?.value}>
-                              <ListGroup.Item
-                                style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
-                                onMouseEnter={() => setHoveredOptionIndex(index)}
-                                onMouseLeave={() => setHoveredOptionIndex(null)}
-                                {...restProps}
-                              >
-                                <div data-cy="inspector-popover-menu-option-row" className="row">
-                                  <div
-                                    data-cy="inspector-popover-menu-option-drag-handle"
-                                    className="col-auto d-flex align-items-center"
-                                  >
-                                    <SortableList.DragHandle show />
-                                  </div>
-                                  <div
-                                    data-cy="inspector-popover-menu-option-label"
-                                    className="col text-truncate cursor-pointer"
-                                    style={{ padding: '0px' }}
-                                  >
-                                    {getSafeRenderableValue(getResolvedValue(item?.label))}
-                                  </div>
-                                  <div data-cy="inspector-popover-menu-option-actions" className="col-auto">
-                                    {index === hoveredOptionIndex && (
-                                      <ButtonSolid
-                                        data-cy="inspector-popover-menu-option-delete-button"
-                                        variant="danger"
-                                        size="xs"
-                                        className={'delete-icon-btn'}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteOption(index);
-                                        }}
-                                      >
-                                        <span className="d-flex">
-                                          <Trash fill={'var(--tomato9)'} width={12} />
-                                        </span>
-                                      </ButtonSolid>
-                                    )}
-                                  </div>
-                                </div>
-                              </ListGroup.Item>
-                            </div>
-                          </OverlayTrigger>
-                        </div>
-                      )}
-                    </Draggable>
-                  );
-                })}
-                {placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-        <AddNewButton onClick={handleAddOption} dataCy="inspector-popover-menu-add-new-option" className="mt-0">
-          Add new option
-        </AddNewButton>
-      </List>
+      <OptionsList
+        options={options}
+        darkMode={darkMode}
+        hoveredOptionIndex={hoveredOptionIndex}
+        onMouseEnter={setHoveredOptionIndex}
+        onMouseLeave={() => setHoveredOptionIndex(null)}
+        onDeleteOption={handleDeleteOption}
+        onOptionChange={handleOptionChange}
+        onAddOption={handleAddOption}
+        onDragEnd={onDragEnd}
+        getResolvedValue={getResolvedValue}
+        getItemStyle={getItemStyle}
+        {...restProps}
+      />
     );
   };
 
