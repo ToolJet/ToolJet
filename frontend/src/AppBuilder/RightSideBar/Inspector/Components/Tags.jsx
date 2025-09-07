@@ -107,7 +107,7 @@ export const Tags = ({
     return {
       title,
       icon: { value: 'IconHome' },
-      iconVisibility: { value: '{{false}}' },
+      iconVisibility: { value: '{{true}}' },
       backgroundColor: { value: backgroundColor },
       loading: { value: '{{false}}' },
       visible: { value: '{{true}}' },
@@ -203,7 +203,7 @@ export const Tags = ({
         <Popover.Body onClick={(e) => e.stopPropagation()}>
           <div className="field mb-3" data-cy={`input-and-label-tag-title`}>
             <label data-cy={`label-tag-title`} className="font-weight-500 mb-1 font-size-12">
-              {'Tab Title'}
+              {'Title'}
             </label>
             <CodeHinter
               currentState={currentState}
@@ -226,12 +226,12 @@ export const Tags = ({
               lineNumbers={false}
               component={component}
               type={'fxEditor'}
-              paramLabel={'Background'}
+              paramLabel={'Pill color'}
               paramName={'backgroundColor'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'backgroundColor', index);
               }}
-              fieldMeta={{ type: 'colorSwatches', displayName: 'Background' }}
+              fieldMeta={{ type: 'colorSwatches', displayName: 'Pill color' }}
               paramType={'colorSwatches'}
             />
           </div>
@@ -244,12 +244,12 @@ export const Tags = ({
               lineNumbers={false}
               component={component}
               type={'fxEditor'}
-              paramLabel={'Foreground'}
+              paramLabel={'Text and icon'}
               paramName={'textColor'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'textColor', index);
               }}
-              fieldMeta={{ type: 'colorSwatches', displayName: 'Foreground' }}
+              fieldMeta={{ type: 'colorSwatches', displayName: 'Text and icon' }}
               paramType={'colorSwatches'}
             />
           </div>
@@ -431,24 +431,6 @@ export const Tags = ({
           allComponents
         )}
       </>
-    ),
-  });
-
-  items.push({
-    title: 'Events',
-    isOpen: true,
-    children: (
-      <EventManager
-        sourceId={component?.id}
-        eventSourceType="component"
-        eventMetaDefinition={componentMeta}
-        dataQueries={dataQueries}
-        components={allComponents}
-        eventsChanged={eventsChanged}
-        apps={apps}
-        darkMode={darkMode}
-        pages={pages}
-      />
     ),
   });
 

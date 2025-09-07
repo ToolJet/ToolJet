@@ -29,7 +29,6 @@ export const Tags = function Tags({
 
   const isInitialRender = useRef(true);
   const containerRef = useRef(null);
-  const [focusedTagIndex, setFocusedTagIndex] = useState(-1);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,
     isLoading: tagsLoadingState,
@@ -131,59 +130,9 @@ export const Tags = function Tags({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keyboard navigation handler
-  const handleKeyDown = (event) => {
-    if (exposedVariablesTemporaryState.isDisabled || !parsedTags?.length) return;
-
-    const tagCount = parsedTags.length;
-
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        event.preventDefault();
-        setFocusedTagIndex((prev) => {
-          const nextIndex = prev < tagCount - 1 ? prev + 1 : 0;
-          return nextIndex;
-        });
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        event.preventDefault();
-        setFocusedTagIndex((prev) => {
-          const prevIndex = prev > 0 ? prev - 1 : tagCount - 1;
-          return prevIndex;
-        });
-        break;
-      case 'Home':
-        event.preventDefault();
-        setFocusedTagIndex(0);
-        break;
-      case 'End':
-        event.preventDefault();
-        setFocusedTagIndex(tagCount - 1);
-        break;
-      case 'Escape':
-        event.preventDefault();
-        setFocusedTagIndex(-1);
-        containerRef.current?.blur();
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Focus management effect
-  useEffect(() => {
-    if (focusedTagIndex >= 0 && parsedTags?.length) {
-      const tagElement = containerRef.current?.querySelector(`[data-index="${focusedTagIndex}"]`);
-      tagElement?.focus();
-    }
-  }, [focusedTagIndex, parsedTags]);
-
   const computedStyles = {
     width,
     height,
-    boxShadow,
     opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
     pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
@@ -244,7 +193,6 @@ export const Tags = function Tags({
     if (!isTagVisible) return null;
 
     const isComponentDisabled = exposedVariablesTemporaryState.isDisabled;
-    const isFocused = focusedTagIndex === index;
 
     const textColor = item.textColor;
 
@@ -290,8 +238,7 @@ export const Tags = function Tags({
       flexShrink: overflow === 'wrap' ? 1 : 0,
       margin: overflow === 'wrap' ? '0 3px 3px 0' : '0 3px 0 0',
       borderRadius: borderRadius + 'px' || '0.25rem',
-      outline: isFocused ? '2px solid #007bff' : 'none',
-      outlineOffset: '1px',
+      outline: 'none',
       ...sizeStyles,
       boxSizing: 'border-box',
       minHeight: sizeStyles.height,
@@ -307,23 +254,8 @@ export const Tags = function Tags({
         key={index + item.title}
         data-cy={tagDataCy}
         data-index={index}
-        role="listitem"
-        tabIndex={isFocused ? 0 : -1}
-        aria-label={`Tag: ${tagTitle}${hasIcon ? ' with icon' : ''}`}
-        aria-current={isFocused ? 'true' : 'false'}
-        onFocus={() => setFocusedTagIndex(index)}
-        onBlur={() => {
-          // Only clear focus if we're not moving to another tag
-          setTimeout(() => {
-            const activeElement = document.activeElement;
-            const isTagActive =
-              activeElement?.getAttribute('role') === 'listitem' &&
-              activeElement?.closest('[role="list"]') === containerRef.current?.querySelector('[role="list"]');
-            if (!isTagActive) {
-              setFocusedTagIndex(-1);
-            }
-          }, 0);
-        }}
+        role="text"
+        aria-label={`${tagTitle}${hasIcon ? ' with icon' : ''}`}
       >
         {getTagIcon(item, tagDataCy)}
         {tagTitle}
@@ -333,47 +265,49 @@ export const Tags = function Tags({
 
   return (
     <div
-      className="tag-comp-wrapper"
-      style={computedStyles}
-      data-cy={`draggable-widget-${dataCy}`}
-      ref={containerRef}
+      style={{
+        boxShadow,
+      }}
+      className="w-100 overflow-hidden"
       role="region"
-      aria-label={`Tags component: ${parsedTags?.length || 0} tags`}
-      aria-live="polite"
-      aria-busy={exposedVariablesTemporaryState.isLoading}
+      aria-label="Tags widget container"
     >
-      {exposedVariablesTemporaryState.isLoading ? (
-        <div
-          style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}
-          data-cy={`${dataCy}-loading-spinner`}
-          role="status"
-          aria-label="Loading tags"
-        >
-          <Spinner />
-        </div>
-      ) : (
-        <div
-          data-cy={`${dataCy}-tags-container`}
-          role="list"
-          aria-label={`Tag list with ${parsedTags?.length || 0} items`}
-          tabIndex={!exposedVariablesTemporaryState.isDisabled && parsedTags?.length > 0 ? 0 : -1}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (focusedTagIndex === -1 && parsedTags?.length > 0) {
-              setFocusedTagIndex(0);
-            }
-          }}
-          style={{
-            outline: 'none',
-          }}
-        >
-          {parsedTags &&
-            Array.isArray(parsedTags) &&
-            parsedTags.map((item, index) => {
-              return renderTag(item, index);
-            })}
-        </div>
-      )}
+      <div
+        className="tag-comp-wrapper"
+        style={computedStyles}
+        data-cy={`draggable-widget-${dataCy}`}
+        ref={containerRef}
+        role="group"
+        aria-label={`Tags display: ${parsedTags?.length || 0} tags`}
+        aria-live="polite"
+        aria-busy={exposedVariablesTemporaryState.isLoading}
+      >
+        {exposedVariablesTemporaryState.isLoading ? (
+          <div
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}
+            data-cy={`${dataCy}-loading-spinner`}
+            role="status"
+            aria-label="Loading tags"
+          >
+            <Spinner />
+          </div>
+        ) : (
+          <div
+            data-cy={`${dataCy}-tags-container`}
+            role="group"
+            aria-label={`Tag collection with ${parsedTags?.length || 0} items`}
+            style={{
+              outline: 'none',
+            }}
+          >
+            {parsedTags &&
+              Array.isArray(parsedTags) &&
+              parsedTags.map((item, index) => {
+                return renderTag(item, index);
+              })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -125,6 +125,23 @@ export const tagsConfig = {
     },
   },
   exposedVariables: {},
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -143,27 +160,31 @@ export const tagsConfig = {
             textColor: { value: '#34A947' },
             backgroundColor: { value: '#34A94733' },
             icon: { value: 'IconHome2' },
+            iconVisibility: { value: '{{true}}' },
             visible: { value: true },
           },
           {
             title: 'info',
             textColor: { value: '#405DE6' },
             backgroundColor: { value: '#405DE61A' },
-            icon: { value: 'IconInfo' },
+            icon: { value: 'IconInfoCircle' },
+            iconVisibility: { value: '{{true}}' },
             visible: { value: true },
           },
           {
             title: 'warning',
             textColor: { value: '#F35717' },
             backgroundColor: { value: '#F357171A' },
-            icon: { value: 'IconWarning' },
+            icon: { value: 'IconAlertTriangle' },
+            iconVisibility: { value: '{{true}}' },
             visible: { value: true },
           },
           {
             title: 'danger',
             textColor: { value: '#EB2E39' },
             backgroundColor: { value: '#EB2E3933' },
-            icon: { value: 'IconDanger' },
+            icon: { value: 'IconCircleXFilled' },
+            iconVisibility: { value: '{{true}}' },
             visible: { value: true },
           },
         ],
