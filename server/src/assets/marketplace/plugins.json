@@ -242,6 +242,14 @@
     ]
   },
   {
+    "name": "EasyPost",
+    "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
+    "version": "1.0.0",
+    "id": "easypost",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 04:38:28 GMT"
+  },
+  {
     "name": "Prometheus",
     "description": "Plugin to query metrics using PromQL",
     "version": "1.0.0",
