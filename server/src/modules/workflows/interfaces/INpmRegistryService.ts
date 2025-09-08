@@ -12,7 +12,11 @@ export interface PackageSearchResult {
     npm?: string;
     homepage?: string;
     repository?: string;
+    bugs?: string;
   };
+  keywords?: string[];
+  author?: string;
+  modified?: string;
 }
 
 export interface PackageInfo {

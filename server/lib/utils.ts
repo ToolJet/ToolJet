@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
 import * as ivm from 'isolated-vm';
 
-const getFunctionWrappedCode = (code, state, isIfCondition) => {
+const getFunctionWrappedCode = (code: string, state: any, isIfCondition: boolean): string => {
   if (isIfCondition) {
     return code;
   }
   return `const fn = () => {${code}}; fn()`;
 };
 
-export function resolveCode(codeContext) {
+export function resolveCode(codeContext: any): any {
   const {
     code,
     state,
@@ -78,12 +78,12 @@ export function resolveCode(codeContext) {
   return result;
 }
 
-export function getDynamicVariables(text) {
+export function getDynamicVariables(text: string): string[] | null {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g);
   return matchedParams;
 }
 
-function resolveVariableReference(object, state, addLog) {
+function resolveVariableReference(object: string, state: any, addLog: (message: string) => void): any {
   const code = object.replace('{{', '').replace('}}', '');
   // Setting isIfCondition to true so that js query need not be
   // used in wrapped function
@@ -91,7 +91,7 @@ function resolveVariableReference(object, state, addLog) {
   return result;
 }
 
-export function getQueryVariables(options, state, addLog) {
+export function getQueryVariables(options: any, state: any, addLog: (message: string) => void = () => {}): any {
   const queryVariables = {};
   const optionsType = typeof options;
 

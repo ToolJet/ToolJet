@@ -24,7 +24,7 @@ export class AppModuleLoader {
         wildcard: false,
         newListener: false,
         removeListener: false,
-        maxListeners: 5,
+        maxListeners: process.env.NODE_ENV === 'test' ? 0 : 5,
         verboseMemoryLeak: true,
         ignoreErrors: false,
       }),
@@ -56,10 +56,10 @@ export class AppModuleLoader {
           prettyPrint:
             process.env.NODE_ENV !== 'production'
               ? {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                }
+                colorize: true,
+                levelFirst: true,
+                translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+              }
               : false,
           redact: {
             paths: [
