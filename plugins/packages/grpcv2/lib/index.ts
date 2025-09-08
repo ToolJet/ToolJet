@@ -8,9 +8,8 @@ import {
   discoverServicesUsingReflection,
   discoverServicesUsingProtoFile,
   loadProtoFromRemoteUrl,
-  buildRequestMetadata,
   extractServicesFromGrpcPackage,
-  createUnifiedCallOptions
+  executeGrpcMethod
 } from './operations';
 import { PackageDefinition } from '@grpc/proto-loader';
 
@@ -25,12 +24,10 @@ export default class Grpcv2QueryService implements QueryService {
     try {
       const client = await this.createGrpcClient(sourceOptions, queryOptions.service);
 
-      const metadata = buildRequestMetadata(sourceOptions, queryOptions);
-
       this.validateRequestData(queryOptions);
       this.validateMethodExists(client, queryOptions);
 
-      const response = await this.executeGrpcCall(client, queryOptions, sourceOptions, metadata);
+      const response = await this.executeGrpcCall(client, queryOptions, sourceOptions);
 
       return {
         status: 'ok',
@@ -213,85 +210,9 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, sourceOptions: SourceOptions, metadata: grpc.Metadata): Promise<Record<string, unknown>> {
-    return new Promise<Record<string, unknown>>((resolve, reject) => {
-      const methodFunction = client[queryOptions.method];
-
-      if (typeof methodFunction !== 'function') {
-        reject(new GrpcOperationError(`Method ${queryOptions.method} not found on client`));
-        return;
-      }
-
-      const timeoutId = setTimeout(() => {
-        reject(new GrpcOperationError(
-          `Request timeout after 2 minutes for method ${queryOptions.method}`,
-          { errorType: 'NetworkError', grpcStatus: 'DEADLINE_EXCEEDED' }
-        ));
-      }, 120000);
-
-      try {
-        const message = this.parseMessage(queryOptions.raw_message);
-
-        // For TLS connections, auth is already handled at channel level via combineChannelCredentials
-        // For non-TLS connections, use per-call CallOptions approach
-        if (!sourceOptions.ssl_enabled) {
-          const callOptions = createUnifiedCallOptions(sourceOptions);
-          
-          if (Object.keys(callOptions).length > 0) {
-            // Add query-level metadata if present
-            const finalOptions = {
-              ...callOptions,
-              ...(metadata && Object.keys(metadata.getMap()).length > 0 ? { metadata } : {})
-            };
-
-            methodFunction.call(
-              client,
-              message,
-              finalOptions,
-              (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
-                clearTimeout(timeoutId);
-
-                if (error) {
-                  reject(new GrpcOperationError(
-                    `gRPC call failed: ${error.message}`,
-                    error
-                  ));
-                } else {
-                  resolve(response || {});
-                }
-              }
-            );
-            return; // Early return to avoid fall-through
-          }
-        }
-        
-        // For TLS connections or no metadata: use regular query metadata only
-        // (TLS auth is handled at channel level, non-TLS has no metadata)
-          methodFunction.call(
-            client,
-            message,
-            metadata,
-            (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
-              clearTimeout(timeoutId);
-
-              if (error) {
-                reject(new GrpcOperationError(
-                  `gRPC call failed: ${error.message}`,
-                  error
-                ));
-              } else {
-                resolve(response || {});
-              }
-            }
-          );
-      } catch (syncError) {
-        clearTimeout(timeoutId);
-        reject(new GrpcOperationError(
-          `Failed to invoke gRPC method ${queryOptions.method}`,
-          syncError
-        ));
-      }
-    });
+  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, sourceOptions: SourceOptions): Promise<Record<string, unknown>> {
+    const message = this.parseMessage(queryOptions.raw_message);
+    return executeGrpcMethod(client, queryOptions.method, message, sourceOptions, queryOptions);
   }
 
   authUrl(sourceOptions: SourceOptions): string {
