@@ -462,7 +462,7 @@ export const buildRequestMetadata = (sourceOptions: SourceOptions, queryOptions:
   if (queryOptions?.metadata) {
     Object.entries(sanitizedMetadata).forEach(([key, value]) => {
       if (key && value) {
-        regularMetadata.add(key.toLowerCase(), String(value));
+        regularMetadata.add(key, String(value));
       }
     });
   }
