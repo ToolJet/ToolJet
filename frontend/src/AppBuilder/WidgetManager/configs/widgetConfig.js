@@ -72,6 +72,7 @@ export const widgets = [
   // Buttons
   buttonConfig,
   buttonGroupConfig,
+  popoverMenuConfig,
 
   //Data
   tableConfig,
@@ -107,7 +108,6 @@ export const widgets = [
   toggleSwitchV2Config,
   radiobuttonV2Config,
   treeSelectConfig,
-  popoverMenuConfig,
 
   //Date and time inputs
   datePickerV2Config,

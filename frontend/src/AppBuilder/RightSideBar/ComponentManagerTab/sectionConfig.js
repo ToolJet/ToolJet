@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup']),
+    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
   },
   data: {
     title: 'Data',
@@ -25,15 +25,7 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set([
-      'DropdownV2',
-      'MultiselectV2',
-      'ToggleSwitchV2',
-      'RadioButtonV2',
-      'Checkbox',
-      'TreeSelect',
-      'PopoverMenu',
-    ]),
+    valueSet: new Set(['DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),
   },
   dateTimeInputs: {
     title: 'Date and time inputs',
