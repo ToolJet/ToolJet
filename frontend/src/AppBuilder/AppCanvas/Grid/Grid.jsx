@@ -1054,7 +1054,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           const parentId = oldParentId?.length > 36 ? oldParentId.slice(0, 36) : oldParentId;
           const parentComponent = boxList.find((box) => box.id === parentId);
 
-          // This block is to show grid lines on the canvas when the dragged element is over a new canvas
           let newParentId = getDroppableSlotIdOnScreen(e, boxList) || 'canvas';
           if (parentComponent?.component?.component === 'Modal') {
             // Never update parentId for Modal
@@ -1068,8 +1067,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             prevDragParentId.current = newParentId;
             handleActivateTargets(newParentId);
           }
-
-          // let scrollDelta = computeScrollDeltaOnDrag(oldParentId);
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
 
