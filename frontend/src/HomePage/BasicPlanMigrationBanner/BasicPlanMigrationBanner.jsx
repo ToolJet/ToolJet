@@ -10,7 +10,7 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
           We will be updating our pricing plan for our AI features on.
           <span className="banner-link">21st September ‘25</span> To know more{' '}
           <a
-            href="https://docs.tooljet.ai/docs/tj-setup/licensing/self-hosted/"
+            href="https://docs.tooljet.ai/docs/build-with-ai/ai-credits"
             className="banner-link"
             target="_blank"
             rel="noopener noreferrer"

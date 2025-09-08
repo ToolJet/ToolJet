@@ -87,7 +87,7 @@ class AppComponent extends React.Component {
   };
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
     const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
@@ -102,12 +102,6 @@ class AppComponent extends React.Component {
       });
       useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
-      // check if version is cloud
-      if (data?.installed_version && data?.installed_version.includes('cloud')) {
-        this.setState({
-          showBanner: true, // show banner if version has "cloud"
-        });
-      }
       this.setState({ tooljetVersion: data.installed_version });
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -124,6 +118,13 @@ class AppComponent extends React.Component {
     authorizeWorkspace();
     hubspotHelper.loadHubspot();
     this.fetchMetadata();
+    // check if version is cloud
+    const data = localStorage.getItem('currentVersion');
+    if (data && data.includes('cloud')) {
+      this.setState({
+        showBanner: true, // show banner if version has "cloud"
+      });
+    }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
     this.updateColorScheme();
@@ -224,7 +225,7 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     const isApplicationsPath = window.location.pathname.includes('/applications/');
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
