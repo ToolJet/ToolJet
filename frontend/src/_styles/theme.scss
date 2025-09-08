@@ -8611,7 +8611,7 @@ tbody {
       margin: 2rem 1rem;
     }
 
-   .footer-container {
+    .footer-container {
       position: absolute;
       width: 100%;
       bottom: 0px;
@@ -14068,7 +14068,7 @@ tbody {
   align-items: center;
   gap: 8px;
 
-  > svg {
+  >svg {
     flex-shrink: 0;
   }
 }
@@ -18207,6 +18207,7 @@ section.ai-message-prompt-input-wrapper {
 
 // To override existing styles,
 @import "../HomePage/styles/homepage.scss";
+
 .editor-sidebar {
   .components-container {
     .search-box-wrapper {
@@ -18214,5 +18215,14 @@ section.ai-message-prompt-input-wrapper {
         top: 2px;
       }
     }
+  }
+}
+
+.tag-comp-wrapper {
+  display: flex;
+  gap: 3px;
+
+  .tag-comp {
+    padding: 4px 9px;
   }
 }

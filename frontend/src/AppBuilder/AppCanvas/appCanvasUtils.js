@@ -798,6 +798,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
   }
+  if (componentType === 'Tabs') {
+    padding = 2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING;
+  }
   return canvasWidth - padding;
 };
 

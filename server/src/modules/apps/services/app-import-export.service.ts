@@ -82,7 +82,8 @@ type NewRevampedComponent =
   | 'Icon'
   | 'Steps'
   | 'Statistics'
-  | 'StarRating';
+  | 'StarRating'
+  | 'Tags';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -113,9 +114,26 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Steps',
   'Statistics',
   'StarRating',
+  'Tags',
 ];
 
-const INPUT_WIDGET_TYPES = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DaterangePicker', 'TimePicker', 'DatetimePickerV2', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'RangeSliderV2'];
+const INPUT_WIDGET_TYPES = [
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'TimePicker',
+  'DatetimePickerV2',
+  'TextArea',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'RangeSliderV2',
+];
 
 @Injectable()
 export class AppImportExportService {
@@ -2508,6 +2526,13 @@ function migrateProperties(
     // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
+    }
+
+    //Tags
+    if (componentType === 'Tags') {
+      if (!('advanced' in properties)) {
+        properties.advanced = { value: '{{true}}' };
+      }
     }
 
     // Form
