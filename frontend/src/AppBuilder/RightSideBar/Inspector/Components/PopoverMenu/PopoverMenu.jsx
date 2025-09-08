@@ -104,8 +104,13 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
       custom: () => (
         <>
           {createRenderElement('advanced')}
-          {isDynamicOptionsEnabled ? createRenderElement('schema') : _renderOptions()}
-          {createRenderElement('optionsLoadingState')}
+          {isDynamicOptionsEnabled ? (
+            <>
+              {createRenderElement('schema')} {createRenderElement('optionsLoadingState')}
+            </>
+          ) : (
+            _renderOptions()
+          )}
         </>
       ),
     },
