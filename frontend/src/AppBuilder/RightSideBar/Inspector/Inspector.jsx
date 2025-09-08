@@ -49,6 +49,7 @@ import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsM
 import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -118,6 +119,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Steps',
   'FilePicker',
   'Chat',
+  'PopoverMenu',
   'Statistics',
   'StarRating',
 ];
@@ -848,6 +850,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+      case 'PopoverMenu':
+        return <PopoverMenu {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
