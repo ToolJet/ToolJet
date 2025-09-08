@@ -275,6 +275,7 @@ import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
+import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -818,6 +819,8 @@ const Icon = (props) => {
       return <EmptyStateModules {...props} />;
     case 'mobile-empty-state':
       return <MobileEmptyStateIcon {...props} />;
+    case 'mobile-empty-state-dark':
+      return <MobileEmptyStateIconDark {...props} />;
 
     case 'play01':
       return <Play01 {...props} />;

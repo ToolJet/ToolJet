@@ -428,7 +428,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/database"
                   element={
-                    <WorkspaceRouteGuard>
+                    <WorkspaceRouteGuard darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
@@ -505,7 +505,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId"
                   element={
-                    <WorkspaceRouteGuard>
+                    <WorkspaceRouteGuard darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
                       </PrivateRoute>

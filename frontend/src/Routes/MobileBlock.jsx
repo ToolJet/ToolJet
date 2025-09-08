@@ -1,26 +1,33 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import LogoLightMode from '@assets/images/Logomark.svg';
-import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
+import LogoLight from '@assets/images/logo-light.svg';
+import LogoDark from '@assets/images/logo-dark.svg';
 
 // Mobile Empty State Component - simple and reusable
 export const MobileEmptyState = ({ darkMode = false }) => {
-  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
-
   return (
-    <div className="tw-flex tw-flex-col tw-items-center tw-justify-between tw-h-screen tw-bg-background-surface-layer-01">
-      {/* Header */}
-      <div className="tw-flex tw-items-center tw-justify-center tw-w-full tw-p-6 tw-border-b tw-border-solid tw-border-border-weak">
+    <div className="tw-h-screen tw-bg-background-surface-layer-01">
+      {/* Fixed Header */}
+      <div className="tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-w-full tw-p-6 tw-bg-background-surface-layer-01 tw-border-b tw-border-solid tw-border-border-weak tw-border-t-0 tw-border-l-0 tw-border-r-0">
         <div className="tw-flex tw-items-center">
-          <LogoLightMode height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
+          {darkMode ? (
+            <LogoDark className="tw-h-5" alt="ToolJet logo" data-cy="page-logo" />
+          ) : (
+            <LogoLight className="tw-h-5" alt="ToolJet logo" data-cy="page-logo" />
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="tw-flex-1 tw-flex tw-flex-col tw-items-center tw-justify-center tw-px-6 tw-text-center tw-max-w-md tw-mx-auto">
+      {/* Main Content - Centered between header and footer */}
+      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full tw-px-6 tw-text-center tw-max-w-md tw-mx-auto">
         {/* Desktop Mockup Icon */}
         <div className="tw-mb-8">
-          <SolidIcon name="mobile-empty-state" width="200" height="140" fill="var(--icon-strong)" />
+          <SolidIcon
+            name={darkMode ? 'mobile-empty-state-dark' : 'mobile-empty-state'}
+            width="200"
+            height="140"
+            fill="var(--icon-strong)"
+          />
         </div>
 
         {/* Title */}
@@ -35,8 +42,8 @@ export const MobileEmptyState = ({ darkMode = false }) => {
         </p>
       </div>
 
-      {/* Footer */}
-      <div className="tw-w-full tw-p-6 tw-border-t tw-border-solid tw-border-border-weak tw-text-center">
+      {/* Fixed Footer */}
+      <div className="tw-fixed tw-bottom-0 tw-left-0 tw-right-0 tw-z-10 tw-w-full tw-p-6 tw-bg-background-surface-layer-01 tw-border-t tw-border-solid tw-border-border-weak tw-border-b-0 tw-border-l-0 tw-border-r-0 tw-text-center">
         <p className="tw-text-sm tw-text-text-placeholder tw-mb-0">
           Need help? Contact our support team at{' '}
           <a

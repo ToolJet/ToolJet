@@ -15,7 +15,6 @@ export const useMobileRouteGuard = () => {
     }
 
     const path = location.pathname;
-    console.log('path', path);
 
     // Block mobile access to editor mode
     if (path.includes('/apps/')) {
