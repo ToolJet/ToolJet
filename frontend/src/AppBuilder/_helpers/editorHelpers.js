@@ -42,7 +42,7 @@ import { CodeEditor } from '@/Editor/Components/CodeEditor';
 import { Timer } from '@/Editor/Components/Timer';
 import { Statistics } from '@/Editor/Components/Statistics';
 import { Pagination } from '@/Editor/Components/Pagination';
-import { Tags } from '@/Editor/Components/Tags';
+import { Tags } from '@/Editor/Components/Tags/Tags';
 import { Spinner } from '@/Editor/Components/Spinner';
 import { CircularProgressBar } from '@/Editor/Components/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
