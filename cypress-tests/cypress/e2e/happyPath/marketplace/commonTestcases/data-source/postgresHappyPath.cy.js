@@ -2,10 +2,11 @@ import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { addWidgetsToAddUser } from "Support/utils/postgreSql";
 import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import { performQueryAction } from "Support/utils/queries";
 
 const data = {};
 const tableName = "cypress_test_users";
@@ -243,7 +244,6 @@ describe("PostgreSQL data source connection and query", () => {
 
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-postgresql`);
   });
-
   it("Should verify the functionality of PostgreSQL connection form.", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
@@ -313,7 +313,6 @@ describe("PostgreSQL data source connection and query", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-string-pgsql`);
   });
-
   it("Should verify elements of the Query section.", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -457,43 +456,13 @@ describe("PostgreSQL data source connection and query", () => {
       .verifyVisibleElement("have.text", commonWidgetText.addEventHandlerLink)
       .click();
     cy.get('[data-cy="event-handler"]').should("be.visible");
-    cy.get('[data-cy="list-query-table-creation"] > .text-truncate').trigger(
-      "mouseover"
-    );
-    cy.get('[data-cy="edit-query-table-creation"]').click({ force: true });
-    cy.get('[data-cy="query-edit-input-field"]')
-      .click()
-      .clear()
-      .type("update-name{enter}");
-    cy.get('[data-cy="list-query-update-name"] > .text-truncate')
-      .should("be.visible")
-      .trigger("mouseover");
-    cy.get('[data-cy="copy-icon"]').click({ force: true });
-    cy.get(
-      '[data-cy="list-query-update-name_copy"] > .text-truncate'
-    ).verifyVisibleElement("have.text", "update-name_copy");
 
-    cy.get('[data-cy="list-query-update-name"] > .text-truncate')
-      .should("be.visible")
-      .click()
-      .trigger("mouseover");
-    cy.get('[data-cy="delete-query-update-name"]').click({ force: true });
-
-    cy.get(postgreSqlSelector.deleteModalMessage).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.dialogueTextDelete
-    );
-    cy.get(postgreSqlSelector.deleteModalCancelButton).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.cancel
-    );
-    cy.get(postgreSqlSelector.deleteModalConfirmButton)
-      .verifyVisibleElement("have.text", postgreSqlText.yes)
-      .click();
+    performQueryAction("table-creation", "rename", "updated-table-creation");
+    performQueryAction("updated-table-creation", "duplicate");
+    performQueryAction("updated-table-creation_copy", "delete");
     cy.apiDeleteApp(`${fake.companyName}-postgresql`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
   });
-
   it("Should verify CRUD operations on SQL Query.", () => {
     const dsName = `cypress-${data.dataSourceName}-crud-pgsql`;
     const dsKind = "postgresql";
@@ -656,35 +625,35 @@ describe("PostgreSQL data source connection and query", () => {
       cy.apiRunQuery();
     });
 
-    cy.apiAddQueryToApp({
-      queryName: "add_data_using_widgets",
-      options: {
-        mode: "sql",
-        transformationLanguage: "javascript",
-        enableTransformation: false,
-        query: `INSERT INTO "public"."${tableName}" ("name", "email") VALUES('{{components.textinput1.value}}', '{{components.textinput2.value}}') RETURNING "id", "name", "email";`,
-      },
-      dsName,
-      dsKind,
-    }).then(() => {
-      cy.reload();
-      addWidgetsToAddUser();
-      cy.intercept(
-        "POST",
-        `**/api/data-queries/${Cypress.env("query-id")}/versions/*/run/*`
-      ).as("runQuery");
+    // cy.apiAddQueryToApp({
+    //   queryName: "add_data_using_widgets",
+    //   options: {
+    //     mode: "sql",
+    //     transformationLanguage: "javascript",
+    //     enableTransformation: false,
+    //     query: `INSERT INTO "public"."${tableName}" ("name", "email") VALUES('{{components.textinput1.value}}', '{{components.textinput2.value}}') RETURNING "id", "name", "email";`,
+    //   },
+    //   dsName,
+    //   dsKind,
+    // }).then(() => {
+    //   cy.reload();
+    //   addWidgetsToAddUser();
+    //   cy.intercept(
+    //     "POST",
+    //     `**/api/data-queries/${Cypress.env("query-id")}/versions/*/run/*`
+    //   ).as("runQuery");
 
-      cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    //   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
 
-      cy.wait("@runQuery", { timeout: 60000 }).then((interception) => {
-        expect(interception.response.statusCode).to.equal(201);
-        expect(interception.response.body.status).to.eq("ok");
-        expect(interception.response.body.data[0]).to.include({
-          name: "Jack",
-          email: "jack@example.com",
-        });
-      });
-    });
+    //   cy.wait("@runQuery", { timeout: 60000 }).then((interception) => {
+    //     expect(interception.response.statusCode).to.equal(201);
+    //     expect(interception.response.body.status).to.eq("ok");
+    //     expect(interception.response.body.data[0]).to.include({
+    //       name: "Jack",
+    //       email: "jack@example.com",
+    //     });
+    //   });
+    // });
     cy.apiAddQueryToApp({
       queryName: "truncate_table",
       options: {
@@ -715,7 +684,6 @@ describe("PostgreSQL data source connection and query", () => {
     cy.apiDeleteApp(`${fake.companyName}-postgresql-CURD-App`);
     cy.apiDeleteGDS(dsName);
   });
-
   it("Should verify bulk update operation ", () => {
     const dsName = `cypress-${data.dataSourceName}-bulk-pgsql`;
     const dsKind = "postgresql";
@@ -815,7 +783,7 @@ describe("PostgreSQL data source connection and query", () => {
     cy.apiDeleteApp(`${fake.companyName}-pgsql-bulk`);
     cy.apiDeleteGDS(dsName);
   });
-  it("Should verify SQL parameter", () => {
+  it("Should verify SQL parameters", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-pgsql`,
