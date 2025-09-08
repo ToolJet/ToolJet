@@ -729,20 +729,9 @@ export const executeGrpcMethod = async (
       const metadata = combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     } else {
-      // Non-TLS connections: Hybrid approach 
-      const criticalCallOptions = prepareCriticalCallCredentials(sourceOptions);
-      const queryMetadata = prepareQueryMetadata(queryOptions);
-
-      // Combine metadata with credentials
-      const hasQueryMetadata = queryMetadata.getMap() && Object.keys(queryMetadata.getMap()).length > 0;
-
-      if (hasQueryMetadata) {
-        // Both critical credentials and query metadata
-        methodFunction.call(client, message, queryMetadata, criticalCallOptions, callback);
-      } else {
-        // Only critical credentials
-        methodFunction.call(client, message, criticalCallOptions, callback);
-      }
+      // Non-TLS connections 
+      const allMetadataOptions = prepareGrpcCallOptions(sourceOptions, queryOptions);
+      methodFunction.call(client, message, allMetadataOptions, callback);
     }
   });
 };
