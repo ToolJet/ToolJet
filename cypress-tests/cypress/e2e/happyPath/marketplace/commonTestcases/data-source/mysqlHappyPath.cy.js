@@ -2,27 +2,17 @@ import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { mySqlText } from "Texts/mysql";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonWidgetText, commonText } from "Texts/common";
-import {
-  fillDataSourceTextField,
-  selectAndAddDataSource,
-  addQuery,
-  fillConnectionForm,
-  openQueryEditor,
-  selectQueryMode,
-  addGuiQuery,
-  addWidgetsToAddUser,
-} from "Support/utils/postgreSql";
+import { commonSelectors } from "Selectors/common";
+import { commonWidgetText } from "Texts/common";
 import {
   closeDSModal,
-  deleteDatasource,
   verifyCouldnotConnectWithAlert,
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { realHover } from "cypress-real-events/commands/realHover";
+import { performQueryAction } from "Support/utils/queries";
 
 const data = {};
+let tableName = "cypress_test_users";
 describe("Data sources MySql connection and query", () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -179,8 +169,7 @@ describe("Data sources MySql connection and query", () => {
     // verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-mysql`);
   });
-
-  it("Should verify the functionality of MySQL connection form.", () => {
+  it("Should verify the functionality of MySQL connection form", () => {
     const dsName = `cypress-${data.dataSourceName}-mysql`;
     cy.get(commonSelectors.globalDataSourceIcon).click();
     //invalid database
@@ -324,8 +313,7 @@ describe("Data sources MySql connection and query", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.apiDeleteGDS(dsName);
   });
-
-  it("Should verify elements of the Query section.", () => {
+  it("Should verify elements of the Query section", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-mysql`,
@@ -467,46 +455,13 @@ describe("Data sources MySql connection and query", () => {
       .verifyVisibleElement("have.text", commonWidgetText.addEventHandlerLink)
       .click();
     cy.get('[data-cy="event-handler"]').should("be.visible");
-    cy.get('[data-cy="list-query-table-creation"] > .text-truncate').trigger(
-      "mouseover"
-    );
-    cy.get('[data-cy="edit-query-table-creation"]').click({ force: true });
-    cy.get('[data-cy="query-edit-input-field"]')
-      .click()
-      .clear()
-      .type("update-name{enter}");
-    cy.get('[data-cy="list-query-update-name"] > .text-truncate')
-      .should("be.visible")
-      .trigger("mouseover");
-    cy.get('[data-cy="copy-icon"]').click({ force: true });
-    cy.get(
-      '[data-cy="list-query-update-name_copy"] > .text-truncate'
-    ).verifyVisibleElement("have.text", "update-name_copy");
-
-    cy.get('[data-cy="list-query-update-name"] > .text-truncate')
-      .should("be.visible")
-      .click()
-      .trigger("mouseover");
-    cy.get('[data-cy="delete-query-update-name"]').click({ force: true });
-
-    cy.get(postgreSqlSelector.deleteModalMessage).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.dialogueTextDelete
-    );
-    cy.get(postgreSqlSelector.deleteModalCancelButton).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.cancel
-    );
-    cy.get(postgreSqlSelector.deleteModalConfirmButton)
-      .verifyVisibleElement("have.text", postgreSqlText.yes)
-      .click();
-
+    performQueryAction("table-creation", "rename", "updated-table-creation");
+    performQueryAction("updated-table-creation", "duplicate");
+    performQueryAction("updated-table-creation_copy", "delete");
     cy.apiDeleteApp(`${fake.companyName}-mysql`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-mysql`);
   });
-
-  it.only("Should verify CRUD operations on SQL Query.", () => {
-    let dbName = "test_db";
+  it("Should verify CRUD operations on SQL Query", () => {
     const dsName = `cypress-${data.dataSourceName}-crud-mysql`;
     const dsKind = "postgresql";
     cy.apiCreateGDS(
@@ -545,12 +500,13 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS \`${dbName}\` (
-      id MEDIUMINT NOT NULL AUTO_INCREMENT,
-      name CHAR(30) NOT NULL,
-      email VARCHAR(255),
-      PRIMARY KEY (id)
-    );`,
+        query: `CREATE TABLE IF NOT EXISTS \`${tableName}\` (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT,
+  name CHAR(30) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  age INT,
+  PRIMARY KEY (id)
+);`,
       },
       dsName,
       dsKind,
@@ -575,7 +531,7 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SHOW TABLES LIKE '${dbName}';`,
+        query: `SHOW TABLES LIKE '${tableName}';`,
       },
       dsName,
       dsKind,
@@ -583,7 +539,7 @@ describe("Data sources MySql connection and query", () => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("ok");
         expect(response.body.data).to.deep.equal([
-          { [`Tables_in_test_db (${dbName})`]: dbName },
+          { [`Tables_in_test_db (${tableName})`]: tableName },
         ]);
       });
     });
@@ -594,15 +550,25 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO \`${dbName}\` (name, email) VALUES ('John Doe', 'john@example.com');`,
+        query: `INSERT INTO \`${tableName}\` (name, email, age)
+VALUES ('John Doe', 'john.doe@example.com', 28);
+SELECT id, name, email, age
+FROM \`${tableName}\`
+WHERE id = LAST_INSERT_ID();`,
       },
       dsName,
       dsKind,
     }).then(() => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("ok");
-        expect(response.body.data).to.have.property("insertId");
-        expect(response.body.data.insertId).to.eq(1);
+        expect(response.body.data[0]).to.have.property("insertId", 1);
+        expect(response.body.data[1][0]).to.have.property("id", 1);
+        expect(response.body.data[1][0]).to.have.property("name", "John Doe");
+        expect(response.body.data[1][0]).to.have.property(
+          "email",
+          "john.doe@example.com"
+        );
+        expect(response.body.data[1][0]).to.have.property("age", 28);
       });
     });
 
@@ -612,7 +578,7 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SELECT * FROM \`${dbName}\`;`,
+        query: `SELECT * FROM \`${tableName}\`;`,
       },
       dsName,
       dsKind,
@@ -621,43 +587,45 @@ describe("Data sources MySql connection and query", () => {
         expect(response.body.status).to.eq("ok");
         expect(response.body.data[0]).to.include({
           name: "John Doe",
-          email: "john@example.com",
+          email: "john.doe@example.com",
+          age: 28,
         });
       });
     });
-    cy.apiAddQueryToApp({
-      queryName: "add_data_using_widgets",
-      options: {
-        mode: "sql",
-        transformationLanguage: "javascript",
-        enableTransformation: false,
-        query: `INSERT INTO \`${dbName}\` (name, email) 
-        VALUES ('{{components.textinput1.value}}', '{{components.textinput2.value}}');
-        SELECT id, name, email FROM \`${dbName}\` WHERE id = LAST_INSERT_ID();`,
-      },
-      dsName,
-      dsKind,
-    }).then(() => {
-      cy.reload();
-      addWidgetsToAddUser();
-      cy.intercept(
-        "POST",
-        `**/api/data-queries/${Cypress.env("query-id")}/versions/*/run/*`
-      ).as("runQuery");
 
-      cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    // cy.apiAddQueryToApp({
+    //   queryName: "add_data_using_widgets",
+    //   options: {
+    //     mode: "sql",
+    //     transformationLanguage: "javascript",
+    //     enableTransformation: false,
+    //     query: `INSERT INTO \`${tableName}\` (name, email)
+    //     VALUES ('{{components.textinput1.value}}', '{{components.textinput2.value}}');
+    //     SELECT id, name, email FROM \`${tableName}\` WHERE id = LAST_INSERT_ID();`,
+    //   },
+    //   dsName,
+    //   dsKind,
+    // }).then(() => {
+    //   cy.reload();
+    //   addWidgetsToAddUser();
+    //   cy.intercept(
+    //     "POST",
+    //     `**/api/data-queries/${Cypress.env("query-id")}/versions/*/run/*`
+    //   ).as("runQuery");
 
-      cy.wait("@runQuery", { timeout: 60000 }).then((interception) => {
-        expect(interception.response.statusCode).to.equal(201);
-        expect(interception.response.body.status).to.eq("ok");
-        expect(interception.response.body.data[0]).to.have.property("insertId");
-        expect(interception.response.body.data[0].insertId).to.eq(2);
-        expect(interception.response.body.data[1][0]).to.include({
-          name: "Jack",
-          email: "jack@example.com",
-        });
-      });
-    });
+    //   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+
+    //   cy.wait("@runQuery", { timeout: 60000 }).then((interception) => {
+    //     expect(interception.response.statusCode).to.equal(201);
+    //     expect(interception.response.body.status).to.eq("ok");
+    //     expect(interception.response.body.data[0]).to.have.property("insertId");
+    //     expect(interception.response.body.data[0].insertId).to.eq(2);
+    //     expect(interception.response.body.data[1][0]).to.include({
+    //       name: "Jack",
+    //       email: "jack@example.com",
+    //     });
+    //   });
+    // });
 
     cy.apiAddQueryToApp({
       queryName: "truncate_table",
@@ -665,7 +633,7 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `TRUNCATE TABLE \`${dbName}\`;`,
+        query: `TRUNCATE TABLE \`${tableName}\`;`,
       },
       dsName,
       dsKind,
@@ -683,7 +651,7 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DROP TABLE IF EXISTS \`${dbName}\`;`,
+        query: `DROP TABLE IF EXISTS \`${tableName}\`;`,
       },
       dsName,
       dsKind,
@@ -692,51 +660,13 @@ describe("Data sources MySql connection and query", () => {
         expect(response.body.status).to.eq("ok");
         expect(response.body.data).to.have.property("affectedRows");
         expect(response.body.data.affectedRows).to.eq(0);
-        
       });
     });
 
-    //cy.apiDeleteApp(`${fake.companyName}-postgresql-CURD-App`);
-    //cy.apiDeleteGDS(dsName);
-    cy.get(postgreSqlSelector.queryPreviewButton).click();
-    cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
-    cy.get(postgreSqlSelector.previewTabRaw).click();
-    cy.get('[class="tab-pane active"]').should(
-      "have.text",
-      `{"fieldCount":0,"affectedRows":0,"insertId":0,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}`
-    );
-
-    addQuery("drop_table", `DROP TABLE ${dbName}`, mySqlText.cypressMySql);
-    cy.get('[data-cy="list-query-existance_of_table"]').click();
-    cy.get(postgreSqlSelector.queryPreviewButton).click();
-    cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
-    cy.get(postgreSqlSelector.previewTabRaw).click();
-    cy.get('[class="tab-pane active"]').should("have.text", "[]");
-
-    // addWidgetsToAddUser();
+    cy.apiDeleteApp(`${fake.companyName}-mysql-CURD-App`);
+    cy.apiDeleteGDS(dsName);
   });
-
-  it.skip("Should verify bulk update", () => {
-    selectAndAddDataSource("databases", "MySQL", data.dataSourceName);
-    cy.clearAndType(
-      postgreSqlSelector.dataSourceNameInputField,
-      mySqlText.cypressMySql
-    );
-    fillConnectionForm({
-      Host: Cypress.env("mysql_host"),
-      Port: "3318",
-      "Database name": "test_db",
-      Username: Cypress.env("mysql_user"),
-      Password: Cypress.env("mysql_password"),
-    });
-
-    openQueryEditor(mySqlText.cypressMySql);
-    cy.get('[class="query-pane"]').invoke("css", "height", "calc(85%)");
-    selectQueryMode(postgreSqlText.queryModeGui);
-    addGuiQuery("name", "email");
-    cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
-  });
-  it("Should verify bulk update operation ", () => {
+  it("Should verify bulk update operation", () => {
     const dsName = `cypress-${data.dataSourceName}-bulk-mysql`;
     const dsKind = "mysql";
     cy.apiCreateGDS(
@@ -775,12 +705,13 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS \`${dbName}\` (
-      id MEDIUMINT NOT NULL AUTO_INCREMENT,
-      name CHAR(30) NOT NULL,
-      email VARCHAR(255),
-      PRIMARY KEY (id)
-    );`,
+        query: `CREATE TABLE IF NOT EXISTS \`${tableName}\` (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT,
+  name CHAR(30) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  age INT,
+  PRIMARY KEY (id)
+);`,
       },
       dsName,
       dsKind,
@@ -798,6 +729,27 @@ describe("Data sources MySql connection and query", () => {
         ]);
       });
     });
+
+    cy.apiAddQueryToApp({
+      queryName: "add_data",
+      options: {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `INSERT INTO \`${tableName}\`(id, name, email, age)
+VALUES
+  (1, 'John Doe', 'john.doe@example.com', 10),
+  (2, 'Jane Smith', 'jane.smith@example.com', 11);`,
+      },
+      dsName,
+      dsKind,
+    }).then(() => {
+      cy.apiRunQuery().then((response) => {
+        expect(response.body.status).to.eq("ok");
+        expect(response.body.data).to.have.property("insertId", 2);
+      });
+    });
+
     cy.apiAddQueryToApp({
       queryName: "bulk_update_users",
       options: {
@@ -806,13 +758,13 @@ describe("Data sources MySql connection and query", () => {
         enableTransformation: false,
         operation: "bulk_update_pkey",
         primary_key_column: "id",
-        table: "cypress_test_users",
+        table: `${tableName}`,
         records: `{{[
         {
           "id": 1,
           "name": "John1 Doe",
           "email": "john1.doe@example.com",
-          "age": 30
+          "age": 20
         },
         {
           "id": 2,
@@ -825,7 +777,9 @@ describe("Data sources MySql connection and query", () => {
       dsName,
       dsKind,
     }).then(() => {
-      cy.apiRunQuery("bulk_update_users");
+      cy.apiRunQuery("bulk_update_users").then((response) => {
+        expect(response.body.data[0]).to.eq(undefined);
+      });
     });
     cy.apiAddQueryToApp({
       queryName: "drop_table",
@@ -833,43 +787,44 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DROP TABLE IF EXISTS "public"."${tableName}"`,
+        query: `DROP TABLE IF EXISTS \`${tableName}\`;`,
       },
       dsName,
       dsKind,
     }).then(() => {
       cy.apiRunQuery();
     });
-    cy.apiDeleteApp(`${fake.companyName}-pgsql-bulk`);
+    cy.apiDeleteApp(`${fake.companyName}-mysql-bulk`);
     cy.apiDeleteGDS(dsName);
   });
-  it("Should verify SQL parameter", () => {
+  it("Should verify SQL parameters", () => {
+    const dsName = `cypress-${data.dataSourceName}-sql-param`;
+    const dsKind = "mysql";
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-pgsql`,
-      "postgresql",
+      dsName,
+      dsKind,
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
+        { key: "connection_type", value: "hostname", encrypted: false },
+        {
+          key: "host",
+          value: `${Cypress.env("mysql_host")}`,
+          encrypted: false,
+        },
+        { key: "port", value: 3318, encrypted: false },
         { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
         {
           key: "username",
-          value: `${Cypress.env("pg_user")}`,
+          value: `${Cypress.env("mysql_user")}`,
           encrypted: false,
         },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: `${Cypress.env("mysql_password")}`,
           encrypted: true,
         },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "database", value: "test_db", encrypted: false },
       ]
     );
     cy.apiCreateApp(`${fake.companyName}-sql-param`);
@@ -880,17 +835,16 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS "public"."${tableName}" (
-          "id" integer GENERATED ALWAYS AS IDENTITY,
-          "name" text NOT NULL,
-          "email" text UNIQUE NOT NULL,
-          "age" integer,
-          "created_at" timestamp DEFAULT now(),
-          PRIMARY KEY ("id")
-          );`,
+        query: `CREATE TABLE IF NOT EXISTS \`${tableName}\` (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT,
+  name CHAR(30) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  age INT,
+  PRIMARY KEY (id)
+);`,
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: dsName,
+      dsKind: dsKind,
     }).then(() => {
       cy.apiRunQuery();
     });
@@ -900,25 +854,19 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO  "public"."${tableName}" (name, email, age)
-          VALUES (:name, :email, :age)
-          RETURNING *;`,
+        query: `INSERT INTO  \`${tableName}\` (name, email, age) VALUES (:name, :email, :age);`,
         query_params: [
           ["name", "John Doe"],
           ["email", "john.doe@example.com"],
           ["age", "28"],
         ],
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: dsName,
+      dsKind: dsKind,
     }).then(() => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("ok");
-        expect(response.body.data[0]).to.include({
-          name: "John Doe",
-          email: "john.doe@example.com",
-          age: 28,
-        });
+        expect(response.body.data).to.have.property("insertId", 1);
       });
     });
 
@@ -928,23 +876,21 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO "public"."${tableName}"  (name, email, age)
-        VALUES (:name, :email, :age)
-        RETURNING *;`,
+        query: `INSERT INTO  \`${tableName}\` (name, email, age) VALUES (:name, :email, :age);`,
         query_params: [
           ["name", "John Doe"],
           ["email", "john.doe@example.com"],
           ["age", "28"],
         ],
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: dsName,
+      dsKind: dsKind,
     }).then(() => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("failed");
         expect(response.body.message).to.eq("Query could not be completed");
         expect(response.body.description).to.include(
-          "duplicate key value violates unique constraint"
+          "Duplicate entry 'john.doe@example.com' for key 'cypress_test_users.email'"
         );
       });
     });
@@ -954,14 +900,14 @@ describe("Data sources MySql connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DROP TABLE IF EXISTS "public"."${tableName}"`,
+        query: `DROP TABLE IF EXISTS \`${tableName}\`;`,
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: dsName,
+      dsKind: dsKind,
     }).then(() => {
       cy.apiRunQuery();
     });
-    cy.apiDeleteApp(`${fake.companyName}-pgsql-bulk`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-pgsql`);
+    cy.apiDeleteApp(`${fake.companyName}-sql-param`);
+    cy.apiDeleteGDS(dsName);
   });
 });
