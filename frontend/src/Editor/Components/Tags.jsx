@@ -152,7 +152,7 @@ export const Tags = function Tags({
           overflowX: 'auto',
           overflowY: 'hidden',
           whiteSpace: 'nowrap',
-          justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
+          justifyContent: 'flex-start',
         }),
   };
 
@@ -292,20 +292,55 @@ export const Tags = function Tags({
             <Spinner />
           </div>
         ) : (
-          <div
-            data-cy={`${dataCy}-tags-container`}
-            role="group"
-            aria-label={`Tag collection with ${parsedTags?.length || 0} items`}
-            style={{
-              outline: 'none',
-            }}
-          >
-            {parsedTags &&
-              Array.isArray(parsedTags) &&
-              parsedTags.map((item, index) => {
-                return renderTag(item, index);
-              })}
-          </div>
+          <>
+            {overflow === 'wrap' ? (
+              <div
+                data-cy={`${dataCy}-tags-container`}
+                role="group"
+                aria-label={`Tag collection with ${parsedTags?.length || 0} items`}
+                style={{
+                  outline: 'none',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
+                  alignContent: 'flex-start',
+                  width: '100%',
+                }}
+              >
+                {parsedTags &&
+                  Array.isArray(parsedTags) &&
+                  parsedTags.map((item, index) => {
+                    return renderTag(item, index);
+                  })}
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
+                  minWidth: 'fit-content',
+                }}
+              >
+                <div
+                  data-cy={`${dataCy}-tags-container`}
+                  role="group"
+                  aria-label={`Tag collection with ${parsedTags?.length || 0} items`}
+                  style={{
+                    outline: 'none',
+                    display: 'flex',
+                    minWidth: 'fit-content',
+                  }}
+                >
+                  {parsedTags &&
+                    Array.isArray(parsedTags) &&
+                    parsedTags.map((item, index) => {
+                      return renderTag(item, index);
+                    })}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
