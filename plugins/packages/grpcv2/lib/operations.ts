@@ -729,7 +729,7 @@ export const executeGrpcMethod = async (
       const metadata = combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     } else {
-      // Non-TLS connections 
+      // Non-TLS connections: All metadata (auth + datasource + query) via CallCredentials
       const allMetadataOptions = prepareGrpcCallOptions(sourceOptions, queryOptions);
       methodFunction.call(client, message, allMetadataOptions, callback);
     }
