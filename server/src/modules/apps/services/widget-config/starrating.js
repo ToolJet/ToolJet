@@ -105,7 +105,7 @@ export const starratingConfig = {
       displayName: 'Style',
       options: [
         { name: 'Standard', value: 'standard' },
-        { name: 'Legacy', value: 'legacy'},
+        { name: 'Legacy', value: 'legacy' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -288,7 +288,7 @@ export const starratingConfig = {
   exposedVariables: {
     value: 0,
   },
-   actions: [
+  actions: [
     {
       handle: 'setValue',
       displayName: 'Set value',
@@ -336,7 +336,7 @@ export const starratingConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#ffb400' },
+      textColor: { value: '#EFB82D' },
       labelColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -348,7 +348,7 @@ export const starratingConfig = {
       auto: { value: '{{true}}' },
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },
-      selectedBackgroundHearts: { value: '#EFB82D' },
+      selectedBackgroundHearts: { value: '#EE5B67' },
       unselectedBackground: { value: 'var(--cc-surface3-surface)' },
     },
   },
