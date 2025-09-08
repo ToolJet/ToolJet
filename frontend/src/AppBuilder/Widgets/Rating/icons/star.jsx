@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default ({ fill = '#EFB82D', unselected = null, isHalf = false, gradientId = null }) => {
+export default ({ fill = '#EFB82D', unselected = null, isHalf = false }) => {
   // Generate unique gradient ID if half-fill is requested
-  const uniqueGradientId = gradientId || `starGradient-${Math.random().toString(36).substr(2, 9)}`;
+  const uniqueGradientId = `starGradient-${Math.random().toString(36).substr(2, 9)}`;
 
   // Determine the fill value
   const fillValue = isHalf && unselected ? `url(#${uniqueGradientId})` : fill;

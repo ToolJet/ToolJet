@@ -202,6 +202,7 @@ export const Rating = ({
         >
           <div
             className="rating-widget-group-inner d-flex"
+            onMouseLeave={() => setHoverIndex(null)}
             style={{
               flexWrap: 'wrap',
               gap: '6px',

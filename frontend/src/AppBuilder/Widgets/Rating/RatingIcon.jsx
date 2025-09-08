@@ -87,7 +87,7 @@ const RatingIcon = ({
   };
 
   const handleMouseLeave = () => {
-    setHoverIndex(null);
+    // setHoverIndex(null);
     setPrecision(0);
     setIcon(star);
     setOutlineIcon(emptyIcon);
