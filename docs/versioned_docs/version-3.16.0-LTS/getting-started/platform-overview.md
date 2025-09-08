@@ -5,61 +5,77 @@ title: Platform Overview
 
 ## What is ToolJet?
 
-ToolJet is a low-code platform that enables developers to rapidly build and deploy custom internal tools. It has a drag-and-drop app builder with 60+ pre-built components, so developers can create complex applications in minutes. ToolJet also connects to most popular data sources and APIs out of the box, and it has a group-based permission system for easy user access management. ToolJet also comes with a lot of other features, but for now, let’s build a basic ToolJet app.
+ToolJet is an AI-native platform for building applications and agents. Teams can generate full apps from natural language prompts, create intelligent agents to automate workflows, and refine them visually with pre-built UI components. ToolJet integrates with 75+ data sources and APIs out of the box, and offers role-based access control with group sync for secure, enterprise-grade user management.  
 
 ## How ToolJet Works:
 
-<img style={{marginBottom:'24px'}} className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v4.png" alt="Platform Overview" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v4.png" alt="Platform Overview" />
 
-**With ToolJet, you can streamline app development with 4 core steps:** <br/>
+**With ToolJet, you can streamline app development with 5 core steps:** <br/>
 
-1. **Design Stunning Interfaces**: Drag and drop UI components like Tables, Charts, Forms, and more build custom applications in minutes. Integrate these components with data sources and incorporate business logic through JavaScript or Python.
-2. **Connect Data Sources**: Leverage ToolJet's robust integration features to connect with any data source. The platform supports seamless data integration across over 50 different applications, databases, and APIs.
-3. **Automate Complex Workflows**: Develop multi-step workflows in ToolJet to automate business processes. In addition to building and automating workflows, ToolJet allows for easy integration of these workflows within your applications.
-4. **Secure and Manage**: Secure your internal tools with detailed permissions settings and audit logs. Maintain quality and consistency with version control, and keep track of performance with comprehensive observability tools.
+1. **Generate with AI**: Instantly create and modify apps, queries, and workflows from prompts.
+
+2. **Build Visually**: Extend apps with drag-and-drop components, themes, and custom logic in JavaScript or Python.
+
+3. **Connect Data Sources**: Integrate 75+ databases, APIs, and services.
+
+4. **Automate with Agents**: Deploy AI agents that can query data, take actions, and orchestrate workflows.
+
+5. **Secure and Manage**: Secure your internal tools with detailed permissions settings and audit logs. Maintain quality and consistency with version control, and keep track of performance with comprehensive observability tools.
 
 Below is a detailed overview of ToolJet's key functionalities, demonstrating how ToolJet helps teams to build more with less effort and greater efficiency. 
 
-### Visual App Builder
+### AI App Builder  
+Generate applications directly from natural language prompts. AI handles the initial structure, UI, and queries so teams can go from idea to a working prototype in seconds.  
 
-Enables the creation of visually appealing front-ends with a drag-and-drop interface and pre-built components. 
-<img  className="screenshot-full img-full" src="/img/platform-overview/app-builder.png" alt="App-Builder" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/ai-app-builder.png" alt="Platform Overview - AI App-Builder" />
 
-### Integrations
+### Agent Builder  
+Create and deploy intelligent agents that can query data, trigger workflows, and automate processes across your apps. Agents bring reasoning and autonomy into internal tools, reducing repetitive work and manual oversight.  
 
-Offers seamless integration with a wide range of data sources, including over 50 applications, databases, and APIs. 
-<img className="screenshot-full img-full" src="/img/platform-overview/integrations-v2.png" alt="Integrations" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/agent-builder.png" alt="Platform Overview - AI Agent Builder" />
 
-### ToolJet Database
+### AI Query Builder & Debugger 
+Write, transform, and troubleshoot queries with AI assistance. Instead of wrestling with syntax or edge cases, let AI generate queries, optimize performance, and suggest fixes in one click.  
 
-A robust, scalable database solution built atop PostgreSQL. It allows for no-code database management, enabling users to build, manage, and scale databases effortlessly.
-<img className="screenshot-full img-full" src="/img/platform-overview/tooljet-db.png" alt="ToolJet Database" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/ai-query-builder.png" alt="Platform Overview - AI Query Builder" />
 
-### Workflow Automation
+### Visual App Builder  
+Build and refine interfaces with a drag-and-drop editor and 60+ pre-built components. AI-generated apps can be visually extended and customized for unique business needs.  
 
-Simplifies the automation of complex manual business processes, reducing the engineering effort required. 
-<!-- This feature is particularly useful for streamlining enterprise workflows and improving operational efficiency. -->
-<img className="screenshot-full img-full" src="/img/platform-overview/workflows.png" alt="Workflows" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/visual-app-builder.png" alt="Platform Overview - Visual App Builder" />
 
-### Enterprise-Grade Security
+### Integrations  
+Connect instantly to 75+ data sources, APIs, and services. ToolJet also provides a CLI and plugin system to extend integrations.  
 
-Designed with advanced security features and a scalable infrastructure to meet the needs of enterprise teams. 
-<!-- This ensures the protection of sensitive data and the reliability of the platform in handling large-scale applications. -->
-<img className="screenshot-full img-full" src="/img/platform-overview/security-v2.png" alt="Security" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/integrations.png" alt="Platform Overview - Integrations List" />
 
-### SSO Support
+### ToolJet Database  
+A built-in, no-code database on PostgreSQL. Store and manage data without leaving the platform, with support for constraints, types, and queries.  
 
-Single Sign-On (SSO) capabilities, supporting a variety of providers including Okta, Google, Azure AD, and OpenID Connect. 
-<img className="screenshot-full img-full" src="/img/platform-overview/sso-v2.png" alt="SSO Support" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/tooljet-db.png" alt="Platform Overview - ToolJet Database" />
 
-### Multiple Environments
+### Security & Access Control  
+Protect sensitive data with enterprise-grade security features:  
+- Role-based access control (RBAC)  
+- Single Sign-On (SSO) with Okta, Google, Azure AD, and more  
+- Group sync and custom user roles  
+- Audit logs and compliance tooling  
 
-Creation and management of multiple environments for efficient application lifecycle management, allowing different stages like development, testing, and production to be handled seamlessly.
-<img className="screenshot-full img-full" src="/img/platform-overview/multi-environment.png" alt="SSO Support" />
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/security-and-access-control.png" alt="Platform Overview - Access Control" />
 
-### Multiplayer Editing
+### Deployment  
+Ship with confidence using integrated lifecycle management:  
+- GitSync & CI/CD for versioning and automated deployments  
+- Multi-environment Management to isolate dev, staging, and production  
+- Embedded Apps for securely embedding ToolJet applications inside other portals or dashboards
 
-Multiple users can collaboratively work on app development in real-time. Simultaneous edits and contributions from different team members streamlines the development process and fosters a more dynamic and interactive workspace
-<img className="screenshot-full img-full" src="/img/platform-overview/multiplayer.png" alt="Multiplayer Editing" />
+### Collaboration  
+Work together in real time with multiplayer editing, inline comments, and live presence indicators.  
 
-Whether you're a seasoned developer or a business professional, ToolJet stands out as a comprehensive solution to fast-track your internal tool development process. 
+<img  className="img-full screenshot-full" src="/img/platform-overview/v2/multiplayer.png" alt="Platform Overview - Multiplayer Editing" />
+
+<br/>
+<br/>
+
+Whether you are a developer or a business user, ToolJet helps you build faster, from AI-generated applications to agent-driven workflows and automation. It combines the power of AI with visual building, making it the leading AI-native platform for apps and agents.  
