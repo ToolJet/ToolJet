@@ -311,7 +311,7 @@ describe("PostgreSQL data source connection and query", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-string-pgsql`);
   });
-  it("Should verify elements of the Query section.", () => {
+  it("Should verify elements of the Query section", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-manual-pgsql`,
@@ -461,7 +461,7 @@ describe("PostgreSQL data source connection and query", () => {
     cy.apiDeleteApp(`${fake.companyName}-postgresql`);
     cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
   });
-  it("Should verify CRUD operations on SQL Query.", () => {
+  it("Should verify CRUD operations on SQL Query", () => {
     const dsName = `cypress-${data.dataSourceName}-crud-pgsql`;
     const dsKind = "postgresql";
     cy.apiCreateGDS(
@@ -682,7 +682,7 @@ describe("PostgreSQL data source connection and query", () => {
     cy.apiDeleteApp(`${fake.companyName}-postgresql-CURD-App`);
     cy.apiDeleteGDS(dsName);
   });
-  it("Should verify bulk update operation ", () => {
+  it("Should verify bulk update operation", () => {
     const dsName = `cypress-${data.dataSourceName}-bulk-pgsql`;
     const dsKind = "postgresql";
     cy.apiCreateGDS(
