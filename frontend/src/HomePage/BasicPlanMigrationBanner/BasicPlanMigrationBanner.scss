@@ -28,6 +28,17 @@
       }
     }
 
+    .banner-link-date {
+      color: var(--text-warning);
+      font-weight: 500;
+
+      &:hover {
+        color: var(--indigo-100);
+      }
+    }
+
+
+
     div[type="button"] {
       margin-left: auto;
     }

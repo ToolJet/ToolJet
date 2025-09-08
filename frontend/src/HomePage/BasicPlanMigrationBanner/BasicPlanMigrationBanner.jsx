@@ -7,8 +7,8 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
     <div className={`${darkMode ? 'theme-dark dark-theme' : ''} basic-plan-migration-banner`}>
       <div style={{ marginLeft: 'auto' }}>
         <p className="banner-text">
-          We will be updating our pricing plan for our AI features on.
-          <span className="banner-link">21st September ‘25</span> To know more{' '}
+          We will be updating our pricing plan for our AI features on{' '}
+          <span className="banner-link-date">22nd September ‘25.</span> To know more{' '}
           <a
             href="https://docs.tooljet.ai/docs/build-with-ai/ai-credits"
             className="banner-link"
@@ -19,7 +19,7 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
           </a>{' '}
           or{' '}
           <a href="mailto:hello@tooljet.com" className="banner-link" target="_blank" rel="noopener noreferrer">
-            contact us
+            contact us.
           </a>
         </p>
       </div>
