@@ -1,0 +1,289 @@
+export const popoverMenuConfig = {
+    name: 'PopoverMenu',
+    displayName: 'Popover Menu',
+    description: 'Popover Menu',
+    component: 'PopoverMenu',
+    defaultSize: {
+        width: 6,
+        height: 40,
+    },
+    others: {
+        showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+        showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+        label: {
+            type: 'code',
+            displayName: 'Button label',
+            validation: { schema: { type: 'string' }, defaultValue: 'Menu' },
+            accordian: 'Menu',
+        },
+        buttonType: {
+            type: 'switch',
+            displayName: 'Button type',
+            validation: { schema: { type: 'string' } },
+            options: [
+                { displayName: 'Primary', value: 'primary' },
+                { displayName: 'Outline', value: 'outline' },
+            ],
+            accordian: 'Menu',
+        },
+        trigger: {
+            type: 'switch',
+            displayName: 'Show menu',
+            validation: { schema: { type: 'string' } },
+            options: [
+                { displayName: 'On hover', value: 'hover' },
+                { displayName: 'On click', value: 'click' },
+
+            ],
+            accordian: 'Menu',
+        },
+        advanced: {
+            type: 'toggle',
+            displayName: 'Dynamic options',
+            validation: {
+                schema: { type: 'boolean' },
+            },
+            accordian: 'Options',
+        },
+        schema: {
+            type: 'code',
+            displayName: 'Schema',
+            conditionallyRender: {
+                key: 'advanced',
+                value: true,
+            },
+            accordian: 'Options',
+        },
+        optionsLoadingState: {
+            type: 'toggle',
+            displayName: 'Options loading state',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            accordian: 'Options',
+            conditionallyRender: {
+                key: 'advanced',
+                value: true,
+            },
+        },
+        loadingState: {
+            type: 'toggle',
+            displayName: 'Loading state',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            section: 'additionalActions',
+        },
+        visibility: {
+            type: 'toggle',
+            displayName: 'Visibility',
+            validation: { schema: { type: 'boolean' }, defaultValue: true },
+            section: 'additionalActions',
+        },
+        disabledState: {
+            type: 'toggle',
+            displayName: 'Disable',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            section: 'additionalActions',
+        },
+        tooltip: {
+            type: 'code',
+            displayName: 'Tooltip',
+            validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+            section: 'additionalActions',
+            placeholder: 'Enter tooltip text',
+        },
+    },
+    events: {
+        onSelect: { displayName: 'On select' },
+    },
+    styles: {
+        backgroundColor: {
+            type: 'colorSwatches',
+            displayName: 'Background',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            conditionallyRender: {
+                key: 'buttonType',
+                value: 'primary',
+            },
+            accordian: 'Menu',
+        },
+        textColor: {
+            type: 'colorSwatches',
+            displayName: 'Text',
+            validation: {
+                schema: { type: 'string' },
+                defaultValue: '#FFFFFF',
+            },
+            accordian: 'Menu',
+        },
+        borderColor: {
+            type: 'colorSwatches',
+            displayName: 'Border',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            accordian: 'Menu',
+        },
+        loaderColor: {
+            type: 'colorSwatches',
+            displayName: 'Loader',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+            accordian: 'Menu',
+        },
+        icon: {
+            type: 'icon',
+            displayName: 'Icon',
+            validation: { schema: { type: 'string' } },
+            accordian: 'Menu',
+            visibility: false,
+        },
+        iconColor: {
+            type: 'colorSwatches',
+            displayName: 'Icon color',
+            validation: { schema: { type: 'string' } },
+            accordian: 'Menu',
+            visibility: false,
+        },
+        direction: {
+            type: 'switch',
+            displayName: '',
+            validation: { schema: { type: 'string' } },
+            showLabel: false,
+            isIcon: true,
+            options: [
+                { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+                { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+            ],
+            accordian: 'Menu',
+        },
+        borderRadius: {
+            type: 'numberInput',
+            displayName: 'Border radius',
+            validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+            accordian: 'Menu',
+        },
+        boxShadow: {
+            type: 'boxShadow',
+            displayName: 'Box Shadow',
+            validation: {
+                schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                defaultValue: '0px 0px 0px 0px #00000040',
+            },
+            conditionallyRender: {
+                key: 'buttonType',
+                value: 'primary',
+            },
+            accordian: 'Menu',
+        },
+
+        optionsTextColor: {
+            type: 'colorSwatches',
+            displayName: 'Label',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+            accordian: 'Options',
+        },
+        optionsIconColor: {
+            type: 'colorSwatches',
+            displayName: 'Icon color',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
+            visibility: false,
+            accordian: 'Options',
+        },
+        optionsDescriptionColor: {
+            type: 'colorSwatches',
+            displayName: 'Description',
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+            accordian: 'Options',
+        },
+    },
+    exposedVariables: {
+        isVisible: true,
+        isDisabled: false,
+        isLoading: false,
+    },
+    actions: [
+        {
+            handle: 'setDisable',
+            displayName: 'Set disable',
+            params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        },
+        {
+            handle: 'setLoading',
+            displayName: 'Set loading',
+            params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        },
+        {
+            handle: 'setVisibility',
+            displayName: 'Set visibility',
+            params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        }
+    ],
+    definition: {
+        others: {
+            showOnDesktop: { value: '{{true}}' },
+            showOnMobile: { value: '{{false}}' },
+        },
+        properties: {
+            label: { value: 'Menu' },
+            buttonType: { value: 'primary' },
+            trigger: { value: 'click' },
+            advanced: { value: '{{false}}' },
+            schema: {
+                value:
+                    '{{[{"label":"option1","description":"","value":"1","icon":"IconBolt", "iconVisibility":false, "disable":false,"visible":true},{"label":"option2","description":"","value":"2","icon":"IconBulb", "iconVisibility":false, "disable":false,"visible":true},{"label":"option3","description":"","value":"3","icon":"IconTag", "iconVisibility":false, "disable":false,"visible":true}]}}',
+            },
+            options: {
+                value: [
+                    {
+                        format: 'plain',
+                        label: 'option1',
+                        description: '',
+                        value: '1',
+                        icon: { value: 'IconBolt' },
+                        iconVisibility: false,
+                        disable: { value: false },
+                        visible: { value: true },
+                    },
+                    {
+                        format: 'plain',
+                        label: 'option2',
+                        description: '',
+                        value: '2',
+                        icon: { value: 'IconBulb' },
+                        iconVisibility: false,
+                        disable: { value: false },
+                        visible: { value: true },
+                    },
+                    {
+                        format: 'plain',
+                        label: 'option3',
+                        description: '',
+                        value: '3',
+                        icon: { value: 'IconTag' },
+                        iconVisibility: false,
+                        disable: { value: false },
+                        visible: { value: true },
+                    },
+                ],
+            },
+            optionsLoadingState: { value: '{{false}}' },
+            visibility: { value: '{{true}}' },
+            disabledState: { value: '{{false}}' },
+            loadingState: { value: '{{false}}' },
+            tooltip: { value: '' },
+        },
+        events: [],
+        styles: {
+            backgroundColor: { value: 'var(--cc-primary-brand)' },
+            textColor: { value: '#FFFFFF' },
+            borderColor: { value: 'var(--cc-primary-brand)' },
+            loaderColor: { value: 'var(--cc-surface1-surface)' },
+            icon: { value: 'IconMenu2' },
+            iconVisibility: { value: '{{true}}' },
+            iconColor: { value: '#FFFFFF' },
+            direction: { value: 'left' },
+            borderRadius: { value: '6' },
+            boxShadow: { value: '0px 0px 0px 0px #00000040' },
+            optionsTextColor: { value: 'var(--cc-primary-text)' },
+            optionsIconColor: { value: 'var(--cc-default-icon)' },
+            optionsDescriptionColor: { value: 'var(--cc-placeholder-text)' },
+        },
+    },
+};
