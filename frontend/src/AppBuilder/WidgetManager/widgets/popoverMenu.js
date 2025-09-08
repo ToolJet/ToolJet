@@ -61,10 +61,14 @@ export const popoverMenuConfig = {
             displayName: 'Options loading state',
             validation: { schema: { type: 'boolean' }, defaultValue: false },
             accordian: 'Options',
+            conditionallyRender: {
+                key: 'advanced',
+                value: true,
+            },
         },
         loadingState: {
             type: 'toggle',
-            displayName: 'Menu button loading state',
+            displayName: 'Loading state',
             validation: { schema: { type: 'boolean' }, defaultValue: false },
             section: 'additionalActions',
         },
@@ -119,7 +123,7 @@ export const popoverMenuConfig = {
         },
         loaderColor: {
             type: 'colorSwatches',
-            displayName: 'Loader color',
+            displayName: 'Loader',
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
             accordian: 'Menu',
         },
@@ -171,13 +175,13 @@ export const popoverMenuConfig = {
 
         optionsTextColor: {
             type: 'colorSwatches',
-            displayName: 'Text',
+            displayName: 'Label',
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
             accordian: 'Options',
         },
         optionsIconColor: {
             type: 'colorSwatches',
-            displayName: 'Icon',
+            displayName: 'Icon color',
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
             visibility: false,
             accordian: 'Options',
@@ -209,12 +213,7 @@ export const popoverMenuConfig = {
             handle: 'setVisibility',
             displayName: 'Set visibility',
             params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-        },
-        {
-            handle: 'setOptions',
-            displayName: 'Set options',
-            params: [{ handle: 'options', displayName: 'Value', defaultValue: '{{[]}}', type: 'array' }],
-        },
+        }
     ],
     definition: {
         others: {
