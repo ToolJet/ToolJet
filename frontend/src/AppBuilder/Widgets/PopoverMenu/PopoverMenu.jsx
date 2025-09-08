@@ -101,7 +101,6 @@ export const PopoverMenu = function PopoverMenu(props) {
       dep: optionsLoadingState,
       sideEffect: () => {
         updateExposedVariablesState('areOptionsLoading', optionsLoadingState);
-        setExposedVariable('areOptionsLoading', optionsLoadingState);
       },
     },
     {
