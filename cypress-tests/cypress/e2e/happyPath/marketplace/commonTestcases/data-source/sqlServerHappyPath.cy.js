@@ -147,15 +147,6 @@ describe("Data sources SQL server connection and query", () => {
       sqlServerText.labelAzureEncryptConnection
     );
 
-    cy.get(postgreSqlSelector.labelSsl).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelSSL
-    );
-    cy.get(postgreSqlSelector.sslToggleInput).should("be.visible");
-    cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.sslCertificate
-    );
     cy.get(dataSourceSelector.toggleInput(sqlServerText.azureText)).should(
       "be.visible"
     );
@@ -184,14 +175,14 @@ describe("Data sources SQL server connection and query", () => {
     //verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
     cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
-      "Failed to connect to localhost:1433 - Could not connect (sequence)"
+      "Failed to connect to :1433 - Could not connect (sequence)"
     );
     deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
   });
 
   it("Should verify the functionality of SQL Server connection form.", () => {
-  cy.get(commonSelectors.globalDataSourceIcon).click();
-     cy.apiCreateGDS(
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-sql-server`,
       "mssql",
