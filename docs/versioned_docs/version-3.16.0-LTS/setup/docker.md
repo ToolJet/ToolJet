@@ -19,6 +19,14 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 
 ::::
 
+### Provisioning VMs with Terraform (Optional)
+
+If you don’t already have a server, you can use Terraform scripts to quickly spin up a VM on AWS or Azure VM and then deploy ToolJet with Docker.
+
+⚙️ Deploy on [AWS EC2](https://github.com/ToolJet/ToolJet/tree/develop/terraform/EC2)
+
+⚙️ Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
+
 ### Installing Docker and Docker Compose
 
 Install docker and docker-compose on the server.
