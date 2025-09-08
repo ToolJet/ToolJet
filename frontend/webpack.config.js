@@ -120,11 +120,6 @@ module.exports = {
       '@cloud': path.resolve(__dirname, 'cloud/'),
       '@assets': path.resolve(__dirname, 'assets/'),
       '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
-      '@icons/material/UnfoldMoreHorizontalIcon': path.resolve(
-        __dirname,
-        'src/vendor/icons/material/UnfoldMoreHorizontalIcon.jsx'
-      ),
-      '@icons/material/CheckIcon': path.resolve(__dirname, 'src/vendor/icons/material/CheckIcon.jsx'),
     },
     fallback: {
       process: require.resolve('process/browser.js'),
