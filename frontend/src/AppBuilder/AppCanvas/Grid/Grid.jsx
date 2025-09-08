@@ -949,9 +949,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           try {
             if (isDraggingRef.current) {
-              setTimeout(() => {
-                useStore.getState().setRightSidebarOpen(true);
-              }, 100);
+              // setTimeout(() => {
+              //   useStore.getState().setRightSidebarOpen(true);
+              // }, 100);
 
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
