@@ -9,7 +9,8 @@ import {
   discoverServicesUsingProtoFile,
   loadProtoFromRemoteUrl,
   buildRequestMetadata,
-  extractServicesFromGrpcPackage
+  extractServicesFromGrpcPackage,
+  createUnifiedCallOptions
 } from './operations';
 import { PackageDefinition } from '@grpc/proto-loader';
 
@@ -29,7 +30,7 @@ export default class Grpcv2QueryService implements QueryService {
       this.validateRequestData(queryOptions);
       this.validateMethodExists(client, queryOptions);
 
-      const response = await this.executeGrpcCall(client, queryOptions, metadata);
+      const response = await this.executeGrpcCall(client, queryOptions, sourceOptions, metadata);
 
       return {
         status: 'ok',
@@ -212,7 +213,7 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, metadata: grpc.Metadata): Promise<Record<string, unknown>> {
+  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, sourceOptions: SourceOptions, metadata: grpc.Metadata): Promise<Record<string, unknown>> {
     return new Promise<Record<string, unknown>>((resolve, reject) => {
       const methodFunction = client[queryOptions.method];
 
@@ -230,23 +231,59 @@ export default class Grpcv2QueryService implements QueryService {
 
       try {
         const message = this.parseMessage(queryOptions.raw_message);
-        methodFunction.call(
-          client,
-          message,
-          metadata,
-          (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
-            clearTimeout(timeoutId);
 
-            if (error) {
-              reject(new GrpcOperationError(
-                `gRPC call failed: ${error.message}`,
-                error
-              ));
-            } else {
-              resolve(response || {});
-            }
+        // For TLS connections, auth is already handled at channel level via combineChannelCredentials
+        // For non-TLS connections, use per-call CallOptions approach
+        if (!sourceOptions.ssl_enabled) {
+          const callOptions = createUnifiedCallOptions(sourceOptions);
+          
+          if (Object.keys(callOptions).length > 0) {
+            // Add query-level metadata if present
+            const finalOptions = {
+              ...callOptions,
+              ...(metadata && Object.keys(metadata.getMap()).length > 0 ? { metadata } : {})
+            };
+
+            methodFunction.call(
+              client,
+              message,
+              finalOptions,
+              (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
+                clearTimeout(timeoutId);
+
+                if (error) {
+                  reject(new GrpcOperationError(
+                    `gRPC call failed: ${error.message}`,
+                    error
+                  ));
+                } else {
+                  resolve(response || {});
+                }
+              }
+            );
+            return; // Early return to avoid fall-through
           }
-        );
+        }
+        
+        // For TLS connections or no metadata: use regular query metadata only
+        // (TLS auth is handled at channel level, non-TLS has no metadata)
+          methodFunction.call(
+            client,
+            message,
+            metadata,
+            (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
+              clearTimeout(timeoutId);
+
+              if (error) {
+                reject(new GrpcOperationError(
+                  `gRPC call failed: ${error.message}`,
+                  error
+                ));
+              } else {
+                resolve(response || {});
+              }
+            }
+          );
       } catch (syncError) {
         clearTimeout(timeoutId);
         reject(new GrpcOperationError(

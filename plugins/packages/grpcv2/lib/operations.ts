@@ -141,7 +141,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const callOptions = {};
+    const callOptions = createUnifiedCallOptions(sourceOptions);
     const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
@@ -152,7 +152,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
 
     for (const serviceName of serviceNames) {
       try {
-        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, {});
+        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, callOptions);
 
         const grpcMethods: GrpcMethod[] = methods.map((methodInfo: ListMethodsType) => {
           if (!methodInfo || typeof methodInfo.name !== 'string') {
@@ -355,6 +355,65 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 };
 
 
+export const createUnifiedCallOptions = (sourceOptions: SourceOptions): grpc.CallOptions => {
+  const unifiedMetadata = new grpc.Metadata();
+  const sanitizedMetadata = sanitizeMetadata(sourceOptions, {}, true);
+
+  // 1. Add datasource metadata 
+  if (sourceOptions.metadata && sourceOptions.metadata.length > 0) {
+    Object.entries(sanitizedMetadata).forEach(([key, value]) => {
+      if (key && value) {
+        unifiedMetadata.set(key, String(value));
+      }
+    });
+  }
+
+  // 2. Add auth metadata based on auth_type
+  switch (sourceOptions.auth_type) {
+    case 'api_key':
+      if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
+        unifiedMetadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
+      }
+      break;
+
+    case 'bearer':
+      if (sourceOptions.bearer_token) {
+        unifiedMetadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
+      }
+      break;
+
+    case 'basic':
+      if (sourceOptions.username && sourceOptions.password) {
+        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
+        unifiedMetadata.set('authorization', `Basic ${credentials}`);
+      }
+      break;
+
+    case 'oauth2':
+      if (sanitizedMetadata?.access_token) {
+        if (sourceOptions.add_token_to === 'header') {
+          const prefix = sourceOptions.header_prefix || 'Bearer ';
+          unifiedMetadata.set('authorization', `${prefix}${sanitizedMetadata.access_token}`);
+        } else {
+          unifiedMetadata.set('token', sanitizedMetadata.access_token);
+        }
+      }
+      break;
+  }
+
+  // 3. Return unified CallCredentials for reliable transport (works without TLS)
+  const metadataMap = unifiedMetadata.getMap();
+  if (metadataMap && Object.keys(metadataMap).length > 0) {
+    return {
+      credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
+        callback(null, unifiedMetadata);
+      })
+    };
+  }
+
+  return {};
+};
+
 const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: Partial<QueryOptions>, hasDataSource = true): { [k: string]: string } => {
   const ensureArrayFormat = (metadata: any) => {
     if (!metadata) return [];
@@ -378,59 +437,20 @@ const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: Partial<Qu
 
 export const buildClientCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
   const channelCredentials = createGrpcCredentials(sourceOptions);
-  const authMetadata = new grpc.Metadata();
-  const sanitizedMetadata = sanitizeMetadata(sourceOptions, {}, true);
 
-  // Add authentication data to call credentials
-  switch (sourceOptions.auth_type) {
-    case 'api_key':
-      if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
-        authMetadata.add(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
-      }
-      break;
-
-    case 'bearer':
-      if (sourceOptions.bearer_token) {
-        authMetadata.add('authorization', `Bearer ${sourceOptions.bearer_token}`);
-      }
-      break;
-
-    case 'basic':
-      if (sourceOptions.username && sourceOptions.password) {
-        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        authMetadata.add('authorization', `Basic ${credentials}`);
-      }
-      break;
-
-    case 'oauth2':
-      if (sanitizedMetadata?.access_token) {
-        if (sourceOptions.add_token_to === 'header') {
-          const prefix = sourceOptions.header_prefix || 'Bearer ';
-          authMetadata.add('authorization', `${prefix}${sanitizedMetadata.access_token}`);
-        } else {
-          authMetadata.add('token', sanitizedMetadata.access_token);
-        }
-      }
-      break;
+  // For TLS connections with metadata, use secure combineChannelCredentials approach
+  if (sourceOptions.ssl_enabled) {
+    const callOptions = createUnifiedCallOptions(sourceOptions);
+    if (callOptions.credentials) {
+      return grpc.credentials.combineChannelCredentials(
+        channelCredentials,
+        callOptions.credentials
+      );
+    }
   }
 
-  // Check if we have auth metadata to combine
-  const authEntries = authMetadata.getMap ? Object.keys(authMetadata.getMap()) : [];
-  const hasAuthMetadata = authEntries.length > 0;
-
-  if (hasAuthMetadata) {
-    // Create call credentials from auth metadata
-    const callCredentials = grpc.credentials.createFromMetadataGenerator(
-      (params, callback) => callback(null, authMetadata)
-    );
-
-    // Combine channel and call credentials
-    return grpc.credentials.combineChannelCredentials(
-      channelCredentials,
-      callCredentials
-    );
-  }
-
+  // For non-TLS connections, return only channel credentials
+  // Metadata will be handled per-call via createUnifiedCallOptions
   return channelCredentials;
 };
 
