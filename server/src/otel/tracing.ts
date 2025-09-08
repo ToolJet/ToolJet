@@ -1,5 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api';
+import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -17,10 +17,18 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMATTRS_DB_STATEMENT,
+  SEMATTRS_DB_OPERATION,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_SQL_TABLE,
 } from '@opentelemetry/semantic-conventions';
 
 const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
 const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
+
+// Database monitoring configuration
+const DB_SLOW_QUERY_THRESHOLD = parseInt(process.env.DB_SLOW_QUERY_THRESHOLD || '1000'); // ms
+const DB_ENABLE_QUERY_ANALYSIS = process.env.DB_ENABLE_QUERY_ANALYSIS !== 'false';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -62,6 +70,57 @@ const sanitizeObject = (obj: any) => {
   return sanitized;
 };
 
+// Database query analysis utilities
+const extractTableNames = (query: string): string[] => {
+  const normalizedQuery = query.toLowerCase().replace(/\s+/g, ' ').trim();
+  const tables: Set<string> = new Set();
+  
+  // Match common SQL patterns
+  const patterns = [
+    /from\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+    /join\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+    /update\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+    /insert\s+into\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+    /delete\s+from\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+  ];
+  
+  patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(normalizedQuery)) !== null) {
+      if (match[1] && !match[1].includes('(')) {
+        tables.add(match[1]);
+      }
+    }
+  });
+  
+  return Array.from(tables);
+};
+
+const getQueryOperation = (query: string): string => {
+  const normalizedQuery = query.toLowerCase().trim();
+  if (normalizedQuery.startsWith('select')) return 'SELECT';
+  if (normalizedQuery.startsWith('insert')) return 'INSERT';
+  if (normalizedQuery.startsWith('update')) return 'UPDATE';
+  if (normalizedQuery.startsWith('delete')) return 'DELETE';
+  if (normalizedQuery.startsWith('create')) return 'CREATE';
+  if (normalizedQuery.startsWith('drop')) return 'DROP';
+  if (normalizedQuery.startsWith('alter')) return 'ALTER';
+  return 'OTHER';
+};
+
+const isSlowQuery = (duration: number): boolean => {
+  return duration >= DB_SLOW_QUERY_THRESHOLD;
+};
+
+// Initialize custom metrics
+let dbQueryDurationHistogram: any;
+let dbSlowQueryCounter: any;
+let dbConnectionPoolGauge: any;
+let dbQueryCounter: any;
+
+// Store request information for response processing
+const spanRequestMap = new Map<string, any>();
+
 export const sdk = new NodeSDK({
   resource: resource,
   traceExporter: traceExporter,
@@ -100,7 +159,102 @@ export const sdk = new NodeSDK({
       },
     }),
     new NestInstrumentation(),
-    new PgInstrumentation({ enhancedDatabaseReporting: true }),
+    new PgInstrumentation({ 
+      enhancedDatabaseReporting: true,
+      requestHook: (span: Span, requestInfo: any) => {
+        if (DB_ENABLE_QUERY_ANALYSIS && requestInfo.query) {
+          const query = requestInfo.query;
+          const startTime = Date.now();
+          
+          // Store request info for response hook using span context
+          const spanContext = span.spanContext();
+          spanRequestMap.set(spanContext.spanId, {
+            startTime,
+            query,
+            connectionParameters: requestInfo.connectionParameters
+          });
+          
+          // Extract query operation and table names
+          const operation = getQueryOperation(query);
+          const tables = extractTableNames(query);
+          
+          // Add custom attributes
+          span.setAttribute(SEMATTRS_DB_OPERATION, operation);
+          span.setAttribute('db.query.tables', tables.join(','));
+          span.setAttribute('db.query.length', query.length);
+          span.setAttribute('db.query.start_time', startTime);
+          
+          // Sanitize and add query statement (limit length for performance)
+          const sanitizedQuery = query.length > 1000 
+            ? query.substring(0, 1000) + '...[truncated]'
+            : query;
+          span.setAttribute(SEMATTRS_DB_STATEMENT, sanitizedQuery);
+          
+          // Add connection info
+          if (requestInfo.connectionParameters) {
+            span.setAttribute('db.connection.host', requestInfo.connectionParameters.host || 'unknown');
+            span.setAttribute('db.connection.port', requestInfo.connectionParameters.port || 5432);
+            span.setAttribute('db.connection.database', requestInfo.connectionParameters.database || 'unknown');
+          }
+        }
+      },
+      responseHook: (span: Span, responseInfo: any) => {
+        if (DB_ENABLE_QUERY_ANALYSIS) {
+          const spanContext = span.spanContext();
+          const storedInfo = spanRequestMap.get(spanContext.spanId);
+          
+          if (storedInfo) {
+            const endTime = Date.now();
+            const startTime = storedInfo.startTime;
+            const duration = endTime - startTime;
+            
+            // Add response metadata
+            span.setAttribute('db.query.duration_ms', duration);
+            span.setAttribute('db.query.end_time', endTime);
+            
+            if (responseInfo.data && responseInfo.data.rowCount !== undefined) {
+              span.setAttribute('db.query.rows_affected', responseInfo.data.rowCount);
+            }
+            
+            // Mark slow queries
+            if (isSlowQuery(duration)) {
+              span.setAttribute('db.query.is_slow', true);
+              span.setAttribute('db.query.slow_threshold_ms', DB_SLOW_QUERY_THRESHOLD);
+              
+              // Record slow query metric
+              if (dbSlowQueryCounter) {
+                const operation = getQueryOperation(storedInfo.query);
+                dbSlowQueryCounter.add(1, {
+                  operation: operation.toLowerCase(),
+                  database: storedInfo.connectionParameters?.database || 'unknown'
+                });
+              }
+            }
+            
+            // Record query duration histogram
+            if (dbQueryDurationHistogram) {
+              const operation = getQueryOperation(storedInfo.query);
+              dbQueryDurationHistogram.record(duration, {
+                operation: operation.toLowerCase(),
+                database: storedInfo.connectionParameters?.database || 'unknown'
+              });
+            }
+            
+            // Record query counter
+            if (dbQueryCounter) {
+              const operation = getQueryOperation(storedInfo.query);
+              dbQueryCounter.add(1, {
+                operation: operation.toLowerCase(),
+                database: storedInfo.connectionParameters?.database || 'unknown'
+              });
+            }
+            
+            // Clean up stored info to prevent memory leaks
+            spanRequestMap.delete(spanContext.spanId);
+          }
+        }
+      }
+    }),
     new PinoInstrumentation(),
   ],
 });
@@ -144,7 +298,27 @@ process.on('SIGTERM', () => {
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
     await sdk.start();
-    console.log('OpenTelemetry instrumentation initializated');
+    
+    // Initialize custom database metrics
+    const meter = metrics.getMeter('tooljet-database', '1.0.0');
+    
+    dbQueryDurationHistogram = meter.createHistogram('db_query_duration_ms', {
+      description: 'Database query execution duration in milliseconds',
+    });
+    
+    dbSlowQueryCounter = meter.createCounter('db_slow_queries_total', {
+      description: 'Total number of slow database queries',
+    });
+    
+    dbQueryCounter = meter.createCounter('db_queries_total', {
+      description: 'Total number of database queries',
+    });
+    
+    dbConnectionPoolGauge = meter.createObservableGauge('db_connection_pool_usage', {
+      description: 'Database connection pool usage statistics',
+    });
+    
+    console.log('OpenTelemetry instrumentation initialized with enhanced database monitoring');
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
