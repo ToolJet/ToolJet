@@ -368,7 +368,7 @@ const ApiEndpointInput = (props) => {
       {options && !loadingSpec && (
         <div>
           <div className="d-flex g-2">
-            <div className="col-12 form-label">
+            <div className="col-3 form-label">
               <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
             </div>
             <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
