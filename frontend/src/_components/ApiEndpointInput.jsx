@@ -150,6 +150,7 @@ const ApiEndpointInput = (props) => {
       operation,
       selectedOperation: specJson.paths[path][operation],
       params: savedParams,
+      ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
 
     setOptions(newOptions);
@@ -186,6 +187,9 @@ const ApiEndpointInput = (props) => {
 
     newParams[paramType] = newParamType;
     newOptions.params = newParams;
+    if (isMultiSpec) {
+      newOptions.specType = selectedSpecType; // Include specType if multiSpec
+    }
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -578,7 +582,9 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">
                 {paramDetails(param)}
-                <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
+                <div className="col field overflow-hidden code-hinter-borderless" style={{
+                  width: "min-content",
+                }}>{inputField(param)}</div>
                 {((type === 'request' && options['params'][type][param]) || options['params'][type][param?.name]) &&
                   clearButton(param)}
               </div>
