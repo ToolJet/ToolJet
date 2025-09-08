@@ -129,7 +129,7 @@ export const CustomOptions = (props) => {
   return (
     <div
       data-cy="popover-menu-options-listbox"
-      style={{ width: '100%', maxHeight: '400px', overflowY: 'auto' }}
+      style={{ width: '100%', maxHeight: '323px', overflowY: 'auto' }}
       role="listbox"
       aria-label="Menu options"
       aria-expanded={exposedVariablesTemporaryState.showPopover}
