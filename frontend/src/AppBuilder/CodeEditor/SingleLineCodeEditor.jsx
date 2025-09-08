@@ -50,7 +50,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
-
   const customVariables = customResolvables?.[parentId]?.[0] || {};
 
   useEffect(() => {
@@ -541,6 +540,7 @@ const DynamicEditorBridge = (props) => {
     onVisibilityChange,
     isEventManagerParam = false,
     iconVisibility,
+    componentId,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -652,6 +652,7 @@ const DynamicEditorBridge = (props) => {
         component={component}
         onVisibilityChange={onVisibilityChange}
         iconVisibility={iconVisibility}
+        componentId={componentId}
       />
     );
   };
