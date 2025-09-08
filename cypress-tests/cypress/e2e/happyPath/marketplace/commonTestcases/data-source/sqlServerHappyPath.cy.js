@@ -3,7 +3,11 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
+import {
+  deleteDatasource,
+  closeDSModal,
+  verifyCouldnotConnectWithAlert,
+} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { sqlServerSelector } from "Selectors/sqlServer";
 import { sqlServerText } from "Texts/sqlServer";
@@ -180,74 +184,107 @@ describe("Data sources SQL server connection and query", () => {
     deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
   });
 
-  it("Should verify the functionality of SQL Server connection form.", () => {
+  it("Should verify the functionality of SQL Server connection form", () => {
+    const dsName = `cypress-${data.dataSourceName}-sql-server`;
     cy.get(commonSelectors.globalDataSourceIcon).click();
+    //invalid database
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-sql-server`,
+      dsName,
       "mssql",
       [
-        { key: "host", value: "localhost" },
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
         { key: "instanceName", value: "" },
         { key: "port", value: 1433 },
-        { key: "database", value: "" },
-        { key: "username", value: "" },
-        { key: "password", value: "", encrypted: true },
+        { key: "database", value: "unknowndb" },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        {
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
+          encrypted: true,
+        },
         { key: "azure", value: false, encrypted: false },
       ]
     );
-    selectAndAddDataSource("databases", "SQL Server", data.dataSourceName);
-
-    fillDataSourceTextField(
-      postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
-      Cypress.env("sqlserver_host")
-    );
-    // fillDataSourceTextField(
-    //   "Instance",
-    //   "Enter the name of the database instance",
-    //   Cypress.env("sqlserver_instance")
-    // );
-    fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "1433"
-    );
-    fillDataSourceTextField(
-      "Database Name",
-      postgreSqlText.placeholderNameOfDB,
-      Cypress.env("sqlserver_db")
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      Cypress.env("sqlserver_user")
-    );
-
-    fillDataSourceTextField(
-      postgreSqlText.labelPassword,
-      "**************",
-      Cypress.env("sqlserver_password")
-    );
-
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'sa'.");
+
+    //invalid username
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: "admin1" },
+        {
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
+          encrypted: true,
+        },
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'admin1'.");
+
+    //invalid password
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        { key: "password", value: "testpassword", encrypted: true },
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'sa'.");
+
+    //valid data
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        {
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
+          encrypted: true,
+        },
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.get(postgreSqlSelector.buttonSave).click();
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      postgreSqlText.toastDSSaved
-    );
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-sql-server-button"]`
-    ).verifyVisibleElement(
-      "have.text",
-      `cypress-${data.dataSourceName}-sql-server`
-    );
-    deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
+    cy.apiDeleteGDS(dsName);
   });
 });
