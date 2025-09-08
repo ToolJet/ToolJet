@@ -8943,7 +8943,7 @@ tbody {
       margin: 2rem 1rem;
     }
 
-   .footer-container {
+    .footer-container {
       position: absolute;
       width: 100%;
       bottom: 0px;
@@ -17840,7 +17840,7 @@ section.ai-message-prompt-input-wrapper {
 
 .tooljet-copilot {
   width: 100%;
-  padding: 8px 16px !important;
+  padding: 1rem;
 
   header {
     display: flex;
@@ -17958,44 +17958,6 @@ section.ai-message-prompt-input-wrapper {
       padding: 8px 16px;
     }
 
-  }
-
-  footer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    button {
-      border: none;
-      outline: none;
-      padding: 6px 7px;
-      color: var(--text-default, #1B1F24);
-      background: transparent;
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 5px 10px;
-      gap: 6px;
-      color: var(--text-default, #1B1F24);
-
-      /* base/medium */
-      font-family: "IBM Plex Sans";
-      font-size: 12px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 18px;
-      border-radius: 6px;
-      border: 1px solid var(--border-weak, #E4E7EB);
-      background: var(--button-secondary, #FFF);
-
-      /* Elevations/100 */
-      box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
-
-      /* 150% */
-      &:hover {
-        background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-      }
-    }
   }
 
   &.dark-theme {
