@@ -5,6 +5,7 @@ import * as Icons from '@tabler/icons-react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import './tags.scss';
 
 export const Tags = function Tags({
   width,
