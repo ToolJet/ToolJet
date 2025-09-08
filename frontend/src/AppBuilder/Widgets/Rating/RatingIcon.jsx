@@ -3,11 +3,7 @@ import { animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import StarSvg from './icons/star';
-import HalfStarSvg from './icons/half-star';
-import EmptyStarSvg from './icons/star-empty';
-import HalfHeartSvg from './icons/half-heart';
 import HeartSvg from './icons/heart';
-import HeartEmptySvg from './icons/heart-empty';
 import classNames from 'classnames';
 /**
  1. on hover show filled icon
@@ -39,16 +35,12 @@ const RatingIcon = ({
   const star = iconType === 'hearts' ? <HeartSvg fill={color} /> : <StarSvg fill={color} />;
   const halfIcon =
     iconType === 'hearts' ? (
-      <HalfHeartSvg fill={color} unselected={unselectedBackground} />
+      <HeartSvg fill={color} unselected={unselectedBackground} isHalf={true} />
     ) : (
-      <HalfStarSvg fill={color} unselected={unselectedBackground} />
+      <StarSvg fill={color} unselected={unselectedBackground} isHalf={true} />
     );
   const emptyIcon =
-    iconType === 'hearts' ? (
-      <HeartEmptySvg fill={unselectedBackground} />
-    ) : (
-      <EmptyStarSvg fill={unselectedBackground} />
-    );
+    iconType === 'hearts' ? <HeartSvg fill={unselectedBackground} /> : <StarSvg fill={unselectedBackground} />;
 
   const [icon, setIcon] = React.useState(star);
   const [outlineIcon, setOutlineIcon] = React.useState(emptyIcon);

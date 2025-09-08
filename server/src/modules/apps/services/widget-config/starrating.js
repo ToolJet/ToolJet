@@ -349,7 +349,7 @@ export const starratingConfig = {
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },
       selectedBackgroundHearts: { value: '#EFB82D' },
-      unselectedBackground: { value: 'var(--cc-default-icon)' },
+      unselectedBackground: { value: 'var(--cc-surface3-surface)' },
     },
   },
 };

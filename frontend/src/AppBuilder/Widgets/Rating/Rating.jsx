@@ -305,7 +305,7 @@ export const Rating = ({
         _width={_width}
         widthType={widthType}
         id={`${ratingId}-label`}
-        top={alignment !== 'top' && '3px'}
+        top={alignment !== 'top' && '1px'}
       />
 
       <div
