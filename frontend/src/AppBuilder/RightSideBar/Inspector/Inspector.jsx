@@ -118,6 +118,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Steps',
   'FilePicker',
   'Chat',
+  'Statistics',
 ];
 
 export const Inspector = ({
@@ -254,13 +255,6 @@ export const Inspector = ({
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;
       }
-      if (param.name === 'secondarySignDisplay') {
-        if (value === 'negative') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-        } else if (value === 'positive') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-        }
-      }
     } else {
       oldValue = allParams[param.name];
       allParams[param.name] = value;
@@ -337,13 +331,6 @@ export const Inspector = ({
         }
         if (param.type === 'select' && defaultValue) {
           allParams[defaultValue.paramName]['value'] = defaultValue.value;
-        }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
         }
       } else {
         allParams[param.name] = value;
