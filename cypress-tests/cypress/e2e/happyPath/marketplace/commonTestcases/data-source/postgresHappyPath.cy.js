@@ -20,8 +20,6 @@ describe("PostgreSQL data source connection and query", () => {
   });
 
   it("Should verify elements on connection form with validation", () => {
-    cy.log(process.env.NODE_ENV);
-    cy.log(postgreSqlText.allDatabase());
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.wait(1000);
 
