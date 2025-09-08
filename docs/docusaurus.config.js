@@ -67,14 +67,14 @@ module.exports = {
           'aria-label': 'Visit ToolJet Website',
         },
         {
-          href: 'https://website-stage.tooljet.ai//login',
+          href: 'https://website-stage.tooljet.ai/login',
           position: 'right',
           label: 'Sign in',
           className: 'navbar-signin',
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://website-stage.tooljet.ai//create-account',
+          href: 'https://website-stage.tooljet.ai/create-account',
           position: 'right',
           label: 'Try for free',
           className: 'navbar-website',
