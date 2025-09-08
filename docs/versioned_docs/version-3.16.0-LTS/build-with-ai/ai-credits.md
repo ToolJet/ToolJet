@@ -3,36 +3,13 @@ id: ai-credits
 title: Understanding AI Credits
 ---
 
+:::warning
+AI credits will be available starting September 22, 2025.
+:::
+
 A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to creating custom code or modifying layouts, consumes a varied amount of credits based on the complexity and type of task. This approach provides transparent cost visibility while enabling you to scale your AI usage on-demand. 
 
 In this guide you will learn about types of credits, credit usage, getting more credits, and more.
-
-## Check Available Credits
-
-### When to Monitor Credit Usage
-
-You might need to monitor your credit usage in the following situations:
-
-- **Large Teams**: Multiple builders using AI features simultaneously
-- **Frequent Iterations**: Rapid development cycles with regular AI-assisted modifications
-- **Complex Applications**: Building apps with extensive features and integrations
-
-### Inside App Builder
-
-1. Click the credit icon at the top-right of the AI chat interface.
-2. View your total available credits (monthly + add-on combined).
-
-<img className="screenshot-full img-full" src="/img/tooljet-ai/credits/app-builder.png" alt="tooljet available credits" />
-
-### Inside Settings
-
-1. Navigate to Settings > Subscription.
-2. View detailed breakdown of monthly and add-on credits.
-3. Check validity periods and renewal dates.
-
-You will also find an option to purchase additional add-on credits.
-
-<img className="screenshot-full img-full" src="/img/tooljet-ai/credits/settings.png" alt="tooljet available credits" />
 
 ## Credit Usage
 
@@ -68,6 +45,25 @@ Add-on credits can be purchased in addition to your monthly credits and are a on
 ToolJet AI credits are allocated on a per builder per month basis according to the purchased license. The total credits from all builders, along with any add-on credits purchased, are pooled together and made available collectively.
 - At **Instance Level** for [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) deployments.
 - At **Workspace Level** for [Cloud](/docs/tj-setup/tj-deployment#tooljet-cloud) deployments.
+
+## Check Available Credits
+
+### Inside App Builder
+
+1. Click the credit icon at the top-right of the AI chat interface.
+2. View your total available credits (monthly + add-on combined).
+
+<img className="screenshot-full img-full" src="/img/tooljet-ai/credits/app-builder.png" alt="tooljet available credits" />
+
+### Inside Settings
+
+1. Navigate to Settings > Subscription.
+2. View detailed breakdown of monthly and add-on credits.
+3. Check validity periods and renewal dates.
+
+You will also find an option to purchase additional add-on credits.
+
+<img className="screenshot-full img-full" src="/img/tooljet-ai/credits/settings.png" alt="tooljet available credits" />
 
 ## Impact on Existing Users
 
