@@ -5,34 +5,40 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-  OneToOne,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
+export enum WalletType {
+  RECURRING = 'recurring',
+  TOPUP = 'topup',
+  FIXED = 'fixed',
+}
+
 @Entity('organizations_ai_feature')
 export class OrganizationsAiFeature extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @OneToOne(() => Organization, (organization) => organization.id)
+  @ManyToOne(() => Organization, (organization) => organization.aiFeatures, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
   @Column({ name: 'balance', type: 'int' })
   balance: number;
 
-  @Column({ name: 'organization_id', unique: true })
-  organizationId: string;
+  @Column({ type: 'timestamp', nullable: true })
+  renew_date: Date | null;
 
-  @Column({ name: 'renew_date', type: 'timestamp' })
-  renewDate: Date;
-
-  @Column({ name: 'ai_credit_fixed', type: 'int' })
-  aiCreditFixed: number;
-
-  @Column({ name: 'ai_credit_multiplier', type: 'int' })
-  aiCreditMultiplier: number;
+  @Column({
+    name: 'wallet_type',
+    type: 'enum',
+    enum: WalletType,
+  })
+  walletType: WalletType;
 
   @Column({ name: 'balance_renewed_date', type: 'timestamp' })
   balanceRenewedDate: Date;
