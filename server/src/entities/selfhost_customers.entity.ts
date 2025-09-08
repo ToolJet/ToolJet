@@ -7,8 +7,10 @@ import {
   BaseEntity,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Metadata } from './metadata.entity';
+import { SelfhostCustomersAiFeature } from './selfhost_customers_ai_feature.entity';
 
 @Entity('selfhost_customers')
 export class SelfhostCustomers extends BaseEntity {
@@ -63,4 +65,7 @@ export class SelfhostCustomers extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => SelfhostCustomersAiFeature, (feature) => feature.selfhostCustomer)
+  aiFeatures: SelfhostCustomersAiFeature[];
 }

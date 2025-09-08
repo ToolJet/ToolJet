@@ -5,22 +5,30 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-  OneToOne,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { SelfhostCustomers } from './selfhost_customers.entity';
+
+export enum WalletTypeSelfhost {
+  RECURRING = 'recurring',
+  TOPUP = 'topup',
+  FIXED = 'fixed',
+}
 
 @Entity('selfhost_customers_ai_feature')
 export class SelfhostCustomersAiFeature extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => SelfhostCustomers, (customer) => customer.id)
+  @ManyToOne(() => SelfhostCustomers, (customer) => customer.aiFeatures, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'selfhost_customer_id' })
   selfhostCustomer: SelfhostCustomers;
 
   @Column({ name: 'selfhost_customer_id', type: 'uuid' })
-  selfhostCustomerId: number;
+  selfhostCustomerId: string;
 
   @Column({ name: 'api_key', type: 'varchar', length: 255 })
   apiKey: string;
@@ -28,14 +36,15 @@ export class SelfhostCustomersAiFeature extends BaseEntity {
   @Column({ name: 'balance', type: 'int' })
   balance: number;
 
-  @Column({ name: 'renew_date', type: 'timestamp' })
-  renewDate: Date;
+  @Column({ name: 'renew_date', type: 'timestamp', nullable: true })
+  renewDate: Date | null;
 
-  @Column({ name: 'ai_credit_fixed', type: 'int' })
-  aiCreditFixed: number;
-
-  @Column({ name: 'ai_credit_multiplier', type: 'int' })
-  aiCreditMultiplier: number;
+  @Column({
+    name: 'wallet_type',
+    type: 'enum',
+    enum: WalletTypeSelfhost,
+  })
+  walletType: WalletTypeSelfhost;
 
   @Column({ name: 'balance_renewed_date', type: 'timestamp' })
   balanceRenewedDate: Date;
