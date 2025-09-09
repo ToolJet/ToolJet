@@ -18,6 +18,7 @@ The Star Rating component allows users to both view and input ratings in a visua
 | **Icon Type**                           | Select the icon to display for the rating.                                         | `stars` or `heart`                            |
 | **Number of stars**                     | Total number of stars displayed on initial load. Default is 5.                     | `Integer`                                     |
 | **Default number of selected stars**    | Sets how many stars are selected by default. Default is 3.                         | `Integer` or `half`                           |
+| **Allow editing**  | Toggle on to allow users to edit. |  `Boolean` (`true` / `false`)                  |
 | **Enable half star**                    | Toggle on to allow selection of half stars. Default is `false`.                    | `Boolean` (`true` / `false`)                  |
 | **Tooltips**                            | Array of strings used to show informative tooltips for each star. Mapped by index. | `Array` of `String` (default: `["Very Poor","Poor","Average", "Good","Excellent"]`)           |
 
@@ -25,7 +26,7 @@ The Star Rating component allows users to both view and input ratings in a visua
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 | :------------------------------------------ | :------------------------------------------------ |
-| On change                                   | Triggers whenever the user clicks a star.         |
+| On change | Triggers whenever the user clicks a star. |
 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
