@@ -437,100 +437,6 @@ export const prepareGrpcCallOptions = (
 };
 
 /**
- * Prepare CallCredentials for CRITICAL metadata only (datasource + auth)
- * This ensures reliable delivery of metadata required for basic server operation
- * Query-specific metadata should use regular metadata transport
- */
-export const prepareCriticalCallCredentials = (
-  sourceOptions: SourceOptions
-): grpc.CallOptions => {
-  const criticalMetadata = new grpc.Metadata();
-
-  // 1. Add datasource metadata (client-id, cp-env, etc.) - CRITICAL for server context
-  if (sourceOptions.metadata && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
-
-    Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        criticalMetadata.set(key, String(value));
-      }
-    });
-  }
-
-  // 2. Add auth metadata based on auth_type - CRITICAL for authentication
-  switch (sourceOptions.auth_type) {
-    case 'api_key':
-      if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
-        criticalMetadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
-      }
-      break;
-
-    case 'bearer':
-      if (sourceOptions.bearer_token) {
-        criticalMetadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
-      }
-      break;
-
-    case 'basic':
-      if (sourceOptions.username && sourceOptions.password) {
-        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        criticalMetadata.set('authorization', `Basic ${credentials}`);
-      }
-      break;
-
-    case 'oauth2':
-      // For OAuth2, get only the access_token from datasource
-      const sanitizedAuth = sanitizeDatasourceMetadata(sourceOptions);
-      if (sanitizedAuth?.access_token) {
-        if (sourceOptions.add_token_to === 'header') {
-          const prefix = sourceOptions.header_prefix || 'Bearer ';
-          criticalMetadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
-        } else {
-          criticalMetadata.set('token', sanitizedAuth.access_token);
-        }
-      }
-      break;
-  }
-
-  // Return CallCredentials only if we have critical metadata
-  const metadataMap = criticalMetadata.getMap();
-  const hasCriticalMetadata = metadataMap && Object.keys(metadataMap).length > 0;
-
-  if (hasCriticalMetadata) {
-    return {
-      credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
-        callback(null, criticalMetadata);
-      })
-    };
-  }
-
-  return {};
-};
-
-/**
- * Prepare regular metadata for query-specific headers only
- * Uses standard gRPC metadata transport (visible in traces, follows standards)
- * Should be used for optional, query-specific contextual data
- */
-export const prepareQueryMetadata = (
-  queryOptions?: QueryOptions
-): grpc.Metadata => {
-  const queryMetadata = new grpc.Metadata();
-
-  if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
-
-    Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        queryMetadata.set(key, String(value));
-      }
-    });
-  }
-
-  return queryMetadata;
-};
-
-/**
  * Combine datasource metadata with query metadata for TLS connections
  * Since auth is handled at channel level, we can combine all non-auth metadata
  */
@@ -678,21 +584,9 @@ export const prepareAuthCallOptions = (sourceOptions: SourceOptions): grpc.CallO
 };
 
 /**
- * Prepares metadata for TLS connections (datasource + query metadata, no auth)
- * Auth is handled at channel level via combineChannelCredentials
- */
-export const prepareMetadataForTLS = (
-  sourceOptions: SourceOptions,
-  queryOptions?: QueryOptions
-): grpc.Metadata => {
-  // Use the existing function that combines datasource and query metadata
-  return combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
-};
-
-/**
- * Universal gRPC method executor with hybrid metadata approach
- * - Critical metadata (datasource + auth) → CallCredentials (reliable delivery)
- * - Query metadata → Regular metadata (standards-compliant, visible in traces)
+ * Universal gRPC method executor
+ * - TLS connections: All metadata as regular metadata (auth handled at channel level)
+ * - Non-TLS connections: All metadata via CallCredentials (guaranteed delivery)
  */
 export const executeGrpcMethod = async (
   client: GrpcClient,
