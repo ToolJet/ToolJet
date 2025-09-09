@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { databaseMonitoring } from './database-monitoring';
+import { databaseMonitoring, ConnectionPoolStats } from './database-monitoring';
 
 export interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -67,7 +67,12 @@ export class OTELHealthCheckService {
   }
 
   // Get database statistics for monitoring dashboards
-  async getDatabaseStats() {
+  async getDatabaseStats(): Promise<{
+    connectionPool: ConnectionPoolStats | null;
+    healthy: boolean;
+    error?: string;
+    timestamp: string;
+  }> {
     const stats = databaseMonitoring.getCurrentStats();
     const health = await databaseMonitoring.isHealthy();
     

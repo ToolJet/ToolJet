@@ -1,7 +1,7 @@
 import { metrics } from '@opentelemetry/api';
 import { DataSource } from 'typeorm';
 
-interface ConnectionPoolStats {
+export interface ConnectionPoolStats {
   totalConnections: number;
   idleConnections: number;
   waitingClients: number;
