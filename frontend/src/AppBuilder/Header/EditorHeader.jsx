@@ -61,7 +61,10 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
             <h1 className="navbar-brand d-none-navbar-horizontal p-0" data-cy="editor-page-logo">
               <LogoNavDropdown darkMode={darkMode} />
             </h1>
-            <div className="header-inner-wrapper d-flex" style={{ width: 'calc(100% - 348px)', background: '' }}>
+            <div
+              className="header-inner-wrapper d-flex"
+              style={{ width: isUserInZeroToOneFlow ? 'auto' : 'calc(100% - 348px)', background: '' }}
+            >
               <div
                 style={{
                   maxHeight: '48px',
@@ -86,20 +89,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       <EditAppName />
                     </div>
                   </div>
-
-                  {isUserInZeroToOneFlow && (
-                    <Steps
-                      steps={
-                        aiGenerationMetadata.steps
-                          ?.filter((step) => !step.hidden)
-                          ?.map((step) => ({
-                            label: step.name,
-                            value: step.id,
-                          })) ?? []
-                      }
-                      activeStep={activeStep}
-                    />
-                  )}
 
                   {!isUserInZeroToOneFlow && (
                     <>
@@ -144,6 +133,21 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                 </div>
               )}
             </div>
+
+            {isUserInZeroToOneFlow && (
+              <Steps
+                steps={
+                  aiGenerationMetadata.steps
+                    ?.filter((step) => !step.hidden)
+                    ?.map((step) => ({
+                      label: step.name,
+                      value: step.id,
+                    })) ?? []
+                }
+                activeStep={activeStep}
+                classes={{ stepsContainer: 'tw-mx-auto' }}
+              />
+            )}
 
             {!isUserInZeroToOneFlow && (
               <>

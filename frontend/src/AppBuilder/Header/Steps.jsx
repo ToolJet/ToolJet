@@ -39,12 +39,12 @@ function Connector({ completed }) {
 }
 
 // sequential steps
-export default function Steps({ steps, activeStep }) {
+export default function Steps({ steps, activeStep, classes = null }) {
   const activeStepIndex = steps.findIndex((step) => step.value === activeStep);
   const currentStepIdx = activeStepIndex === -1 ? 0 : activeStepIndex;
 
   return (
-    <div className="tw-flex tw-items-center tw-gap-1 tw-py-2">
+    <div className={cn('tw-flex tw-items-center tw-gap-1 tw-py-2', classes?.stepsContainer)}>
       {Children.toArray(
         steps.map((step, index) => {
           const isActive = index === currentStepIdx;
