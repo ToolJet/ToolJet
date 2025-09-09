@@ -37,3 +37,6 @@
 
 .idea/*
 ti-*
+
+/CLAUDE.md
+/claude_docs
