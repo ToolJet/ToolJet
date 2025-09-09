@@ -62,9 +62,10 @@ export const Rating = ({
   // Generate unique ID for ARIA labelling
   const ratingId = React.useMemo(() => `rating-${Math.random().toString(36).substr(2, 9)}`, []);
   const [announceValue, setAnnounceValue] = React.useState('');
+  const _maxRating = !maxRating || maxRating < 0 ? 0 : maxRating;
 
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
-  const animatedStars = useTrail(maxRating, {
+  const animatedStars = useTrail(_maxRating, {
     config: {
       friction: 22,
       tension: 500,
@@ -93,7 +94,7 @@ export const Rating = ({
     fireEvent('onChange');
 
     // Announce the new rating value for screen readers
-    const ratingText = `${newValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+    const ratingText = `${newValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
     setAnnounceValue(ratingText);
   }
 
@@ -112,7 +113,7 @@ export const Rating = ({
     return '';
   };
 
-  const resetRating = () => {
+  const resetValue = () => {
     setRatingIndex(defaultSelected - 1);
     setExposedVariable('value', defaultSelected);
   };
@@ -163,22 +164,22 @@ export const Rating = ({
       }
 
       // Ensure the value is within valid range
-      processedValue = Math.max(0, Math.min(processedValue, maxRating));
+      processedValue = Math.max(0, Math.min(processedValue, _maxRating));
 
       setRatingIndex(processedValue - 1);
       setExposedVariable('value', processedValue);
     },
-    [allowHalfStar, maxRating, setExposedVariable]
+    [allowHalfStar, _maxRating, setExposedVariable]
   );
 
   React.useEffect(() => {
     setExposedVariable('label', label);
     setExposedVariable('setValue', setValue);
-  }, [setValue, allowHalfStar, maxRating, label, setExposedVariable]);
+  }, [setValue, allowHalfStar, _maxRating, label, setExposedVariable]);
 
   React.useEffect(() => {
-    resetRating();
-    setExposedVariable('resetRating', resetRating);
+    resetValue();
+    setExposedVariable('resetValue', resetValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
 
@@ -194,7 +195,7 @@ export const Rating = ({
           role="radiogroup"
           aria-labelledby={label ? `${ratingId}-label` : undefined}
           aria-label={
-            !label ? `Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${maxRating}` : undefined
+            !label ? `Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${_maxRating}` : undefined
           }
           aria-required="false"
           aria-disabled={isDisabled}
@@ -212,7 +213,7 @@ export const Rating = ({
             {animatedStars.map((props, index) => {
               const ratingValue = index + 1;
               const isSelected = index <= currentRatingIndex;
-              const ariaLabel = `${ratingValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
+              const ariaLabel = `${ratingValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
                 getTooltip(index) ? `, ${getTooltip(index)}` : ''
               }`;
 
@@ -221,7 +222,7 @@ export const Rating = ({
                   tooltip={getTooltip(index)}
                   active={getActive(index)}
                   isHalfIcon={isHalfIcon(index)}
-                  maxRating={maxRating}
+                  maxRating={_maxRating}
                   onClick={(e, idx) => {
                     e.stopPropagation();
                     setRatingIndex(idx);

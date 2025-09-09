@@ -310,7 +310,7 @@ export const starratingConfig = {
       params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'resetRating',
+      handle: 'resetValue',
       displayName: 'Reset rating',
       params: [],
     },
