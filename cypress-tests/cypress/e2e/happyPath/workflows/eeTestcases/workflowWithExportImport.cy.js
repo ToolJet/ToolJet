@@ -118,7 +118,7 @@ describe("Workflows Export/Import Sanity", () => {
       workflowsText.postgresqlNodeName,
       workflowsText.postgresResponseNodeQuery
     );
-    cy.verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
+    verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     cy.exportWorkflowApp(wfName);
 

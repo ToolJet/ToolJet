@@ -10,10 +10,11 @@ import { workflowSelector } from "Selectors/workflows";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
-  verifyTextInResponseOutputLimited,
 } from "Support/utils/postgreSql";
-
-import { enterJsonInputInStartNode } from "Support/utils/workFlows";
+import {
+  enterJsonInputInStartNode,
+  verifyTextInResponseOutputLimited,
+} from "Support/utils/workFlows";
 
 const data = {};
 
