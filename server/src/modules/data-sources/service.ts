@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { InstrumentService } from '../../otel/service-instrumentation';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
@@ -33,6 +34,10 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) { }
 
+  @InstrumentService('DataSourcesService', { 
+    attributes: { 'operation.type': 'read', 'operation.scope': 'app' },
+    tags: { 'business_operation': 'datasource_listing' }
+  })
   async getForApp(
     query: GetQueryVariables,
     user: User,
@@ -110,6 +115,10 @@ export class DataSourcesService implements IDataSourcesService {
     return { data_sources: decamelizedDatasources };
   }
 
+  @InstrumentService('DataSourcesService', { 
+    attributes: { 'operation.type': 'create' },
+    tags: { 'business_operation': 'datasource_creation' }
+  })
   async create(createDataSourceDto: CreateDataSourceDto, user: User): Promise<DataSource> {
     const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
 

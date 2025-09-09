@@ -1,5 +1,6 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { InstrumentService } from '../../otel/service-instrumentation';
 import {
   BadRequestException,
   ForbiddenException,
@@ -62,6 +63,10 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
   ) {}
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'create' },
+    tags: { 'business_operation': 'app_creation' }
+  })
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -150,6 +155,10 @@ export class AppsService implements IAppsService {
     };
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'update' },
+    tags: { 'business_operation': 'app_update' }
+  })
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
@@ -178,6 +187,10 @@ export class AppsService implements IAppsService {
     return response;
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'delete' },
+    tags: { 'business_operation': 'app_deletion' }
+  })
   async delete(app: App, user: User) {
     const { organizationId } = user;
     const { id } = app;
@@ -210,6 +223,10 @@ export class AppsService implements IAppsService {
     });
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'read', 'operation.scope': 'list' },
+    tags: { 'business_operation': 'app_listing' }
+  })
   async getAllApps(user: User, appListDto: AppListDto): Promise<any> {
     let apps = [];
     let totalFolderCount = 0;

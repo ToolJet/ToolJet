@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { InstrumentService } from '../../../otel/service-instrumentation';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { User } from 'src/entities/user.entity';
@@ -16,6 +17,10 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     throw new Error('Method not implemented.');
   }
 
+  @InstrumentService('WorkflowExecutionsService', { 
+    attributes: { 'operation.type': 'execute' },
+    tags: { 'business_operation': 'workflow_execution' }
+  })
   async execute(
     workflowExecution: WorkflowExecution,
     params: Record<string, any>,

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { InstrumentService } from '../../otel/service-instrumentation';
 import { IAiService } from './interfaces/IService';
 
 @Injectable()
@@ -17,6 +18,10 @@ export class AiService implements IAiService {
     throw new Error('Method not implemented.');
   }
 
+  @InstrumentService('AiService', { 
+    attributes: { 'operation.type': 'message', 'ai.type': 'user_message' },
+    tags: { 'business_operation': 'ai_user_message' }
+  })
   async sendUserMessage(body, response, organizationId) {
     throw new Error('Method not implemented.');
   }
