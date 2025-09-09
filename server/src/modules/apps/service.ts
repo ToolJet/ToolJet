@@ -44,6 +44,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { trackAppUsage, trackAppLoadTime, AppPerformanceContext } from '../../otel/business-metrics';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -85,6 +86,16 @@ export class AppsService implements IAppsService {
         resourceId: app.id,
         resourceName: app.name,
       });
+
+      // Track app usage business metrics
+      const appContext: AppPerformanceContext = {
+        appId: app.id,
+        appName: app.name,
+        organizationId: user.organizationId,
+        userId: user.id,
+        environment: 'production'
+      };
+      trackAppUsage(appContext, 'edit'); // Creating an app is considered editing
 
       return decamelizeKeys(app);
     });

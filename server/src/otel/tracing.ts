@@ -339,7 +339,12 @@ export const startOpenTelemetry = async (): Promise<void> => {
     const { initializeServiceMetrics } = await import('./service-instrumentation');
     initializeServiceMetrics();
     
-    console.log('[ToolJet Backend] OpenTelemetry instrumentation initialized with enhanced database and service monitoring');
+    // Initialize business metrics
+    const { initializeBusinessMetrics, setupResourceMetricCallbacks } = await import('./business-metrics');
+    initializeBusinessMetrics();
+    setupResourceMetricCallbacks();
+    
+    console.log('[ToolJet Backend] OpenTelemetry instrumentation initialized with enhanced database, service, and business monitoring');
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;

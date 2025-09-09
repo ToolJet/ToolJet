@@ -24,6 +24,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { trackDataSourceConnection } from '../../otel/business-metrics';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -150,6 +151,9 @@ export class DataSourcesService implements IDataSourcesService {
       metadata: dataSource,
     });
 
+    // Track data source connection business metrics
+    trackDataSourceConnection(kind, user.organizationId, 'connect');
+
     return dataSource;
   }
 
@@ -189,6 +193,9 @@ export class DataSourcesService implements IDataSourcesService {
     }
 
     await this.dataSourcesRepository.delete(dataSourceId);
+
+    // Track data source disconnection business metrics
+    trackDataSourceConnection(dataSource.kind, user.organizationId, 'disconnect');
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

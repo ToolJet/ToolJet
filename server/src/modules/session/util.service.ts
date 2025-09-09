@@ -29,6 +29,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
+import { trackUserLogin, trackUserSession, UserContext, startUserSession, endUserSession } from '../../otel/business-metrics';
 
 @Injectable()
 export class SessionUtilService {
@@ -47,6 +48,12 @@ export class SessionUtilService {
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Get user to find organization for session tracking
+      const user = await this.userRepository.findOne(userId);
+      if (user?.organizationId) {
+        endUserSession(userId, user.organizationId);
+      }
+      
       await manager.delete(UserSessions, { userId });
     });
   }
@@ -137,6 +144,32 @@ export class SessionUtilService {
         ...(extraData ? extraData : {}),
         ...(isPatLogin ? { signedPat } : {}),
       };
+
+      // Track user login business metrics
+      if (user && organization) {
+        const userContext: UserContext = {
+          userId: user.id,
+          organizationId: organization.id,
+          userEmail: user.email,
+          sessionId: sessionId,
+          ipAddress: (request as any)?.clientIp || (request && requestIp.getClientIp(request)),
+          userAgent: request?.headers['user-agent']
+        };
+
+        // Determine login method
+        let loginMethod: 'password' | 'sso' | 'oauth' | 'magic_link' = 'password';
+        if (isInstanceSSO || JWTPayload.isSSOLogin) {
+          loginMethod = 'sso';
+        } else if (isPasswordLogin || JWTPayload.isPasswordLogin) {
+          loginMethod = 'password';
+        }
+
+        // Track successful login
+        trackUserLogin(userContext, 'success', loginMethod);
+        
+        // Start user session for active users tracking
+        startUserSession(user.id, organization.id);
+      }
 
       return decamelizeKeys(responsePayload);
     }, manager);
