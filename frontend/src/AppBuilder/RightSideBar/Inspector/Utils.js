@@ -66,21 +66,29 @@ export function renderCustomStyles(
     componentConfig.component == 'Timepicker' ||
     componentConfig.component == 'PhoneInput' ||
     componentConfig.component == 'CurrencyInput' ||
-    componentConfig.component == 'DaterangePicker'
+    componentConfig.component == 'DaterangePicker' ||
+    componentConfig.component == 'StarRating' ||
+    componentConfig.component == 'PopoverMenu'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
-    const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+    const getResolvedValue = (key, parentObjectKey = 'styles') => {
+      if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
+        return (
+          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
+        );
+      }
+      const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
+      return value && resolveReferences(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
       return conditionallyRender.reduce((acc, condition) => {
-        const { key, value } = condition;
-        if (paramTypeDefinition?.[key] ?? value) {
-          const resolvedValue = getResolvedValue(key);
+        const { key, value, parentObjectKey } = condition;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
           acc.push(resolvedValue?.value !== value);
         }
         return acc;

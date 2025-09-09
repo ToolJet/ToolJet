@@ -50,6 +50,7 @@ import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -87,7 +88,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = [
+export const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
   'TextArea',
@@ -120,7 +121,9 @@ const NEW_REVAMPED_COMPONENTS = [
   'FilePicker',
   'Tags',
   'Chat',
+  'PopoverMenu',
   'Statistics',
+  'StarRating',
 ];
 
 export const Inspector = ({
@@ -852,6 +855,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+      case 'PopoverMenu':
+        return <PopoverMenu {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
