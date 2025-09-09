@@ -1,7 +1,7 @@
 import { processDataInBatches } from '@helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveVisibilityForHtmlComponent1756814928002 implements MigrationInterface {
+export class MoveVisibilityForHtmlComponent1756814928003 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     const entityManager = queryRunner.manager;
@@ -14,7 +14,10 @@ export class MoveVisibilityForHtmlComponent1756814928002 implements MigrationInt
           `
           SELECT id FROM components 
           WHERE type = 'Html' 
-            AND styles->>'visibility' IS NOT NULL
+            AND (
+              styles->>'visibility' IS NOT NULL
+              OR general_styles->>'boxShadow' IS NOT NULL
+            )
           ORDER BY created_at ASC
           LIMIT $1
         `,
@@ -27,21 +30,30 @@ export class MoveVisibilityForHtmlComponent1756814928002 implements MigrationInt
 
         const componentIds = components.map((c) => c.id);
 
-        // Move visibility from styles to properties using raw SQL
+        // Move visibility, boxShadow using raw SQL
         await entityManager.query(
           `
           UPDATE components 
           SET 
-            properties = jsonb_set(
-              properties::jsonb, 
-              '{visibility}', 
-              (styles->'visibility')::jsonb
-            ),
-            styles = (styles::jsonb - 'visibility')::json
+            properties = 
+              CASE 
+                WHEN styles->>'visibility' IS NOT NULL THEN jsonb_set(properties::jsonb, '{visibility}', (styles->'visibility')::jsonb)
+                ELSE properties::jsonb
+              END,
+            styles = 
+              CASE 
+                WHEN general_styles->>'boxShadow' IS NOT NULL THEN jsonb_set(styles::jsonb, '{boxShadow}', (general_styles->'boxShadow')::jsonb)
+                ELSE styles::jsonb
+              END
+              - 'visibility',
+            general_styles = (general_styles::jsonb - 'boxShadow')::json
           WHERE 
             id = ANY($1)
             AND type = 'Html' 
-            AND styles->>'visibility' IS NOT NULL
+            AND (
+              styles->>'visibility' IS NOT NULL
+              OR general_styles->>'boxShadow' IS NOT NULL
+            )
         `,
           [componentIds]
         );
@@ -62,7 +74,10 @@ export class MoveVisibilityForHtmlComponent1756814928002 implements MigrationInt
           `
           SELECT id FROM components 
           WHERE type = 'Html' 
-            AND properties->>'visibility' IS NOT NULL
+            AND (
+              properties->>'visibility' IS NOT NULL
+              OR styles->>'boxShadow' IS NOT NULL
+            )
           ORDER BY created_at ASC
           LIMIT $1
         `,
@@ -75,21 +90,31 @@ export class MoveVisibilityForHtmlComponent1756814928002 implements MigrationInt
 
         const componentIds = components.map((c) => c.id);
 
-        // Rollback: Move visibility from properties back to styles using raw SQL
+        // Rollback: Move visibility, boxShadow, tooltip back using raw SQL
         await entityManager.query(
           `
           UPDATE components 
           SET 
-            styles = jsonb_set(
-              styles::jsonb, 
-              '{visibility}', 
-              (properties->'visibility')::jsonb
-            )::json,
-            properties = (properties::jsonb - 'visibility')::json
+            styles = 
+              CASE 
+                WHEN properties->>'visibility' IS NOT NULL THEN jsonb_set(styles::jsonb, '{visibility}', (properties->'visibility')::jsonb)
+                ELSE styles::jsonb
+              END
+              ||
+              CASE 
+                WHEN styles->>'boxShadow' IS NOT NULL THEN styles::jsonb
+                ELSE jsonb_set(styles::jsonb, '{boxShadow}', (properties->'boxShadow')::jsonb)
+              END
+              - 'boxShadow',
+            properties = (properties::jsonb - 'visibility' - 'boxShadow')::json,
+            general_styles = (general_styles::jsonb - 'boxShadow')::json
           WHERE 
             id = ANY($1)
             AND type = 'Html' 
-            AND properties->>'visibility' IS NOT NULL
+            AND (
+              properties->>'visibility' IS NOT NULL
+              OR styles->>'boxShadow' IS NOT NULL
+            )
         `,
           [componentIds]
         );

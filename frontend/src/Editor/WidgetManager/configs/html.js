@@ -41,7 +41,17 @@ export const htmlConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   events: {},
-  styles: {},
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'container',
+    },
+  },
   exposedVariables: {},
   actions: [
     {
@@ -83,7 +93,7 @@ export const htmlConfig = {
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
