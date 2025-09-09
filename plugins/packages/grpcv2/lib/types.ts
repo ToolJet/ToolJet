@@ -12,8 +12,17 @@ function hasProperty<T extends PropertyKey>(obj: unknown, prop: T): obj is Recor
   return isRecord(obj) && prop in obj;
 }
 
+// Type for gRPC unary method functions based on grpc-js implementation
+export type UnaryMethodFunction = (
+  message: any,
+  metadataOrCallback: grpc.Metadata | grpc.CallOptions | Function,
+  optionsOrCallback?: grpc.CallOptions | Function,
+  callback?: Function
+) => void;
+
 export interface GrpcClient {
-  [methodName: string]: Function | any;
+  [methodName: string]: UnaryMethodFunction | any;
+  waitForReady?(deadline: Date, callback: (error?: Error) => void): void;
 }
 
 export { toError, isRecord, hasProperty };
