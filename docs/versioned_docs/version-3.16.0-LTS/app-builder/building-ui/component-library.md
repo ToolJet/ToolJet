@@ -13,7 +13,7 @@ Components can be added to the canvas by dragging and dropping them onto the can
 
 | Category | Components |
 |:----------|:------------|
-| **Buttons**  | [Button](/docs/widgets/button), [Button Group](/docs/widgets/button-group) |
+| **Buttons**  | [Button](/docs/widgets/button), [Button Group](/docs/widgets/button-group), [Popover Menu](/docs/widgets/popover-menu) |
 | **Data** | [Table](/docs/widgets/table/), [Chart](/docs/widgets/chart/)|
 | **Layouts** | [Form](/docs/widgets/form), [Modal](/docs/widgets/modal-v2), [Container](/docs/widgets/container), [Tabs](/docs/widgets/tabs), [ListView](/docs/widgets/listview), [Kanban](/docs/widgets/kanban), [Calendar](/docs/widgets/calendar) |
 | **Text Inputs** | [Text Input](/docs/widgets/text-input), [Text Area](/docs/widgets/text-area), [Email Input](/docs/widgets/email-input), [Password Input](/docs/widgets/password-input), [Rich Text Editor](/docs/widgets/rich-text-editor) |
