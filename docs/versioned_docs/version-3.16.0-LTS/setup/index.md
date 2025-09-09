@@ -1,10 +1,16 @@
-<!-- # Deploy ToolJet
+# Deploy ToolJet
 
 Check out the different methods you can use to deploy ToolJet on your machine.
 
 ```mdx-code-block
-import {DocsCardList} from '../../../src/components/DocsCard';
+import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
 
-<DocsCardList list={useCurrentSidebarCategory().items} />
-``` -->
+<DocCardList items={useCurrentSidebarCategory().items} />
+```
+
+
+<!-- import {DocsCardList} from '../../../src/components/DocsCard';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocsCardList list={useCurrentSidebarCategory().items} /> -->
