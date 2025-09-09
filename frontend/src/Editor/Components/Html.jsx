@@ -37,6 +37,10 @@ export const Html = function ({
   };
 
   useEffect(() => {
+    setRawHtml(stringifyHTML || '');
+  }, [stringifyHTML]);
+
+  useEffect(() => {
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
       // set all elements owning target to target=_blank
       if ('target' in node) {
