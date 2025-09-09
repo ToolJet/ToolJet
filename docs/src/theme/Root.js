@@ -1,7 +1,16 @@
 import React, { useEffect } from "react";
+import { useLocation, useHistory } from "@docusaurus/router";
 
 export default function Root({ children }) {
-  function storeUTMParams() {
+  const location = useLocation();
+  const history = useHistory();
+
+  function getStoredUTMParams() {
+    return JSON.parse(sessionStorage.getItem("utmParams") || "{}");
+  }
+
+  // Store UTMs on first page load
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const storedParams = JSON.parse(
       sessionStorage.getItem("utmParams") || "{}"
@@ -18,42 +27,28 @@ export default function Root({ children }) {
     if (hasNewParams) {
       sessionStorage.setItem("utmParams", JSON.stringify(storedParams));
     }
-  }
+  }, []);
 
-  function handleLinkClick(event) {
-    const target = event.target.closest("a.navbar-website, a.navbar-signin");
-    if (!target) return;
-
-    const storedParams = JSON.parse(
-      sessionStorage.getItem("utmParams") || "{}"
-    );
+  // Append UTMs on every route change
+  useEffect(() => {
+    const storedParams = getStoredUTMParams();
     if (Object.keys(storedParams).length === 0) return;
 
-    try {
-      const url = new URL(target.href);
+    const url = new URL(window.location.href);
 
-      // Append stored UTM params
-      Object.entries(storedParams).forEach(([key, value]) => {
+    // Append UTMs only if they're not already present
+    Object.entries(storedParams).forEach(([key, value]) => {
+      if (!url.searchParams.has(key)) {
         url.searchParams.set(key, value);
-      });
+      }
+    });
 
-      // Redirect with updated URL
-      event.preventDefault();
-      window.location.href = url.toString();
-    } catch (e) {
-      console.error("Invalid URL in navbar link:", target.href);
+    const newUrl = url.pathname + url.search + url.hash;
+
+    if (newUrl !== location.pathname + location.search + location.hash) {
+      history.replace(newUrl); // update URL without reloading
     }
-  }
-
-  useEffect(() => {
-    storeUTMParams();
-
-    document.addEventListener("click", handleLinkClick);
-
-    return () => {
-      document.removeEventListener("click", handleLinkClick);
-    };
-  }, []);
+  }, [location, history]);
 
   return <>{children}</>;
 }
