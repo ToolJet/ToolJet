@@ -12,13 +12,66 @@ export class DatabaseMonitoring {
   private static instance: DatabaseMonitoring;
   private dataSource: DataSource | null = null;
   private connectionPoolGauge: any;
+  private pendingRequestsGauge: any;
   private monitoringInterval: NodeJS.Timeout | null = null;
+  private meter: any = null;
 
   private constructor() {
-    const meter = metrics.getMeter('tooljet-database-pool', '1.0.0');
-    this.connectionPoolGauge = meter.createObservableGauge('db_connection_pool_stats', {
-      description: 'Database connection pool detailed statistics',
+    // Metrics will be initialized later via initializeMetrics()
+  }
+  
+  public initializeMetrics(meter: any): void {
+    console.log('[ToolJet Backend] DatabaseMonitoring: Initializing metrics with provided meter');
+    this.meter = meter;
+    
+    // Create observable gauges for connection pool stats  
+    this.connectionPoolGauge = meter.createObservableGauge('db_client_connection_count', {
+      description: 'The number of connections that are currently in state described by the state attribute',
+      unit: '{connection}',
     });
+    
+    this.pendingRequestsGauge = meter.createObservableGauge('db_client_connection_pending_requests', {
+      description: 'The number of pending requests for an open connection, cumulative for the entire pool',
+      unit: '{request}',
+    });
+    
+    // Set up callbacks for observable gauges
+    this.connectionPoolGauge.addCallback((observableResult: any) => {
+      const stats = this.getConnectionPoolStats();
+      if (stats && this.dataSource) {
+        const poolName = this.dataSource?.options?.database || 'default';
+        
+        // Report current connection counts
+        observableResult.observe(stats.idleConnections, { 
+          'db.client.connection.state': 'idle',
+          'db.client.connection.pool.name': poolName
+        });
+        
+        observableResult.observe(stats.activeConnections, { 
+          'db.client.connection.state': 'used',
+          'db.client.connection.pool.name': poolName
+        });
+        
+        console.log('[ToolJet Backend] Connection count metrics observed:', {
+          idle: stats.idleConnections,
+          used: stats.activeConnections,
+          poolName
+        });
+      }
+    });
+    
+    this.pendingRequestsGauge.addCallback((observableResult: any) => {
+      const stats = this.getConnectionPoolStats();
+      if (stats && this.dataSource) {
+        const poolName = this.dataSource?.options?.database || 'default';
+        observableResult.observe(stats.waitingClients, { 
+          'db.client.connection.pool.name': poolName
+        });
+        console.log('[ToolJet Backend] Pending requests metric observed:', stats.waitingClients);
+      }
+    });
+    
+    console.log('[ToolJet Backend] DatabaseMonitoring: Metrics initialized successfully');
   }
 
   public static getInstance(): DatabaseMonitoring {
@@ -29,28 +82,37 @@ export class DatabaseMonitoring {
   }
 
   public setDataSource(dataSource: DataSource): void {
+    console.log('[ToolJet Backend] DatabaseMonitoring: Setting DataSource');
     this.dataSource = dataSource;
     this.startMonitoring();
+    console.log('[ToolJet Backend] DatabaseMonitoring: Started monitoring for database:', dataSource.options.database);
+    
+    // Test connection pool stats immediately
+    const stats = this.getConnectionPoolStats();
+    console.log('[ToolJet Backend] DatabaseMonitoring: Connection pool stats test:', stats);
   }
 
   private getConnectionPoolStats(): ConnectionPoolStats | null {
     try {
+      if (!this.dataSource) {
+        return null;
+      }
+
       // TypeORM PostgreSQL driver pool access
-      const driver = this.dataSource?.driver as any;
-      const pool = driver?.master?.pool || driver?.pool;
+      const driver = this.dataSource.driver as any;
+      const pool = driver?.master?.pool || driver?.pool || driver?.master;
       
       if (!pool) {
         return null;
       }
       
       return {
-        totalConnections: pool.totalCount || 0,
-        idleConnections: pool.idleCount || 0,
-        waitingClients: pool.waitingCount || 0,
-        activeConnections: (pool.totalCount || 0) - (pool.idleCount || 0),
+        totalConnections: pool.totalCount || pool.size || 0,
+        idleConnections: pool.idleCount || pool.available || 0,
+        waitingClients: pool.waitingCount || pool.pending || 0,
+        activeConnections: (pool.totalCount || pool.size || 0) - (pool.idleCount || pool.available || 0),
       };
     } catch (error) {
-      // Silently handle connection pool access errors
       return null;
     }
   }
@@ -60,30 +122,11 @@ export class DatabaseMonitoring {
       clearInterval(this.monitoringInterval);
     }
 
-    // Monitor connection pool every 30 seconds
+    // Monitor connection pool every 30 seconds for logging warnings only
+    // Observable gauges are called automatically by the metrics reader
     this.monitoringInterval = setInterval(() => {
       const stats = this.getConnectionPoolStats();
       if (stats) {
-        // Record connection pool metrics
-        this.connectionPoolGauge.addCallback((observableResult: any) => {
-          observableResult.observe(stats.totalConnections, { 
-            stat: 'total',
-            database: this.dataSource?.options?.database || 'unknown'
-          });
-          observableResult.observe(stats.idleConnections, { 
-            stat: 'idle',
-            database: this.dataSource?.options?.database || 'unknown'
-          });
-          observableResult.observe(stats.waitingClients, { 
-            stat: 'waiting',
-            database: this.dataSource?.options?.database || 'unknown'
-          });
-          observableResult.observe(stats.activeConnections, { 
-            stat: 'active',
-            database: this.dataSource?.options?.database || 'unknown'
-          });
-        });
-
         // Log warning if connection pool is under pressure
         const utilizationRate = stats.totalConnections > 0 
           ? stats.activeConnections / stats.totalConnections 

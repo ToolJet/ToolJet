@@ -127,6 +127,7 @@ export const sdk = new NodeSDK({
   spanProcessor: new BatchSpanProcessor(traceExporter),
   metricReader: new PeriodicExportingMetricReader({
     exporter: metricExporter,
+    exportIntervalMillis: 10000, // Export every 10 seconds for debugging
   }),
   textMapPropagator: new CompositePropagator({
     propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
@@ -225,18 +226,27 @@ export const sdk = new NodeSDK({
               if (dbSlowQueryCounter) {
                 const operation = getQueryOperation(storedInfo.query);
                 dbSlowQueryCounter.add(1, {
+                  'db.operation.name': operation.toLowerCase(),
+                  'db.namespace': storedInfo.connectionParameters?.database || 'unknown',
+                  'db.system': 'postgresql'
+                });
+                console.log('[ToolJet Backend] Slow query detected:', {
+                  duration: duration,
                   operation: operation.toLowerCase(),
-                  database: storedInfo.connectionParameters?.database || 'unknown'
+                  database: storedInfo.connectionParameters?.database
                 });
               }
             }
             
-            // Record query duration histogram
+            // Record query duration histogram (convert ms to seconds)
             if (dbQueryDurationHistogram) {
               const operation = getQueryOperation(storedInfo.query);
-              dbQueryDurationHistogram.record(duration, {
-                operation: operation.toLowerCase(),
-                database: storedInfo.connectionParameters?.database || 'unknown'
+              const tables = extractTableNames(storedInfo.query);
+              dbQueryDurationHistogram.record(duration / 1000, { // Convert to seconds
+                'db.operation.name': operation.toLowerCase(),
+                'db.namespace': storedInfo.connectionParameters?.database || 'unknown',
+                'db.system': 'postgresql',
+                'db.sql.table': tables.length > 0 ? tables[0] : 'unknown' // Primary table
               });
             }
             
@@ -244,8 +254,9 @@ export const sdk = new NodeSDK({
             if (dbQueryCounter) {
               const operation = getQueryOperation(storedInfo.query);
               dbQueryCounter.add(1, {
-                operation: operation.toLowerCase(),
-                database: storedInfo.connectionParameters?.database || 'unknown'
+                'db.operation.name': operation.toLowerCase(),
+                'db.namespace': storedInfo.connectionParameters?.database || 'unknown',
+                'db.system': 'postgresql'
               });
             }
             
@@ -302,23 +313,29 @@ export const startOpenTelemetry = async (): Promise<void> => {
     // Initialize custom database metrics
     const meter = metrics.getMeter('tooljet-database', '1.0.0');
     
-    dbQueryDurationHistogram = meter.createHistogram('db_query_duration_ms', {
-      description: 'Database query execution duration in milliseconds',
+    // Use standard OpenTelemetry database metric names
+    dbQueryDurationHistogram = meter.createHistogram('db.client.operation.duration', {
+      description: 'Duration of database client operations',
+      unit: 's', // OpenTelemetry standard uses seconds
     });
     
-    dbSlowQueryCounter = meter.createCounter('db_slow_queries_total', {
-      description: 'Total number of slow database queries',
+    dbSlowQueryCounter = meter.createCounter('db.client.operation.slow_total', {
+      description: 'Total number of slow database operations',
     });
     
-    dbQueryCounter = meter.createCounter('db_queries_total', {
-      description: 'Total number of database queries',
+    dbQueryCounter = meter.createCounter('db.client.operation.count', {
+      description: 'Total number of database operations',
     });
     
     dbConnectionPoolGauge = meter.createObservableGauge('db_connection_pool_usage', {
       description: 'Database connection pool usage statistics',
     });
     
-    console.log('OpenTelemetry instrumentation initialized with enhanced database monitoring');
+    // Initialize database monitoring metrics
+    const { databaseMonitoring } = await import('./database-monitoring');
+    databaseMonitoring.initializeMetrics(meter);
+    
+    console.log('[ToolJet Backend] OpenTelemetry instrumentation initialized with enhanced database monitoring');
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
