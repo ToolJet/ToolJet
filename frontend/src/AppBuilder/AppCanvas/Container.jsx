@@ -63,7 +63,6 @@ const Container = React.memo(
     const { isDragging } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
     }));
-
     // // // Cleanup ghost when drag ends
     useEffect(() => {
       if (!isDragging) {
@@ -122,11 +121,10 @@ const Container = React.memo(
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns]);
+    }, [canvasWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {

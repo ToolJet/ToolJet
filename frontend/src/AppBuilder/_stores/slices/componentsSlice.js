@@ -1295,10 +1295,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -2011,8 +2011,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
-
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
     return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
       if (mappings[category] && mappings[category][id]) {
         let name;
@@ -2201,5 +2200,21 @@ export const createComponentsSlice = (set, get) => ({
         state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
       });
     }
+  },
+  computeColorForPopoverMenu: (value, meta, componentId) => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId);
+    const buttonType = component?.properties?.buttonType;
+    if (buttonType == 'primary') return value;
+    else {
+      if (meta.displayName == 'Text') {
+        return value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
+      } else if (meta.displayName == 'Border') {
+        return value == 'var(--cc-primary-brand)' ? 'var(--cc-default-border)' : value;
+      } else if (meta.displayName == 'Icon color') {
+        return value == '#FFFFFF' ? 'var(--cc-default-icon)' : value;
+      }
+    }
+    return value;
   },
 });

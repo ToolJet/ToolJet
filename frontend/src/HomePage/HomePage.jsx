@@ -1695,7 +1695,13 @@ class HomePageComponent extends React.Component {
                               showCreateAppModal: true,
                             })
                           }
-                          data-cy="create-new-app-button"
+                          data-cy={`create-new-${
+                            this.props.appType === 'workflow'
+                              ? 'workflows'
+                              : this.props.appType === 'module'
+                              ? 'modules'
+                              : 'apps'
+                          }-button`}
                         >
                           <>
                             {isImportingApp && (
