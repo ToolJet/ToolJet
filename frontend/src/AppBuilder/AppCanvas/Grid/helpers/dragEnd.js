@@ -224,7 +224,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-    return newParentId || 'canvas';
+    return newParentId === 'canvas' ? 'real-canvas' : newParentId;
   } else {
     const [slotId] = document
       .elementsFromPoint(event.clientX, event.clientY)
@@ -267,9 +267,6 @@ const extractSlotId = (element) => {
  * @returns {Object} { left, top } - The computed position.
  */
 export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gridWidth, dragged) => {
-  let left = event.lastEvent?.translate[0];
-  let top = event.lastEvent?.translate[1];
-
   if (isParentChangeAllowed) {
     // Compute the relative position inside the new container
     const { left: adjustedLeft, top: adjustedTop } = getMouseDistanceFromParentDiv(
