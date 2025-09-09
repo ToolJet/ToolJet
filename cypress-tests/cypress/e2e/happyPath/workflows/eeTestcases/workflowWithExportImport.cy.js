@@ -8,14 +8,9 @@ import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
 
 import {
-  createWorkflowApp,
-  fillStartNodeJsonInput,
-  connectDataSourceNode,
-  connectNodeToResponseNode,
-  verifyTextInResponseOutput,
-  deleteWorkflow,
+  enterJsonInputInStartNode,
   importWorkflowApp,
-  exportWorkflowApp,
+  verifyTextInResponseOutputLimited,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -33,29 +28,34 @@ describe("Workflows Export/Import Sanity", () => {
   it("RunJS workflow - execute, export/import, re-execute", () => {
     const wfName = `${data.wfName}-runjs`;
 
-    createWorkflowApp(wfName);
-    fillStartNodeJsonInput();
-    connectDataSourceNode(workflowsText.runjsNode);
+    cy.createWorkflowApp(wfName);
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({ force: true });
+    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
+      force: true,
+    });
 
     cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
       .click({ force: true })
-      .realType(workflowsText.runjsCode, { delay: 50 });
+      .realType(workflowsText.runjsNodeCode, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    connectNodeToResponseNode(workflowsText.runjs, workflowsText.runjsResponse);
-    verifyTextInResponseOutput(workflowsText.runjsExpectedValue);
+    cy.connectNodeToResponseNode(
+      workflowsText.runjs,
+      workflowsText.responseNodeQuery
+    );
+    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    exportWorkflowApp(wfName);
+    cy.exportWorkflowApp(wfName);
 
-    importWorkflowApp(wfName, workflowsText.exportFixture);
-    verifyTextInResponseOutput(workflowsText.runjsExpectedValue);
+    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    deleteWorkflow(wfName);
-    cy.task("deleteFile", workflowsText.exportFixture);
+    cy.deleteWorkflow(wfName);
+    cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
   it("Postgres workflow - execute, export/import, re-execute", () => {
@@ -74,8 +74,16 @@ describe("Workflows Export/Import Sanity", () => {
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "database", value: "postgres", encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "username", value: `${Cypress.env("pg_user")}`, encrypted: false },
-        { key: "password", value: `${Cypress.env("pg_password")}`, encrypted: false },
+        {
+          key: "username",
+          value: `${Cypress.env("pg_user")}`,
+          encrypted: false,
+        },
+        {
+          key: "password",
+          value: `${Cypress.env("pg_password")}`,
+          encrypted: false,
+        },
       ]
     );
 
@@ -84,34 +92,40 @@ describe("Workflows Export/Import Sanity", () => {
       .click();
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, { timeout: 10000 })
-      .should("have.text", postgreSqlText.labelConnectionVerified);
+    cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified);
 
     cy.reload();
 
-    createWorkflowApp(wfName);
-    fillStartNodeJsonInput();
-    connectDataSourceNode(dsName);
+    cy.createWorkflowApp(wfName);
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(dsName);
 
-    cy.get(workflowSelector.nodeName(workflowsText.postgresql)).click({ force: true });
+    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
+      force: true,
+    });
 
     cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
-      .realType(workflowsText.postgresQuery, { delay: 50 });
+      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    connectNodeToResponseNode(workflowsText.postgresql, workflowsText.postgresResponse);
-    verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
+    cy.connectNodeToResponseNode(
+      workflowsText.postgresqlNodeName,
+      workflowsText.postgresResponseNodeQuery
+    );
+    cy.verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
 
-    exportWorkflowApp(wfName);
+    cy.exportWorkflowApp(wfName);
 
-    importWorkflowApp(wfName, workflowsText.exportFixture);
-    verifyTextInResponseOutput(workflowsText.postgresExpectedValue);
+    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     deleteWorkflowAndDS(wfName, dsName);
-    cy.task("deleteFile", workflowsText.exportFixture);
+    cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

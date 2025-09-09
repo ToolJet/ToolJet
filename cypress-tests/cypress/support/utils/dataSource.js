@@ -1,15 +1,10 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { cyParamName } from "Selectors/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
-import {
-  deleteWorkflow,
-} from "Support/utils/workFlows";
 
 export const verifyCouldnotConnectWithAlert = (dangerText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
@@ -24,7 +19,7 @@ export const resizeQueryPanel = (height = "90") => {
 };
 
 export const deleteWorkflowAndDS = (appName, datasourceName) => {
-  deleteWorkflow(appName);
+  cy.deleteWorkflow(appName);
   deleteDatasource(datasourceName);
 };
 
