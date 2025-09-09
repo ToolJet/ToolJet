@@ -13,4 +13,11 @@ export enum CustomerType {
 
 export type QueryOptions = {
   operation: string;
+  path: string;
+  params: {
+    path?: Record<string, string>;
+    query?: Record<string, string>;
+    request?: Record<string, any>;
+  };
+  specType: string;
 };
