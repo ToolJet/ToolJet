@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { SourceOptions, QueryOptions, CustomerType } from './types';
+import { SourceOptions, QueryOptions, CustomerType, BaseURL } from './types';
 import got, { HTTPError, Method } from 'got';
 
 export default class Fedex implements QueryService {
@@ -10,6 +10,7 @@ export default class Fedex implements QueryService {
 
       const { accessToken } = await this.generateOAuthToken(sourceOptions);
       const { operation, path, params } = queryOptions;
+      const { base_url } = sourceOptions;
 
       // Build resolved path
       let resolvedPath = path;
@@ -20,9 +21,7 @@ export default class Fedex implements QueryService {
         );
       }
 
-      const baseUrl = "https://apis-sandbox.fedex.com";
-
-      const fullUrl = new URL(`${baseUrl}${resolvedPath}`);
+      const fullUrl = new URL(`${base_url}${resolvedPath}`);
 
       // Append query parameters
       for (const [key, value] of Object.entries(params.query || {})) {
@@ -70,10 +69,10 @@ export default class Fedex implements QueryService {
       this.validateSourceOptions(sourceOptions);
 
       const { accessToken } = await this.generateOAuthToken(sourceOptions);
+      const { base_url } = sourceOptions;
 
       // Use the access token to make a test API call to verify connectivity
-      const baseUrl = "https://apis-sandbox.fedex.com";
-      const testUrl = `${baseUrl}/rate/v1/rates/quotes`;
+      const testUrl = `${base_url}/rate/v1/rates/quotes`;
 
       await got.post(testUrl, {
         headers: {
@@ -98,10 +97,9 @@ export default class Fedex implements QueryService {
   }
 
   private async generateOAuthToken(sourceOptions: SourceOptions) {
-    const baseUrl = "https://apis-sandbox.fedex.com";
-    const tokenUrl = `${baseUrl}/oauth/token`;
 
-    const { client_id, client_secret, customer_type, child_key, child_secret } = sourceOptions;
+    const { client_id, client_secret, customer_type, child_key, child_secret, base_url } = sourceOptions;
+    const tokenUrl = `${base_url}/oauth/token`;
 
     const formData: Record<string, string> = {
       client_id,
@@ -194,16 +192,27 @@ export default class Fedex implements QueryService {
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
-    const { client_id, client_secret, customer_type } =
+    const { client_id, client_secret, customer_type, base_url } =
       sourceOptions;
 
-    if (!client_id || !client_secret) {
+    if (!client_id || !client_secret || !base_url) {
       throw new QueryError(
         "Query could not be completed",
         "Missing required source options",
         {
           client_id: !!client_id,
           client_secret: !!client_secret,
+          base_url: !!base_url,
+        }
+      );
+    }
+
+    if (base_url && !Object.values(BaseURL).includes(base_url)) {
+      throw new QueryError(
+        "Query could not be completed",
+        "Invalid base URL, expected 'https://apis.fedex.com' or 'https://apis-sandbox.fedex.com'",
+        {
+          base_url: base_url,
         }
       );
     }

@@ -4,11 +4,17 @@ export type SourceOptions = {
   customer_type?: CustomerType;
   child_key?: string;
   child_secret?: string;
+  base_url?: BaseURL;
 };
 
 export enum CustomerType {
   INTERNAL = "internal_customers",
   PROPRIETARY_PARENT_CHILD = "proprietary_parent_child_customers",
+}
+
+export enum BaseURL {
+  PRODUCTION = "https://apis.fedex.com",
+  SANDBOX = "https://apis-sandbox.fedex.com",
 }
 
 export type QueryOptions = {

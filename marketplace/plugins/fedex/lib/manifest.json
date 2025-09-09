@@ -30,6 +30,9 @@
       },
       "child_secret": {
         "type": "string"
+      },
+      "base_url": {
+        "type": "string"
       }
     }
   },
@@ -74,6 +77,22 @@
         ],
         "allowed_scope_field": true
       }
+    },
+    "base_url": {
+      "label": "Base URL",
+      "key": "base_url",
+      "type": "dropdown",
+      "description": "Base URL for FedEx API",
+      "list": [
+        {
+          "label": "Production [https://apis.fedex.com]",
+          "value": "https://apis.fedex.com"
+        },
+        {
+          "label": "Sandbox [https://apis-sandbox.fedex.com]",
+          "value": "https://apis-sandbox.fedex.com"
+        }
+      ]
     },
     "customer_type": {
       "label": "Customer Type",
