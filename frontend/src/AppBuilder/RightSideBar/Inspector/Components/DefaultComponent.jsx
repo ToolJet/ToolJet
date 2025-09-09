@@ -41,6 +41,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Listview',
   'Statistics',
   'StarRating',
+  'Html',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
