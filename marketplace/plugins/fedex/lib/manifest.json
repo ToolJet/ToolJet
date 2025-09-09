@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "FedEx datasource",
+  "description": "A schema defining FedEx datasource",
+  "type": "api",
+  "source": {
+    "name": "FedEx",
+    "kind": "fedex",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "customer_type": {
+        "type": "string"
+      },
+      "redirect_url": {
+        "type": "string"
+      },
+      "child_key": {
+        "type": "string"
+      },
+      "child_secret": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "redirect_url": {
+      "value": "",
+      "encrypted": false
+    },
+    "allowed_auth_types": {
+      "value": "oauth2",
+      "encrypted": false
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "client_credentials"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "OAuth configuration for FedEx",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "client_credentials": [
+            "client_id",
+            "client_secret",
+            "child_key",
+            "child_secret"
+          ]
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "client_credentials"
+        ],
+        "allowed_scope_field": true
+      }
+    },
+    "customer_type": {
+      "label": "Customer Type",
+      "key": "customer_type",
+      "type": "dropdown-component-flip",
+      "description": "Select the Customer Type",
+      "list": [
+        {
+          "label": "FedEx® Internal, Compatible, and Integrator customers",
+          "value": "internal_customers"
+        },
+        {
+          "label": "FedEx® Proprietary Parent Child customers",
+          "value": "proprietary_parent_child_customers"
+        }
+      ]
+    },
+    "internal_customers": {
+      "child_key": {
+        "label": "Child key",
+        "key": "child_key",
+        "type": "text",
+        "description": "Customer key returned through Credential Registration API request"
+      },
+      "child_secret": {
+        "label": "Child secret",
+        "key": "child_secret",
+        "type": "text",
+        "description": "Customer password returned through Credential Registration API request"
+      }
+    },
+    "proprietary_parent_child_customers": {
+      "child_key": {
+        "label": "Child key",
+        "key": "child_key",
+        "type": "text",
+        "description": "Enter child key"
+      }
+    }
+  },
+  "required": [
+    "client_id",
+    "client_secret"
+  ]
+}
