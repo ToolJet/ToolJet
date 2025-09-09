@@ -125,6 +125,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Statistics',
   'StarRating',
   'CustomComponent',
+  'Html',
 ];
 
 export const Inspector = ({
