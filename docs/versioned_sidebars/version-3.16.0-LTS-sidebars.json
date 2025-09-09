@@ -48,6 +48,10 @@
         {
           "type": "category",
           "label": "Deployment",
+          "link": {
+            "type": "doc",
+            "id": "setup/index"
+          },
           "items": [
             {
               "type": "category",
