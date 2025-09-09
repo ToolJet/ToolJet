@@ -1,0 +1,12 @@
+{
+  "label": "PostgreSQL 13 → 16 Upgrade",
+  "position": 1,
+  "collapsed": true,
+  "link": {
+    "type": "doc",
+    "id": "setup/postgresql-13-16/aws/overview"
+  },
+  "customProps": {
+    "icon": "postgresql"
+  }
+}
