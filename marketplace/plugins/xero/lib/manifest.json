@@ -42,25 +42,16 @@
       "value": "authorization_code"
     },
     "scopes": {
-      "value": ""
+      "value": "openid profile email accounting.transactions accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.contacts accounting.attachments accounting.budgets.read payroll.employees payroll.payruns payroll.payslip payroll.timesheets payroll.settings files assets projects"
     },
     "oauth_type": {
       "value": "custom_app"
     },
     "access_token_url": {
       "value": "https://identity.xero.com/connect/token"
-    },
-    "tenant_id": {
-      "value": ""
     }
     },
   "properties": {
-    "tenant_id": {
-      "key": "tenant_id",
-      "type": "text",
-      "label": "Tenant ID",
-      "description": "Enter your Xero Tenant ID (get it from https://api.xero.com/connections)"
-      },
     "oauth": {
       "key": "oauth",
       "type": "react-component-oauth",
@@ -82,5 +73,5 @@
       }
     }
   },
-  "required": ["client_id", "client_secret", "tenant_id","scopes"]
+  "required": ["client_id", "client_secret","scopes"]
 }

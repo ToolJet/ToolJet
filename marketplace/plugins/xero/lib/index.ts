@@ -214,6 +214,7 @@ export default class Xero implements QueryService {
       });
 
        const tokenResponse = response.body as { access_token: string; refresh_token: string };
+       
        return [
          ['access_token', tokenResponse.access_token],
          ['refresh_token', tokenResponse.refresh_token],
@@ -249,7 +250,7 @@ export default class Xero implements QueryService {
     const queryParams = queryOptions['params']['query'];
     const bodyParams = queryOptions['params']['request'];
 
-
+    console.log(`------------------------------------>query Options`,queryOptions);
     let baseUrl: string;
 
     switch (specType.toLowerCase()) { 
@@ -318,7 +319,8 @@ export default class Xero implements QueryService {
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
       requestOptions.headers = {
         ...(requestOptions.headers || {}),
-        'Xero-tenant-id': sourceOptions['tenant_id'],
+       // 'Xero-tenant-id': sourceOptions['tenant_id'],
+        'Xero-tenant-id': queryOptions?.tenant_id,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       };
@@ -327,20 +329,32 @@ export default class Xero implements QueryService {
         method: operation,
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Xero-tenant-id': sourceOptions['tenant_id'],
-          Accept: 'application/json',
+          //'Xero-tenant-id': sourceOptions['tenant_id'],
+          'Xero-tenant-id': queryOptions?.tenant_id,
+           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         searchParams: queryParams,
       };
 
+      // if (operation && typeof operation === 'string' && !['get', 'delete'].includes(operation)) {
+      //   if (bodyParams && Object.keys(bodyParams).length > 0) {
+      //     requestOptions['json'] = bodyParams;
+      //   }
+      // }
       if (operation && typeof operation === 'string' && !['get', 'delete'].includes(operation)) {
-        if (bodyParams && Object.keys(bodyParams).length > 0) {
+        if (specType === 'files' && operation === 'post') {
+          requestOptions.headers['Content-Type'] = 'multipart/form-data';
+          requestOptions.body = bodyParams?.body;
+        } else if (bodyParams && Object.keys(bodyParams).length > 0) {
           requestOptions['json'] = bodyParams;
         }
       }
     }
     try {
+      console.log(`------------------------tenant_id`, queryOptions?.tenant_id)
+      console.log(`------------------------->url[]`,url);
+      console.log(`------------------------->requestOptions[]`,requestOptions);
       const response = await got(url, requestOptions);
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
       return {

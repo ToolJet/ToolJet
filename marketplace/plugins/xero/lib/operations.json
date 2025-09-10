@@ -5,6 +5,20 @@
   "type": "api",
   "defaults": {},
   "properties": {
+"tenant_id": {
+  "label": "Tenant ID",
+  "key": "tenant_id",
+  "type": "dropdown",
+  "description": "Select your Xero Tenant ID",
+  "width": "220px",
+  "height": "36px",
+  "placeholder": "Select Tenant",
+  "list": [
+    { "name": "Tenant 1", "value": "tenant_1" },
+    { "name": "Tenant 2", "value": "tenant_2" },
+    { "name": "Tenant 3", "value": "tenant_3" }
+  ]
+},
     "operation": {
       "label": "",
       "key": "xero_operation",
