@@ -26,9 +26,12 @@ const Avatar = ({ text, image, avatarId, title = '', borderShape, indexId = 0, c
       style={{
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
-      className={cx(`animation-fade avatar tj-text-xsm ${className} ${realtime ? 'tj-header-avatar' : 'tj-avatar '}`, {
-        'avatar-rounded': borderShape === 'rounded',
-      })}
+      className={cx(
+        `!tw-shadow-none animation-fade avatar tj-text-xsm ${className} ${realtime ? 'tj-header-avatar' : 'tj-avatar '}`,
+        {
+          'avatar-rounded': borderShape === 'rounded',
+        }
+      )}
       data-cy="avatar-image"
     >
       {!image && !avatarId && text}
