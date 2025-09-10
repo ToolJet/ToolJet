@@ -147,6 +147,8 @@ export default class MysqlQueryService implements QueryService {
         multipleStatements: true,
         ...(sourceOptions.ssl_enabled && { ssl: sslObject }),
       },
+      pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
+      acquireConnectionTimeout: 60000,
       ...this.connectionOptions(sourceOptions),
     };
     return knex(config);
