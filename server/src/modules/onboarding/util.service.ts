@@ -316,7 +316,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           return {};
         }
         case isUserAlreadyExisted: {
-          const errorMessage = organizationId ? 'User already exists in the workspace.' : 'Email already exists.';
+          const errorMessage = organizationId
+            ? 'User with this email already exists in one or more workspaces.'
+            : 'Email already exists.';
           throw new NotAcceptableException(errorMessage);
         }
         default:
