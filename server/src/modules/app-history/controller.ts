@@ -13,7 +13,7 @@ export class AppHistoryController {
     @Query('actionType') actionType?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string
-  ) {
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
@@ -21,7 +21,7 @@ export class AppHistoryController {
   async getHistoryEntry(
     @Param('versionId', ParseUUIDPipe) versionId: string,
     @Param('historyId', ParseUUIDPipe) historyId: string
-  ) {
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
@@ -30,12 +30,15 @@ export class AppHistoryController {
     @Param('versionId', ParseUUIDPipe) versionId: string,
     @Param('historyId', ParseUUIDPipe) historyId: string,
     @Body() restoreDto: any
-  ) {
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
   @Patch(':historyId')
-  async updateHistoryDescription(@Param('historyId', ParseUUIDPipe) historyId: string, @Body() updateDto: any) {
+  async updateHistoryDescription(
+    @Param('historyId', ParseUUIDPipe) historyId: string,
+    @Body() updateDto: any
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

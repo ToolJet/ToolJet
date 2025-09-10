@@ -28,6 +28,7 @@ export class ModulesModule {
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
+    const { AppHistoryModule } = await import(`${importPath}/app-history/module`);
 
     return {
       module: ModulesModule,
@@ -41,6 +42,7 @@ export class ModulesModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       controllers: [ModulesController],
       providers: [
@@ -57,7 +59,7 @@ export class ModulesModule {
         FeatureAbilityFactory,
         RolesRepository,
         AppGitRepository,
-        GroupPermissionsRepository
+        GroupPermissionsRepository,
       ],
     };
   }

@@ -41,6 +41,7 @@ import { FEATURES as EXTERNAL_API_FEATURES } from '@modules/external-apis/consta
 import { FEATURES as MODULE_FEATURES } from '@modules/modules/constants/feature';
 import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git-sync/constants/feature';
+import { FEATURES as APP_HISTORY_FEATURES } from '@modules/app-history/constants/features';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -90,4 +91,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...MODULE_FEATURES,
   ...APP_GIT_FEATURES,
   ...GIT_SYNC_FEATURES,
+  ...APP_HISTORY_FEATURES,
 };
