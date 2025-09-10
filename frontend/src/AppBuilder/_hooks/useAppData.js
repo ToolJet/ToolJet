@@ -256,6 +256,10 @@ const useAppData = (
       }
     }
 
+    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
+      setEditorLoading(true, moduleId);
+    }
+
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -549,26 +553,9 @@ const useAppData = (
         handleEvent("onPageLoad", currentPageEvents, {});
       });
     }
-    /*
-    -  AI LOGIC 
-    - This logic is a hack for onload queries to run when app transitions from ai to visual builder.
-    - This is needed because when app is in ai mode, component layout never changes because AppCanvas is loaded already with an empty app. Instead of touching the logic in AppBuilder, we are adding this hack here.
-    */
-    if (isAppModeSwitchedToVisualPostLayoutGeneration) {
-      setTimeout(() => {
-        runOnLoadQueries(moduleId).then(() => {
-          const currentPageEvents = events.filter(
-            (event) =>
-              event.target === "page" && event.sourceId === currentPageId
-          );
-          handleEvent("onPageLoad", currentPageEvents, {});
-        });
-      }, 1000);
-    }
   }, [
     isComponentLayoutReady,
     moduleId,
-    isAppModeSwitchedToVisualPostLayoutGeneration,
   ]);
 
   useEffect(() => {
