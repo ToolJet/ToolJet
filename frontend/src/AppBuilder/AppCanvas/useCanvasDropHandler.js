@@ -14,6 +14,8 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
 
+const BUFFER_OFFSET = 15;
+
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
 
@@ -49,6 +51,9 @@ export const useCanvasDropHandler = () => {
       );
       return;
     }
+
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    setRightSidebarOpen(true);
 
     // IMPORTANT: This logic needs to be changed when we implement the module versioning
     const moduleInfo = component?.moduleId
@@ -89,9 +94,6 @@ export const useCanvasDropHandler = () => {
       await addComponentToCurrentPage(addedComponent);
     }
 
-    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-    setRightSidebarOpen(true);
-
     const canvas = document.querySelector('.canvas-container');
     const sidebar = document.querySelector('.editor-sidebar');
     const droppedElem = document.getElementById(addedComponent?.[0]?.id);
@@ -106,7 +108,7 @@ export const useCanvasDropHandler = () => {
     if (isOverlapping) {
       const overlap = droppedRect.right - sidebarRect.left;
       canvas.scrollTo({
-        left: canvas.scrollLeft + overlap,
+        left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
         behavior: 'smooth',
       });
     }

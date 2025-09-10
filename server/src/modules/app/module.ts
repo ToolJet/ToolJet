@@ -57,7 +57,19 @@ import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from '@modules/tooljet-db/helper';
+import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
+import { EntityManager } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { InjectEntityManager } from '@nestjs/typeorm';
+
 export class AppModule implements OnModuleInit {
+  constructor(
+    private configService: ConfigService,
+    @InjectEntityManager('tooljetDb')
+    private readonly tooljetDbManager: EntityManager
+  ) {}
+
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
     const modules = await AppModuleLoader.loadModules(configs);
@@ -149,8 +161,30 @@ export class AppModule implements OnModuleInit {
     });
   }
 
-  onModuleInit(): void {
+  async onModuleInit() {
     console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
     console.log(`Initializing server modules 📡 `);
+
+    if (!process.env.WORKER) {
+      const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
+      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
+
+      if (isSQLModeDisabled()) {
+        await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      } else {
+        await reconfigurePostgrest(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      }
+
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    }
   }
 }
