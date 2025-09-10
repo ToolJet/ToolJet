@@ -62,6 +62,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   PopoverMenu: 'Data',
   Statistics: 'Data',
   StarRating: 'Data',
+  Kanban: 'Board configuration',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {

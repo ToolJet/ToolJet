@@ -13,7 +13,8 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const parentRef = useRef(null);
-  const { id, containerProps, component } = kanbanProps;
+  const { id, containerProps, component, properties } = kanbanProps;
+  const { size, modalHeight } = properties;
   const prevLastSelectedCard = useRef(lastSelectedCard);
 
   // Check if the previous lastSelectedCard data is different from the current lastSelectedCard data
@@ -51,7 +52,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
       show={showModal}
       contentClassName="modal-component kanban-modal"
       container={document.getElementsByClassName('real-canvas')[0]}
-      size={'lg'}
+      size={size}
       keyboard={true}
       enforceFocus={false}
       animation={false}
@@ -59,7 +60,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
       backdrop={'static'}
       component-id={`${id}-modal`}
     >
-      <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: '400px' }}>
+      <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: `${modalHeight}px` }}>
         {renderCloseButton()}
         <SubContainer
           canvasWidth={720}
