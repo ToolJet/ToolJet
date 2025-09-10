@@ -14,7 +14,6 @@ import {
   createWorkflowForUser,
   createApplicationVersion,
   createNestAppInstance,
-  createFeatureMocks,
 } from '../workflows.helper';
 import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -76,11 +75,9 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
   });
 
   beforeAll(async () => {
-    const featureMocks = await createFeatureMocks();
     app = await createNestAppInstance({
       edition: 'ee',
       isGetContext: true,
-      mockProviders: featureMocks,
     });
   });
 
@@ -95,6 +92,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const loggedUser = await authenticateUser(app, user.email);
@@ -139,6 +141,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const loggedUser = await authenticateUser(app, user.email);
@@ -186,6 +193,37 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         })
       );
     });
+
+    it('should return 403 when user lacks workflow edit permissions', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'readonly@tooljet.io',
+        password: 'password',
+        firstName: 'ReadOnly',
+        lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: false,
+          workflowCreate: false
+        }
+      });
+
+      const loggedUser = await authenticateUser(app, user.email);
+      const tokenCookie = loggedUser.tokenCookie;
+
+      const response = await request(app.getHttpServer())
+        .get('/api/workflows/packages/search')
+        .query({ q: 'lodash', limit: 5 })
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .send();
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: 'You do not have permission to access this resource'
+        })
+      );
+    });
   });
 
   describe('GET /api/workflows/:workflowId/packages', () => {
@@ -195,6 +233,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -227,6 +270,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-with-deps');
@@ -250,11 +298,14 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       // Wait for package processing
       await new Promise(resolve => setTimeout(resolve, 100));
 
+      // Re-authenticate to ensure fresh token for GET request
+      const refreshedUser = await authenticateUser(app, user.email);
+      
       // Now get the dependencies
       const response = await request(app.getHttpServer())
         .get(`/api/workflows/${appVersion.id}/packages`)
         .set('tj-workspace-id', user.defaultOrganizationId)
-        .set('Cookie', tokenCookie)
+        .set('Cookie', refreshedUser.tokenCookie)
         .send();
 
       expect(response.statusCode).toBe(200);
@@ -292,6 +343,38 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         })
       );
     });
+
+    it('should return 403 when user lacks workflow edit permissions', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'readonly@tooljet.io',
+        password: 'password',
+        firstName: 'ReadOnly',
+        lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: false,
+          workflowCreate: false
+        }
+      });
+
+      const workflow = await createWorkflowForUser(app, user, 'test-workflow');
+      const appVersion = await createApplicationVersion(app, workflow);
+      const loggedUser = await authenticateUser(app, user.email);
+      const tokenCookie = loggedUser.tokenCookie;
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/workflows/${appVersion.id}/packages`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .send();
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: 'You do not have permission to access this resource'
+        })
+      );
+    });
   });
 
   describe('PUT /api/workflows/:workflowId/packages', () => {
@@ -301,6 +384,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -377,6 +465,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -409,6 +502,38 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         })
       );
     });
+
+    it('should return 403 when user lacks workflow edit permissions', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'readonly@tooljet.io',
+        password: 'password',
+        firstName: 'ReadOnly',
+        lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: false,
+          workflowCreate: false
+        }
+      });
+
+      const workflow = await createWorkflowForUser(app, user, 'test-workflow');
+      const appVersion = await createApplicationVersion(app, workflow);
+      const loggedUser = await authenticateUser(app, user.email);
+      const tokenCookie = loggedUser.tokenCookie;
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/workflows/${appVersion.id}/packages`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .send({ dependencies: { lodash: '4.17.21' } });
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: 'You do not have permission to access this resource'
+        })
+      );
+    });
   });
 
   describe('GET /api/workflows/:workflowId/bundle/status', () => {
@@ -418,6 +543,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -464,6 +594,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const loggedUser = await authenticateUser(app, user.email);
@@ -495,6 +630,38 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         })
       );
     });
+
+    it('should return 403 when user lacks workflow edit permissions', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'readonly@tooljet.io',
+        password: 'password',
+        firstName: 'ReadOnly',
+        lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: false,
+          workflowCreate: false
+        }
+      });
+
+      const workflow = await createWorkflowForUser(app, user, 'test-workflow');
+      const appVersion = await createApplicationVersion(app, workflow);
+      const loggedUser = await authenticateUser(app, user.email);
+      const tokenCookie = loggedUser.tokenCookie;
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/workflows/${appVersion.id}/bundle/status`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .send();
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: 'You do not have permission to access this resource'
+        })
+      );
+    });
   });
 
   describe('POST /api/workflows/:workflowId/bundle/rebuild', () => {
@@ -504,6 +671,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -559,6 +731,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
@@ -590,6 +767,38 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         })
       );
     });
+
+    it('should return 403 when user lacks workflow edit permissions', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'readonly@tooljet.io',
+        password: 'password',
+        firstName: 'ReadOnly',
+        lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: false,
+          workflowCreate: false
+        }
+      });
+
+      const workflow = await createWorkflowForUser(app, user, 'test-workflow');
+      const appVersion = await createApplicationVersion(app, workflow);
+      const loggedUser = await authenticateUser(app, user.email);
+      const tokenCookie = loggedUser.tokenCookie;
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/workflows/${appVersion.id}/bundle/rebuild`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .send();
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: 'You do not have permission to access this resource'
+        })
+      );
+    });
   });
 
   describe('Complete workflow package management flow', () => {
@@ -599,6 +808,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         password: 'password',
         firstName: 'Admin',
         lastName: 'User',
+      }, {
+        workflowPermissions: {
+          isAllEditable: true,
+          workflowCreate: true
+        }
       });
 
       const workflow = await createWorkflowForUser(app, user, 'integration-test-workflow');

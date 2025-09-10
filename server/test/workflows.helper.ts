@@ -23,17 +23,17 @@ import { UserSessions } from '@entities/user_sessions.entity';
 import { SessionType } from '@modules/external-apis/constants';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
-import { createMock } from '@golevelup/ts-jest';
+import { DataSource } from '@entities/data_source.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { WorkflowDefinitionNode, WorkflowDefinitionEdge, WorkflowDefinitionQuery, WorkflowNodeData } from '../ee/workflows/services/workflow-executions.service';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
+import { BundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
 
-let AbilityService: any, FeatureAbilityFactory: any, UserPermissions: any, FEATURE_KEY: any;
-
-async function loadAbilityTypes() {
-    if (!AbilityService) {
-        AbilityService = (await import('../src/modules/ability/interfaces/IService')).AbilityService;
-        FeatureAbilityFactory = (await import('../ee/workflows/ability/app')).FeatureAbilityFactory;
-        FEATURE_KEY = (await import('../src/modules/workflows/constants')).FEATURE_KEY;
-    }
-}
 
 export const createUser = async (
     nestApp: INestApplication,
@@ -82,9 +82,15 @@ export const createUser = async (
 export const setupOrganizationAndUser = async (
     nestApp: INestApplication,
     userParams: { email: string; password: string; firstName: string; lastName: string },
-    options: { allowPersonalWorkspace?: boolean } = {}
+    options: {
+        allowPersonalWorkspace?: boolean;
+        workflowPermissions?: {
+            isAllEditable?: boolean;
+            workflowCreate?: boolean;
+        };
+    } = {}
 ): Promise<{ user: User; organization: Organization }> => {
-    const { allowPersonalWorkspace = true } = options;
+    const { allowPersonalWorkspace = true, workflowPermissions } = options;
 
     await updateInstanceSetting(nestApp, INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE, allowPersonalWorkspace.toString());
 
@@ -96,7 +102,71 @@ export const setupOrganizationAndUser = async (
 
     await createDefaultAppEnvironments(nestApp, organization.id);
 
+    // Create workflow permissions if specified
+    if (workflowPermissions) {
+        await createUserWorkflowPermissions(nestApp, user, organization.id, workflowPermissions);
+    }
+
     return { user, organization };
+};
+
+const createUserWorkflowPermissions = async (
+    nestApp: INestApplication,
+    user: User,
+    organizationId: string,
+    permissions: {
+        isAllEditable?: boolean;
+        workflowCreate?: boolean;
+    }
+): Promise<void> => {
+    const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+    const groupPermissionsRepository = defaultDataSource.getRepository(GroupPermissions);
+    const granularPermissionsRepository = defaultDataSource.getRepository(GranularPermissions);
+    const appsGroupPermissionsRepository = defaultDataSource.getRepository(AppsGroupPermissions);
+    const groupUsersRepository = defaultDataSource.getRepository(GroupUsers);
+
+    // Create a custom group for workflow permissions
+    const groupPermission = groupPermissionsRepository.create({
+        organizationId,
+        name: `wf-test-${user.id.substring(0, 20)}`,
+        type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+        workflowCreate: permissions.workflowCreate || false,
+        appCreate: false,
+        appDelete: false,
+        folderCRUD: false,
+        orgConstantCRUD: false,
+        dataSourceCreate: false,
+        dataSourceDelete: false,
+        appPromote: false,
+        appRelease: false,
+    });
+    await groupPermissionsRepository.save(groupPermission);
+
+    // Create granular permissions for workflows
+    const granularPermission = granularPermissionsRepository.create({
+        groupId: groupPermission.id,
+        name: 'Workflows',
+        type: ResourceType.WORKFLOWS,
+        isAll: permissions.isAllEditable || false,
+    });
+    await granularPermissionsRepository.save(granularPermission);
+
+    // Create apps group permissions for workflows
+    const appsGroupPermission = appsGroupPermissionsRepository.create({
+        granularPermissionId: granularPermission.id,
+        appType: APP_TYPES.WORKFLOW,
+        canEdit: permissions.isAllEditable || false,
+        canView: true, // Always allow view
+        hideFromDashboard: false,
+    });
+    await appsGroupPermissionsRepository.save(appsGroupPermission);
+
+    // Associate user with the group
+    const groupUser = groupUsersRepository.create({
+        userId: user.id,
+        groupId: groupPermission.id,
+    });
+    await groupUsersRepository.save(groupUser);
 };
 
 export const createWorkflowForUser = async (
@@ -154,7 +224,6 @@ export const createApplicationVersion = async (
 export const authenticateUser = async (
     app: INestApplication,
     email: string = 'admin@tooljet.io',
-    password: string = 'password',
     organizationId?: string
 ) => {
     const defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
@@ -369,14 +438,14 @@ export const createNestAppInstance = async (options: {
     const { edition = 'ce', isGetContext = true, mockProviders = [] } = options;
     if (edition) process.env.TOOLJET_EDITION = edition;
 
-    let moduleBuilder = Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
         imports: [await AppModule.register({ IS_GET_CONTEXT: isGetContext })],
         providers: [],
     });
 
-    // Apply mock providers if provided
+    // Apply mock providers if provided - override each provider
     for (const mockProvider of mockProviders) {
-        moduleBuilder = moduleBuilder.overrideProvider(mockProvider.provide).useValue(mockProvider.useValue);
+        moduleBuilder.overrideProvider(mockProvider.provide).useValue(mockProvider.useValue);
     }
 
     const moduleRef = await moduleBuilder.compile();
@@ -391,51 +460,263 @@ export const createNestAppInstance = async (options: {
         type: VersioningType.URI,
         defaultVersion: VERSION_NEUTRAL,
     });
-    console.log('Initializing Nest application instance...');
     await app.init();
 
     return app;
 };
 
-/**
- * Creates mock providers for features that require ability/permission checks
- */
-export const createFeatureMocks = async () => {
-    await loadAbilityTypes();
+export const createWorkflowDataSource = async (
+    nestApp: INestApplication,
+    organizationId: string,
+    appVersionId: string,
+    kind: string,
+    environmentId: string,
+    options: {
+        name?: string;
+        type?: 'static' | 'default' | 'sample';
+        scope?: 'global' | 'local';
+        pluginId?: string;
+    } = {}
+): Promise<DataSource> => {
+    const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+    const dataSourceRepository = defaultDataSource.getRepository(DataSource);
 
-    // Mock UserPermissions with admin privileges
-    const mockUserPermissions = {
-        isAdmin: true,
-        isSuperAdmin: true,
-        isBuilder: true,
-        isEndUser: true,
-        appCreate: true,
-        appDelete: true,
-        workflowCreate: true,
-        workflowDelete: true,
-        appPromote: true,
-        appRelease: true,
-        dataSourceCreate: true,
-        dataSourceDelete: true,
-        folderCRUD: true,
-        orgConstantCRUD: true,
-        orgVariableCRUD: true,
-    };
+    const dataSource = dataSourceRepository.create({
+        id: require('crypto').randomUUID(),
+        name: options.name || (options.type === 'static' ? `${kind}default` : kind),
+        kind: kind,
+        type: options.type || 'default',
+        scope: options.scope || 'global',
+        pluginId: options.pluginId || null,
+        appVersionId: (options.scope || 'global') === 'global' ? null : appVersionId,
+        organizationId: organizationId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
 
-    const abilityServiceMock = createMock<typeof AbilityService>();
-    (abilityServiceMock as any).resourceActionsPermission.mockResolvedValue(mockUserPermissions);
-    (abilityServiceMock as any).getResourcePermission.mockResolvedValue([]);
+    const savedDataSource = await dataSourceRepository.save(dataSource);
 
-    const featureAbilityFactoryMock = createMock<typeof FeatureAbilityFactory>();
-    const mockAbility = {
-        can: jest.fn().mockImplementation((feature: string) => {
-            return feature === FEATURE_KEY.NPM_PACKAGES || true;
-        })
-    };
-    (featureAbilityFactoryMock as any).createAbility.mockResolvedValue(mockAbility);
+    // Create DataSourceOptions for the environment
+    const dataSourceOptionsRepository = defaultDataSource.getRepository(DataSourceOptions);
+    const dataSourceOptions = dataSourceOptionsRepository.create({
+        environmentId: environmentId,
+        dataSourceId: savedDataSource.id,
+        options: {} // Default empty options for the data source
+    });
+    await dataSourceOptionsRepository.save(dataSourceOptions);
 
-    return [
-        { provide: AbilityService, useValue: abilityServiceMock },
-        { provide: FeatureAbilityFactory, useValue: featureAbilityFactoryMock }
-    ];
+    return savedDataSource;
 };
+
+export const createWorkflowDataQuery = async (
+    nestApp: INestApplication,
+    appVersion: AppVersion,
+    dataSource: DataSource,
+    queryConfig: {
+        name: string;
+        options: Record<string, any>;
+    }
+): Promise<DataQuery> => {
+    const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+    const dataQueryRepository = defaultDataSource.getRepository(DataQuery);
+
+    const dataQuery = dataQueryRepository.create({
+        id: require('crypto').randomUUID(),
+        name: queryConfig.name,
+        options: queryConfig.options,
+        dataSourceId: dataSource.id,
+        appVersionId: appVersion.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    return await dataQueryRepository.save(dataQuery);
+};
+
+
+export const buildGrpcOptions = (config: {
+    proto?: string;
+    service?: string;
+    rpc?: string;
+    metadata?: Record<string, string>;
+    message?: string;
+}) => ({
+    proto: config.proto || '',
+    service: config.service || '',
+    rpc: config.rpc || '',
+    metadata: config.metadata || {},
+    message: config.message || '{}'
+});
+
+export const buildRunPyOptions = (code: string) => ({
+    code
+});
+
+/**
+ * Workflow Definition Types
+ * These are aliases to the actual types from the workflow execution service
+ */
+
+// Create a more flexible version of WorkflowNodeData for testing
+interface TestWorkflowNodeData extends Partial<Omit<WorkflowNodeData, 'nodeType'>> {
+    nodeType?: 'start' | 'query' | 'workflow' | 'response';
+    nodeName?: string;
+}
+
+// Node type with additional properties needed for testing
+export interface WorkflowNode extends Omit<WorkflowDefinitionNode, 'data'> {
+    data: TestWorkflowNodeData;
+    position: { x: number; y: number };
+    sourcePosition?: string;
+    targetPosition?: string;
+}
+
+// Edge type alias
+export type WorkflowEdge = WorkflowDefinitionEdge;
+
+// Query type with additional properties needed for testing
+export interface WorkflowQuery extends Partial<WorkflowDefinitionQuery> {
+    idOnDefinition: string;
+    dataSourceKind: 'runjs' | 'restapi' | 'runpy' | 'grpcv2';
+    name: string;
+    options: Record<string, any>;
+}
+
+export const buildWorkflowDefinition = (config: {
+    nodes: WorkflowNode[];
+    edges: WorkflowEdge[];
+    queries: Array<{
+        idOnDefinition: string;
+        id?: string;
+    }>;
+    setupScript?: string;
+    dependencies?: Record<string, string>;
+    webhookParams?: any[];
+    defaultParams?: string;
+}) => ({
+    nodes: config.nodes,
+    edges: config.edges,
+    queries: config.queries,
+    setupScript: config.setupScript || undefined,
+    dependencies: config.dependencies || undefined,
+    webhookParams: config.webhookParams || [],
+    defaultParams: config.defaultParams || '{}'
+});
+
+export const createCompleteWorkflow = async (
+    nestApp: INestApplication,
+    user: User,
+    workflowConfig: {
+        name: string;
+        setupScript?: string;
+        dependencies?: Record<string, string>;
+        nodes: WorkflowNode[];
+        edges: WorkflowEdge[];
+        queries: WorkflowQuery[];
+    }
+): Promise<{
+    app: App;
+    appVersion: AppVersion;
+    dataQueries: DataQuery[];
+    dataSources: DataSource[];
+}> => {
+    // Create the workflow app
+    const app = await createWorkflowForUser(nestApp, user, workflowConfig.name);
+
+    // Prepare queries definition with idOnDefinition
+    const queriesDefinition = workflowConfig.queries.map(q => ({
+        idOnDefinition: q.idOnDefinition,
+        id: null as string | null
+    }));
+
+    // Create app version with workflow definition
+    const appVersion = await createApplicationVersion(nestApp, app, {
+        definition: buildWorkflowDefinition({
+            nodes: workflowConfig.nodes,
+            edges: workflowConfig.edges,
+            queries: queriesDefinition,
+            setupScript: workflowConfig.setupScript,
+            dependencies: workflowConfig.dependencies
+        })
+    });
+
+    const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+
+    // Create data sources and queries
+    const dataSources: DataSource[] = [];
+    const dataQueries: DataQuery[] = [];
+
+    // Group queries by data source kind
+    const queryGroups = new Map<string, WorkflowQuery[]>();
+    for (const query of workflowConfig.queries) {
+        const existing = queryGroups.get(query.dataSourceKind) || [];
+        existing.push(query);
+        queryGroups.set(query.dataSourceKind, existing);
+    }
+
+    // Create data sources for each kind
+    const dataSourceMap = new Map<string, DataSource>();
+    for (const [kind] of queryGroups) {
+        const dataSource = await createWorkflowDataSource(
+            nestApp,
+            user.organizationId || user.defaultOrganizationId,
+            appVersion.id,
+            kind as any,
+            appVersion.currentEnvironmentId,
+            { type: 'static', scope: 'global' }
+        );
+        dataSources.push(dataSource);
+        dataSourceMap.set(kind, dataSource);
+    }
+
+    // Create data queries and update definition
+    for (let i = 0; i < workflowConfig.queries.length; i++) {
+        const queryConfig = workflowConfig.queries[i];
+        const dataSource = dataSourceMap.get(queryConfig.dataSourceKind)!;
+
+        const dataQuery = await createWorkflowDataQuery(
+            nestApp,
+            appVersion,
+            dataSource,
+            {
+                name: queryConfig.name,
+                options: queryConfig.options
+            }
+        );
+
+        dataQueries.push(dataQuery);
+
+        // Update the app version definition with the actual data query ID
+        const queryDefIndex = queriesDefinition.findIndex(
+            q => q.idOnDefinition === queryConfig.idOnDefinition
+        );
+        if (queryDefIndex !== -1) {
+            queriesDefinition[queryDefIndex].id = dataQuery.id;
+        }
+    }
+
+    // Update app version with the linked query IDs
+    appVersion.definition.queries = queriesDefinition;
+    await defaultDataSource.getRepository(AppVersion).save(appVersion);
+
+    return {
+        app,
+        appVersion,
+        dataQueries,
+        dataSources
+    };
+};
+
+
+export const createWorkflowBundle = async (
+    nestApp: INestApplication,
+    appVersionId: string,
+    dependencies: Record<string, string>
+): Promise<void> => {
+    const bundleGenerationService = nestApp.get<BundleGenerationService>(BundleGenerationService);
+    
+    // Use the bundle generation service to update packages
+    // This will handle both creating new bundles and updating existing ones
+    await bundleGenerationService.updatePackages(appVersionId, dependencies);
+};
+
