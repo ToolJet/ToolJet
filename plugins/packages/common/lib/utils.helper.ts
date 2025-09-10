@@ -19,22 +19,24 @@ export function cacheConnection(dataSourceId: string, connection: any): any {
 }
 
 export function generateSourceOptionsHash(sourceOptions) {
-  const sortedEntries = Object.entries(sourceOptions)
-    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}:${value}`)
-    .join('|');
-
+  // Object.keys().sort() is faster than localeCompare
+  const sortedKeys = Object.keys(sourceOptions).sort();
+  const optionsList: string[] = [];
+  for (const key of sortedKeys) {
+    const value = sourceOptions[key];
+    if (value !== undefined && value !== null && value !== '') optionsList.push(`${key}:${value}`);
+  }
+  // Join only once at the end, instead of repeated concatenation
+  const sortedEntries = optionsList.join('|');
   return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
 }
 
 export function cacheConnectionWithConfiguration(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
   const updatedAt = new Date();
-  const allKeys = Object.keys(CACHED_CONNECTIONS);
-  const oldKeysForThisDatasource = allKeys.filter(
-    (key) => key.startsWith(`${dataSourceId}_`) && key !== enhancedCacheKey
-  );
-  oldKeysForThisDatasource.forEach((oldKey) => delete CACHED_CONNECTIONS[oldKey]);
+  const prefix = `${dataSourceId}_`;
+  for (const key in CACHED_CONNECTIONS) {
+    if (key.startsWith(prefix) && key !== enhancedCacheKey) delete CACHED_CONNECTIONS[key];
+  }
 
   CACHED_CONNECTIONS[enhancedCacheKey] = { connection, updatedAt };
 }
