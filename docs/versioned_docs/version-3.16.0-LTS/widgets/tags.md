@@ -89,7 +89,7 @@ The following actions of the component can be controlled using the component-spe
 
 ### Container
 
-| Property.         | Description                                |
+| Property          | Description                                |
 |:----------------- |:-------------------------------------------|
 | **Box shadow**    | Applies shadow styling to the container.   |
 | **Padding**       | Sets the padding around the container.     |
