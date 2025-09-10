@@ -1,5 +1,7 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { selectEvent } from "Support/utils/events";
+import { commonQuerySelectors } from "Selectors/common";
+import { postgreSqlText } from "Texts/postgreSql";
 
 export const selectQueryFromLandingPage = (dbName, label) => {
   cy.get(
@@ -70,4 +72,31 @@ export const addSuccessNotification = (notification) => {
   cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(notification);
   cy.get('[data-cy="query-tab-setup"]').click();
   cy.wait(300);
+};
+
+
+export const performQueryAction = (queryName, action, newName) => {
+  cy.get(commonQuerySelectors.queryNameList(queryName))
+    .should("be.visible")
+    .trigger("mouseover");
+  cy.get(`[data-cy="delete-query-${queryName}"]`)
+    .should("be.visible")
+    .click();
+  if (action === "rename") {
+    cy.get(commonQuerySelectors.queryActionButton(action)).click();
+    cy.get(commonQuerySelectors.queryEditInputField).clear().type(`${newName}{enter}`);
+  } 
+  else if (action === "duplicate") {
+    cy.get(commonQuerySelectors.queryActionButton(action)).click();
+  } 
+  else if (action === "delete") {
+    cy.get(commonQuerySelectors.queryActionButton(action)).click();
+    cy.get(postgreSqlSelector.deleteModalMessage)
+      .verifyVisibleElement("have.text", postgreSqlText.dialogueTextDelete);
+    cy.get(postgreSqlSelector.deleteModalCancelButton)
+      .verifyVisibleElement("have.text", postgreSqlText.cancel);
+    cy.get(postgreSqlSelector.deleteModalConfirmButton)
+      .verifyVisibleElement("have.text", postgreSqlText.yes)
+      .click();
+  }
 };

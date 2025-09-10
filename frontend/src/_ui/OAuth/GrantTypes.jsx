@@ -322,7 +322,7 @@ const AuthorizationCode = ({
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
             />
-            <span className="form-check-label" data-cy="label-authentication-requrired-for-all-users">
+            <span className="form-check-label" data-cy="label-authentication-required-for-all-users">
               Authentication required for all users
             </span>
           </label>
