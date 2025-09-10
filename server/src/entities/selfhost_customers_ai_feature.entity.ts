@@ -33,7 +33,7 @@ export class SelfhostCustomersAiFeature extends BaseEntity {
   @Column({ name: 'api_key', type: 'varchar', length: 255 })
   apiKey: string;
 
-  @Column({ name: 'balance', type: 'int' })
+  @Column({ name: 'balance', type: 'numeric', precision: 12, scale: 2 })
   balance: number;
 
   // renamed from renew_date -> expiry_date (nullable)

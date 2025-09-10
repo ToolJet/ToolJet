@@ -27,7 +27,7 @@ export class OrganizationsAiFeature extends BaseEntity {
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
-  @Column({ name: 'balance', type: 'int' })
+  @Column({ name: 'balance', type: 'numeric', precision: 12, scale: 2 })
   balance: number;
 
   // renamed from renew_date -> expiry_date (nullable)
