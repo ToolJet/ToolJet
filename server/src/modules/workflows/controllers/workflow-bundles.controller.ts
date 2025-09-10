@@ -21,32 +21,32 @@ export class WorkflowBundlesController {
     throw new HttpException('Enterprise feature: NPM package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @Get(':workflowId/packages')
+  @Get(':appVersionId/packages')
   @UseGuards(JwtAuthGuard, WorkflowAccessGuard)
-  async getPackages(@Param('workflowId') workflowId: string, @User() user: any): Promise<GetPackagesResult> {
+  async getPackages(@Param('appVersionId') appVersionId: string, @User() user: any): Promise<GetPackagesResult> {
     throw new HttpException('Enterprise feature: NPM package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @Put(':workflowId/packages')
+  @Put(':appVersionId/packages')
   @UseGuards(JwtAuthGuard, WorkflowAccessGuard)
   async updatePackages(
-    @Param('workflowId') workflowId: string,
+    @Param('appVersionId') appVersionId: string,
     @Body() dto: UpdatePackagesDto,
     @User() user: any
   ): Promise<UpdatePackagesResult> {
     throw new HttpException('Enterprise feature: NPM package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @Get(':workflowId/bundle/status')
+  @Get(':appVersionId/bundle/status')
   @UseGuards(JwtAuthGuard, WorkflowAccessGuard)
-  async getBundleStatus(@Param('workflowId') workflowId: string, @User() user: any): Promise<BundleStatus> {
+  async getBundleStatus(@Param('appVersionId') appVersionId: string, @User() user: any): Promise<BundleStatus> {
     throw new HttpException('Enterprise feature: NPM package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @Post(':workflowId/bundle/rebuild')
+  @Post(':appVersionId/bundle/rebuild')
   @UseGuards(JwtAuthGuard, WorkflowAccessGuard)
   async rebuildBundle(
-    @Param('workflowId') workflowId: string,
+    @Param('appVersionId') workflowId: string,
     @Body() dto: RebuildBundleDto,
     @User() user: any
   ): Promise<RebuildBundleResult> {

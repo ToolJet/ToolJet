@@ -12,7 +12,7 @@ import * as path from 'path';
  * @group workflows
  */
 describe('NpmRegistryService', () => {
-  describe('Unit Tests (CE - Community Edition)', () => {
+  describe('Community Edition', () => {
     let ceService: BaseNpmRegistryService;
 
     beforeEach(async () => {
@@ -41,7 +41,7 @@ describe('NpmRegistryService', () => {
     });
   });
 
-  describe('Integration Tests (EE - Enterprise Edition)', () => {
+  describe('Enterprise Edition', () => {
     let eeService: NpmRegistryService;
 
     const context = setupPolly({
@@ -66,7 +66,11 @@ describe('NpmRegistryService', () => {
       },
       persisterOptions: {
         fs: {
-          recordingsDir: path.resolve(__dirname, '../__fixtures__'),
+          // Store recordings as __fixtures__/spec-file-name/*
+          recordingsDir: path.resolve(
+            __dirname,
+            `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`
+          ),
         },
       },
     });

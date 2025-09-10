@@ -11,21 +11,21 @@ import { VersionRepository } from '@modules/versions/repository';
 
 @Injectable()
 export class WorkflowAccessGuard implements CanActivate {
-  constructor(private readonly versionRepository: VersionRepository) {}
+  constructor(private readonly versionRepository: VersionRepository) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { workflowId } = request.params;
+    const { appVersionId } = request.params;
     const user: User = request.user;
 
-    // Validate workflowId parameter
-    if (!workflowId) {
-      throw new BadRequestException('Workflow ID is required');
+    // Validate appVersionId parameter
+    if (!appVersionId) {
+      throw new BadRequestException('App Version ID is required');
     }
 
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(workflowId)) {
+    if (!uuidRegex.test(appVersionId)) {
       throw new BadRequestException('Invalid workflow ID format');
     }
 
@@ -35,7 +35,7 @@ export class WorkflowAccessGuard implements CanActivate {
     }
 
     // Find the app/workflow by version ID
-    const app = await this.versionRepository.findAppFromVersion(workflowId, user.organizationId);
+    const app = await this.versionRepository.findAppFromVersion(appVersionId, user.organizationId);
 
     // If app is not found, throw NotFoundException
     if (!app) {
@@ -45,7 +45,7 @@ export class WorkflowAccessGuard implements CanActivate {
     // Verify this is actually a workflow (not a regular app)
     // Workflows in ToolJet are AppVersions with type='workflow'
     const appVersion = await this.versionRepository.findOne({
-      where: { id: workflowId },
+      where: { id: appVersionId },
       relations: ['app'],
     });
 

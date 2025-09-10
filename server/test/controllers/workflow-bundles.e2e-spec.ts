@@ -53,7 +53,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     },
     persisterOptions: {
       fs: {
-        recordingsDir: path.resolve(__dirname, '../__fixtures__/workflow-bundles-e2e'),
+        // Store recordings as __fixtures__/spec-file-name/*
+        recordingsDir: path.resolve(
+          __dirname,
+          `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`
+        ),
       },
     },
   });

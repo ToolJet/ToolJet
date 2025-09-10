@@ -25,7 +25,7 @@ describe('BundleGenerationService', () => {
   const mockWorkflowId = 'test-workflow-id-123';
   const mockDependencies = { lodash: '4.17.21', moment: '2.29.4' };
 
-  describe('Unit Tests (CE - Community Edition)', () => {
+  describe('Community Edition', () => {
     let ceService: BaseBundleGenerationService;
 
     beforeEach(async () => {
@@ -79,7 +79,7 @@ describe('BundleGenerationService', () => {
     });
   });
 
-  describe('Unit Tests (EE - Enterprise Edition)', () => {
+  describe('Enterprise Edition', () => {
     let eeService: BundleGenerationService;
     let repository: jest.Mocked<Repository<WorkflowBundle>>;
 
@@ -115,6 +115,8 @@ describe('BundleGenerationService', () => {
     describe('generateBundle', () => {
       beforeEach(() => {
         // Mock filesystem operations
+        // mkdtemp must return a concrete tmp dir path used later for writeFile/rm
+        mockFs.mkdtemp = jest.fn().mockResolvedValue('/tmp/bundle-test-workflow-id-123-1699999999') as any;
         mockFs.mkdir.mockResolvedValue(undefined);
         mockFs.writeFile.mockResolvedValue(undefined);
         mockFs.rm.mockResolvedValue(undefined);

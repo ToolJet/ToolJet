@@ -1,19 +1,20 @@
 import * as _ from 'lodash';
 import * as ivm from 'isolated-vm';
 
-const getFunctionWrappedCode = (code: string, state: any, isIfCondition: boolean): string => {
-  if (isIfCondition) {
-    return code;
+// When wrapInIIFE is true, run code inside an IIFE to support `return` statements
+// and avoid leaking bindings. When false, run top-level to persist bindings.
+const getFunctionWrappedCode = (code: string, state: any, wrapInIIFE: boolean): string => {
+  if (wrapInIIFE) {
+    return `(function(){${code}\n})()`;
   }
-  // Use an IIFE to avoid leaking identifiers across runs in a shared context
-  return `(function(){${code}\n})()`;
+  return code;
 };
 
 export function resolveCode(codeContext: any): any {
   const {
     code,
     state,
-    isIfCondition = false,
+    wrapInIIFE = true,
     customObjects = {},
     withError = false,
     reservedKeyword = [],
@@ -38,7 +39,7 @@ export function resolveCode(codeContext: any): any {
     const codeToExecute = getFunctionWrappedCode(
       'var console = { log: (...args) => __reserved_keyword_log(args.join(\', \'), \'normal\') };\n' + code,
       globalState,
-      isIfCondition
+      wrapInIIFE
     );
     const isolate = providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
     const context = providedContext || isolate.createContextSync();
@@ -82,7 +83,6 @@ export function resolveCode(codeContext: any): any {
         const checkScript = isolate.compileScriptSync('typeof WorkflowPackages !== "undefined"');
         const alreadyInitialized = !!checkScript.runSync(context, { copy: true });
         if (!alreadyInitialized) {
-          try { console.log('[resolveCode] Injecting bundle length:', bundleContent.length); } catch (_) { }
           // Run the bundle as-is (avoid embedding in template literal)
           const bundle = isolate.compileScriptSync(bundleContent);
           bundle.runSync(context, { timeout: 5000 });
@@ -109,7 +109,6 @@ export function resolveCode(codeContext: any): any {
           shim.runSync(context, { timeout: 5000 });
         }
       } catch (bundleError) {
-        try { console.error('[resolveCode] Bundle injection error:', (bundleError as any)?.stack || (bundleError as any)?.message); } catch (_) { }
         addLog && (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
         // Continue execution without packages - don't fail the entire code execution
       }
@@ -117,10 +116,8 @@ export function resolveCode(codeContext: any): any {
 
     let script: ivm.Script;
     try {
-      try { console.log('[resolveCode] Executing code:', String(codeToExecute).slice(0, 200)); } catch (_) { }
       script = isolate.compileScriptSync(codeToExecute);
     } catch (compileErr) {
-      try { console.error('[resolveCode] Compile error:', (compileErr as any)?.stack || (compileErr as any)?.message); } catch (_) { }
       throw compileErr;
     }
 
@@ -145,7 +142,6 @@ export function resolveCode(codeContext: any): any {
         }
       );
     } catch (runErr) {
-      try { console.error('[resolveCode] Runtime error:', (runErr as any)?.stack || (runErr as any)?.message); } catch (_) { }
       throw runErr;
     }
     //   const stats = isolate.getHeapStatisticsSync();
@@ -176,9 +172,8 @@ function resolveVariableReference(
   context?: ivm.Context | null
 ): any {
   const code = object.replace('{{', '').replace('}}', '');
-  // Setting isIfCondition to true so that js query need not be
-  // used in wrapped function
-  const result = resolveCode({ code, state, isIfCondition: true, addLog, bundleContent, isolate, context });
+  // Evaluate template expressions at top-level so they can access setupScript bindings
+  const result = resolveCode({ code, state, addLog, bundleContent, isolate, context, wrapInIIFE: false });
   return result;
 }
 

@@ -85,7 +85,11 @@ const context = setupPolly({
   persister: FSPersister as any,
   persisterOptions: {
     fs: {
-      recordingsDir: path.resolve(__dirname, '../__fixtures__/workflow-executions-e2e'),
+      // Store recordings as __fixtures__/spec-file-name/*
+      recordingsDir: path.resolve(
+        __dirname,
+        `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`
+      ),
     },
   },
   recordFailedRequests: true,
@@ -217,10 +221,792 @@ describe('workflow executions controller', () => {
         expect(responseResult).toContain('Workflow executed successfully');
       });
     });
+
+    describe('Workflow with query nodes', () => {
+      it('should execute workflow with RunJS query node', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runjs-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runjs-1',
+              kind: 'runjs',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runjs1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runjs-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runjs-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runjs-1',
+            dataSourceKind: 'runjs',
+            name: 'runjs1',
+            options: {
+              code: `
+              const numbers = [1, 2, 3, 4, 5];
+              const sum = numbers.reduce((acc, val) => acc + val, 0);
+              return { sum: sum, numbers: numbers };
+            `,
+              parameters: []
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'RunJS Workflow',
+          nodes,
+          edges,
+          queries
+        });
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runjs-1');
+
+        // Verify RunJS node result contains the numbers array
+        const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
+        expect(runjsNode).toBeDefined();
+        expect(runjsNode.executed).toBe(true);
+
+        const runjsResult = JSON.parse(runjsNode.result);
+        expect(runjsResult).toEqual(expect.arrayContaining([[1, 2, 3, 4, 5]]));
+
+        // Verify response node result contains the numbers array
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+
+        const responseResult = JSON.parse(responseNode.result);
+        expect(responseResult).toEqual(expect.arrayContaining([[1, 2, 3, 4, 5]]));
+      });
+
+      it('should execute workflow with REST API query node', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'restapi-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-restapi-1',
+              kind: 'restapi',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { data: restapi1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'restapi-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'restapi-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-restapi-1',
+            dataSourceKind: 'restapi',
+            name: 'restapi1',
+            options: {
+              method: 'get',
+              url: 'https://jsonplaceholder.typicode.com/users/1',
+              headers: [['Accept', 'application/json']],
+              body: [['', '']],
+              url_params: [['', '']],
+              cookies: [['', '']],
+              json_body: null,
+              body_toggle: false,
+              transformationLanguage: 'javascript',
+              enableTransformation: false,
+              raw_body: null,
+              arrayValuesChanged: true
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'REST API Workflow',
+          nodes,
+          edges,
+          queries
+        });
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('restapi-1');
+
+        // Verify REST API node executed and has result
+        const restapiNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'restapi-1');
+        expect(restapiNode).toBeDefined();
+        expect(restapiNode.executed).toBe(true);
+        expect(restapiNode.result).toBeTruthy();
+
+        // Parse and validate REST API response
+        const restapiResult = JSON.parse(restapiNode.result);
+        expect(Array.isArray(restapiResult)).toBe(true);
+        expect(restapiResult.length).toBeGreaterThan(0);
+
+        // The result should contain status and data info - check for 'ok' status
+        expect(restapiResult).toContain('ok');
+
+        // Find the user data object in the result array
+        const userData = restapiResult.find((item: any) =>
+          typeof item === 'object' && item !== null && item.hasOwnProperty('id')
+        );
+        expect(userData).toBeDefined();
+
+        // Validate the JSONPlaceholder user data structure
+        expect(userData).toHaveProperty('id', 1);
+        expect(userData).toHaveProperty('name');
+        expect(userData).toHaveProperty('username');
+        expect(userData).toHaveProperty('email');
+        expect(userData).toHaveProperty('address');
+        expect(userData).toHaveProperty('phone');
+        expect(userData).toHaveProperty('website');
+        expect(userData).toHaveProperty('company');
+
+        // Verify specific expected values from JSONPlaceholder user 1
+        expect(restapiResult).toContain('Leanne Graham');
+        expect(restapiResult).toContain('Bret');
+        expect(restapiResult).toContain('Sincere@april.biz');
+
+        // Verify response node executed successfully
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+        expect(responseNode.result).toBeTruthy();
+
+        // Parse and validate response node result
+        const responseResult = JSON.parse(responseNode.result);
+        expect(Array.isArray(responseResult)).toBe(true);
+        expect(responseResult.length).toBeGreaterThan(0);
+
+        // Response should contain the user data
+        expect(responseResult).toContain('Leanne Graham');
+        expect(responseResult).toContain('Bret');
+      });
+    });
+
+    describe('NPM package support', () => {
+      it('should execute workflow with setup script using lodash', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const setupScript = `
+          const _ = require('lodash');
+          global.processNumbers = (numbers) => ({
+            sum: _.sum(numbers),
+            max: _.max(numbers),
+            min: _.min(numbers),
+            sorted: _.sortBy(numbers)
+          });
+        `;
+
+        const dependencies = {
+          'lodash': '4.17.21'
+        };
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runjs-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runjs-lodash',
+              kind: 'runjs',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runjs1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runjs-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runjs-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runjs-lodash',
+            dataSourceKind: 'runjs',
+            name: 'runjs1',
+            options: {
+              code: `
+              const numbers = [10, 5, 8, 3, 12, 7];
+              return processNumbers(numbers);
+            `,
+              parameters: []
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'NPM Package Workflow',
+          setupScript,
+          dependencies,
+          nodes,
+          edges,
+          queries
+        });
+
+        await createWorkflowBundle(app, appVersion.id, dependencies);
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runjs-1');
+
+        // Verify RunJS node executed and has result
+        const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
+        expect(runjsNode).toBeDefined();
+        expect(runjsNode.executed).toBe(true);
+
+        console.log('RunJS Node Result:', runjsNode.result);
+
+        // Parse the flatted-encoded result and verify the actual object structure
+        const parsedResult = parse(runjsNode.result);
+        expect(parsedResult).toMatchObject({
+          data: {
+            sum: 45,
+            max: 12,
+            min: 3,
+            sorted: [3, 5, 7, 8, 10, 12]
+          },
+          status: "ok"
+        });
+
+        // Verify response node contains the lodash results
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+
+        // Parse the response node result and verify it contains the same lodash results
+        const parsedResponseResult = parse(responseNode.result);
+        expect(parsedResponseResult).toMatchObject({
+          data: {
+            result: {
+              sum: 45,
+              max: 12,
+              min: 3,
+              sorted: [3, 5, 7, 8, 10, 12]
+            }
+          },
+          status: "ok"
+        });
+      });
+
+      it('should execute workflow with REST API query using NPM packages in template expressions', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const setupScript = `
+        const _ = require('lodash');
+      `;
+
+        const dependencies = {
+          'lodash': '4.17.21'
+        };
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'restapi-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-restapi-lodash',
+              kind: 'restapi',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { data: restapi1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'restapi-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'restapi-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-restapi-lodash',
+            dataSourceKind: 'restapi',
+            name: 'restapi1',
+            options: {
+              method: 'get',
+              url: 'https://reqres.in/api/users?page={{ _.toLower("2") }}',
+              headers: [
+                ['x-custom-header', '{{ _.startCase("hello world") }}'],
+                ['Accept', 'application/json']
+              ],
+              body: [['', '']],
+              url_params: [['', '']],
+              cookies: [['', '']],
+              json_body: null,
+              body_toggle: false,
+              transformationLanguage: 'javascript',
+              enableTransformation: false,
+              raw_body: null,
+              arrayValuesChanged: true
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'REST API Template Workflow',
+          setupScript,
+          dependencies,
+          nodes,
+          edges,
+          queries
+        });
+
+        await createWorkflowBundle(app, appVersion.id, dependencies);
+
+        // Observe the actual outbound request to verify template resolution
+        const observedRequests: Array<{ url: string; headers: Record<string, any> | undefined }> = [];
+        const captureRoute = context.polly.server
+          .any()
+          .filter((req: any) => {
+            try {
+              const u = new URL(req.url);
+              return u.hostname === 'reqres.in' && u.pathname === '/api/users';
+            } catch (_) {
+              return false;
+            }
+          });
+
+        captureRoute.on('request', (req: any) => {
+          // Try multiple header access shapes for robustness across adapters
+          let headers: Record<string, any> | undefined = undefined;
+          try {
+            if (typeof req.getHeader === 'function') {
+              headers = {
+                'x-custom-header': req.getHeader('x-custom-header'),
+                accept: req.getHeader('accept'),
+              } as any;
+            } else if (req.headers) {
+              headers = req.headers as any;
+            }
+          } catch (_) { }
+          observedRequests.push({ url: req.url, headers });
+        });
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('restapi-1');
+
+        // Verify REST API node executed and has result
+        const restapiNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'restapi-1');
+        expect(restapiNode).toBeDefined();
+        expect(restapiNode.executed).toBe(true);
+        expect(restapiNode.result).toBeTruthy();
+
+        // Parse and validate REST API response (should contain resolved template expressions)
+        const restapiResult = JSON.parse(restapiNode.result);
+        expect(Array.isArray(restapiResult)).toBe(true);
+        expect(restapiResult.length).toBeGreaterThan(0);
+
+        // The result should contain status and data info - check for 'ok' status
+        expect(restapiResult).toContain('ok');
+
+        // Verify response node executed successfully
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+        expect(responseNode.result).toBeTruthy();
+
+        // Parse and validate response node result
+        const responseResult = JSON.parse(responseNode.result);
+        expect(Array.isArray(responseResult)).toBe(true);
+        expect(responseResult.length).toBeGreaterThan(0);
+
+        // Response should contain the API data with resolved template expressions
+        expect(responseResult).toContain('ok');
+
+        // Assert the outbound request had resolved URL and headers
+        expect(observedRequests.length).toBeGreaterThan(0);
+        const { url: observedUrl, headers: observedHeaders } = observedRequests[0];
+
+        const parsedUrl = new URL(observedUrl);
+        expect(parsedUrl.searchParams.get('page')).toBe('2'); // {{ toLower("2") }} => 2
+
+        const headerVal = observedHeaders && (
+          observedHeaders['x-custom-header'] ||
+          observedHeaders['X-Custom-Header'] ||
+          (typeof (observedHeaders as any).get === 'function' ? (observedHeaders as any).get('x-custom-header') : undefined)
+        );
+        expect(headerVal).toBe('Hello World'); // {{ startCase("hello world") }} => Hello World
+      });
+    });
   });
 
-  describe('Workflow with query nodes', () => {
-    it('should execute workflow with RunJS query node', async () => {
+  describe('GET /api/workflow_executions/:id/status', () => {
+    it('should retrieve workflow execution status', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'admin@tooljet.io',
+        password: 'password',
+        firstName: 'Admin',
+        lastName: 'User'
+      });
+
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+        name: 'Status Check Workflow',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          }
+        ],
+        edges: [],
+        queries: []
+      });
+
+      const execution = await executeWorkflow(app, workflow, user, {
+        environmentId: appVersion.currentEnvironmentId
+      });
+
+      const { tokenCookie } = await authenticateUser(app, user.email);
+
+      const statusResponse = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/${execution.id}/status`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(statusResponse.statusCode).toBe(200);
+      expect(statusResponse.body).toHaveProperty('status');
+    });
+  });
+
+  describe('GET /api/workflow_executions/:id', () => {
+    it('should retrieve workflow execution details including logs', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'admin@tooljet.io',
+        password: 'password',
+        firstName: 'Admin',
+        lastName: 'User'
+      });
+
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+        name: 'Details Check Workflow',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          }
+        ],
+        edges: [],
+        queries: []
+      });
+
+      const execution = await executeWorkflow(app, workflow, user, {
+        environmentId: appVersion.currentEnvironmentId
+      });
+
+      const { tokenCookie } = await authenticateUser(app, user.email);
+
+      const detailsResponse = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/${execution.id}`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(detailsResponse.statusCode).toBe(200);
+      expect(detailsResponse.body).toHaveProperty('id');
+      expect(detailsResponse.body.id).toBe(execution.id);
+    });
+  });
+
+  describe('GET /api/workflow_executions/all/:appVersionId', () => {
+    it('should list all executions for an app version', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'admin@tooljet.io',
+        password: 'password',
+        firstName: 'Admin',
+        lastName: 'User'
+      });
+
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+        name: 'List Executions Workflow',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          }
+        ],
+        edges: [],
+        queries: []
+      });
+
+      // Execute workflow twice
+      await executeWorkflow(app, workflow, user, {
+        environmentId: appVersion.currentEnvironmentId
+      });
+
+      await executeWorkflow(app, workflow, user, {
+        environmentId: appVersion.currentEnvironmentId
+      });
+
+      const { tokenCookie } = await authenticateUser(app, user.email);
+
+      const listResponse = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/all/${appVersion.id}`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(listResponse.statusCode).toBe(200);
+      expect(Array.isArray(listResponse.body)).toBe(true);
+      expect(listResponse.body.length).toBe(2);
+    });
+  });
+
+  describe('GET /api/workflow_executions', () => {
+    it('should retrieve paginated execution logs', async () => {
+      const { user } = await setupOrganizationAndUser(app, {
+        email: 'admin@tooljet.io',
+        password: 'password',
+        firstName: 'Admin',
+        lastName: 'User'
+      });
+
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+        name: 'Pagination Test Workflow',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          }
+        ],
+        edges: [],
+        queries: []
+      });
+
+      // Execute workflow multiple times
+      for (let i = 0; i < 3; i++) {
+        await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+      }
+
+      const { tokenCookie } = await authenticateUser(app, user.email);
+
+      const logsResponse = await request(app.getHttpServer())
+        .get(`/api/workflow_executions?appVersionId=${appVersion.id}&page=1&per_page=2`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(logsResponse.statusCode).toBe(200);
+      expect(logsResponse.body).toHaveProperty('data');
+      expect(Array.isArray(logsResponse.body.data)).toBe(true);
+    });
+  });
+
+  describe('GET /api/workflow_executions/:id/nodes', () => {
+    it('should retrieve execution nodes with pagination', async () => {
       const { user } = await setupOrganizationAndUser(app, {
         email: 'admin@tooljet.io',
         password: 'password',
@@ -247,18 +1033,6 @@ describe('workflow executions controller', () => {
           position: { x: 350, y: 250 },
           sourcePosition: 'right',
           targetPosition: 'left'
-        },
-        {
-          id: 'response-1',
-          type: 'output',
-          data: {
-            nodeType: 'response',
-            label: 'Response',
-            code: 'return { result: runjs1.data }',
-            nodeName: 'response1'
-          },
-          position: { x: 600, y: 250 },
-          targetPosition: 'left'
         }
       ];
 
@@ -267,12 +1041,6 @@ describe('workflow executions controller', () => {
           id: 'edge-1',
           source: 'start-1',
           target: 'runjs-1',
-          type: 'workflow'
-        },
-        {
-          id: 'edge-2',
-          source: 'runjs-1',
-          target: 'response-1',
           type: 'workflow'
         }
       ];
@@ -283,18 +1051,14 @@ describe('workflow executions controller', () => {
           dataSourceKind: 'runjs',
           name: 'runjs1',
           options: {
-            code: `
-              const numbers = [1, 2, 3, 4, 5];
-              const sum = numbers.reduce((acc, val) => acc + val, 0);
-              return { sum: sum, numbers: numbers };
-            `,
+            code: `return { message: "Hello from RunJS" };`,
             parameters: []
           }
         }
       ];
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-        name: 'RunJS Workflow',
+        name: 'Nodes Test Workflow',
         nodes,
         edges,
         queries
@@ -304,587 +1068,16 @@ describe('workflow executions controller', () => {
         environmentId: appVersion.currentEnvironmentId
       });
 
-      // Get workflow execution details
-      const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+      const { tokenCookie } = await authenticateUser(app, user.email);
 
-      // Verify execution status
-      expect(workflowExecution.executed).toBe(true);
+      const nodesResponse = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/${execution.id}/nodes?page=1&per_page=10`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
 
-      // Verify nodes executed
-      const executedNodes = executionNodes.filter((n: any) => n.executed);
-      const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
-      expect(executedNodeIds).toContain('start-1');
-      expect(executedNodeIds).toContain('runjs-1');
-
-      // Verify RunJS node result contains the numbers array
-      const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
-      expect(runjsNode).toBeDefined();
-      expect(runjsNode.executed).toBe(true);
-
-      const runjsResult = JSON.parse(runjsNode.result);
-      expect(runjsResult).toEqual(expect.arrayContaining([[1, 2, 3, 4, 5]]));
-
-      // Verify response node result contains the numbers array
-      const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
-      expect(responseNode).toBeDefined();
-      expect(responseNode.executed).toBe(true);
-
-      const responseResult = JSON.parse(responseNode.result);
-      expect(responseResult).toEqual(expect.arrayContaining([[1, 2, 3, 4, 5]]));
+      expect(nodesResponse.statusCode).toBe(200);
+      expect(nodesResponse.body).toHaveProperty('data');
+      expect(Array.isArray(nodesResponse.body.data)).toBe(true);
     });
-
-    it('should execute workflow with REST API query node', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User'
-      });
-
-      const nodes: WorkflowNode[] = [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        },
-        {
-          id: 'restapi-1',
-          type: 'query',
-          data: {
-            idOnDefinition: 'query-restapi-1',
-            kind: 'restapi',
-            options: {}
-          },
-          position: { x: 350, y: 250 },
-          sourcePosition: 'right',
-          targetPosition: 'left'
-        },
-        {
-          id: 'response-1',
-          type: 'output',
-          data: {
-            nodeType: 'response',
-            label: 'Response',
-            code: 'return { data: restapi1.data }',
-            nodeName: 'response1'
-          },
-          position: { x: 600, y: 250 },
-          targetPosition: 'left'
-        }
-      ];
-
-      const edges: WorkflowEdge[] = [
-        {
-          id: 'edge-1',
-          source: 'start-1',
-          target: 'restapi-1',
-          type: 'workflow'
-        },
-        {
-          id: 'edge-2',
-          source: 'restapi-1',
-          target: 'response-1',
-          type: 'workflow'
-        }
-      ];
-
-      const queries: WorkflowQuery[] = [
-        {
-          idOnDefinition: 'query-restapi-1',
-          dataSourceKind: 'restapi',
-          name: 'restapi1',
-          options: {
-            method: 'get',
-            url: 'https://jsonplaceholder.typicode.com/users/1',
-            headers: [['Accept', 'application/json']],
-            body: [['', '']],
-            url_params: [['', '']],
-            cookies: [['', '']],
-            json_body: null,
-            body_toggle: false,
-            transformationLanguage: 'javascript',
-            enableTransformation: false,
-            raw_body: null,
-            arrayValuesChanged: true
-          }
-        }
-      ];
-
-      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-        name: 'REST API Workflow',
-        nodes,
-        edges,
-        queries
-      });
-
-      const execution = await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
-      });
-
-      // Get workflow execution details
-      const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
-
-      // Verify execution status
-      expect(workflowExecution.executed).toBe(true);
-
-      // Verify nodes executed
-      const executedNodes = executionNodes.filter((n: any) => n.executed);
-      const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
-      expect(executedNodeIds).toContain('start-1');
-      expect(executedNodeIds).toContain('restapi-1');
-
-      // Verify REST API node executed and has result
-      const restapiNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'restapi-1');
-      expect(restapiNode).toBeDefined();
-      expect(restapiNode.executed).toBe(true);
-      expect(restapiNode.result).toBeTruthy();
-
-      // Parse and validate REST API response
-      const restapiResult = JSON.parse(restapiNode.result);
-      expect(Array.isArray(restapiResult)).toBe(true);
-      expect(restapiResult.length).toBeGreaterThan(0);
-
-      // The result should contain status and data info - check for 'ok' status
-      expect(restapiResult).toContain('ok');
-
-      // Find the user data object in the result array
-      const userData = restapiResult.find((item: any) =>
-        typeof item === 'object' && item !== null && item.hasOwnProperty('id')
-      );
-      expect(userData).toBeDefined();
-
-      // Validate the JSONPlaceholder user data structure
-      expect(userData).toHaveProperty('id', 1);
-      expect(userData).toHaveProperty('name');
-      expect(userData).toHaveProperty('username');
-      expect(userData).toHaveProperty('email');
-      expect(userData).toHaveProperty('address');
-      expect(userData).toHaveProperty('phone');
-      expect(userData).toHaveProperty('website');
-      expect(userData).toHaveProperty('company');
-
-      // Verify specific expected values from JSONPlaceholder user 1
-      expect(restapiResult).toContain('Leanne Graham');
-      expect(restapiResult).toContain('Bret');
-      expect(restapiResult).toContain('Sincere@april.biz');
-
-      // Verify response node executed successfully
-      const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
-      expect(responseNode).toBeDefined();
-      expect(responseNode.executed).toBe(true);
-      expect(responseNode.result).toBeTruthy();
-
-      // Parse and validate response node result
-      const responseResult = JSON.parse(responseNode.result);
-      expect(Array.isArray(responseResult)).toBe(true);
-      expect(responseResult.length).toBeGreaterThan(0);
-
-      // Response should contain the user data
-      expect(responseResult).toContain('Leanne Graham');
-      expect(responseResult).toContain('Bret');
-    });
-  });
-
-  describe('NPM package support', () => {
-    it('should execute workflow with setup script using lodash', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User'
-      });
-
-      const setupScript = `
-          const _ = require('lodash');
-          global.processNumbers = (numbers) => ({
-            sum: _.sum(numbers),
-            max: _.max(numbers),
-            min: _.min(numbers),
-            sorted: _.sortBy(numbers)
-          });
-        `;
-
-      const dependencies = {
-        'lodash': '4.17.21'
-      };
-
-      const nodes: WorkflowNode[] = [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        },
-        {
-          id: 'runjs-1',
-          type: 'query',
-          data: {
-            idOnDefinition: 'query-runjs-lodash',
-            kind: 'runjs',
-            options: {}
-          },
-          position: { x: 350, y: 250 },
-          sourcePosition: 'right',
-          targetPosition: 'left'
-        },
-        {
-          id: 'response-1',
-          type: 'output',
-          data: {
-            nodeType: 'response',
-            label: 'Response',
-            code: 'return { result: runjs1.data }',
-            nodeName: 'response1'
-          },
-          position: { x: 600, y: 250 },
-          targetPosition: 'left'
-        }
-      ];
-
-      const edges: WorkflowEdge[] = [
-        {
-          id: 'edge-1',
-          source: 'start-1',
-          target: 'runjs-1',
-          type: 'workflow'
-        },
-        {
-          id: 'edge-2',
-          source: 'runjs-1',
-          target: 'response-1',
-          type: 'workflow'
-        }
-      ];
-
-      const queries: WorkflowQuery[] = [
-        {
-          idOnDefinition: 'query-runjs-lodash',
-          dataSourceKind: 'runjs',
-          name: 'runjs1',
-          options: {
-            code: `
-              const numbers = [10, 5, 8, 3, 12, 7];
-              return processNumbers(numbers);
-            `,
-            parameters: []
-          }
-        }
-      ];
-
-      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-        name: 'NPM Package Workflow',
-        setupScript,
-        dependencies,
-        nodes,
-        edges,
-        queries
-      });
-
-      await createWorkflowBundle(app, appVersion.id, dependencies);
-
-      const execution = await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
-      });
-
-      // Get workflow execution details
-      const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
-
-      // Verify execution status
-      expect(workflowExecution.executed).toBe(true);
-
-      // Verify nodes executed
-      const executedNodes = executionNodes.filter((n: any) => n.executed);
-      const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
-      expect(executedNodeIds).toContain('start-1');
-      expect(executedNodeIds).toContain('runjs-1');
-
-      // Verify RunJS node executed and has result
-      const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
-      expect(runjsNode).toBeDefined();
-      expect(runjsNode.executed).toBe(true);
-
-      console.log('RunJS Node Result:', runjsNode.result);
-
-      // Parse the flatted-encoded result and verify the actual object structure
-      const parsedResult = parse(runjsNode.result);
-      expect(parsedResult).toMatchObject({
-        data: {
-          sum: 45,
-          max: 12,
-          min: 3,
-          sorted: [3, 5, 7, 8, 10, 12]
-        },
-        status: "ok"
-      });
-
-      // Verify response node contains the lodash results
-      const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
-      expect(responseNode).toBeDefined();
-      expect(responseNode.executed).toBe(true);
-
-      // Parse the response node result and verify it contains the same lodash results
-      const parsedResponseResult = parse(responseNode.result);
-      expect(parsedResponseResult).toMatchObject({
-        data: {
-          result: {
-            sum: 45,
-            max: 12,
-            min: 3,
-            sorted: [3, 5, 7, 8, 10, 12]
-          }
-        },
-        status: "ok"
-      });
-    });
-  });
-});
-
-describe('GET /api/workflow_executions/:id/status', () => {
-  it('should retrieve workflow execution status', async () => {
-    const { user } = await setupOrganizationAndUser(app, {
-      email: 'admin@tooljet.io',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'User'
-    });
-
-    const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-      name: 'Status Check Workflow',
-      nodes: [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        }
-      ],
-      edges: [],
-      queries: []
-    });
-
-    const execution = await executeWorkflow(app, workflow, user, {
-      environmentId: appVersion.currentEnvironmentId
-    });
-
-    const { tokenCookie } = await authenticateUser(app, user.email);
-
-    const statusResponse = await request(app.getHttpServer())
-      .get(`/api/workflow_executions/${execution.id}/status`)
-      .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Cookie', tokenCookie);
-
-    expect(statusResponse.statusCode).toBe(200);
-    expect(statusResponse.body).toHaveProperty('status');
-  });
-});
-
-describe('GET /api/workflow_executions/:id', () => {
-  it('should retrieve workflow execution details including logs', async () => {
-    const { user } = await setupOrganizationAndUser(app, {
-      email: 'admin@tooljet.io',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'User'
-    });
-
-    const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-      name: 'Details Check Workflow',
-      nodes: [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        }
-      ],
-      edges: [],
-      queries: []
-    });
-
-    const execution = await executeWorkflow(app, workflow, user, {
-      environmentId: appVersion.currentEnvironmentId
-    });
-
-    const { tokenCookie } = await authenticateUser(app, user.email);
-
-    const detailsResponse = await request(app.getHttpServer())
-      .get(`/api/workflow_executions/${execution.id}`)
-      .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Cookie', tokenCookie);
-
-    expect(detailsResponse.statusCode).toBe(200);
-    expect(detailsResponse.body).toHaveProperty('id');
-    expect(detailsResponse.body.id).toBe(execution.id);
-  });
-});
-
-describe('GET /api/workflow_executions/all/:appVersionId', () => {
-  it('should list all executions for an app version', async () => {
-    const { user } = await setupOrganizationAndUser(app, {
-      email: 'admin@tooljet.io',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'User'
-    });
-
-    const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-      name: 'List Executions Workflow',
-      nodes: [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        }
-      ],
-      edges: [],
-      queries: []
-    });
-
-    // Execute workflow twice
-    await executeWorkflow(app, workflow, user, {
-      environmentId: appVersion.currentEnvironmentId
-    });
-
-    await executeWorkflow(app, workflow, user, {
-      environmentId: appVersion.currentEnvironmentId
-    });
-
-    const { tokenCookie } = await authenticateUser(app, user.email);
-
-    const listResponse = await request(app.getHttpServer())
-      .get(`/api/workflow_executions/all/${appVersion.id}`)
-      .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Cookie', tokenCookie);
-
-    expect(listResponse.statusCode).toBe(200);
-    expect(Array.isArray(listResponse.body)).toBe(true);
-    expect(listResponse.body.length).toBe(2);
-  });
-});
-
-describe('GET /api/workflow_executions', () => {
-  it('should retrieve paginated execution logs', async () => {
-    const { user } = await setupOrganizationAndUser(app, {
-      email: 'admin@tooljet.io',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'User'
-    });
-
-    const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-      name: 'Pagination Test Workflow',
-      nodes: [
-        {
-          id: 'start-1',
-          type: 'input',
-          data: { nodeType: 'start', label: 'Start trigger' },
-          position: { x: 100, y: 250 },
-          sourcePosition: 'right'
-        }
-      ],
-      edges: [],
-      queries: []
-    });
-
-    // Execute workflow multiple times
-    for (let i = 0; i < 3; i++) {
-      await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
-      });
-    }
-
-    const { tokenCookie } = await authenticateUser(app, user.email);
-
-    const logsResponse = await request(app.getHttpServer())
-      .get(`/api/workflow_executions?appVersionId=${appVersion.id}&page=1&per_page=2`)
-      .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Cookie', tokenCookie);
-
-    expect(logsResponse.statusCode).toBe(200);
-    expect(logsResponse.body).toHaveProperty('data');
-    expect(Array.isArray(logsResponse.body.data)).toBe(true);
-  });
-});
-
-describe('GET /api/workflow_executions/:id/nodes', () => {
-  it('should retrieve execution nodes with pagination', async () => {
-    const { user } = await setupOrganizationAndUser(app, {
-      email: 'admin@tooljet.io',
-      password: 'password',
-      firstName: 'Admin',
-      lastName: 'User'
-    });
-
-    const nodes: WorkflowNode[] = [
-      {
-        id: 'start-1',
-        type: 'input',
-        data: { nodeType: 'start', label: 'Start trigger' },
-        position: { x: 100, y: 250 },
-        sourcePosition: 'right'
-      },
-      {
-        id: 'runjs-1',
-        type: 'query',
-        data: {
-          idOnDefinition: 'query-runjs-1',
-          kind: 'runjs',
-          options: {}
-        },
-        position: { x: 350, y: 250 },
-        sourcePosition: 'right',
-        targetPosition: 'left'
-      }
-    ];
-
-    const edges: WorkflowEdge[] = [
-      {
-        id: 'edge-1',
-        source: 'start-1',
-        target: 'runjs-1',
-        type: 'workflow'
-      }
-    ];
-
-    const queries: WorkflowQuery[] = [
-      {
-        idOnDefinition: 'query-runjs-1',
-        dataSourceKind: 'runjs',
-        name: 'runjs1',
-        options: {
-          code: `return { message: "Hello from RunJS" };`,
-          parameters: []
-        }
-      }
-    ];
-
-    const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
-      name: 'Nodes Test Workflow',
-      nodes,
-      edges,
-      queries
-    });
-
-    const execution = await executeWorkflow(app, workflow, user, {
-      environmentId: appVersion.currentEnvironmentId
-    });
-
-    const { tokenCookie } = await authenticateUser(app, user.email);
-
-    const nodesResponse = await request(app.getHttpServer())
-      .get(`/api/workflow_executions/${execution.id}/nodes?page=1&per_page=10`)
-      .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Cookie', tokenCookie);
-
-    expect(nodesResponse.statusCode).toBe(200);
-    expect(nodesResponse.body).toHaveProperty('data');
-    expect(Array.isArray(nodesResponse.body.data)).toBe(true);
   });
 });
