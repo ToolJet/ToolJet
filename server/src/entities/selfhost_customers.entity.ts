@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Metadata } from './metadata.entity';
 import { SelfhostCustomersAiFeature } from './selfhost_customers_ai_feature.entity';
+import { SelfhostCustomersAiCreditHistory } from './selfhost_ai_credit_history.entity';
 
 @Entity('selfhost_customers')
 export class SelfhostCustomers extends BaseEntity {
@@ -68,4 +69,7 @@ export class SelfhostCustomers extends BaseEntity {
 
   @OneToMany(() => SelfhostCustomersAiFeature, (feature) => feature.selfhostCustomer)
   aiFeatures: SelfhostCustomersAiFeature[];
+
+  @OneToMany(() => SelfhostCustomersAiCreditHistory, (history) => history.selfhostCustomer)
+  aiCreditHistory: SelfhostCustomersAiCreditHistory[];
 }

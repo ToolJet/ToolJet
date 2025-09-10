@@ -36,8 +36,9 @@ export class SelfhostCustomersAiFeature extends BaseEntity {
   @Column({ name: 'balance', type: 'int' })
   balance: number;
 
-  @Column({ name: 'renew_date', type: 'timestamp', nullable: true })
-  renewDate: Date | null;
+  // renamed from renew_date -> expiry_date (nullable)
+  @Column({ name: 'expiry_date', type: 'timestamp', nullable: true })
+  expiryDate: Date | null;
 
   @Column({
     name: 'wallet_type',

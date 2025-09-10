@@ -30,8 +30,9 @@ export class OrganizationsAiFeature extends BaseEntity {
   @Column({ name: 'balance', type: 'int' })
   balance: number;
 
-  @Column({ type: 'timestamp', nullable: true })
-  renew_date: Date | null;
+  // renamed from renew_date -> expiry_date (nullable)
+  @Column({ name: 'expiry_date', type: 'timestamp', nullable: true })
+  expiryDate: Date | null;
 
   @Column({
     name: 'wallet_type',

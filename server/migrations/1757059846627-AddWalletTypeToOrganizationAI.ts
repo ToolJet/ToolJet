@@ -3,17 +3,17 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // 1. Drop unique constraints on organization_id
-   await queryRunner.query(`
-  ALTER TABLE "organizations_ai_feature" 
-  DROP CONSTRAINT IF EXISTS "UQ_95399755b73980d4cfabd03ff32",
-  DROP CONSTRAINT IF EXISTS "organizations_ai_feature_organization_id_key"
-`);
+    await queryRunner.query(`
+      ALTER TABLE "organizations_ai_feature" 
+      DROP CONSTRAINT IF EXISTS "UQ_95399755b73980d4cfabd03ff32",
+      DROP CONSTRAINT IF EXISTS "organizations_ai_feature_organization_id_key"
+    `);
 
-// 2. Drop unique indexes on organization_id
- await queryRunner.query(`
-  DROP INDEX IF EXISTS "IDX_UNIQUE_ORG_AI_FEATURE";
-  DROP INDEX IF EXISTS "IDX_organizations_ai_feature_organization_id_unique";
-`);
+    // 2. Drop unique indexes on organization_id
+    await queryRunner.query(`
+      DROP INDEX IF EXISTS "IDX_UNIQUE_ORG_AI_FEATURE";
+      DROP INDEX IF EXISTS "IDX_organizations_ai_feature_organization_id_unique";
+    `);
 
     // 3. Drop old columns
     await queryRunner.dropColumn(
@@ -25,12 +25,16 @@ export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInte
       'ai_credit_multiplier'
     );
 
-    // 4. Make renew_date nullable
+    // 4. Rename renew_date -> expiry_date (nullable)
     await queryRunner.query(
-      `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "renew_date" DROP NOT NULL`
+      `ALTER TABLE "organizations_ai_feature" RENAME COLUMN "renew_date" TO "expiry_date"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "expiry_date" DROP NOT NULL`
     );
 
     // 5. Create enum for wallet_type
+    await queryRunner.query(`DROP TYPE IF EXISTS "wallet_type_enum" CASCADE`);
     await queryRunner.query(
       `CREATE TYPE "wallet_type_enum" AS ENUM ('recurring', 'topup', 'fixed')`
     );
@@ -47,26 +51,44 @@ export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInte
 
     // 7. Backfill existing rows with default value
     await queryRunner.query(
-      `UPDATE "organizations_ai_feature" SET "wallet_type" = 'recurring'`
+      `UPDATE "organizations_ai_feature" SET "wallet_type" = 'recurring' WHERE "wallet_type" IS NULL`
     );
 
     // 8. Set NOT NULL constraint
     await queryRunner.query(
       `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "wallet_type" SET NOT NULL`
     );
+
+    // 9. Add unique constraint (organization_id, wallet_type)
+    await queryRunner.query(
+      `ALTER TABLE "organizations_ai_feature" ADD CONSTRAINT "UQ_org_wallet_type" UNIQUE ("organization_id", "wallet_type")`
+    );
+
+    // 10. Update balance column type to float
+    await queryRunner.query(
+      `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "balance" TYPE numeric(12,2) USING balance::numeric`
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // 1. Remove wallet_type
-    await queryRunner.dropColumn('organizations_ai_feature', 'wallet_type');
-    await queryRunner.query(`DROP TYPE "wallet_type_enum"`);
+    // 1. Drop unique constraint (org_id, wallet_type)
+    await queryRunner.query(
+      `ALTER TABLE "organizations_ai_feature" DROP CONSTRAINT IF EXISTS "UQ_org_wallet_type"`
+    );
 
-    // 2. Revert renew_date back to NOT NULL
+    // 2. Remove wallet_type column
+    await queryRunner.dropColumn('organizations_ai_feature', 'wallet_type');
+    await queryRunner.query(`DROP TYPE IF EXISTS "wallet_type_enum"`);
+
+    // 3. Rename expiry_date back to renew_date (NOT NULL)
+    await queryRunner.query(
+      `ALTER TABLE "organizations_ai_feature" RENAME COLUMN "expiry_date" TO "renew_date"`
+    );
     await queryRunner.query(
       `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "renew_date" SET NOT NULL`
     );
 
-    // 3. Re-add old columns
+    // 4. Re-add old columns
     await queryRunner.addColumn(
       'organizations_ai_feature',
       new TableColumn({
@@ -83,12 +105,12 @@ export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInte
       })
     );
 
-    // 4. Restore unique constraint on organization_id
+    // 5. Restore unique constraint on organization_id
     await queryRunner.query(
       `ALTER TABLE "organizations_ai_feature" ADD CONSTRAINT "organizations_ai_feature_organization_id_key" UNIQUE ("organization_id")`
     );
 
-    // 5. Restore unique index on organization_id
+    // 6. Restore unique index on organization_id
     await queryRunner.query(
       `CREATE UNIQUE INDEX "IDX_UNIQUE_ORG_AI_FEATURE" ON "organizations_ai_feature" ("organization_id")`
     );
