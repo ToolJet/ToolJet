@@ -550,7 +550,7 @@ const useAppData = (
       });
     }
     /*
-    - AI LOGIC 
+    -  AI LOGIC 
     - This logic is a hack for onload queries to run when app transitions from ai to visual builder.
     - This is needed because when app is in ai mode, component layout never changes because AppCanvas is loaded already with an empty app. Instead of touching the logic in AppBuilder, we are adding this hack here.
     */
@@ -648,6 +648,9 @@ const useAppData = (
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
           isReleasedApp: isReleasedApp,
+          appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
+          aiGenerationMetadata: appData.aiGenerationMetadata || {},
+          appBuilderMode: appData.appBuilderMode || 'visual',
         });
 
         setGlobalSettings(
