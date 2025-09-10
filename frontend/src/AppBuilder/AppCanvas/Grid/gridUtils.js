@@ -288,15 +288,7 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
 };
 
 export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
-  let parentDiv = id
-    ? typeof id === 'string'
-      ? document.getElementById(id)
-      : id
-    : document.getElementsByClassName('real-canvas')[0];
-  parentDiv = id === 'real-canvas' ? document.getElementById('real-canvas') : document.getElementById('canvas-' + id);
-  if (parentWidgetType === 'Container' || parentWidgetType === 'Modal') {
-    parentDiv = document.getElementById('canvas-' + id);
-  }
+  const parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
   const targetDivRect = event.target.getBoundingClientRect();
@@ -543,7 +535,7 @@ export const handleDeactivateTargets = () => {
 };
 export const computeScrollDelta = ({ source }) => {
   // Only need to calculate scroll delta when moving from a sub-container
-  if (source.slotId !== 'real-canvas') {
+  if (source?.slotId && source?.slotId !== 'real-canvas') {
     const subContainerWrap = document
       .querySelector(`#canvas-${source.slotId}`)
       ?.closest('.sub-container-overflow-wrap');

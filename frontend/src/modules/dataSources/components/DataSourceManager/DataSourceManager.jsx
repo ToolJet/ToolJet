@@ -987,6 +987,7 @@ class DataSourceManagerComponent extends React.Component {
             animation={false}
             onExit={this.onExit}
             container={this.props.container}
+            autoFocus={false}
             {...this.props.modalProps}
           >
             <Modal.Header className={'d-block'}>
