@@ -16,6 +16,7 @@ import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
 import './styles/tabs.scss';
 const tinycolor = require('tinycolor2');
+const TAB_HEADER_HEIGHT = 49.5;
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
@@ -347,7 +348,6 @@ export const Tabs = function Tabs({
             alignItems: 'center',
             width: '100%',
             backgroundColor: headerBackground,
-            height: '50px',
             display: parsedHideTabs ? 'none' : 'flex',
           }}
         >
@@ -378,7 +378,7 @@ export const Tabs = function Tabs({
               flexGrow: 1,
               paddingLeft: '10px',
               paddingRight: '10px',
-              height: '100%',
+              height: `${TAB_HEADER_HEIGHT}px`,
             }}
           >
             {tabItems
@@ -489,7 +489,7 @@ export const Tabs = function Tabs({
           style={{
             overflow: 'hidden',
             width: '100%',
-            height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+            height: '100%',
             position: 'relative',
           }}
         >
@@ -611,7 +611,7 @@ const TabContent = memo(function TabContent({
       className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
         display: 'block',
-        height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+        height: '100%',
         position: 'relative',
         top: '0px',
         width: '100%',
@@ -620,6 +620,7 @@ const TabContent = memo(function TabContent({
         pointerEvents: disable ? 'none' : 'auto',
         overflow: 'hidden', // Ensure TabContent doesn't overflow
         boxSizing: 'border-box', // Include padding/border in size calculation
+        padding: `${TAB_CANVAS_PADDING}px`,
       }}
     >
       {loading ? (
@@ -649,6 +650,7 @@ const TabContent = memo(function TabContent({
             contain: 'layout style', // Add containment for better overflow control
           }}
           darkMode={darkMode}
+          componentType="Tabs"
         />
       )}
     </div>

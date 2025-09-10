@@ -12,8 +12,17 @@ function hasProperty<T extends PropertyKey>(obj: unknown, prop: T): obj is Recor
   return isRecord(obj) && prop in obj;
 }
 
+// Type for gRPC unary method functions based on grpc-js implementation
+export type UnaryMethodFunction = (
+  message: any,
+  metadataOrCallback: grpc.Metadata | grpc.CallOptions | Function,
+  optionsOrCallback?: grpc.CallOptions | Function,
+  callback?: Function
+) => void;
+
 export interface GrpcClient {
-  [methodName: string]: Function | any;
+  [methodName: string]: UnaryMethodFunction | any;
+  waitForReady?(deadline: Date, callback: (error?: Error) => void): void;
 }
 
 export { toError, isRecord, hasProperty };
@@ -38,10 +47,13 @@ export type SourceOptions = {
   url: string;
   proto_files: 'server_reflection' | 'import_proto_file';
   proto_file_url?: string;
-  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2';
+  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'api_key';
   username?: string;
   password?: string;
   bearer_token?: string;
+  // API Key auth
+  grpc_apikey_key?: string;
+  grpc_apikey_value?: string;
   // OAuth2 fields
   grant_type?: 'authorization_code' | 'client_credentials';
   add_token_to?: 'header' | 'metadata';

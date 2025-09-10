@@ -244,7 +244,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
     return (
-      <div className="datasource-list-container">
+      <div className="datasource-list-container" id="datasource-list-container">
         <div className="datasource-list">
           <div className="datasource-search-holder">
             <SearchBox
@@ -299,9 +299,15 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       updateSidebarNAV(type);
       setSelectedDataSource(null);
       setTimeout(() => {
+        const container = document.getElementById('datasource-list-container'); //container to scroll
         const element = document.getElementById(activekey);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+
+        if (container && element) {
+          const offsetTop = element.offsetTop - container.offsetTop;
+          container.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth',
+          });
         }
       }, 100);
     };

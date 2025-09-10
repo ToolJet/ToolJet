@@ -20,17 +20,49 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
-# Checkout the same branch in submodules if it exists, otherwise fallback to main
-RUN git submodule foreach " \
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+RUN if git submodule update --init --recursive; then \
+  echo "Submodules initialized successfully"; \
+  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
+  git submodule foreach " \
+    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+      git checkout ${BRANCH_NAME}; \
+    else \
+      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
+      git checkout lts-3.16; \
+    fi"; \
+else \
+  echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
+  # Clone frontend/ee submodule directly
+  if [ ! -d "frontend/ee" ]; then \
+    mkdir -p frontend/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+  fi; \
+  # Clone server/ee submodule directly  
+  if [ ! -d "server/ee" ]; then \
+    mkdir -p server/ee; \
+    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+  fi; \
+  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
+  cd frontend/ee && \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
-    git checkout main; \
-  fi"
+    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
+    git checkout lts-3.16; \
+  fi && \
+  cd ../../server/ee && \
+  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    git checkout ${BRANCH_NAME}; \
+  else \
+    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
+    git checkout lts-3.16; \
+  fi && \
+  cd ../..; \
+fi
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -42,7 +74,7 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
-ENV TOOLJET_EDITION=ee
+ENV TOOLJET_EDITION=cloud
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -52,7 +84,7 @@ RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
-ENV TOOLJET_EDITION=ee
+ENV TOOLJET_EDITION=cloud
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -65,16 +97,15 @@ RUN npm --prefix server run build
 FROM node:22.15.1-bullseye
 
 RUN apt-get update -yq \
-    && apt-get install curl wget gnupg zip -yq \
+    && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
-    && apt -y install redis \
     && apt-get clean -y
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
-ENV TOOLJET_EDITION=ee
+ENV TOOLJET_EDITION=cloud
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 
@@ -140,14 +171,6 @@ RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
     "\n" \
-    "[program:redis] \n" \
-    "command=redis-server /etc/redis/redis.conf \n" \
-    "user=redis \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/var/log/redis/redis-server.log \n" \
-    "stdout_logfile=/var/log/redis/redis-server.log \n" \
-    "\n" \
     "[program:postgrest] \n" \
     "command=/bin/postgrest \n" \
     "autostart=true \n" \
@@ -165,7 +188,7 @@ RUN echo "[supervisord] \n" \
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
-    PORT=3000 \
+    PORT=80 \
     NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
@@ -178,15 +201,10 @@ ENV TOOLJET_HOST=http://localhost \
     TOOLJET_DB_USER=postgres \
     TOOLJET_DB_PASS=postgres \
     TOOLJET_DB=tooljet_db \
-    PGRST_HOST=http://localhost:3001 \
-    PGRST_SERVER_PORT=3001 \
+    PGRST_HOST=http://localhost:3000 \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
-    REDIS_HOST=localhost \
-    REDIS_PORT=6379 \
-    REDIS_USER= \
-    REDIS_PASSWORD= \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \

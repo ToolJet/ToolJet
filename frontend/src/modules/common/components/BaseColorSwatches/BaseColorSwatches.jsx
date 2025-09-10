@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
 import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import useStore from '@/AppBuilder/_stores/store';
 
 const BaseColorSwatches = ({
   value,
@@ -19,11 +20,17 @@ const BaseColorSwatches = ({
   component,
   styleDefinition,
   componentType = 'color',
-  CustomOptionList = () => { },
-  SwatchesToggle = () => { },
+  componentId,
+  CustomOptionList = () => {},
+  SwatchesToggle = () => {},
   onReset,
 }) => {
-  value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
+  const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  if (component == 'PopoverMenu') {
+    value = computeColorForPopoverMenu(value, meta, componentId);
+  } else if (component == 'Button') {
+    value = computeColor(styleDefinition, value, meta);
+  }
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -136,9 +143,9 @@ const BaseColorSwatches = ({
         >
           {colorMap?.[value]
             ? colorMap[value]
-              .split('/')
-              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-              .join('/')
+                .split('/')
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('/')
             : value}
         </div>
         {typeof onReset === 'function' && (

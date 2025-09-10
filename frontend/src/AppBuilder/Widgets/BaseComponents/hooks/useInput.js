@@ -3,6 +3,22 @@ import { useGridStore } from '@/_stores/gridStore';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode } from 'react-phone-number-input';
 
+export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
+  return {
+    width: !labelAutoWidth && widthType === 'ofComponent' && alignment === 'side' ? `${100 - labelWidth}%` : '100%',
+    minWidth: !labelAutoWidth && widthType === 'ofComponent' && alignment === 'side' ? `20%` : undefined,
+  };
+};
+
+export const getLabelWidthOfInput = (widthType, labelWidth) => {
+  if (widthType === 'ofComponent') return labelWidth;
+  return (labelWidth / 100) * 70;
+};
+
+export const checkIfInputWidgetTypeIsDeprecated = (optionValue) => {
+  return optionValue === 'ofField';
+};
+
 export const useInput = ({
   id,
   properties,
@@ -13,6 +29,7 @@ export const useInput = ({
   setExposedVariables,
   fireEvent,
   inputType,
+  width,
 }) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef();
@@ -51,7 +68,7 @@ export const useInput = ({
       return Number(int + '.' + dec.slice(0, digits));
     }
     return num;
-  }
+  };
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -68,6 +85,8 @@ export const useInput = ({
     isMandatory,
     styles.padding,
     styles.direction,
+    styles.widthType,
+    width,
     labelRef?.current?.getBoundingClientRect()?.width,
   ]);
 

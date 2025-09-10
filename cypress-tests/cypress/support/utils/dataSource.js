@@ -20,6 +20,11 @@ export const resizeQueryPanel = (height = "90") => {
   cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
 };
 
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
+};
+
 export const query = (operation) => {
   cy.get(`[data-cy="query-${operation}-button"]`).click();
 };
@@ -280,7 +285,12 @@ export const createRestAPIQuery = (
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         headers: headers,
         body: requestBody,
       }).then((response) => {
