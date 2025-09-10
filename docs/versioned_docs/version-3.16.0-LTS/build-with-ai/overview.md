@@ -8,33 +8,13 @@ Additionally, it comes with an AI-powered [documentation assistant](/docs/build-
 
 Follow these step-by-step instructions to create an inventory management application:
 1. **Describe your application** – Provide a prompt detailing the business application you want to create. (Example: "Inventory management system for a manufacturing company.")
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/overview-ai-1.png" alt="tooljet ai overview" />
- 
-</div>
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/overview-ai-1.png" alt="tooljet ai overview" />
 2. **Refine the requirements** – Review and accept or modify the application requirements suggested.
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/overview-ai-2.png" alt="tooljet ai overview" />
- 
-</div>
+    <img className="screenshot-full img-ful" style={{ marginTop: '15px' }} src="/img/tooljet-ai/overview-ai-2.png" alt="tooljet ai overview" />   
 3. **Customize your application** – Use AI to customize the generated application to your specific needs, adjusting components and styles, and also data source queries.
-
-- **Generated Application**
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/overview-ai-3.png" alt="tooljet ai overview" />
- 
-</div>
-
-- **Customizing Application**
-
-<div style={{textAlign: 'center',  marginBottom:'15px'}}>
-
-<img className="screenshot-full" src="/img/tooljet-ai/overview-ai-4.png" alt="tooljet ai overview" />
- 
-</div>
-
+    - **Generated Application**
+        <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/overview-ai-3.png" alt="tooljet ai overview" />
+    - **Customizing Application**
+        <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/overview-ai-4.png" alt="tooljet ai overview" />
 
 Refer to [Generate Applications](/docs/build-with-ai/generate-applications) and [AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant) documentation to learn more.
