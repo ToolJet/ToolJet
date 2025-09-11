@@ -34,3 +34,4 @@ export * from './login_configs.service';
 export * from './ai.service';
 export * from './appPermission.service';
 export * from './ai-onboarding.service';
+export * from './workflow_bundles.service';
