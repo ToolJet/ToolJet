@@ -3,14 +3,19 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
+import {
+  deleteDatasource,
+  closeDSModal,
+  verifyCouldnotConnectWithAlert,
+} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { addWidgetsToAddUser } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import { sqlServerSelector } from "Selectors/sqlServer";
+import { sqlServerText } from "Texts/sqlServer";
 import { performQueryAction } from "Support/utils/queries";
 
 const data = {};
 const tableName = "cypress_test_users";
-describe("PostgreSQL data source connection and query", () => {
+describe("Data sources SQL server connection and query", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -21,7 +26,7 @@ describe("PostgreSQL data source connection and query", () => {
 
   it("Should verify elements on connection form with validation", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.wait(1000);
+    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -46,112 +51,31 @@ describe("PostgreSQL data source connection and query", () => {
 
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-postgresql`,
-      "postgresql",
+      `cypress-${data.dataSourceName}-sql-server`,
+      "mssql",
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: "localhost", encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: true, encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "password", value: null, encrypted: true },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "host", value: "localhost" },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: "" },
+        { key: "username", value: "" },
+        { key: "password", value: "", encrypted: true },
+        { key: "azure", value: false, encrypted: false },
       ]
     );
     cy.reload();
-    cy.get(`[data-cy="cypress-${data.dataSourceName}-postgresql-button"]`)
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-sql-server-button"]`)
       .should("be.visible")
       .click();
     cy.get(dataSourceSelector.dsNameInputField).should(
       "have.value",
-      `cypress-${data.dataSourceName}-postgresql`
+      `cypress-${data.dataSourceName}-sql-server`
     );
-
-    cy.get(
-      dataSourceSelector.dropdownLabel(postgreSqlText.labelConnectionType)
-    ).verifyVisibleElement("have.text", postgreSqlText.labelConnectionType);
-    cy.get(dataSourceSelector.dropdownField(postgreSqlText.labelConnectionType))
-      .should("be.visible")
-      .click();
-    cy.contains(
-      `[id*="react-select-"]`,
-      postgreSqlText.connectionStringOption
-    ).click();
-
-    cy.get(
-      dataSourceSelector.dropdownField(postgreSqlText.labelConnectionType)
-    ).should("be.visible");
-    cy.get(
-      dataSourceSelector.labelFieldName(postgreSqlText.connectionStringOption)
-    ).verifyVisibleElement(
-      "have.text",
-      `${postgreSqlText.connectionStringOption}*`
-    );
-    cy.get(postgreSqlSelector.labelEncryptedText).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelEncrypted
-    );
-    cy.get(dataSourceSelector.button(postgreSqlText.editButtonText)).should(
-      "be.visible"
-    );
-    cy.get(dataSourceSelector.button(postgreSqlText.editButtonText)).click();
-    cy.verifyRequiredFieldValidation(
-      postgreSqlText.connectionStringOption,
-      "rgb(226, 99, 103)"
-    );
-    cy.get(
-      dataSourceSelector.textField(postgreSqlText.connectionStringOption)
-    ).should("be.visible");
-    cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.whiteListIpText
-    );
-    cy.get(postgreSqlSelector.buttonCopyIp).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.textCopy
-    );
-
-    cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.readDocumentation
-    );
-    cy.get(postgreSqlSelector.buttonTestConnection)
-      .verifyVisibleElement(
-        "have.text",
-        postgreSqlText.buttonTextTestConnection
-      )
-      .click();
-    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect
-    );
-    cy.get(postgreSqlSelector.buttonSave)
-      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
-      .and("be.disabled");
-    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.unableAcquireConnectionAlertText
-    );
-
-    cy.get(dataSourceSelector.dropdownField(postgreSqlText.labelConnectionType))
-      .should("be.visible")
-      .click();
-    cy.contains(
-      `[id*="react-select-"]`,
-      postgreSqlText.manualConnectionOption
-    ).click();
-
-    cy.get(
-      dataSourceSelector.dropdownField(postgreSqlText.labelConnectionType)
-    ).should("be.visible");
 
     const requiredFields = [
       postgreSqlText.labelHost,
       postgreSqlText.labelPort,
+      postgreSqlText.labelDbName,
       postgreSqlText.labelUserName,
       postgreSqlText.labelPassword,
     ];
@@ -207,14 +131,18 @@ describe("PostgreSQL data source connection and query", () => {
         cy.get(dataSourceSelector.textField(section)).should("be.visible");
       }
     });
-    cy.get(postgreSqlSelector.labelSsl).verifyVisibleElement(
+
+    cy.get(sqlServerSelector.labelInstance).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelSSL
+      sqlServerText.labelInstance
     );
-    cy.get(postgreSqlSelector.sslToggleInput).should("be.visible");
-    cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
+    cy.get(sqlServerSelector.labelAzureEncryptConnection).verifyVisibleElement(
       "have.text",
-      postgreSqlText.sslCertificate
+      sqlServerText.labelAzureEncryptConnection
+    );
+
+    cy.get(dataSourceSelector.toggleInput(sqlServerText.azureText)).should(
+      "be.visible"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -238,109 +166,138 @@ describe("PostgreSQL data source connection and query", () => {
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .and("be.disabled");
-    verifyCouldnotConnectWithAlert(postgreSqlText.serverNotSuppotSsl);
-
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-postgresql`);
+    //verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+      "have.text",
+      "Failed to connect to :1433 - Could not connect (sequence)"
+    );
+    deleteDatasource(`cypress-${data.dataSourceName}-sql-server`);
   });
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
+
+  it("Should verify the functionality of SQL Server connection form", () => {
+    const dsName = `cypress-${data.dataSourceName}-sql-server`;
     cy.get(commonSelectors.globalDataSourceIcon).click();
+    //invalid database
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-manual-pgsql`,
-      "postgresql",
+      dsName,
+      "mssql",
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: "unknowndb" },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: `${Cypress.env("sqlserver_password")}`,
           encrypted: true,
         },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "azure", value: false, encrypted: false },
       ]
     );
-    cy.get(
-      dataSourceSelector.dataSourceNameButton(
-        `cypress-${data.dataSourceName}-manual-pgsql`
-      )
-    )
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
       .should("be.visible")
       .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'sa'.");
+
+    //invalid username
     cy.reload();
-    cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-string-pgsql`,
-      "postgresql",
-      [
-        { key: "connection_type", value: "string", encrypted: false },
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: "admin1" },
         {
-          key: "connection_string",
-          value: `${Cypress.env("pg_string")}`,
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
           encrypted: true,
         },
-      ]
-    );
-    cy.get(
-      dataSourceSelector.dataSourceNameButton(
-        `cypress-${data.dataSourceName}-string-pgsql`
-      )
-    )
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
       .should("be.visible")
       .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'admin1'.");
+
+    //invalid password
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        { key: "password", value: "testpassword", encrypted: true },
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.wait(500);
+    verifyCouldnotConnectWithAlert("Login failed for user 'sa'.");
+
+    //valid data
+    cy.reload();
+    cy.apiUpdateGDS({
+      name: dsName,
+      options: [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        {
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
+          encrypted: true,
+        },
+        { key: "azure", value: false, encrypted: false },
+      ],
+    });
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-string-pgsql`);
+    cy.apiDeleteGDS(dsName);
   });
+
   it("Should verify elements of the Query section", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-manual-pgsql`,
-      "postgresql",
+      `cypress-${data.dataSourceName}-sqlserver`,
+      "mssql",
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: `${Cypress.env("sqlserver_password")}`,
           encrypted: true,
         },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "azure", value: false, encrypted: false },
       ]
     );
-    cy.apiCreateApp(`${fake.companyName}-postgresql`);
+    cy.apiCreateApp(`${fake.companyName}-sqlserver`);
     cy.openApp();
 
     cy.apiAddQueryToApp({
@@ -350,8 +307,8 @@ describe("PostgreSQL data source connection and query", () => {
         transformationLanguage: "javascript",
         enableTransformation: false,
       },
-      dsName: `cypress-${data.dataSourceName}-manual-pgsql`,
-      dsKind: "postgresql",
+      dsName: `cypress-${data.dataSourceName}-sqlserver`,
+      dsKind: "mssql",
     });
     cy.reload();
     cy.get(
@@ -366,7 +323,7 @@ describe("PostgreSQL data source connection and query", () => {
     cy.get(".css-zz6spl-container").should("be.visible");
     cy.get(".w-100 > .react-select__control > .react-select__value-container")
       .should("be.visible")
-      .and("have.text", `cypress-${data.dataSourceName}-manual-pgsql`);
+      .and("have.text", `cypress-${data.dataSourceName}-sqlserver`);
 
     cy.get(postgreSqlSelector.queryPreviewButton).verifyVisibleElement(
       "have.text",
@@ -458,41 +415,32 @@ describe("PostgreSQL data source connection and query", () => {
     performQueryAction("table-creation", "rename", "updated-table-creation");
     performQueryAction("updated-table-creation", "duplicate");
     performQueryAction("updated-table-creation_copy", "delete");
-    cy.apiDeleteApp(`${fake.companyName}-postgresql`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.apiDeleteApp(`${fake.companyName}-sqlserver`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-sqlserver`);
   });
+
   it("Should verify CRUD operations on SQL Query", () => {
-    const dsName = `cypress-${data.dataSourceName}-crud-pgsql`;
-    const dsKind = "postgresql";
+    const dsName = `cypress-${data.dataSourceName}-crud-sqlserver`;
+    const dsKind = "mssql";
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       dsKind,
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: `${Cypress.env("sqlserver_password")}`,
           encrypted: true,
         },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "azure", value: false, encrypted: false },
       ]
     );
-    cy.apiCreateApp(`${fake.companyName}-postgresql-CURD-App`);
+    cy.apiCreateApp(`${fake.companyName}-sqlserver-CRUD-App`);
     cy.openApp();
 
     cy.apiAddQueryToApp({
@@ -501,14 +449,14 @@ describe("PostgreSQL data source connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS "public"."${tableName}" (
-        "id" integer GENERATED ALWAYS AS IDENTITY,
-        "name" text NOT NULL,
-        "email" text UNIQUE NOT NULL,
-        "age" integer,
-        "created_at" timestamp DEFAULT now(),
-        PRIMARY KEY ("id")
-        );`,
+        query: `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='${tableName}' AND xtype='U')
+      CREATE TABLE [dbo].[${tableName}] (
+        [id] int IDENTITY(1,1) PRIMARY KEY,
+        [name] nvarchar(255) NOT NULL,
+        [email] nvarchar(255) UNIQUE NOT NULL,
+        [age] int,
+        [created_at] datetime2 DEFAULT GETDATE()
+      );`,
       },
       dsName,
       dsKind,
@@ -522,9 +470,9 @@ describe("PostgreSQL data source connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO "public"."${tableName}" (name, email, age)
-        VALUES ('Alice', 'alice@example.com', 30)
-        RETURNING *;`,
+        query: `INSERT INTO ${tableName} (name, email, age)
+      OUTPUT INSERTED.*
+      VALUES ('Alice', 'alice@example.com', 30);`,
       },
       dsName,
       dsKind,
@@ -539,14 +487,15 @@ describe("PostgreSQL data source connection and query", () => {
         });
       });
     });
+
     cy.apiAddQueryToApp({
       queryName: "read_user",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SELECT * FROM "public"."${tableName}"
-        WHERE email = 'alice@example.com';`,
+        query: `SELECT * FROM ${tableName}
+      WHERE email = 'alice@example.com';`,
       },
       dsName,
       dsKind,
@@ -555,16 +504,31 @@ describe("PostgreSQL data source connection and query", () => {
         expect(response.body.data[0].name).to.eq("Alice");
       });
     });
+
+    cy.apiAddQueryToApp({
+      queryName: "table_preview",
+      options: {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `SELECT * FROM ${tableName}`,
+      },
+      dsName,
+      dsKind,
+    }).then(() => {
+      cy.apiRunQuery();
+    });
+
     cy.apiAddQueryToApp({
       queryName: "update_user",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `UPDATE "public"."${tableName}"
-        SET name = 'Alice Updated', age = 31
-        WHERE email = 'alice@example.com'
-        RETURNING *;`,
+        query: `UPDATE ${tableName}
+      SET name = 'Alice Updated', age = 31
+      OUTPUT INSERTED.*
+      WHERE email = 'alice@example.com';`,
       },
       dsName,
       dsKind,
@@ -580,9 +544,9 @@ describe("PostgreSQL data source connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DELETE FROM "public"."${tableName}"
-        WHERE email = 'alice@example.com'
-        RETURNING *;`,
+        query: `DELETE FROM ${tableName}
+      OUTPUT DELETED.*
+      WHERE email = 'alice@example.com';`,
       },
       dsName,
       dsKind,
@@ -593,12 +557,15 @@ describe("PostgreSQL data source connection and query", () => {
     });
 
     cy.apiAddQueryToApp({
-      queryName: "table_preview",
+      queryName: "existance_of_table",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SELECT * FROM "${tableName}"`,
+        query: `SELECT CASE WHEN EXISTS (
+        SELECT * FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_NAME = '${tableName}'
+      ) THEN 1 ELSE 0 END AS table_exists;`,
       },
       dsName,
       dsKind,
@@ -607,14 +574,74 @@ describe("PostgreSQL data source connection and query", () => {
     });
 
     cy.apiAddQueryToApp({
-      queryName: "existance_of_table",
+      queryName: "truncate_table",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `SELECT EXISTS (
-      SELECT FROM information_schema.tables
-      WHERE table_name = '${tableName}'
+        query: `TRUNCATE TABLE ${tableName}`,
+      },
+      dsName,
+      dsKind,
+    }).then(() => {
+      cy.apiRunQuery();
+    });
+
+    cy.apiAddQueryToApp({
+      queryName: "drop_table",
+      options: {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `DROP TABLE IF EXISTS ${tableName}`,
+      },
+      dsName,
+      dsKind,
+    }).then(() => {
+      cy.apiRunQuery();
+    });
+
+    cy.apiDeleteApp(`${fake.companyName}-sqlserver-CRUD-App`);
+    cy.apiDeleteGDS(dsName);
+  });
+
+  it("Should verify bulk update operation", () => {
+    const dsName = `cypress-${data.dataSourceName}-bulk-sqlserver`;
+    const dsKind = "mssql";
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      dsName,
+      dsKind,
+      [
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
+        {
+          key: "password",
+          value: `${Cypress.env("sqlserver_password")}`,
+          encrypted: true,
+        },
+        { key: "azure", value: false, encrypted: false },
+      ]
+    );
+    cy.apiCreateApp(`${fake.companyName}-sqlserver-bulk`);
+    cy.openApp();
+
+    cy.apiAddQueryToApp({
+      queryName: "table-creation",
+      options: {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='${tableName}' AND xtype='U')
+      CREATE TABLE [dbo].[${tableName}] (
+        [id] int IDENTITY(1,1) PRIMARY KEY,
+        [name] nvarchar(255) NOT NULL,
+        [email] nvarchar(255) UNIQUE NOT NULL,
+        [age] int,
+        [created_at] datetime2 DEFAULT GETDATE()
       );`,
       },
       dsName,
@@ -622,120 +649,34 @@ describe("PostgreSQL data source connection and query", () => {
     }).then(() => {
       cy.apiRunQuery();
     });
-
-    // cy.apiAddQueryToApp({
-    //   queryName: "add_data_using_widgets",
-    //   options: {
-    //     mode: "sql",
-    //     transformationLanguage: "javascript",
-    //     enableTransformation: false,
-    //     query: `INSERT INTO "public"."${tableName}" ("name", "email") VALUES('{{components.textinput1.value}}', '{{components.textinput2.value}}') RETURNING "id", "name", "email";`,
-    //   },
-    //   dsName,
-    //   dsKind,
-    // }).then(() => {
-    //   cy.reload();
-    //   addWidgetsToAddUser();
-    //   cy.intercept(
-    //     "POST",
-    //     `**/api/data-queries/${Cypress.env("query-id")}/versions/*/run/*`
-    //   ).as("runQuery");
-
-    //   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-
-    //   cy.wait("@runQuery", { timeout: 60000 }).then((interception) => {
-    //     expect(interception.response.statusCode).to.equal(201);
-    //     expect(interception.response.body.status).to.eq("ok");
-    //     expect(interception.response.body.data[0]).to.include({
-    //       name: "Jack",
-    //       email: "jack@example.com",
-    //     });
-    //   });
-    // });
     cy.apiAddQueryToApp({
-      queryName: "truncate_table",
+      queryName: "insert_user",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `TRUNCATE TABLE "public"."${tableName}"`,
+        query: `INSERT INTO ${tableName} (name, email, age)
+      OUTPUT INSERTED.*
+      VALUES ('Alice', 'alice@example.com', 30), ('John', 'john@example.com', 28);`,
       },
       dsName,
       dsKind,
     }).then(() => {
-      cy.apiRunQuery();
+      cy.apiRunQuery().then((response) => {
+        expect(response.body.status).to.eq("ok");
+        expect(response.body.data).to.be.an("array").with.length(2);
+        expect(response.body.data[0]).to.include({
+          name: "Alice",
+          email: "alice@example.com",
+          age: 30,
+        });
+        expect(response.body.data[1]).to.include({
+          name: "John",
+          email: "john@example.com",
+          age: 28,
+        });
+      });
     });
-    cy.apiAddQueryToApp({
-      queryName: "drop_table",
-      options: {
-        mode: "sql",
-        transformationLanguage: "javascript",
-        enableTransformation: false,
-        query: `DROP TABLE IF EXISTS "public"."${tableName}"`,
-      },
-      dsName,
-      dsKind,
-    }).then(() => {
-      cy.apiRunQuery();
-    });
-
-    cy.apiDeleteApp(`${fake.companyName}-postgresql-CURD-App`);
-    cy.apiDeleteGDS(dsName);
-  });
-  it("Should verify bulk update operation", () => {
-    const dsName = `cypress-${data.dataSourceName}-bulk-pgsql`;
-    const dsKind = "postgresql";
-    cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
-      dsKind,
-      [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
-        {
-          key: "password",
-          value: `${Cypress.env("pg_password")}`,
-          encrypted: true,
-        },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
-      ]
-    );
-    cy.apiCreateApp(`${fake.companyName}-pgsql-bulk`);
-    cy.openApp();
-    cy.apiAddQueryToApp({
-      queryName: "table-creation",
-      options: {
-        mode: "sql",
-        transformationLanguage: "javascript",
-        enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS "public"."${tableName}" (
-        "id" integer GENERATED ALWAYS AS IDENTITY,
-        "name" text NOT NULL,
-        "email" text UNIQUE NOT NULL,
-        "age" integer,
-        "created_at" timestamp DEFAULT now(),
-        PRIMARY KEY ("id")
-        );`,
-      },
-      dsName,
-      dsKind,
-    }).then(() => {
-      cy.apiRunQuery();
-    });
-
     cy.apiAddQueryToApp({
       queryName: "bulk_update_users",
       options: {
@@ -746,109 +687,122 @@ describe("PostgreSQL data source connection and query", () => {
         primary_key_column: "id",
         table: "cypress_test_users",
         records: `{{[
-      {
-        "id": 1,
-        "name": "John1 Doe",
-        "email": "john1.doe@example.com",
-        "age": 30
-      },
-      {
-        "id": 2,
-        "name": "Jane1 Smith",
-        "email": "jane1.smith@example.com",
-        "age": 25
-      }
-    ]}}`,
+    {
+      "id": 1,
+      "name": "John1 Doe",
+      "email": "john1.doe@example.com",
+      "age": 30
+    },
+    {
+      "id": 2,
+      "name": "Jane1 Smith",
+      "email": "jane1.smith@example.com",
+      "age": 25
+    }
+  ]}}`,
       },
       dsName,
       dsKind,
     }).then(() => {
-      cy.apiRunQuery("bulk_update_users");
+      cy.apiRunQuery("bulk_update_users").then((response) => {
+        expect(response.body.data[0]).to.eq(undefined);
+      });
     });
+
+    cy.apiAddQueryToApp({
+      queryName: "table_preview",
+      options: {
+        mode: "sql",
+        transformationLanguage: "javascript",
+        enableTransformation: false,
+        query: `SELECT * FROM ${tableName}`,
+      },
+      dsName,
+      dsKind,
+    }).then(() => {
+      cy.apiRunQuery().then((response) => {
+        expect(response.body.status).to.eq("ok");
+        expect(response.body.data).to.be.an("array").with.length(2);
+      });
+    });
+
     cy.apiAddQueryToApp({
       queryName: "drop_table",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DROP TABLE IF EXISTS "public"."${tableName}"`,
+        query: `DROP TABLE IF EXISTS ${tableName}`,
       },
       dsName,
       dsKind,
     }).then(() => {
       cy.apiRunQuery();
     });
-    cy.apiDeleteApp(`${fake.companyName}-pgsql-bulk`);
+
+    cy.apiDeleteApp(`${fake.companyName}-sqlserver-bulk`);
     cy.apiDeleteGDS(dsName);
   });
   it("Should verify SQL parameters", () => {
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-pgsql`,
-      "postgresql",
+      `cypress-${data.dataSourceName}-sqlserver`,
+      "mssql",
       [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
+        { key: "host", value: `${Cypress.env("sqlserver_host")}` },
+        { key: "instanceName", value: "" },
+        { key: "port", value: 1433 },
+        { key: "database", value: `${Cypress.env("sqlserver_db")}` },
+        { key: "username", value: `${Cypress.env("sqlserver_user")}` },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: `${Cypress.env("sqlserver_password")}`,
           encrypted: true,
         },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
+        { key: "azure", value: false, encrypted: false },
       ]
     );
     cy.apiCreateApp(`${fake.companyName}-sql-param`);
     cy.openApp();
+
     cy.apiAddQueryToApp({
       queryName: "table-creation",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `CREATE TABLE IF NOT EXISTS "public"."${tableName}" (
-        "id" integer GENERATED ALWAYS AS IDENTITY,
-        "name" text NOT NULL,
-        "email" text UNIQUE NOT NULL,
-        "age" integer,
-        "created_at" timestamp DEFAULT now(),
-        PRIMARY KEY ("id")
-        );`,
+        query: `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='${tableName}' AND xtype='U')
+      CREATE TABLE [dbo].[${tableName}] (
+        [id] int IDENTITY(1,1) PRIMARY KEY,
+        [name] nvarchar(255) NOT NULL,
+        [email] nvarchar(255) UNIQUE NOT NULL,
+        [age] int,
+        [created_at] datetime2 DEFAULT GETDATE()
+      );`,
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: `cypress-${data.dataSourceName}-sqlserver`,
+      dsKind: "mssql",
     }).then(() => {
       cy.apiRunQuery();
     });
+
     cy.apiAddQueryToApp({
       queryName: "create-user",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO  "public"."${tableName}" (name, email, age)
-        VALUES (:name, :email, :age)
-        RETURNING *;`,
+        query: `INSERT INTO ${tableName} (name, email, age)
+      OUTPUT INSERTED.*
+      VALUES (:name, :email, :age);`,
         query_params: [
           ["name", "John Doe"],
           ["email", "john.doe@example.com"],
           ["age", "28"],
         ],
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: `cypress-${data.dataSourceName}-sqlserver`,
+      dsKind: "mssql",
     }).then(() => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("ok");
@@ -866,40 +820,42 @@ describe("PostgreSQL data source connection and query", () => {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `INSERT INTO "public"."${tableName}"  (name, email, age)
-      VALUES (:name, :email, :age)
-      RETURNING *;`,
+        query: `INSERT INTO ${tableName} (name, email, age)
+      OUTPUT INSERTED.*
+      VALUES (:name, :email, :age);`,
         query_params: [
           ["name", "John Doe"],
           ["email", "john.doe@example.com"],
           ["age", "28"],
         ],
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: `cypress-${data.dataSourceName}-sqlserver`,
+      dsKind: "mssql",
     }).then(() => {
       cy.apiRunQuery().then((response) => {
         expect(response.body.status).to.eq("failed");
         expect(response.body.message).to.eq("Query could not be completed");
         expect(response.body.description).to.include(
-          "duplicate key value violates unique constraint"
+          "Violation of UNIQUE KEY constraint"
         );
       });
     });
+
     cy.apiAddQueryToApp({
       queryName: "drop_table",
       options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
-        query: `DROP TABLE IF EXISTS "public"."${tableName}"`,
+        query: `DROP TABLE IF EXISTS ${tableName}`,
       },
-      dsName: `cypress-${data.dataSourceName}-pgsql`,
-      dsKind: "postgresql",
+      dsName: `cypress-${data.dataSourceName}-sqlserver`,
+      dsKind: "mssql",
     }).then(() => {
       cy.apiRunQuery();
     });
-    cy.apiDeleteApp(`${fake.companyName}-pgsql-bulk`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-pgsql`);
+
+    cy.apiDeleteApp(`${fake.companyName}-sql-param`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-sqlserver`);
   });
 });
