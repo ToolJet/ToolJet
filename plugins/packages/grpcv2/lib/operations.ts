@@ -356,22 +356,22 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 
 
 /**
- * Prepare gRPC call options for NON-TLS connections only
- * Handles ALL metadata (datasource + auth + query) via CallCredentials
- * Note: This function is only called when ssl_enabled = false
+ * Build all metadata for NON-TLS connections (datasource + auth + query)
+ * Returns Metadata object directly for use with unary gRPC method calls
+ * Note: For non-TLS connections, auth must be included as metadata headers
  */
-export const prepareGrpcCallOptions = (
+export const buildMetadata = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
-): grpc.CallOptions => {
-  const allMetadata = new grpc.Metadata();
+): grpc.Metadata => {
+  const metadata = new grpc.Metadata();
 
   // 1. Add datasource metadata (client-id, cp-env, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
     const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
       if (key && value) {
-        allMetadata.set(key, String(value));
+        metadata.set(key, String(value));
       }
     });
   }
@@ -381,7 +381,7 @@ export const prepareGrpcCallOptions = (
     const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
       if (key && value) {
-        allMetadata.set(key, String(value));
+        metadata.set(key, String(value));
       }
     });
   }
@@ -390,20 +390,20 @@ export const prepareGrpcCallOptions = (
   switch (sourceOptions.auth_type) {
     case 'api_key':
       if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
-        allMetadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
+        metadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
       }
       break;
 
     case 'bearer':
       if (sourceOptions.bearer_token) {
-        allMetadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
+        metadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
       }
       break;
 
     case 'basic':
       if (sourceOptions.username && sourceOptions.password) {
         const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        allMetadata.set('authorization', `Basic ${credentials}`);
+        metadata.set('authorization', `Basic ${credentials}`);
       }
       break;
 
@@ -413,22 +413,37 @@ export const prepareGrpcCallOptions = (
       if (sanitizedAuth?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
-          allMetadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
+          metadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
         } else {
-          allMetadata.set('token', sanitizedAuth.access_token);
+          metadata.set('token', sanitizedAuth.access_token);
         }
       }
       break;
   }
 
-  // Return CallCredentials for reliable delivery of ALL metadata (non-TLS connections)
-  const metadataMap = allMetadata.getMap();
+  // Return the metadata directly for use with unary methods
+  return metadata;
+};
+
+/**
+ * Prepare gRPC call options for STREAMING methods (like reflection)
+ * Handles ALL metadata via CallCredentials for non-TLS streaming connections
+ * Note: Streaming methods need CallOptions, not Metadata as first parameter
+ */
+export const prepareGrpcCallOptions = (
+  sourceOptions: SourceOptions,
+  queryOptions?: QueryOptions
+): grpc.CallOptions => {
+  const metadata = buildMetadata(sourceOptions, queryOptions);
+
+  // For streaming methods, wrap metadata in CallCredentials
+  const metadataMap = metadata.getMap();
   const hasMetadata = metadataMap && Object.keys(metadataMap).length > 0;
 
   if (hasMetadata) {
     return {
       credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
-        callback(null, allMetadata);
+        callback(null, metadata);
       })
     };
   }
@@ -623,9 +638,9 @@ export const executeGrpcMethod = async (
       const metadata = combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     } else {
-      // Non-TLS connections: All metadata (auth + datasource + query) via CallCredentials
-      const allMetadataOptions = prepareGrpcCallOptions(sourceOptions, queryOptions);
-      methodFunction.call(client, message, allMetadataOptions, callback);
+      // Non-TLS connections: All metadata (auth + datasource + query) as direct metadata
+      const metadata = buildMetadata(sourceOptions, queryOptions);
+      methodFunction.call(client, message, metadata, callback);
     }
   });
 };
