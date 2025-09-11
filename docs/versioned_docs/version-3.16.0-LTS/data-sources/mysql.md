@@ -79,7 +79,9 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
+
 SQL Parameters:
+
 - Key: username
 - Value: oliver // or `{{ components.username.value }}`
 
@@ -105,7 +107,6 @@ MySQL offers dynamic functions and system variables that provide real-time infor
 | `@@port`            | Returns the MySQL server port number                              | `3306`               |
 | `CONNECTION_ID()`   | Returns the connection ID for the current session                 | `123456`             |
 
-
 ## Querying in GUI Mode
 
 GUI mode can be used to query MySQL database without writing queries.
@@ -130,7 +131,7 @@ GUI mode can be used to query MySQL database without writing queries.
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
 :::
 
 </div>

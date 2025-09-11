@@ -48,11 +48,82 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/index"
-          },
           "items": [
+            {
+              "type": "category",
+              "label": "PostgreSQL 13 → 16 Upgrade",
+              "items": [
+                  {
+                    "type": "category",
+                    "label": "AWS",
+                    "items": [
+                      "setup/postgresql-13-16/aws/overview",
+                      "setup/postgresql-13-16/aws/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/aws/deployment/docker",
+                              "setup/postgresql-13-16/aws/deployment/ami",
+                              "setup/postgresql-13-16/aws/deployment/ecs",
+                              "setup/postgresql-13-16/aws/deployment/eks"
+                          ]
+                      },
+                      "setup/postgresql-13-16/aws/verification",
+                      "setup/postgresql-13-16/aws/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "Azure",
+                    "items": [
+                      "setup/postgresql-13-16/azure/overview",
+                      "setup/postgresql-13-16/azure/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/azure/deployment/aks",
+                              "setup/postgresql-13-16/azure/deployment/container"
+                          ]
+                      },
+                      "setup/postgresql-13-16/azure/verification",
+                      "setup/postgresql-13-16/azure/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "GCP",
+                    "items": [
+                      "setup/postgresql-13-16/gcp/overview",
+                      "setup/postgresql-13-16/gcp/db-upgrade",
+                      {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                              "setup/postgresql-13-16/gcp/deployment/docker",
+                              "setup/postgresql-13-16/gcp/deployment/gke",
+                              "setup/postgresql-13-16/gcp/deployment/cloud-run"
+                          ]
+                      },
+                      "setup/postgresql-13-16/gcp/verification",
+                      "setup/postgresql-13-16/gcp/best-practices"
+                    ]
+                  },
+                  {
+                    "type": "category",
+                    "label": "ToolJet Postgres Upgrade Guide",
+                    "items": [
+                      "setup/postgresql-13-16/tj/overview",
+                      "setup/postgresql-13-16/tj/steps",
+                      "setup/postgresql-13-16/tj/troubleshooting",
+                      "setup/postgresql-13-16/tj/post-upgrade",
+                      "setup/postgresql-13-16/tj/security",
+                      "setup/postgresql-13-16/tj/checklist"
+                    ]
+                  }
+              ]
+            },
             "setup/try-tooljet",
             "setup/choose-your-tooljet",
             "setup/system-requirements",
@@ -103,53 +174,85 @@
         "app-builder/overview",
         {
           "type": "category",
-          "label": "Building the UI",
+          "label": "UI and Themes",
           "items": [
-            "app-builder/building-ui/canvas",
-            "app-builder/building-ui/component-library",
-            "app-builder/building-ui/component-properties",
-            "app-builder/building-ui/pages",
-            "app-builder/building-ui/component-state"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Connecting Data Sources",
-          "items": [
-            "app-builder/connecting-with-data-sources/creating-managing-queries",
-            "app-builder/connecting-with-data-sources/accessing-query-results",
-            "app-builder/connecting-with-data-sources/transforming-data",
-            "app-builder/connecting-with-data-sources/binding-data-to-components"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Events and Actions",
-          "items": [
-            "app-builder/events/overview",
-            "app-builder/events/event-triggers",
-            "app-builder/events/use-case/csa",
-            "app-builder/events/use-case/page-nav",
-            "app-builder/events/use-case/variables"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Writing Custom Code",
-          "items": [
-            "app-builder/custom-code/fx-dynamic-behaviour",
-            "app-builder/custom-code/control-components",
-            "app-builder/custom-code/transform-data",
-            "app-builder/custom-code/managing-variables",
             {
               "type": "category",
-              "label": "Importing External Libraries",
+              "label": "Building the UI",
               "items": [
-                "app-builder/import-libraries/runjs",
-                "app-builder/import-libraries/runpy"
+                "app-builder/building-ui/canvas",
+                "app-builder/building-ui/component-library",
+                "app-builder/building-ui/component-properties",
+                "app-builder/building-ui/pages",
+                "app-builder/building-ui/component-state"
               ]
             },
-            "app-builder/custom-code/constants-secrets"
+            "app-builder/custom-theme",
+            {
+              "type": "category",
+              "label": "Modules",
+              "items": [
+                "app-builder/modules/overview",
+                "app-builder/modules/create-module",
+                "app-builder/modules/input-output",
+                "app-builder/modules/data-flow",
+                "app-builder/modules/using-modules",
+                "app-builder/modules/import-export-modules"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Data and Logic",
+          "items": [
+            {
+              "type": "category",
+              "label": "Connecting Data Sources",
+              "items": [
+                "app-builder/connecting-with-data-sources/creating-managing-queries",
+                "app-builder/connecting-with-data-sources/accessing-query-results",
+                "app-builder/connecting-with-data-sources/transforming-data",
+                "app-builder/connecting-with-data-sources/binding-data-to-components"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Events and Actions",
+              "items": [
+                "app-builder/events/overview",
+                "app-builder/events/event-triggers",
+                "app-builder/events/use-case/csa",
+                "app-builder/events/use-case/page-nav",
+                "app-builder/events/use-case/variables"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Writing Custom Code",
+              "items": [
+                "app-builder/custom-code/fx-dynamic-behaviour",
+                "app-builder/custom-code/control-components",
+                "app-builder/custom-code/transform-data",
+                "app-builder/custom-code/managing-variables",
+                {
+                  "type": "category",
+                  "label": "Importing External Libraries",
+                  "items": [
+                    "app-builder/import-libraries/runjs",
+                    "app-builder/import-libraries/runpy"
+                  ]
+                },
+                "app-builder/custom-code/constants-secrets"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Role Based Applications",
+              "items": [
+                "app-builder/walkthrough/row-level-security"
+              ]
+            }
           ]
         },
         {
@@ -157,7 +260,16 @@
           "label": "Debugging",
           "items": [
             "app-builder/debugging/inspector",
-            "app-builder/debugging/understanding-logs"
+            "app-builder/debugging/understanding-logs",
+            "app-builder/anti-patterns"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Share Application",
+          "items": [
+            "app-builder/importing-exporting-applications",
+            "app-builder/embed-application"
           ]
         },
         {
@@ -298,26 +410,10 @@
                 "actions/set-localstorage",
                 "actions/copy-to-clipboard"
               ]
-            }
+            },
+            "tutorial/keyboard-shortcuts"
           ]
-        },
-        "app-builder/custom-theme",
-        {
-          "type": "category",
-          "label": "Modules",
-          "items": [
-            "app-builder/modules/overview",
-            "app-builder/modules/create-module",
-            "app-builder/modules/input-output",
-            "app-builder/modules/data-flow",
-            "app-builder/modules/using-modules",
-            "app-builder/modules/import-export-modules"
-          ]
-        },
-        "app-builder/walkthrough/row-level-security",
-        "app-builder/anti-patterns",
-        "app-builder/importing-exporting-applications",
-        "tutorial/keyboard-shortcuts"
+        }
       ]
     },
     {
@@ -351,6 +447,7 @@
             "data-sources/googlesheets",
             "data-sources/graphql",
             "data-sources/grpc",
+            "data-sources/grpcv2",
             "data-sources/influxdb",
             "data-sources/mailgun",
             "data-sources/mariadb",
@@ -402,32 +499,40 @@
               "type": "category",
               "label": "Marketplace Plugins",
               "items": [
+                "marketplace/plugins/marketplace-plugin-aftership",
+                "marketplace/plugins/marketplace-plugin-anthropic",
+                "marketplace/plugins/marketplace-plugin-aws-bedrock",
                 "marketplace/plugins/marketplace-plugin-awsredshift",
                 "marketplace/plugins/marketplace-plugin-textract",
                 "marketplace/plugins/marketplace-plugin-aws-lambda",
+                "marketplace/plugins/marketplace-plugin-azurerepos",
+                "marketplace/plugins/marketplace-plugin-clickup",
+                "marketplace/plugins/marketplace-plugin-cohere",
+                "marketplace/plugins/marketplace-plugin-easypost",
                 "marketplace/plugins/marketplace-plugin-engagespot",
+                "marketplace/plugins/marketplace-plugin-gemini",
                 "marketplace/plugins/marketplace-plugin-github",
+                "marketplace/plugins/marketplace-plugin-gmail",
+                "marketplace/plugins/marketplace-plugin-googlecalendar",
+                "marketplace/plugins/marketplace-plugin-spanner",
                 "marketplace/plugins/marketplace-plugin-harperdb",
+                "marketplace/plugins/marketplace-plugin-hubspot",
+                "marketplace/plugins/marketplace-plugin-hugging_face",
+                "marketplace/plugins/marketplace-plugin-jira",
+                "marketplace/plugins/marketplace-plugin-microsoft_graph",
+                "marketplace/plugins/marketplace-plugin-mistral_ai",
                 "marketplace/plugins/marketplace-plugin-openai",
+                "marketplace/plugins/marketplace-plugin-pinecone",
                 "marketplace/plugins/marketplace-plugin-plivo",
-                "marketplace/plugins/marketplace-plugin-salesforce",
-                "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-pocketbase",
                 "marketplace/plugins/marketplace-plugin-portkey",
                 "marketplace/plugins/marketplace-plugin-Presto",
-                "marketplace/plugins/marketplace-plugin-jira",
-                "marketplace/plugins/marketplace-plugin-sharepoint",
-                "marketplace/plugins/marketplace-plugin-pinecone",
-                "marketplace/plugins/marketplace-plugin-gemini",
-                "marketplace/plugins/marketplace-plugin-anthropic",
-                "marketplace/plugins/marketplace-plugin-mistral_ai",
-                "marketplace/plugins/marketplace-plugin-hugging_face",
-                "marketplace/plugins/marketplace-plugin-cohere",
-                "marketplace/plugins/marketplace-plugin-weaviate",
                 "marketplace/plugins/marketplace-plugin-qdrant",
-                "marketplace/plugins/marketplace-plugin-azurerepos",
-                "marketplace/plugins/marketplace-plugin-googlecalendar",
-                "marketplace/plugins/marketplace-plugin-gmail"
+                "marketplace/plugins/marketplace-plugin-salesforce",
+                "marketplace/plugins/marketplace-plugin-sharepoint",
+                "marketplace/plugins/marketplace-plugin-supabase",
+                "marketplace/plugins/marketplace-plugin-ups",
+                "marketplace/plugins/marketplace-plugin-weaviate"
               ]
             }
           ]
@@ -520,7 +625,8 @@
             "tj-setup/smtp-setup/configuration",
             "tj-setup/smtp-setup/email-providers"
           ]
-        }
+        },
+        "tj-setup/whitelist-cdn-domains"
       ]
     },
     {
@@ -626,7 +732,8 @@
               "type": "category",
               "label": "Workspace level",
               "items": [
-                "user-management/group-sync/workspace-level/oidc"
+                "user-management/group-sync/workspace-level/oidc",
+                "user-management/group-sync/workspace-level/saml"
               ]
             }
           ]
@@ -664,8 +771,23 @@
           "label": "GitSync",
           "items": [
             "development-lifecycle/gitsync/overview",
-            "development-lifecycle/gitsync/gitsync-config",
-            "development-lifecycle/gitsync/ssh-config",
+            {
+              "type": "category",
+              "label": "Connect to Git Repo",
+              "items": [
+                "development-lifecycle/gitsync/connect-to-git-repo/connection-method",
+                {
+                  "type": "category",
+                  "label": "Git SSH Protocol",
+                  "items": [
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config",
+                    "development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config"
+                  ]
+                },
+                "development-lifecycle/gitsync/connect-to-git-repo/github-config",
+                "development-lifecycle/gitsync/connect-to-git-repo/gitlab-config"
+              ]
+            },
             "development-lifecycle/gitsync/delete-gitsync",
             "development-lifecycle/gitsync/push",
             "development-lifecycle/gitsync/pull"

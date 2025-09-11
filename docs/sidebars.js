@@ -438,7 +438,10 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-weaviate',
                 'marketplace/plugins/marketplace-plugin-qdrant',
                 'marketplace/plugins/marketplace-plugin-azurerepos',
-                'marketplace/plugins/marketplace-plugin-googlecalendar'
+                'marketplace/plugins/marketplace-plugin-googlecalendar',
+                'marketplace/plugins/marketplace-plugin-ups',
+                'marketplace/plugins/marketplace-plugin-aftership',
+                'marketplace/plugins/marketplace-plugin-microsoft_graph'
               ],
             },
           ],

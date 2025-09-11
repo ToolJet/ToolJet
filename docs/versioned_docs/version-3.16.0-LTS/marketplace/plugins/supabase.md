@@ -14,11 +14,12 @@ ToolJet connects to your Supabase database, allowing you to directly interact wi
 ## Connection
 
 - To connect to Supabase you need to have the Project URL and Service Role Secret. You can find these credentials in your API Settings on the Supabase dashboard. Make sure to copy the Service Role Secret key. This key has the ability to bypass Row Level Security.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/api_settings.png" alt="Supabase API Settings" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/api_settings.png" alt="Supabase API Settings" />
 - Establish a connection to Supabase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
 - Enter your Project URL and Service Role Secret into their designated fields.
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/supabase_install.png" alt="Supabase Install" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/supabase_install.png" alt="Supabase Install" />
+
 ## Querying Supabase
 
 - To perform queries on Supabase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
@@ -28,7 +29,7 @@ ToolJet connects to your Supabase database, allowing you to directly interact wi
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/add_query.gif" alt="Supabase query" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
 :::
 
 ## Supported Operations
@@ -52,7 +53,7 @@ You can create query for Supabase data source to perform several operations such
 - **Where** - Filter rows based on a condition.
 - **Sort** - Sort rows based on a column.
 - **Limit** - Limit the number of rows returned.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/get_rows.png" alt="Get Rows" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/get_rows.png" alt="Get Rows" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -82,7 +83,7 @@ You can create query for Supabase data source to perform several operations such
 
 - **Table** - Database table name.
 - **Body** - Data to be inserted into the table. It should be an array of object(s).
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/create_rows.png" alt="Create Rows" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/create_rows.png" alt="Create Rows" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -103,7 +104,7 @@ created: true
 #### Optional Parameters:
 
 - **Where** - Update rows based on a condition. If not provided, all rows will be updated.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/update_rows.png" alt="Update Rows" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/update_rows.png" alt="Update Rows" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -127,8 +128,7 @@ created: true
 
 - **Table** - Database table name.
 - **Where** - Delete rows based on a condition.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/delete_rows.png" alt="Delete Rows" />
-
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/delete_rows.png" alt="Delete Rows" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>

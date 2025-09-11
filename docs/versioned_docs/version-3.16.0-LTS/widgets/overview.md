@@ -5,7 +5,7 @@ title: Overview
 
 # Components: Overview
 
-Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/category/actions-reference)**.
+Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/actions/run-query)**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -59,15 +59,15 @@ Components can be customized and styled using the **Properties Panel** such as t
 
 ## Component Event Handlers
 
-Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger **[Actions](/docs/category/actions-reference)** such as executing the queries, performing Component Specific Actions(CSA) or for setting a variable.
+Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger **[Actions](/docs/actions/run-query)** such as executing the queries, performing Component Specific Actions(CSA) or for setting a variable.
 
 Event handlers for components have the following properties:
 
 1. **Event**: Each component has its own set of exclusive events. You can refer to the component reference to find the specific events available for each component. These events are triggered by user interactions or other actions within the application.
 
-2. **Action**: Actions are the operations that can be performed when an event is triggered. There is a comprehensive list of available actions, which can be found in the **[actions reference documentation](/docs/category/actions-reference)**. In addition to general actions, each component may also have its own set of **Component Specific Actions (CSA)** that are specific to that particular component. The CSA can be found in the respective component reference.
+2. **Action**: Actions are the operations that can be performed when an event is triggered. There is a comprehensive list of available actions, which can be found in the **[actions reference documentation](/docs/actions/run-query)**. In addition to general actions, each component may also have its own set of **Component Specific Actions (CSA)** that are specific to that particular component. The CSA can be found in the respective component reference.
 
-3. **Run Only If**: This property allows you to define a condition that must be satisfied before the event handler's action is executed. By specifying a condition, you can control the flow of execution and ensure that the action is only performed when the condition is met. 
+3. **Run Only If**: This property allows you to define a condition that must be satisfied before the event handler's action is executed. By specifying a condition, you can control the flow of execution and ensure that the action is only performed when the condition is met.
 
 <div style={{textAlign: 'center'}}>
 
@@ -97,11 +97,19 @@ In this case, the action `runQuery()` will only be triggered if the `expression/
 **Example expressions:**
 
 ```js
-{{globals.currentUser.groups[1] === 'admin'}} // returns true if the current user is admin
+{
+  {
+    globals.currentUser.groups[1] === "admin";
+  }
+} // returns true if the current user is admin
 
-or
+or;
 
-{{components.form1.isValid}} // isValid holds the boolean value true or false
+{
+  {
+    components.form1.isValid;
+  }
+} // isValid holds the boolean value true or false
 ```
 
 <div style={{textAlign: 'center'}}>
