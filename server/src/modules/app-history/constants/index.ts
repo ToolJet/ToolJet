@@ -35,7 +35,6 @@ export const RETENTION_BUFFER_LIMIT = 109;
 
 export enum FEATURE_KEY {
   LIST_HISTORY = 'list_history',
-  GET_HISTORY_ENTRY = 'get_history_entry',
   RESTORE_HISTORY = 'restore_history',
   UPDATE_DESCRIPTION = 'update_description',
 }

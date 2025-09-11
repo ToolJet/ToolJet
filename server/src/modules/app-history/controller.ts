@@ -17,14 +17,6 @@ export class AppHistoryController {
     throw new Error('Method not implemented.');
   }
 
-  @Get(':historyId')
-  async getHistoryEntry(
-    @Param('versionId', ParseUUIDPipe) versionId: string,
-    @Param('historyId', ParseUUIDPipe) historyId: string
-  ): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
   @Post(':historyId/restore')
   async restoreHistory(
     @Param('versionId', ParseUUIDPipe) versionId: string,
