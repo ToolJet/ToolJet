@@ -246,6 +246,7 @@ export const PhoneInput = (props) => {
             aria-required={isMandatory}
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
             className={`tj-text-input-widget ${
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}

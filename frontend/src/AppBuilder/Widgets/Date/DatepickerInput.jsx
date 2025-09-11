@@ -28,6 +28,9 @@ export const DatepickerInput = forwardRef(
     direction,
     isMandatory,
     inputId,
+    auto,
+    labelWidth,
+    label,
   }) => {
     return (
       <>
@@ -47,6 +50,7 @@ export const DatepickerInput = forwardRef(
           aria-busy={loading}
           aria-required={isMandatory}
           aria-invalid={!isValid && showValidationError}
+          aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           ref={dateInputRef}
           id={`component-${inputId}`}
           style={inputStyles}

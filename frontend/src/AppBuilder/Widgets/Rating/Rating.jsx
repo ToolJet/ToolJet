@@ -195,9 +195,7 @@ export const Rating = ({
         <div
           role="radiogroup"
           id={`component-${id}`}
-          aria-label={
-            !label ? `Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${_maxRating}` : undefined
-          }
+          aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           aria-required="false"
           aria-disabled={isDisabled}
           aria-hidden={!isVisible}

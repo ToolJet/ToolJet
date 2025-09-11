@@ -279,6 +279,7 @@ export const RangeSliderV2 = ({
                 ref={sliderRef}
                 id={`component-${id}`}
                 ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
@@ -316,6 +317,7 @@ export const RangeSliderV2 = ({
                 ref={sliderRef}
                 id={`component-${id}`}
                 ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 onChange={onSliderChange}
                 onAfterChange={() => fireEvent('onChange')}
                 trackStyle={rangeStyles.trackStyle}

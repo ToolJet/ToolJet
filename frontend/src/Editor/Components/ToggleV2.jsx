@@ -272,7 +272,7 @@ export const ToggleSwitchV2 = ({
             whiteSpace="normal"
             width={width - 20}
           >
-            <label htmlFor={`component-${id}`}>{label}</label>
+            <label htmlFor={id}>{label}</label>
             {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 

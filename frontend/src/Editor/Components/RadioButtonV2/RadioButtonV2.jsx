@@ -217,6 +217,7 @@ export const RadioButtonV2 = ({
         aria-disabled={isDisabled}
         aria-required={isMandatory}
         aria-invalid={!isValid}
+        aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
       >
         <Label
           label={label}

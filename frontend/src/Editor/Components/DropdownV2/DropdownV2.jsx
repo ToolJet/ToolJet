@@ -512,6 +512,7 @@ export const DropdownV2 = ({
             aria-invalid={!isValid}
             id={`component-${id}`}
             aria-labelledby={`${id}-label`}
+            aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}

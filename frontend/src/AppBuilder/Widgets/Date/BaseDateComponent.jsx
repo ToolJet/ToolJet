@@ -190,6 +190,9 @@ export const BaseDateComponent = ({
               errTextColor={errTextColor}
               direction={direction}
               isMandatory={isMandatory}
+              labelWidth={labelWidth}
+              auto={labelAutoWidth}
+              label={label}
               {...customDateInputProps}
               inputId={id}
             />

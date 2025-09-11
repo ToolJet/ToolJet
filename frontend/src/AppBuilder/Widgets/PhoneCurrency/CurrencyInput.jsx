@@ -274,6 +274,7 @@ export const CurrencyInput = (props) => {
             aria-required={isMandatory}
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
         </div>
         {loading && <Loader style={loaderStyle} width="16" />}

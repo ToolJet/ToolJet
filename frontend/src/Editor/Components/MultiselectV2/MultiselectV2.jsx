@@ -523,6 +523,7 @@ export const MultiselectV2 = ({
             aria-invalid={!isValid}
             id={`component-${id}`}
             aria-labelledby={`${id}-label`}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             showSearchInput={showSearchInput}
