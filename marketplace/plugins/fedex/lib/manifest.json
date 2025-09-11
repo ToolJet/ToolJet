@@ -75,7 +75,7 @@
         "allowed_grant_types": [
           "client_credentials"
         ],
-        "allowed_scope_field": true
+        "allowed_scope_field": false
       }
     },
     "base_url": {
