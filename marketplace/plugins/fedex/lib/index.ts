@@ -106,7 +106,7 @@ export default class Fedex implements QueryService {
       client_secret,
     }
 
-    if (!customer_type) {
+    if (!customer_type || customer_type === CustomerType.STANDARD) {
       // Standard OAuth Client Credentials flow
       formData['grant_type'] = 'client_credentials';
     } else if (customer_type === CustomerType.INTERNAL) {
@@ -227,7 +227,7 @@ export default class Fedex implements QueryService {
       );
     }
 
-    if (customer_type) {
+    if (customer_type && customer_type !== CustomerType.STANDARD) {
       const { child_key, child_secret } = sourceOptions;
 
       if (!child_key || !child_secret) {

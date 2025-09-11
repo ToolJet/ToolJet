@@ -8,6 +8,7 @@ export type SourceOptions = {
 };
 
 export enum CustomerType {
+  STANDARD = "standard_customers",
   INTERNAL = "internal_customers",
   PROPRIETARY_PARENT_CHILD = "proprietary_parent_child_customers",
 }

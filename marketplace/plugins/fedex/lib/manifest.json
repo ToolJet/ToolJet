@@ -33,6 +33,13 @@
       },
       "base_url": {
         "type": "string"
+      },
+      "child_key": {
+        "type": "string"
+      },
+      "child_secret": {
+        "type": "string",
+        "encrypted": true
       }
     }
   },
@@ -53,9 +60,28 @@
     },
     "oauth_type": {
       "value": "custom_app"
+    },
+    "customer_type": {
+      "value": "standard_customers"
     }
   },
   "properties": {
+    "base_url": {
+      "label": "Base URL",
+      "key": "base_url",
+      "type": "dropdown",
+      "description": "Base URL for FedEx API",
+      "list": [
+        {
+          "label": "Production [https://apis.fedex.com]",
+          "value": "https://apis.fedex.com"
+        },
+        {
+          "label": "Sandbox [https://apis-sandbox.fedex.com]",
+          "value": "https://apis-sandbox.fedex.com"
+        }
+      ]
+    },
     "oauth": {
       "key": "oauth",
       "type": "react-component-oauth",
@@ -78,28 +104,16 @@
         "allowed_scope_field": false
       }
     },
-    "base_url": {
-      "label": "Base URL",
-      "key": "base_url",
-      "type": "dropdown",
-      "description": "Base URL for FedEx API",
-      "list": [
-        {
-          "label": "Production [https://apis.fedex.com]",
-          "value": "https://apis.fedex.com"
-        },
-        {
-          "label": "Sandbox [https://apis-sandbox.fedex.com]",
-          "value": "https://apis-sandbox.fedex.com"
-        }
-      ]
-    },
     "customer_type": {
       "label": "Customer Type",
       "key": "customer_type",
       "type": "dropdown-component-flip",
       "description": "Select the Customer Type",
       "list": [
+        {
+          "label": "FedEx® Standard Customers",
+          "value": "standard_customers"
+        },
         {
           "label": "FedEx® Internal, Compatible, and Integrator customers",
           "value": "internal_customers"
@@ -120,7 +134,7 @@
       "child_secret": {
         "label": "Child secret",
         "key": "child_secret",
-        "type": "text",
+        "type": "password",
         "description": "Customer password returned through Credential Registration API request"
       }
     },
@@ -130,6 +144,12 @@
         "key": "child_key",
         "type": "text",
         "description": "Enter child key"
+      },
+      "child_secret": {
+        "label": "Child secret",
+        "key": "child_secret",
+        "type": "password",
+        "description": "Customer password returned through Credential Registration API request"
       }
     }
   },
