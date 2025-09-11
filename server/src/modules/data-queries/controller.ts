@@ -120,6 +120,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response,
     @Query('mode') mode?: string
   ) {
+    console.log('[ToolJet Backend Controller] runQueryOnBuilder called:', { dataQueryId, mode });
     return this.dataQueriesService.runQueryOnBuilder(
       user,
       dataQueryId,
@@ -162,6 +163,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Param('environmentId') environmentId,
     @Res({ passthrough: true }) response: Response
   ) {
+    console.log('[ToolJet Backend Controller] previewQuery called');
     const dataQuery: DataQuery = dataSource.dataQueries[0];
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = Object.assign(new DataQuery(), {

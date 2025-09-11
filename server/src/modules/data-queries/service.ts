@@ -194,7 +194,77 @@ export class DataQueriesService implements IDataQueriesService {
       }
     }
 
+    console.log('[ToolJet Backend] About to track query execution metrics');
+    
+    // Track query execution metrics
+    this.trackQueryExecutionMetrics(user, dataQuery, result, environmentId, mode);
+
+    console.log('[ToolJet Backend] Query execution metrics tracking completed');
     return result;
+  }
+
+  private trackQueryExecutionMetrics(
+    user: User,
+    dataQuery: DataQuery,
+    result: any,
+    environmentId?: string,
+    mode?: string
+  ): void {
+    try {
+      const { trackQueryExecution } = require('../../otel/business-metrics');
+      
+      console.log('[ToolJet Backend] Raw query result for metrics:', {
+        resultKeys: Object.keys(result || {}),
+        resultStatus: result?.status,
+        resultMetadata: result?.metadata,
+        dataQueryName: dataQuery?.name,
+        dataQueryId: dataQuery?.id,
+        dataSourceKind: dataQuery?.dataSource?.kind,
+        appId: dataQuery?.app?.id,
+        appName: dataQuery?.app?.name || dataQuery?.app?.appName
+      });
+      
+      // Extract metadata from result
+      const metadata = result.metadata || {};
+      const status = result.status === 'failed' ? 'error' : 'success';
+      const duration = metadata.duration || 0; // in milliseconds
+      
+      // Get data source type from dataQuery
+      const dataSourceType = dataQuery?.dataSource?.kind || 'unknown';
+      
+      const appContext = {
+        appId: dataQuery?.app?.id || 'unknown',
+        appName: dataQuery?.app?.name || dataQuery?.app?.appName || 'Unknown App',
+        organizationId: user?.organizationId || dataQuery?.app?.organizationId || 'unknown',
+        userId: user?.id || 'unknown',
+        environment: environmentId || 'production'
+      };
+      
+      console.log('[ToolJet Backend] Tracking query execution with enhanced logging:', {
+        queryName: dataQuery?.name,
+        status,
+        duration,
+        dataSourceType,
+        appContext,
+        trackQueryExecutionExists: typeof trackQueryExecution === 'function'
+      });
+      
+      if (typeof trackQueryExecution === 'function') {
+        trackQueryExecution(
+          appContext,
+          dataQuery?.name || 'unnamed_query',
+          duration,
+          status,
+          dataSourceType
+        );
+        console.log('[ToolJet Backend] Query execution metrics sent successfully');
+      } else {
+        console.error('[ToolJet Backend] trackQueryExecution is not a function:', typeof trackQueryExecution);
+      }
+    } catch (error) {
+      console.error('[ToolJet Backend] Failed to track query execution metrics:', error);
+      console.error('[ToolJet Backend] Error stack:', error.stack);
+    }
   }
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {

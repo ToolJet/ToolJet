@@ -1,4 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
+import { trackApiCall } from './business-metrics';
 import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -277,6 +278,8 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
   const method = req.method || 'UNKNOWN_METHOD';
 
   if (span && route.startsWith('/api/') && route !== '/api/health') {
+    const startTime = Date.now();
+    
     span.updateName(`${method} ${route}`);
     span.setAttribute('http.route', route);
     span.setAttribute('http.method', method);
@@ -284,8 +287,13 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
     const originalJson = res.json;
     res.json = function (body: any) {
       const statusCode = res.statusCode;
+      const duration = (Date.now() - startTime) / 1000; // Convert to seconds
 
       span.setAttribute('http.status_code', statusCode);
+      
+      // Track API call business metrics
+      trackApiCall(route, method, statusCode, duration);
+      
       // eslint-disable-next-line prefer-rest-params
       return originalJson.apply(this, arguments);
     };

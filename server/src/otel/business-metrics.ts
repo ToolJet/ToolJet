@@ -232,6 +232,7 @@ export const trackQueryExecution = (
   if (appQueryExecutionTime) {
     appQueryExecutionTime.record(executionTimeMs / 1000, {
       app_id: context.appId,
+      app_name: context.appName || 'Unknown App',
       query_name: queryName,
       status,
       datasource_type: dataSourceType || 'unknown',

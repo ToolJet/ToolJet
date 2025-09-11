@@ -149,4 +149,75 @@ export class AppsController implements IAppsController {
   releaseVersion(@User() user, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
     return this.appsService.release(app, user, versionReleaseDto);
   }
+
+  // Metrics endpoints
+  @UseGuards(JwtAuthGuard)
+  @Post('metrics/app-load-time')
+  trackAppLoadTime(
+    @User() user: UserEntity,
+    @Body() data: { 
+      appId: string; 
+      loadTime: number; 
+      appName?: string;
+      environment?: string;
+    }
+  ) {
+    const { trackAppLoadTime } = require('../../otel/business-metrics');
+    
+    const appContext = {
+      appId: data.appId,
+      appName: data.appName || 'Unknown App',
+      organizationId: user.organizationId,
+      userId: user.id,
+      environment: data.environment || 'production'
+    };
+    
+    console.log('[ToolJet Backend] Tracking app load time:', appContext, 'loadTime:', data.loadTime);
+    trackAppLoadTime(appContext, data.loadTime * 1000); // Convert seconds to milliseconds
+    
+    return { 
+      success: true,
+      message: 'App load time tracked successfully',
+      data: {
+        appId: data.appId,
+        loadTime: data.loadTime,
+        userId: user.id
+      }
+    };
+  }
+
+  // Test endpoint to manually trigger metrics
+  @UseGuards(JwtAuthGuard)
+  @Post('metrics/test')
+  testMetrics(@User() user: UserEntity) {
+    const { trackAppLoadTime, trackQueryExecution } = require('../../otel/business-metrics');
+    
+    const appContext = {
+      appId: 'test-manual-app',
+      appName: 'Manual Test App',
+      organizationId: user.organizationId,
+      userId: user.id,
+      environment: 'test'
+    };
+    
+    console.log('[ToolJet Backend] Manual test - tracking app load time:', appContext);
+    trackAppLoadTime(appContext, 3.14 * 1000); // Convert seconds to milliseconds
+    
+    console.log('[ToolJet Backend] Manual test - tracking query execution:', appContext);
+    trackQueryExecution(appContext, 'test_query', 250, 'success', 'postgresql');
+    trackQueryExecution(appContext, 'slow_query', 5000, 'error', 'mysql');
+    
+    return { 
+      success: true,
+      message: 'Test metrics tracked successfully',
+      data: {
+        loadTime: 3.14,
+        queries: [
+          { name: 'test_query', duration: 250, status: 'success', datasource: 'postgresql' },
+          { name: 'slow_query', duration: 5000, status: 'error', datasource: 'mysql' }
+        ],
+        userId: user.id
+      }
+    };
+  }
 }

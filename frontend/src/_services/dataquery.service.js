@@ -1,6 +1,28 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
+// Function to track query execution metrics on frontend
+const trackQueryExecutionFrontend = async (queryId, duration, status, options, mode) => {
+  try {
+    // Only track if we have basic query info
+    if (!queryId || duration === undefined) return;
+    
+    console.log('[ToolJet Frontend] Tracking query execution:', { 
+      queryId, 
+      duration, 
+      status, 
+      mode 
+    });
+    
+    // Optional: Send additional timing data to backend
+    // This could be used for detailed frontend performance analysis
+    // For now, the main tracking happens on the backend via the service layer
+    
+  } catch (error) {
+    console.error('[ToolJet Frontend] Failed to track query execution:', error);
+  }
+};
+
 export const dataqueryService = {
   create,
   getAll,
@@ -90,6 +112,8 @@ function del(id, versionId) {
 }
 
 function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
+  const startTime = performance.now();
+  
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -105,10 +129,23 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
   }
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(url, requestOptions).then(handleResponse);
+  return fetch(url, requestOptions)
+    .then(handleResponse)
+    .then((result) => {
+      const duration = (performance.now() - startTime) / 1000; // Convert to seconds
+      trackQueryExecutionFrontend(queryId, duration, result.status === 'failed' ? 'error' : 'success', options, mode);
+      return result;
+    })
+    .catch((error) => {
+      const duration = (performance.now() - startTime) / 1000;
+      trackQueryExecutionFrontend(queryId, duration, 'error', options, mode);
+      throw error;
+    });
 }
 
 function preview(query, options, versionId, environmentId) {
+  const startTime = performance.now();
+  
   const body = {
     query,
     options: options,
@@ -121,7 +158,18 @@ function preview(query, options, versionId, environmentId) {
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
     }`,
     requestOptions
-  ).then(handleResponse);
+  )
+    .then(handleResponse)
+    .then((result) => {
+      const duration = (performance.now() - startTime) / 1000; // Convert to seconds
+      trackQueryExecutionFrontend(query?.id, duration, result.status === 'failed' ? 'error' : 'success', options, 'preview');
+      return result;
+    })
+    .catch((error) => {
+      const duration = (performance.now() - startTime) / 1000;
+      trackQueryExecutionFrontend(query?.id, duration, 'error', options, 'preview');
+      throw error;
+    });
 }
 
 function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {

@@ -49,7 +49,7 @@ export class SessionUtilService {
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Get user to find organization for session tracking
-      const user = await this.userRepository.findOne(userId);
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (user?.organizationId) {
         endUserSession(userId, user.organizationId);
       }
