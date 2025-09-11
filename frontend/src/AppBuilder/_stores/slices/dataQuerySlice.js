@@ -492,6 +492,7 @@ export const createDataQuerySlice = (set, get) => ({
       const queries = get().dataQuery.queries.modules[moduleId];
       try {
         for (const query of queries) {
+          console.log(query, isQueryRunnable(query));
           if (
             (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
             (query.restricted || isQueryRunnable(query))
