@@ -25,9 +25,6 @@
       "redirect_url": {
         "type": "string"
       },
-      "child_key": {
-        "type": "string"
-      },
       "child_secret": {
         "type": "string"
       },
@@ -45,12 +42,10 @@
   },
   "defaults": {
     "redirect_url": {
-      "value": "",
-      "encrypted": false
+      "value": ""
     },
     "allowed_auth_types": {
-      "value": "oauth2",
-      "encrypted": false
+      "value": "oauth2"
     },
     "auth_type": {
       "value": "oauth2"
@@ -90,9 +85,7 @@
         "allowed_field_groups": {
           "client_credentials": [
             "client_id",
-            "client_secret",
-            "child_key",
-            "child_secret"
+            "client_secret"
           ]
         },
         "allowed_auth_types": [
