@@ -25,9 +25,6 @@
       "redirect_url": {
         "type": "string"
       },
-      "child_secret": {
-        "type": "string"
-      },
       "base_url": {
         "type": "string"
       },
