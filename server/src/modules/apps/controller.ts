@@ -151,6 +151,7 @@ export class AppsController implements IAppsController {
   }
 
   // Metrics endpoints
+  @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard)
   @Post('metrics/app-load-time')
   trackAppLoadTime(
@@ -160,6 +161,7 @@ export class AppsController implements IAppsController {
       loadTime: number; 
       appName?: string;
       environment?: string;
+      mode?: string;
     }
   ) {
     const { trackAppLoadTime } = require('../../otel/business-metrics');
@@ -172,8 +174,8 @@ export class AppsController implements IAppsController {
       environment: data.environment || 'production'
     };
     
-    console.log('[ToolJet Backend] Tracking app load time:', appContext, 'loadTime:', data.loadTime);
-    trackAppLoadTime(appContext, data.loadTime * 1000); // Convert seconds to milliseconds
+    const mode = data.mode || 'direct';
+    trackAppLoadTime(appContext, data.loadTime * 1000, mode); // Convert seconds to milliseconds
     
     return { 
       success: true,

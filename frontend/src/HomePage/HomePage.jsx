@@ -341,6 +341,12 @@ class HomePageComponent extends React.Component {
         button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
       });
       const workspaceId = getWorkspaceId();
+      
+      // Store start time for Create mode load tracking
+      const loadStartTime = performance.now();
+      localStorage.setItem(`app_create_load_start_${data.id}`, loadStartTime.toString());
+      localStorage.setItem(`app_create_mode_${data.id}`, 'create');
+      
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
       });

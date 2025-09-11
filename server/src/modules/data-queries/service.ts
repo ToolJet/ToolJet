@@ -221,7 +221,9 @@ export class DataQueriesService implements IDataQueriesService {
         dataQueryId: dataQuery?.id,
         dataSourceKind: dataQuery?.dataSource?.kind,
         appId: dataQuery?.app?.id,
-        appName: dataQuery?.app?.name || dataQuery?.app?.appName
+        appName: dataQuery?.app?.name,
+        dataQueryKeys: Object.keys(dataQuery || {}),
+        queryOptions: dataQuery?.options
       });
       
       // Extract metadata from result
@@ -232,9 +234,12 @@ export class DataQueriesService implements IDataQueriesService {
       // Get data source type from dataQuery
       const dataSourceType = dataQuery?.dataSource?.kind || 'unknown';
       
+      // Extract query text from options
+      const queryText = dataQuery?.options?.query || dataQuery?.options?.sql || dataQuery?.options?.rawQuery || 'unknown';
+      
       const appContext = {
         appId: dataQuery?.app?.id || 'unknown',
-        appName: dataQuery?.app?.name || dataQuery?.app?.appName || 'Unknown App',
+        appName: dataQuery?.app?.name || 'Unknown App',
         organizationId: user?.organizationId || dataQuery?.app?.organizationId || 'unknown',
         userId: user?.id || 'unknown',
         environment: environmentId || 'production'
@@ -245,6 +250,7 @@ export class DataQueriesService implements IDataQueriesService {
         status,
         duration,
         dataSourceType,
+        queryText: queryText,
         appContext,
         trackQueryExecutionExists: typeof trackQueryExecution === 'function'
       });
@@ -255,7 +261,8 @@ export class DataQueriesService implements IDataQueriesService {
           dataQuery?.name || 'unnamed_query',
           duration,
           status,
-          dataSourceType
+          dataSourceType,
+          queryText
         );
         console.log('[ToolJet Backend] Query execution metrics sent successfully');
       } else {

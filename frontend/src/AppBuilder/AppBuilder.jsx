@@ -28,8 +28,13 @@ import ArtifactPreview from './ArtifactPreview';
 // const QueryPanel = lazy(() => import('@/AppBuilder/QueryPanel'));
 
 // Function to track app load time
-const trackAppLoadTime = async (appId, appName, loadTime) => {
+const trackAppLoadTime = async (appId, appName, loadTime, mode = 'direct') => {
   try {
+    // Get current environment from ToolJet's environment store
+    const store = useStore.getState();
+    const selectedEnvironment = store.environmentsAndVersionsStore?.selectedEnvironment;
+    const environmentName = selectedEnvironment?.name || 'development';
+    
     const requestOptions = {
       method: 'POST',
       headers: authHeader(),
@@ -38,11 +43,12 @@ const trackAppLoadTime = async (appId, appName, loadTime) => {
         appId: appId,
         appName: appName,
         loadTime: loadTime,
-        environment: 'production'
+        mode: mode,
+        environment: environmentName
       })
     };
     const response = await fetch(`${config.apiUrl}/apps/metrics/app-load-time`, requestOptions).then(handleResponse);
-    console.log('[ToolJet Frontend] App load time tracked:', { appId, loadTime });
+    console.log('[ToolJet Frontend] App load time tracked:', { appId, loadTime, mode, environment: environmentName });
   } catch (error) {
     console.error('[ToolJet Frontend] Failed to track app load time:', error);
   }
@@ -50,7 +56,21 @@ const trackAppLoadTime = async (appId, appName, loadTime) => {
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
-  const loadStartTime = useRef(performance.now());
+  // Check if we have a stored start time from Edit button click, Launch button click, or Create app
+  const editStartTime = localStorage.getItem(`app_edit_load_start_${appId}`);
+  const launchStartTime = localStorage.getItem(`app_launch_load_start_${appId}`);
+  const createStartTime = localStorage.getItem(`app_create_load_start_${appId}`);
+  
+  const editMode = localStorage.getItem(`app_edit_mode_${appId}`);
+  const launchMode = localStorage.getItem(`app_launch_mode_${appId}`);
+  const createMode = localStorage.getItem(`app_create_mode_${appId}`);
+  
+  // Determine which start time and mode to use
+  const storedStartTime = editStartTime || launchStartTime || createStartTime;
+  const storedMode = editMode || launchMode || createMode || 'direct';
+  
+  
+  const loadStartTime = useRef(storedStartTime ? parseFloat(storedStartTime) : null);
   const hasTrackedLoadTime = useRef(false);
   
   useAppData(appId, moduleId, darkMode);
@@ -81,11 +101,23 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     });
     
     if (!isEditorLoading && !hasTrackedLoadTime.current && app && appName) {
-      const loadTime = (performance.now() - loadStartTime.current) / 1000;
-      hasTrackedLoadTime.current = true;
-      
-      console.log('[ToolJet Debug] Tracking app load time:', { appId, appName: appName, loadTime });
-      trackAppLoadTime(appId, appName || 'Unnamed App', loadTime);
+      // Only track if we have a valid start time from localStorage
+      if (loadStartTime.current) {
+        const loadTime = (performance.now() - loadStartTime.current) / 1000;
+        hasTrackedLoadTime.current = true;
+        
+        const mode = storedMode || 'direct';
+        
+        trackAppLoadTime(appId, appName || 'Unnamed App', loadTime, mode);
+        
+        // Clean up localStorage
+        localStorage.removeItem(`app_edit_load_start_${appId}`);
+        localStorage.removeItem(`app_edit_mode_${appId}`);
+        localStorage.removeItem(`app_launch_load_start_${appId}`);
+        localStorage.removeItem(`app_launch_mode_${appId}`);
+        localStorage.removeItem(`app_create_load_start_${appId}`);
+        localStorage.removeItem(`app_create_mode_${appId}`);
+      }
     }
   }, [isEditorLoading, app, appId, appName]);
 

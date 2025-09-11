@@ -205,19 +205,16 @@ export interface AppPerformanceContext {
   environment?: string;
 }
 
-export const trackAppLoadTime = (context: AppPerformanceContext, loadTimeMs: number) => {
+export const trackAppLoadTime = (context: AppPerformanceContext, loadTimeMs: number, mode?: string) => {
   if (appLoadTimeHistogram) {
-    appLoadTimeHistogram.record(loadTimeMs / 1000, {
+    const finalMode = mode || 'direct';
+    const loadTimeSeconds = Math.max(0, loadTimeMs / 1000); // Ensure non-negative
+    appLoadTimeHistogram.record(loadTimeSeconds, {
       app_id: context.appId,
       app_name: context.appName || 'unknown',
       organization_id: context.organizationId,
-      environment: context.environment || 'production'
-    });
-    
-    console.log(`[ToolJet Backend] App load time tracked:`, {
-      appId: context.appId,
-      loadTime: loadTimeMs,
-      organizationId: context.organizationId
+      environment: context.environment || 'production',
+      mode: finalMode
     });
   }
 };
@@ -227,7 +224,8 @@ export const trackQueryExecution = (
   queryName: string, 
   executionTimeMs: number,
   status: 'success' | 'error',
-  dataSourceType?: string
+  dataSourceType?: string,
+  queryText?: string
 ) => {
   if (appQueryExecutionTime) {
     appQueryExecutionTime.record(executionTimeMs / 1000, {
@@ -236,7 +234,8 @@ export const trackQueryExecution = (
       query_name: queryName,
       status,
       datasource_type: dataSourceType || 'unknown',
-      organization_id: context.organizationId
+      organization_id: context.organizationId,
+      query_text: queryText ? (queryText.length > 100 ? queryText.substring(0, 100) + '...' : queryText) : 'unknown'
     });
     
     console.log(`[ToolJet Backend] Query execution tracked:`, {
