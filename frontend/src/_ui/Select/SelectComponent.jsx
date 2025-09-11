@@ -57,28 +57,26 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
   };
 
   return (
-    <div data-cy={restProps['data-cy']}>
-      <Select
-        {...restProps}
-        ref={selectRef}
-        selectRef={selectRef} // Exposed ref for custom components if needed
-        isLoading={isLoading}
-        isDisabled={isDisabled || isLoading}
-        options={selectOptions}
-        value={currentValue}
-        isSearchable={hasSearch}
-        onChange={handleOnChange}
-        placeholder={placeholder}
-        styles={customStyles}
-        openMenuOnFocus={openMenuOnFocus}
-        formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPlacement={menuPlacement}
-        maxMenuHeight={maxMenuHeight}
-        menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-        closeMenuOnSelect={closeMenuOnSelect ?? true}
-        classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
-        data-cy={restProps['data-cy']}
-      />
-    </div>
+    <Select
+      {...restProps}
+      ref={selectRef}
+      selectRef={selectRef}
+      isLoading={isLoading}
+      isDisabled={isDisabled || isLoading}
+      options={selectOptions}
+      value={currentValue}
+      isSearchable={hasSearch}
+      onChange={handleOnChange}
+      placeholder={placeholder}
+      styles={customStyles}
+      openMenuOnFocus={openMenuOnFocus}
+      formatOptionLabel={(option) => renderCustomOption(option)}
+      menuPlacement={menuPlacement}
+      maxMenuHeight={maxMenuHeight}
+      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+      closeMenuOnSelect={closeMenuOnSelect ?? true}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      data-cy={restProps['data-cy']}
+    />
   );
 };

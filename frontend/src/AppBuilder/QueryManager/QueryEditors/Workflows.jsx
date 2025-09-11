@@ -52,6 +52,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
   return (
     <>
       <label className="mb-1">Workflow</label>
+      <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
         value={options.workflowId ?? {}}
@@ -60,7 +61,6 @@ export function Workflows({ options, optionsChanged, currentState }) {
           optionsChanged({ workflowId });
         }}
         placeholder="Select workflow"
-        data-cy="workflow-dropdown"
         height="32px"
         useMenuPortal={true}
         closeMenuOnSelect={true}

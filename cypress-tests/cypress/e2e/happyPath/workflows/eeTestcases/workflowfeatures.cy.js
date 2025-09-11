@@ -75,7 +75,7 @@ describe("Workflows features", () => {
   });
 
   // Need to run after bug fixes
-  it.only("Creating workflow inside Workflow and validating execution", () => {
+  it("Creating workflow inside Workflow and validating execution", () => {
     cy.createWorkflowApp(data.childWFName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
