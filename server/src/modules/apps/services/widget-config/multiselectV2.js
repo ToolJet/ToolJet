@@ -1,6 +1,6 @@
 export const multiselectV2Config = {
   name: 'Multiselect',
-  displayName: 'Multiselect',
+  displayName: 'Multi Select',
   description: 'Multiple item selector',
   defaultSize: {
     width: 10,
