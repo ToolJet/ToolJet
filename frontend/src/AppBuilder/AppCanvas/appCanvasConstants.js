@@ -42,7 +42,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Table',
   'ModuleContainer',
 ]);
-export const TAB_CANVAS_PADDING = 7.5;
+export const TAB_CANVAS_PADDING = 8;
 
 export const MODAL_CANVAS_PADDING = 5;
 
