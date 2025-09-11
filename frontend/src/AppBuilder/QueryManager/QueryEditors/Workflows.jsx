@@ -60,6 +60,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           optionsChanged({ workflowId });
         }}
         placeholder="Select workflow"
+        data-cy="workflow-dropdown"
         height="32px"
         useMenuPortal={true}
         closeMenuOnSelect={true}
@@ -67,7 +68,6 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        className="workflow-dropdown"
         onMenuOpen={() => setIsMenuOpen(true)}
         onMenuClose={() => setIsMenuOpen(false)}
       />

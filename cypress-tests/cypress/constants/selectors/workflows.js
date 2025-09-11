@@ -31,7 +31,7 @@ export const workflowSelector = {
   showDSPopoverButton: '[data-cy="show-ds-popover-button"]',
   workflowSearchInput: ".css-4e90k9",
   queryRenameInput: '[data-cy="query-rename-input"]',
-  workflowDropdown: '[class*="workflow-dropdown"]',
+  workflowDropdown: '[data-cy="workflow-dropdown"]',
   workflowSelectInput: 'input[id*="react-select"]',
   workflowSelectOption: '[class*="workflow-select"]',
 
