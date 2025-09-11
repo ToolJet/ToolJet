@@ -29,6 +29,7 @@ function FolderList({
   CustomIcon,
   toolTipDisabled = false,
   hovered = false,
+  ariaLabel,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -86,6 +87,7 @@ function FolderList({
           data-tooltip-content={toolTipText}
           data-tooltip-id="button-content"
           data-tooltip-hidden={!toolTipDisabled}
+          aria-label={ariaLabel}
         >
           {LeftIcon && (
             <div className="tj-list-item-icon">
