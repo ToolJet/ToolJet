@@ -3,7 +3,7 @@ id: star-rating
 title: Star Rating
 ---
 
-The Star Rating component allows users to both view and input ratings in a visually intuitive way. It supports half-star increments, giving more precise rating options, and the total number of stars can be configured to fit different use cases.
+The **Star Rating** component can be used to gather user feedback and provide a visual representation of ratings, helping users make informed decisions, provide social proof, and evaluate the quality or popularity of a product or service.
 
 **Why Use It?**
 - **Collect User Feedback**: Ideal for capturing user opinions on products, services, or content in a simple, visual format.
@@ -18,15 +18,15 @@ The Star Rating component allows users to both view and input ratings in a visua
 | **Icon Type**                           | Select the icon to display for the rating.                                         | `stars` or `heart`                            |
 | **Number of stars**                     | Total number of stars displayed on initial load. Default is 5.                     | `Integer`                                     |
 | **Default number of selected stars**    | Sets how many stars are selected by default. Default is 3.                         | `Integer` or `half`                           |
-| **Allow editing**  | Toggle on to allow users to edit. |  `Boolean` (`true` / `false`)                  |
+| **Allow editing**                       | Toggle on to allow users to edit. |  `Boolean` (`true` / `false`)                  |
 | **Enable half star**                    | Toggle on to allow selection of half stars. Default is `false`.                    | `Boolean` (`true` / `false`)                  |
-| **Tooltips**                            | Array of strings used to show informative tooltips for each star. Mapped by index. | `Array` of `String` (default: `["Very Poor","Poor","Average", "Good","Excellent"]`)           |
+| **Tooltips**                            | Array of strings used to show informative tooltips for each star. Mapped by index. | `Array` of `String` (default: `["Very Poor","Poor","Average", "Good","Excellent"]`)          |
 
 ## Events
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 | :------------------------------------------ | :------------------------------------------------ |
-| On change | Triggers whenever the user clicks a star. |
+| On change                                   | Triggers whenever the user clicks a star.         |
 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
@@ -36,10 +36,10 @@ Check [Action Reference](/docs/actions/run-query) docs to get the detailed infor
 
 The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
-| <div style={{ width:"100px"}}> **Action** </div> | **Description** | **RunJS Query** |
-|:-----------|:----------------|:----------------|
+| <div style={{ width:"100px"}}> **Action** </div> |          **Description**                 |              **RunJS Query**             |
+|:------------------------------------------|:------------------------------------------------|:-----------------------------------------|
 | **setValue( )**                           | Sets the current rating value programmatically. | `components.starrating1.setValue()`      |
-| **resetRating( )**                        | Resets the rating to the default value.         | `components.starrating1.resetRating()`   |
+| **resetValue( )**                         | Resets the rating to the default value.         | `components.starrating1.resetValue()`    |
 | **setVisibility( )**                      | Controls the visibility of the component.       | `components.starrating1.setVisibility()` |
 | **setLoading( )**                         | Sets the component to a loading state.          | `components.starrating1.setLoading()`    |
 | **setDisable( )**                         | Disables user interaction with the component.   | `components.starrating1.setDisable()`    |
