@@ -274,6 +274,9 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import DataDatabase from './DataDatabase.jsx';
+import Flash from './Flash.jsx';
+import Json from './Json.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -827,6 +830,12 @@ const Icon = (props) => {
       return <Pull {...props} />;
     case 'support':
       return <Support {...props} />;
+    case 'data-database':
+      return <DataDatabase {...props} />;
+    case 'flash':
+      return <Flash {...props} />;
+    case 'json':
+      return <Json {...props} />;
     default:
       return <Apps {...props} />;
   }
