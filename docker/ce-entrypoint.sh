@@ -15,6 +15,8 @@ if [ -f "./.env" ]; then
   declare $(grep -v '^#' ./.env | xargs)
 fi
 
+export NODE_OPTIONS="--max-old-space-size=4096 --experimental-global-webcrypto"
+
 if [ -z "$DATABASE_URL" ]; then
   ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- $SETUP_CMD
 else
@@ -28,4 +30,6 @@ else
   ./server/scripts/wait-for-it.sh "$PG_HOST:$PG_PORT" --strict --timeout=300 -- $SETUP_CMD
 fi
 
-exec "$@"
+
+npm --prefix server run start:dev
+
