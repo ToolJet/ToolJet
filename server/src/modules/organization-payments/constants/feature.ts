@@ -14,5 +14,6 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.UPDATE_INVOICE]: {},
     [FEATURE_KEY.UPDATE_SUBSCRIPTION]: {},
+    [FEATURE_KEY.ADD_TOP_UP_CREDITS]: {},
   },
 };

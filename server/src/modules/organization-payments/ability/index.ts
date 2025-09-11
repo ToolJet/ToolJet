@@ -30,6 +30,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_UPCOMING_INVOICE,
           FEATURE_KEY.UPDATE_INVOICE,
           FEATURE_KEY.UPDATE_SUBSCRIPTION,
+          FEATURE_KEY.ADD_TOP_UP_CREDITS,
         ],
         OrganizationSubscription
       );
