@@ -95,7 +95,7 @@
       }
     },
     "customer_type": {
-      "label": "Customer Type",
+      "label": "Customer type",
       "key": "customer_type",
       "type": "dropdown-component-flip",
       "description": "Select the Customer Type",
