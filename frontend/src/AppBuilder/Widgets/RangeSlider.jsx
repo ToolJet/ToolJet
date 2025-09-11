@@ -2,7 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
+export const RangeSlider = function RangeSlider({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  dataCy,
+  id,
+}) {
   const isInitialRender = useRef(true);
   const { value, min, max, enableTwoHandle } = properties;
   const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
@@ -70,7 +78,13 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   return (
-    <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+    <div
+      style={computedStyles}
+      className="range-slider"
+      data-cy={dataCy}
+      aria-hidden={!visibility}
+      id={`component-${id}`}
+    >
       {enableTwoHandle ? (
         <Slider
           range
@@ -84,6 +98,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
           trackStyle={rangeStyles.trackStyle}
           railStyle={rangeStyles.railStyle}
           handleStyle={rangeStyles.handleStyle}
+          ariaLabelledByForHandle={`Range Slider with two handles, with min value ${min} and max value ${max}`}
         />
       ) : (
         <Slider
@@ -100,6 +115,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
             backgroundColor: handleColor,
             borderColor: handleColor,
           }}
+          ariaLabelForHandle={`Range Slider with single handle, with min value ${min} and max value ${max}`}
         />
       )}
     </div>

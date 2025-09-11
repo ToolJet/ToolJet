@@ -15,6 +15,7 @@ export const RangeSliderV2 = ({
   setExposedVariables,
   fireEvent,
   dataCy,
+  id,
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
@@ -231,7 +232,13 @@ export const RangeSliderV2 = ({
     visibility: visibility ? 'visible' : 'hidden',
   };
   return (
-    <div style={containerStyle} className="range-slider" data-cy={dataCy}>
+    <div
+      style={containerStyle}
+      className="range-slider"
+      data-cy={dataCy}
+      aria-hidden={!visibility}
+      aria-disabled={disabled}
+    >
       {loading ? (
         <div
           style={{
@@ -255,6 +262,8 @@ export const RangeSliderV2 = ({
             defaultAlignment={defaultAlignment}
             direction={direction}
             widthType={widthType}
+            inputId={`component-${id}`}
+            id={`${id}-label`}
           />
 
           <div style={sliderContainerStyle}>
@@ -268,6 +277,8 @@ export const RangeSliderV2 = ({
                 onAfterChange={() => fireEvent('onChange')}
                 value={defaultRangeValue}
                 ref={sliderRef}
+                id={`component-${id}`}
+                ariaLabelledByForHandle={`${id}-label`}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
@@ -303,6 +314,8 @@ export const RangeSliderV2 = ({
                 defaultValue={defaultSliderValue}
                 value={defaultSliderValue}
                 ref={sliderRef}
+                id={`component-${id}`}
+                ariaLabelledByForHandle={`${id}-label`}
                 onChange={onSliderChange}
                 onAfterChange={() => fireEvent('onChange')}
                 trackStyle={rangeStyles.trackStyle}

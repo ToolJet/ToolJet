@@ -14,6 +14,7 @@ export const Checkbox = ({
   dataCy,
   validate,
   width,
+  id,
 }) => {
   const isInitialRender = useRef(true);
   const defaultValueFromProperties = properties.defaultValue ?? false;
@@ -214,6 +215,12 @@ export const Checkbox = ({
                 onClick={toggleValue}
                 defaultChecked={defaultValue}
                 checked={checked}
+                id={`component-${id}`}
+                aria-disabled={disable}
+                aria-busy={loading}
+                aria-required={isMandatory}
+                aria-hidden={!visibility}
+                aria-invalid={!isValid}
               />
               <div style={checkmarkStyle}>
                 {checked && (
@@ -247,10 +254,12 @@ export const Checkbox = ({
               whiteSpace="normal"
               width={width - 20}
             >
-              {label}
-              {isMandatory && !checked && (
-                <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-              )}
+              <label htmlFor={`component-${id}`}>
+                {label}
+                {isMandatory && !checked && (
+                  <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
+                )}
+              </label>
             </OverflowTooltip>
           </>
         )}

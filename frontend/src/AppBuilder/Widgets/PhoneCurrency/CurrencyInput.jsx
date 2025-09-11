@@ -206,6 +206,7 @@ export const CurrencyInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
           widthType={widthType}
+          inputId={`component-${id}`}
         />
         <div
           className="d-flex h-100"
@@ -264,10 +265,15 @@ export const CurrencyInput = (props) => {
             }}
             // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             prefix={''}
-            disabled={disabledState}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            id={`component-${id}`}
+            aria-disabled={disabledState}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
           />
         </div>
         {loading && <Loader style={loaderStyle} width="16" />}

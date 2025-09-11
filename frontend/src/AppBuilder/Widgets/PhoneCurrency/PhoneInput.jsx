@@ -205,6 +205,7 @@ export const PhoneInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
           widthType={widthType}
+          inputId={`component-${id}`}
         />
         <div
           className="d-flex h-100"
@@ -239,10 +240,15 @@ export const PhoneInput = (props) => {
             onChange={onInputValueChange}
             placeholder={placeholder}
             style={computedStyles}
+            id={`component-${id}`}
+            aria-disabled={disabledState}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
             className={`tj-text-input-widget ${
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
-            disabled={disabledState}
             data-ignore-hover={true}
             onBlur={handleBlur}
             onFocus={handleFocus}

@@ -38,6 +38,7 @@ export const BaseInput = ({
   additionalInputProps = {},
   rightIcon,
   getCustomStyles,
+  id,
 }) => {
   const {
     padding,
@@ -167,6 +168,7 @@ export const BaseInput = ({
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
+          inputId={`component-${id}`}
         />
 
         {showLeftIcon && (
@@ -214,13 +216,18 @@ export const BaseInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           onKeyUp={handleKeyUp}
-          // disabled={disable || loading}
           placeholder={placeholder}
           style={{
             ...finalStyles,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
           {...additionalInputProps}
+          id={`component-${id}`}
+          aria-disabled={disable || loading}
+          aria-busy={loading}
+          aria-required={isMandatory}
+          aria-hidden={!visibility}
+          aria-invalid={!isValid && showValidationError}
         />
 
         {rightIcon}

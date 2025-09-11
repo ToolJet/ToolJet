@@ -195,7 +195,7 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
+            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`}>
               {labelText}
             </h3>
             <ValidationBar
@@ -226,6 +226,10 @@ const FilePicker = (props) => {
               borderRadius={borderRadius}
               height={height}
               selectedFilesLength={selectedFiles.length}
+              id={id}
+              isVisible={isVisible}
+              isLoading={isLoading}
+              isMandatory={isMandatory}
             />
           </div>
           {selectedFiles.length > 0 && (

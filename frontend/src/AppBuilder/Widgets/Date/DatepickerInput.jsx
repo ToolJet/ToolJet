@@ -26,6 +26,8 @@ export const DatepickerInput = forwardRef(
     visibility,
     errTextColor,
     direction,
+    isMandatory,
+    inputId,
   }) => {
     return (
       <>
@@ -40,7 +42,13 @@ export const DatepickerInput = forwardRef(
             setTextInputFocus(false);
             setShowValidationError(true);
           }}
+          aria-hidden={!visibility}
+          aria-disabled={disable || loading}
+          aria-busy={loading}
+          aria-required={isMandatory}
+          aria-invalid={!isValid && showValidationError}
           ref={dateInputRef}
+          id={`component-${inputId}`}
           style={inputStyles}
           onChange={(e) => {
             const inputVal = e.target.value;

@@ -473,6 +473,7 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
           widthType={widthType}
+          id={`${id}-label`}
         />
         <div
           className="px-0 h-100 dropdownV2-widget"
@@ -504,6 +505,13 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             styles={customStyles}
+            aria-hidden={!visibility}
+            aria-disabled={isDropdownDisabled}
+            aria-busy={isDropdownLoading}
+            aria-required={isMandatory}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}

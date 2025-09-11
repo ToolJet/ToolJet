@@ -28,6 +28,7 @@ export const BaseDateComponent = ({
   customHeaderProps,
   customTimeInputProps,
   customDateInputProps,
+  id,
 }) => {
   const {
     selectedTextColor,
@@ -151,6 +152,7 @@ export const BaseDateComponent = ({
         _width={_width}
         top={'1px'}
         widthType={widthType}
+        inputId={`component-${id}`}
       />
       <div
         className="px-0 h-100"
@@ -187,7 +189,9 @@ export const BaseDateComponent = ({
               visibility={visibility}
               errTextColor={errTextColor}
               direction={direction}
+              isMandatory={isMandatory}
               {...customDateInputProps}
+              inputId={id}
             />
           }
           customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}

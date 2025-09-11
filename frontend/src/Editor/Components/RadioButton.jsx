@@ -54,8 +54,11 @@ export const RadioButton = function RadioButton({
       className="row py-1"
       style={{ height, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
+      id={`component-${id}`}
+      role="radiogroup"
+      aria-labelledby={`${id}-label`}
     >
-      <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
+      <span className="form-check-label col-auto py-0" style={{ color: textColor }} id={`${id}-label`}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">
@@ -72,8 +75,11 @@ export const RadioButton = function RadioButton({
               value={option.value}
               name={`${id}-${uuidv4()}`}
               onChange={() => onSelect(option.value)}
+              aria-disabled={disabledState}
+              aria-hidden={!visibility}
+              aria-labelledby={`${id}-option-${index}-label`}
             />
-            <span className="form-check-label" style={{ color: textColor }}>
+            <span className="form-check-label" style={{ color: textColor }} id={`${id}-option-${index}-label`}>
               {option.name}
             </span>
           </label>

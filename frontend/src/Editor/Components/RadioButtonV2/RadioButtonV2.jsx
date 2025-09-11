@@ -20,6 +20,7 @@ export const RadioButtonV2 = ({
   componentName,
   validate,
   validation,
+  id,
 }) => {
   const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
@@ -193,7 +194,6 @@ export const RadioButtonV2 = ({
       <div
         data-cy={`label-${String(componentName).toLowerCase()} `}
         data-disabled={isDisabled}
-        id={String(componentName)}
         className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) ||
@@ -210,6 +210,13 @@ export const RadioButtonV2 = ({
           width: '100%',
           paddingLeft: '0px',
         }}
+        role="radiogroup"
+        id={`component-${id}`}
+        aria-hidden={!visibility}
+        aria-busy={isLoading}
+        aria-disabled={isDisabled}
+        aria-required={isMandatory}
+        aria-invalid={!isValid}
       >
         <Label
           label={label}
@@ -224,6 +231,7 @@ export const RadioButtonV2 = ({
           _width={_width}
           top={alignment !== 'top' && '2px'}
           widthType={widthType}
+          inputId={`component-${id}`}
         />
 
         <div
@@ -240,7 +248,7 @@ export const RadioButtonV2 = ({
               {selectOptions.map((option, index) => {
                 const isChecked = checkedValue == option.value;
                 return (
-                  <label key={index} className="radio-button-container">
+                  <label key={index} className="radio-button-container" htmlFor={`${id}-option-${index}`}>
                     <span
                       style={{
                         color:
@@ -266,6 +274,7 @@ export const RadioButtonV2 = ({
                         fireEvent('onSelectionChange');
                       }}
                       disabled={option.isDisabled}
+                      id={`${id}-option-${index}`}
                     />
                     <span
                       className="checkmark"

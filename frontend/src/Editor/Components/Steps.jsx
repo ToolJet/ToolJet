@@ -4,7 +4,16 @@ import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
 import { getFormattedSteps, getSafeRenderableValue } from './utils';
 
-export const Steps = function Steps({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
+export const Steps = function Steps({
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  height,
+  darkMode,
+  dataCy,
+  id,
+}) {
   const { stepsSelectable, disabledState } = properties;
   const visibility = isExpectedDataType(properties.visibility, 'boolean');
   const currentStepId = isExpectedDataType(properties.currentStep, 'number');
@@ -165,11 +174,17 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
         paddingTop: theme === 'plain' ? `3px` : theme === 'numbers' ? `2px` : 0,
         ...dynamicStyle,
       }}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
+      role="navigation"
+      id={`component-${id}`}
+      aria-label="Steps"
       data-cy={dataCy}
     >
       <div className={`progress-line-container ${filteredSteps.length === 1 ? 'single-step' : ''}`}>
         {filteredSteps.map((step, index) => {
           const isStepDisabled = step.disabled;
+          const isStepVisible = step.visible;
           const isCompleted = index < currentStepIndex;
           const isActive = index === currentStepIndex;
           const isUpcoming = index > currentStepIndex;
@@ -186,8 +201,9 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
               >
                 <div
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
-                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${isDisabled || isStepDisabled ? 'disabled' : ''
-                    } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                  className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${
+                    isDisabled || isStepDisabled ? 'disabled' : ''
+                  } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                 >
                   {theme === 'numbers' ? (
                     index + 1
@@ -196,10 +212,14 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                       <div
                         className={`dot ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                         style={{
-                          border: `2px solid ${isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
-                            }`,
+                          border: `2px solid ${
+                            isCompleted ? completedAccent : isActive ? completedAccent : incompletedAccent
+                          }`,
                           backgroundColor: isActive ? 'transparent' : isCompleted ? completedAccent : incompletedAccent,
                         }}
+                        aria-hidden={!isStepVisible}
+                        aria-disabled={isStepDisabled}
+                        aria-current={isActive ? 'step' : undefined}
                       />
                       {theme === 'titles' && (
                         <div
@@ -207,7 +227,7 @@ export const Steps = function Steps({ properties, styles, fireEvent, setExposedV
                           className={`label ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
                           style={{ maxWidth: `${progressBarWidth}px` }}
                         >
-                          {getSafeRenderableValue(step.name)}
+                          <span id={`${id}-option-${index}-label`}>{getSafeRenderableValue(step.name)}</span>
                         </div>
                       )}
                     </>

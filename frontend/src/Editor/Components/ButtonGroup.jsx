@@ -10,6 +10,7 @@ export const ButtonGroup = function Button({
   setExposedVariable,
   darkMode,
   dataCy,
+  id,
 }) {
   const { label, multiSelection } = properties;
   const values = isExpectedDataType(properties.values, 'array');
@@ -130,12 +131,22 @@ export const ButtonGroup = function Button({
     }
   };
   return (
-    <div className="widget-buttongroup" style={{ height, alignItems: mapAlignment(alignment) }} data-cy={dataCy}>
+    <div
+      className="widget-buttongroup"
+      style={{ height, alignItems: mapAlignment(alignment) }}
+      data-cy={dataCy}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
+      role="group"
+      id={`component-${id}`}
+      aria-labelledby={`${id}-label`}
+    >
       <div>
         {label && (
           <p
             style={{ display: computedStyles.display }}
             className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
+            id={`${id}-label`}
           >
             {label}
           </p>

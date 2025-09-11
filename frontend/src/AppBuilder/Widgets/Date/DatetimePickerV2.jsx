@@ -430,6 +430,7 @@ export const DatetimePickerV2 = ({
       customHeaderProps={customHeaderProps}
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };

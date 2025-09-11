@@ -152,7 +152,12 @@ export const ColorPicker = function ({
       </div>
       {showColorPicker && (
         <div className="position-relative top-0 mt-1" ref={colorPickerRef} width={width}>
-          <SketchPicker color={color} onChangeComplete={handleColorChange} />
+          <SketchPicker
+            color={color}
+            onChangeComplete={handleColorChange}
+            id={`component-${id}`}
+            aria-hidden={!visibility}
+          />
         </div>
       )}
     </div>

@@ -23,6 +23,7 @@ export const Rating = ({
   setExposedVariables,
   darkMode,
   dataCy,
+  id,
 }) => {
   const {
     iconType = 'stars',
@@ -193,12 +194,13 @@ export const Rating = ({
 
         <div
           role="radiogroup"
-          aria-labelledby={label ? `${ratingId}-label` : undefined}
+          id={`component-${id}`}
           aria-label={
             !label ? `Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${_maxRating}` : undefined
           }
           aria-required="false"
           aria-disabled={isDisabled}
+          aria-hidden={!isVisible}
           className="rating-widget-group"
         >
           <div
@@ -306,8 +308,8 @@ export const Rating = ({
         isMandatory={false}
         _width={_width}
         widthType={widthType}
-        id={`${ratingId}-label`}
         top={alignment !== 'top' && '1px'}
+        inputId={`component-${id}`}
       />
 
       <div

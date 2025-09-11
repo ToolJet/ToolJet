@@ -140,6 +140,13 @@ export const Multiselect = function Multiselect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, setSelected]);
 
+  useEffect(() => {
+    const dropdownContainer = document.querySelector(`[aria-labelledby='${id}-label']`);
+    if (dropdownContainer) {
+      dropdownContainer.removeAttribute('aria-readonly');
+    }
+  }, []);
+
   const filterOptions = (options, filter) => {
     setSearched(filter);
 
@@ -168,6 +175,7 @@ export const Multiselect = function Multiselect({
           style={{ marginRight: label ? '1rem' : '', marginBottom: 0, color: 'var(--cc-primary-text)' }}
           className={`form-label py-1`}
           data-cy={`multiselect-label-${componentName?.toLowerCase()}`}
+          id={`${id}-label`}
         >
           {label}
         </label>
@@ -180,13 +188,16 @@ export const Multiselect = function Multiselect({
           backgroundColor: 'var(--cc-surface1-surface)',
           color: 'var(--cc-primary-text)',
         }}
+        id={`component-${id}`}
+        aria-hidden={!visibility}
+        aria-disabled={disabledState}
       >
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}
           value={selected}
           onChange={onChangeHandler}
-          labelledBy={'Select'}
+          labelledBy={`${id}-label`}
           disabled={disabledState}
           className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}

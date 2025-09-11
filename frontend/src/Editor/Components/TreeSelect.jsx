@@ -14,6 +14,7 @@ export const TreeSelect = ({
   fireEvent,
   darkMode,
   dataCy,
+  id,
 }) => {
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, boxShadow } = styles;
@@ -114,9 +115,11 @@ export const TreeSelect = ({
         boxShadow,
       }}
       data-cy={dataCy}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
     >
       <div className="card-title" style={{ marginBottom: '0.5rem' }}>
-        {label}
+        <label htmlFor={`component-${id}`}>{label}</label>
       </div>
       <CheckboxTree
         nodes={data}
@@ -128,6 +131,7 @@ export const TreeSelect = ({
         nativeCheckboxes
         checkModel="all"
         disabled={disabledState}
+        id={`component-${id}`}
       />
     </div>
   );
