@@ -135,7 +135,7 @@ export default class Fedex implements QueryService {
           "Access token missing in response",
           {
             status: response.statusCode,
-            statusText: response.statusMessage,
+            statusMessage: response.statusMessage,
             errors: data,
           }
         );
@@ -159,12 +159,10 @@ export default class Fedex implements QueryService {
     let errorDetails: Record<string, any> = {};
 
     if (error instanceof HTTPError && error.response) {
-      errorMessage = `HTTP ${error.response.statusCode}: ${error.response.statusMessage || "Request failed"
-        }`;
+      errorMessage = `HTTP ${error.response.statusCode}: ${error.response.statusMessage || "Request failed"}`;
       errorDetails = {
         status: error.response.statusCode,
-        statusText: error.response.statusMessage,
-        errors: error.response.body,
+        statusMessage: error.response.statusMessage,
       };
 
       try {
@@ -173,15 +171,27 @@ export default class Fedex implements QueryService {
             ? JSON.parse(error.response.body)
             : error.response.body;
 
-        if (errorBody.errors && Array.isArray(errorBody.errors)) {
-          errorMessage = errorBody.errors[0]?.message || errorMessage;
-          errorDetails.errors = errorBody.errors;
-        } else if (errorBody.error) {
-          errorMessage = errorBody.error.message || errorMessage;
-          errorDetails.errors = errorBody.error;
+        // Filter and map relevant error information
+        if (Array.isArray(errorBody?.errors)) {
+          errorDetails.errors = errorBody.errors.map((err: any) => ({
+            code: err.code,
+            message: err.message,
+          }));
+
+          if (errorBody.errors[0]?.message) {
+            errorMessage = errorBody.errors[0].message;
+          }
+        } else if (errorBody?.error) {
+          errorDetails.errors = [{
+            code: errorBody.error.code,
+            message: errorBody.error.message,
+          }];
+          if (errorBody.error.message) {
+            errorMessage = errorBody.error.message;
+          }
         }
       } catch (parseError) {
-        // Keep the raw response body if parsing fails
+        // If parsing fails, do not include the raw body
       }
     } else {
       errorMessage = error.message || "An unexpected error occurred";
