@@ -126,7 +126,7 @@ jobs:
     needs: full-deploy
 
     steps:
-            - name: ✅ Check user authorization
+      - name: ✅ Check user authorization
         run: |
           allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
           allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
@@ -140,7 +140,7 @@ jobs:
           else
             echo "✅ User '${{ github.actor }}' is authorized."
           fi
-
+          
       - name: 📥 Manual Git checkout with submodules
         run: |
           set -e
