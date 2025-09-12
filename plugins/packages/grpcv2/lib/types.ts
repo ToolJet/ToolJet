@@ -12,9 +12,11 @@ function hasProperty<T extends PropertyKey>(obj: unknown, prop: T): obj is Recor
   return isRecord(obj) && prop in obj;
 }
 
-export interface GrpcClient {
-  [methodName: string]: Function | any;
-}
+// Use SDK's Client class as the base type for all gRPC clients
+export type GrpcClient = grpc.Client;
+
+// Re-export useful SDK types
+export type { UnaryCallback } from '@grpc/grpc-js/build/src/client';
 
 export { toError, isRecord, hasProperty };
 

@@ -6,19 +6,26 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
+# Set GitHub token, branch and repository URL as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
+ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
-RUN git clone https://github.com/ToolJet/ToolJet.git .
+RUN git clone ${REPO_URL} .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout ${BRANCH_NAME}
+RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+      git checkout ${BRANCH_NAME}; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found, falling back to lts-3.16"; \
+      git checkout lts-3.16; \
+    fi
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
 RUN if git submodule update --init --recursive; then \

@@ -14,7 +14,10 @@ export const DEFAULT_CANVAS_WIDTH = 1292;
 
 export const APP_HEADER_HEIGHT = 47;
 
-export const LEFT_SIDEBAR_WIDTH = 350;
+export const LEFT_SIDEBAR_WIDTH = {
+  tooljetai: 440,
+  default: 350,
+};
 
 export const RIGHT_SIDEBAR_WIDTH = 300;
 
@@ -42,7 +45,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Table',
   'ModuleContainer',
 ]);
-export const TAB_CANVAS_PADDING = 7.5;
+export const TAB_CANVAS_PADDING = 8;
 
 export const MODAL_CANVAS_PADDING = 5;
 

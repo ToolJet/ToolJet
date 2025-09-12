@@ -95,7 +95,7 @@
           "width": "320px",
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Enter Enter primary key column"
+          "placeholder": "Enter primary key column"
         },
         "records": {
           "label": "Records to update",
