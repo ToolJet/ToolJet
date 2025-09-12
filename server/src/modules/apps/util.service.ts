@@ -81,12 +81,31 @@ export class AppsUtilService implements IAppsUtilService {
                   {
                     name: 'Define specs',
                     id: 'define_specs',
-                    loadingStates: ['Generating app', 'App generated successfully'],
+                    loadingStates: ['Generating app specifications', 'Specifications generated successfully'],
+                  },
+                  {
+                    name: 'Design layout',
+                    id: 'design_layout',
+                    loadingStates: ['Designing app layout', 'Layout designed successfully'],
+                  },
+                  {
+                    name: 'Select datasource',
+                    id: 'select_datasource',
+                    loadingStates: ['Selecting datasource', 'Datasource selected successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
+                  },
+                  {
+                    name: 'Connect datasource',
+                    id: 'connect_datasource',
+                    loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
                   },
                   {
                     name: 'Setup database',
                     id: 'setup_database',
-                    loadingStates: ['Generating app', 'App generated successfully'],
+                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
                   },
                   {
                     name: 'Generate app',
@@ -96,7 +115,7 @@ export class AppsUtilService implements IAppsUtilService {
                 ],
                 activeStep: 'describe_app',
                 completedSteps: [],
-                version: 'v1',
+                version: 'v3',
               },
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
@@ -578,7 +597,7 @@ export class AppsUtilService implements IAppsUtilService {
     }));
   }
 
-  protected buildComponentMetaDefinition(components = {}) {
+  public buildComponentMetaDefinition(components = {}) {
     for (const componentId in components) {
       const currentComponentData = components[componentId];
 

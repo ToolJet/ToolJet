@@ -38,7 +38,7 @@ const Input = ({ helpText, onBlur, ...props }) => {
   };
 
   return (
-    <div className="tj-app-input">
+    <div className={cn('tj-app-input', classes?.inputContainer)}>
       <div
         className={cx('', { 'tj-app-input-wrapper': type === 'password' || type === 'copyToClipboard' || encrypted })}
       >

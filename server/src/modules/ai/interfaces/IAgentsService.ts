@@ -1,7 +1,7 @@
 export interface IAgentsService {
   CreateTable(organizationId: string, tables: any): Promise<any>;
 
-  docs(prompt: string, organizationId: string): Promise<any>;
+  docs(prompt: string, organizationId: string, previousMessages?: any[]): Promise<any>;
 
   create_header_component(appTitle: string): Promise<any>;
 

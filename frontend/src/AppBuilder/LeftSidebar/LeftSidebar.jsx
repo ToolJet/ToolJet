@@ -46,6 +46,9 @@ export const BaseLeftSidebar = ({
     toggleLeftSidebar,
     isSidebarOpen,
     isDraggingQueryPane,
+    aiGenerationActiveStep,
+    isAppGeneratedFromPrompt,
+    didUserSwitchedToVisualBuilder,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -59,6 +62,9 @@ export const BaseLeftSidebar = ({
       state.toggleLeftSidebar,
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
+      state.appStore.modules[moduleId].app?.aiGenerationMetadata?.active_step ?? '',
+      state.appStore.modules[moduleId].app?.appGeneratedFromPrompt ?? false,
+      state.ai.didUserSwitchedToVisualBuilder,
     ],
     shallow
   );
@@ -229,9 +235,21 @@ export const BaseLeftSidebar = ({
           darkMode: darkMode,
           icon: 'tooljetai',
           className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-          tip: 'Build with AI',
+          tip: (
+            <GenerateAppTooltipContent
+              isSidebarOpen={isSidebarOpen}
+              aiGenerationActiveStep={aiGenerationActiveStep}
+              isAppGeneratedFromPrompt={isAppGeneratedFromPrompt}
+              didUserSwitchedToVisualBuilder={didUserSwitchedToVisualBuilder}
+            />
+          ),
           ref: setSideBarBtnRefs('tooljetai'),
-          children: <SolidIcon width="16" height="16" name="tooljetai" className="tw-text-icon-strong" />,
+          keepTooltipOpen:
+            !isSidebarOpen &&
+            (aiGenerationActiveStep === 'design_layout' ||
+              (isAppGeneratedFromPrompt && didUserSwitchedToVisualBuilder)),
+          classes: { tooltip: '[&_.tooltip-inner]:tw-text-left [&_.tooltip-inner]:tw-p-3' },
+          children: <SolidIcon width="20" height="20" name="tooljetai" className="tw-text-icon-strong" />,
         })}
 
         {!isUserInZeroToOneFlow && (
@@ -299,7 +317,6 @@ export const BaseLeftSidebar = ({
     </div>
   );
 };
-
 const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   const self = useSelf();
   const others = useOthers();
@@ -339,3 +356,30 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
 };
 
 export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
+
+function GenerateAppTooltipContent({
+  isSidebarOpen,
+  aiGenerationActiveStep,
+  isAppGeneratedFromPrompt,
+  didUserSwitchedToVisualBuilder,
+}) {
+  if (
+    !isSidebarOpen &&
+    (aiGenerationActiveStep === 'design_layout' || (isAppGeneratedFromPrompt && didUserSwitchedToVisualBuilder))
+  )
+    return (
+      <div className="tw-flex tw-items-center tw-gap-1">
+        <SolidIcon name="interactive" width="16" />
+
+        <span>Click to continue building</span>
+      </div>
+    );
+
+  return (
+    <>
+      <h5 className="tw-font-medium">Generate app</h5>
+
+      <p className="tw-text-base tw-mb-0">Build a complete application by simply describing your requirements</p>
+    </>
+  );
+}

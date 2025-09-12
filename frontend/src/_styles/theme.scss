@@ -15769,43 +15769,6 @@ fieldset:disabled {
   padding: 25px 0;
 
   header {
-    display: flex;
-    gap: 12px;
-    // padding: 16px 24px;
-    background: var(--bg-surface-layer-01);
-
-    .left {
-      border-radius: 24px;
-      display: flex;
-      width: 44px;
-      height: 44px;
-      padding: 3px 3px 6px 3px;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .right {
-      h3 {
-        margin: 0;
-        color: var(--text-placeholder, #6a727c);
-        font-family: "IBM Plex Sans";
-        font-size: 12px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 18px;
-      }
-
-      h2 {
-        margin: 0;
-        color: var(--text-default, #1b1f24);
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 24px;
-      }
-    }
-
     .learn-about-tooljet-ai {
       align-self: flex-end;
       margin-left: auto;
@@ -17317,27 +17280,12 @@ section.ai-message-prompt-input-wrapper {
 
 .tooljet-copilot {
   width: 100%;
-  padding: 8px 16px !important;
+  padding: 1rem;
 
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    .text {
-      color: var(--text-default, #1b1f24);
-      display: flex;
-      align-items: center;
-      /* large/medium */
-      font-family: "IBM Plex Sans";
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 20px;
-      gap: 4px;
-
-      /* 142.857% */
-    }
 
     button {
       border: none;
@@ -17451,45 +17399,6 @@ section.ai-message-prompt-input-wrapper {
       border: none;
       background-color: transparent;
       padding: 8px 16px;
-    }
-  }
-
-  footer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    button {
-      border: none;
-      outline: none;
-      padding: 6px 7px;
-      color: var(--text-default, #1b1f24);
-      background: transparent;
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 5px 10px;
-      gap: 6px;
-      color: var(--text-default, #1b1f24);
-
-      /* base/medium */
-      font-family: "IBM Plex Sans";
-      font-size: 12px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 18px;
-      border-radius: 6px;
-      border: 1px solid var(--border-weak, #e4e7eb);
-      background: var(--button-secondary, #fff);
-
-      /* Elevations/100 */
-      box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
-        0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
-
-      /* 150% */
-      &:hover {
-        background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-      }
     }
   }
 

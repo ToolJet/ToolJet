@@ -5,7 +5,6 @@ import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -15,6 +14,7 @@ import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import UnsavedChangesDialog from '@/modules/dataSources/components/DataSourceManager/UnsavedChangesDialog';
 
 function Layout({
   children,
@@ -104,14 +104,7 @@ function Layout({
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
-  const {
-    checkForUnsavedChanges,
-    handleDiscardChanges,
-    handleSaveChanges,
-    handleContinueEditing,
-    unSavedModalVisible,
-    nextRoute,
-  } = useGlobalDatasourceUnsavedChanges();
+  const { checkForUnsavedChanges } = useGlobalDatasourceUnsavedChanges();
 
   const canCreateVariableOrConstant = () => {
     return authenticationService.currentSessionValue.user_permissions?.org_constant_c_r_u_d;
@@ -155,19 +148,8 @@ function Layout({
         />
         <div style={{ paddingTop: 48 }}>{children}</div>
       </div>
-      <ConfirmDialog
-        title={'Unsaved Changes'}
-        show={unSavedModalVisible}
-        message={'Datasource has unsaved changes. Are you sure you want to discard them?'}
-        onConfirm={() => handleDiscardChanges(nextRoute)}
-        onCancel={handleSaveChanges}
-        confirmButtonText={'Discard'}
-        cancelButtonText={'Save changes'}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        backdropClassName="datasource-selection-confirm-backdrop"
-        onCloseIconClick={handleContinueEditing}
-      />
+
+      <UnsavedChangesDialog />
     </div>
   );
 }
