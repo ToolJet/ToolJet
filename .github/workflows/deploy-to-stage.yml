@@ -140,7 +140,7 @@ jobs:
           else
             echo "✅ User '${{ github.actor }}' is authorized."
           fi
-          
+
       - name: 📥 Manual Git checkout with submodules
         run: |
           set -e
