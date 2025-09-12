@@ -141,7 +141,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const callOptions = prepareGrpcCallOptions(sourceOptions);
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
     const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
@@ -356,11 +356,11 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 
 
 /**
- * Build all metadata for NON-TLS connections (datasource + auth + query)
+ * Build all metadata (auth, datasource, query) for NON-TLS connections
  * Returns Metadata object directly for use with unary gRPC method calls
  * Note: For non-TLS connections, auth must be included as metadata headers
  */
-export const buildMetadata = (
+export const buildMetadataForNonTlsConnection = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
 ): grpc.Metadata => {
@@ -368,7 +368,7 @@ export const buildMetadata = (
 
   // 1. Add datasource metadata (client-id, cp-env, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
+    const sanitizedDatasourceMetadata = extractDatasourceHeaders(sourceOptions);
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
       if (key && value) {
         metadata.set(key, String(value));
@@ -378,7 +378,7 @@ export const buildMetadata = (
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
+    const sanitizedQueryMetadata = extractQueryHeaders(queryOptions);
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
       if (key && value) {
         metadata.set(key, String(value));
@@ -409,7 +409,7 @@ export const buildMetadata = (
 
     case 'oauth2':
       // For OAuth2, access_token is in datasource metadata (already added above)
-      const sanitizedAuth = sanitizeDatasourceMetadata(sourceOptions);
+      const sanitizedAuth = extractDatasourceHeaders(sourceOptions);
       if (sanitizedAuth?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
@@ -430,11 +430,11 @@ export const buildMetadata = (
  * Handles ALL metadata via CallCredentials for non-TLS streaming connections
  * Note: Streaming methods need CallOptions, not Metadata as first parameter
  */
-export const prepareGrpcCallOptions = (
+export const buildCallOptionsForStreaming = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
 ): grpc.CallOptions => {
-  const metadata = buildMetadata(sourceOptions, queryOptions);
+  const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
 
   // For streaming methods, wrap metadata in CallCredentials
   const metadataMap = metadata.getMap();
@@ -452,10 +452,11 @@ export const prepareGrpcCallOptions = (
 };
 
 /**
+ * Build metadata for TLS connections (datasource + query metadata only)
  * Combine datasource metadata with query metadata for TLS connections
  * Since auth is handled at channel level, we can combine all non-auth metadata
  */
-export const combineDatasourceAndQueryMetadata = (
+export const buildMetadataForTlsConnection = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
 ): grpc.Metadata => {
@@ -463,7 +464,7 @@ export const combineDatasourceAndQueryMetadata = (
 
   // 1. Add datasource metadata (client-id, tenant-id, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
+    const sanitizedDatasourceMetadata = extractDatasourceHeaders(sourceOptions);
 
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
       if (key && value) {
@@ -474,7 +475,7 @@ export const combineDatasourceAndQueryMetadata = (
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
+    const sanitizedQueryMetadata = extractQueryHeaders(queryOptions);
 
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
       if (key && value) {
@@ -487,10 +488,10 @@ export const combineDatasourceAndQueryMetadata = (
 };
 
 /**
- * Sanitize datasource metadata only (client-id, cp-env, etc.)
+ * Extract and sanitize datasource metadata only (client-id, cp-env, etc.)
  * Used for critical metadata that needs reliable delivery
  */
-const sanitizeDatasourceMetadata = (sourceOptions: SourceOptions): { [k: string]: string } => {
+const extractDatasourceHeaders = (sourceOptions: SourceOptions): { [k: string]: string } => {
   const ensureArrayFormat = (metadata: any) => {
     if (!metadata) return [];
     if (Array.isArray(metadata)) return metadata;
@@ -506,10 +507,10 @@ const sanitizeDatasourceMetadata = (sourceOptions: SourceOptions): { [k: string]
 };
 
 /**
- * Sanitize query metadata only (request-id, trace-id, etc.)
+ * Extract and sanitize query metadata only (request-id, trace-id, etc.)
  * Used for query-specific headers that follow gRPC standards
  */
-const sanitizeQueryMetadata = (queryOptions: QueryOptions): { [k: string]: string } => {
+const extractQueryHeaders = (queryOptions: QueryOptions): { [k: string]: string } => {
   const ensureArrayFormat = (metadata: any) => {
     if (!metadata) return [];
     if (Array.isArray(metadata)) return metadata;
@@ -530,7 +531,7 @@ export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.Chan
 
   // For TLS connections with auth, use secure combineChannelCredentials approach
   if (sourceOptions.ssl_enabled) {
-    const authCallOptions = prepareAuthCallOptions(sourceOptions);
+    const authCallOptions = buildAuthCallCredentials(sourceOptions);
     if (authCallOptions.credentials) {
       return grpc.credentials.combineChannelCredentials(
         channelCredentials,
@@ -548,7 +549,7 @@ export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.Chan
  * Creates CallCredentials for auth only (no datasource or query metadata)
  * Used for secure TLS channel setup
  */
-export const prepareAuthCallOptions = (sourceOptions: SourceOptions): grpc.CallOptions => {
+export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.CallOptions => {
   const authMetadata = new grpc.Metadata();
 
   switch (sourceOptions.auth_type) {
@@ -572,7 +573,7 @@ export const prepareAuthCallOptions = (sourceOptions: SourceOptions): grpc.CallO
       break;
 
     case 'oauth2':
-      const sanitizedMetadata = sanitizeDatasourceMetadata(sourceOptions);
+      const sanitizedMetadata = extractDatasourceHeaders(sourceOptions);
       if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
@@ -635,11 +636,11 @@ export const executeGrpcMethod = async (
 
     if (sourceOptions.ssl_enabled) {
       // TLS connections: Auth at channel level, all other metadata as regular metadata
-      const metadata = combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
+      const metadata = buildMetadataForTlsConnection(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     } else {
       // Non-TLS connections: All metadata (auth + datasource + query) as direct metadata
-      const metadata = buildMetadata(sourceOptions, queryOptions);
+      const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     }
   });
