@@ -229,7 +229,7 @@ class AppComponent extends React.Component {
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
-          {!isApplicationsPath && (isAdmin || isBuilder) && showBanner && (
+          {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
             <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
           )}
           <div
