@@ -8,6 +8,7 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { BotMessageSquare } from 'lucide-react';
 
 const initialState = {
   isSaving: false,
@@ -98,6 +99,7 @@ export const createAppSlice = (set, get) => ({
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
     const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
+    let debugObject = {};
     const currentMode = getCurrentMode(moduleId);
 
     const maxPermanentHeight = Object.values(components).reduce((max, component) => {
@@ -118,7 +120,21 @@ export const createAppSlice = (set, get) => ({
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
+    const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
+    debugObject = {
+      canvasHeight,
+      maxHeight,
+      maxPermanentHeight,
+      temporaryLayoutsMaxHeight,
+      components,
+      temporaryLayouts,
+      bottomPadding,
+      frameHeight,
+      currentMode,
+      currentLayout,
+    };
+    window.tooljetCanvasHeightDebug = debugObject;
   },
   setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
