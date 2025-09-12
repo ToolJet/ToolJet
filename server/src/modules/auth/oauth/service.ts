@@ -260,7 +260,7 @@ export class OauthService implements IOAuthService {
         } else if (!userDetails && enableSignUp) {
           userDetails = await this.authUtilService.findOrCreateUser(userResponse, organization, manager);
         } else if (!userDetails) {
-          throw new UnauthorizedException('User does not exist in the workspace');
+          throw new UnauthorizedException('You have been archived from this workspace. Sign in to another workspace or contact admin to know more.');
         }
         organizationDetails = organization;
 
