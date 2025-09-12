@@ -3,3 +3,10 @@
     border: 1px solid var(--cc-table-border-color) !important;
     outline: none !important;
 }
+
+
+.canvas-component {
+    .jet-table.table-component.jet-table .jet-data-table .table-row.selected {
+        --tblr-table-accent-bg: revert !important;
+    }
+}

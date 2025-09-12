@@ -81,7 +81,9 @@ type NewRevampedComponent =
   | 'FilePicker'
   | 'Icon'
   | 'Steps'
-  | 'Statistics';
+  | 'Statistics'
+  | 'StarRating'
+  | 'Tags';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -111,9 +113,27 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Icon',
   'Steps',
   'Statistics',
+  'StarRating',
+  'Tags',
 ];
 
-const INPUT_WIDGET_TYPES = ['TextInput', 'NumberInput', 'PasswordInput', 'EmailInput', 'PhoneInput', 'CurrencyInput', 'DatePickerV2', 'DaterangePicker', 'TimePicker', 'DatetimePickerV2', 'TextArea', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2', 'RangeSliderV2'];
+const INPUT_WIDGET_TYPES = [
+  'TextInput',
+  'NumberInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'TimePicker',
+  'DatetimePickerV2',
+  'TextArea',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'RangeSliderV2',
+];
 
 @Injectable()
 export class AppImportExportService {
@@ -2508,6 +2528,13 @@ function migrateProperties(
       properties.showHeader = properties?.showHeader || false;
     }
 
+    //Tags
+    if (componentType === 'Tags') {
+      if (!('advanced' in properties)) {
+        properties.advanced = { value: '{{true}}' };
+      }
+    }
+
     // Form
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
@@ -2601,6 +2628,13 @@ function migrateProperties(
         styles.positiveSecondaryValueColor = styles.secondaryTextColour;
         styles.negativeSecondaryValueColor = styles.secondaryTextColour;
         delete styles.secondaryTextColour;
+      }
+    }
+
+    // StarRating
+    if (componentType === 'StarRating') {
+      if (!styles.labelStyle) {
+        styles.labelStyle = { value: 'legacy' };
       }
     }
   }
