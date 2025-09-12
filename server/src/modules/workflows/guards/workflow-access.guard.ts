@@ -15,7 +15,7 @@ export class WorkflowAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { appVersionId } = request.params;
+    const { workflowId: appVersionId } = request.params;
     const user: User = request.user;
 
     // Validate appVersionId parameter
