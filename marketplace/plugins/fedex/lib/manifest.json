@@ -133,7 +133,7 @@
         "label": "Child key",
         "key": "child_key",
         "type": "text",
-        "description": "Enter child key"
+        "description": "Customer key returned through Credential Registration API request"
       },
       "child_secret": {
         "label": "Child secret",
