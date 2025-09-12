@@ -24,7 +24,7 @@ const helperModules = {
   // },
   posthog: {
     ce: posthog,
-    ee: posthog, //no posthog for ee
+    ee: posthogCloud, //Enable posthog on EE - Revert on release
     cloud: posthogCloud,
   },
   hubspot: {
