@@ -27,8 +27,7 @@ const OAuthWrapper = ({
   const needConnectionButton =
     selectedDataSource.kind !== 'openapi' &&
     options?.auth_type?.value === 'oauth2' &&
-    options?.grant_type?.value === 'authorization_code' &&
-    multiple_auth_enabled !== true;
+    options?.grant_type?.value === 'authorization_code';
   const dataSourceNameCapitalize = capitalize(
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
