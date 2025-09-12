@@ -98,6 +98,7 @@ export const createAppSlice = (set, get) => ({
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
     const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
+    let debugObject = {};
     const currentMode = getCurrentMode(moduleId);
 
     const maxPermanentHeight = Object.values(components).reduce((max, component) => {
@@ -118,7 +119,30 @@ export const createAppSlice = (set, get) => ({
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
+    const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
+    const _components = components.map((c) => {
+      return {
+        layouts: c?.layouts,
+        type: c?.componentType,
+        parent: c?.parent,
+        id: c?.id,
+        properties: c?.component?.definition?.properties,
+      };
+    });
+    debugObject = {
+      canvasHeight,
+      maxHeight,
+      maxPermanentHeight,
+      temporaryLayoutsMaxHeight,
+      components: _components,
+      temporaryLayouts,
+      bottomPadding,
+      frameHeight,
+      currentMode,
+      currentLayout,
+    };
+    window.tooljetCanvasHeightDebug = debugObject;
   },
   setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
