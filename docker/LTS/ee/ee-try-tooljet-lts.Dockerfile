@@ -53,15 +53,6 @@ RUN apt update && apt install -y gettext-base curl \
 COPY ./docker/LTS/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
 COPY ./docker/LTS/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
 
-# Install Neo4j using Docker-compatible approach
-RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
-    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
-    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
-    mkdir -p /var/lib/neo4j/plugins && \
-    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    mkdir -p /var/lib/neo4j/data /var/lib/neo4j/logs /var/lib/neo4j/import && \
-    chown -R appuser:appuser /var/lib/neo4j && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
@@ -133,9 +124,6 @@ ENV TOOLJET_HOST=http://localhost \
     TEMPORAL_DB_USER=tooljet \
     TEMPORAL_DB_PASS=postgres \
     TEMPORAL_CORS_ORIGINS=http://localhost:8080 \
-    NEO4J_URI=bolt://localhost:7687 \
-    NEO4J_USERNAME=neo4j \
-    NEO4J_PASSWORD=appaqvyvRLbeukhFE \
     ENABLE_AI_FEATURES=true
 
 # Set the entrypoint
