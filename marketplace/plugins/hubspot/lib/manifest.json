@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "HubSpot",
@@ -21,7 +20,8 @@
         "type": "string"
       }
     },
-    "customTesting": true
+    "customTesting": true,
+    "hideSave": true
   },
   "defaults": {
     "client_id": {
@@ -37,7 +37,7 @@
       "value": "https://api.hubapi.com/oauth/v1/token"
     },
     "redirect_url": {
-      "value": "http://localhost:8082/oauth2/authorize"
+      "value": ""
     },
     "auth_url": {
       "value": "https://app.hubspot.com/oauth/authorize"
@@ -52,10 +52,13 @@
       "value": "authorization_code"
     },
     "access_token_custom_headers": {
-        "value": [
-          ["Content-Type", "application/x-www-form-urlencoded"]
+      "value": [
+        [
+          "Content-Type",
+          "application/x-www-form-urlencoded"
         ]
-      },
+      ]
+    },
     "scopes": {
       "value": "oauth"
     }

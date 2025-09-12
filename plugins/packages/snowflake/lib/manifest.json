@@ -82,6 +82,9 @@
     },
     "oauthTypes": {
       "value": "custom_app"
+    },
+    "grant_type": {
+      "value": "authorization_code"
     }
   },
   "properties": {

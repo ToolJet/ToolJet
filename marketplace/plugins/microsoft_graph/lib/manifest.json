@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Microsoft Graph",
@@ -24,68 +23,51 @@
         "encrypted": true
       }
     },
-    "customTesting": true
+    "customTesting": true,
+    "hideSave": true
   },
   "defaults": {
-      "username": {
-        "value": ""
-      },
-      "account": {
-        "value": ""
-      },
-      "password": {
-        "value": ""
-      },
-      "database": {
-        "value": ""
-      },
-      "schema": {
-        "value": ""
-      },
-      "warehouse": {
-        "value": ""
-      },
-      "role": {
-        "value": ""
-      },
-      "client_id": {
-          "value": ""
-      },
-      "client_secret": {
-        "value": ""
-      },
-      "tenant_id": {
-        "value": ""
-      },
-      "access_token_url": {
-        "value": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token"
-      },
-      "redirect_url": {
-          "value": ""
-      },
-      "auth_url": {
-          "value": ""
-      },
-      "allowed_auth_types": {
-          "value": "oauth2"
-      },
-      "auth_type": {
-          "value": "oauth2"
-      },
-      "grant_type": {
-          "value": "authorization_code"
-      },
-      "scopes": {
-          "value": "https://graph.microsoft.com/.default"
-      },
-      "access_token_custom_headers": {
-        "value": [
-          ["Content-Type", "application/x-www-form-urlencoded"]
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "tenant_id": {
+      "value": ""
+    },
+    "access_token_url": {
+      "value": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token"
+    },
+    "redirect_url": {
+      "value": ""
+    },
+    "auth_url": {
+      "value": ""
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "https://graph.microsoft.com/.default"
+    },
+    "access_token_custom_headers": {
+      "value": [
+        [
+          "Content-Type",
+          "application/x-www-form-urlencoded"
         ]
-      },
-      "oauth_type": {
-        "value": "custom_app"
-      }
+      ]
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    }
   },
   "properties": {
     "tenant_id": {
