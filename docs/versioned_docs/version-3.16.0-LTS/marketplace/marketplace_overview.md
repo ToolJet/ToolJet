@@ -68,6 +68,7 @@ To remove a plugin, follow these steps:
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
+- **[Gmail](/docs/marketplace/plugins/marketplace-plugin-gmail)**
 - **[Google Calendar](/docs/marketplace/plugins/marketplace-plugin-googlecalendar)**
 - **[Google Cloud Spanner](/docs/marketplace/plugins/marketplace-plugin-spanner)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
