@@ -253,7 +253,7 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'hubspot'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'hubspot', 'gmail'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -974,7 +974,7 @@ class DataSourceManagerComponent extends React.Component {
       'snowflake',
       'microsoft_graph',
       'hubspot',
-    ];
+      'gmail'];
     return (
       pluginsLoaded && (
         <div>
@@ -987,6 +987,7 @@ class DataSourceManagerComponent extends React.Component {
             animation={false}
             onExit={this.onExit}
             container={this.props.container}
+            autoFocus={false}
             {...this.props.modalProps}
           >
             <Modal.Header className={'d-block'}>

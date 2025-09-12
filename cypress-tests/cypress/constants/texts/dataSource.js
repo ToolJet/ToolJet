@@ -51,6 +51,7 @@ export const dataSourceText = {
   buttonLabelPreview: "Preview",
   buttonLabelCreateAndRun: "Create & Run",
   buttonLabelCreate: "Create",
+  buttonLabelRun: "Run",
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
 
