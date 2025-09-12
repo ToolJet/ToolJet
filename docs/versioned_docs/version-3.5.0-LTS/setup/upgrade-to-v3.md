@@ -275,8 +275,8 @@ ToolJet Database is now a core requirement for the ToolJet 3.0.
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. <br/>
 Please check the environment variables that you need to configure to set up:
 
-- [PostgREST](/docs/setup/env-vars#postgrest)
-- [ToolJet Database](/docs/setup/env-vars#tooljet-database)
+- [PostgREST](/docs/3.5.0-LTS/setup/env-vars#postgrest)
+- [ToolJet Database](/docs/3.5.0-LTS/setup/env-vars#tooljet-database)
 
 ## Help and Support
 

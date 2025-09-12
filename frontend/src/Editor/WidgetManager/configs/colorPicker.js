@@ -26,6 +26,19 @@ export const colorPickerConfig = {
   },
   styles: {
     visibility: { type: 'toggle', displayName: 'Visibility' },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+    },
   },
   exposedVariables: {
     selectedColorHex: '#000000',
@@ -45,6 +58,7 @@ export const colorPickerConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      padding: { value: 'default' },
     },
   },
 };

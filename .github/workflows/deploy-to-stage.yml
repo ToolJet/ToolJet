@@ -10,10 +10,10 @@ on:
       dockerfile_path:
         description: 'Path to Dockerfile'
         required: true
-        default: './docker/cloud/cloud-server.Dockerfile'
+        default: './docker/LTS/cloud/cloud-server.Dockerfile'
         type: choice
         options:
-          - ./docker/cloud/cloud-server.Dockerfile
+          - ./docker/LTS/cloud/cloud-server.Dockerfile
       docker_tag:
         description: 'Docker tag suffix (e.g., cloud-staging-v14)'
         required: true
@@ -144,7 +144,8 @@ jobs:
       - name: 📥 Manual Git checkout with submodules
         run: |
           set -e
-          BRANCH="${{ github.event.inputs.branch_name }}"
+
+          BRANCH="${{ github.event.inputs.branch }}"
           REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
 
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
@@ -155,6 +156,11 @@ jobs:
           git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
           cd repo
 
+          echo "🔎 Main repo: verifying checkout"
+          MAIN_CURRENT=$(git rev-parse --abbrev-ref HEAD)
+          echo "✅ Main repo: successfully checked out branch $MAIN_CURRENT"
+          echo "📍 Main repo: current commit $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
+
           echo "🔁 Updating submodules"
           git submodule update --init --recursive
 
@@ -162,13 +168,44 @@ jobs:
 
           BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
             name="$sm_path"
-            echo "↪ $name: checking out branch $BRANCH"
+            echo ""
+            echo "Entering '\''$name'\''"
+            echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
+
             if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
-              git fetch origin "$BRANCH:$BRANCH"
-              git checkout "$BRANCH"
+              git fetch origin "$BRANCH:$BRANCH" || {
+                echo "❌ $name: fetch failed for $BRANCH"
+                exit 1
+              }
+
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git checkout "$BRANCH" || {
+                echo "❌ $name: checkout failed for $BRANCH"
+                exit 1
+              }
+
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+              echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ Branch not found, falling back to main"
-              git checkout main && git pull origin main
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
+              PREV=$(git rev-parse --short HEAD || echo "unknown")
+              git fetch origin lts-3.16:lts-3.16 || {
+                echo "❌ $name: fetch failed for lts-3.16"
+                exit 1
+              }
+              git checkout lts-3.16 || {
+                echo "❌ $name: fallback to lts-3.16 failed"
+                exit 1
+              }
+              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+              echo "✅ $name: now on branch lts-3.16"
+            fi
+
+            CURRENT=$(git rev-parse --abbrev-ref HEAD)
+            echo "🔎 $name: current branch = $CURRENT"
+            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
+              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
+              exit 1
             fi
           '
 
@@ -181,7 +218,7 @@ jobs:
         run: npm install
         working-directory: repo
 
-      - name: 🛠️ Build project
+      - name: 🛠️ Build the project
         run: npm run build:plugins:prod && npm run build:frontend
         working-directory: repo
         env:

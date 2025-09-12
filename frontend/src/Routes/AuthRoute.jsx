@@ -69,14 +69,13 @@ export const AuthRoute = ({ children }) => {
   };
 
   const verifyWhiteLabeling = (pathname) => {
-    const signupRegex = /^\/signup\/[^/]+$/;
-    const loginRegex = /^\/login\/[^/]+$/;
-    if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
-      resetToDefaultWhiteLabels();
-    }
-    const whiteLabelText = retrieveWhiteLabelText();
-    const whiteLabelFavicon = retrieveWhiteLabelFavicon();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+    // TODO: assume this code only needs for cloud.
+    // const signupRegex = /^\/signup\/[^/]+$/;
+    // const loginRegex = /^\/login\/[^/]+$/;
+    // if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
+    //   resetToDefaultWhiteLabels();
+    // }
+    setFaviconAndTitle(location);
   };
 
   const fetchOrganizationDetails = () => {

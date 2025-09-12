@@ -1,25 +1,26 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ILicenseController } from './interfaces/IController';
 import { Terms } from './interfaces/terms';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { LicenseUpdateDto } from './dto';
 import { FeatureAbilityGuard } from './ability/guard';
 import { FEATURE_KEY } from './constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { User as UserEntity } from '@entities/user.entity';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class LicenseController implements ILicenseController {
   getLicense(): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
+  @UseGuards(FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_ACCESS)
   @Get('access')
-  getFeatureAccess(): Promise<Terms> {
+  getFeatureAccess(@Req() req: Request): Promise<Terms> {
     return Promise.resolve({
       expiry: '',
       licenseStatus: {
@@ -28,13 +29,13 @@ export class LicenseController implements ILicenseController {
       },
     });
   }
-  getDomains(): Promise<{ domains: any; licenseStatus: any }> {
+  getDomains(@Req() req: Request): Promise<{ domains: any; licenseStatus: any }> {
     throw new Error('Method not implemented.');
   }
-  getLicenseTerms(): Promise<{ terms: Terms }> {
+  getLicenseTerms(@Req() req: Request): Promise<{ terms: Terms }> {
     throw new Error('Method not implemented.');
   }
-  updateLicense(licenseUpdateDto: LicenseUpdateDto): Promise<void> {
+  updateLicense(licenseUpdateDto: LicenseUpdateDto, @User() user: UserEntity): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

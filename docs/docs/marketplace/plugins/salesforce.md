@@ -3,8 +3,6 @@ id: marketplace-plugin-salesforce
 title: Salesforce
 ---
 
-# Salesforce
-
 ToolJet connects to your Salesforce account, allowing you to directly interact with your Salesforce connected app from within your ToolJet application.
 
 :::info
@@ -22,7 +20,12 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 - Copy the **Redirect URL** and paste it into the OAuth **Callback URL** field in your Salesforce connected app settings.
 - Click the **Connect to salesforce** button to authenticate your Salesforce account.
 - Once authenticated, click **Save data source** to store the data source.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/setup.png" alt="Salesforece Install" />
+
+You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
+
+Note: After completing the OAuth flow, the query must be triggered again to load the data.
+
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/setup-v2.png" alt="Salesforece Install" />
 
 ## Querying Salesforce
 

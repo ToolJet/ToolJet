@@ -1,8 +1,8 @@
 import React from 'react';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
-function DsPermissionsActions() {
+function DataSourcPermissionActionContainer() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(DsPermissionsActions, 'WorkspaceSettings');
+export default withEditionSpecificComponent(DataSourcPermissionActionContainer, 'WorkspaceSettings');

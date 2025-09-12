@@ -15,7 +15,7 @@ There are two types of constants:
 |   Characteristic        |       Global Constants        |         Secrets           |
 |-------------------------|:-----------------------------:|:-------------------------:|
 | Components              |             ✅                |           ❌              |
-| Data Queries *          |             ✅                |           ✅              |
+| Data Queries            |             ✅                |           ✅              |
 | Data Sources            |             ✅                |           ✅              |
 | Workflows               |             ✅                |       Coming Soon         |
 | Encrypted in DB         |             ✅                |           ✅              |
@@ -24,7 +24,7 @@ There are two types of constants:
 | Resolved on Server Side |             ❌                |           ✅              |
 | Naming Convention       | `{{constants.constant_name}}` | `{{secrets.secret_name}}` |
         
-***Note**: 
+**Note**: 
 1. Secret Constants cannot be used in RunJS or RunPy queries.
 2. Secret Constants can only be used as a singular key and can't be used in a composite key manner.
 

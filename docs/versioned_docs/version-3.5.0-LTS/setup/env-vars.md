@@ -61,6 +61,7 @@ ToolJet uses **PostgREST (v12.2.0)** for API access. The following environment v
 - `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
 - `PGRST_DB_URI`: Database connection string
 - `PGRST_LOG_LEVEL=info`
+- `PGRST_DB_PRE_CONFIG=postgrest.pre_config`
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
@@ -187,6 +188,11 @@ Enable Google or GitHub SSO with these environment variables:
 **General SSO Settings:**
 - `SSO_ACCEPTED_DOMAINS`: Comma-separated list of allowed email domains
 - `SSO_DISABLE_SIGNUPS=true`: Restricts signups to existing users
+
+#### Group Synchronization
+If any of the following environment variables are set to true, group synchronization will be skipped during the login process for the respective SSO provider:
+- `DISABLE_LDAP_GROUP_SYNC=true` – Disables group sync for LDAP during login.
+- `DISABLE_SAML_GROUP_SYNC=true` – Disables group sync for SAML during login.
 
 #### REST API Cookie Forwarding
 By default, ToolJet does not forward cookies with REST API requests. To enable this (self-hosted only), set:

@@ -1,6 +1,5 @@
 import { QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { capitalize } from 'lodash';
 
 export const TJDB = {
   character_varying: 'character varying' as const,
@@ -74,7 +73,8 @@ export type TooljetDbActions =
   | 'view_tables'
   | 'sql_execution'
   | 'bulk_upload'
-  | 'proxy_postgrest';
+  | 'proxy_postgrest'
+  | 'bulk_upsert_with_primary_key';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
 type ErrorCodeMapping = {
@@ -150,10 +150,11 @@ export class TooljetDatabaseError extends QueryFailedError {
   }
 
   toString(): string {
+    const capitalizeSentence = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
     const errorMessage =
       errorCodeMapping[this.code]?.[this.context.origin] ||
       errorCodeMapping[this.code]?.['default'] ||
-      capitalize(this.message);
+      capitalizeSentence(this.message);
     return this.replaceErrorPlaceholders(errorMessage);
   }
 

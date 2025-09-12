@@ -97,6 +97,9 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
         switch (typeResolver(value?.type)) {
           case 'TextInput':
+          case 'EmailInput':
+          case 'PhoneInput':
+          case 'CurrencyInput':
             if (value?.styles?.backgroundColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor'] =
                 value?.styles?.backgroundColor;
@@ -127,6 +130,15 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder'] = value?.placeholder;
+
+            if (value?.defaultCountry && ['PhoneInput', 'CurrencyInput'].includes(typeResolver(value?.type))) {
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultCountry'] = value?.defaultCountry;
+            }
+
+            if (value?.defaultCountry && typeResolver(value?.type) === 'CurrencyInput') {
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['decimalPlaces'] = value?.decimalPlaces;
+            }
+
             // prevent label from showing up in text input, because it is already shown in the text component. (Defaults to "Label" if not updated explicitly with an empty string)
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = '';
             break;
@@ -482,6 +494,12 @@ const typeResolver = (type) => {
       return 'DropDown';
     case 'button':
       return 'Button';
+    case 'emailinput':
+      return 'EmailInput';
+    case 'phoneinput':
+      return 'PhoneInput';
+    case 'currencyinput':
+      return 'CurrencyInput';
     case 'text':
       return 'Text';
     case 'number':
@@ -514,4 +532,23 @@ const typeResolver = (type) => {
 const validBooleanChecker = (input) => {
   if (/^(true|false)$/i.test(input) == true) return JSON.parse(input);
   return true;
+};
+
+export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60, footerHeight = 60) => {
+  let modalHeight = height ? parseInt(height, 10) : 0;
+  let parsedHeaderHeight = showHeader ? parseInt(headerHeight, 10) : 0;
+  let parsedFooterHeight = showFooter ? parseInt(footerHeight, 10) : 0;
+
+  if (showHeader) {
+    // 10 is header padding
+    modalHeight = modalHeight - parsedHeaderHeight - 10;
+  }
+  if (showFooter) {
+    // 14 is footer padding
+    modalHeight = modalHeight - parsedFooterHeight - 14;
+  }
+
+  const rounded = Math.ceil(modalHeight / 10) * 10;
+
+  return `${Math.max(rounded - 20, 40)}px`;
 };

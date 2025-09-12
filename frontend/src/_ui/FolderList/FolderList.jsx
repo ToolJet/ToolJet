@@ -98,8 +98,8 @@ function FolderList({
               <CustomIcon
                 color={computedStyles?.icon?.color}
                 style={{
-                  width: '18px',
-                  height: '18px',
+                  width: '16px',
+                  height: '16px',
                   color: computedStyles?.icon?.color,
                   stroke: computedStyles?.icon?.color,
                 }}

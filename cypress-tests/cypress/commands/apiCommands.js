@@ -1,3 +1,5 @@
+const envVar = Cypress.env("environment");
+
 Cypress.Commands.add(
   "apiLogin",
   (
@@ -50,12 +52,37 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
         log: false;
       }
       expect(response.status).to.equal(201);
-      Cypress.env(`${name}-id`, response.body.id);
+      Cypress.env(`${name}`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
         displayName: "Data source created",
         message: `:\nDatasource: '${kind}',\nName: '${name}'`,
+      });
+    });
+  });
+});
+
+Cypress.Commands.add("apiFetchDataSourcesId", () => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}/environments/${Cypress.env("environmentId")}/versions/${Cypress.env("editingVersionId")}`,
+      headers,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const dataSources = response.body?.data_sources || [];
+
+      dataSources.forEach((item) => {
+        Cypress.env(`${item.kind}`, `${item.id}`);
+      });
+
+      Cypress.log({
+        name: "DS Fetch",
+        displayName: "Data Sources Fetched",
+        message: dataSources
+          .map((ds) => `\nKind: '${ds.kind}', Name: '${ds.id}'`)
+          .join(","),
       });
     });
   });
@@ -75,14 +102,17 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         Cookie: `tj_auth_token = ${cookie.value}`,
       },
       body: {
-        created_at: "",
-        id: "",
-        is_maintenance_on: false,
-        is_public: null,
+        type: "front-end",
         name: appName,
+        is_maintenance_on: false,
         organization_id: "",
-        updated_at: "",
         user_id: "",
+        created_at: "",
+        updated_at: "",
+        id: "",
+        is_public: null,
+        workflow_enabled: false,
+        creation_mode: "DEFAULT",
       },
     }).then((response) => {
       {
@@ -128,21 +158,17 @@ Cypress.Commands.add(
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
-    cy.intercept("GET", "/api/v2/apps/*").as("getAppData");
+    cy.intercept("GET", "/api/apps/*").as("getAppData");
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
     cy.wait("@getAppData").then((interception) => {
-      // Assuming the response body is a JSON object
       const responseData = interception.response.body;
 
-      // Set the response data as an environment variable
-      Cypress.env("apiResponseData", responseData);
-
-      // You can log it to check if the env var is set correctly
-      cy.log(Cypress.env("apiResponseData"));
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
     });
     cy.get(componentSelector, { timeout: 10000 });
   }
@@ -166,6 +192,7 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
       { log: false }
     ).then((response) => {
       expect(response.status).to.equal(201);
+      return response;
     });
   });
 });
@@ -175,7 +202,7 @@ Cypress.Commands.add("apiLogout", () => {
     cy.request(
       {
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/logout`,
+        url: `${Cypress.env("server_host")}/api/session/logout`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -190,22 +217,36 @@ Cypress.Commands.add("apiLogout", () => {
 
 Cypress.Commands.add(
   "apiUserInvite",
-  (userName, userEmail, userRole = "end-user") => {
+  (userName, userEmail, userRole = "end-user", metaData = {}) => {
+    const requestBody =
+      envVar === "Enterprise"
+        ? {
+          email: userEmail,
+          firstName: userName,
+          groups: [],
+          lastName: "",
+          role: userRole,
+          userMetadata: metaData,
+        }
+        : {
+          email: userEmail,
+          firstName: userName,
+          groups: [],
+          lastName: "",
+          role: userRole,
+          userMetadata: metaData,
+        };
+
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
         {
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/organization_users`,
+          url: `${Cypress.env("server_host")}/api/organization-users`,
           headers: {
             "Tj-Workspace-Id": Cypress.env("workspaceId"),
             Cookie: `tj_auth_token=${cookie.value}`,
           },
-          body: {
-            first_name: userName,
-            email: userEmail,
-            groups: [],
-            role: userRole,
-          },
+          body: requestBody,
         },
         { log: false }
       ).then((response) => {
@@ -221,21 +262,26 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
       "Tj-Workspace-Id": Cypress.env("workspaceId"),
       Cookie: `tj_auth_token=${cookie.value}`,
     };
-    cy.request({
-      method: "PATCH",
-      url: `${Cypress.env("server_host")}/api/data_queries/${dataQueryId}`,
-      headers: headers,
-      body: {
-        name: queryName,
-        options: {
-          mode: "sql",
-          transformationLanguage: "javascript",
-          enableTransformation: false,
-          query: query,
+
+    cy.apiGetAppData(Cypress.env("appId")).then((appData) => {
+      const editingVersionId = appData.editing_version.id;
+
+      cy.request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/data-queries/${dataQueryId}/versions/${editingVersionId}`,
+        headers: headers,
+        body: {
+          name: queryName,
+          options: {
+            mode: "sql",
+            transformationLanguage: "javascript",
+            enableTransformation: false,
+            query: query,
+          },
         },
-      },
-    }).then((patchResponse) => {
-      expect(patchResponse.status).to.equal(200);
+      }).then((patchResponse) => {
+        expect(patchResponse.status).to.equal(200);
+      });
     });
   });
 });
@@ -243,6 +289,9 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 Cypress.Commands.add(
   "apiAddQueryToApp",
   (queryName, options, dsName, dsKind) => {
+    cy.log(
+      `${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`
+    );
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = `tj_auth_token=${cookie.value}`;
       const workspaceId = Cypress.env("workspaceId");
@@ -262,7 +311,7 @@ Cypress.Commands.add(
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/data_queries`,
+          url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${Cypress.env(dsKind)}/versions/${Cypress.env("editingVersionId")}`,
           headers: {
             "Content-Type": "application/json",
             Cookie: authToken,
@@ -315,7 +364,7 @@ Cypress.Commands.add(
 
         cy.request({
           method: "GET",
-          url: `${Cypress.env("server_host")}/api/v2/apps/${appId}`,
+          url: `${Cypress.env("server_host")}/api/apps/${appId}`,
           headers: {
             "Tj-Workspace-Id": Cypress.env("workspaceId"),
             Cookie: `tj_auth_token=${cookie.value}`,
@@ -430,47 +479,53 @@ Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   });
 });
 
-Cypress.Commands.add("apiDeleteGranularPermission", (groupName) => {
+Cypress.Commands.add("apiDeleteGranularPermission", (groupName, typesToDelete = []) => {
   cy.getAuthHeaders().then((headers) => {
-
-    // Fetch group permissions
+    // Step 1: Get the group by name
     cy.request({
       method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
-      headers: headers,
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+      headers,
       log: false,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const group = response.body.groupPermissions.find(
-        (g) => g.name === groupName
-      );
+      const group = response.body.groupPermissions.find((g) => g.name === groupName);
       if (!group) throw new Error(`Group with name ${groupName} not found`);
 
       const groupId = group.id;
 
-      // Fetch granular permissions for the specific group
+      // Step 2: Get all granular permissions for the group
       cy.request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/v2/group_permissions/${groupId}/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
         headers,
         log: false,
       }).then((granularResponse) => {
         expect(granularResponse.status).to.equal(200);
-        const granularPermissionId = granularResponse.body[0].id;
+        const granularPermissions = granularResponse.body;
 
-        // Delete the granular permission
-        cy.request({
-          method: "DELETE",
-          url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions/${granularPermissionId}`,
-          headers,
-          log: false,
-        }).then((deleteResponse) => {
-          expect(deleteResponse.status).to.equal(200);
+        // Step 3: Filter if typesToDelete is specified
+        const permissionsToDelete = typesToDelete.length
+          ? granularPermissions.filter((perm) => typesToDelete.includes(perm.type))
+          : granularPermissions;
+
+        // Step 4: Delete each granular permission
+        permissionsToDelete.forEach((permission) => {
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
+            headers,
+            log: false,
+          }).then((deleteResponse) => {
+            expect(deleteResponse.status).to.equal(200);
+            cy.log(`Deleted granular permission: ${permission.name}`);
+          });
         });
       });
     });
   });
 });
+
 
 Cypress.Commands.add(
   "apiCreateGranularPermission",
@@ -483,11 +538,10 @@ Cypress.Commands.add(
     resourcesToAdd = []
   ) => {
     cy.getAuthHeaders().then((headers) => {
-
       // Fetch group permissions
       cy.request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers: headers,
         log: false,
       }).then((response) => {
@@ -502,7 +556,7 @@ Cypress.Commands.add(
         // Create granular permission
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions`,
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions`,
           headers: headers,
           body: {
             name,
@@ -528,10 +582,9 @@ Cypress.Commands.add(
 Cypress.Commands.add("apiReleaseApp", (appName) => {
   cy.getAppId(appName).then((appId) => {
     cy.getAuthHeaders().then((headers) => {
-
       cy.request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}`,
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
         headers,
       })
         .then((response) => {
@@ -539,7 +592,7 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
           const editingVersionId = response.body.editing_version.id;
           cy.request({
             method: "PUT",
-            url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/release`,
+            url: `${Cypress.env("server_host")}/api/apps/${appId}/release`,
             headers: headers,
             body: {
               versionToBeReleased: editingVersionId,
@@ -556,7 +609,6 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
 Cypress.Commands.add("apiAddAppSlug", (appName, slug) => {
   cy.getAppId(appName).then((appId) => {
     cy.getAuthHeaders().then((headers) => {
-
       cy.request({
         method: "PUT",
         url: `${Cypress.env("server_host")}/api/apps/${appId}`,
@@ -576,7 +628,6 @@ Cypress.Commands.add("apiAddAppSlug", (appName, slug) => {
 
 Cypress.Commands.add("apiGetTableIdByName", (tableName) => {
   cy.getAuthHeaders().then((headers) => {
-
     cy.request({
       method: "GET",
       url: `${Cypress.env("server_host")}/api/tooljet-db/organizations/${Cypress.env("workspaceId")}/tables`,
@@ -594,7 +645,6 @@ Cypress.Commands.add("apiGetTableIdByName", (tableName) => {
 Cypress.Commands.add("apiAddDataToTable", (tableName, data) => {
   cy.apiGetTableIdByName(tableName).then((tableId) => {
     cy.getAuthHeaders().then((headers) => {
-
       cy.request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/tooljet-db/proxy/${tableId}`,
@@ -609,10 +659,11 @@ Cypress.Commands.add("apiAddDataToTable", (tableName, data) => {
 });
 
 Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
+  const workspaceId = Cypress.env("workspaceId");
   cy.getAuthHeaders().then((headers) => {
     cy.request({
       method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/data_sources`,
+      url: `${Cypress.env("server_host")}/api/data-sources/${workspaceId}`,
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
@@ -647,7 +698,7 @@ Cypress.Commands.add(
             name: dataSourceName,
             options: [
               { key: "connection_type", value: "manual", encrypted: false },
-              { key: "host", value: "35.202.183.199" },
+              { key: "host", value: "9.234.17.31" },
               { key: "port", value: 5432 },
               { key: "database", value: "student" },
               { key: "username", value: "postgres" },
@@ -670,7 +721,7 @@ Cypress.Commands.add(
 
           cy.request({
             method: "PUT",
-            url: `${Cypress.env("server_host")}/api/v2/data_sources/${dataSourceId}?environment_id=${environmentId}`,
+            url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${environmentId}`,
             headers: headers,
             body: mergedData,
           }).then((updateResponse) => {
@@ -683,3 +734,67 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add("apiGetAppData", (appId = Cypress.env("appId")) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+      headers: headers,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      return response.body;
+    });
+  });
+});
+
+Cypress.Commands.add("apiDeleteGDS", (name) => {
+  const dataSourceId = Cypress.env(`${name}`);
+
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      },
+      failOnStatusCode: false,
+    }).then((response) => {
+      console.log("Delete response:", response);
+
+      expect(response.status, "Delete status code").to.eq(200);
+
+      Cypress.log({
+        name: "Delete Data Source",
+        displayName: "Data source deleted",
+        message: `Name: '${name}' | ID: '${dataSourceId}'`,
+      });
+    });
+  });
+});
+
+Cypress.Commands.add(
+  "apiUpdateGDS",
+  ({ name, options, envName = "development" }) => {
+    cy.getAuthHeaders().then((headers) => {
+      cy.apiGetEnvironments().then((environments) => {
+        const environment = environments.find((env) => env.name === envName);
+        const environmentId = environment.id;
+        const dataSourceId = Cypress.env(`${name}`);
+
+        cy.request({
+          method: "PUT",
+          url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${environmentId}`,
+          headers: headers,
+          body: {
+            name: name,
+            options: options,
+          },
+        }).then((response) => {
+          expect(response.status).to.equal(200);
+          cy.log(`Datasource "${name}" updated successfully.`);
+        });
+      });
+    });
+  }
+);

@@ -47,7 +47,7 @@ import { verticalDividerConfig } from './verticalDivider';
 import { customComponentConfig } from './customComponent';
 import { buttonGroupConfig } from './buttonGroup';
 import { pdfConfig } from './pdf';
-import { stepsConfig } from './steps';
+// import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
@@ -55,6 +55,7 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
+import { chatConfig } from './chat';
 
 export {
   buttonConfig,
@@ -106,7 +107,7 @@ export {
   customComponentConfig,
   buttonGroupConfig,
   pdfConfig,
-  stepsConfig,
+  // stepsConfig,
   kanbanConfig,
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
@@ -114,4 +115,5 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
 };

@@ -1,3 +1,7 @@
+import { MODULES } from '@modules/app/constants/modules';
+import { FEATURE_KEY } from '../constants';
+import { FeatureConfig } from '@modules/app/types';
+
 export interface AuditLogsQuery {
   resources: string;
   actions: string;
@@ -7,4 +11,27 @@ export interface AuditLogsQuery {
   apps: string;
   page: string;
   perPage: string;
+}
+
+export interface AuditLogFields {
+  userId: string;
+  organizationId: string;
+  resourceId: string;
+  resourceType: MODULES;
+  resourceData?: object;
+  actionType: string;
+  resourceName?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  metadata?: object;
+  organizationIds?: Array<string>;
+}
+
+export interface Features {
+  [FEATURE_KEY.VIEW_LOGS]: FeatureConfig;
+  [FEATURE_KEY.VIEW_RESOURCES]: FeatureConfig;
+}
+
+export interface FeaturesConfig {
+  [MODULES.AUDIT_LOGS]: Features;
 }

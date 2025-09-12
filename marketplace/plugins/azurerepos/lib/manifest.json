@@ -4,7 +4,7 @@
   "description": "A schema defining Azurerepos datasource",
   "type": "api",
   "source": {
-    "name": "Azurerepos",
+    "name": "Azure Repos",
     "kind": "azurerepos",
     "exposedVariables": {
       "isLoading": false,

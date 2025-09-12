@@ -3,6 +3,14 @@ id: permissions
 title: Permissions
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Permissions in **ToolJet Workflows** provide a structured approach to access control, ensuring precise management of who can view, edit, or execute workflows. The below table gives a detailed summary of permissions in context of ToolJet Workflows. 
 
 | User Group                          | Workflows Dashboard Access | Create/Edit Workflows | Execute Workflows | Using Workflows in ToolJet App Builder | Enable/Disable Workflows |

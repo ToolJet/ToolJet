@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { FilesRepository } from '@modules/files/repository';
 import { File } from '@entities/file.entity';
 import { IProfileUtilService } from '@modules/profile/interfaces/IService';
@@ -8,7 +8,7 @@ import { CreateFileDto } from '@modules/files/dto/index';
 
 @Injectable()
 export class ProfileUtilService implements IProfileUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected userRepository: UserRepository) {}
+  constructor(protected readonly filesRepository: FilesRepository, protected readonly userRepository: UserRepository) {}
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager): Promise<File> {
     const user = await this.userRepository.getUser({
@@ -31,6 +31,7 @@ export class ProfileUtilService implements IProfileUtilService {
     if (currentAvatarId) {
       await this.filesRepository.removeOne(currentAvatarId, manager);
     }
+
     return avatar;
   }
 }

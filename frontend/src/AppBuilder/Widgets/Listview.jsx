@@ -9,6 +9,8 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Listview = function Listview({
   id,
@@ -18,18 +20,23 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariables,
+  adjustComponentPositions,
+  currentLayout,
   darkMode,
   dataCy,
 }) {
+  const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
-  const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), shallow);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
-
+  const isWidgetInContainerDragging = useStore(
+    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+    shallow
+  );
   const prevFilteredDataRef = useRef([]);
   const prevChildComponents = useRef({});
-
   const {
     data,
     rowHeight,
@@ -38,6 +45,7 @@ export const Listview = function Listview({
     enablePagination = false,
     mode = 'list',
     columns = 1,
+    dynamicHeight,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
@@ -49,10 +57,13 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    height: enablePagination ? height - 54 : height,
+    height: dynamicHeight ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
+    padding: '7px',
+    overflowX: 'hidden',
+    overflowY: isWidgetInContainerDragging ? 'hidden' : 'auto',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {
@@ -65,11 +76,23 @@ export const Listview = function Listview({
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
+
   const [childrenData, setChildrenData] = useState({});
+
+  useDynamicHeight({
+    dynamicHeight: dynamicHeight,
+    id: id,
+    height,
+    value: data,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility,
+  });
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const changedData = { [componentName]: { [optionName]: value } };
         const existingDataAtIndex = prevData[index] ?? {};
         const newDataAtIndex = {
@@ -84,13 +107,13 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   const onOptionsChange = useCallback(
     (exposedVariables, componentId, index) => {
       setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId);
+        const componentName = getComponentNameFromId(componentId, moduleId);
         const existingDataAtIndex = prevData[index] ?? {};
         const changedData = {};
         Object.keys(exposedVariables).forEach((key) => {
@@ -108,7 +131,7 @@ export const Listview = function Listview({
         return { ...prevData, ...newChildrenData };
       });
     },
-    [getComponentNameFromId, setChildrenData]
+    [getComponentNameFromId, setChildrenData, moduleId]
   );
 
   function onRecordOrRowClicked(index) {
@@ -231,24 +254,28 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem');
+    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
   }
-
   return (
     <div
       data-disabled={disabledState}
-      className="jet-listview flex-column w-100 position-relative"
+      className="flex-column w-100 position-relative"
       id={id}
       ref={parentRef}
       style={computedStyles}
-      //   onClick={() => containerProps.onComponentClick(id, component)}
       data-cy={dataCy}
     >
-      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
         {filteredData.map((listItem, index) => (
           <div
-            className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
+            className={`list-item ${mode == 'list' && 'w-100'}`}
+            style={{
+              position: 'relative',
+              height: `${rowHeight}px`,
+              width: `${100 / positiveColumns}%`,
+              padding: '0px',
+              ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
+            }}
             key={index}
             // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClickCapture={(event) => {

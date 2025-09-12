@@ -20,14 +20,24 @@ export const Code = ({
   placeholder,
   validationFn,
   isHidden = false,
+  setCodeEditorView,
+  customMeta,
 }) => {
   const currentState = useCurrentState();
 
-  let initialValue = !_.isEmpty(definition)
-    ? definition.value
-    : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+  function getInitialValue() {
+    if (customMeta && customMeta.defaultValue) {
+      return customMeta.defaultValue;
+    }
+    return !_.isEmpty(definition)
+      ? definition.value
+      : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+  }
 
-  const paramMeta = accordian ? componentMeta[paramType]?.[param.name] : componentMeta[paramType][param.name];
+  let initialValue = getInitialValue();
+  const paramMeta = accordian
+    ? customMeta ?? componentMeta[paramType]?.[param.name]
+    : customMeta ?? componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 
   function handleCodeChanged(value) {
@@ -46,7 +56,7 @@ export const Code = ({
 
   if (isHidden) return null;
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
+    <div className={`field tw-mb-2 last:tw-mb-0 ${options.className ?? ''}`}>
       <CodeEditor
         type="fxEditor"
         initialValue={initialValue}
@@ -66,6 +76,7 @@ export const Code = ({
         placeholder={placeholder}
         validationFn={validationFn}
         cyLabel=""
+        setCodeEditorView={setCodeEditorView}
       />
     </div>
   );

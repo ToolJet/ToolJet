@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import config from 'config';
 
-export const PluginsListForAppModal = ({ dependentPluginsForTemplate, dependentPluginsDetail }) => {
+export const PluginsListForAppModal = ({ dependentPlugins, dependentPluginsDetail }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => {
@@ -29,7 +29,7 @@ export const PluginsListForAppModal = ({ dependentPluginsForTemplate, dependentP
         )}
       </span>
 
-      {isExpanded && dependentPluginsForTemplate && dependentPluginsForTemplate.length > 0 && (
+      {isExpanded && dependentPlugins && dependentPlugins.length > 0 && (
         <div
           style={{
             minHeight: '20px',
@@ -38,7 +38,7 @@ export const PluginsListForAppModal = ({ dependentPluginsForTemplate, dependentP
             borderLeft: '1px solid var(--border-weak)',
           }}
         >
-          {dependentPluginsForTemplate.map((plugin, index) => {
+          {dependentPlugins.map((plugin, index) => {
             const pluginsName = dependentPluginsDetail[plugin].name || plugin;
             const iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${plugin}/lib/icon.svg`;
             return (

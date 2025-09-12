@@ -1,4 +1,13 @@
-import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto } from '../dto/external_apis.dto';
+import {
+  UpdateUserDto,
+  WorkspaceDto,
+  UpdateGivenWorkspaceDto,
+  CreateUserDto,
+  AppGitPullDto,
+  AppGitPushDto,
+  AppImportRequestDto,
+} from '../dto';
+import { EditUserRoleDto } from '@modules/roles/dto';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
@@ -21,4 +30,29 @@ export interface IExternalApisController {
 
   // Gets list of all workspaces
   getAllWorkspaces(): Promise<any>;
+
+  // Updates user role
+  updateUserRole(workspaceId: string, editRoleDto: EditUserRoleDto): Promise<any>;
+}
+
+export interface IExternalApisAppsController {
+  pullNewAppFromGit(createMode: string, payload: AppGitPullDto): Promise<any>;
+
+  pullChangesIntoExistingApp(appId: string, createMode: string): Promise<any>;
+
+  pushVersionToGit(appId: string, versionId: string, payload: AppGitPushDto): Promise<any>;
+
+  autoDeployApp(appId: string): Promise<any>;
+
+  getAllWorkspaceApps(workspaceId: string): Promise<any>;
+
+  importApp(workspaceId: string, importresources: AppImportRequestDto): Promise<{ message: string }>;
+
+  exportApp(
+    appId: string,
+    workspaceId: string,
+    exportTjdb: boolean,
+    appVersion: string,
+    exportAllVersions: boolean
+  ): Promise<any>;
 }
