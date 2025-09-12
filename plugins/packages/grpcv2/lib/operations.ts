@@ -1,7 +1,6 @@
-import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, UnaryMethodFunction, GrpcOperationError, toError, isRecord } from './types';
-import { sanitizeHeaders } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
 import got from 'got';
-import { GrpcReflection, serviceHelper } from 'grpc-js-reflection-client';
+import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
@@ -14,8 +13,7 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
   try {
     const credentials = buildChannelCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
-
-    const client = await serviceHelper({
+    const serviceHelperOptions: ServiceHelperOptionsType = {
       host: cleanUrl,
       servicePath: serviceName,
       credentials,
@@ -27,7 +25,9 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
         defaults: true,
         oneofs: true
       }
-    });
+    }
+
+    const client = await serviceHelper(serviceHelperOptions) as GrpcClient;
 
     return client;
   } catch (error: unknown) {
@@ -368,21 +368,17 @@ export const buildMetadataForNonTlsConnection = (
 
   // 1. Add datasource metadata (client-id, cp-env, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = extractDatasourceHeaders(sourceOptions);
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        metadata.set(key, String(value));
-      }
+      metadata.set(key, value);
     });
   }
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = extractQueryHeaders(queryOptions);
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        metadata.set(key, String(value));
-      }
+      metadata.set(key, value);
     });
   }
 
@@ -409,7 +405,7 @@ export const buildMetadataForNonTlsConnection = (
 
     case 'oauth2':
       // For OAuth2, access_token is in datasource metadata (already added above)
-      const sanitizedAuth = extractDatasourceHeaders(sourceOptions);
+      const sanitizedAuth = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedAuth?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
@@ -464,23 +460,19 @@ export const buildMetadataForTlsConnection = (
 
   // 1. Add datasource metadata (client-id, tenant-id, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = extractDatasourceHeaders(sourceOptions);
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
 
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        combinedMetadata.set(key, String(value));
-      }
+      combinedMetadata.set(key, value);
     });
   }
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = extractQueryHeaders(queryOptions);
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
 
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        combinedMetadata.set(key, String(value));
-      }
+      combinedMetadata.set(key, value);
     });
   }
 
@@ -488,41 +480,46 @@ export const buildMetadataForTlsConnection = (
 };
 
 /**
- * Extract and sanitize datasource metadata only (client-id, cp-env, etc.)
- * Used for critical metadata that needs reliable delivery
+ * Extract and sanitize metadata from a metadata array
+ * Returns sanitized metadata as key-value pairs
  */
-const extractDatasourceHeaders = (sourceOptions: SourceOptions): { [k: string]: string } => {
-  const ensureArrayFormat = (metadata: any) => {
-    if (!metadata) return [];
-    if (Array.isArray(metadata)) return metadata;
+const extractSanitizedMetadata = (metadata: unknown): { [k: string]: string } => {
+  type MetadataEntry = [string, string];
+
+  const cleanMetadata = (metadata: [string, unknown][]): [string, unknown][] =>
+    metadata.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+
+  const filterValidMetadataEntries = (metadata: [string, unknown][]): MetadataEntry[] => {
+    return metadata.filter((entry): entry is MetadataEntry => {
+      const [_, value] = entry;
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      // Convert array to string by joining
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
+        entry[1] = value.join(', ');
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const processMetadata = (rawMetadata: [string, unknown][]): { [k: string]: string } => {
+    const cleaned = cleanMetadata(rawMetadata || []);
+    const validMetadata = filterValidMetadataEntries(cleaned);
+    return Object.fromEntries(validMetadata);
+  };
+
+  const ensureArrayFormat = (data: unknown): [string, unknown][] => {
+    if (!data) return [];
+    if (Array.isArray(data)) {
+      // Ensure each item is a tuple with at least 2 elements
+      return data.filter(item => Array.isArray(item) && item.length >= 2)
+        .map(item => [String(item[0]), item[1]]);
+    }
     return [];
   };
 
-  const sourceOptionsWithHeaders = {
-    ...sourceOptions,
-    headers: ensureArrayFormat(sourceOptions.metadata)
-  };
-
-  return sanitizeHeaders(sourceOptionsWithHeaders, {}, true);
-};
-
-/**
- * Extract and sanitize query metadata only (request-id, trace-id, etc.)
- * Used for query-specific headers that follow gRPC standards
- */
-const extractQueryHeaders = (queryOptions: QueryOptions): { [k: string]: string } => {
-  const ensureArrayFormat = (metadata: any) => {
-    if (!metadata) return [];
-    if (Array.isArray(metadata)) return metadata;
-    return [];
-  };
-
-  const queryOptionsWithHeaders = {
-    ...queryOptions,
-    headers: ensureArrayFormat(queryOptions.metadata)
-  };
-
-  return sanitizeHeaders({}, queryOptionsWithHeaders, false);
+  return processMetadata(ensureArrayFormat(metadata));
 };
 
 
@@ -573,7 +570,7 @@ export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.Cal
       break;
 
     case 'oauth2':
-      const sanitizedMetadata = extractDatasourceHeaders(sourceOptions);
+      const sanitizedMetadata = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
@@ -611,7 +608,7 @@ export const executeGrpcMethod = async (
   sourceOptions: SourceOptions,
   queryOptions: QueryOptions
 ): Promise<Record<string, unknown>> => {
-  const methodFunction = client[methodName] as UnaryMethodFunction;
+  const methodFunction = client[methodName] as unknown;
 
   if (typeof methodFunction !== 'function') {
     throw new GrpcOperationError(`Method ${methodName} not found on client`);
