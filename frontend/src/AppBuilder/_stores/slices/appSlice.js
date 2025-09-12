@@ -8,7 +8,6 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
-import { BotMessageSquare } from 'lucide-react';
 
 const initialState = {
   isSaving: false,
@@ -122,12 +121,21 @@ export const createAppSlice = (set, get) => ({
     const frameHeight = currentMode === 'view' ? 45 : 85;
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
+    const _components = components.map((c) => {
+      return {
+        layouts: c?.layouts,
+        type: c?.componentType,
+        parent: c?.parent,
+        id: c?.id,
+        properties: c?.component?.definition?.properties,
+      };
+    });
     debugObject = {
       canvasHeight,
       maxHeight,
       maxPermanentHeight,
       temporaryLayoutsMaxHeight,
-      components,
+      components: _components,
       temporaryLayouts,
       bottomPadding,
       frameHeight,
