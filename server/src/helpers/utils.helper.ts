@@ -511,3 +511,17 @@ export function normalizeEnvSlug(key: string): string {
   // Convert `my-workspace` → `my_workspace`
   return key.replace(/-/g, '_');
 }
+export function isAzureEntraIdIssuer(issuer?: string): boolean {
+  if (!issuer) return false;
+  const microsoftDomains = [
+    '.microsoftonline.com',
+    '.microsoftonline.us',
+    '.chinacloudapi.cn',
+    '.microsoftonline.de',
+    '.b2clogin.com',
+  ];
+  if (issuer.startsWith('https://sts.windows.net/')) {
+    return true;
+  }
+  return microsoftDomains.some((domain) => issuer.includes(domain));
+}
