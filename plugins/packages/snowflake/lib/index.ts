@@ -154,7 +154,14 @@ export default class Snowflake implements QueryService {
         ['refresh_token', ''],
       ];
     }
-    const oauth_type = source_options.find((item) => item.key === 'oauth_type')?.value;
+
+    const getOptionValue = (key: string) => {
+      if (Array.isArray(source_options)) {
+        return source_options.find((item) => item.key === key)?.value;
+      } else return source_options[key];
+    };
+
+    const oauth_type = getOptionValue('oauth_type');
     let client_id = '';
     let client_secret = '';
 
@@ -162,13 +169,13 @@ export default class Snowflake implements QueryService {
       client_id = process.env.SNOWFLAKE_CLIENT_ID;
       client_secret = process.env.SNOWFLAKE_CLIENT_SECRET;
     } else {
-      client_id = source_options.find((item) => item.key === 'client_id')?.value;
-      client_secret = source_options.find((item) => item.key === 'client_secret')?.value;
+      client_id = getOptionValue('client_id');
+      client_secret = getOptionValue('client_secret');
     }
 
-    const access_token_url = source_options.find((item) => item.key === 'access_token_url')?.value;
-    const client_auth = source_options.find((item) => item.key === 'client_auth')?.value;
-    const custom_auth_params = sanitizeParams(source_options.find((item) => item.key === 'custom_auth_params')?.value);
+    const access_token_url = getOptionValue('access_token_url');
+    const client_auth = getOptionValue('client_auth');
+    const custom_auth_params = sanitizeParams(getOptionValue('custom_auth_params'));
 
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -231,7 +238,8 @@ export default class Snowflake implements QueryService {
   ): Promise<any> {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      const userId = context?.user?.id;
+      const enhancedCacheKey = `${dataSourceId}_${userId}_${optionsHash}`;
       let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection && (await connection.isValidAsync())) {
