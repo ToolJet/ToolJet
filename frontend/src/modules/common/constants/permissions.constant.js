@@ -10,7 +10,7 @@ export const EDIT_ROLE_MESSAGE = {
       return (
         <div>
           <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-            Changing your user default group from admin to builder will revoke your access to settings.
+            Changing the user's role from admin to builder will revoke their access to settings.
           </p>
           <p className="tj-text-sm">Are you sure you want to continue?</p>
         </div>
@@ -82,7 +82,7 @@ export const EDIT_ROLE_MESSAGE = {
           )}
           {!isPaidPlan && (
             <p className="tj-text-sm" style={{ marginBottom: '10px' }}>
-              Changing the user role from end-user to builder will grant access the user access to all resources.
+              Changing user role from end-user to builder will grant the user access to all resources.
             </p>
           )}
           <p className="tj-text-sm">Are you sure you want to continue?</p>
