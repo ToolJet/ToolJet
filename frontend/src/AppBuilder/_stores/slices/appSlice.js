@@ -121,13 +121,14 @@ export const createAppSlice = (set, get) => ({
     const frameHeight = currentMode === 'view' ? 45 : 85;
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
-    const _components = components.map((c) => {
+    const _components = Object.values(components).map((c) => {
       return {
         layouts: c?.layouts,
         type: c?.componentType,
         parent: c?.parent,
         id: c?.id,
         properties: c?.component?.definition?.properties,
+        others: c?.component?.definition?.others,
       };
     });
     debugObject = {
