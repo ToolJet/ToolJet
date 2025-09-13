@@ -17,14 +17,16 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
       type: 'js_method',
     }));
   } else {
-    JSLangHints = Object.keys(hints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    const uniqueHints = new Set();
+    Object.values(hints['jsHints']).forEach((fieldType) => {
+      fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
+    });
+
+    JSLangHints = Array.from(uniqueHints, (hint) => ({
+      hint,
+      type: 'js_method',
+    }));
   }
 
   const deprecatedWorkspaceVarsHints = ['client', 'server'];
@@ -218,14 +220,16 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
 
   let JSLangHints = [];
   if (lang === 'javascript') {
-    JSLangHints = Object.keys(allHints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    const uniqueHints = new Set();
+    Object.values(hints['jsHints']).forEach((fieldType) => {
+      fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
+    });
+
+    JSLangHints = Array.from(uniqueHints, (hint) => ({
+      hint,
+      type: 'js_method',
+    }));
 
     JSLangHints = JSLangHints.filter((cm) => {
       let lastWordAfterDot = nearestSubstring.split('.');
