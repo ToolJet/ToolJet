@@ -19,23 +19,20 @@ export const useDynamicHeight = ({
 
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
+    if (!element) return;
     if (skipAdjustment && dynamicHeight) {
       element.style.height = `${prevHeight.current}px`;
     } else if (dynamicHeight) {
-      if (element) {
-        element.style.height = 'auto';
-        // Wait for the next frame to ensure the height has updated
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
-        });
-      }
+      element.style.height = 'auto';
+      // Wait for the next frame to ensure the height has updated
+      requestAnimationFrame(() => {
+        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+      });
     } else if (!dynamicHeight && prevDynamicHeight.current) {
-      if (element) {
-        element.style.height = `${height}px`;
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
-        });
-      }
+      element.style.height = `${height}px`;
+      requestAnimationFrame(() => {
+        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+      });
     }
     prevHeight.current = element.offsetHeight;
     prevDynamicHeight.current = dynamicHeight;
