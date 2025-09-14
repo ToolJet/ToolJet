@@ -39,10 +39,6 @@ const plugins = [
     favicon: './assets/images/logo.svg',
     hash: environment === 'production',
   }),
-  new CompressionPlugin({
-    test: /\.js(\?.*)?$/i,
-    algorithm: 'gzip',
-  }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
   new webpack.DefinePlugin({
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
@@ -78,12 +74,36 @@ if (process.env.APM_VENDOR === 'sentry') {
   );
 }
 
+// Add compression only in production
+if (environment === 'production') {
+  plugins.push(
+    new CompressionPlugin({
+      test: /\.js(\?.*)?$/i,
+      algorithm: 'gzip',
+    })
+  );
+}
+
 if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
 module.exports = {
   mode: environment,
+  stats: isDevEnv ? 'errors-warnings' : 'normal', // Reduce stats verbosity in dev
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+    compression: 'gzip', // Enable cache compression to save memory
+    maxMemoryGenerations: isDevEnv ? 1 : 0, // Limit memory generations in dev
+  },
+  performance: {
+    hints: environment === 'production' ? 'warning' : false,
+    maxAssetSize: 500000,
+    maxEntrypointSize: 500000,
+  },
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
@@ -96,17 +116,50 @@ module.exports = {
           compress: {
             drop_debugger: true,
             drop_console: true,
+            passes: 2, // Multiple passes for better optimization
+          },
+          mangle: {
+            safari10: true, // Fix Safari 10/11 bugs
           },
         },
-        parallel: environment === 'production',
+        parallel: environment === 'production' ? Math.max(2, Math.min(4, require('os').cpus().length - 1)) : false,
+        extractComments: false,
+        minify: TerserPlugin.terserMinify, // Use terser for better performance
       }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 5, // Reduced from 10 to limit chunks
+      minSize: 20000, // Increased minimum size to reduce small chunks
+      maxSize: 244000, // Add max size to prevent very large chunks
       cacheGroups: {
-        vendors: {
+        default: {
+          minChunks: 2, // Increased from 1 to reduce fragmentation
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+        defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
+          name: 'vendors',
+          priority: 10,
           chunks: 'all',
+          reuseExistingChunk: true,
+        },
+        framework: {
+          chunks: 'all',
+          name: 'framework',
+          test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+          priority: 40,
+          enforce: true,
+        },
+        // Simplified lib cache group - removed complex hashing to reduce memory
+        lib: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'lib',
+          priority: 30,
+          minChunks: 1,
+          minSize: 30000,
+          reuseExistingChunk: true,
         },
       },
     },
@@ -202,6 +255,9 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
+            cacheDirectory: true,
+            cacheCompression: true, // Enable compression to save cache memory
+            compact: environment === 'production', // Only compact in production
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
               ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
@@ -221,6 +277,12 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
+    },
+    hot: true,
+    liveReload: false,
+    compress: false, // Disable compression in dev for speed
+    client: {
+      overlay: false, // Disable error overlay for performance
     },
   },
   output: {
