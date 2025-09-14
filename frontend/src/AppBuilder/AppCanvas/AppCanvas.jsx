@@ -53,11 +53,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
-    localStorage.getItem('isPagesSidebarPinned') !== 'false'
+    localStorage.getItem('isPagesSidebarPinned') === null
+      ? false
+      : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
   const { globalSettings, pageSettings, switchPage } = useStore(
@@ -151,34 +154,40 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   function getMinWidth() {
     if (isModuleMode) return '100%';
 
+    const isSidebarOpenInEditor = currentMode === 'edit' ? isSidebarOpen : false;
+
     const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
 
     if (!shouldAdjust) return '';
     let offset;
+    const currentSideBarWidth = LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default;
+
     if (isViewerSidebarPinned && !isPagesSidebarHidden) {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       }
     } else {
-      if (position === 'side' && isSidebarOpen && isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isSidebarOpen && !isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
-      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpen && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       }
     }
 
-    if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpen && !isRightSidebarOpen) {
-      offset = `${LEFT_SIDEBAR_WIDTH}px`;
-    } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpen) {
-      offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+    if (currentMode === 'edit') {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && isRightSidebarOpen) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && !isRightSidebarOpen) {
+        offset = `${currentSideBarWidth}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpenInEditor) {
+        offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+      }
     }
 
     return `calc(100% + ${offset})`;
@@ -203,7 +212,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           )}
           style={canvasContainerStyles}
         >
-          {showOnDesktop && appType !== 'module' && (
+          {appType !== 'module' && (
             <PagesSidebarNavigation
               showHeader={showHeader}
               isMobileDevice={currentLayout === 'mobile'}
@@ -214,6 +223,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               isSidebarPinned={isViewerSidebarPinned}
               toggleSidebarPinned={toggleSidebarPinned}
               darkMode={darkMode}
+              canvasMaxWidth={canvasMaxWidth}
             />
           )}
           <div
@@ -245,8 +255,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     pagePositionType={position}
                     appType={appType}
                   />
-                  <DragGhostWidget />
-                  <ResizeGhostWidget />
+                  {currentMode === 'edit' && (
+                    <>
+                      <DragGhostWidget />
+                      <ResizeGhostWidget />
+                    </>
+                  )}
                   <div id="component-portal" />
                   {appType !== 'module' && <div id="component-portal" />}
                 </div>

@@ -1,6 +1,6 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { fullName, generateNextNameAndSlug } from '@helpers/utils.helper';
+import { fullName, generateNextNameAndSlug, getTooljetEdition } from '@helpers/utils.helper';
 import { EntityManager, In } from 'typeorm';
 import {
   getUserStatusAndSource,
@@ -39,7 +39,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
@@ -258,6 +258,8 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     metadataFlag: boolean = false
   ): Promise<FetchUserResponse> {
     const userDetails = orgUser.user.userDetails.find((ud) => ud.organizationId === orgUser.organizationId);
+    // Return custom groups for CE, skip for EE basic plan
+    const isEnterpriseVersion = getTooljetEdition() === TOOLJET_EDITIONS.EE;
     let response: FetchUserResponse = {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
@@ -268,9 +270,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: orgUser.user.userPermissions
-        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
-        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups:
+        isBasicPlan && isEnterpriseVersion
+          ? []
+          : orgUser.user.userPermissions
+              .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
+              .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       roleGroup: orgUser.user.userPermissions
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
@@ -446,22 +451,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           manager
         );
       }
-      const isPersonalWorkspaceAllowed = await this.checkPersonalWorkspaceAllowed();
-      const defaultOrganization =
-        !user && isPersonalWorkspaceAllowed ? await this.createDefaultOrganization(manager) : null;
-
-      const updatedUser = await this.createOrUpdateUser(
-        userParams,
-        user,
-        isPersonalWorkspaceAllowed ? defaultOrganization?.id : null,
-        manager
-      );
-
-      if (defaultOrganization) {
-        await this.addUserAsAdmin(updatedUser.id, defaultOrganization.id, manager);
-        await this.organizationUsersRepository.createOne(updatedUser, defaultOrganization, true, manager);
-      }
-
+      const updatedUser = await this.createOrUpdateUser(userParams, user, null, manager);
       if (inviteNewUserDto.userMetadata) {
         await this.updateUserMetadata(
           manager,
@@ -509,6 +499,13 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
+      this.eventEmitter.emit('CRM.Push', {
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        isInvited: true,
+      });
 
       const groupsArray = [];
       if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {

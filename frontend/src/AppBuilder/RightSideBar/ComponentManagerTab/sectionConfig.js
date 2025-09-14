@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup']),
+    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
   },
   data: {
     title: 'Data',
@@ -59,7 +59,7 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner']),
+    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat']),
   },
   legacy: {
     title: 'Legacy',

@@ -14,6 +14,7 @@ import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
+import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
 import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
 import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
 import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
@@ -27,7 +28,7 @@ import { ToggleSwitch } from '@/Editor/Components/Toggle';
 import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
 import { RadioButton } from '@/Editor/Components/RadioButton';
 import { RadioButtonV2 } from '@/Editor/Components/RadioButtonV2/RadioButtonV2';
-import { StarRating } from '@/Editor/Components/StarRating';
+import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
@@ -41,7 +42,7 @@ import { CodeEditor } from '@/Editor/Components/CodeEditor';
 import { Timer } from '@/Editor/Components/Timer';
 import { Statistics } from '@/Editor/Components/Statistics';
 import { Pagination } from '@/Editor/Components/Pagination';
-import { Tags } from '@/Editor/Components/Tags';
+import { Tags } from '@/Editor/Components/Tags/Tags';
 import { Spinner } from '@/Editor/Components/Spinner';
 import { CircularProgressBar } from '@/Editor/Components/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
@@ -72,8 +73,8 @@ import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
-
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
+import { Chat } from '@/AppBuilder/Widgets/Chat';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -157,8 +158,10 @@ export const AllComponents = {
   Form,
   BoundedBox,
   ToggleSwitchV2,
+  Chat,
   ModuleContainer,
   ModuleViewer,
+  PopoverMenu,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);

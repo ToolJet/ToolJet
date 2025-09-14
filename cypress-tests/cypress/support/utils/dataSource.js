@@ -8,16 +8,25 @@ import { dataSourceText } from "Texts/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
 
-export const verifyCouldnotConnectWithAlert = (dangerText) => {
+export const verifyCouldnotConnectWithAlert = (alertText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
     timeout: 10000,
   }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
     timeout: 5000,
   });
+  cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+    "contain",
+    alertText
+  );
 };
 
 export const resizeQueryPanel = (height = "90") => {
   cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
+};
+
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
 };
 
 export const query = (operation) => {
@@ -25,7 +34,7 @@ export const query = (operation) => {
 };
 
 export const verifypreview = (type, data) => {
-  cy.get(`[data-cy="preview-tab-${type}"]`, { timeout: 15000 }).click();
+  cy.get(`[data-cy="preview-tab-${type}"]`).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
     "contain.text",
     data,
@@ -280,7 +289,12 @@ export const createRestAPIQuery = (
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         headers: headers,
         body: requestBody,
       }).then((response) => {

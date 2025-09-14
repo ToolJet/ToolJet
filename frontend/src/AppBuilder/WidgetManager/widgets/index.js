@@ -64,6 +64,8 @@ import { moduleViewerConfig } from './moduleViewer';
 import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
+import { chatConfig } from './chat';
+import { popoverMenuConfig } from './popoverMenu';
 
 export {
   buttonConfig,
@@ -129,7 +131,9 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
-  rangeSliderV2Config
+  rangeSliderV2Config,
+  popoverMenuConfig,
 };

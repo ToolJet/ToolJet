@@ -54,10 +54,6 @@ export const TableRow = ({
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
-          width:
-            cell.column.id === 'rightActions' || cell.column.id === 'leftActions'
-              ? 'fit-content'
-              : cell.column.getSize(),
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
             cellValue: cell.getValue(),
@@ -66,10 +62,8 @@ export const TableRow = ({
           display: 'flex',
           alignItems: 'center',
           textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          width: cell.column.getSize(),
         };
-        if (cell.column.id === 'rightActions' || cell.column.id === 'leftActions') {
-          cellStyles.maxWidth = 'fit-content';
-        }
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
           rowData: row.original,
@@ -108,10 +102,18 @@ export const TableRow = ({
               isEditable: isEditable,
             })}
             onClick={(e) => {
+              // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
+              if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
+                e.stopPropagation();
+                fireEvent('onRowClicked');
+                return;
+              }
+
               if (
-                (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
-                allowSelection &&
-                !selectRowOnCellEdit
+                isEditable ||
+                (['rightActions', 'leftActions'].includes(cell.column.id) &&
+                  allowSelection &&
+                  (!selectRowOnCellEdit || row.getIsSelected()))
               ) {
                 // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
                 e.stopPropagation();

@@ -253,7 +253,7 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar'];
+    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'hubspot', 'gmail'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -965,7 +965,16 @@ class DataSourceManagerComponent extends React.Component {
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
       ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar'];
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'snowflake',
+      'microsoft_graph',
+      'hubspot',
+      'gmail'];
     return (
       pluginsLoaded && (
         <div>
@@ -978,6 +987,7 @@ class DataSourceManagerComponent extends React.Component {
             animation={false}
             onExit={this.onExit}
             container={this.props.container}
+            autoFocus={false}
             {...this.props.modalProps}
           >
             <Modal.Header className={'d-block'}>
@@ -1000,7 +1010,7 @@ class DataSourceManagerComponent extends React.Component {
                   )}
                   <Modal.Title className="mt-3">
                     {selectedDataSource && !isSampleDb ? (
-                      <div className="row selected-ds">
+                      <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                         <div className="input-icon" style={{ width: '160px' }}>
                           <input
@@ -1024,7 +1034,7 @@ class DataSourceManagerComponent extends React.Component {
                     ) : (
                       <div className="row">
                         <div className="col-md-2">
-                          <SolidIcon name="tooljet" />
+                          <img src="assets/images/tj-logo.svg" />
                         </div>
                         <div className="col-md-10" data-cy="sample-data-source-title">
                           {' '}
@@ -1096,9 +1106,11 @@ class DataSourceManagerComponent extends React.Component {
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    (OAuthDs.includes(selectedDataSource?.kind) &&
-                      (options?.grant_type?.value !== 'authorization_code' ||
-                        options?.multiple_auth_enabled?.value === true))) && (
+                    !(
+                      options?.auth_type?.value === 'oauth2' &&
+                      options?.grant_type?.value === 'authorization_code' &&
+                      options?.multiple_auth_enabled?.value !== true
+                    )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
                         <div className="row w-100">
@@ -1225,8 +1237,11 @@ class DataSourceManagerComponent extends React.Component {
                   selectedDataSource &&
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    options?.grant_type?.value !== 'authorization_code' ||
-                    options?.multiple_auth_enabled?.value === true) && (
+                    !(
+                      options?.auth_type?.value === 'oauth2' &&
+                      options?.grant_type?.value === 'authorization_code' &&
+                      options?.multiple_auth_enabled?.value !== true
+                    )) && (
                     <Modal.Footer>
                       <div className="col">
                         <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />

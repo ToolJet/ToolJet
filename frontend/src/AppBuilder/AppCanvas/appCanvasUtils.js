@@ -562,9 +562,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     parentComponent = components[id];
   }
 
+  const componentIdMappingSet = new Map(),
+    formComponentIds = new Set();
+
   pastedComponents.forEach((component) => {
     component = deepClone(component);
     const newComponentId = isCut ? component.id : uuidv4();
+    if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
+    if (component.component.component === 'Form') formComponentIds.add(newComponentId);
     const componentName = computeComponentName(component.component.component, {
       ...components,
       ...Object.fromEntries(finalComponents.map((component) => [component.id, component])),
@@ -625,8 +630,17 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     finalComponents.push(newComponent);
   });
   const canAddToParent = useStore.getState().canAddToParent;
-  const filteredFinalComponents = finalComponents.filter((component) => {
+  const fc = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
+  });
+  const filteredFinalComponents = fc.map((component) => {
+    if (formComponentIds.has(component.id)) {
+      const fields = component.component.definition?.properties?.fields?.value || [];
+      fields.forEach((field) => {
+        field.componentId = componentIdMappingSet.get(field.componentId) || field.componentId;
+      });
+    }
+    return component;
   });
 
   const filteredComponentsCount = filteredFinalComponents.length;
@@ -783,6 +797,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   }
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+  }
+  if (componentType === 'Tabs') {
+    padding = 2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING;
   }
   return canvasWidth - padding;
 };

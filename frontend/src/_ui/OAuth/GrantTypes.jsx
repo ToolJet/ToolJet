@@ -31,11 +31,13 @@ const CommonOAuthFields = ({
     }),
     shallow
   );
+  const [isCloud, setIsCloud] = React.useState(false);
 
   React.useEffect(() => {
     if (oauthTypes?.default_value && !options?.oauth_type?.value) {
       optionchanged('oauth_type', oauthTypes.default_value);
     }
+    setIsCloud(checkIfToolJetCloud(tooljetVersion));
   }, []);
 
   const oauthTypeOptions = React.useMemo(() => {
@@ -97,7 +99,7 @@ const CommonOAuthFields = ({
           />
         </>
       )}
-      {oauthTypes?.required && (
+      {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
         <div className="col-md-12">
           <label className="form-label mt-3">OAuth type</label>
           <Select
@@ -292,22 +294,6 @@ const AuthorizationCode = ({
           />
         </div>
       )}
-      {isFieldAllowed('multiple_auth_enabled', 'authorization_code', oauth_configs) && (
-        <div>
-          <label className="form-check form-switch my-4">
-            <input
-              data-cy="authentication-required-for-all-users-toggle-switch"
-              className="form-check-input"
-              type="checkbox"
-              checked={multiple_auth_enabled}
-              onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
-            />
-            <span className="form-check-label" data-cy="label-authentication-requrired-for-all-users">
-              Authentication required for all users
-            </span>
-          </label>
-        </div>
-      )}
       {isFieldAllowed('custom_query_params', 'authorization_code', oauth_configs) && (
         <>
           <div className="row mt-3">
@@ -325,6 +311,22 @@ const AuthorizationCode = ({
             dataCy={'custom-query-parameters'}
           />
         </>
+      )}
+      {isFieldAllowed('multiple_auth_enabled', 'authorization_code', oauth_configs) && (
+        <div>
+          <label className="form-check form-switch my-4">
+            <input
+              data-cy="authentication-required-for-all-users-toggle-switch"
+              className="form-check-input"
+              type="checkbox"
+              checked={multiple_auth_enabled}
+              onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+            />
+            <span className="form-check-label" data-cy="label-authentication-required-for-all-users">
+              Authentication required for all users
+            </span>
+          </label>
+        </div>
       )}
     </>
   );
@@ -358,17 +360,19 @@ const OAuthConfiguration = ({
 
   return (
     <div>
-      <div className="row mt-3">
-        <label className="form-label" data-cy="label-grant-type">
-          Grant type
-        </label>
-        <Select
-          options={grantTypeOptions()}
-          value={grant_type}
-          onChange={(value) => optionchanged('grant_type', value)}
-          width={'100%'}
-          useMenuPortal={false}
-        />
+      <div className="row">
+        {(!allowed_grant_types || (allowed_grant_types && allowed_grant_types.length > 1)) && (
+          <div>
+            <label className="form-label mt-3">Grant type</label>
+            <Select
+              options={grantTypeOptions()}
+              value={grant_type}
+              onChange={(value) => optionchanged('grant_type', value)}
+              width={'100%'}
+              useMenuPortal={false}
+            />
+          </div>
+        )}
         <CommonOAuthFields
           clientConfig={clientConfig}
           tokenConfig={tokenConfig}

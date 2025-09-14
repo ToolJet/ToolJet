@@ -12,7 +12,7 @@ const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(protected eventHandlerService: EventsService) { }
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -35,7 +35,6 @@ export class ComponentsService implements IComponentsService {
       return component;
     });
   }
-
 
   async create(componentDiff: object, pageId: string, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -99,41 +98,50 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
   }
 
-  async getAllComponents(pageId: string, manager?: EntityManager) {
-    // need to get all components for a page with their layouts
-
+  async getAllComponents(pageId: string, externalManager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager
+      const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId = :pageId', { pageId })
-        .andWhere((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('layout.id')
-            .from('layouts', 'layout')
-            .where('layout.componentId = component.id')
-            .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
-            .orderBy('layout.updatedAt', 'DESC')
-            .limit(2)
-            .getQuery();
-          return `layout.id IN ${subQuery}`;
-        })
-        .getMany()
-        .then((components) => {
-          return components.reduce((acc, component) => {
-            const componentId = component.id;
-            const componentData = component;
-            const componentLayout = component.layouts;
+        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .orderBy('component.id', 'ASC')
+        .addOrderBy('layout.updatedAt', 'DESC')
+        .getMany();
 
-            const transformedData = this.createComponentWithLayout(componentData, componentLayout, manager);
+      const result: Record<string, any> = {};
+      const layoutsToUpdate: Layout[] = [];
 
-            acc[componentId] = transformedData[componentId];
+      for (const component of rawComponents) {
+        const processedLayoutsForComponent: Layout[] = [];
 
-            return acc;
-          }, {});
+        (component.layouts || []).forEach((layout) => {
+          if (layout && layout.type) {
+            const currentLayout = { ...layout };
+
+            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
+              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+              layoutsToUpdate.push(currentLayout);
+            }
+            processedLayoutsForComponent.push(currentLayout);
+          }
         });
-    }, manager);
+
+        const relevantLayouts = processedLayoutsForComponent
+          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+          .slice(0, 2);
+
+        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
+        result[component.id] = transformedData[component.id];
+      }
+
+      if (layoutsToUpdate.length > 0) {
+        await manager.save(Layout, layoutsToUpdate);
+      }
+
+      return result;
+    }, externalManager);
   }
 
   transformComponentData(data: object): Component[] {
@@ -160,36 +168,26 @@ export class ComponentsService implements IComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData = [], manager: EntityManager) {
+  createComponentWithLayout(componentData: Component, layoutData: Layout[] = []) {
+    // Removed manager, it's not used here anymore for DB ops
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
-    const layouts = {};
+    const layouts: Record<string, { top: number; left: number; width: number; height: number }> = {};
 
     layoutData.forEach((layout) => {
-      const { type, top, left, width, height, dimensionUnit, id } = layout;
+      if (layout && layout.type) {
+        const { type, top, left, width, height } = layout;
 
-      let adjustedLeftValue = left;
-      if (dimensionUnit === LayoutDimensionUnits.PERCENT) {
-        adjustedLeftValue = this.resolveGridPositionForComponent(left, type);
-        manager.update(
-          Layout,
-          {
-            id,
-          },
-          {
-            dimensionUnit: LayoutDimensionUnits.COUNT,
-            left: adjustedLeftValue,
-          }
-        );
+        // Note: adjustedLeftValue logic will be handled BEFORE calling this function
+        // so 'left' here is already the final desired value for the output.
+        layouts[type] = {
+          top: top ?? 0,
+          left: left ?? 0, // Use the already adjusted 'left' value
+          width: width ?? 0,
+          height: height ?? 0,
+        };
       }
-
-      layouts[type] = {
-        top,
-        left: adjustedLeftValue,
-        width,
-        height,
-      };
     });
 
     const componentWithLayout = {
@@ -331,11 +329,9 @@ export class ComponentsService implements IComponentsService {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
                 return srcValue;
               } else if (
-                  (componentData.type === 'DropdownV2' ||
-                    componentData.type === 'MultiselectV2' ||
-                    componentData.type === 'ModuleContainer' ||
-                    componentData.type === 'Tabs' ||
-                    componentData.type === 'Steps') &&
+                ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'ModuleContainer', 'Tabs', 'Steps', 'RadioButtonV2', 'Tags'].includes(
+                  componentData.type
+                ) &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);

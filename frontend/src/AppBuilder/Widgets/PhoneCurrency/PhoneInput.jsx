@@ -5,7 +5,7 @@ import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { useInput } from '../BaseComponents/hooks/useInput';
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
@@ -54,8 +54,9 @@ export const PhoneInput = (props) => {
     errTextColor,
     boxShadow,
     borderRadius,
+    widthType,
   } = styles;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const isInitialRender = useRef(true);
 
@@ -100,6 +101,11 @@ export const PhoneInput = (props) => {
             value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
             setCountry(value ? value : '');
           }
+          setExposedVariables({
+            country: country,
+            countryCode: `+${getCountryCallingCodeSafe(country)}`,
+            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
+          });
         },
       });
       isInitialRender.current = false;
@@ -108,7 +114,9 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (!isInitialRender.current) {
-      setCountry(defaultCountry);
+      if (getCountryCallingCodeSafe(defaultCountry)) {
+        setCountry(defaultCountry);
+      }
     }
   }, [defaultCountry]);
 
@@ -135,7 +143,7 @@ export const PhoneInput = (props) => {
 
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -162,8 +170,6 @@ export const PhoneInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderBottomLeftRadius: '0px',
-    borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
 
@@ -198,8 +204,16 @@ export const PhoneInput = (props) => {
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          widthType={widthType}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+          }}
+        >
           <CountrySelect
             value={{ label: `${en[country]} +${getCountryCallingCodeSafe(country)}`, value: country }}
             options={options}
@@ -220,7 +234,7 @@ export const PhoneInput = (props) => {
           <Input
             ref={inputRef}
             country={country}
-            international={false}
+            international={true}
             value={value}
             onChange={onInputValueChange}
             placeholder={placeholder}

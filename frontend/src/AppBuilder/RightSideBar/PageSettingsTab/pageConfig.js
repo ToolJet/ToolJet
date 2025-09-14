@@ -3,7 +3,7 @@ export const pageConfig = {
     collapsable: true,
     style: 'texticon',
     hideHeader: false,
-    position: 'top',
+    position: 'side',
     name: '',
     hideLogo: false,
     disableMenu: {
@@ -65,7 +65,7 @@ export const pageConfig = {
       collapsable: true,
       style: 'texticon',
       hideHeader: false,
-      position: 'top',
+      position: 'side',
       name: '',
       hideLogo: false,
       disableMenu: {

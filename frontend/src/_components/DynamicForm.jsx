@@ -14,10 +14,10 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
+import ApiEndpointInputOld from './ApiEndpointInputOld';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
-import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
-import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
+import { orgEnvironmentConstantService } from '../_services';
 import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
@@ -46,6 +46,7 @@ const DynamicForm = ({
   disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
+  renderCopilot,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -210,8 +211,8 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
-      case 'react-component-salesforce':
-        return Salesforce;
+      case 'react-component-api-endpoint-old':
+        return ApiEndpointInputOld;
       case 'react-component-sharepoint':
         return Sharepoint;
       case 'react-component-oauth':
@@ -233,7 +234,8 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText,
+    helpText: helpTextProp, // For marketplace compatibility
+    help_text,
     description,
     type,
     placeholder = '',
@@ -247,10 +249,12 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType = 'basic',
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
     spec_url = '',
     disabled = false,
-    buttonText,
+    buttonText: buttonTextProp,
+    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
     text,
     subtext,
     oauth_configs,
@@ -261,6 +265,11 @@ const DynamicForm = ({
     const isWorkspaceConstant = !!workspaceConstant;
 
     if (!options) return;
+
+    // Select snake_case for marketplace plugins if camelCase is undefined
+    const buttonText = buttonTextProp || button_text;
+    const editorType = editorTypeProp || editor_type;
+    const helpText = helpTextProp || help_text;
 
     switch (type) {
       case 'password':
@@ -359,7 +368,7 @@ const DynamicForm = ({
       }
       case 'react-component-oauth-authentication':
         return {
-          isGrpc: source === 'grpc',
+          isGrpc: source === 'grpc' || source === 'grpcv2',
           grant_type: options?.grant_type?.value,
           auth_type: options?.auth_type?.value,
           add_token_to: options?.add_token_to?.value,
@@ -391,7 +400,6 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-      case 'react-component-salesforce':
       case 'react-component-sharepoint':
       case 'react-component-oauth':
         return {
@@ -417,6 +425,7 @@ const DynamicForm = ({
           selectedDataSource,
           darkMode,
           optionsChanged,
+          renderCopilot,
         };
       case 'codehinter': {
         let theme;
@@ -446,11 +455,16 @@ const DynamicForm = ({
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
           disabled,
           delayOnChange: false,
+          renderCopilot,
           ...(helpText && { helpText }),
         };
       }
       case 'react-component-openapi-validator':
         return {
+          selectedDataSource,
+          isSaving,
+          currentAppEnvironmentId,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           format: options.format?.value,
           definition: options.definition?.value,
           auth_type: options.auth_type?.value,
@@ -473,8 +487,10 @@ const DynamicForm = ({
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
+          audience: options?.audience?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
         };
       case 'filters':
         return {
@@ -497,6 +513,13 @@ const DynamicForm = ({
           placeholders,
         };
       case 'react-component-api-endpoint':
+        return {
+          specUrl: spec_url,
+          optionsChanged,
+          options,
+          darkMode,
+        };
+      case 'react-component-api-endpoint-old':
         return {
           specUrl: spec_url,
           optionsChanged,
@@ -581,7 +604,12 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
+          const isSpecificComponent = [
+            'tooljetdb-operations',
+            'react-component-api-endpoint',
+            'react-component-api-endpoint-old',
+            'react-component-oauth',
+          ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
@@ -590,8 +618,9 @@ const DynamicForm = ({
           return (
             enabled && (
               <div
-                className={cx('my-2', {
-                  'col-md-12': !className && !isHorizontalLayout,
+                className={cx({
+                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
+                  'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
                   [className]: !!className,
                   'd-flex': isHorizontalLayout,
                   'dynamic-form-row': isHorizontalLayout,

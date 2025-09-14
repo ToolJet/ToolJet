@@ -288,15 +288,7 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
 };
 
 export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
-  let parentDiv = id
-    ? typeof id === 'string'
-      ? document.getElementById(id)
-      : id
-    : document.getElementsByClassName('real-canvas')[0];
-  parentDiv = id === 'real-canvas' ? document.getElementById('real-canvas') : document.getElementById('canvas-' + id);
-  if (parentWidgetType === 'Container' || parentWidgetType === 'Modal') {
-    parentDiv = document.getElementById('canvas-' + id);
-  }
+  const parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
   const targetDivRect = event.target.getBoundingClientRect();
@@ -398,7 +390,18 @@ export function hasParentWithClass(child, className) {
 export function showGridLines() {
   var canvasElms = document.getElementsByClassName('real-canvas');
   // Filter out module canvas
-  var elementsArray = Array.from(canvasElms).filter((element) => !element.classList.contains('module-container'));
+  var elementsArray = Array.from(canvasElms).filter((element) => {
+    if (element.classList.contains('module-container')) {
+      return false;
+    }
+    if (
+      !element.classList.contains('is-module-editor') &&
+      element.getAttribute('component-type') === 'ModuleContainer'
+    ) {
+      return false;
+    }
+    return true;
+  });
   elementsArray.forEach(function (element) {
     element.classList.remove('hide-grid');
     element.classList.add('show-grid');
@@ -532,7 +535,7 @@ export const handleDeactivateTargets = () => {
 };
 export const computeScrollDelta = ({ source }) => {
   // Only need to calculate scroll delta when moving from a sub-container
-  if (source.slotId !== 'real-canvas') {
+  if (source?.slotId && source?.slotId !== 'real-canvas') {
     const subContainerWrap = document
       .querySelector(`#canvas-${source.slotId}`)
       ?.closest('.sub-container-overflow-wrap');
@@ -547,10 +550,7 @@ export const computeScrollDelta = ({ source }) => {
 export const computeScrollDeltaOnDrag = computeScrollDelta;
 
 export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const transformedCanvasParentId = canvasParentId?.substring(0, 36);
-  const targetCanvasWidth =
-    document.getElementById(`canvas-${transformedCanvasParentId}`)?.offsetWidth ||
-    document.getElementById('real-canvas')?.offsetWidth;
+  const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;
   const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
   const gridUnits = Math.round(widgetWidth / gridUnitWidth);
   const draggingWidgetWidth = gridUnits * gridUnitWidth;
@@ -619,4 +619,12 @@ export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => 
       component?.classList?.remove('active-target');
     }
   }
+};
+
+export const getInitialPosition = (currentWidget, temporaryLayouts, _gridWidth) => {
+  const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
+  const width = currentWidget.width * _gridWidth;
+  const transformX = currentWidget.left * _gridWidth;
+  const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
+  return { height, width, transformX, transformY };
 };

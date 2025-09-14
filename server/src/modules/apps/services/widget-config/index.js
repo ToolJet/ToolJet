@@ -64,6 +64,8 @@ import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
+import { chatConfig } from './chat';
+import { popoverMenuConfig } from './popoverMenu';
 
 const widgets = {
   buttonConfig,
@@ -130,8 +132,10 @@ const widgets = {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
   moduleContainerConfig,
-  moduleViewerConfig
+  moduleViewerConfig,
+  popoverMenuConfig
 };
 
 const universalProps = {

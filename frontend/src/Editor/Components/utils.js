@@ -45,3 +45,26 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
 
   return tinycolor(colorValue).darken(modificationAmount).toString();
 }
+
+export function getSafeRenderableValue(value) {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+    ? value
+    : (() => {
+      try { return String(value ?? ''); }
+      catch { return ''; }
+    })();
+}
+
+export const getFormattedSteps = (steps) => {
+  if (Array.isArray(steps)) return steps;
+  if (typeof steps === 'string') {
+    if (steps.trim() === '') return [];
+    try {
+      const parsed = JSON.parse(steps);
+      return Array.isArray(parsed) ? steps : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};

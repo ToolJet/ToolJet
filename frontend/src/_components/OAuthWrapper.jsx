@@ -24,9 +24,14 @@ const OAuthWrapper = ({
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
-  const needConnectionButton = options?.grant_type?.value === 'authorization_code' && multiple_auth_enabled !== true;
-  const dataSourceNameCapitalize = selectedDataSource?.plugin?.name;
-
+  const needConnectionButton =
+    selectedDataSource.kind !== 'openapi' &&
+    options?.auth_type?.value === 'oauth2' &&
+    options?.grant_type?.value === 'authorization_code' &&
+    multiple_auth_enabled !== true;
+  const dataSourceNameCapitalize = capitalize(
+    selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
+  );
   const hostUrl = window.public_config?.TOOLJET_HOST;
   const subPathUrl = window.public_config?.SUB_PATH;
   const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
@@ -69,7 +74,6 @@ const OAuthWrapper = ({
   return (
     <div>
       <div>
-        <label className="form-label">Connection type</label>
         <OAuth
           isGrpc={false}
           grant_type={options?.grant_type?.value}
@@ -102,7 +106,7 @@ const OAuthWrapper = ({
           oauth_configs={oauth_configs}
         />
       </div>
-      {oauth_configs.allowed_scope_field && (
+      {oauth_configs?.allowed_scope_field && (
         <div>
           <label className="form-label mt-3">Scope(s)</label>
           <Input
@@ -112,7 +116,7 @@ const OAuthWrapper = ({
             value={scopes}
             workspaceConstants={workspaceConstants}
           />
-          {oauth_configs.scopeHelperText?.length > 0 && (
+          {oauth_configs?.scopeHelperText?.length > 0 && (
             <span className="text-muted" style={{ fontSize: '12px' }}>
               {oauth_configs.scopeHelperText}
             </span>
@@ -123,28 +127,30 @@ const OAuthWrapper = ({
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
-          helpText={`In ${dataSourceNameCapitalize}, use the URL above when prompted to enter an OAuth callback or redirect URL`}
+          helpText="Save this URL as callback or redirect URL in your OAuth app."
           type="copyToClipboard"
-          disabled="true"
+          disabled={true}
           className="form-control"
         />
       </div>
-      <div>
-        <label className="form-check form-switch mt-3">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={multiple_auth_enabled}
-            onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
-          />
-          <div>
-            <span className="form-check-label">Authentication required for all users</span>
-            <span className="text-muted" style={{ fontSize: '12px' }}>
-              User will be redirected to OAuth flow once first query of this data source is run in an app.
-            </span>
-          </div>
-        </label>
-      </div>
+      {options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code' && (
+        <div>
+          <label className="form-check form-switch mt-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={multiple_auth_enabled}
+              onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+            />
+            <div>
+              <span className="form-check-label">Authentication required for all users</span>
+              <span className="text-muted" style={{ fontSize: '12px' }}>
+                User will be redirected to OAuth flow once first query of this data source is run in an app.
+              </span>
+            </div>
+          </label>
+        </div>
+      )}
       {needConnectionButton && (
         <div className="row mt-3">
           <center>

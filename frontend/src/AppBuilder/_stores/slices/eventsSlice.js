@@ -383,6 +383,9 @@ export const createEventsSlice = (set, get) => ({
           'onInvalid',
           'onNewRowsAdded',
           'onTableDataDownload',
+          'onMessageSent',
+          'onClearHistory',
+          'onTableDataDownload',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -442,9 +445,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -481,7 +483,7 @@ export const createEventsSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       });
     },
-    executeAction: debounce(async (eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
+    executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
@@ -497,8 +499,8 @@ export const createEventsSlice = (set, get) => ({
         switch (event.actionId) {
           case 'show-alert': {
             let message = getResolvedValue(event.message, customVariables, moduleId);
-
             if (typeof message === 'object') message = JSON.stringify(message);
+            if (Number.isNaN(message)) message = '';
 
             switch (event.alertType) {
               case 'success':
@@ -604,7 +606,7 @@ export const createEventsSlice = (set, get) => ({
             //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
             const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
             // const url = resolveReferences(event.url, undefined, customVariables);
-            window.open(resolvedValue, event?.windowTarget === 'newTab' ? '_blank' : '_self');
+            window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
             return Promise.resolve();
           }
           case 'go-to-app': {

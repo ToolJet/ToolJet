@@ -316,7 +316,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           return {};
         }
         case isUserAlreadyExisted: {
-          const errorMessage = organizationId ? 'User already exists in the workspace.' : 'Email already exists.';
+          const errorMessage = organizationId
+            ? 'User with this email already exists in one or more workspaces.'
+            : 'Email already exists.';
           throw new NotAcceptableException(errorMessage);
         }
         default:
@@ -398,7 +400,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
   };
 
-  createUserOrPersonalWorkspace = async (
+  createUserInWorkspace = async (
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization,
@@ -412,14 +414,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
         'true';
 
-      let personalWorkspace: Organization;
-      if (isPersonalWorkspaceEnabled) {
-        const { name, slug } = generateNextNameAndSlug('My workspace');
-        personalWorkspace = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
-      }
-      const organizationRole = personalWorkspace ? USER_ROLE.ADMIN : USER_ROLE.END_USER;
-
-      const organizationId = personalWorkspace ? personalWorkspace.id : signingUpOrganization.id;
+      const organizationRole = USER_ROLE.END_USER;
+      const organizationId = signingUpOrganization.id;
       /* Create the user or attach user groups to the user */
       const lifeCycleParms = signingUpOrganization
         ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
@@ -440,11 +436,12 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         manager,
         !isPersonalWorkspaceEnabled
       );
-
-      if (personalWorkspace) {
-        await this.organizationUserRepository.createOne(user, personalWorkspace, true, manager);
-      }
-
+      this.eventEmitter.emit('CRM.Push', {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -454,19 +451,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-
-        if (personalWorkspace) {
-          /* if the personal workspace is enabled for newly created users -> 
-          attach a role in the signing up workspace 
-          *This part will only run for user who is new to the instance and workspace at the same time
-          */
-          await this.rolesUtilService.addUserRole(
-            signingUpOrganization.id,
-            { role: USER_ROLE.END_USER, userId: user.id },
-            manager
-          );
-        }
-
         await this.licenseUserService.validateUser(manager, organizationId);
         this.eventEmitter.emit('emailEvent', {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,

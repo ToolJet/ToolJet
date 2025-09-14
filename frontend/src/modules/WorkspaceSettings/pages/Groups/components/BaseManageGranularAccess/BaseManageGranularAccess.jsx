@@ -2,7 +2,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React from 'react';
 import { withTranslation } from 'react-i18next';
-import { groupPermissionV2Service } from '@/_services';
+import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import '../../resources/styles/group-permissions.styles.scss';
 import ChangeRoleModal from '../ChangeRoleModal';
@@ -15,7 +15,6 @@ import WorkflowResourcePermissions from './components/WorkflowResourcePermission
 import Spinner from 'react-bootstrap/Spinner';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 class BaseManageGranularAccess extends React.Component {
   constructor(props) {
@@ -71,6 +70,7 @@ class BaseManageGranularAccess extends React.Component {
         selectedResources: [],
         isAll: true,
         newPermissionName: null,
+        showEmptyResourceContainer: false,
       },
     };
   }
@@ -129,6 +129,7 @@ class BaseManageGranularAccess extends React.Component {
       this.setState({
         granularPermissions: data,
         isLoading: false,
+        showEmptyResourceContainer: !data.length,
       });
     });
   };
@@ -646,6 +647,7 @@ class BaseManageGranularAccess extends React.Component {
       resourceType,
       hasChanges,
     } = this.state;
+    console.log(granularPermissions, 'granularPermissions');
 
     const { addableDs = [], resourcesOptions } = this.props;
 
@@ -752,7 +754,7 @@ class BaseManageGranularAccess extends React.Component {
             groupName={currentGroupPermission.name}
           />
         )}
-        {!granularPermissions.length && !isLoading ? (
+        {this.state.showEmptyResourceContainer && !isLoading ? (
           <div className="empty-container">
             <div className="icon-container" data-cy="empty-page-svg">
               <SolidIcon name="granularaccess" />
@@ -810,7 +812,7 @@ class BaseManageGranularAccess extends React.Component {
             </div>
           </>
         )}
-        {granularPermissions.length > 0 && (
+        {!this.state.showEmptyResourceContainer && (
           <div className="side-button-cont">
             <AddResourcePermissionsMenu
               openAddPermissionModal={this.openAddPermissionModal}

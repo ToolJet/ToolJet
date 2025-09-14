@@ -51,7 +51,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) {}
+  ) { }
   async create(
     name: string,
     user: User,
@@ -168,14 +168,13 @@ export class AppsUtilService implements IAppsUtilService {
       appVersion.showViewerNavigation = type === 'module' ? false : true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
-        hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
         canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
-        appMode: 'auto',
+        appMode: 'light',
       };
       await manager.save(appVersion);
       return app;
@@ -502,14 +501,14 @@ export class AppsUtilService implements IAppsUtilService {
     return userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -596,7 +595,9 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'Steps'].includes(currentComponentData?.component?.component) &&
+              ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'Steps', 'Tabs', 'RadioButtonV2', 'Tags'].includes(
+                currentComponentData?.component?.component
+              ) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -660,10 +661,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });

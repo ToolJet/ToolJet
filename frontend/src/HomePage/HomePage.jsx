@@ -1695,7 +1695,13 @@ class HomePageComponent extends React.Component {
                               showCreateAppModal: true,
                             })
                           }
-                          data-cy="create-new-app-button"
+                          data-cy={`create-new-${
+                            this.props.appType === 'workflow'
+                              ? 'workflows'
+                              : this.props.appType === 'module'
+                              ? 'modules'
+                              : 'apps'
+                          }-button`}
                         >
                           <>
                             {isImportingApp && (
@@ -1912,7 +1918,9 @@ class HomePageComponent extends React.Component {
                 {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
-                      {this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                      {this.props.appType === 'workflow'
+                        ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

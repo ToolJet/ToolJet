@@ -1075,7 +1075,13 @@ export const createComponentsSlice = (set, get) => ({
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
-          if (!skipFormUpdate) state.selectedComponents = []; // Empty the selected components
+          if (!skipFormUpdate) {
+            state.selectedComponents = []; // Empty the selected components
+            // Auto-switch to components tab when no components are selected after deletion
+            if (state.isRightSidebarOpen) {
+              state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.COMPONENTS;
+            }
+          }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
@@ -1289,10 +1295,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1305,6 +1311,10 @@ export const createComponentsSlice = (set, get) => ({
 
     Object.keys(componentLayouts).forEach((componentId) => {
       deleteTemporaryLayouts(componentId);
+      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamic) {
+        adjustComponentPositions(componentId, currentLayout, false, false);
+      }
     });
 
     if (saveAfterAction) {
@@ -1357,16 +1367,21 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
       setResolvedComponent,
       saveComponentPropertyChanges,
+      checkIfParentIsListviewOrKanban,
       getCurrentMode,
+      getCustomResolvables,
+      setResolvedComponentByProperty,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const { component } = getComponentDefinition(componentId, moduleId);
     const oldValue = component.definition[paramType][property];
-
+    const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
-      resolvedComponent[componentId][paramType][property] = [];
-
+      const index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+      if (index === null) {
+        resolvedComponent[componentId][paramType][property] = [];
+      }
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -1377,10 +1392,19 @@ export const createComponentsSlice = (set, get) => ({
         true,
         moduleId
       );
-      setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
 
-      // If the value is not changed, return
-      if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
+      if (index !== null) {
+        const customResolvables = getCustomResolvables(parentId, null);
+        const length = Object.keys(customResolvables).length;
+        const limit = length === 0 ? 1 : length;
+        for (let i = 0; i < limit; i++) {
+          setResolvedComponentByProperty(componentId, paramType, property, updatedValue, i, moduleId);
+        }
+      } else {
+        setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
+        // If the value is not changed, return
+        if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
+      }
 
       set(
         withUndoRedo((state) => {
@@ -1625,6 +1649,8 @@ export const createComponentsSlice = (set, get) => ({
       setActiveRightSideBarTab,
       setRightSidebarOpen,
       isRightSidebarPinned,
+      isRightSidebarOpen,
+      activeRightSideBarTab,
     } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
@@ -1636,9 +1662,20 @@ export const createComponentsSlice = (set, get) => ({
       !selectedText
     ) {
       clearSelectedComponents();
-      // if (!isRightSidebarPinned) {
-      //   setRightSidebarOpen(false);
-      // }
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
+    }
+
+    // If page settings tab is active and user clicks on canvas, switch to components tab
+    if (
+      !isClickedOnSubcontainer &&
+      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+      !selectedText &&
+      isRightSidebarOpen &&
+      activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+    ) {
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     }
   },
 
@@ -1974,8 +2011,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
-
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
     return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
       if (mappings[category] && mappings[category][id]) {
         let name;
@@ -2164,5 +2200,21 @@ export const createComponentsSlice = (set, get) => ({
         state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
       });
     }
+  },
+  computeColorForPopoverMenu: (value, meta, componentId) => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId);
+    const buttonType = component?.properties?.buttonType;
+    if (buttonType == 'primary') return value;
+    else {
+      if (meta.displayName == 'Text') {
+        return value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
+      } else if (meta.displayName == 'Border') {
+        return value == 'var(--cc-primary-brand)' ? 'var(--cc-default-border)' : value;
+      } else if (meta.displayName == 'Icon color') {
+        return value == '#FFFFFF' ? 'var(--cc-default-icon)' : value;
+      }
+    }
+    return value;
   },
 });
