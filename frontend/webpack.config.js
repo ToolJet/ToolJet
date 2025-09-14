@@ -1,7 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
-const crypto = require('crypto');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
@@ -91,11 +90,14 @@ if (isDevEnv) {
 
 module.exports = {
   mode: environment,
+  stats: isDevEnv ? 'errors-warnings' : 'normal', // Reduce stats verbosity in dev
   cache: {
     type: 'filesystem',
     buildDependencies: {
       config: [__filename],
     },
+    compression: 'gzip', // Enable cache compression to save memory
+    maxMemoryGenerations: isDevEnv ? 1 : 0, // Limit memory generations in dev
   },
   performance: {
     hints: environment === 'production' ? 'warning' : false,
@@ -114,22 +116,35 @@ module.exports = {
           compress: {
             drop_debugger: true,
             drop_console: true,
+            passes: 2, // Multiple passes for better optimization
+          },
+          mangle: {
+            safari10: true, // Fix Safari 10/11 bugs
           },
         },
-        parallel: environment === 'production' ? 2 : false, // Limit parallel processing
+        parallel: environment === 'production' ? Math.max(2, Math.min(4, require('os').cpus().length - 1)) : false,
+        extractComments: false,
+        minify: TerserPlugin.terserMinify, // Use terser for better performance
       }),
     ],
     splitChunks: {
       chunks: 'all',
-      maxInitialRequests: 10,
-      minSize: 0,
+      maxInitialRequests: 5, // Reduced from 10 to limit chunks
+      minSize: 20000, // Increased minimum size to reduce small chunks
+      maxSize: 244000, // Add max size to prevent very large chunks
       cacheGroups: {
         default: {
-          minChunks: 1,
+          minChunks: 2, // Increased from 1 to reduce fragmentation
           priority: -20,
           reuseExistingChunk: true,
         },
-        defaultVendors: false,
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          priority: 10,
+          chunks: 'all',
+          reuseExistingChunk: true,
+        },
         framework: {
           chunks: 'all',
           name: 'framework',
@@ -137,34 +152,13 @@ module.exports = {
           priority: 40,
           enforce: true,
         },
+        // Simplified lib cache group - removed complex hashing to reduce memory
         lib: {
-          test(module) {
-            return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
-          },
-          name(module) {
-            const hash = crypto.createHash('sha1');
-            hash.update(module.libIdent ? module.libIdent({ context: __dirname }) : module.identifier());
-            return hash.digest('hex').substring(0, 8);
-          },
+          test: /[\\/]node_modules[\\/]/,
+          name: 'lib',
           priority: 30,
           minChunks: 1,
-          reuseExistingChunk: true,
-        },
-        commons: {
-          name: 'commons',
-          minChunks: 2,
-          priority: 20,
-        },
-        shared: {
-          name(module, chunks) {
-            return crypto
-              .createHash('sha1')
-              .update(chunks.reduce((acc, chunk) => acc + chunk.name, ''))
-              .digest('hex')
-              .substring(0, 8);
-          },
-          priority: 10,
-          minChunks: 2,
+          minSize: 30000,
           reuseExistingChunk: true,
         },
       },
@@ -187,7 +181,7 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-cheap-module-source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -262,7 +256,8 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             cacheDirectory: true,
-            cacheCompression: false,
+            cacheCompression: true, // Enable compression to save cache memory
+            compact: environment === 'production', // Only compact in production
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
               ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
