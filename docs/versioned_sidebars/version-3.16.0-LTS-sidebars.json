@@ -505,6 +505,7 @@
                 "marketplace/plugins/marketplace-plugin-cohere",
                 "marketplace/plugins/marketplace-plugin-easypost",
                 "marketplace/plugins/marketplace-plugin-engagespot",
+                "marketplace/plugins/marketplace-plugin-fedex",
                 "marketplace/plugins/marketplace-plugin-gemini",
                 "marketplace/plugins/marketplace-plugin-github",
                 "marketplace/plugins/marketplace-plugin-gmail",

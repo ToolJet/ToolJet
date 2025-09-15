@@ -65,7 +65,9 @@ To remove a plugin, follow these steps:
 - **[Azure Repos](/docs/marketplace/plugins/marketplace-plugin-azurerepos)**
 - **[Click Up](/docs/marketplace/plugins/marketplace-plugin-clickup)**
 - **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
+- **[EasyPost](/docs/marketplace/plugins/marketplace-plugin-easypost)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
+- **[FedEx](/docs/marketplace/plugins/marketplace-plugin-fedex)**
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[Gmail](/docs/marketplace/plugins/marketplace-plugin-gmail)**
