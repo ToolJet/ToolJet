@@ -29,7 +29,10 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
 
   const getInvitedUserSession = async () => {
     try {
-      const invitedUserSession = await authenticationService.getInvitedUserSession({ organizationToken, accountToken });
+      const invitedUserSession = await authenticationService.getInvitedUserSession({
+        organizationToken,
+        accountToken,
+      });
       const {
         current_organization_id,
         current_organization_slug,
@@ -188,7 +191,9 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           onLoginSuccess(data, navigate);
         })
         .catch(() => {
-          toast.error('Error while setting up your account.', { position: 'top-center' });
+          toast.error('Error while setting up your account.', {
+            position: 'top-center',
+          });
         });
     }
   };
