@@ -13,7 +13,6 @@ function Header({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
-  const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const routes = (pathEnd, path) => {
@@ -162,7 +161,6 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              Version {currentVersion}
             </div>
           </div>
         </div>
