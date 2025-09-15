@@ -11,23 +11,46 @@ import * as fs from 'fs';
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const credentials = buildChannelCredentials(sourceOptions);
-    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
-    const serviceHelperOptions: ServiceHelperOptionsType = {
-      host: cleanUrl,
-      servicePath: serviceName,
-      credentials,
-      proto_symbol: serviceName,
-      protoLoaderOptions: {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true
-      }
+    // Create reflection client with basic credentials (same as testConnection)
+    const reflectionClient = await createReflectionClient(sourceOptions);
+
+    // Use streaming call options that contain metadata (same approach as testConnection)
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
+
+    // Get service descriptor using reflection with metadata
+    // We need to infer the proto filename from the service name
+    const protoFileName = `${serviceName.split('.')[0]}.proto`;
+    const descriptor = await reflectionClient.getDescriptorByFileName(protoFileName, callOptions);
+
+    if (!descriptor) {
+      throw new GrpcOperationError(`Service descriptor for ${protoFileName} not found`);
     }
 
-    const client = await serviceHelper(serviceHelperOptions) as GrpcClient;
+    // Create package services from the descriptor
+    const packageObject = descriptor.getPackageObject({
+      keepCase: true,
+      enums: String,
+      longs: String,
+      defaults: true,
+      oneofs: true
+    });
+
+    // Find the service in the package object
+    const service = findServiceInPackage(packageObject, serviceName);
+    if (!service) {
+      throw new GrpcOperationError(`Service ${serviceName} not found in proto definition`);
+    }
+
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+
+    // Create the service client with basic credentials
+    // Note: metadata will be handled per-call, not at client level for non-TLS
+    const credentials = buildChannelCredentials(sourceOptions);
+    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const client = new ServiceConstructor(cleanUrl, credentials);
 
     return client;
   } catch (error: unknown) {
