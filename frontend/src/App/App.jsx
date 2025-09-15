@@ -499,11 +499,9 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
-                      </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    <PrivateRoute darkMode={darkMode}>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                    </PrivateRoute>
                   }
                 />
                 <Route
