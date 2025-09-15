@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
-import { ButtonSolid } from '../../../../_components/AppButton';
+import { Button } from '@/components/ui/button';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
@@ -62,8 +62,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
         {type === 'password' && (
           <div className="d-flex justify-content-between w-100">
             <div className="mx-1 col">
-              <ButtonSolid
-                className="datasource-edit-btn mb-2"
+              <Button
                 type="a"
                 variant="tertiary"
                 target="_blank"
@@ -73,7 +72,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
-              </ButtonSolid>
+              </Button>
             </div>
 
             <div className="col-auto mb-2">
