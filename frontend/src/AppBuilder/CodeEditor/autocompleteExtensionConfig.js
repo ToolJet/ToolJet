@@ -3,6 +3,23 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 import { syntaxTree } from '@codemirror/language';
 
+/**
+ * Collects all unique JS method hints from all field types
+ * @param {Object} hints - The hints object containing jsHints
+ * @returns {Array} Array of unique JS method hints with type 'js_method'
+ */
+const collectUniqueJSMethodHints = (hints) => {
+  const uniqueHints = new Set();
+  Object.values(hints['jsHints']).forEach((fieldType) => {
+    fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
+  });
+
+  return Array.from(uniqueHints, (hint) => ({
+    hint,
+    type: 'js_method',
+  }));
+};
+
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
@@ -18,15 +35,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     }));
   } else {
     // Collect all unique JS method hints from all field types
-    const uniqueHints = new Set();
-    Object.values(hints['jsHints']).forEach((fieldType) => {
-      fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
-    });
-
-    JSLangHints = Array.from(uniqueHints, (hint) => ({
-      hint,
-      type: 'js_method',
-    }));
+    JSLangHints = collectUniqueJSMethodHints(hints);
   }
 
   const deprecatedWorkspaceVarsHints = ['client', 'server'];
@@ -224,15 +233,7 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
   let JSLangHints = [];
   if (lang === 'javascript') {
     // Collect all unique JS method hints from all field types
-    const uniqueHints = new Set();
-    Object.values(hints['jsHints']).forEach((fieldType) => {
-      fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
-    });
-
-    JSLangHints = Array.from(uniqueHints, (hint) => ({
-      hint,
-      type: 'js_method',
-    }));
+    JSLangHints = collectUniqueJSMethodHints(hints);
 
     JSLangHints = JSLangHints.filter((cm) => {
       let lastWordAfterDot = nearestSubstring.split('.');
