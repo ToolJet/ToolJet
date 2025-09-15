@@ -247,7 +247,7 @@ export const TableExposedVariables = ({
       lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
-      if (key && value) {
+      if (key && (value !== undefined || value !== null)) {
         selectRow(key, value);
       }
     } else {
