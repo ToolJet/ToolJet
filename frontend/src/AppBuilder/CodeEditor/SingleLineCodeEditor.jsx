@@ -290,6 +290,7 @@ const EditorInput = ({
         from: word.from,
         options: completions,
         validFor: /^\{\{.*\}\}$/,
+        filter: false,
       };
     } else return getSuggestionsForMultiLine(context, hints, hintsWithoutParamHints, lang, paramHints); //Need multiline behaviour inside workflows editor, where suggestions are shown on each keystroke
   }

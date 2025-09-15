@@ -57,11 +57,14 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     return suggestion.hint.includes(actualInput);
   });
 
+  const lastCharsAfterDot = actualInput.split('.').pop();
   const jsHints = JSLangHints.filter((cm) => {
-    const lastCharsAfterDot = actualInput.split('.').pop();
     if (cm.hint.includes(lastCharsAfterDot)) return true;
+    return false;
+  });
 
-    if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
+  jsHints.sort((a, b) => {
+    return a.hint.startsWith(lastCharsAfterDot) ? -1 : 1;
   });
 
   const searchInput = removeNestedDoubleCurlyBraces(input);
