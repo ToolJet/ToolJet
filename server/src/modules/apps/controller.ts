@@ -20,6 +20,7 @@ import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
 import { isHttpsEnabled } from '@helpers/utils.helper';
+import { traceAppLifecycleOperation } from '../../otel/tracing';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -52,7 +53,19 @@ export class AppsController implements IAppsController {
       });
     }
 
-    return this.appsService.create(user, appCreateDto);
+    return traceAppLifecycleOperation('create', {
+      userId: user.id,
+      organizationId: user.organizationId,
+      appName: appCreateDto.name,
+      userEmail: user.email
+    }, async () => {
+      return this.appsService.create(user, appCreateDto);
+    }, {
+      'app.type': appCreateDto.type || 'frontend',
+      'app.icon': appCreateDto.icon,
+      'request.has_ai_prompt': !!cookies.tj_ai_prompt,
+      'request.has_template': !!cookies.tj_template_id
+    });
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
@@ -80,7 +93,18 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
   update(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
-    return this.appsService.update(app, appUpdateDto, user);
+    return traceAppLifecycleOperation('update', {
+      userId: user.id,
+      organizationId: user.organizationId,
+      appId: app.id,
+      appName: app.name,
+      userEmail: user.email
+    }, async () => {
+      return this.appsService.update(app, appUpdateDto, user);
+    }, {
+      'app.current_version': app.editingVersion?.id,
+      'update.fields': Object.keys(appUpdateDto).join(',')
+    });
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
@@ -94,8 +118,21 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id')
   delete(@User() user, @App() app: AppEntity) {
-    return this.appsService.delete(app, user);
+    return traceAppLifecycleOperation('delete', {
+      userId: user.id,
+      organizationId: user.organizationId,
+      appId: app.id,
+      appName: app.name,
+      userEmail: user.email
+    }, async () => {
+      return this.appsService.delete(app, user);
+    }, {
+      'app.version_count': app.appVersions?.length || 0,
+      'app.is_public': app.isPublic,
+      'app.created_at': app.createdAt?.toISOString()
+    });
   }
+
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)

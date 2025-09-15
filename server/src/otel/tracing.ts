@@ -1,6 +1,23 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { trackApiCall } from './business-metrics';
 import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
+
+// Import application-level tracing utilities
+import {
+  traceAppLifecycleOperation,
+  traceQueryExecution,
+  traceDataSourceConnection,
+  traceUserJourney,
+  addUserActivityEvent,
+  createCorrelationContext,
+  linkOperation,
+  recordBusinessError,
+  recordErrorRecovery,
+  getCurrentTraceContext,
+  createChildSpan,
+  ApplicationContext,
+  BusinessOperationContext
+} from './application-tracing';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -431,6 +448,23 @@ export const startOpenTelemetry = async (): Promise<void> => {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
   }
+};
+
+// Export application-level tracing functions for use throughout the application
+export {
+  traceAppLifecycleOperation,
+  traceQueryExecution,
+  traceDataSourceConnection,
+  traceUserJourney,
+  addUserActivityEvent,
+  createCorrelationContext,
+  linkOperation,
+  recordBusinessError,
+  recordErrorRecovery,
+  getCurrentTraceContext,
+  createChildSpan,
+  ApplicationContext,
+  BusinessOperationContext
 };
 
 export default sdk;
