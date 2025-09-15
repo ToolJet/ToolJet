@@ -6,7 +6,7 @@ import LogoDark from '@assets/images/logo-dark.svg';
 // Mobile Empty State Component - simple and reusable
 export const MobileEmptyState = ({ darkMode = false }) => {
   return (
-    <div className="tw-h-screen tw-bg-background-surface-layer-01">
+    <div className={`tw-h-screen ${darkMode ? 'dark-theme' : ''} tw-bg-background-surface-layer-01`}>
       {/* Fixed Header */}
       <div className="tw-fixed tw-top-0 tw-left-0 tw-right-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-w-full tw-p-6 tw-bg-background-surface-layer-01 tw-border-b tw-border-solid tw-border-border-weak tw-border-t-0 tw-border-l-0 tw-border-r-0">
         <div className="tw-flex tw-items-center">
