@@ -25,8 +25,9 @@ function getInstalledPackages(workflowId) {
   return fetch(`${config.apiUrl}/workflows/${workflowId}/packages`, requestOptions).then(handleResponse);
 }
 
-function getPackageStatus(workflowId) {
+function getPackageStatus(workflowId, signal) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  if (signal) requestOptions.signal = signal;
   return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/status`, requestOptions).then(handleResponse);
 }
 
