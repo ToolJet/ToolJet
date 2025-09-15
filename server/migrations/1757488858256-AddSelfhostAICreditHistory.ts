@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 export class AddSelfhostAICreditHistory1757488858256 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,7 +32,7 @@ export class AddSelfhostAICreditHistory1757488858256 implements MigrationInterfa
           },
           {
             name: 'wallet_type',
-            type: 'wallet_type_enum', // wallet_type_enum already exists from organizations_ai_feature
+            type: 'wallet_type_enum',
           },
           {
             name: 'transaction_type',
@@ -69,6 +69,15 @@ export class AddSelfhostAICreditHistory1757488858256 implements MigrationInterfa
         referencedColumnNames: ['id'],
         referencedTableName: 'selfhost_customers',
         onDelete: 'CASCADE',
+      }),
+    );
+
+    //Add Index
+    await queryRunner.createIndex(
+      'selfhost_customers_ai_credit_history',
+      new TableIndex({
+        name: 'IDX_selfhost_customers_ai_credit_history_selfhost_customer_id',
+        columnNames: ['selfhost_customer_id'],
       }),
     );
   }

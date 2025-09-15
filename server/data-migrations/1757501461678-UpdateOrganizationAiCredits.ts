@@ -16,7 +16,7 @@ export class UpdateOrganizationAiCredits1757501461678 implements MigrationInterf
 
     if (!result?.length) return;
 
-    const updates: { id: string; newBalance: number; orgId: string }[] = [];
+    const updates: { id: string; newBalance: number; orgId: string; total_amount: number }[] = [];
     const now = new Date();
 
     for (const row of result) {
@@ -34,32 +34,33 @@ export class UpdateOrganizationAiCredits1757501461678 implements MigrationInterf
           }
         }
       }
-      //If No credits used skip top up
-      if (newBalance !== row.balance) {
-        updates.push({
-          id: row.id,
-          newBalance,
-          orgId: row.organization_id,
-        });
-      }
+      updates.push({
+        id: row.id,
+        newBalance,
+        orgId: row.organization_id,
+        total_amount: newBalance,
+      });
     }
 
     // Bulk update balances only
     const ids = updates.map((u) => u.id);
-    const balances = updates.map((u) => u.newBalance);
+    const balances = updates.map((u) => u.newBalance); //Currenly only recurring wallets are there
+    const totalAmounts = updates.map((u) => u.total_amount); //Total amount added to the wallet
 
     await queryRunner.query(
       `
       UPDATE organizations_ai_feature AS oaf
-      SET balance = u.new_balance
+      SET balance = u.new_balance,
+      total_amount = u.total_amount
       FROM (
         SELECT 
           unnest($1::uuid[]) AS id,
-          unnest($2::numeric[]) AS new_balance
-      ) AS u(id, new_balance)
+          unnest($2::numeric[]) AS new_balance,
+          unnest($3::numeric[]) AS total_amount
+      ) AS u(id, new_balance, total_amount)
       WHERE oaf.id = u.id
     `,
-      [ids, balances]
+      [ids, balances, totalAmounts]
     );
 
     // Insert into credit history row by row

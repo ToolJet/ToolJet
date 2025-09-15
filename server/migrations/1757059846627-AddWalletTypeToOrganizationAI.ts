@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn} from 'typeorm';
 
 export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -67,6 +67,19 @@ export class AddWalletTypeToOrganizationAI1757059846627 implements MigrationInte
     // 10. Update balance column type to float
     await queryRunner.query(
       `ALTER TABLE "organizations_ai_feature" ALTER COLUMN "balance" TYPE numeric(12,2) USING balance::numeric`
+    );
+
+    // 11.Add new totalAmount column with default 0
+    await queryRunner.addColumn(
+      'organizations_ai_feature',
+      new TableColumn({
+        name: 'total_amount',
+        type: 'numeric',
+        precision: 12,
+        scale: 2,
+        default: 0,
+        isNullable: false,
+      })
     );
   }
 

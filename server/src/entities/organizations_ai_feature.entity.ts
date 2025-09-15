@@ -41,6 +41,15 @@ export class OrganizationsAiFeature extends BaseEntity {
   })
   walletType: WalletType;
 
+  @Column({
+    name: 'total_amount',
+    type: 'numeric',
+    precision: 12,
+    scale: 2,
+    default: 0,
+  })
+  totalAmount: number;
+
   @Column({ name: 'balance_renewed_date', type: 'timestamp' })
   balanceRenewedDate: Date;
 

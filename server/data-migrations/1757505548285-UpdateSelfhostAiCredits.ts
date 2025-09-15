@@ -22,7 +22,13 @@ export class UpdateSelfhostAiCredits1757505548285 implements MigrationInterface 
     }
 
     const now = new Date();
-    const updates: { id: string; newBalance: number; selfhostCustomerId: string; walletType: string }[] = [];
+    const updates: {
+      id: string;
+      newBalance: number;
+      selfhostCustomerId: string;
+      walletType: string;
+      totalAmount: number;
+    }[] = [];
 
     for (const row of result) {
       let newBalance = 300; // default balance for free plan
@@ -47,6 +53,7 @@ export class UpdateSelfhostAiCredits1757505548285 implements MigrationInterface 
           newBalance,
           selfhostCustomerId: row.selfhost_customer_id,
           walletType: row.wallet_type,
+          totalAmount: newBalance,
         });
       }
     }
@@ -59,15 +66,17 @@ export class UpdateSelfhostAiCredits1757505548285 implements MigrationInterface 
     await queryRunner.query(
       `
       UPDATE selfhost_customers_ai_feature AS scaf
-      SET balance = u.new_balance
+      SET balance = u.new_balance,
+      total_amount = u.total_amount
       FROM (
         SELECT 
           unnest($1::uuid[]) as id,
-          unnest($2::numeric[]) as new_balance
-      ) AS u(id, new_balance)
+          unnest($2::numeric[]) as new_balance,
+          unnest($3::numeric[]) as total_amount
+      ) AS u(id, new_balance, total_amount)
       WHERE scaf.id = u.id
     `,
-      [updates.map((u) => u.id), updates.map((u) => u.newBalance)]
+      [updates.map((u) => u.id), updates.map((u) => u.newBalance), updates.map((u) => u.totalAmount)]
     );
 
     // 3. Insert into credit history row-by-row

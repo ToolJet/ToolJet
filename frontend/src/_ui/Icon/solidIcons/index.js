@@ -274,9 +274,12 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import AITopup from './AITopup.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
+    case 'ai-topup':
+      return <AITopup {...props} />;
     case 'tooljetai':
       return <TooljetAi {...props} />;
     case 'lighticon':

@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 export class AddOrganizationAICreditHistory1757488747540 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -9,8 +9,6 @@ export class AddOrganizationAICreditHistory1757488747540 implements MigrationInt
     await queryRunner.query(
       `CREATE TYPE "transaction_status_enum" AS ENUM ('success', 'failure')`
     );
-
-    // wallet_type_enum already exists, reuse it from organizations_ai_feature
 
     await queryRunner.createTable(
       new Table({
@@ -77,6 +75,15 @@ export class AddOrganizationAICreditHistory1757488747540 implements MigrationInt
         referencedColumnNames: ['id'],
         referencedTableName: 'organizations',
         onDelete: 'CASCADE',
+      }),
+    );
+
+    //Add Index
+    await queryRunner.createIndex(
+      'organization_ai_credit_history',
+      new TableIndex({
+        name: 'IDX_organization_ai_credit_history_org_id',
+        columnNames: ['organization_id'],
       }),
     );
   }
