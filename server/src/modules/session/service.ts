@@ -40,6 +40,17 @@ export class SessionService {
         where: { id: userId },
       });
 
+      // Track user session end for analytics
+      try {
+        const organizationId = user.defaultOrganizationId;
+        if (organizationId) {
+          const { endUserSession } = require('../../otel/business-metrics');
+          endUserSession(userId, organizationId);
+        }
+      } catch (error) {
+        console.error('[ToolJet Backend] Failed to track user session end:', error);
+      }
+
       const auditLogData = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,

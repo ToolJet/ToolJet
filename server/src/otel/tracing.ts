@@ -271,6 +271,55 @@ export const sdk = new NodeSDK({
   ],
 });
 
+// Helper function to determine activity type from route and method
+const getActivityTypeFromRoute = (route: string, method: string): string => {
+  const methodLower = method.toLowerCase();
+
+  // App-related activities
+  if (route.includes('/api/apps')) {
+    if (methodLower === 'post') return 'app_create';
+    if (methodLower === 'put') return 'app_update';
+    if (methodLower === 'delete') return 'app_delete';
+    if (route.includes('validate-private-app-access')) return 'app_access';
+    return 'app_view';
+  }
+
+  // Query-related activities
+  if (route.includes('/api/data-queries')) {
+    if (methodLower === 'post') return 'query_execute';
+    if (methodLower === 'put') return 'query_update';
+    return 'query_view';
+  }
+
+  // Data source activities
+  if (route.includes('/api/data-sources')) {
+    return 'datasource_access';
+  }
+
+  // Authentication activities
+  if (route.includes('/api/authorize') || route.includes('/api/session')) {
+    return 'authentication';
+  }
+
+  // Organization management
+  if (route.includes('/api/organization')) {
+    return 'organization_management';
+  }
+
+  // License and limits
+  if (route.includes('/api/license')) {
+    return 'license_check';
+  }
+
+  // AI features
+  if (route.includes('/api/ai')) {
+    return 'ai_feature_usage';
+  }
+
+  // Default for other activities
+  return 'general_api_usage';
+};
+
 // Custom Express middleware for tracing and metrics
 export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
   const span = trace.getSpan(context.active());
@@ -291,8 +340,33 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
 
       span.setAttribute('http.status_code', statusCode);
       
+      // Extract organization ID from request context
+      const organizationId = req.user?.organizationId ||
+                            req.headers?.['tj-workspace-id'] ||
+                            req.session?.current_organization_id ||
+                            undefined;
+
       // Track API call business metrics
-      trackApiCall(route, method, statusCode, duration);
+      trackApiCall(route, method, statusCode, duration, organizationId);
+
+      // Track user activity for authenticated requests
+      if (req.user?.id && organizationId) {
+        const { trackUserActivity, updateUserActivity } = require('../otel/business-metrics');
+        const activityType = getActivityTypeFromRoute(route, method);
+
+        // Track specific activity
+        trackUserActivity({
+          userId: req.user.id,
+          organizationId: organizationId
+        }, activityType, {
+          endpoint: route,
+          method: method.toUpperCase(),
+          status_code: statusCode.toString()
+        });
+
+        // Update user's last activity time
+        updateUserActivity(req.user.id, organizationId, activityType);
+      }
       
       // eslint-disable-next-line prefer-rest-params
       return originalJson.apply(this, arguments);

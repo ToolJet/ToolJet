@@ -286,7 +286,7 @@ export class SessionUtilService {
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(
+      const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
@@ -295,6 +295,24 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
+
+      // Track user session start for analytics
+      try {
+        const user = await manager.findOne(User, {
+          where: { id: userId },
+          relations: ['organizationUsers', 'organizationUsers.organization']
+        });
+
+        if (user?.organizationUsers?.length > 0) {
+          const organizationId = user.organizationUsers[0].organizationId;
+          const { startUserSession } = require('../../otel/business-metrics');
+          startUserSession(userId, organizationId);
+        }
+      } catch (error) {
+        console.error('[ToolJet Backend] Failed to track user session start:', error);
+      }
+
+      return session;
     }, manager);
   }
 

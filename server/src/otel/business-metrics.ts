@@ -363,19 +363,15 @@ export const setupResourceMetricCallbacks = () => {
   if (activeUsersGauge) {
     activeUsersGauge.addCallback((observableResult: any) => {
       const totalActiveUsers = activeUserSessions.size;
-      
-      // Group active users by organization
-      const orgCounts = new Map<string, number>();
-      for (const sessionKey of activeUserSessions.values()) {
-        const [organizationId] = sessionKey.split(':');
-        orgCounts.set(organizationId, (orgCounts.get(organizationId) || 0) + 1);
-      }
-      
+
+      // Group active users by organization using the new Map structure
+      const orgCounts = getActiveUsersByOrganization();
+
       // Observe total active users
       observableResult.observe(totalActiveUsers, {
         scope: 'total'
       });
-      
+
       // Observe active users per organization
       for (const [organizationId, count] of orgCounts.entries()) {
         observableResult.observe(count, {
@@ -400,6 +396,11 @@ export const setupResourceMetricCallbacks = () => {
     });
   }
   
+  // Set up periodic cleanup of inactive sessions (every 15 minutes)
+  setInterval(() => {
+    cleanupInactiveSessions();
+  }, 15 * 60 * 1000); // 15 minutes
+
   console.log('[ToolJet Backend] Resource metric callbacks initialized');
 };
 
@@ -417,16 +418,82 @@ export const getCurrentBusinessMetrics = () => {
 };
 
 // Helper to create time-based user activity tracking
-const activeUserSessions = new Set<string>();
+const activeUserSessions = new Map<string, { startTime: number, lastActivity: number }>();
+const userFeatureUsageMap = new Map<string, Set<string>>();
 
 export const startUserSession = (userId: string, organizationId: string) => {
-  activeUserSessions.add(`${organizationId}:${userId}`);
+  const sessionKey = `${organizationId}:${userId}`;
+  const now = Date.now();
+  activeUserSessions.set(sessionKey, {
+    startTime: now,
+    lastActivity: now
+  });
+
+  // Track session start activity
+  if (userActivityGauge) {
+    userActivityGauge.add(1, {
+      activity_type: 'session_start',
+      organization_id: organizationId,
+      user_id: userId
+    });
+  }
 };
 
 export const endUserSession = (userId: string, organizationId: string) => {
-  activeUserSessions.delete(`${organizationId}:${userId}`);
+  const sessionKey = `${organizationId}:${userId}`;
+  const sessionData = activeUserSessions.get(sessionKey);
+
+  if (sessionData && userActivityGauge) {
+    const sessionDuration = (Date.now() - sessionData.startTime) / 1000; // Convert to seconds
+
+    // Track session end and duration
+    userActivityGauge.add(1, {
+      activity_type: 'session_end',
+      organization_id: organizationId,
+      user_id: userId,
+      session_duration_seconds: sessionDuration.toString()
+    });
+  }
+
+  activeUserSessions.delete(sessionKey);
+};
+
+export const updateUserActivity = (userId: string, organizationId: string, activityType: string) => {
+  const sessionKey = `${organizationId}:${userId}`;
+  const sessionData = activeUserSessions.get(sessionKey);
+
+  if (sessionData) {
+    sessionData.lastActivity = Date.now();
+
+    // Track feature usage
+    if (!userFeatureUsageMap.has(userId)) {
+      userFeatureUsageMap.set(userId, new Set());
+    }
+    userFeatureUsageMap.get(userId)!.add(activityType);
+  }
 };
 
 export const getActiveUserCount = (): number => {
   return activeUserSessions.size;
+};
+
+export const getActiveUsersByOrganization = (): Map<string, number> => {
+  const orgCounts = new Map<string, number>();
+  for (const sessionKey of activeUserSessions.keys()) {
+    const [organizationId] = sessionKey.split(':');
+    orgCounts.set(organizationId, (orgCounts.get(organizationId) || 0) + 1);
+  }
+  return orgCounts;
+};
+
+// Cleanup inactive sessions (older than 30 minutes)
+export const cleanupInactiveSessions = () => {
+  const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+
+  for (const [sessionKey, sessionData] of activeUserSessions.entries()) {
+    if (sessionData.lastActivity < thirtyMinutesAgo) {
+      const [organizationId, userId] = sessionKey.split(':');
+      endUserSession(userId, organizationId);
+    }
+  }
 };
