@@ -126,8 +126,8 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                                                                                       |
 | :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Color                                                | Sets the color of the component's label.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                                                |
-| Alignment                                            | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`.                                  |
-| Width                                                | Sets the width of the input field.                | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value. |
+| Alignment | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
+| Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Switch
 

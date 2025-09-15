@@ -121,66 +121,66 @@ components.dropdown1.selectOption([2]);
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>                                                | <div style={{width: "200px"}}> How To Access </div> |
-| :--------------------------------------------- | :----------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
-| searchText                                     | This variable is initially empty and holds the value whenever the user searches on the dropdown. | `{{components.dropdown1.searchText}}`               |
-| label                                          | Holds the label name of the dropdown.                                                            | `{{components.dropdown1.label}}`                    |
-| value                                          | Holds the value selected by the user in the component.                                           | `{{components.dropdown1.value}}`                    |
-| selectedOption                                 | Holds the label and value of the selected option in array form.                                  | `{{components.dropdown1.selectedOption.label}}`     |
-| isValid                                        | Indicates if the input meets validation criteria.                                                | `{{components.dropdown1.isValid}}`                  |
-| options                                        | Holds all the option values of the dropdown in array form.                                       | `{{components.dropdown1.options}}`                  |
-| isVisible                                      | Indicates if the component is visible.                                                           | `{{components.dropdown1.isVisible}}`                |
-| isLoading                                      | Indicates if the component is loading.                                                           | `{{components.dropdown1.isLoading}}`                |
-| isDisabled                                     | Indicates if the component is disabled.                                                          | `{{components.dropdown1.isDisabled}}`               |
-| isMandatory                                    | Indicates if the field is required.                                                              | `{{components.dropdown1.isMandatory}}`              |
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
+| searchText | This variable is initially empty and holds the value whenever the user searches on the dropdown. | `{{components.dropdown1.searchText}}` |
+| label | Holds the label name of the dropdown. | `{{components.dropdown1.label}}` |
+| value | Holds the value selected by the user in the component. | `{{components.dropdown1.value}}` |
+| selectedOption | Holds the label and value of the selected option in array form. | `{{components.dropdown1.selectedOption.label}}` |
+| isValid | Indicates if the input meets validation criteria. | `{{components.dropdown1.isValid}}` |
+| options | Holds all the option values of the dropdown in array form. | `{{components.dropdown1.options}}` |
+| isVisible | Indicates if the component is visible. | `{{components.dropdown1.isVisible}}` |
+| isLoading | Indicates if the component is loading.  | `{{components.dropdown1.isLoading}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.dropdown1.isDisabled}}` |
+| isMandatory | Indicates if the field is required. | `{{components.dropdown1.isMandatory}}` |
 
 ## Validation
 
-| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div>                    | <div style={{width: "200px"}}> Expected Value </div>                                                                         |
-| :------------------------------------------------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Make this field mandatory                               | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Custom validation                                       | Specifies a validation error message for specific conditions.        | Logical Expression (e.g., `{{components.dropdown.value<5&&"Value needs to be more than 5"}}`).                               |
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div> |
+| :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
+| Make this field mandatory | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.dropdown.value<5&&"Value needs to be more than 5"}}`). |
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                                                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Show clear selection button                  | Gives a button to clear all selections.                                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show search in options                       | Enables a search option.                                                                                | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility                                   | Controls component visibility. Toggle or set dynamically.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                      | Enables or disables the component. Toggle or set dynamically.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover. Set a string value for display.                               | String (e.g., `Enter your name here.` ).                                                                                     |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Show clear selection button | Gives a button to clear all selections. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show search in options | Enables a search option. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Enter your name here.` ). |
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>                                                                              |
-| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Styles
 
 ### Label
 
-| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                                                                                       |
-| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Color                                                | Sets the color of the component's label.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                                                |
-| Alignment                                            | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`.                                  |
-| Width                                                | Sets the width of the input field.                | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value. |
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Color | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Alignment | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
+| Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Field
 
-| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div>         | <div style={{ width:"250px"}}> Configuration Options </div>                                        |
-| :--------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| Background                                           | Sets the background color of the component.               | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Border                                               | Sets the border color of the component.                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Text                                                 | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Accent                                               | Sets the color of the border when the dropdown is opened. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Error text                                           | Sets the text color of validation message that displays.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon                                                 | Allows you to select an icon for the component.           | Enable the icon visibility, select icon and icon color                                             |
-| Border radius                                        | Modifies the border radius of the component.              | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.  |
-| Box shadow                                           | Sets the box shadow properties of the component.          | Select the box shadow color and adjust the related properties.                                     |
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Accent | Sets the color of the border when the dropdown is opened. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Error text | Sets the text color of validation message that displays.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color |
+| Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.  |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties. |
 
 ### Container
 
