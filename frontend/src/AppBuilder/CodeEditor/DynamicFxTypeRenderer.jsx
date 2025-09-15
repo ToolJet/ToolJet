@@ -21,6 +21,8 @@ import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { Query } from '../CodeBuilder/Elements/Query';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
+import { DataDropdown } from '../CodeBuilder/Elements/DataDropdown/DataDropdown';
+import QueryDropdown from '../CodeBuilder/Elements/QueryDropdown';
 
 const AllElements = {
   Color,
@@ -44,6 +46,8 @@ const AllElements = {
   TimePicker,
   DropdownMenu,
   Query,
+  DataDropdown,
+  QueryDropdown,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {

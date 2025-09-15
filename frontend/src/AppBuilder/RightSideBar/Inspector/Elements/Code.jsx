@@ -29,9 +29,11 @@ export const Code = ({
     if (customMeta && customMeta.defaultValue) {
       return customMeta.defaultValue;
     }
-    return !_.isEmpty(definition)
+    const result = !_.isEmpty(definition)
       ? definition.value
       : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+
+    return result;
   }
 
   let initialValue = getInitialValue();
