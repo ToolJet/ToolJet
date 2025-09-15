@@ -210,10 +210,10 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
-      if (clientSidePagination) setPageIndex(targetPageIndex - 1);
+      setPageIndex(targetPageIndex - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables, clientSidePagination]);
+  }, [setPageIndex, setExposedVariables]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
