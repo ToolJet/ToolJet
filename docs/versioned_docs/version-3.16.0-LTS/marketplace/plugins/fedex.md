@@ -140,5 +140,240 @@ Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.h
 | POST   | `/availability/v1/packageandserviceoption` | Retrieve Package and Service Options – get available package types and shipping services for a given origin and destination. |
 | POST   | `/availability/v1/specialserviceoptions` | Retrieve Special Service Options – get special service options (such as Saturday delivery, signature options, etc.) available for a shipment. |
 
+## Example Queries
 
+### Validating an Address
+
+Operation: POST `/address/v1/addresses/resolve`
+
+**Required Parameters**
+
+- addressesToValidate
+
+**Optional Parameters**
+
+- EffectAsOfTimestamp
+- validateAddressControlParameters
+
+**Sample Input**
+
+```json
+{{[
+    {
+      "address": {
+        "streetLines": ["942 Test Street"],
+        "city": "Memphis",
+        "stateOrProvinceCode": "TN",
+        "postalCode": "38120",
+        "countryCode": "US"
+      }
+    }
+  ]}}
+```
+
+<details id="tj-dropdown">
+<summary>**Query Response Example**</summary>
+```
+{
+  "isLoading": false,
+  "data": {
+    "transactionId": "APIF_SV_ADVC_TxID3c9aa161-bc90-459e-87f9-b74ba6e18862",
+    "output": {
+      "alerts": [
+        {
+          "code": "VIRTUAL.RESPONSE",
+          "message": "This is a Virtual Response.",
+          "alertType": "NOTE"
+        }
+      ],
+      "resolvedAddresses": [
+        {
+          "streetLinesToken": [
+            "942 TEST STREET"
+          ],
+          "city": "Memphis",
+          "stateOrProvinceCode": "RegiÃ³n Metropolitana de Santia",
+          "postalCode": "38120",
+          "parsedPostalCode": {
+            "base": "38120"
+          },
+          "countryCode": "CL",
+          "classification": "UNKNOWN",
+          "ruralRouteHighwayContract": false,
+          "generalDelivery": false,
+          "customerMessages": [],
+          "normalizedStatusNameDPV": false,
+          "standardizedStatusNameMatchSource": "Postal",
+          "resolutionMethodName": "GENERIC_VALIDATE",
+          "attributes": {
+            "POBox": "false",
+            "SuiteRequiredButMissing": "false",
+            "StreetPointNotApplicable": "false",
+            "InvalidSuiteNumber": "false",
+            "ResolutionInput": "RAW_ADDRESS",
+            "ResolutionMethod": "GENERIC_VALIDATE",
+            "DataVintage": "February 2023",
+            "MatchSource": "Postal",
+            "CountrySupported": "true",
+            "ValidlyFormed": "true",
+            "Matched": "true",
+            "StreetOrganizationAddress": "false",
+            "MissingOrAmbiguousDirectional": "false",
+            "StreetNameAddress": "false",
+            "StreetPointNotValidated": "true",
+            "Inserted": "false",
+            "RuralRoute": "false",
+            "PostalDataSource": "Correos de Chile (Chile Postal Authority)",
+            "InterpolatedStreetAddress": "false",
+            "MultiUnitBase": "false",
+            "StreetBuildingAddress": "false",
+            "StreetRange": "false",
+            "UniqueZIP": "false",
+            "StreetAddress": "false",
+            "RRConversion": "false",
+            "SuiteNotValidated": "false",
+            "ValidMultiUnit": "false",
+            "AddressType": "STANDARDIZED",
+            "AddressPrecision": "StreetName",
+            "MultipleMatches": "false"
+          }
+        }
+      ]
+    }
+  },
+  "rawData": {
+    "transactionId": "APIF_SV_ADVC_TxID3c9aa161-bc90-459e-87f9-b74ba6e18862",
+    "output": {
+      "alerts": [
+        {
+          "code": "VIRTUAL.RESPONSE",
+          "message": "This is a Virtual Response.",
+          "alertType": "NOTE"
+        }
+      ],
+      "resolvedAddresses": [
+        {
+          "streetLinesToken": [
+            "942 TEST STREET"
+          ],
+          "city": "Memphis",
+          "stateOrProvinceCode": "RegiÃ³n Metropolitana de Santia",
+          "postalCode": "38120",
+          "parsedPostalCode": {
+            "base": "38120"
+          },
+          "countryCode": "CL",
+          "classification": "UNKNOWN",
+          "ruralRouteHighwayContract": false,
+          "generalDelivery": false,
+          "customerMessages": [],
+          "normalizedStatusNameDPV": false,
+          "standardizedStatusNameMatchSource": "Postal",
+          "resolutionMethodName": "GENERIC_VALIDATE",
+          "attributes": {
+            "POBox": "false",
+            "SuiteRequiredButMissing": "false",
+            "StreetPointNotApplicable": "false",
+            "InvalidSuiteNumber": "false",
+            "ResolutionInput": "RAW_ADDRESS",
+            "ResolutionMethod": "GENERIC_VALIDATE",
+            "DataVintage": "February 2023",
+            "MatchSource": "Postal",
+            "CountrySupported": "true",
+            "ValidlyFormed": "true",
+            "Matched": "true",
+            "StreetOrganizationAddress": "false",
+            "MissingOrAmbiguousDirectional": "false",
+            "StreetNameAddress": "false",
+            "StreetPointNotValidated": "true",
+            "Inserted": "false",
+            "RuralRoute": "false",
+            "PostalDataSource": "Correos de Chile (Chile Postal Authority)",
+            "InterpolatedStreetAddress": "false",
+            "MultiUnitBase": "false",
+            "StreetBuildingAddress": "false",
+            "StreetRange": "false",
+            "UniqueZIP": "false",
+            "StreetAddress": "false",
+            "RRConversion": "false",
+            "SuiteNotValidated": "false",
+            "ValidMultiUnit": "false",
+            "AddressType": "STANDARDIZED",
+            "AddressPrecision": "StreetName",
+            "MultipleMatches": "false"
+          }
+        }
+      ]
+    }
+  },
+  "id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+}
+```
+</details>
+
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/add-validation.png" alt="Marketplace: FedEx" />
+
+### Creating a Rate Quote
+
+Operation: POST `/rate/v1/rates/quotes`
+
+**Required Parameters**
+- requesedShipment
+
+**Optional Parameter**
+- accountNumber
+- rateRequestControlParameters
+- carrierCodes
+
+**Sample Input**
+
+```json
+{{{
+    "shipper": {
+      "address": {
+        "postalCode": "65247",
+        "countryCode": "US"
+      }
+    },
+    "recipient": {
+      "address": {
+        "postalCode": "72348",
+        "countryCode": "US"
+      }
+    },
+    "pickupType": "DROPOFF_AT_FEDEX_LOCATION",
+    "rateRequestType": [
+      "ACCOUNT",
+      "LIST"
+    ],
+    "requestedPackageLineItems": [
+      {
+        "weight": {
+          "units": "LB",
+          "value": "10"
+        }
+      }
+    ]
+}}}
+```
+
+<details id="tj-dropdown">
+<summary>**Query Response Example**</summary>
+```
+{
+  "isLoading": false,
+  "data": {
+    "transactionId": "0c547414-a28d-45a8-88a5-7d47e5542df1"
+  },
+  "rawData": {
+    "transactionId": "0c547414-a28d-45a8-88a5-7d47e5542df1"
+  },
+  "id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+}
+```
+</details>
+
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/rate-quote.png" alt="Marketplace: FedEx" />
 
