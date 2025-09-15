@@ -38,6 +38,9 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Tabs',
   'RangeSliderV2',
   'Statistics',
+  'StarRating',
+  'PopoverMenu',
+  'Tags',
 ];
 
 const RenderWidget = ({

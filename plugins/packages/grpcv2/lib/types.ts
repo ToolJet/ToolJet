@@ -12,9 +12,11 @@ function hasProperty<T extends PropertyKey>(obj: unknown, prop: T): obj is Recor
   return isRecord(obj) && prop in obj;
 }
 
-export interface GrpcClient {
-  [methodName: string]: Function | any;
-}
+// Use SDK's Client class as the base type for all gRPC clients
+export type GrpcClient = grpc.Client;
+
+// Re-export useful SDK types
+export type { UnaryCallback } from '@grpc/grpc-js/build/src/client';
 
 export { toError, isRecord, hasProperty };
 
@@ -38,10 +40,13 @@ export type SourceOptions = {
   url: string;
   proto_files: 'server_reflection' | 'import_proto_file';
   proto_file_url?: string;
-  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2';
+  auth_type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'api_key';
   username?: string;
   password?: string;
   bearer_token?: string;
+  // API Key auth
+  grpc_apikey_key?: string;
+  grpc_apikey_value?: string;
   // OAuth2 fields
   grant_type?: 'authorization_code' | 'client_credentials';
   add_token_to?: 'header' | 'metadata';

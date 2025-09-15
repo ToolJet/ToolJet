@@ -31,7 +31,7 @@ function Logs({ logProps, idx }) {
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+    transform: open ? 'rotate(-90deg)' : 'rotate(0deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',

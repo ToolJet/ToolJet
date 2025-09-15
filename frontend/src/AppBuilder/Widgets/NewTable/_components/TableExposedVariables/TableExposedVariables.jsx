@@ -85,6 +85,12 @@ export const TableExposedVariables = ({
   }, [data, setExposedVariables]);
 
   useEffect(() => {
+    if (editedRows.size > 0) {
+      fireEvent('onCellValueChanged');
+    }
+  }, [editedRows, editedFields, fireEvent]);
+
+  useEffect(() => {
     let updatedData = [...data];
     editedRows.forEach((value, key) => {
       updatedData[key] = value;
@@ -95,10 +101,7 @@ export const TableExposedVariables = ({
       dataUpdates: Object.fromEntries(editedRows),
       updatedData: updatedData,
     });
-    if (editedRows.size > 0) {
-      fireEvent('onCellValueChanged');
-    }
-  }, [editedRows, editedFields, data, setExposedVariables, fireEvent]);
+  }, [data, editedRows, editedFields, setExposedVariables]);
 
   useEffect(() => {
     if (addNewRowDetails) {
