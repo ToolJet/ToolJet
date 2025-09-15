@@ -274,6 +274,7 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import MarkerCircle from './MarkerCircle.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -689,6 +690,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'markercircle':
+      return <MarkerCircle {...props} />;
     case 'workspace':
       return <Workspace {...props} />;
     case 'workflows':
