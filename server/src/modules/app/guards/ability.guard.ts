@@ -36,107 +36,125 @@ export abstract class AbilityGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const module = cloneDeep(this.reflector.get<MODULES>('tjModuleId', context.getClass()));
-    let features = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
+    const startTime = Date.now();
+    let error: Error | undefined;
 
-    if (features && !Array.isArray(features)) {
-      features = [features];
-    }
+    try {
+      const module = cloneDeep(this.reflector.get<MODULES>('tjModuleId', context.getClass()));
+      let features = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
-    const app: App = request.tj_app;
-    if (app) {
-      this.setResourceObject(app);
-    }
-
-    if (!features?.length) {
-      return false;
-    }
-
-    // License check
-    for (const feature of features) {
-      const featureInfo: FeatureConfig = MODULE_INFO?.[module]?.[feature];
-      if (!featureInfo) {
-        throw new HttpException(`Feature ${feature} not found in module ${module}`, 404);
+      if (features && !Array.isArray(features)) {
+        features = [features];
       }
 
-      const licenseRequired: LICENSE_FIELD = featureInfo?.license;
-      if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
-        // If no license is required, continue to the next feature
-        return true;
-      }
-      if (
-        licenseRequired &&
-        !(await this.licenseTermsService.getLicenseTerms(licenseRequired, app?.organizationId || user?.organizationId))
-      ) {
-        throw new HttpException(
-          `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
-          451
-        );
+      const request = context.switchToHttp().getRequest();
+      const user = request.user;
+      const app: App = request.tj_app;
+      if (app) {
+        this.setResourceObject(app);
       }
 
-      // If any of the feature is public
-      if (featureInfo.isPublic) {
-        // No other validations if user is API is public
-        return true;
-      }
-
-      if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
-        // If the user is not super admin and the feature is a super admin feature
-        throw new ForbiddenException({
-          message: 'You do not have permission to access this resource',
-          organizationId: app?.organizationId,
-        });
-      }
-
-      if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
-        // No need to do validations if app is public
-        return true;
-      }
-
-      if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
-        // App is public and feature should not skip public app check and user is not available
+      if (!features?.length) {
         return false;
       }
-    }
 
-    if (!user && !app?.isPublic) {
-      return false;
-    }
+      // License check
+      for (const feature of features) {
+        const featureInfo: FeatureConfig = MODULE_INFO?.[module]?.[feature];
+        if (!featureInfo) {
+          throw new HttpException(`Feature ${feature} not found in module ${module}`, 404);
+        }
 
-    const resources = this.getResource();
-    const resourceArray: ResourceDetails[] = Array.isArray(resources) ? resources : resources ? [resources] : [];
+        const licenseRequired: LICENSE_FIELD = featureInfo?.license;
+        if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
+          // If no license is required, continue to the next feature
+          return true;
+        }
+        if (
+          licenseRequired &&
+          !(await this.licenseTermsService.getLicenseTerms(
+            licenseRequired,
+            app?.organizationId || user?.organizationId
+          ))
+        ) {
+          throw new HttpException(
+            `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
+            451
+          );
+        }
 
-    if (user) {
-      const abilityFactory = await this.moduleRef.resolve(this.getAbilityFactory());
+        // If any of the feature is public
+        if (featureInfo.isPublic) {
+          // No other validations if user is API is public
+          return true;
+        }
 
-      // ABILITY DB CALL HAPPENS HERE
-      const ability = await abilityFactory.createAbility(
-        user,
-        { moduleName: module, features },
-        resourceArray,
-        request
-      );
+        if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
+          // If the user is not super admin and the feature is a super admin feature
+          throw new ForbiddenException({
+            message: 'You do not have permission to access this resource',
+            organizationId: app?.organizationId,
+          });
+        }
 
-      if (this.forwardAbility()) {
-        request.tj_ability = ability;
+        if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
+          // No need to do validations if app is public
+          return true;
+        }
+
+        if (app?.isPublic && featureInfo.shouldNotSkipPublicApp && !user) {
+          // App is public and feature should not skip public app check and user is not available
+          return false;
+        }
       }
 
-      const resourceId = request.tj_resource_id;
-
-      // Validate all features against resource if any
-      if (!features.every((feature) => ability.can(feature, this.getSubjectType(), resourceId || undefined))) {
-        throw new ForbiddenException({
-          message: 'You do not have permission to access this resource',
-          organizationId: app?.organizationId,
-        });
+      if (!user && !app?.isPublic) {
+        return false;
       }
-      return true;
-    }
-    if (!app || !app?.isPublic) {
-      // If user is not available the app object should be there and app should be public
-      return false;
+
+      const resources = this.getResource();
+      const resourceArray: ResourceDetails[] = Array.isArray(resources) ? resources : resources ? [resources] : [];
+
+      if (user) {
+        const abilityFactory = await this.moduleRef.resolve(this.getAbilityFactory());
+
+        // ABILITY DB CALL HAPPENS HERE
+        const ability = await abilityFactory.createAbility(
+          user,
+          { moduleName: module, features },
+          resourceArray,
+          request
+        );
+
+        if (this.forwardAbility()) {
+          request.tj_ability = ability;
+        }
+
+        const resourceId = request.tj_resource_id;
+
+        // Validate all features against resource if any
+        if (!features.every((feature) => ability.can(feature, this.getSubjectType(), resourceId || undefined))) {
+          throw new ForbiddenException({
+            message: 'You do not have permission to access this resource',
+            organizationId: app?.organizationId,
+          });
+        }
+        return true;
+      }
+      if (!app || !app?.isPublic) {
+        // If user is not available the app object should be there and app should be public
+        return false;
+      }
+    } catch (err) {
+      error = err as Error;
+      throw err;
+    } finally {
+      const executionTime = Date.now() - startTime;
+      if (error) {
+        console.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Exception: ${error.message}`);
+      } else {
+        console.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Result: Success`);
+      }
     }
   }
 }
