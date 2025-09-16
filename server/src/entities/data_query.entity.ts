@@ -12,11 +12,11 @@ import {
   AfterLoad,
   OneToMany,
 } from 'typeorm';
-import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
 import { QueryPermission } from './query_permissions.entity';
+import { AppBase } from './app_base.entity';
 
 @Entity({ name: 'data_queries' })
 export class DataQuery extends BaseEntity {
@@ -67,7 +67,7 @@ export class DataQuery extends BaseEntity {
 
   kind: string;
 
-  @ManyToMany(() => App)
+  @ManyToMany(() => AppBase)
   @JoinTable({
     name: 'app_versions',
     joinColumn: {
@@ -79,9 +79,9 @@ export class DataQuery extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  apps: App[];
+  apps: AppBase[];
 
-  app: App;
+  app: AppBase;
 
   @OneToMany(() => QueryPermission, (permission) => permission.query)
   permissions: QueryPermission[];
