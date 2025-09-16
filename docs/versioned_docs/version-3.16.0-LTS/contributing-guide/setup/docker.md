@@ -55,6 +55,14 @@ chmod +x ./deploy/docker/internal.sh && ./deploy/docker/internal.sh
 If you are setting up on a Windows machine, please ensure that the .env file line endings are set to LF, as they will be CRLF by default unless configured otherwise.
 :::
 
+Make sure to add these required envs along with the existing envs for PostgREST in your `.env` file:
+
+```
+PGRST_HOST=postgrest:3002
+PGRST_SERVER_PORT=3002
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+```
+
 5. Build Docker images.
 
 ```bash

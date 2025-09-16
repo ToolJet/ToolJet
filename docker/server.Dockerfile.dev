@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:18.18.2-buster
+FROM node:18.18.2-bullseye
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies
@@ -30,4 +30,4 @@ COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["./server/local-ce-entrypoint.sh"]
