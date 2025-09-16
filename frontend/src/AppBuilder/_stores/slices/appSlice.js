@@ -209,6 +209,7 @@ export const createAppSlice = (set, get) => ({
     const isPreview = getCurrentMode(moduleId) !== 'edit';
     //!TODO clear all queued tasks
     cleanUpStore(true);
+    get().clearTemporaryLayouts();
     setCurrentPageId(pageId, moduleId);
     setComponentNameIdMapping(moduleId);
     setQueryMapping(moduleId);
