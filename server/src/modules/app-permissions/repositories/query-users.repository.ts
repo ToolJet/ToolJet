@@ -56,13 +56,16 @@ export class QueryUsersRepository extends Repository<QueryUser> {
     manager?: EntityManager
   ): Promise<boolean> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const startTime = Date.now();
       const allowedGroups = await this.groupPermissionsRepository.getAllUserGroupsAndRoles(
         userId,
         appId,
         organizationId,
         manager
       );
-      const allowedGroupIds = allowedGroups.map(group => group.id);
+      console.log(`Allowed groups fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+
+      const allowedGroupIds = allowedGroups.map((group) => group.id);
 
       const result = await manager
         .createQueryBuilder(QueryUser, 'query_users')
@@ -75,6 +78,8 @@ export class QueryUsersRepository extends Repository<QueryUser> {
         .andWhere('group.id IN (:...allowedGroupIds)', { allowedGroupIds })
         .getOne();
 
+      console.log(`QueryUser fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+
       return !!result;
     }, manager || this.manager);
   }
@@ -85,12 +90,14 @@ export class QueryUsersRepository extends Repository<QueryUser> {
     manager?: EntityManager
   ): Promise<boolean> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const startTime = Date.now();
       const queryUser = await manager.findOne(QueryUser, {
         where: {
           queryPermission: { id: queryPermission.id },
           userId,
         },
       });
+      console.log(`checkQueryUserWithSingle fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
 
       return !!queryUser;
     }, manager || this.manager);
