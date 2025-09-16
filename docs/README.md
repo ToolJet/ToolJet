@@ -68,7 +68,7 @@ This directory contains the following folders:
 The two suggested workflows are:
 
 - For small changes, use the "Edit this page" button on each page to edit the Markdown file directly on GitHub.
-- If you plan to make significant changes or preview the changes locally, clone the repo to your system to and follow the installation and local development steps in [Local setup](#local-setup).
+- If you plan to make significant changes or preview the changes locally, clone the repo to your system and follow the installation and local development steps in [Local setup](#local-setup).
 
 ### Conventions
 
