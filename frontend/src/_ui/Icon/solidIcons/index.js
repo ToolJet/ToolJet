@@ -274,6 +274,8 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -827,6 +829,10 @@ const Icon = (props) => {
       return <Pull {...props} />;
     case 'support':
       return <Support {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
     default:
       return <Apps {...props} />;
   }
