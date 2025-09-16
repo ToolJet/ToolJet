@@ -5,6 +5,7 @@ import _, { isEmpty, throttle } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
 
 const initialState = {
   sortBy: 'updated_at',
