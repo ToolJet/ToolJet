@@ -6,10 +6,10 @@ export class SystemMetricsService implements OnModuleInit, OnModuleDestroy {
   private intervalId: NodeJS.Timeout;
 
   onModuleInit() {
-    // Log every 1 seconds
+    // Log every 10 seconds
     this.intervalId = setInterval(() => {
       this.logMetrics();
-    }, 1000);
+    }, 10000);
   }
 
   onModuleDestroy() {
