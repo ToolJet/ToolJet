@@ -148,4 +148,5 @@ export const PLANS = {
   BUSINESS: 'business',
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
+  STARTER: 'starter',
 };
