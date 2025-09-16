@@ -4,7 +4,7 @@ import { EmailModule } from '@modules/email/module';
 import { getImportPath } from '@modules/app/constants';
 
 export class EmailListenerModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailListener } = await import(`${importPath}/email-listener/listener`);
     return {

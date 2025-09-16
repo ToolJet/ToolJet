@@ -18,7 +18,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
 
 export class TemplatesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { TemplatesService, TemplateAppsController } = await this.getProviders(configs, 'templates', [
       'service',
       'controller',

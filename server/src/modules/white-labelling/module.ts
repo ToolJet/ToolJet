@@ -6,7 +6,7 @@ import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
 export class WhiteLabellingModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { WhiteLabellingController, WhiteLabellingService, WhiteLabellingUtilService } = await this.getProviders(
       configs,
       'white-labelling',
@@ -16,14 +16,16 @@ export class WhiteLabellingModule extends SubModule {
     return {
       module: WhiteLabellingModule,
       imports: [],
-      controllers: [WhiteLabellingController],
-      providers: [
-        WhiteLabellingService,
-        OrganizationRepository,
-        WhiteLabellingRepository,
-        WhiteLabellingUtilService,
-        FeatureAbilityFactory,
-      ],
+      controllers: !isMainImport ? [] : [WhiteLabellingController],
+      providers: !isMainImport
+        ? [WhiteLabellingUtilService, OrganizationRepository, WhiteLabellingRepository]
+        : [
+            WhiteLabellingService,
+            OrganizationRepository,
+            WhiteLabellingRepository,
+            WhiteLabellingUtilService,
+            FeatureAbilityFactory,
+          ],
       exports: [WhiteLabellingUtilService],
     };
   }

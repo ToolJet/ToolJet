@@ -5,7 +5,7 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class PluginsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { PluginsController, PluginsService, PluginsUtilService } = await this.getProviders(configs, 'plugins', [
       'controller',
       'service',
@@ -13,9 +13,11 @@ export class PluginsModule extends SubModule {
     ]);
     return {
       module: PluginsModule,
-      controllers: [PluginsController],
-      providers: [PluginsService, FilesRepository, PluginsUtilService, FeatureAbilityFactory, DataSourcesRepository],
-      exports: [PluginsUtilService],
+      controllers: !isMainImport ? [] : [PluginsController],
+      providers: !isMainImport
+        ? [PluginsUtilService, FilesRepository]
+        : [PluginsService, FilesRepository, PluginsUtilService, FeatureAbilityFactory, DataSourcesRepository],
+      exports: !isMainImport ? [] : [PluginsUtilService],
     };
   }
 }

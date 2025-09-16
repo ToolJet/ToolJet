@@ -15,7 +15,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 export class DataSourcesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       DataSourcesService,
       DataSourcesController,
@@ -41,20 +41,28 @@ export class DataSourcesModule extends SubModule {
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
       ],
-      providers: [
-        DataSourcesService,
-        DataSourcesRepository,
-        VersionRepository,
-        AppsRepository,
-        DataSourcesUtilService,
-        PluginsServiceSelector,
-        PluginsRepository,
-        SampleDataSourceService,
-        FeatureAbilityFactory,
-        OrganizationRepository,
-      ],
-      controllers: [DataSourcesController],
-      exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
+      providers: !isMainImport
+        ? [
+            DataSourcesUtilService,
+            SampleDataSourceService,
+            PluginsServiceSelector,
+            DataSourcesRepository,
+            PluginsRepository,
+          ]
+        : [
+            DataSourcesService,
+            DataSourcesRepository,
+            VersionRepository,
+            AppsRepository,
+            DataSourcesUtilService,
+            PluginsServiceSelector,
+            PluginsRepository,
+            SampleDataSourceService,
+            FeatureAbilityFactory,
+            OrganizationRepository,
+          ],
+      controllers: !isMainImport ? [] : [DataSourcesController],
+      exports: isMainImport ? [] : [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
     };
   }
 }

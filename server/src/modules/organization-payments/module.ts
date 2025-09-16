@@ -7,7 +7,7 @@ import { FeatureAbilityFactory } from './ability';
 
 @Module({})
 export class OrganizationPaymentModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { OrganizationPaymentController, OrganizationPaymentService } = await this.getProviders(
       configs,
       'organization-payments',

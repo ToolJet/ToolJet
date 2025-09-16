@@ -15,26 +15,35 @@ import { FeatureAbilityFactory } from './ability';
 import { UserSessionRepository } from './repository';
 
 export class SessionModule extends SubModule {
-  static async register(config: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { SessionService, SessionController, SessionUtilService, JwtStrategy } = await this.getProviders(
       config,
       'session',
       ['service', 'controller', 'util.service', 'jwt/jwt.strategy']
     );
 
-    const providerImports = [
-      RolesRepository,
-      SessionService,
-      SessionUtilService,
-      UserRepository,
-      AppsRepository,
-      OrganizationRepository,
-      OrganizationUsersRepository,
-      GroupPermissionsRepository,
-      JwtStrategy,
-      FeatureAbilityFactory,
-      UserSessionRepository,
-    ];
+    const providerImports = !isMainImport
+      ? [
+          SessionUtilService,
+          UserRepository,
+          OrganizationRepository,
+          GroupPermissionsRepository,
+          OrganizationUsersRepository,
+          RolesRepository,
+        ]
+      : [
+          RolesRepository,
+          SessionService,
+          SessionUtilService,
+          UserRepository,
+          AppsRepository,
+          OrganizationRepository,
+          OrganizationUsersRepository,
+          GroupPermissionsRepository,
+          JwtStrategy,
+          FeatureAbilityFactory,
+          UserSessionRepository,
+        ];
 
     return {
       module: SessionModule,
@@ -49,9 +58,9 @@ export class SessionModule extends SubModule {
           inject: [ConfigService],
         }),
       ],
-      controllers: [SessionController],
+      controllers: !isMainImport ? [] : [SessionController],
       providers: providerImports,
-      exports: [SessionUtilService],
+      exports: isMainImport ? [] : [SessionUtilService],
     };
   }
 }

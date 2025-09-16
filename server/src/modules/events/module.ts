@@ -3,7 +3,7 @@ import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 
 export class EventsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const providers = [];
 
     const { EventsGateway, YjsGateway } = await this.getProviders(configs, 'events', ['events.gateway', 'yjs.gateway']);

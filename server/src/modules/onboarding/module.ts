@@ -12,7 +12,7 @@ import { SetupOrganizationsModule } from '@modules/setup-organization/module';
 import { SubModule } from '@modules/app/sub-module';
 
 export class OnboardingModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { OnboardingService, OnboardingUtilService, OnboardingController } = await this.getProviders(
       configs,
       'onboarding',
@@ -29,16 +29,18 @@ export class OnboardingModule extends SubModule {
         await OrganizationUsersModule.register(configs),
         await SetupOrganizationsModule.register(configs),
       ],
-      providers: [
-        OnboardingService,
-        OnboardingUtilService,
-        OrganizationUsersRepository,
-        UserRepository,
-        OrganizationRepository,
-        FeatureAbilityFactory,
-      ],
-      controllers: [OnboardingController],
-      exports: [OnboardingUtilService],
+      providers: !isMainImport
+        ? [OnboardingUtilService, OrganizationUsersRepository, UserRepository, OrganizationRepository]
+        : [
+            OnboardingService,
+            OnboardingUtilService,
+            OrganizationUsersRepository,
+            UserRepository,
+            OrganizationRepository,
+            FeatureAbilityFactory,
+          ],
+      controllers: !isMainImport ? [] : [OnboardingController],
+      exports: isMainImport ? [] : [OnboardingUtilService],
     };
   }
 }

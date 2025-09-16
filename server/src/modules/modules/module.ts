@@ -19,7 +19,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 @Module({})
 export class ModulesModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const importPath = await getImportPath(configs.IS_GET_CONTEXT);
     const { ModulesController } = await import(`${importPath}/modules/modules.controller`);
     const { AppsService } = await import(`${importPath}/apps/service`);

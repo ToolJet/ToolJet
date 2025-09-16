@@ -6,7 +6,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class CustomStylesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { CustomStylesController, CustomStylesService } = await this.getProviders(configs, 'custom-styles', [
       'controller',
       'service',
