@@ -97,18 +97,24 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
-    let debugObject = {};
+    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
     const currentMode = getCurrentMode(moduleId);
 
-    const maxPermanentHeight = Object.values(components).reduce((max, component) => {
-      const layout = component?.layouts?.[currentLayout];
-      if (!layout) {
-        return max;
-      }
-      const sum = layout.top + layout.height;
-      return Math.max(max, sum);
-    }, 0);
+    const maxPermanentHeight = Object.values(components)
+      .filter((component) => !component?.parent)
+      .reduce((max, component) => {
+        const layout = component?.layouts?.[currentLayout];
+        const visibility =
+          getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
+          getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
+
+        const height = visibility ? layout.height : 10;
+        if (!layout) {
+          return max;
+        }
+        const sum = layout.top + height;
+        return Math.max(max, sum);
+      }, 0);
 
     const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
       const sum = layout.top + layout.height;
@@ -120,30 +126,7 @@ export const createAppSlice = (set, get) => ({
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
-    setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
-    const _components = Object.values(components).map((c) => {
-      return {
-        layouts: c?.layouts,
-        type: c?.componentType,
-        parent: c?.parent,
-        id: c?.id,
-        properties: c?.component?.definition?.properties,
-        others: c?.component?.definition?.others,
-      };
-    });
-    debugObject = {
-      canvasHeight,
-      maxHeight,
-      maxPermanentHeight,
-      temporaryLayoutsMaxHeight,
-      components: _components,
-      temporaryLayouts,
-      bottomPadding,
-      frameHeight,
-      currentMode,
-      currentLayout,
-    };
-    window.tooljetCanvasHeightDebug = debugObject;
+    setCanvasHeight(canvasHeight, moduleId);
   },
   setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
