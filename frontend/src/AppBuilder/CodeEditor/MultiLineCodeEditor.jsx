@@ -17,7 +17,6 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
-import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
@@ -25,7 +24,7 @@ import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
-import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
+import useWorkflowStore from '@/_stores/workflowStore';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -74,7 +73,7 @@ const MultiLineCodeEditor = (props) => {
 
   const context = useContext(CodeHinterContext);
 
-  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
+  const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
   const { suggestionList: paramList } = createReferencesLookup(context, true);
 
@@ -149,7 +148,7 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    const hints = getWorkflowSuggestions ?? getSuggestions();
+    const hints = workflowSuggestions ?? getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {

@@ -34,7 +34,7 @@ import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
-import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
+import useWorkflowStore from '@/_stores/workflowStore';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
@@ -238,14 +238,14 @@ const EditorInput = ({
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
-  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
+  const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
   );
   function autoCompleteExtensionConfig(context) {
-    const hintsWithoutParamHints = getWorkflowSuggestions ?? getSuggestions();
+    const hintsWithoutParamHints = workflowSuggestions ?? getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const hints = {
@@ -253,7 +253,7 @@ const EditorInput = ({
       appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
-    if (!getWorkflowSuggestions) {
+    if (!workflowSuggestions) {
       let word = context.matchBefore(/\w*/);
 
       const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
