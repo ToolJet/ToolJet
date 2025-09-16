@@ -9,20 +9,23 @@ This guide explains how to quickly generate and modify business applications usi
 To create an application, follow these steps:
 
 1. **Enter a prompt** – Describe the business application you want to build in the prompt input on the dashboard.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate01.png" alt="tooljet generate apps " />
-2. **Accept or modify requirements** – After submitting your prompt, the app will be created, and you’ll be taken to the App Builder, where a list of features, a database schema, design details, and query specifications will be generated based on your prompt. 
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate02.png" alt="tooljet generate apps " />
-    You can accept or modify these application requirements after reviewing them thoroughly.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate03.png" alt="tooljet generate apps " />
-3. **App Generation** – Once you confirm the requirements, ToolJet will build the application inside the App Builder.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate04.png" alt="tooljet generate apps " />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/prompt.png" alt="tooljet generate apps" />
+2. **Accept or modify requirements** – After submitting your prompt, a new app will be created, and you’ll be taken to the App Builder, where a specs files will be generated including list of features, navigation, etc. 
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/specs.png" alt="tooljet generate apps" />
+    After reviewing the specs thoroughly, you can either accept or modify these specs before moving the next step.
+3. **Design Layout** - Once you accept the specs then a Design Layout will be generated, you can either accept it or modify it in the visual builder.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ui.png" alt="tooljet generate apps" />
+4. **Select Data Source** - After approving the design layout, you need to select the data source, ToolJet AI Builder currently supports three data sources - ToolJet DB, PostgreSQL and MongoDB.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ds.png" alt="tooljet generate apps" />
+5. **Database Schema** - After selecting the data source you can approve or modify the database schema.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/schema.png" alt="tooljet generate apps" />
+6. **App Generation** – Once you confirm all the requirements then a fully fucntional app will be generated.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/app.png" alt="tooljet generate apps" />
 
 ## Modifying Application
 
 You can modify any application in ToolJet with AI assistance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt. 
-
-For example, if you want to add a button in your app you can write a prompt for the same.
-<img className="screenshot-full img-full" src="/img/tooljet-ai/generate05.png" alt="tooljet generate apps " />
+<img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/modify.png" alt="tooljet generate apps" />
 
 ## Limitations
 
