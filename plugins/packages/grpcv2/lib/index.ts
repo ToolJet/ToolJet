@@ -170,6 +170,7 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   private async createGrpcClient(sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> {
+    // TODO: Can cache clients based on sourceOptions 
     if (sourceOptions.proto_files === 'server_reflection') {
       return await buildReflectionClient(sourceOptions, serviceName);
     } else {
