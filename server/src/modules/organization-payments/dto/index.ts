@@ -152,4 +152,8 @@ export class TopUpPaymentDto {
   @IsString()
   @IsNotEmpty()
   cancel_url: string;
+
+  @IsString()
+  @IsOptional()
+  promo_code: string;
 }

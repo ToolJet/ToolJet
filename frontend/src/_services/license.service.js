@@ -16,6 +16,7 @@ export const licenseService = {
   getPortalLink,
   updateOrganization,
   addTopUpCredits,
+  getAiCreditsBalance,
 };
 
 function get() {
@@ -159,4 +160,13 @@ function addTopUpCredits(topUpPaymentDto) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/organization/payment/${organizationId}/top-up`, requestOptions).then(handleResponse);
+}
+
+function getAiCreditsBalance() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
+    handleResponse
+  );
 }

@@ -8,4 +8,5 @@ export enum FEATURE_KEY {
   STRIPE_WEBHOOK = 'stripe_webhook',
   GET_REDIRECT_URL = 'get_redirect_url',
   ADD_TOP_UP_CREDITS = 'add_top_up_credits',
+  GET_AI_CREDITS_BALANCE = 'get_ai_credits_balance',
 }

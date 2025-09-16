@@ -25,7 +25,10 @@ export class OrganizationsAiFeature extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'organization_id' })
-  organization: string;
+  organization: Organization;
+
+  @Column({ name: 'organization_id', type: 'uuid' })
+  organizationId: string;
 
   @Column({ name: 'balance', type: 'numeric', precision: 12, scale: 2 })
   balance: number;

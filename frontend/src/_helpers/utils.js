@@ -1582,3 +1582,15 @@ export const centsToUSD = (amountInCents) => {
 export function formatPrice(price) {
   return price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+
+export function formatToDDMMYYYY(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate);
+
+  // use UTC to avoid timezone shifts
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0'); // months are 0-based
+  const year = d.getUTCFullYear();
+
+  return `${day}/${month}/${year}`;
+}
