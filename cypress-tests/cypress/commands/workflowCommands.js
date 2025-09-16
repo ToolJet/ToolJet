@@ -169,7 +169,9 @@ Cypress.Commands.add("addWorkflowInApp", (wfName) => {
   );
   cy.contains(`[id*="react-select-"]`, workflowsText.workflowLabel).click();
   cy.get(workflowSelector.queryRenameInput).clear().type(wfName);
-  cy.get(workflowSelector.workflowDropdown).click();
+  cy.get(workflowSelector.workflowDropdown).parent()
+  .find('.react-select__control')
+  .click();
   cy.get(workflowSelector.workflowSelectInput).realType(wfName);
   cy.get(workflowSelector.workflowSelectOption).contains(wfName).click();
 });
