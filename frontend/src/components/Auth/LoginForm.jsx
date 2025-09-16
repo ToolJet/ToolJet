@@ -5,33 +5,33 @@ import { CornerDownLeft } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/Input/Input.jsx';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormWrapper } from '@/components/Auth/FormWrapper';
-import { PasswordInput } from '@/components/Auth/PasswordInput';
 
 export function LoginForm({ className, ...props }) {
   const {
     // Header and sign up section
-    signinHeader = 'Sign in',
-    signUpText = 'New to ToolJet?',
-    signUpUrl = '#',
-    signUpCTA = 'Create an account',
+    signinHeader,
+    signUpText,
+    signUpUrl,
+    signUpCTA,
 
     // Form fields
-    emailLabel = 'Email',
-    emailPlaceholder = 'm@example.com',
-    passwordLabel = 'Password',
+    emailLabel,
+    emailPlaceholder,
+    passwordLabel,
+    passwordPlaceholder,
 
     // Forgot password
-    showForgotPassword = true,
-    forgotPasswordUrl = '/forgot-password',
-    forgotPasswordText = 'Forgot?',
+    showForgotPassword,
+    forgotPasswordUrl,
+    forgotPasswordText,
 
     // Button and separator
-    signinButtonText = 'Sign in',
-    orText = 'OR',
-    showOrSeparator = true,
+    signinButtonText,
+    orText,
+    showOrSeparator,
 
     // Form functionality
     onSubmit,
@@ -41,15 +41,17 @@ export function LoginForm({ className, ...props }) {
     onPasswordChange,
 
     // Validation and state
-    emailError,
-    passwordError,
-    isLoading = false,
-    disabled = false,
+    emailValidation,
+    passwordValidation,
+    emailValidationMessage,
+    passwordValidationMessage,
+    isLoading,
+    disabled,
   } = props;
   return (
     <FormWrapper>
       <form className={cn('tw-flex tw-flex-col tw-gap-6', className)} onSubmit={onSubmit} {...props}>
-        <div className="tw-flex tw-flex-col tw-gap-0.5">
+        <div className="tw-flex tw-flex-col tw-gap-0.5 tw-min-w-96">
           <h1 className="tw-text-2xl tw-font-bold tw-mb-0" data-cy="no-login-methods-warning">
             {signinHeader}
           </h1>
@@ -71,18 +73,18 @@ export function LoginForm({ className, ...props }) {
         </div>
         <div className="tw-grid tw-gap-4">
           <div className="tw-grid tw-gap-0.5">
-            <Label htmlFor="email">{emailLabel}</Label>
             <Input
-              size="large"
-              id="email"
+              label={emailLabel}
               type="email"
               placeholder={emailPlaceholder}
               value={emailValue}
               onChange={onEmailChange}
               disabled={disabled}
               required
+              validation={emailValidation}
+              isValidatedMessages={emailValidationMessage}
+              size="large"
             />
-            {emailError && <p className="tw-text-sm tw-text-red-500 tw-mt-1">{emailError}</p>}
           </div>
           <div className="tw-grid tw-gap-0.5">
             <div className="tw-flex tw-items-center tw-justify-between">
@@ -98,17 +100,18 @@ export function LoginForm({ className, ...props }) {
                 </Link>
               )}
             </div>
-            <PasswordInput
-              id="password"
+            <Input
               type="password"
-              size="large"
-              hint=""
+              placeholder={passwordPlaceholder}
               value={passwordValue}
               onChange={onPasswordChange}
               disabled={disabled}
+              showEncryption={false}
               required
+              validation={passwordValidation}
+              isValidatedMessages={passwordValidationMessage}
+              size="large"
             />
-            {passwordError && <p className="tw-text-sm tw-text-red-500 tw-mt-1">{passwordError}</p>}
           </div>
           <Button
             size="large"
@@ -165,8 +168,10 @@ LoginForm.propTypes = {
   onPasswordChange: PropTypes.func,
 
   // Validation and state
-  emailError: PropTypes.string,
-  passwordError: PropTypes.string,
+  emailValidation: PropTypes.func,
+  passwordValidation: PropTypes.func,
+  emailValidationMessage: PropTypes.object,
+  passwordValidationMessage: PropTypes.object,
   isLoading: PropTypes.bool,
   disabled: PropTypes.bool,
 };
@@ -182,8 +187,9 @@ LoginForm.defaultProps = {
 
   // Form fields
   emailLabel: 'Email',
-  emailPlaceholder: 'm@example.com',
+  emailPlaceholder: 'Enter your work email',
   passwordLabel: 'Password',
+  passwordPlaceholder: 'Enter password',
 
   // Forgot password
   showForgotPassword: true,
@@ -203,8 +209,10 @@ LoginForm.defaultProps = {
   onPasswordChange: undefined,
 
   // Validation and state
-  emailError: undefined,
-  passwordError: undefined,
+  emailValidation: undefined,
+  passwordValidation: undefined,
+  emailValidationMessage: undefined,
+  passwordValidationMessage: undefined,
   isLoading: false,
   disabled: false,
 };
