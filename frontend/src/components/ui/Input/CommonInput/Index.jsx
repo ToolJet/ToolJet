@@ -16,13 +16,14 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     isEditing,
     handleEncryptedFieldsToggle,
     labelDisabled,
+    showEncryption = true,
   } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
 
-  const isEncrypted = type === 'password' || encrypted;
+  const isEncrypted = showEncryption && (type === 'password' || encrypted);
   const isWorkspaceConstant =
     restProps.placeholder &&
     (restProps.placeholder.includes('{{constants') || restProps.placeholder.includes('{{secrets'));
@@ -59,7 +60,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
             <InputLabel disabled={labelDisabled ?? disabled} label={label} required={required} />
           </div>
         )}
-        {type === 'password' && (
+        {showEncryption && type === 'password' && (
           <div className="d-flex justify-content-between w-100">
             <div className="mx-1 col">
               <Button
