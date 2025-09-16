@@ -646,14 +646,14 @@ Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
 });
 
 Cypress.Commands.add("openComponentSidebar", (selector, value) => {
-  cy.get("body")
-    .then(($body) => {
-      const isSearchVisible = $body
-        .find(commonSelectors.searchField)
-        .is(":visible");
+  cy.get("body").then(($body) => {
+    const isSearchVisible = $body
+      .find(commonSelectors.searchField)
+      .is(":visible");
 
-      if (!isSearchVisible) {
-        cy.get('[data-cy="right-sidebar-plus-button"]').click();
-      }
-    })
+    if (!isSearchVisible) {
+      cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    }
+  });
 });
+
