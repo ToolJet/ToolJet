@@ -11,10 +11,8 @@ import * as fs from 'fs';
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    // Create reflection client with basic credentials (same as testConnection)
     const reflectionClient = await createReflectionClient(sourceOptions);
 
-    // Use streaming call options that contain metadata (same approach as testConnection)
     const callOptions = buildCallOptionsForStreaming(sourceOptions);
 
     // Get service descriptor using reflection with metadata
