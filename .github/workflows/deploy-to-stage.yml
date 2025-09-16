@@ -6,7 +6,7 @@ on:
       branch_name:
         description: 'Git branch to build from'
         required: true
-        default: 'main'
+        default: 'lts-3.16'
       dockerfile_path:
         description: 'Path to Dockerfile'
         required: true
@@ -145,7 +145,7 @@ jobs:
         run: |
           set -e
 
-          BRANCH="${{ github.event.inputs.branch }}"
+          BRANCH="${{ github.event.inputs.branch_name }}"
           REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
 
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
