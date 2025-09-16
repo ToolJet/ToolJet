@@ -52,7 +52,7 @@ To use JSON Schema, select **JSON Schema** from the **Generate form from** dropd
 | **properties** | 	Defines the schema of the form fields (components to be rendered in the form).  | 
 | **submitButton** | Defines the schema and behavior of the form’s submit button. | 
 
-Refer to the [Custom Schema](#) guide for schema examples of commonly used components.
+Refer to the [Custom Schema](/docs/widgets/form/schema) guide for schema examples of commonly used components.
 
 <img className="screenshot-full img-full" src="/img/widgets/form/json-schema-dropdown.png" alt="Component Event Handler" />
 

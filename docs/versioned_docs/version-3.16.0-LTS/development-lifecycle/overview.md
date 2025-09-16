@@ -13,7 +13,7 @@ ToolJet enables teams to manage application changes and deployments effectively 
 
 ### Release Management 
 
-Using ToolJet's release management, you can create multiple **[versions](/docs/development-lifecycle/release/version-control)** of your application and easily **[release](/docs/development-lifecycle/release/release-rollback)** the latest version with new features, fixes, and enhancements. ToolJet also enables you to **[roll back](#)** to a previous stable version if needed. Additionally, ToolJet lets you **[share your application](/docs/development-lifecycle/release/share-app)** in multiple ways.
+Using ToolJet's release management, you can create multiple **[versions](/docs/development-lifecycle/release/version-control)** of your application and easily **[release](/docs/development-lifecycle/release/release-rollback)** the latest version with new features, fixes, and enhancements. ToolJet also enables you to **[roll back](/docs/development-lifecycle/release/release-rollback#rollback)** to a previous stable version if needed. Additionally, ToolJet lets you **[share your application](/docs/development-lifecycle/release/share-app)** in multiple ways.
 
 ### GitSync
 
