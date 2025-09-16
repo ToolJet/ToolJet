@@ -8299,7 +8299,7 @@ tbody {
   max-width: 288px;
   height: 48px;
   max-height: 64px;
-  padding-top: 8px;
+  padding-top: 22px;
   padding-left: 20px;
   padding-bottom: 8px;
   border-right: 1px solid var(--border-weak);
@@ -15249,8 +15249,9 @@ textarea.tj-text-input-widget {
   }
 }
 
-div.ds-svg-container img {
+.ds-svg-container svg {
   padding: 2px;
+  object-fit: contain;
 }
 
 .custom-textarea-height {
@@ -15765,7 +15766,7 @@ fieldset:disabled {
 }
 
 .create-app-with-ai-prompt-wrapper {
-  padding: 30px 0;
+  padding: 25px 0;
 
   header {
     display: flex;

@@ -634,28 +634,24 @@ export const addAppToGroup = (appName) => {
   );
 };
 
-export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-  let groupId;
-
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    const headers = {
-      "Tj-Workspace-Id": Cypress.env("workspaceId"),
-      Cookie: `tj_auth_token=${cookie.value}`,
-      "Content-Type": "application/json",
-    };
-
-    cy.request({
+export const createGroup = (groupName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy.request({
       method: "POST",
       url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
       headers: headers,
-      body: {
-        name: groupName,
-      },
+      body: { name: groupName },
     }).then((response) => {
       expect(response.status).to.equal(201);
-      groupId = response.body.id;
-      cy.wrap(groupId).as("groupId");
+      return response.body.id; // Returns the group ID as resolved value
+    });
+  });
+};
 
+export const createGroupAddAppAndUserToGroup = (groupName, email) => {
+  cy.getAuthHeaders().then((headers) => {
+    createGroup(groupName).then((groupId) => {
+      // Add app to group
       cy.request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/app`,
@@ -670,24 +666,20 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             canView: false,
             hideFromDashboard: false,
             resourcesToAdd: [
-              {
-                appId: Cypress.env("appId"),
-              },
+              { appId: Cypress.env("appId") },
             ],
           },
         },
       }).then((response) => {
         expect(response.status).to.equal(201);
       });
-
       cy.wait(2000);
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         const userId = resp.rows[0].id;
-        cy.log(userId);
-
+        // Add user to group
         cy.request({
           method: "POST",
           url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
@@ -703,6 +695,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
     });
   });
 };
+
 
 export const OpenGroupCardOption = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName))
@@ -854,6 +847,7 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
   );
   addUserInGroup(groupName, email);
 };
+
 export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
