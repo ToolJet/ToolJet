@@ -173,7 +173,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           isLoading={promotingEnvironment}
           data-cy="promote-button"
         >
-          Promote <ArrowRight fill="#FDFDFE" width="22" />
+          Promote
+          <span style={{ marginTop: '2px' }}>
+            <ArrowRight fill="#FDFDFE" width="22" />
+          </span>
         </ButtonSolid>
       </Modal.Footer>
     </Modal>
