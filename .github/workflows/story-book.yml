@@ -46,7 +46,7 @@ jobs:
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
                 "buildCommand": "npm i && npx storybook build",
-                "publishPath": "frontend/storybook-static/",
+                "publishPath": "storybook-static/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
