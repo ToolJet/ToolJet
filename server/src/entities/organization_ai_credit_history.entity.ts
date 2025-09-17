@@ -26,7 +26,7 @@ export class OrganizationAiCreditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'amount', type: 'int', nullable: true })
+  @Column({ name: 'amount', type: 'numeric', precision: 12, scale: 2, nullable: true })
   amount: number | null;
 
   @Column({ name: 'ai_credits', type: 'numeric', precision: 12, scale: 2, default: 0 })

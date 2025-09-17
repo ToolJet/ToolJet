@@ -17,7 +17,9 @@ export class AddSelfhostAICreditHistory1757488858256 implements MigrationInterfa
           },
           {
             name: 'amount',
-            type: 'int',
+            type: 'numeric',
+            precision: 12,
+            scale: 2,
             isNullable: true,
           },
           {

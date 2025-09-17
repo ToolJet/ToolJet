@@ -23,7 +23,9 @@ export class AddOrganizationAICreditHistory1757488747540 implements MigrationInt
           },
           {
             name: 'amount',
-            type: 'int',
+            type: 'numeric',
+            precision: 12,
+            scale: 2,
             isNullable: true,
           },
           {
