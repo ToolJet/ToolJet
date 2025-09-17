@@ -661,7 +661,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     dataSource: DataSource
   ): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
       const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
@@ -679,28 +678,42 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
-    const bodyData = {
+    const baseBodyData = {
       code,
-      client_id: sourceOptions['client_id'],
-      client_secret: sourceOptions['client_secret'],
       grant_type: sourceOptions['grant_type'],
       redirect_uri: `${tooljetHost}/oauth2/authorize`,
       ...customParams,
     };
 
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...customAccessTokenHeaders,
+    };
+
+    let bodyData;
+    if (sourceOptions.client_auth.toLowerCase() === 'header') {
+      const credentials = Buffer.from(`${sourceOptions['client_id']}:${sourceOptions['client_secret']}`).toString(
+        'base64'
+      );
+      headers['Authorization'] = `Basic ${credentials}`;
+      bodyData = baseBodyData;
+    } else {
+      bodyData = {
+        ...baseBodyData,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+      };
+    }
+
     try {
       const response = await got(accessTokenUrl, {
         method: 'post',
-        headers: {
-          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-          ...customAccessTokenHeaders,
-        },
-        form: isUrlEncoded ? bodyData : undefined,
-        json: !isUrlEncoded ? bodyData : undefined,
+        headers,
+        form: bodyData,
       });
 
       const result = JSON.parse(response.body);
-      console.log('access token result', result);
+
       return {
         ...(isMultiAuthEnabled ? { user_id: userId } : {}),
         access_token: result['access_token'],

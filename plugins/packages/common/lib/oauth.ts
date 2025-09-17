@@ -178,22 +178,36 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
   }
 
   const headersObject = sanitizeParams(sourceOptions.access_token_custom_headers);
+  const clientAuth = sourceOptions.client_auth?.toLowerCase();
 
   try {
-    const requestBody = new URLSearchParams({
+    const baseRequestBody = new URLSearchParams({
       grant_type: sourceOptions.grant_type || 'client_credentials',
-      client_id: sourceOptions.client_id,
-      client_secret: sourceOptions.client_secret,
       ...(sourceOptions.audience ? { audience: sourceOptions.audience } : {}),
       ...(sourceOptions.scopes ? { scope: sourceOptions.scopes } : {}),
     });
 
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...(Object.keys(headersObject).length > 0 && headersObject),
+    };
+
+    let bodyData;
+    if (clientAuth === 'header') {
+      const credentials = Buffer.from(`${sourceOptions.client_id}:${sourceOptions.client_secret}`).toString('base64');
+      headers['Authorization'] = `Basic ${credentials}`;
+      bodyData = baseRequestBody;
+    } else {
+      bodyData = {
+        ...baseRequestBody,
+        client_id: sourceOptions.client_id,
+        client_secret: sourceOptions.client_secret,
+      };
+    }
+
     const response = await got.post(sourceOptions.access_token_url, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        ...(Object.keys(headersObject).length > 0 && headersObject),
-      },
-      body: requestBody.toString(),
+      headers,
+      form: bodyData,
       responseType: 'json',
     });
 
