@@ -317,14 +317,10 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
-export const dbConnection = () => {
+export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
-    dbconfig: Cypress.config("db"),
-    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
-  });
-  cy.task("dbConnection", {
-    dbconfig: Cypress.config("db"),
-    sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id='${workspaceId}';`,
   });
 };
 
@@ -353,15 +349,12 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
 };
 
 export const defaultSSO = (enable) => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
+  cy.getAuthHeaders().then((headers) => {
     cy.request(
       {
         method: "PATCH",
         url: `${Cypress.env("server_host")}/api/organizations`,
-        headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
-          Cookie: `tj_auth_token=${cookie.value}`,
-        },
+        headers: headers,
         body: { inheritSSO: enable },
       },
       { log: false }
@@ -378,14 +371,11 @@ export const setSignupStatus = (enable, workspaceName = "My workspace") => {
   }).then((resp) => {
     const workspaceId = resp.rows[0].id;
 
-    cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.getAuthHeaders().then((headers) => {
       cy.request({
         method: "PATCH",
         url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
-        headers: {
-          "Tj-Workspace-Id": workspaceId,
-          Cookie: `tj_auth_token=${cookie.value}`,
-        },
+        headers: headers,
         body: { enableSignUp: enable },
       }).then((response) => {
         expect(response.status).to.equal(200);
@@ -412,15 +402,12 @@ export const deleteOrganisationSSO = (workspaceName, services) => {
 };
 
 export const resetDomain = () => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
+  cy.getAuthHeaders().then((headers) => {
     cy.request(
       {
         method: "PATCH",
         url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
-        headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
-          Cookie: `tj_auth_token=${cookie.value}`,
-        },
+        headers: headers,
         body: { domain: "" },
       },
       { log: false }
@@ -430,22 +417,104 @@ export const resetDomain = () => {
   });
 };
 
-export const enableInstanceSignup = (
-  allowPersonalWorkspace = true,
-  enableLoginConfig = true,
-  allowedDomains = ""
-) => {
-  const allowValue = allowPersonalWorkspace ? "true" : "false";
-  const loginConfigValue = enableLoginConfig ? "true" : "false";
+export const enableInstanceSignup = (enable = true) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/login-configs/instance-general`,
+      headers: headers,
+      body: { enableSignUp: enable },
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+};
 
-  const sql = `
-    UPDATE instance_settings SET value = '${allowValue}' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';
-    UPDATE instance_settings SET value = '${loginConfigValue}' WHERE key = 'ENABLE_SIGNUP';
-    UPDATE instance_settings SET value = '${allowedDomains}' WHERE key = 'ALLOWED_DOMAINS';
-  `;
+export const updateOIDCConfig = (orgId) => {
+  const ssoConfigId = "22f22523-7bc2-4134-891d-88bdfec073cd";
+  const sso = "'openid'";
+  const configs = `'{
+    "name": "",
+    "clientId": "",
+    "clientSecret": "",
+    "wellKnownUrl": ""
+  }'`;
+  const configScope = "'organization'";
+  const syncId = "a6a2f665-f96e-4c82-91cb-6e0a99c32d21"; // Explicit id for second table
+  const claimName = "groups";
+  const groupMapping = "{}";
 
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql,
+    sql: `
+          INSERT INTO sso_configs (
+            id,
+            organization_id,
+            sso,
+            configs,
+            enabled,
+            config_scope
+          ) VALUES (
+            '${ssoConfigId}',
+            '${orgId}',
+            ${sso},
+            ${configs},
+            true,
+            ${configScope}
+          );
+        `,
   });
+
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+            INSERT INTO sso_config_oidc_group_sync (
+              id,
+              sso_config_id,
+              organization_id,
+              claim_name,
+              group_mapping,
+              enable_group_sync
+            ) VALUES (
+              '${syncId}',
+              '${ssoConfigId}',
+              '${orgId}',
+              '${claimName}',
+              '${groupMapping}',
+              true
+            );
+          `,
+  });
+};
+
+export const authResponse = (matcher) => {
+  cy.intercept("POST", "/api/authorize", (req) => {
+    req.continue((res) => {
+      matcher(res.body);
+    });
+  }).as("authorizeCheck");
+};
+
+export const OidcConfig = (groupMapping, level = "workspace", extra = {}) => {
+  const config = {
+    type: "openid",
+    configs: {
+      name: "",
+      clientId: Cypress.env("okta_client_id"),
+      clientSecret: Cypress.env("okta_client_secret"),
+      wellKnownUrl: `https://${Cypress.env("okta_domain")}/.well-known/openid-configuration`,
+      ...(level === "instance" ? { enableGroupSync: true } : {}),
+    },
+    oidcGroupSyncs: [
+      {
+        claimName: "groups",
+        groupMapping: { ...groupMapping },
+        ...(level === "instance"
+          ? { organizationId: extra.organizationId, id: extra.id }
+          : {}),
+      },
+    ],
+    enabled: true,
+  };
+  return cy.apiUpdateSSOConfig(config, level);
 };
