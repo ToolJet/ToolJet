@@ -12,7 +12,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class DataQueriesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { DataQueriesController, DataQueriesService, DataQueriesUtilService } = await this.getProviders(
       configs,
       'data-queries',
@@ -38,7 +38,7 @@ export class DataQueriesModule extends SubModule {
         DataSourceFeatureAbilityFactory,
       ],
       exports: [DataQueriesUtilService],
-      controllers: [DataQueriesController],
+      controllers: isMainImport ? [DataQueriesController] : [],
     };
   }
 }

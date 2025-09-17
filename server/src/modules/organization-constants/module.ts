@@ -9,7 +9,7 @@ import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
 export class OrganizationConstantModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       OrganizationConstantController,
       OrganizationConstantsService,
@@ -25,7 +25,7 @@ export class OrganizationConstantModule extends SubModule {
     return {
       module: OrganizationConstantModule,
       imports: [await AppEnvironmentsModule.register(configs), await EncryptionModule.register(configs)],
-      controllers: [OrganizationConstantController],
+      controllers: isMainImport ? [OrganizationConstantController] : [],
       providers: [
         EnvironmentConstantsService,
         OrganizationConstantsUtilService,

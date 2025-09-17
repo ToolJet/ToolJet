@@ -10,5 +10,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.ROOT]: {
       isPublic: true,
     },
+    [FEATURE_KEY.METRICS]: {
+      isPublic: true,
+    },
   },
 };
