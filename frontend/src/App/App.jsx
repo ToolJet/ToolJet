@@ -441,24 +441,18 @@ class AppComponent extends React.Component {
                 <Route
                   exact
                   path="/error/:errorType"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
+                  element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   exact
                   path="/app-url-archived"
                   element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <SwitchWorkspacePage
-                        switchDarkMode={this.switchDarkMode}
-                        darkMode={darkMode}
-                        archived={true}
-                        isAppUrl={true}
-                      />
-                    </PrivateRoute>
+                    <SwitchWorkspacePage
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                      archived={true}
+                      isAppUrl={true}
+                    />
                   }
                 />
                 <Route
