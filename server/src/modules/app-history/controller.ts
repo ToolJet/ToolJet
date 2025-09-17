@@ -1,9 +1,12 @@
 import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe } from '@nestjs/common';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from './constants';
 
-@Controller('apps/:appId/versions/:versionId/history')
+@Controller('apps/versions/:versionId/history')
 export class AppHistoryController {
   constructor() {}
 
+  @InitFeature(FEATURE_KEY.LIST_HISTORY)
   @Get()
   async getHistory(
     @Param('versionId', ParseUUIDPipe) versionId: string,
@@ -17,6 +20,7 @@ export class AppHistoryController {
     throw new Error('Method not implemented.');
   }
 
+  @InitFeature(FEATURE_KEY.RESTORE_HISTORY)
   @Post(':historyId/restore')
   async restoreHistory(
     @Param('versionId', ParseUUIDPipe) versionId: string,
@@ -26,6 +30,7 @@ export class AppHistoryController {
     throw new Error('Method not implemented.');
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_DESCRIPTION)
   @Patch(':historyId')
   async updateHistoryDescription(
     @Param('historyId', ParseUUIDPipe) historyId: string,
