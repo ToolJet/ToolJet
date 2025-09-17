@@ -209,7 +209,7 @@
 }
 
 @layer utilities {
-  .tw-hide-scrollbar {
+  .tw-transparent-scrollbar {
     // scrollbar-color: transparent transparent;
 
     &::-webkit-scrollbar-thumb {
@@ -230,6 +230,14 @@
 
     &::-webkit-scrollbar-track {
       background: transparent;
+    }
+  }
+
+  .tw-hide-scrollbar {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
 }
@@ -17389,7 +17397,7 @@ section.ai-message-prompt-input-wrapper {
   }
 
   section.content {
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
     margin: 16px auto;
     background-color: #f6f7f7;
