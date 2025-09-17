@@ -42,6 +42,10 @@ export class UpdateOrganizationAiCredits1757501461678 implements MigrationInterf
       });
     }
 
+    if (!updates.length) {
+      return;
+    }
+
     // Bulk update balances only
     const ids = updates.map((u) => u.id);
     const balances = updates.map((u) => u.newBalance); //Currenly only recurring wallets are there

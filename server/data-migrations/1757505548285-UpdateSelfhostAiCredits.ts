@@ -46,16 +46,13 @@ export class UpdateSelfhostAiCredits1757505548285 implements MigrationInterface 
         }
       }
 
-      //If No credits used skip top up
-      if (newBalance !== row.balance) {
-        updates.push({
-          id: row.id,
-          newBalance,
-          selfhostCustomerId: row.selfhost_customer_id,
-          walletType: row.wallet_type,
-          totalAmount: newBalance,
-        });
-      }
+      updates.push({
+        id: row.id,
+        newBalance,
+        selfhostCustomerId: row.selfhost_customer_id,
+        walletType: row.wallet_type,
+        totalAmount: newBalance,
+      });
     }
 
     if (!updates.length) {

@@ -29,7 +29,7 @@ export class OrganizationAiCreditHistory extends BaseEntity {
   @Column({ name: 'amount', type: 'int', nullable: true })
   amount: number | null;
 
-  @Column({ name: 'ai_credits', type: 'int', default: 0 })
+  @Column({ name: 'ai_credits', type: 'numeric', precision: 12, scale: 2, default: 0 })
   aiCredits: number;
 
   @Column({ name: 'operation', type: 'varchar', length: 50 })

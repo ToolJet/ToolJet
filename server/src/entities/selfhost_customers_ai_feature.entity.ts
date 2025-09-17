@@ -18,8 +18,8 @@ export enum WalletTypeSelfhost {
 
 @Entity('selfhost_customers_ai_feature')
 export class SelfhostCustomersAiFeature extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => SelfhostCustomers, (customer) => customer.aiFeatures, {
     onDelete: 'CASCADE',

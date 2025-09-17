@@ -28,7 +28,9 @@ export class AddOrganizationAICreditHistory1757488747540 implements MigrationInt
           },
           {
             name: 'ai_credits',
-            type: 'int',
+            type: 'numeric',
+            precision: 12,
+            scale: 2,
             default: 0,
           },
           {
