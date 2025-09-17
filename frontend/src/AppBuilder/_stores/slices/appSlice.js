@@ -100,26 +100,45 @@ export const createAppSlice = (set, get) => ({
     const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
     const currentMode = getCurrentMode(moduleId);
 
-    const maxPermanentHeight = Object.values(components)
-      .filter((component) => !component?.parent)
-      .reduce((max, component) => {
-        const layout = component?.layouts?.[currentLayout];
-        const visibility =
-          getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-          getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
+    // Only keep canvas components (components with no parent) & show on layout true
+    const currentMainCanvasComponents = Object.entries(components)
+      .filter(
+        ([key, component]) =>
+          !component?.component?.parent &&
+          getResolvedValue(
+            component?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop']
+              .value
+          )
+      )
+      .map(([key, component]) => {
+        console.log(key, component);
+        return {
+          ...component,
+          id: component.id || key,
+        };
+      });
+    const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      const visibility =
+        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
+        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
 
-        const height = visibility ? layout.height : 10;
-        if (!layout) {
-          return max;
-        }
-        const sum = layout.top + height;
-        return Math.max(max, sum);
-      }, 0);
-
-    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
-      const sum = layout.top + layout.height;
+      const height = visibility ? layout.height : 10;
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + height;
       return Math.max(max, sum);
     }, 0);
+
+    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts)
+      .filter((layout) => {
+        return currentMainCanvasComponents.find((component) => temporaryLayouts?.[component.id]);
+      })
+      .reduce((max, layout) => {
+        const sum = layout.top + layout.height;
+        return Math.max(max, sum);
+      }, 0);
 
     const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
