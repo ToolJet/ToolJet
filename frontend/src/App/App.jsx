@@ -268,24 +268,8 @@ class AppComponent extends React.Component {
               <Routes>
                 {onboarding({ ...this.props, darkMode })}
                 {auth({ ...this.props, darkMode })}
-                <Route
-                  path="/sso/:origin/:configId"
-                  exact
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Oauth {...this.props} />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/sso/:origin"
-                  exact
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Oauth {...this.props} />
-                    </PrivateRoute>
-                  }
-                />
+                <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
+                <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
                 <Route
                   exact
                   path="/:workspaceId/apps/:slug/:pageHandle?/*"
@@ -504,27 +488,15 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                <Route
-                  exact
-                  path="/embed-apps/:appId"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <EmbedApp />
-                    </PrivateRoute>
-                  }
-                />
+                <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
                 <Route
                   path="*"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      {(() => {
-                        if (authenticationService?.currentSessionValue?.current_organization_id) {
-                          return <Navigate to="/:workspaceId" />;
-                        }
-                        return <Navigate to="/login" />;
-                      })()}
-                    </PrivateRoute>
-                  }
+                  render={() => {
+                    if (authenticationService?.currentSessionValue?.current_organization_id) {
+                      return <Navigate to="/:workspaceId" />;
+                    }
+                    return <Navigate to="/login" />;
+                  }}
                 />
               </Routes>
             </BreadCrumbContext.Provider>
