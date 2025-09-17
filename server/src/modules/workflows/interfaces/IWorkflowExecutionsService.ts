@@ -6,6 +6,17 @@ import { Response } from 'express';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 
+export interface ResponseNodeMetadata {
+  status: 'ok' | 'failed';
+  request?: Record<string, unknown>;
+  response: {
+    statusCode?: number;
+    headers?: {
+      'X-Workflow-Response-Status-Set': boolean;
+    };
+  };
+}
+
 export interface IWorkflowExecutionsService {
   create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution>;
 
@@ -39,6 +50,12 @@ export interface IWorkflowExecutionsService {
   listWorkflowExecutions(appVersionId: string): Promise<WorkflowExecution[]>;
 
   findOne(id: string, relations?: string[]): Promise<WorkflowExecution>;
+
+  buildResponseNodeMetadata(
+    statusText: 'ok' | 'failed',
+    statusCode: number,
+    setHeader?: boolean
+  ): Promise<ResponseNodeMetadata>;
 
   previewQueryNode(
     queryId: string,
