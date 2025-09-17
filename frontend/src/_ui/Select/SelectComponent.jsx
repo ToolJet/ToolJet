@@ -60,7 +60,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     <Select
       {...restProps}
       ref={selectRef}
-      selectRef={selectRef}
+      selectRef={selectRef} // Exposed ref for custom components if needed
       isLoading={isLoading}
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
