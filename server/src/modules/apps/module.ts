@@ -19,6 +19,7 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { AppHistoryModule } from '@ee/app-history/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
@@ -70,6 +71,7 @@ export class AppsModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
         await AppEnvironmentsModule.register(configs),
       ],

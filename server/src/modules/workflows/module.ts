@@ -34,6 +34,7 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
+import { AppHistoryModule } from '@ee/app-history/module';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const {
@@ -118,6 +119,7 @@ export class WorkflowsModule extends SubModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await UsersModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       providers: [
         AppsAbilityFactory,

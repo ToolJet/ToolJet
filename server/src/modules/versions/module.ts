@@ -12,6 +12,7 @@ import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { AppHistoryModule } from '@ee/app-history/module';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -50,6 +51,7 @@ export class VersionModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       controllers: [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2],
       providers: [

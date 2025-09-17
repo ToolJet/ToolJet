@@ -11,6 +11,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { FeatureAbilityFactory } from './ability/app';
 import { FeatureAbilityFactory as DataSourceFeatureAbility } from './ability/data-source';
 import { SubModule } from '@modules/app/sub-module';
+import { AppHistoryModule } from '@ee/app-history/module';
 
 export class ImportExportResourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -35,6 +36,7 @@ export class ImportExportResourcesModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await OrganizationConstantModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       controllers: [ImportExportResourcesController],
       providers: [

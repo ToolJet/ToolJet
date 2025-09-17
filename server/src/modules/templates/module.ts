@@ -16,6 +16,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { FilesRepository } from '@modules/files/repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
+import { AppHistoryModule } from '@ee/app-history/module';
 
 export class TemplatesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -51,6 +52,7 @@ export class TemplatesModule extends SubModule {
         await FolderAppsModule.register(configs),
         await AppsModule.register(configs),
         await DataSourcesModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       providers: [
         AppsRepository,
