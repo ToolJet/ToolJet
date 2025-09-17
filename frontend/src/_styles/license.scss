@@ -1179,5 +1179,8 @@ line-height: 16px;
 border: 1px solid var(--border-danger-weak, #F4979E);
     }
 }
-
-
+.get-ai-credits-btn {
+    path {
+        fill: none !important
+    }
+}
