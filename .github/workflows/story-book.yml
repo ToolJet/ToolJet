@@ -35,26 +35,18 @@ jobs:
             "rootDir": "frontend",
             "envVars": [
               {
-                "key": "NODE_ENV",
-                "value": "production"
-              },
-              {
                 "key": "NODE_VERSION",
-                "value": "18.18.2"
+                "value": "v22.15.1"
               },
               {
                 "key": "NPM_VERSION",
-                "value": "9.8.1"
-              },
-              {
-                "key": "GTM",
-                "value": "dummy"
+                "value": "10.9.2"
               }
             ],
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
                 "buildCommand": "npm i && npx storybook build",
-                "publishPath": "frontend/storybook-static/",
+                "publishPath": "storybook-static/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
@@ -64,7 +56,7 @@ jobs:
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
 
       - name: Comment deployment URL
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -220,3 +212,5 @@ jobs:
             } catch (e) {
               console.log(e)
             }
+
+# dummy PR 1
