@@ -57,7 +57,14 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+    createDataQuery: (
+      selectedDataSource,
+      shouldRunQuery,
+      customOptions = {},
+      moduleId = 'canvas',
+      queryName,
+      extraProperties = {}
+    ) => {
       let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
@@ -81,9 +88,9 @@ export const createDataQuerySlice = (set, get) => ({
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
-
+      const callbackFunction = extraProperties?.callbackFunction;
       let cleanSelectedQuery = { ...selectedQuery };
-      if(selectedQuery?.permissions) {
+      if (selectedQuery?.permissions) {
         delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
       }
 
@@ -154,6 +161,9 @@ export const createDataQuerySlice = (set, get) => ({
 
           if (runOnCreate) {
             get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
+          if (callbackFunction) {
+            callbackFunction(data);
           }
         })
         .catch((error) => {
@@ -331,10 +341,10 @@ export const createDataQuerySlice = (set, get) => ({
               type: queryToClone.permissions[0]?.type,
               ...(queryToClone.permissions[0]?.type === 'GROUP'
                 ? {
-                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
-                      (group) => group.permissionGroupsId || group.permission_groups_id
-                    ),
-                  }
+                  groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                    (group) => group.permissionGroupsId || group.permission_groups_id
+                  ),
+                }
                 : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
             };
             appPermissionService
