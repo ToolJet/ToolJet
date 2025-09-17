@@ -25,6 +25,36 @@ const expectISO8601 = () => expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2
 const expectBundleStatus = () => expect.stringMatching(/^(none|building|ready|failed)$/);
 const expectSHA256 = () => expect.stringMatching(/^[a-f0-9]{64}$/);
 
+// Helper function to wait for bundle completion
+const waitForBundleReady = async (
+  bundleRepo: any,
+  appVersionId: string,
+  timeoutMs: number = 15000
+): Promise<WorkflowBundle> => {
+  const startTime = Date.now();
+  const pollInterval = 200; // Poll every 200ms
+
+  while (Date.now() - startTime < timeoutMs) {
+    const bundle = await bundleRepo.findOne({
+      where: { appVersionId }
+    });
+
+    if (bundle) {
+      if (bundle.status === 'ready') {
+        return bundle;
+      }
+      if (bundle.status === 'failed') {
+        throw new Error(`Bundle generation failed: ${bundle.error}`);
+      }
+      // If status is 'building', continue polling
+    }
+
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error(`Bundle generation timed out after ${timeoutMs}ms`);
+};
+
 /**
  * @group workflows
  */
@@ -431,12 +461,8 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
       const bundleRepo = defaultDataSource.getRepository(WorkflowBundle);
 
-      // Wait a moment for bundle generation
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const bundleEntity = await bundleRepo.findOne({
-        where: { appVersionId: appVersion.id },
-      });
+      // Wait for bundle generation to complete
+      const bundleEntity = await waitForBundleReady(bundleRepo, appVersion.id);
 
       expect(bundleEntity).toBeDefined();
       expect(bundleEntity).toEqual(
@@ -696,12 +722,9 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         .send({ dependencies });
 
       // Wait for initial bundle generation
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      // Get initial bundle data
       const defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
       const bundleRepo = defaultDataSource.getRepository(WorkflowBundle);
-      const initialBundle = await bundleRepo.findOne({ where: { appVersionId: appVersion.id } });
+      const initialBundle = await waitForBundleReady(bundleRepo, appVersion.id);
 
       // Rebuild the bundle
       const rebuildResponse = await request(app.getHttpServer())
@@ -721,10 +744,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       );
 
       // Wait for rebuild completion
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      // Verify rebuilt bundle has same SHA for same dependencies
-      const rebuiltBundle = await bundleRepo.findOne({ where: { appVersionId: appVersion.id } });
+      const rebuiltBundle = await waitForBundleReady(bundleRepo, appVersion.id);
       expect(rebuiltBundle).toBeDefined();
       expect(rebuiltBundle!.bundleSha).toBe(initialBundle!.bundleSha);
     });
@@ -880,9 +900,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       // Step 4: Verify entity in database
       const defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
       const bundleRepo = defaultDataSource.getRepository(WorkflowBundle);
-      const bundleEntity = await bundleRepo.findOne({
-        where: { appVersionId: appVersion.id },
-      });
+      const bundleEntity = await waitForBundleReady(bundleRepo, appVersion.id);
 
       expect(bundleEntity).toBeDefined();
       expect(bundleEntity!.dependencies).toEqual(dependencies);
@@ -907,10 +925,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(rebuildResponse.body).toHaveProperty('success', true);
 
       // Step 6: Verify rebuilt bundle consistency
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const rebuiltEntity = await bundleRepo.findOne({
-        where: { appVersionId: appVersion.id },
-      });
+      const rebuiltEntity = await waitForBundleReady(bundleRepo, appVersion.id);
 
       expect(rebuiltEntity).toBeDefined();
       expect(rebuiltEntity!.bundleSha).toBe(initialSha); // Same dependencies = same SHA

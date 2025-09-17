@@ -589,7 +589,7 @@ export const buildWorkflowDefinition = (config: {
         idOnDefinition: string;
         id?: string;
     }>;
-    setupScript?: string;
+    setupScript?: Record<string, string>;
     dependencies?: Record<string, string>;
     webhookParams?: any[];
     defaultParams?: string;
@@ -608,7 +608,7 @@ export const createCompleteWorkflow = async (
     user: User,
     workflowConfig: {
         name: string;
-        setupScript?: string;
+        setupScript?: Record<string, string>;
         dependencies?: Record<string, string>;
         nodes: WorkflowNode[];
         edges: WorkflowEdge[];
@@ -714,9 +714,12 @@ export const createWorkflowBundle = async (
     dependencies: Record<string, string>
 ): Promise<void> => {
     const bundleGenerationService = nestApp.get<BundleGenerationService>(BundleGenerationService);
-    
-    // Use the bundle generation service to update packages
-    // This will handle both creating new bundles and updating existing ones
-    await bundleGenerationService.updatePackages(appVersionId, dependencies);
+
+    await bundleGenerationService.generateBundle(appVersionId, dependencies);
+
+    const bundle = await bundleGenerationService.getBundleForExecution(appVersionId);
+    if (!bundle) {
+        throw new Error('Bundle was not created successfully');
+    }
 };
 

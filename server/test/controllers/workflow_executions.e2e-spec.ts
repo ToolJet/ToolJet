@@ -499,15 +499,16 @@ describe('workflow executions controller', () => {
           lastName: 'User'
         });
 
-        const setupScript = `
+        const setupScript = {
+          javascript: `
           const _ = require('lodash');
-          global.processNumbers = (numbers) => ({
+          const processNumbers = (numbers) => ({
             sum: _.sum(numbers),
             max: _.max(numbers),
             min: _.min(numbers),
             sorted: _.sortBy(numbers)
           });
-        `;
+        `};
 
         const dependencies = {
           'lodash': '4.17.21'
@@ -609,8 +610,6 @@ describe('workflow executions controller', () => {
         expect(runjsNode).toBeDefined();
         expect(runjsNode.executed).toBe(true);
 
-        console.log('RunJS Node Result:', runjsNode.result);
-
         // Parse the flatted-encoded result and verify the actual object structure
         const parsedResult = parse(runjsNode.result);
         expect(parsedResult).toMatchObject({
@@ -651,9 +650,9 @@ describe('workflow executions controller', () => {
           lastName: 'User'
         });
 
-        const setupScript = `
-        const _ = require('lodash');
-      `;
+        const setupScript = {
+          javascript: `const _ = require('lodash');`
+        };
 
         const dependencies = {
           'lodash': '4.17.21'
