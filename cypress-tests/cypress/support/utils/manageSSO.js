@@ -518,3 +518,7 @@ export const OidcConfig = (groupMapping, level = "workspace", extra = {}) => {
   };
   return cy.apiUpdateSSOConfig(config, level);
 };
+
+export const samlConfig = () => {
+  cy.apiUpdateSSOConfig(config);
+};
