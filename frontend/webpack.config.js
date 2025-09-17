@@ -124,6 +124,7 @@ module.exports = {
     fallback: {
       process: require.resolve('process/browser.js'),
       path: require.resolve('path-browserify'),
+      util: require.resolve('util/'),
       '@ee/modules': emptyModulePath,
       '@cloud/modules': emptyModulePath,
     },
@@ -204,7 +205,15 @@ module.exports = {
           options: {
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
-              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
+              [
+                'import',
+                {
+                  libraryName: 'lodash',
+                  libraryDirectory: '',
+                  camel2DashComponentName: false,
+                },
+                'lodash',
+              ],
             ].filter(Boolean),
           },
         },

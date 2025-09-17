@@ -151,6 +151,7 @@
     "tw-animate-css": "^1.3.7",
     "url-join": "^5.0.0",
     "use-react-router-breadcrumbs": "^4.0.1",
+    "util": "^0.12.5",
     "uuid": "9.0.0",
     "xlsx": "^0.18.5",
     "y-websocket": "^1.4.5",
@@ -164,6 +165,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
+    "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-links": "^9.1.5",
     "@storybook/addon-onboarding": "^9.1.5",
     "@storybook/react-webpack5": "^9.1.5",
@@ -205,8 +207,7 @@
     "terser-webpack-plugin": "^5.3.6",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "4.11.1",
-    "@storybook/addon-docs": "^9.1.5"
+    "webpack-dev-server": "4.11.1"
   },
   "overrides": {
     "react-dates": {
