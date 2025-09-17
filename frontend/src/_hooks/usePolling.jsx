@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const usePolling = (options = {}) => {
   const [status, setStatus] = useState('idle'); // idle, running, success, failed
-  const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
   const abortControllerRef = useRef(null);
   const pollIntervalRef = useRef(null);
   const attemptsRef = useRef(0);
+  const isPollingRef = useRef(false);
 
   const maxAttempts = options.maxAttempts || 120; // 10 minutes with 5s intervals
   const pollInterval = options.pollInterval || 5000; // 5 seconds
@@ -79,9 +79,9 @@ export const usePolling = (options = {}) => {
   }, [serviceFn, serviceParams, maxAttempts]);
 
   const startPolling = useCallback(() => {
-    if (isPolling) return;
+    if (isPollingRef.current) return;
 
-    setIsPolling(true);
+    isPollingRef.current = true;
     setStatus('running');
     setError(null);
     attemptsRef.current = 0;
@@ -89,8 +89,8 @@ export const usePolling = (options = {}) => {
     const poll = async () => {
       const shouldStop = await checkStatus();
 
-      if (shouldStop || !isPolling) {
-        setIsPolling(false);
+      if (shouldStop || !isPollingRef.current) {
+        isPollingRef.current = false;
         if (pollIntervalRef.current) {
           clearTimeout(pollIntervalRef.current);
         }
@@ -107,10 +107,10 @@ export const usePolling = (options = {}) => {
     };
 
     poll();
-  }, [isPolling, checkStatus, pollInterval]);
+  }, [checkStatus, pollInterval]);
 
   const stopPolling = useCallback(() => {
-    setIsPolling(false);
+    isPollingRef.current = false;
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -135,7 +135,6 @@ export const usePolling = (options = {}) => {
 
   return {
     status,
-    isPolling,
     error,
     result,
     startPolling,
