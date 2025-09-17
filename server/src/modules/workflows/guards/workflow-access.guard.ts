@@ -15,7 +15,7 @@ export class WorkflowAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { workflowId: appVersionId } = request.params;
+    const { appVersionId } = request.params;
     const user: User = request.user;
 
     // Validate appVersionId parameter
@@ -26,7 +26,7 @@ export class WorkflowAccessGuard implements CanActivate {
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(appVersionId)) {
-      throw new BadRequestException('Invalid workflow ID format');
+      throw new BadRequestException('Invalid appVersionId format');
     }
 
     // User is mandatory
