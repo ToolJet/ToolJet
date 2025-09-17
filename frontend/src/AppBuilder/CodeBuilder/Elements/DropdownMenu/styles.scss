@@ -4,7 +4,7 @@
 
     .dropdown-menu-container {
         background-color: var(--background-surface-layer-01, #FFFFFF);
-        border: 1px solid var(--border-default, #CCD1D5);
+        box-shadow: var(--elevation-400-box-shadow);
     }
 
     .dropdown-menu-trigger {
@@ -21,6 +21,21 @@
         &.is-open {
             border: 2px solid var(--interactive-focus-outline, #4368E3);
         }
+
+        .dropdown-menu-trigger-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+
+            .dropdown-menu-trigger-label {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                flex: 1;
+                min-width: 0;
+            }
+        }
     }
 
     .dropdown-menu-placeholder {
@@ -29,14 +44,69 @@
 
     .dropdown-menu-items {
         color: var(--text-default, #1B1F24);
+        padding: 8px;
+    }
+
+    .dropdown-menu-footer {
+        border-top: 1px solid var(--border-weak, #E4E7EB);
+    }
+
+    .dropdown-menu-body {
+        max-height: 286px;
+        overflow-y: auto;
+    }
+
+    .dropdown-menu-body-transparent-scrollbar {
+        scrollbar-color: #8890991F transparent;
+
+        &::-webkit-scrollbar {
+            width: 10px;
+            height: 50px;
+          }
+        
+          &::-webkit-scrollbar-track {
+            background: transparent;
+            width: 10px;
+          }
+        
+          &::-webkit-scrollbar-thumb {
+            background-color: #8890991F;
+            border-radius: 10px;
+            border: 1.5px solid transparent;
+            background-clip: content-box;
+          }
+        
+          &::-webkit-scrollbar-thumb:hover {
+            background-color: #8890991F;
+          }
+        
+    }
+
+    .dropdown-menu-header {
+        padding: 4px 0px;
+        border-bottom: 1px solid var(--border-weak, #E4E7EB);
+        input {
+            border: none !important;
+            box-shadow: none !important;
+        }
     }
 
     .dropdown-menu-item {
         border-radius: 6px;
+        height: 30px;
+        padding: 7px 8px;
 
         &:hover {
             cursor: pointer;
-            background-color: var(--interactive-hover, #ACB2B959);
+            background-color: var(--interactive-default, #88909914);
+        }
+
+        .dropdown-menu-item-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
         }
     }
 
