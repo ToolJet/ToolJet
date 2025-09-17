@@ -35,6 +35,7 @@ class ItemDto {
 enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
+  STARTER = 'starter',
 }
 
 export enum SubscriptionMode {
@@ -67,6 +68,7 @@ export class ProrationDto {
 export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
+  STARTER = 'starter',
 }
 
 export class PaymentRedirectDto {
