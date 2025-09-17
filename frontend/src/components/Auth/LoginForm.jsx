@@ -16,6 +16,8 @@ export function LoginForm({ className, ...props }) {
     signUpText,
     signUpUrl,
     signUpCTA,
+    showSignup,
+    organizationName,
 
     // Form fields
     emailLabel,
@@ -55,21 +57,35 @@ export function LoginForm({ className, ...props }) {
           <h1 className="tw-text-2xl tw-font-bold tw-mb-0" data-cy="no-login-methods-warning">
             {signinHeader}
           </h1>
-          <div>
-            <p className="tw-text-balance tw-text-sm tw-text-muted-foreground tw-mb-0">
-              <span>{signUpText}</span>
-              <span>
-                <Link
-                  to={signUpUrl}
-                  className="tw-text-text-brand tw-text-[11px] tw-font-medium tw-no-underline tw-pl-1.5 tw-pb-0.5 tw-self-center hover:tw-text-button-primary-hover"
-                  tabIndex="-1"
-                  data-cy="create-an-account-link"
-                >
-                  {signUpCTA}
-                </Link>
-              </span>
+
+          {(organizationName || showSignup) && (
+            <p className="tw-text-balance tw-text-sm tw-text-text-placeholder tw-mb-0">
+              {organizationName && (
+                <>
+                  Sign in to the workspace -{' '}
+                  <span className="tw-font-medium" data-cy="workspace-name">
+                    {organizationName}
+                  </span>
+                  .
+                </>
+              )}{' '}
+              {showSignup && (
+                <>
+                  <span>{signUpText}</span>
+                  <span>
+                    <Link
+                      to={signUpUrl}
+                      className="tw-text-text-brand tw-text-[11px] tw-font-medium tw-no-underline tw-pl-1.5 tw-pb-0.5 tw-self-center hover:tw-text-button-primary-hover"
+                      tabIndex="-1"
+                      data-cy="create-an-account-link"
+                    >
+                      {signUpCTA}
+                    </Link>
+                  </span>
+                </>
+              )}
             </p>
-          </div>
+          )}
         </div>
         <div className="tw-grid tw-gap-4">
           <div className="tw-grid tw-gap-0.5">
@@ -144,7 +160,8 @@ LoginForm.propTypes = {
   signUpText: PropTypes.string,
   signUpUrl: PropTypes.string,
   signUpCTA: PropTypes.string,
-
+  showSignup: PropTypes.bool,
+  organizationName: PropTypes.string,
   // Form fields
   emailLabel: PropTypes.string,
   emailPlaceholder: PropTypes.string,
@@ -184,7 +201,8 @@ LoginForm.defaultProps = {
   signUpText: 'New to ToolJet?',
   signUpUrl: '#',
   signUpCTA: 'Create an account',
-
+  showSignup: true,
+  organizationName: '',
   // Form fields
   emailLabel: 'Email',
   emailPlaceholder: 'Enter your work email',
