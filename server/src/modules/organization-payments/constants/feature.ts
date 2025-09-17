@@ -1,6 +1,7 @@
 import { FEATURE_KEY } from './index';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeaturesConfig } from '@modules/organization-payments/types';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.ORGANIZATION_PAYMENTS]: {
@@ -14,7 +15,9 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.UPDATE_INVOICE]: {},
     [FEATURE_KEY.UPDATE_SUBSCRIPTION]: {},
-    [FEATURE_KEY.ADD_TOP_UP_CREDITS]: {},
+    [FEATURE_KEY.ADD_TOP_UP_CREDITS]: {
+      license: LICENSE_FIELD.VALID,
+    },
     [FEATURE_KEY.GET_AI_CREDITS_BALANCE]: {},
   },
 };
