@@ -23,6 +23,8 @@ export const SidebarItem = forwardRef(
       children,
       keepTooltipOpen,
       classes,
+      trigger = ['click', 'hover', 'focus'],
+      show = undefined,
       ...rest
     },
     ref
@@ -58,7 +60,7 @@ export const SidebarItem = forwardRef(
     if (!tip) return content;
     return (
       <OverlayTrigger
-        trigger={keepTooltipOpen ? [] : ['click', 'hover', 'focus']}
+        trigger={trigger}
         placement="right"
         delay={{ show: 250, hide: 200 }}
         overlay={
@@ -66,7 +68,7 @@ export const SidebarItem = forwardRef(
             {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
           </Tooltip>
         }
-        show={keepTooltipOpen || undefined}
+        show={show}
       >
         {content}
       </OverlayTrigger>
