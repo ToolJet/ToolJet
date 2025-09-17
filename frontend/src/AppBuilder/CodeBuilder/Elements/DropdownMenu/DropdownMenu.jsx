@@ -3,34 +3,58 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '@/AppBuilder/QueryManager/Components/DataSourceIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { LabeledDivider } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/_components';
 import cx from 'classnames';
+import Fuse from 'fuse.js';
 import './styles.scss';
+import AddQueryBtn from './AddQueryBtn';
+import InputComponent from '@/components/ui/Input/Index';
 
 export const DropdownMenu = (props) => {
-  const { value, onChange, forceCodeBox } = props;
+  const { value, onChange, darkMode } = props;
 
   const dataQueries = useStore((state) => state.dataQuery.queries.modules.canvas, shallow);
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredQueries, setFilteredQueries] = useState(dataQueries);
 
   // Simple emoji/text icons instead of lucide icons
-  const sourceOptions = useMemo(
-    () => [
-      { id: 'rawJson', label: 'Raw JSON', icon: <SolidIcon name="curlybraces" /> },
-      { id: 'jsonSchema', label: 'JSON schema', icon: <SolidIcon name="curlybraces" /> },
-      // { id: 'json-schema', label: 'JSON schema' },
-    ],
-    []
-  );
+  const sourceOptions = useMemo(() => {
+    const options = props.meta.options;
+    return options.map((option) => ({
+      id: option.value,
+      label: option.name,
+      icon: <SolidIcon name="curlybraces" />,
+    }));
+  }, [props.meta.options]);
 
   const queryOptions = useMemo(() => {
-    return dataQueries.map((query) => ({
+    return filteredQueries.map((query) => ({
       id: query.id,
       value: `{{queries.${query.id}.data}}`,
       label: query.name,
       icon: <DataSourceIcon source={query} height={16} />,
       type: 'query',
     }));
-  }, [dataQueries]);
+  }, [filteredQueries]);
+
+  const filterQueries = (value, queries) => {
+    if (value) {
+      const fuse = new Fuse(queries, { keys: ['name'], shouldSort: true, threshold: 0.3 });
+      const results = fuse.search(value);
+      let filterDataQueries = [];
+      results.every((result) => {
+        if (result.item.name === value) {
+          filterDataQueries = [];
+          filterDataQueries.push(result.item);
+          return false;
+        }
+        filterDataQueries.push(result.item);
+        return true;
+      });
+      setFilteredQueries(filterDataQueries);
+    } else {
+      setFilteredQueries(queries);
+    }
+  };
 
   const getSelectedSource = (value) => {
     if (!value) return null;
@@ -38,7 +62,7 @@ export const DropdownMenu = (props) => {
     if (selectedItem) {
       return selectedItem;
     }
-    if (!value.startsWith('{{queries.')) {
+    if (typeof value !== 'string' || !value.startsWith('{{queries.')) {
       return null;
     }
     const queryName = value.split('.')[1]?.replace('}}', '');
@@ -49,9 +73,32 @@ export const DropdownMenu = (props) => {
     return null;
   };
 
+  const handleChange = (data) => {
+    const { id, name, kind } = data;
+    const option = {
+      id: id,
+      label: name,
+      value: `{{queries.${id}.data}}`,
+      icon: <DataSourceIcon source={{ id, name, kind }} height={16} />,
+      type: 'query',
+    };
+    setSelectedSource(option);
+    onChange(`{{queries.${id}.data}}`);
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSource, setSelectedSource] = useState(() => getSelectedSource(value));
   const dropdownRef = useRef(null);
+
+  // Initialize filtered queries when dataQueries change
+  useEffect(() => {
+    setFilteredQueries(dataQueries);
+  }, [dataQueries]);
+
+  // Filter queries when search value changes
+  useEffect(() => {
+    filterQueries(searchValue, dataQueries);
+  }, [searchValue, dataQueries]);
 
   // Handle outside clicks
   useEffect(() => {
@@ -83,13 +130,17 @@ export const DropdownMenu = (props) => {
       onChange(source.id);
     } else if (source.type === 'query') {
       onChange(source.value);
-      forceCodeBox();
     }
   };
 
-  const renderCheckIcon = ({ id }) => {
-    if (value === id) {
-      return <SolidIcon name="check" width="16" height="16" fill="#4368E3" viewBox="0 0 16 16" />;
+  const renderCheckIcon = (props) => {
+    let transformedValue = props.value;
+    const { id, label } = props;
+    if (typeof transformedValue === 'string' && transformedValue.startsWith('{{queries.')) {
+      transformedValue = transformedValue.replace(id, label);
+    }
+    if (value === props.id || value === transformedValue) {
+      return <SolidIcon name="check" width="16" height="16" fill="#4368E3" viewBox="0 0 18 18" />;
     } else {
       return <div style={{ width: '16px', height: '16px' }}></div>;
     }
@@ -108,18 +159,20 @@ export const DropdownMenu = (props) => {
             }
           )}
         >
-          <div className="tw-flex tw-items-center">
+          <div className="dropdown-menu-trigger-content">
             {selectedSource ? (
               <>
                 <span className="tw-mr-2">{selectedSource.icon}</span>
-                <span>{selectedSource.label}</span>
+                <span className="dropdown-menu-trigger-label">{selectedSource.label}</span>
               </>
             ) : (
               <>
                 <span className="tw-mr-2 tw-text-gray-400">
                   <SolidIcon name="code" width="16" height="16" fill="#CCD1D5" />
                 </span>
-                <span className="tw-text-gray-400 dropdown-menu-placeholder">Select a source</span>
+                <span className="tw-text-gray-400 dropdown-menu-placeholder dropdown-menu-trigger-label">
+                  Select a source
+                </span>
               </>
             )}
           </div>
@@ -134,43 +187,51 @@ export const DropdownMenu = (props) => {
 
         {/* Dropdown menu */}
         {isOpen && (
-          <div className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-rounded-md tw-shadow-lg tw-p-2 dropdown-menu-container">
-            {/* Source options section */}
-            <div className="tw-py-1 dropdown-menu-items">
-              {sourceOptions.map((option) => (
-                <div
-                  key={option.id}
-                  onClick={() => selectSource(option)}
-                  className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left dropdown-menu-item"
-                >
-                  {renderCheckIcon(option)}
-                  <span className="icon-image">{option.icon}</span>
-                  <span>{option.label}</span>
-                </div>
-              ))}
+          <div className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-rounded-md dropdown-menu-container">
+            <div className="dropdown-menu-header">
+              <InputComponent
+                leadingIcon="search01"
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue('')}
+                size="medium"
+                placeholder="Search for queries"
+                value={searchValue}
+                {...(searchValue && { trailingAction: 'clear' })}
+              />
             </div>
-
             {dataQueries.length > 0 && (
               <>
-                {/* Divider with "From query" text */}
-                <LabeledDivider label="From query" />
-
                 {/* Query options section */}
-                <div className="tw-py-1 dropdown-menu-items">
+                <div className="dropdown-menu-items dropdown-menu-body dropdown-menu-body-transparent-scrollbar">
                   {queryOptions.map((option) => (
                     <div
                       key={option.id}
                       onClick={() => selectSource(option)}
-                      className="tw-flex tw-items-center tw-w-full tw-px-4 tw-py-2 tw-text-left dropdown-menu-item"
+                      className="tw-flex tw-items-center tw-w-full tw-text-left dropdown-menu-item"
                     >
                       {renderCheckIcon(option)}
                       <span className="icon-image">{option.icon}</span>
-                      <span>{option.label}</span>
+                      <span className="dropdown-menu-item-label">{option.label}</span>
                     </div>
                   ))}
                 </div>
               </>
             )}
+            {/* Source options section */}
+            <div className="dropdown-menu-items dropdown-menu-footer">
+              {sourceOptions.map((option) => (
+                <div
+                  key={option.id}
+                  onClick={() => selectSource(option)}
+                  className="tw-flex tw-items-center tw-w-full tw-text-left dropdown-menu-item"
+                >
+                  {renderCheckIcon(option)}
+                  <span className="icon-image">{option.icon}</span>
+                  <span className="dropdown-menu-item-label">{option.label}</span>
+                </div>
+              ))}
+              <AddQueryBtn onQueryCreate={handleChange} darkMode={darkMode} />
+            </div>
           </div>
         )}
       </div>
