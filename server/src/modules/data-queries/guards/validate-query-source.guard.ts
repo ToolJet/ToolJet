@@ -15,38 +15,46 @@ export class ValidateQuerySourceGuard implements CanActivate {
   constructor(private readonly dataSourceRepository: DataSourcesRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const { id, dataSourceId } = request.params;
-    const user: User = request.user;
+    const startTime = Date.now();
+    console.log(`ValidateQuerySourceGuard invoked at ${new Date().toISOString()}`);
+    try {
+      const request = context.switchToHttp().getRequest();
+      const { id, dataSourceId } = request.params;
+      const user: User = request.user;
 
-    // id or dataSourceId is mandatory
-    if (!(id || dataSourceId)) {
-      throw new BadRequestException();
+      // id or dataSourceId is mandatory
+      if (!(id || dataSourceId)) {
+        throw new BadRequestException();
+      }
+
+      // id and user are mandatory
+      if (!user) {
+        throw new ForbiddenException();
+      }
+
+      let dataSource: DataSource;
+
+      if (id) {
+        dataSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
+      } else {
+        dataSource = await this.dataSourceRepository.findById(dataSourceId);
+      }
+
+      // If app is not found, throw NotFoundException
+      if (!dataSource) {
+        throw new NotFoundException();
+      }
+
+      // Attach the found app to the request
+      request.tj_data_source = dataSource;
+      request.tj_resource_id = dataSource.id;
+
+      // Return true to allow the request to proceed
+      return true;
+    } finally {
+      console.log(
+        `ValidateQuerySourceGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
     }
-
-    // id and user are mandatory
-    if (!user) {
-      throw new ForbiddenException();
-    }
-
-    let dataSource: DataSource;
-
-    if (id) {
-      dataSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
-    } else {
-      dataSource = await this.dataSourceRepository.findById(dataSourceId);
-    }
-
-    // If app is not found, throw NotFoundException
-    if (!dataSource) {
-      throw new NotFoundException();
-    }
-
-    // Attach the found app to the request
-    request.tj_data_source = dataSource;
-    request.tj_resource_id = dataSource.id;
-
-    // Return true to allow the request to proceed
-    return true;
   }
 }

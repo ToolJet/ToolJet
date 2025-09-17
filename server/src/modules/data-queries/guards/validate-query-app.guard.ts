@@ -18,40 +18,47 @@ export class ValidateQueryAppGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const { id, versionId } = request.params;
-    const appId = request.body?.app_id;
-    const user: User = request.user;
+    const startTime = Date.now();
+    console.log(`ValidateQueryAppGuard invoked at ${new Date().toISOString()}`);
+    try {
+      const request = context.switchToHttp().getRequest();
+      const { id, versionId } = request.params;
+      const appId = request.body?.app_id;
+      const user: User = request.user;
 
-    if (!id && !versionId && !appId) {
-      throw new BadRequestException();
-    }
+      if (!id && !versionId && !appId) {
+        throw new BadRequestException();
+      }
 
-    // User is mandatory
-    if (!user) {
-      throw new ForbiddenException();
-    }
-    let app;
-    if (id) {
-      app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
-    }
-    if (appId) {
-      app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
-    }
-    if (versionId) {
-      app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
-    }
+      // User is mandatory
+      if (!user) {
+        throw new ForbiddenException();
+      }
+      let app;
+      if (id) {
+        app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
+      }
+      if (!app && appId) {
+        app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
+      }
+      if (!app && versionId) {
+        app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
+      }
 
-    // If app is not found, throw NotFoundException
-    if (!app) {
-      throw new NotFoundException('App not found');
+      // If app is not found, throw NotFoundException
+      if (!app) {
+        throw new NotFoundException('App not found');
+      }
+
+      // Attach the found app to the request
+      request.tj_app = app;
+      request.tj_resource_id = app.id;
+
+      // Return true to allow the request to proceed
+      return true;
+    } finally {
+      // Any cleanup logic if needed
+      console.log(`ValidateQueryAppGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
     }
-
-    // Attach the found app to the request
-    request.tj_app = app;
-    request.tj_resource_id = app.id;
-
-    // Return true to allow the request to proceed
-    return true;
   }
 }
