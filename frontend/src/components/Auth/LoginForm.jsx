@@ -54,7 +54,7 @@ export function LoginForm({ className, ...props }) {
     <FormWrapper>
       <form className={cn('tw-flex tw-flex-col tw-gap-6', className)} onSubmit={onSubmit} {...props}>
         <div className="tw-flex tw-flex-col tw-gap-0.5 tw-min-w-96">
-          <h1 className="tw-text-2xl tw-font-bold tw-mb-0" data-cy="no-login-methods-warning">
+          <h1 className="tw-text-4xl tw-tracking-tight tw-font-medium tw-mb-0" data-cy="">
             {signinHeader}
           </h1>
 
