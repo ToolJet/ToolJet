@@ -31,8 +31,8 @@ export enum ACTION_TYPE {
 }
 
 export const SNAPSHOT_FREQUENCY = 10;
-export const RETENTION_VISIBLE_LIMIT = 10;
-export const RETENTION_BUFFER_LIMIT = 19;
+export const RETENTION_VISIBLE_LIMIT = 100;
+export const RETENTION_BUFFER_LIMIT = 109;
 
 export enum FEATURE_KEY {
   LIST_HISTORY = 'list_history',

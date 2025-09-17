@@ -3,10 +3,7 @@ import { ACTION_TYPE } from '../constants';
 export interface HistoryEntryDto {
   id: string;
   sequenceNumber: number;
-  historyType: 'snapshot' | 'delta';
-  actionType: string;
   description: string;
-  operationScope?: Record<string, any>;
   user?: {
     id: string;
     firstName: string;
