@@ -33,6 +33,7 @@ import Clock from './Clock.jsx';
 import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
 import DatasourceGradient from './DatasourceGradient.jsx';
+import CoinIcon from './CoinIcon.jsx';
 import Column from './Column.jsx';
 import Columns from './Columns.jsx';
 import Compass from './Compass.jsx';
@@ -388,6 +389,8 @@ const Icon = (props) => {
       return <Clock {...props} />;
     case 'cursorclick':
       return <CursorClick {...props} />;
+    case 'coin':
+      return <CoinIcon {...props} />;
     case 'column':
       return <Column {...props} />;
     case 'columns':

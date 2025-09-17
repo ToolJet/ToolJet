@@ -22,6 +22,8 @@ export const getPrivateRoute = (page, params = {}) => {
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
     modules: '/modules',
+    subscription: '/settings/subscription',
+    license: '/settings/license',
   };
 
   let url = routes[page];

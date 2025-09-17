@@ -15885,8 +15885,8 @@ section.ai-message-prompt-input-wrapper {
   padding: 12px;
 
   &.inside-appbuilder {
-    border: 1px solid var(--border-weak, #4368e3);
-    margin: 16px;
+    margin: 0;
+    padding: 0.5rem 0.625rem;
 
     /* Elevations/300 */
     box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
