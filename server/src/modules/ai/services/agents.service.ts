@@ -9,7 +9,7 @@ export class AgentsService implements IAgentsService {
     throw new Error('Method not implemented.');
   }
 
-  async docs(prompt: string, organizationId): Promise<any> {
+  async docs(prompt: string, organizationId: string, previousMessages?: any[]): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

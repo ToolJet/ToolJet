@@ -90,4 +90,7 @@ export class CreateAiUserDto {
   @IsString()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsOptional()
+  utmParams?: Record<string, any>;
 }

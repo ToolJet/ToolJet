@@ -3,6 +3,7 @@ import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button/Button';
 
 // TODO: remove refs and related dependancies
 export const SidebarItem = forwardRef(
@@ -12,12 +13,16 @@ export const SidebarItem = forwardRef(
       selectedSidebarItem,
       className,
       icon,
-      iconFill = 'var(--slate8)',
+      IconComponent,
+      iconFill = 'var(--icon-strong)',
       commentBadge,
       text,
       onClick,
       badge = false,
       count,
+      children,
+      keepTooltipOpen,
+      classes,
       ...rest
     },
     ref
@@ -26,34 +31,42 @@ export const SidebarItem = forwardRef(
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
     const content = (
-      <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
-        {icon && (
-          <div
-            className={`sidebar-svg-icon  position-relative ${
-              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
-            }`}
-            data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
-          >
-            <SolidIcon
-              name={displayIcon}
-              width={icon == 'settings' ? 22.4 : 20}
-              fill={selectedSidebarItem === icon ? '#3E63DD' : iconFill}
-            />
+      <Button
+        {...rest}
+        className={`${className} ${
+          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
+        } ${icon}-icon`}
+        onClick={onClick && onClick}
+        ref={ref}
+        type="button"
+        aria-label={tip}
+        variant="ghost"
+        size="default"
+        iconOnly
+      >
+        {children && (
+          <div className={'sidebar-svg-icon  position-relative'}>
+            {children}
             {commentBadge && <SidebarItem.CommentBadge />}
           </div>
         )}
         {badge && <SidebarItem.Badge count={count} />}
         <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-      </div>
+      </Button>
     );
 
     if (!tip) return content;
     return (
       <OverlayTrigger
-        trigger={['click', 'hover', 'focus']}
+        trigger={keepTooltipOpen ? [] : ['click', 'hover', 'focus']}
         placement="right"
         delay={{ show: 250, hide: 200 }}
-        overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
+        overlay={
+          <Tooltip id="button-tooltip" className={classes?.tooltip}>
+            {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
+          </Tooltip>
+        }
+        show={keepTooltipOpen || undefined}
       >
         {content}
       </OverlayTrigger>
