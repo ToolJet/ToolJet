@@ -1119,37 +1119,46 @@
 
     .inner-container{
         display: flex;
-width: 300px;
-justify-content: space-between;
-align-items: center;  
+        width: 300px;
+        justify-content: space-between;
+        align-items: center;  
     }
 
     .inner-container-text{
         display: flex;
-width: 124px;
-flex-direction: column;
-justify-content: space-between;
-align-items: flex-start;
-flex-shrink: 0;
+        width: 124px;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-shrink: 0;
     }
 
     .top-up-button-container{
         margin-left: 20px;
         border-radius: 6px;
-    border: 1px solid var(--ai-grad, #FC5F70);
-    background: var(--button-secondary, #FFF);
-    font-size: 12px;
-    
-    /* Elevations/100 */
-    box-shadow: 0 0 1px 0 var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0 1px 1px 0 var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
+        border: 1px solid var(--ai-grad, #FC5F70);
+        background: var(--button-secondary, #FFF);
+        font-size: 12px;
+        box-shadow: 0 0 1px 0 var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0 1px 1px 0 var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
     }
 
     .top-up-button{
         width: 125px;
-    font-size: 12px;
-    padding: 10px;
-    height: 32px;
-
+        font-size: 12px;
+        padding: 10px;
+        height: 32px;
+        path {
+            fill: none !important
+        }
+    }
+    .top-up-button:disabled {
+        background: var(--button-secondary, #FFF) !important;
+        color: var(--text-default, #1B1F24) !important;
+        opacity: 1;
+        cursor: pointer;
+        path {
+        fill: none !important
+    }
     }
 
     .divider{
