@@ -24,7 +24,7 @@ function getHistory(appVersionId, page = 0, limit = 20) {
   );
 }
 
-function restoreToEntry(appVersionId, historyId, data) {
+function restoreToEntry(appVersionId, historyId) {
   const requestOptions = {
     method: 'POST',
     headers: {
@@ -32,7 +32,6 @@ function restoreToEntry(appVersionId, historyId, data) {
       ...authHeader(),
     },
     credentials: 'include',
-    body: JSON.stringify(data),
   };
 
   return fetch(`${config.apiUrl}/apps/versions/${appVersionId}/history/${historyId}/restore`, requestOptions).then(

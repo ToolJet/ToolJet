@@ -64,7 +64,7 @@ const useAppHistoryStore = create(
         );
 
         try {
-          const response = await appHistoryService.restoreToEntry(appVersionId, historyId, { confirmRestore: true });
+          const response = await appHistoryService.restoreToEntry(appVersionId, historyId);
 
           // Reload history after restoration
           await get().loadHistory(appVersionId);

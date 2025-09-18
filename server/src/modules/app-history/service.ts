@@ -29,8 +29,7 @@ export class AppHistoryService implements IAppHistoryService {
 
   async restoreToPoint(
     appVersionId: string,
-    historyId: string,
-    confirmRestore: boolean = false
+    historyId: string
   ): Promise<{
     success: boolean;
     newVersion: number;

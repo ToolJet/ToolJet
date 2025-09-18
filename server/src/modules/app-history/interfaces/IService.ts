@@ -36,8 +36,7 @@ export interface IAppHistoryService {
 
   restoreToPoint(
     appVersionId: string,
-    historyId: string,
-    confirmRestore?: boolean
+    historyId: string
   ): Promise<{
     success: boolean;
     newVersion: number;

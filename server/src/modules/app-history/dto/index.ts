@@ -1,4 +1,4 @@
-import { IsString, IsBoolean, IsOptional, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
 import { ACTION_TYPE, HISTORY_TYPE } from '../constants';
 
 export class CreateHistoryEntryDto {
@@ -33,12 +33,6 @@ export class UpdateDescriptionDto {
   @IsString()
   @IsNotEmpty()
   description: string;
-}
-
-export class RestoreRequestDto {
-  @IsBoolean()
-  @IsNotEmpty()
-  confirmRestore: boolean;
 }
 
 export class HistoryFiltersDto {

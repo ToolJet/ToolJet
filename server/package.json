@@ -122,7 +122,6 @@
     "moment": "^2.29.4",
     "neo4j-driver": "^5.28.1",
     "nest-winston": "^1.9.4",
-    "nestjs-cls": "^6.0.1",
     "nestjs-pino": "^1.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
