@@ -527,7 +527,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
               : query.kind === 'workflows'
-              ? { metadata: errorData?.metadata }
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
               : {}),
           },
           moduleId
