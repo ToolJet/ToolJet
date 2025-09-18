@@ -7,6 +7,8 @@ import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
+import 'cypress-mailhog';
+
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
@@ -410,25 +412,25 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
-      SELECT id FROM organizations WHERE name = 'My workspace';`,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
+  // cy.task("dbConnection", {
+  //   dbconfig: Cypress.env("app_db"),
+  //   sql: `
+  //     SELECT id FROM organizations WHERE name = 'My workspace';`,
+  // }).then((resp) => {
+  //   const workspaceId = resp.rows[0].id;
 
-    cy.apiLogin(
-      "dev@tooljet.io",
-      "password",
-      workspaceId,
-      "/my-workspace"
-    ).then(() => {
-      cy.visit("/");
-      cy.wait(2000);
-      cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    });
+  cy.apiLogin(
+    "dev@tooljet.io",
+    "password",
+    // workspaceId,
+    // "/my-workspace"
+  ).then(() => {
+    cy.visit("/");
+    cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   });
 });
+// });
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
@@ -561,7 +563,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
