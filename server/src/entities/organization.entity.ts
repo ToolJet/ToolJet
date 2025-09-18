@@ -20,6 +20,8 @@ import { GroupPermission } from './group_permission.entity';
 import { UserDetails } from './user_details.entity';
 import { OrganizationTjdbConfigurations } from './organization_tjdb_configurations.entity';
 import { WhiteLabelling } from './white_labelling.entity';
+import { OrganizationsAiFeature } from './organizations_ai_feature.entity';
+import { OrganizationAiCreditHistory } from './organization_ai_credit_history.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -102,4 +104,10 @@ export class Organization extends BaseEntity {
     (organizationTjdbConfiguration) => organizationTjdbConfiguration.organizationId
   )
   organizationTjdbConfigurations: OrganizationTjdbConfigurations[];
+
+  @OneToMany(() => OrganizationsAiFeature, (aiFeature) => aiFeature.organization)
+  aiFeatures: OrganizationsAiFeature[];
+
+  @OneToMany(() => OrganizationAiCreditHistory, (aiCreditHistory) => aiCreditHistory.organization)
+  aiCreditHistory: OrganizationAiCreditHistory[];
 }
