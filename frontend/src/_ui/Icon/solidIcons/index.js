@@ -15,6 +15,7 @@ import ArrowUp from './ArrowUp.jsx';
 import ArrowUpRightIcon from './ArrowUpRightIcon.jsx';
 import ArrowUpDown from './ArrowUpDown.jsx';
 import BulbIcon from './Bulb.jsx';
+import BulletList from './BulletList.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
@@ -348,6 +349,8 @@ const Icon = (props) => {
       return <AuditLogs {...props} />;
     case 'bulb':
       return <BulbIcon {...props} />;
+    case 'bullet-list':
+      return <BulletList {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':
