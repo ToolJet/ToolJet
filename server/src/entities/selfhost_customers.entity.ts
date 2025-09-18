@@ -27,6 +27,9 @@ export class SelfhostCustomers extends BaseEntity {
   @Column({ name: 'license_key', type: 'varchar', length: 10000 })
   licenseKey: string;
 
+  @Column({ name: 'ai_api_key', type: 'varchar', length: 255, nullable: true })
+  aiApiKey: string | null;
+
   @Column({ name: 'host_name', type: 'varchar', length: 255 })
   hostname: string;
 

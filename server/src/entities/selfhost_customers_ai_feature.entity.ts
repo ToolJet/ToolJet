@@ -30,9 +30,6 @@ export class SelfhostCustomersAiFeature extends BaseEntity {
   @Column({ name: 'selfhost_customer_id', type: 'uuid' })
   selfhostCustomerId: string;
 
-  @Column({ name: 'api_key', type: 'varchar', length: 255 })
-  apiKey: string;
-
   @Column({ name: 'balance', type: 'numeric', precision: 12, scale: 2 })
   balance: number;
 
