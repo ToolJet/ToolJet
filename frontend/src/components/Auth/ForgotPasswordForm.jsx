@@ -6,6 +6,7 @@ import { CornerDownLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { FormWrapper } from '@/components/Auth/FormWrapper';
 
 export function ForgotPasswordForm({ className, ...props }) {
@@ -68,8 +69,10 @@ export function ForgotPasswordForm({ className, ...props }) {
 
         <div className="tw-grid tw-gap-4">
           <div className="tw-grid tw-gap-0.5">
+            <Label htmlFor="email" size="large">
+              {emailLabel}
+            </Label>
             <Input
-              label={emailLabel}
               type="email"
               placeholder={emailPlaceholder}
               value={emailValue}

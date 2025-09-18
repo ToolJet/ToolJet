@@ -5,6 +5,7 @@ import { CornerDownLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { FormWrapper } from '@/components/Auth/FormWrapper';
 
 export function SetupAdminForm({ className, ...props }) {
@@ -58,8 +59,10 @@ export function SetupAdminForm({ className, ...props }) {
 
         <div className="tw-grid tw-gap-4">
           <div className="tw-grid tw-gap-0.5">
+            <Label htmlFor="name" size="large">
+              {nameLabel}
+            </Label>
             <Input
-              label={nameLabel}
               type="text"
               placeholder={namePlaceholder}
               value={nameValue}
@@ -73,8 +76,10 @@ export function SetupAdminForm({ className, ...props }) {
           </div>
 
           <div className="tw-grid tw-gap-0.5">
+            <Label htmlFor="email" size="large">
+              {emailLabel}
+            </Label>
             <Input
-              label={emailLabel}
               type="email"
               placeholder={emailPlaceholder}
               value={emailValue}
@@ -88,8 +93,10 @@ export function SetupAdminForm({ className, ...props }) {
           </div>
 
           <div className="tw-grid tw-gap-0.5">
+            <Label htmlFor="password" size="large">
+              {passwordLabel}
+            </Label>
             <Input
-              label={passwordLabel}
               type="password"
               placeholder={passwordPlaceholder}
               value={passwordValue}

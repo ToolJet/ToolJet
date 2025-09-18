@@ -25,6 +25,19 @@ export const Input = React.forwardRef(
 
     const validationClass = response === true ? 'valid-textarea' : response === false ? 'invalid-textarea' : '';
 
+    const getTextSize = () => {
+      switch (size) {
+        case 'small':
+          return 'tw-text-[12px]/[18px]';
+        case 'medium':
+          return 'tw-text-[12px]/[18px]';
+        case 'large':
+          return 'tw-text-[14px]/[20px]';
+        default:
+          return 'tw-text-[12px]/[18px]';
+      }
+    };
+
     const inputStyle = ` ${
       props.disabled ? 'placeholder:tw-text-text-placeholder' : 'placeholder:tw-text-text-default'
     } ${
@@ -36,7 +49,9 @@ export const Input = React.forwardRef(
         {multiline ? (
           <textarea
             className={cn(
-              `tw-relative tw-peer tw-flex tw-text-[12px]/[18px] tw-w-full tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-bg-background-surface-layer-01 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
+              `tw-relative tw-peer tw-flex ${getTextSize()} tw-w-full tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-bg-background-surface-layer-01 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${
+                props.styles
+              }`,
               className,
               validationClass
             )}
@@ -50,7 +65,9 @@ export const Input = React.forwardRef(
               type={isPasswordField && isPasswordVisible ? 'text' : type}
               className={cn(
                 inputVariants({ size }),
-                `tw-peer tw-flex tw-text-[12px]/[18px] tw-w-full tw-rounded-[8px] tw-border tw-border-solid tw-border-border-strong tw-bg-background-surface-layer-01 tw-px-3 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
+                `tw-peer tw-flex ${getTextSize()} tw-w-full tw-rounded-[8px] tw-border tw-border-solid tw-border-border-strong tw-bg-background-surface-layer-01 tw-px-3 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${
+                  props.styles
+                }`,
                 className,
                 inputStyle
               )}
