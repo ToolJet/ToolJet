@@ -1,5 +1,6 @@
 export enum MODULES {
   APP = 'APP',
+  METRICS = 'METRICS',
   SESSION = 'SESSION',
   ROOT = 'ROOT',
   VERSION = 'VERSION',

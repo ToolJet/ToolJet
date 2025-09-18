@@ -32,7 +32,6 @@ export interface ResourceDetails {
 interface Features {
   [FEATURE_KEY.HEALTH]: FeatureConfig;
   [FEATURE_KEY.ROOT]: FeatureConfig;
-  [FEATURE_KEY.METRICS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

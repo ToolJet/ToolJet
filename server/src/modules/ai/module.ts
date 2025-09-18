@@ -7,7 +7,6 @@ import { AppsRepository } from '@modules/apps/repository';
 import { FeatureAbilityFactory } from './ability';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
-import { LicenseModule } from '@modules/licensing/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { ArtifactRepository } from './repositories/artifact.repository';

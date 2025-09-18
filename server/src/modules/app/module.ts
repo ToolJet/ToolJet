@@ -62,7 +62,7 @@ import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { MetricsService } from './services/metrics.service';
+import { MetricsModule } from '@modules/metrices/module';
 
 export class AppModule implements OnModuleInit {
   constructor(
@@ -137,6 +137,9 @@ export class AppModule implements OnModuleInit {
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       conditionalImports.push(await WorkflowsModule.register(configs, true));
     }
+    if (process.env.ENABLE_METRICS === 'true') {
+      conditionalImports.push(MetricsModule);
+    }
 
     const imports = [...baseImports, ...conditionalImports];
 
@@ -145,7 +148,6 @@ export class AppModule implements OnModuleInit {
       imports: [...modules, ...imports],
       controllers: [AppController],
       providers: [
-        MetricsService,
         ShutdownHook,
         GetConnection,
         ClearSSOResponseScheduler,
