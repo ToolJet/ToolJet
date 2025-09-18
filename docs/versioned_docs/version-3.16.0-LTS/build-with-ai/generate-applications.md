@@ -12,10 +12,10 @@ To create an application, follow these steps:
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/prompt.png" alt="tooljet generate apps" />
 2. **Accept or modify requirements** – After submitting your prompt, a new app will be created, and you’ll be taken to the App Builder, where a specs files will be generated including list of features, navigation, etc. 
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/specs.png" alt="tooljet generate apps" />
-    After reviewing the specs thoroughly, you can either accept or modify these specs before moving the next step.
+    After reviewing the specs thoroughly, you can either accept or modify these specs before moving to the next step.
 3. **Design Layout** - Once you accept the specs then a Design Layout will be generated, you can either accept it or modify it in the visual builder.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ui.png" alt="tooljet generate apps" />
-4. **Select Data Source** - After approving the design layout, you need to select the data source, ToolJet AI Builder currently supports three data sources - ToolJet DB, PostgreSQL and MongoDB.
+4. **Select Data Source** - After approving the design layout, you need to select the data source, ToolJet AI Builder currently supports two data sources - PostgreSQL and MongoDB.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ds.png" alt="tooljet generate apps" />
 5. **Database Schema** - After selecting the data source you can approve or modify the database schema.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/schema.png" alt="tooljet generate apps" />
@@ -29,9 +29,7 @@ You can modify any application in ToolJet with AI assistance, whether it's a new
 
 ## Limitations
 
-ToolJet supports generating queries with AI for the following data sources:
+ToolJet AI supports generating queries with [RunJS](/docs/data-sources/run-js) and the following data sources:
 
 - [Postgres](/docs/data-sources/postgresql/)
-- [MySQL](/docs/data-sources/mysql/)
-- [SQL Server](/docs/data-sources/mssql/)
-- [RunJS Queries](/docs/data-sources/run-js)
+- [MongoDB](/docs/data-sources/mongodb)

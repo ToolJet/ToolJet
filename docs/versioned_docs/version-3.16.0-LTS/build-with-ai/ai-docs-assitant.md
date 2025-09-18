@@ -1,15 +1,16 @@
 ---
 id: ai-docs-assistant
-title: AI Docs Assistant
+title: Learn with AI
 ---
 
-The **AI Docs Assistant** is an intelligent assistant designed to help you navigate ToolJet’s documentation with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support by summarizing docs, troubleshooting issues, and guiding you through best practices.
+The **Learn with AI** is an intelligent assistant designed to help you navigate ToolJet’s documentation with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support by summarizing docs, troubleshooting issues, and guiding you through best practices.
 
-You can access the AI Docs Assistant under the **Learn** tab in the Build with AI sidebar. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
+You can access this feature by selcting **Learn** from the dropdown on the AI chat. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
 
-<img className="screenshot-full img-full"  src="/img/tooljet-ai/doc0.png" alt="tooljet ai doc assistant" />
+<img className="screenshot-full img-full"  src="/img/tooljet-ai/learn-with-ai/dropdown.png" alt="tooljet ai doc assistant" />
  
-### What You Can Do with the AI Docs Assistant  
+### What You Can Do with Learn with AI
+
 - Get guidance on setting up workspaces, managing users, and configuring roles.  
 - Quickly understand complex topics with clear, actionable steps   
 - Find answers to common questions and resolve issues efficiently.  

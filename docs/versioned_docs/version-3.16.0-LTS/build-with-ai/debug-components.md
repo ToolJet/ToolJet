@@ -12,9 +12,9 @@ Now, you can fix these errors in components with AI. This new feature is built t
 
 If a component property contains an error, you’ll see an error message in the code hinter. Below this message, a **Fix with AI**  button appears. This button only shows up when there’s an actual error once the error is resolved, the button disappears.
 
-<img className="screenshot-full img-s" style={{marginBottom:"15px"}}  src="/img/tooljet-ai/fix-with-ai/code-hinter-error.png" alt="Fix with AI button in the code hinter" />
+<img className="screenshot-full img-l" style={{marginBottom:"15px"}}  src="/img/tooljet-ai/fix-with-ai/code-hinter-error.png" alt="Fix with AI button in the code hinter" />
 
-Clicking on the **Fix with AI** opens a mini chat window, anchored right near the error and it knows which component and property the issue is coming from. This means you don’t need to re-explain the problem. The AI sees the broken component, the error message, and and fixes it for you. This is a single action chat and does not retain context of previous fixes.
+Clicking on the **Fix with AI** opens a mini chat window, anchored right near the error, and it knows which component and property the issue is coming from. This means you don’t need to re-explain the problem. The AI sees the broken component, the error message, and fixes it for you. This is a single action chat and does not retain context of previous fixes.
 
 <img className="screenshot-full img-s" style={{marginBottom:"15px"}}  src="/img/tooljet-ai/fix-with-ai/ai-processing.png" alt="AI processing the response" />
 
