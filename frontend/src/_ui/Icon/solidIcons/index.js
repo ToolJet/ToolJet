@@ -15,6 +15,7 @@ import ArrowUp from './ArrowUp.jsx';
 import ArrowUpRightIcon from './ArrowUpRightIcon.jsx';
 import ArrowUpDown from './ArrowUpDown.jsx';
 import BulbIcon from './Bulb.jsx';
+import BulletList from './BulletList.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
@@ -279,11 +280,14 @@ import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
 import AITopup from './AITopup.jsx';
+import AITopupWhite from './AITopupWhite.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'ai-topup':
       return <AITopup {...props} />;
+    case 'ai-topup-white':
+      return <AITopupWhite {...props} />;
     case 'tooljetai':
       return <TooljetAi {...props} />;
     case 'lighticon':
@@ -348,6 +352,8 @@ const Icon = (props) => {
       return <AuditLogs {...props} />;
     case 'bulb':
       return <BulbIcon {...props} />;
+    case 'bullet-list':
+      return <BulletList {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':

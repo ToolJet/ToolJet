@@ -321,7 +321,7 @@ const useAppData = (
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
         if (setConversation && setDocsConversation) {
-          setConversation(conversation);
+          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
@@ -631,7 +631,7 @@ const useAppData = (
           isPublic: appData.isPublic,
           isReleasedApp: isReleasedApp,
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
-          aiGenerationMetadata: appData.aiGenerationMetadata || {},
+          aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
         });
 

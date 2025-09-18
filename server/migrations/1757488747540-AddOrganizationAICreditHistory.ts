@@ -4,7 +4,7 @@ export class AddOrganizationAICreditHistory1757488747540 implements MigrationInt
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enums
     await queryRunner.query(
-      `CREATE TYPE "transaction_type_enum" AS ENUM ('debit', 'credit')`
+      `CREATE TYPE "transaction_type_enum" AS ENUM ('debit', 'credit', 'refund')`
     );
     await queryRunner.query(
       `CREATE TYPE "transaction_status_enum" AS ENUM ('success', 'failure')`
