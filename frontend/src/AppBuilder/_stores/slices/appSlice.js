@@ -111,12 +111,12 @@ export const createAppSlice = (set, get) => ({
           )
       )
       .map(([key, component]) => {
-        console.log(key, component);
         return {
           ...component,
           id: component.id || key,
         };
       });
+
     const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       const visibility =
@@ -131,11 +131,9 @@ export const createAppSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts)
-      .filter((layout) => {
-        return currentMainCanvasComponents.find((component) => temporaryLayouts?.[component.id]);
-      })
-      .reduce((max, layout) => {
+    const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
+      .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
+      .reduce((max, [componentId, layout]) => {
         const sum = layout.top + layout.height;
         return Math.max(max, sum);
       }, 0);
