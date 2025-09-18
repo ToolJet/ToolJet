@@ -700,7 +700,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       });
 
       const result = JSON.parse(response.body);
-      console.log('access token result', result);
       return {
         ...(isMultiAuthEnabled ? { user_id: userId } : {}),
         access_token: result['access_token'],
@@ -751,7 +750,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (Array.isArray(currentOption)) {
         for (let i = 0; i < currentOption.length; i++) {
           const curr = currentOption[i];
-
+          // Handle nested arrays (like [['', '']])
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
@@ -760,6 +759,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
                 curr[j] = resolved;
+              }
+            }
+          } else if (typeof curr === 'object' && curr !== null) {
+            // Handle nested objects in arrays (specifically for Openapi)
+            for (const objKey of Object.keys(curr)) {
+              const objValue = curr[objKey];
+              constantMatcher.lastIndex = 0;
+
+              if (constantMatcher.test(objValue)) {
+                const resolved = await this.resolveConstants(objValue, organizationId, environmentId, user);
+                curr[objKey] = resolved;
               }
             }
           }

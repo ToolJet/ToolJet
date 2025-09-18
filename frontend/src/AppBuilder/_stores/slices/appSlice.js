@@ -321,6 +321,9 @@ export const createAppSlice = (set, get) => ({
   getHomePageId: (moduleId = 'canvas') => {
     return get().appStore.modules[moduleId].app.homePageId;
   },
+  getAppType: (moduleId = 'canvas') => {
+    return get().appStore.modules[moduleId].app.appType || 'front-end';
+  },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
   setSelectedUserGroups: (groups) =>
     set((state) => {

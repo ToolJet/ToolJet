@@ -974,6 +974,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const { eventsSlice, dataQuery } = get();
       const { generateAppActions } = eventsSlice;
       const { query, mode, isPreview, code, currentState, queryResult } = options;
+      const appType = get().getAppType(moduleId);
       let pyodide;
       try {
         pyodide = await loadPyodide();
@@ -1029,6 +1030,7 @@ export const createQueryPanelSlice = (set, get) => ({
         await pyodide.globals.set('page', deepClone(resolvedState['page']));
         await pyodide.globals.set('parameters', currentState['parameters']);
         await pyodide.globals.set('variables', appStateVars);
+        if (appType === 'module') await pyodide.globals.set('input', resolvedState['input']);
         if (queryResult) await pyodide.globals.set('data', queryResult);
 
         await pyodide.loadPackagesFromImports(code);
@@ -1068,9 +1070,11 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { runPythonTransformation },
         getResolvedState,
+        getAppType,
       } = get();
       let result = {};
       const currentState = getResolvedState(moduleId);
+      const appType = getAppType(moduleId);
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -1085,11 +1089,24 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedGlobals = currentState?.globals;
           const proxiedConstants = currentState?.constants;
           const proxiedVariables = currentState?.variables;
+          const proxiedInput = currentState?.input;
           const proxiedPage = deepClone(currentState?.page);
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
           const evalFunction = Function(
-            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
+            [
+              'data',
+              'moment',
+              '_',
+              'components',
+              'queries',
+              'globals',
+              'variables',
+              'page',
+              'constants',
+              ...(appType === 'module' ? ['input'] : []),
+              'actions',
+            ],
             transformation
           );
 
@@ -1103,6 +1120,7 @@ export const createQueryPanelSlice = (set, get) => ({
             proxiedVariables,
             proxiedPage,
             proxiedConstants,
+            ...(appType === 'module' ? [proxiedInput] : []),
             {
               logError: function (log) {
                 return actions.logError.call(actions, log, true);
@@ -1279,6 +1297,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
+      const appType = get().getAppType(moduleId);
 
       if (isValidCode.status === 'failed') {
         return isValidCode;
@@ -1384,6 +1403,7 @@ export const createQueryPanelSlice = (set, get) => ({
           'actions',
           'constants',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
           code,
         ];
         var evalFn = new AsyncFunction(...fnParams);
@@ -1400,6 +1420,7 @@ export const createQueryPanelSlice = (set, get) => ({
           actions,
           resolvedState?.constants,
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
         ];
         result = {
           status: 'ok',
