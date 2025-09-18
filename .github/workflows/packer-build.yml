@@ -78,7 +78,30 @@ jobs:
         env:
           PACKER_LOG: 1
 
+      - name: Cleanup EC2 instances
+        if: always()
+        run: |
+          echo "Checking for running EC2 instances created by Packer in us-west-2..."
+
+          # Get instances with Packer builder tag that are running
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --region us-west-2 \
+            --filters "Name=tag:Name,Values=Packer Builder" \
+                      "Name=instance-state-name,Values=running,pending" \
+            --query 'Reservations[*].Instances[*].InstanceId' \
+            --output text)
+
+          if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
+            echo "Found running instances: $INSTANCE_IDS"
+            echo "Terminating instances..."
+            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
+            echo "Terminated instances: $INSTANCE_IDS"
+          else
+            echo "No running Packer instances found"
+          fi
+
       - name: Send Slack Notification
+        if: always()
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
             message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
