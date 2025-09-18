@@ -5,7 +5,7 @@ import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils
 import { noop } from 'lodash';
 import { useDropdownContext } from './DropdownProvider';
 
-const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }) => {
+const DropdownComponent = ({ options = {}, onClose = noop, container, theme = 'light', ...props }) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
@@ -90,6 +90,7 @@ const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }
           className={`${props.className}__content`}
           style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
           container={getContainer()}
+          theme={theme}
         >
           <SelectGroup>
             {Object.keys(options).map((key) => (

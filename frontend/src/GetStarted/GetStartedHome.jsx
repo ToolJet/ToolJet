@@ -1,19 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import AiBuilder from './AiBuilder';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
-import toast from 'react-hot-toast';
-import { appsService, authenticationService } from '@/_services';
-import { v4 as uuidv4 } from 'uuid';
-import { sample } from 'lodash';
-import { useNavigate } from 'react-router-dom';
-import { getWorkspaceId } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
-import iconConfig from '../HomePage/Configs/AppIcon.json';
-
-const { iconList, defaultIcon } = iconConfig;
+import HomePagePromptSection from './HomePagePromptSection';
 
 const WIDGET_TYPES = {
   APP: {
@@ -41,73 +32,6 @@ const WIDGET_TYPES = {
     iconColor: 'var(--icon-danger)',
   },
 };
-
-function Hero() {
-  const isLoadingAiApp = useStore((state) => state.ai?.isLoading ?? false);
-  const creditsLeft = useStore((store) => store.ai?.creditsRemaining) || 0;
-  const isAiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
-
-  const navigate = useNavigate();
-
-  const createApp = useCallback(
-    async (appName, _unused, prompt) => {
-      try {
-        const canCreateApp = authenticationService?.currentSessionValue?.user_permissions?.app_create;
-        if (!canCreateApp) {
-          toast.error('You do not have permission to create an app', { style: { maxWidth: '339px' } });
-          return;
-        }
-        const data = await appsService.createApp({
-          icon: sample(iconList) || defaultIcon,
-          name: appName,
-          type: 'front-end',
-          prompt,
-        });
-        const workspaceId = getWorkspaceId();
-        navigate(`/${workspaceId}/apps/${data.id}`, { state: { prompt } });
-        toast.success('App created successfully!');
-        return true;
-      } catch (error) {
-        if (error.statusCode === 409) return false;
-        toast.error(error?.error || 'Failed to create app');
-        throw error;
-      }
-    },
-    [navigate]
-  );
-
-  const handleAiBuilderChange = (value) => {
-    if (!isAiFeaturesEnabled) {
-      toast.error('App generation with ToolJet is disabled. Contact admin to know more.', {
-        className:
-          'tw-max-w-72 tw-px-4 tw-py-3 tw-gap-2 [&>div]:tw-self-start [&>div+div]:tw-m-0 [&>div+div]:tw-font-medium',
-        style: { wordBreak: 'normal' },
-      });
-
-      return;
-    }
-
-    if (isLoadingAiApp || creditsLeft <= 0) return;
-
-    if (!value?.trim()) {
-      return toast.error('Prompt can not be empty');
-    }
-    createApp(`Untitled App: ${uuidv4()}`, undefined, value);
-  };
-
-  return (
-    <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-3" role="banner">
-      <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-0.5 tw-items-center tw-justify-start tw-p-0 tw-relative tw-w-full">
-        <SolidIcon name="tooljetai" width={24} height={24} className="" data-name="TJ AI" aria-label="ToolJet AI" />
-
-        <h1 className="tw-text-2xl tw-text-center tw-text-text-default tw-font-medium tw-mb-3">
-          What do you want to build today?
-        </h1>
-        <AiBuilder onSubmit={handleAiBuilderChange} />
-      </div>
-    </div>
-  );
-}
 
 function DividerWithText() {
   return (
@@ -184,7 +108,7 @@ function GetStartedHome({ isToolJetCloud }) {
 
   return (
     <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
-      <Hero />
+      <HomePagePromptSection />
       <DividerWithText />
       <GetStartedOptionsRow isToolJetCloud={isToolJetCloud} />
     </div>
