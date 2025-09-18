@@ -955,12 +955,15 @@
 }
 
 .due-banner {
+    width: 880px;
     display: flex;
     justify-content: space-between;
     border: 1px solid var(--slate5);
     padding: 20px 30px;
     background-color: var(--base);
     border-radius: 6px;
+    margin: auto auto 20px auto; 
+
 
     .due-info-container {
         display: flex;
