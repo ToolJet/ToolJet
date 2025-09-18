@@ -1,5 +1,5 @@
 import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common';
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
 import { SourceOptions, QueryOptions } from './types';
@@ -16,7 +16,7 @@ export default class MongodbService implements QueryService {
         case 'list_collections':
           result = await db.listCollections().toArray();
           break;
-         case 'create_collection':
+        case 'create_collection':
           const collection = await db.createCollection(queryOptions.collection, this.parseEJSON(queryOptions.options));
           result = {
             collectionName: collection.collectionName,
@@ -132,6 +132,9 @@ export default class MongodbService implements QueryService {
             .collection(queryOptions.collection)
             .aggregate(this.parseEJSON(queryOptions.pipeline), this.parseEJSON(queryOptions.options))
             .toArray();
+          break;
+        case 'create_objectid':
+          result = { objectId: new ObjectId().toHexString() };
           break;
       }
     } catch (error) {
