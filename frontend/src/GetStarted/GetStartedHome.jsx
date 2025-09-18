@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AiBuilder from './AiBuilder';
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { sample } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
+import useStore from '@/AppBuilder/_stores/store';
 import iconConfig from '../HomePage/Configs/AppIcon.json';
 
 const { iconList, defaultIcon } = iconConfig;
@@ -42,7 +43,12 @@ const WIDGET_TYPES = {
 };
 
 function Hero() {
+  const isLoadingAiApp = useStore((state) => state.ai?.isLoading ?? false);
+  const creditsLeft = useStore((store) => store.ai?.creditsRemaining) || 0;
+  const isAiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+
   const navigate = useNavigate();
+
   const createApp = useCallback(
     async (appName, _unused, prompt) => {
       try {
@@ -70,22 +76,31 @@ function Hero() {
     [navigate]
   );
 
-  const handleAiBuilderChange = useCallback(
-    (value) => {
-      if (!value) return;
-      if (!value.trim()) {
-        return toast.error('Prompt can not be empty');
-      }
-      createApp(`Untitled App: ${uuidv4()}`, undefined, value);
-    },
-    [createApp]
-  );
+  const handleAiBuilderChange = (value) => {
+    if (!isAiFeaturesEnabled) {
+      toast.error('App generation with ToolJet is disabled. Contact admin to know more.', {
+        className:
+          'tw-max-w-72 tw-px-4 tw-py-3 tw-gap-2 [&>div]:tw-self-start [&>div+div]:tw-m-0 [&>div+div]:tw-font-medium',
+        style: { wordBreak: 'normal' },
+      });
+
+      return;
+    }
+
+    if (isLoadingAiApp || creditsLeft <= 0) return;
+
+    if (!value?.trim()) {
+      return toast.error('Prompt can not be empty');
+    }
+    createApp(`Untitled App: ${uuidv4()}`, undefined, value);
+  };
 
   return (
-    <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-5" role="banner">
-      <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-1 tw-items-center tw-justify-start tw-p-0 tw-relative tw-w-full">
+    <div className="tw-relative tw-shrink-0 tw-w-full tw-mb-3" role="banner">
+      <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-0.5 tw-items-center tw-justify-start tw-p-0 tw-relative tw-w-full">
         <SolidIcon name="tooljetai" width={24} height={24} className="" data-name="TJ AI" aria-label="ToolJet AI" />
-        <h1 className="tw-font-display-small tw-text-center tw-text-text-default tw-mb-2">
+
+        <h1 className="tw-text-2xl tw-text-center tw-text-text-default tw-font-medium tw-mb-3">
           What do you want to build today?
         </h1>
         <AiBuilder onSubmit={handleAiBuilderChange} />
@@ -161,8 +176,14 @@ function GetStartedOptionsRow({ isToolJetCloud }) {
 }
 
 function GetStartedHome({ isToolJetCloud }) {
+  const getCreditBalance = useStore((store) => store.ai?.getCreditBalance);
+
+  useEffect(() => {
+    getCreditBalance?.();
+  }, [getCreditBalance]);
+
   return (
-    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-4 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
+    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <Hero />
       <DividerWithText />
       <GetStartedOptionsRow isToolJetCloud={isToolJetCloud} />
