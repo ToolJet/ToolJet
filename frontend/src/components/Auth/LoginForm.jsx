@@ -89,8 +89,10 @@ export function LoginForm({ className, ...props }) {
         </div>
         <div className="tw-grid tw-gap-4">
           <div className="tw-grid tw-gap-0.5">
+            <Label htmlFor="email" size="large">
+              {emailLabel}
+            </Label>
             <Input
-              label={emailLabel}
               type="email"
               placeholder={emailPlaceholder}
               value={emailValue}
@@ -104,7 +106,9 @@ export function LoginForm({ className, ...props }) {
           </div>
           <div className="tw-grid tw-gap-0.5">
             <div className="tw-flex tw-items-center tw-justify-between">
-              <Label htmlFor="password">{passwordLabel}</Label>
+              <Label htmlFor="password" size="large">
+                {passwordLabel}
+              </Label>
               {showForgotPassword && (
                 <Link
                   to={forgotPasswordUrl}

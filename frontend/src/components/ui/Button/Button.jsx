@@ -7,8 +7,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
+// eslint-disable-next-line import/no-unresolved
+import { DynamicIcon } from 'lucide-react/dynamic';
 import './Button.scss';
-import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize } from './ButtonUtils.jsx';
+import {
+  getDefaultIconFillColor,
+  getLucideIconClassName,
+  defaultButtonFillColour,
+  getIconSize,
+  getLucideIconSize,
+} from './ButtonUtils.jsx';
 
 const buttonVariants = cva(
   'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors tw-focus-visible:tw-outline-none tw-disabled:tw-pointer-events-none tw-disabled:tw-opacity-50',
@@ -132,26 +140,33 @@ const Button = forwardRef(
       fill = '',
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       loaderText = null,
+      isLucid = false, // Use Lucide icons instead of SolidIcon
       ...props
     },
     ref
   ) => {
-    const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
+    const iconFillColor =
+      !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
+    const lucideIconClassName = getLucideIconClassName(variant, iconOnly);
     const Comp = asChild ? Slot : 'button';
+    const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
+
     const leadingIconElement = leadingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={leadingIcon} fill={iconFillColor} />
+      <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
+        {isLucid ? (
+          <DynamicIcon name={leadingIcon} size={iconSize} className={lucideIconClassName} />
+        ) : (
+          <SolidIcon name={leadingIcon} fill={iconFillColor} />
+        )}
       </div>
     );
     const trailingIconElement = trailingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={trailingIcon} fill={iconFillColor} />
+      <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
+        {isLucid ? (
+          <DynamicIcon name={trailingIcon} size={iconSize} className={lucideIconClassName} />
+        ) : (
+          <SolidIcon name={trailingIcon} fill={iconFillColor} />
+        )}
       </div>
     );
 
@@ -212,6 +227,7 @@ Button.propTypes = {
   fill: PropTypes.string,
   leadingIcon: PropTypes.string,
   trailingIcon: PropTypes.string,
+  isLucid: PropTypes.bool,
 };
 
 Button.defaultProps = {
@@ -225,6 +241,7 @@ Button.defaultProps = {
   fill: '',
   leadingIcon: '',
   trailingIcon: '',
+  isLucid: false,
 };
 
 export { Button, buttonVariants };
