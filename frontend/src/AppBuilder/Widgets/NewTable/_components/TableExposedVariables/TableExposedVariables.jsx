@@ -146,9 +146,8 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
-    mounted && fireEvent('onPageChanged');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
+  }, [pageIndex, setExposedVariables]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
@@ -210,10 +209,10 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
-      if (clientSidePagination) setPageIndex(targetPageIndex - 1);
+      setPageIndex(targetPageIndex - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables, clientSidePagination]);
+  }, [setPageIndex, setExposedVariables]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
@@ -247,7 +246,7 @@ export const TableExposedVariables = ({
       lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
-      if (key && value) {
+      if (key && (value !== undefined || value !== null)) {
         selectRow(key, value);
       }
     } else {
