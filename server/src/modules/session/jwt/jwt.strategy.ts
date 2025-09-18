@@ -9,6 +9,7 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +17,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     protected readonly configService: ConfigService,
     protected readonly sessionUtilService: SessionUtilService,
     protected readonly userRepository: UserRepository,
-    protected readonly sessionRepository: UserSessionRepository
+    protected readonly sessionRepository: UserSessionRepository,
+    protected readonly transactionLogger: TransactionLogger
   ) {
     super({
       jwtFromRequest: (request: Request) => {
@@ -114,7 +116,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       return user;
     } finally {
-      console.log(`JwtStrategy validate completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+      this.transactionLogger.log(
+        `JwtStrategy validate completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
     }
   }
 }

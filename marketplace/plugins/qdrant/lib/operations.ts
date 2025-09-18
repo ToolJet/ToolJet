@@ -65,8 +65,6 @@ export async function deletePoints(qdrant: QdrantClient, options: QueryOptions):
 export async function queryPoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
   const { collectionName, query, filter, limit, withPayload, withVectors } = options;
 
-  console.log("OPTIONS ARE " + JSON.stringify(options));
-
   if (!collectionName) {
     throw new Error('Collection name is required');
   }

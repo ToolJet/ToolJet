@@ -45,8 +45,6 @@ export default class Portkey implements QueryService {
     const portkey: PortKeyAi.Portkey = await this.getConnection(sourceOptions);
     try {
       const response = await portkey.models.list();
-      console.log('response', response);
-      console.log('response.status', response.status);
       if (response.data !== undefined) {
         return {
           status: 'ok',
@@ -63,7 +61,6 @@ export default class Portkey implements QueryService {
     if (config) {
       creds['config'] = typeof config === 'string' ? JSON.parse(config) : null;
     }
-    console.log('creds', creds);
     return new PortKeyAi.Portkey(creds);
   }
 }

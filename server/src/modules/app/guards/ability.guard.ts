@@ -9,6 +9,7 @@ import { App } from '@entities/app.entity';
 import { MODULES } from '../constants/modules';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { cloneDeep } from 'lodash';
+import { TransactionLogger } from '@modules/logging/service';
 
 // User should be present or app should be public
 @Injectable()
@@ -16,7 +17,8 @@ export abstract class AbilityGuard implements CanActivate {
   constructor(
     protected reflector: Reflector,
     protected moduleRef: ModuleRef,
-    protected readonly licenseTermsService: LicenseTermsService
+    protected readonly licenseTermsService: LicenseTermsService,
+    protected readonly transactionLogger: TransactionLogger
   ) {}
 
   protected abstract getAbilityFactory(): Type<AbilityFactory<any, any>>;
@@ -151,9 +153,11 @@ export abstract class AbilityGuard implements CanActivate {
     } finally {
       const executionTime = Date.now() - startTime;
       if (error) {
-        console.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Exception: ${error.message}`);
+        this.transactionLogger.log(
+          `[AbilityGuard] canActivate execution time: ${executionTime}ms - Exception: ${error.message}`
+        );
       } else {
-        console.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Result: Success`);
+        this.transactionLogger.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Result: Success`);
       }
     }
   }

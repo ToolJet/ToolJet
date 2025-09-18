@@ -46,6 +46,22 @@ export class ResponseInterceptor implements NestInterceptor {
           return;
         }
 
+        const timeTaken = response.locals?.tj_start_time
+          ? Date.now() - (response.locals?.tj_start_time || Date.now())
+          : 'unknown';
+
+        if (!logsData.metadata) {
+          logsData.metadata = {};
+        }
+        if (response.locals?.tj_transactionId) {
+          logsData.metadata = {
+            ...logsData.metadata,
+            transactionId: response.locals.tj_transactionId,
+            totalDuration: timeTaken,
+            route: response.locals.tj_route,
+          };
+        }
+
         // Check if the status code indicates success (2xx)
         const isSuccess = response.statusCode >= 200 && response.statusCode < 300;
 

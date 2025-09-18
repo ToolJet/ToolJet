@@ -700,7 +700,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       });
 
       const result = JSON.parse(response.body);
-      console.log('access token result', result);
       return {
         ...(isMultiAuthEnabled ? { user_id: userId } : {}),
         access_token: result['access_token'],
