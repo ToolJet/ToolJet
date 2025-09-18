@@ -9,6 +9,7 @@ import './styles.scss';
 import AddQueryBtn from './AddQueryBtn';
 import InputComponent from '@/components/ui/Input/Index';
 import useShowPopover from '@/_hooks/useShowPopover';
+import { FileCode2, Braces } from 'lucide-react';
 
 export const DropdownMenu = (props) => {
   const { value, onChange, darkMode } = props;
@@ -28,7 +29,7 @@ export const DropdownMenu = (props) => {
     return options.map((option) => ({
       id: option.value,
       label: option.name,
-      icon: <SolidIcon name="curlybraces" />,
+      icon: <Braces color="var(--icon-weak)" width={16} height={16} />,
     }));
   }, [props.meta.options]);
 
@@ -212,7 +213,7 @@ export const DropdownMenu = (props) => {
                 {...(searchValue && { trailingAction: 'clear' })}
               />
             </div>
-            {dataQueries.length > 0 && (
+            {queryOptions.length > 0 ? (
               <>
                 {/* Query options section */}
                 <div className="dropdown-menu-items dropdown-menu-body dropdown-menu-body-transparent-scrollbar">
@@ -230,6 +231,18 @@ export const DropdownMenu = (props) => {
                   ))}
                 </div>
               </>
+            ) : (
+              <div className="dropdown-empty-state">
+                <div className="dropdown-empty-state-content">
+                  <div className="dropdown-empty-state-content-icon">
+                    <FileCode2 color="var(--icon-default)" width={20} height={20} />
+                  </div>
+                  <span className="dropdown-empty-state-content-title">No queries created</span>
+                  <span className="dropdown-empty-state-content-description">
+                    Create your first query to fetch and display data in your table
+                  </span>
+                </div>
+              </div>
             )}
             {/* Source options section */}
             <div className="dropdown-menu-items dropdown-menu-footer">

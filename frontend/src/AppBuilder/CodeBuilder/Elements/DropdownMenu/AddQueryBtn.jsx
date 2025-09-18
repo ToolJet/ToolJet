@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import DataSourceSelect from '@/AppBuilder/QueryManager/Components/DataSourceSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { FileCode2 } from 'lucide-react';
 
 const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate, showMenu, setShowMenu }) => {
   const selectRef = useRef();
@@ -50,7 +51,7 @@ const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate, showMenu, s
         >
           <span style={{ width: '16px', height: '16px' }} />
           <span className="icon-image tw-flex tw-items-center">
-            <SolidIcon name="file-code" width={16} height={16} />
+            <FileCode2 color="var(--icon-weak)" width={16} height={16} />
           </span>
           <span>Add new query</span>
           <span style={{ marginLeft: 'auto' }}>
