@@ -3,16 +3,27 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoEeSelector, commonEeSelectors } from "Selectors/eeCommon";
 import { ssoText, ssoEeText } from "Texts/manageSSO";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
 import { deleteOrganisationSSO } from "Support/utils/manageSSO";
-import * as common from "Support/utils/common";
+import { navigateToManageSSO } from "Support/utils/common";
 import {
     createGroup,
     deleteGroup,
     verifyUserRole,
 } from "Support/utils/manageGroups";
-import { setSignupStatus, updateSsoId } from "Support/utils/manageSSO";
+import {
+    setSignupStatus,
+    updateSsoId,
+    uiOktaLogin,
+} from "Support/utils/manageSSO";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+
+const loginViaSamlSSO = (email, password) => {
+    cy.intercept("GET", "/api/authorize").as("openidResponse");
+    cy.get(ssoEeSelector.saml.ssoText).click();
+    cy.wait(2000);
+    uiOktaLogin(email, password);
+    cy.wait(3000);
+};
 
 describe("SAML SSO", () => {
     const data = {
@@ -42,7 +53,7 @@ describe("SAML SSO", () => {
 
     it("Should verify SAML modal elements", () => {
         cy.visit("/");
-        common.navigateToManageSSO();
+        navigateToManageSSO();
         cy.get(ssoEeSelector.saml.card).should("be.visible");
         cy.get(ssoEeSelector.saml.label).verifyVisibleElement("have.text", "SAML");
         cy.get(`${ssoEeSelector.saml.card} > .switch > .slider`).should(
@@ -116,25 +127,11 @@ describe("SAML SSO", () => {
 
         cy.apiLogout();
         cy.visit("/login/my-workspace");
-
-        cy.intercept("GET", "/api/authorize").as("openidResponse");
-        cy.get(ssoEeSelector.saml.ssoText).click();
-        cy.wait(2000);
-        cy.clearAndType('input[name="identifier"]', Cypress.env("saml_signup"));
-        cy.get(".button-primary").click();
-        cy.wait(2000);
-        cy.clearAndType(
-            'input[name="credentials.passcode"]',
-            Cypress.env("okta_password")
-        );
-        cy.get(".button-primary").click();
-        cy.wait(3000);
-
+        loginViaSamlSSO(Cypress.env("saml_signup"), Cypress.env("okta_password"));
         cy.wait("@openidResponse").then((interception) => {
             const userId = interception.response.body.id;
             cy.wrap(userId).as("userId");
         });
-
         verifyUserRole("@userId", "end-user", ["SAML"]);
     });
 
@@ -153,17 +150,7 @@ describe("SAML SSO", () => {
         fetchAndVisitInviteLink(invitedUserEmail);
 
         // Start SSO login process
-        cy.get(ssoEeSelector.saml.ssoText).click();
-        cy.wait(2000);
-        cy.clearAndType('input[name="identifier"]', invitedUserEmail);
-        cy.get(".button-primary").click();
-        cy.wait(2000);
-        cy.clearAndType(
-            'input[name="credentials.passcode"]',
-            Cypress.env("okta_password")
-        );
-        cy.get(".button-primary").click();
-        cy.wait(3000);
+        loginViaSamlSSO(invitedUserEmail, Cypress.env("okta_password"));
 
         cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
             "have.text",

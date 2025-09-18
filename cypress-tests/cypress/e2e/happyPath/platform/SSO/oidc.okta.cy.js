@@ -11,10 +11,16 @@ import {
     authResponse,
     OidcConfig,
     enableInstanceSignup,
+    deleteOrganisationSSO,
 } from "Support/utils/manageSSO";
-import { createGroup, verifyUserRole } from "Support/utils/manageGroups";
+import {
+    createGroup,
+    verifyUserRole,
+    deleteGroup,
+} from "Support/utils/manageGroups";
 import { getUser } from "Support/utils/api";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { uiOktaLogin } from "Support/utils/manageSSO";
 
 const loginWithOIDC = (params, alias = "@userId") => {
     cy.intercept("GET", "/api/authorize").as("openidResponse");
@@ -35,15 +41,18 @@ describe("Okta OIDC", () => {
     };
 
     beforeEach("", () => {
+        data.groupName = `oidc-${fake.companyName}-group`;
+
         cy.apiLogin();
+        deleteOrganisationSSO("My workspace", ["openid"]);
         enableInstanceSignup();
         setSignupStatus(true);
     });
 
     it("Instance level signup and group sync cases", () => {
-        const orgId = Cypress.env("workspaceId");
         createGroup(data.groupName);
 
+        const orgId = Cypress.env("workspaceId");
         OidcConfig({ Everyone: data.groupName }, "instance", {
             organizationId: orgId,
             id: "1",
@@ -62,11 +71,12 @@ describe("Okta OIDC", () => {
         });
 
         verifyUserRole("@userId", "end-user", [data.groupName]);
-
         logout();
+        deleteGroup(data.groupName, Cypress.env("workspaceId"));
 
         cy.apiLogin();
-        OidcConfig({ Everyone: "Admin" }, "instance", {
+        createGroup(data.groupName);
+        OidcConfig({ Everyone: "Admin", OIDC: data.groupName }, "instance", {
             organizationId: orgId,
             id: "1",
         });
@@ -83,7 +93,8 @@ describe("Okta OIDC", () => {
             organizationId: orgId,
         });
 
-        verifyUserRole("@userId", "admin", ["admin"]);
+        verifyUserRole("@userId", "admin", ["admin", data.groupName]);
+        deleteGroup(data.groupName, Cypress.env("workspaceId"));
     });
 
     it("Workspace signup and group cases", () => {
@@ -96,7 +107,7 @@ describe("Okta OIDC", () => {
 
         OidcConfig({ Everyone: "Admin" });
         cy.apiLogout();
-        cy.wait(2000);
+        cy.wait(4000);
 
         loginWithOIDC({
             username: Cypress.env("okta_user"),
@@ -153,6 +164,8 @@ describe("Okta OIDC", () => {
         const orgId = Cypress.env("workspaceId");
         const invitedUserEmail = Cypress.env("okta_invite_user");
         const firstName = fake.firstName;
+        createGroup(data.groupName);
+
         cy.intercept("GET", "/api/authorize").as("openidResponse");
 
         cy.getSsoConfigId("openid").then((id) => {
@@ -161,12 +174,11 @@ describe("Okta OIDC", () => {
             }
         });
 
-        OidcConfig({ Everyone: "Admin" });
+        OidcConfig({ Everyone: "builder", OIDC: data.groupName });
 
         // Create and setup invitation
         cy.apiUserInvite(firstName, invitedUserEmail);
         fetchAndVisitInviteLink(invitedUserEmail);
-
         // Start SSO login process
         cy.oidcLogin({
             username: invitedUserEmail,
@@ -184,20 +196,15 @@ describe("Okta OIDC", () => {
         );
         cy.get(commonSelectors.acceptInviteButton).click();
         // Verify successful login and role
+        cy.wait(4000);
+
         cy.wait("@openidResponse").then((interception) => {
             const userId = interception.response.body.id;
             cy.wrap(userId).as("userId");
         });
+        cy.wait(4000);
 
-        //need to check the flow here
-        // if (commonSelectors.invitePageHeader.length > 0) {
-        //     cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
-        //         "have.text",
-        //         "Join My workspace"
-        //     );
-        //     cy.get(commonSelectors.acceptInviteButton).click();
-        // }
-
-        verifyUserRole("@userId", "admin");
+        verifyUserRole("@userId", "builder", ["builder", data.groupName]);
+        deleteGroup(data.groupName, Cypress.env("workspaceId"));
     });
 });
