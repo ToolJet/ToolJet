@@ -11,67 +11,6 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 describe('Button Component Tests', () => {
-    const functions = [
-
-        {
-            "key": "setText",
-            "type": "Function"
-        },
-        {
-            "key": "click",
-            "type": "Function"
-        },
-        {
-            "key": "disable",
-            "type": "Function"
-        },
-        {
-            "key": "visibility",
-            "type": "Function"
-        },
-        {
-            "key": "setVisibility",
-            "type": "Function"
-        },
-        {
-            "key": "setDisable",
-            "type": "Function"
-        },
-        {
-            "key": "loading",
-            "type": "Function"
-        },
-        {
-            "key": "setLoading",
-            "type": "Function"
-        }
-    ]
-    const exposedValues = [{
-        "key": "buttonText",
-        "type": "String",
-        "value": "\"Button\""
-    },
-    {
-        "key": "isVisible",
-        "type": "Boolean",
-        "value": "true"
-    },
-    {
-        "key": "isDisabled",
-        "type": "Boolean",
-        "value": "false"
-    },
-    {
-        "key": "isLoading",
-        "type": "Boolean",
-        "value": "false"
-    },
-        // {
-        //     "key": "id",
-        //     "type": "String",
-        //     "value": "\"d9f805c-a8d9-4c5a-ad09-badd6c2216ba\""
-        // }
-    ]
 
     beforeEach(() => {
         // cy.apiLogin();

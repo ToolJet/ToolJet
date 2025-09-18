@@ -376,7 +376,6 @@ export const fetchAndVisitInviteLinkViaMH = (email) => {
     const lastMail = mails[mails.length - 1];
     const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
     const mailBody = mailContent.Body || mailContent.Html || '';
-    cy.log('Email body:', mailBody);
 
     // Clean the email body by removing quoted-printable encoding and HTML entities
     let cleanedBody = mailBody

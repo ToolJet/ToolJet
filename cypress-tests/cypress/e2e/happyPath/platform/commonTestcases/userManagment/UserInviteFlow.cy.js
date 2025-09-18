@@ -43,14 +43,14 @@ describe("user invite flow cases", () => {
     });
   });
 
-  it.only("Should verify the Manage users page", () => {
+  it("Should verify the Manage users page", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     navigateToManageUsers();
     manageUsersElements();
 
     cy.get(commonSelectors.cancelButton).click();
-    // cy.get(usersSelector.usersPageTitle).should("be.visible");
+    cy.get(usersSelector.usersPageTitle).should("be.visible");
     cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();
 
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
