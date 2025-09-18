@@ -8,6 +8,7 @@ import Fuse from 'fuse.js';
 import './styles.scss';
 import AddQueryBtn from './AddQueryBtn';
 import InputComponent from '@/components/ui/Input/Index';
+import useShowPopover from '@/_hooks/useShowPopover';
 
 export const DropdownMenu = (props) => {
   const { value, onChange, darkMode } = props;
@@ -15,6 +16,11 @@ export const DropdownMenu = (props) => {
   const dataQueries = useStore((state) => state.dataQuery.queries.modules.canvas, shallow);
   const [searchValue, setSearchValue] = useState('');
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
+  const [showMenu, setShowMenu] = useShowPopover(
+    false,
+    '#component-data-query-add-popover',
+    '#component-data-query-add-popover-btn'
+  );
 
   // Simple emoji/text icons instead of lucide icons
   const sourceOptions = useMemo(() => {
@@ -35,6 +41,13 @@ export const DropdownMenu = (props) => {
       type: 'query',
     }));
   }, [filteredQueries]);
+
+  const closeMenu = () => {
+    if (!showMenu) {
+      return;
+    }
+    setShowMenu(false);
+  };
 
   const filterQueries = (value, queries) => {
     if (value) {
@@ -208,6 +221,7 @@ export const DropdownMenu = (props) => {
                       key={option.id}
                       onClick={() => selectSource(option)}
                       className="tw-flex tw-items-center tw-w-full tw-text-left dropdown-menu-item"
+                      onMouseEnter={() => closeMenu()}
                     >
                       {renderCheckIcon(option)}
                       <span className="icon-image">{option.icon}</span>
@@ -224,13 +238,19 @@ export const DropdownMenu = (props) => {
                   key={option.id}
                   onClick={() => selectSource(option)}
                   className="tw-flex tw-items-center tw-w-full tw-text-left dropdown-menu-item"
+                  onMouseEnter={() => closeMenu()}
                 >
                   {renderCheckIcon(option)}
                   <span className="icon-image">{option.icon}</span>
                   <span className="dropdown-menu-item-label">{option.label}</span>
                 </div>
               ))}
-              <AddQueryBtn onQueryCreate={handleChange} darkMode={darkMode} />
+              <AddQueryBtn
+                onQueryCreate={handleChange}
+                darkMode={darkMode}
+                showMenu={showMenu}
+                setShowMenu={setShowMenu}
+              />
             </div>
           </div>
         )}

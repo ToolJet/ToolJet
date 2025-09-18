@@ -1,16 +1,10 @@
 import React, { useRef, useEffect } from 'react';
-import useShowPopover from '@/_hooks/useShowPopover';
 import useStore from '@/AppBuilder/_stores/store';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import DataSourceSelect from '@/AppBuilder/QueryManager/Components/DataSourceSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate }) => {
-  const [showMenu, setShowMenu] = useShowPopover(
-    false,
-    '#component-data-query-add-popover',
-    '#component-data-query-add-popover-btn'
-  );
+const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate, showMenu, setShowMenu }) => {
   const selectRef = useRef();
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const disabled = _disabled || shouldFreeze;
@@ -45,12 +39,12 @@ const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate }) => {
     >
       <span className="col-auto" id="component-data-query-add-popover-btn">
         <div
-          onClick={(e) => {
+          onMouseEnter={(e) => {
             e.stopPropagation();
             if (disabled) {
               return;
             }
-            setShowMenu((show) => !show);
+            setShowMenu(true);
           }}
           className="tw-flex tw-items-center tw-w-full tw-text-left dropdown-menu-item"
         >
