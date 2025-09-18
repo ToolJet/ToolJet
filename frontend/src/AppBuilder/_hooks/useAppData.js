@@ -615,7 +615,6 @@ const useAppData = (
         setSelectedQuery(null);
         setPreviewData(null);
         const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
-        console.log('Version set app', appData);
         setApp({
           appName: appData.name,
           appId: appData.id,
