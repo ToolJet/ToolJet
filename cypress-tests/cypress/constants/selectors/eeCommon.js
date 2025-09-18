@@ -34,7 +34,7 @@ export const ssoEeSelector = {
         clientSecretLabel: '[data-cy="client-secret-label"]',
         encryptedLabel: '[data-cy="encripted-label"]',
         WellKnownUrlLabel: '[data-cy="well-known-url-label"]',
-        // redirectUrlLabel: '[data-cy="redirect-url-label"]',
+
     },
     nameInput: '[data-cy="name-input"]',
     clientIdInput: '[data-cy="client-id-input"]',
@@ -70,7 +70,18 @@ export const ssoEeSelector = {
         baseDNHelperText: '[data-cy="base-dn-helper-text"]',
         groupAttributeLabel: '[data-cy="group-attribute-label"]',
         groupAttributeHelperText: '[data-cy="group-attribute-helper-text"]',
-    }
+    },
+    saml: {
+        card: '[data-cy="saml-sso-card"]',
+        label: '[data-cy="saml-label"]',
+        toggleInput: '[data-cy="saml-toggle-input"]',
+        nameInput: '[data-cy="name-input"]',
+        metadataInput: '[data-cy="dp-metadata-input"]',
+        groupAttributeInput: '[data-cy="group-attribute-input"]',
+        copyIcon: '[data-cy="copy-icon"]',
+        ssoText: '[data-cy="saml-sso-button-text"]',
+    },
+    redirectUrlLabel: '[data-cy="redirect-url-label"]',
 };
 
 export const eeGroupsSelector = {
