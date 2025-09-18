@@ -26,7 +26,7 @@ If you don’t already have a server, you can use Terraform scripts to quickly s
 - Deploy on [AWS EC2](https://github.com/ToolJet/ToolJet/tree/develop/terraform/EC2)
 - Deploy on [AWS EC2 Using AMI](https://github.com/ToolJet/ToolJet/tree/develop/terraform/AMI_EC2)
 - Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
-- Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/GCP)
+- Deploy on [GCP VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/GCP)
 
 ### Installing Docker and Docker Compose
 
