@@ -245,7 +245,9 @@ const EditorInput = ({
     [wrapperRef.current]
   );
   function autoCompleteExtensionConfig(context) {
-    const hintsWithoutParamHints = workflowSuggestions ?? getSuggestions();
+    const hasWorkflowSuggestions =
+      workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
+    const hintsWithoutParamHints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const hints = {
@@ -253,7 +255,7 @@ const EditorInput = ({
       appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
-    if (!workflowSuggestions) {
+    if (!hasWorkflowSuggestions) {
       let word = context.matchBefore(/\w*/);
 
       const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;

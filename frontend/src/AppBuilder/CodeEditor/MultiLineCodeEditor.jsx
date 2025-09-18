@@ -148,7 +148,9 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    const hints = workflowSuggestions ?? getSuggestions();
+    const hasWorkflowSuggestions =
+      workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
+    const hints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
