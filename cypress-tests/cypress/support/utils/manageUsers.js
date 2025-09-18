@@ -1,4 +1,4 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
@@ -9,7 +9,7 @@ import { onboardingSelectors } from "Selectors/onboarding";
 const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
-  cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+  cy.get(`[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
       commonText.breadcrumbworkspaceSettingTitle
     );
@@ -130,9 +130,9 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-  cy.exec("mkdir -p ./cypress/downloads/");
+  cy.exec("mkdir -p ./cypress/downloads/", { failOnNonZeroExit: false });
   cy.wait(3000);
-  cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
   cy.wait(3000);
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000);
@@ -368,6 +368,42 @@ export const fetchAndVisitInviteLink = (email) => {
       cy.wait(1000);
       cy.visit(url);
     });
+};
+
+export const fetchAndVisitInviteLinkViaMH = (email) => {
+  cy.mhGetMailsByRecipient(email).then((mails) => {
+    expect(mails).to.have.length.greaterThan(0);
+    const lastMail = mails[mails.length - 1];
+    const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
+    const mailBody = mailContent.Body || mailContent.Html || '';
+    cy.log('Email body:', mailBody);
+
+    // Clean the email body by removing quoted-printable encoding and HTML entities
+    let cleanedBody = mailBody
+      .replace(/=\r?\n/g, '') // Remove quoted-printable line breaks (= at end of line)
+      .replace(/=3D/g, '=')   // Decode =3D back to =
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&');
+
+    // Extract URL from href attribute or plain text
+    let inviteUrl = '';
+
+    // Try to find URL in href attribute first
+    const hrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i);
+    if (hrefMatch) {
+      inviteUrl = hrefMatch[1];
+    } else {
+      // Fallback: look for URL in plain text
+      const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i);
+      inviteUrl = urlMatch ? urlMatch[0] : '';
+    }
+
+    expect(inviteUrl).to.not.be.empty;
+    cy.log('Found invite URL: ' + inviteUrl);
+    cy.visit(inviteUrl);
+  });
 };
 
 export const inviteUserWithUserRole = (firstName, email, role) => {
