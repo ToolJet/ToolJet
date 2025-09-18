@@ -224,7 +224,6 @@ export const Modal = function Modal({
       backgroundColor: triggerButtonBackgroundColor,
       color: triggerButtonTextColor,
       width: '100%',
-      display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
       borderColor: 'var(--cc-primary-brand)',
@@ -254,15 +253,14 @@ export const Modal = function Modal({
       setModalWidth(parentRef.current.offsetWidth);
     }
   }, [showModal, properties.size, id]);
-
   return (
     <div
       className="container d-flex align-items-center"
       data-disabled={disabledState}
       data-cy={dataCy}
-      style={{ height }}
+      style={{ height: '100%' }}
     >
-      {useDefaultButton && (
+      {useDefaultButton && visibility && (
         <button
           disabled={disabledState}
           className="jet-button btn btn-primary p-1 overflow-hidden"
