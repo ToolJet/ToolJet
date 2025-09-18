@@ -80,13 +80,14 @@ const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }
   };
 
   return (
-    <div>
+    <div className={props.className}>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Select {...props} ref={selectRef} open={open} onOpenChange={handleOpenChange} onValueChange={handleChange}>
         <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
         <SelectContent
+          className={`${props.className}__content`}
           style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
           container={getContainer()}
         >
@@ -140,6 +141,7 @@ DropdownComponent.propTypes = {
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
   container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  className: PropTypes.string,
 };
 
 DropdownComponent.defaultProps = {
@@ -156,4 +158,5 @@ DropdownComponent.defaultProps = {
   leadingIcon: false,
   trailingAction: '',
   helperText: '',
+  className: '',
 };
