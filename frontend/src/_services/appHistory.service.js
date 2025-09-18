@@ -19,7 +19,7 @@ function getHistory(appVersionId, page = 0, limit = 20) {
     credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/apps/versions/${appVersionId}/history?${queryParams}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/app-history/apps/versions/${appVersionId}?${queryParams}`, requestOptions).then(
     handleResponse
   );
 }
@@ -34,9 +34,7 @@ function restoreToEntry(appVersionId, historyId) {
     credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/apps/versions/${appVersionId}/history/${historyId}/restore`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/app-history/${historyId}/restore`, requestOptions).then(handleResponse);
 }
 
 function updateDescription(historyId, data) {
@@ -50,5 +48,5 @@ function updateDescription(historyId, data) {
     body: JSON.stringify(data),
   };
 
-  return fetch(`${config.apiUrl}/history/${historyId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-history/${historyId}`, requestOptions).then(handleResponse);
 }

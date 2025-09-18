@@ -2,12 +2,12 @@ import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe } from 
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 
-@Controller('apps/versions/:versionId/history')
+@Controller('app-history')
 export class AppHistoryController {
   constructor() {}
 
   @InitFeature(FEATURE_KEY.LIST_HISTORY)
-  @Get()
+  @Get('apps/versions/:versionId')
   async getHistory(
     @Param('versionId', ParseUUIDPipe) versionId: string,
     @Query('page') page: number = 0,
@@ -24,8 +24,7 @@ export class AppHistoryController {
   @Post(':historyId/restore')
   async restoreHistory(
     @Param('versionId', ParseUUIDPipe) versionId: string,
-    @Param('historyId', ParseUUIDPipe) historyId: string,
-    @Body() restoreDto: any
+    @Param('historyId', ParseUUIDPipe) historyId: string
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }
