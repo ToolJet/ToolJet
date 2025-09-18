@@ -334,11 +334,6 @@ export const createGridSlice = (set, get) => ({
           const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
           if (hasHorizontalOverlap) {
             const newTop = (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + realDiff;
-            // const currentTransform = window.getComputedStyle(element).transform;
-
-            // const matrix = new DOMMatrix(currentTransform);
-            // const currentX = matrix.m41;
-            // element.style.transform = `translate(${currentX}px, ${newTop}px)`;
 
             updatedLayouts[component.id] = {
               ...component.layouts[currentLayout],
@@ -433,10 +428,6 @@ export const createGridSlice = (set, get) => ({
               newTop = component.layouts[currentLayout].top;
             }
             tempTopMap[component.id] = newTop;
-            const currentTransform = window.getComputedStyle(element).transform;
-            const matrix = new DOMMatrix(currentTransform);
-            const currentX = matrix.m41;
-            element.style.transform = `translate(${currentX}px, ${newTop}px)`;
 
             updatedLayouts[component.id] = {
               ...component.layouts[currentLayout],
