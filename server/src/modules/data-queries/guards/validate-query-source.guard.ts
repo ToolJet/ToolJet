@@ -9,14 +9,17 @@ import {
 import { User } from '@entities/user.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSource } from '@entities/data_source.entity';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class ValidateQuerySourceGuard implements CanActivate {
-  constructor(private readonly dataSourceRepository: DataSourcesRepository) {}
+  constructor(
+    private readonly dataSourceRepository: DataSourcesRepository,
+    private readonly transactionLogger: TransactionLogger
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const startTime = Date.now();
-    console.log(`ValidateQuerySourceGuard invoked at ${new Date().toISOString()}`);
     try {
       const request = context.switchToHttp().getRequest();
       const { id, dataSourceId } = request.params;
@@ -52,7 +55,7 @@ export class ValidateQuerySourceGuard implements CanActivate {
       // Return true to allow the request to proceed
       return true;
     } finally {
-      console.log(
+      this.transactionLogger.log(
         `ValidateQuerySourceGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
       );
     }

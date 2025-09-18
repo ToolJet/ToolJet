@@ -15,7 +15,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 export class DataSourcesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       DataSourcesService,
       DataSourcesController,
@@ -53,7 +53,7 @@ export class DataSourcesModule extends SubModule {
         FeatureAbilityFactory,
         OrganizationRepository,
       ],
-      controllers: [DataSourcesController],
+      controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
     };
   }

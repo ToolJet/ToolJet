@@ -261,7 +261,6 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const groupUser = await this.groupPermissionsRepository.getGroupUser(id, manager);
       this.groupPermissionsUtilService.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
-      console.log('group user group', groupUser?.group);
       await this.groupPermissionsRepository.removeUserFromGroup(id);
       //USER_REMOVE_FROM_GROUP audit
       const auditLogsData = {

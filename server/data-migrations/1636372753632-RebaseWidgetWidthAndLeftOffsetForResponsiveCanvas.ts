@@ -32,7 +32,6 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
             let containerWidth = 1292;
             if (layoutIndex === 'mobile') containerWidth = 450;
             if (component.parent) {
-              console.log('component is', component);
               const parentComponentCandidates: any = Object.entries(components).filter(
                 (entry) => entry[0] === component.parent
               );

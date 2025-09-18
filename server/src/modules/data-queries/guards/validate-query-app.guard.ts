@@ -9,17 +9,18 @@ import {
 import { User } from '@entities/user.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class ValidateQueryAppGuard implements CanActivate {
   constructor(
     private readonly versionRepository: VersionRepository,
-    private readonly appsRepository: AppsRepository
+    private readonly appsRepository: AppsRepository,
+    private readonly transactionLogger: TransactionLogger
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const startTime = Date.now();
-    console.log(`ValidateQueryAppGuard invoked at ${new Date().toISOString()}`);
     try {
       const request = context.switchToHttp().getRequest();
       const { id, versionId } = request.params;
@@ -58,7 +59,9 @@ export class ValidateQueryAppGuard implements CanActivate {
       return true;
     } finally {
       // Any cleanup logic if needed
-      console.log(`ValidateQueryAppGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+      this.transactionLogger.log(
+        `ValidateQueryAppGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
     }
   }
 }
