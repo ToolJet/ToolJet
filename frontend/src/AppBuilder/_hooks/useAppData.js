@@ -182,6 +182,7 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
+        checkAndSetTrueBuildSuggestionsFlag();
       }, 0);
     }
   }, [pageSwitchInProgress, currentPageId, moduleMode]);
