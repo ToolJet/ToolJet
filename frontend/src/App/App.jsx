@@ -46,7 +46,7 @@ import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/Ba
 import EmbedApp from '@/AppBuilder/EmbedApp';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
-import WorkspaceRouteGuard from '@/Routes/WorkspaceRouteGuard';
+import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -283,11 +283,11 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/workspace-constants"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route
@@ -322,51 +322,53 @@ class AppComponent extends React.Component {
                     exact
                     path="/:workspaceId/workflows/*"
                     element={
-                      <WorkspaceRouteGuard darkMode={darkMode}>
+                      <DesktopOnlyRoute darkMode={darkMode}>
                         <PrivateRoute darkMode={darkMode}>
                           <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                         </PrivateRoute>
-                      </WorkspaceRouteGuard>
+                      </DesktopOnlyRoute>
                     }
                   />
                 )}
                 <Route
                   path="/:workspaceId/workspace-settings/*"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <WorkspaceSettings {...mergedProps} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route
                   path="settings/*"
                   element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
-                    </PrivateRoute>
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute darkMode={darkMode}>
+                        <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route
                   path="/:workspaceId/settings/*"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route
                   exact
                   path="/:workspaceId/modules"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
 
@@ -375,11 +377,11 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/profile-settings"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
@@ -406,11 +408,11 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/database"
                   element={
-                    <WorkspaceRouteGuard darkMode={darkMode}>
+                    <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
                         <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
-                    </WorkspaceRouteGuard>
+                    </DesktopOnlyRoute>
                   }
                 />
 

@@ -3,13 +3,13 @@ import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
 
 /**
- * Wrapper component for workspace routes that blocks mobile access
- * to workspace management features
+ * Wrapper component that restricts route access on mobile devices
+ * and displays an empty state for mobile users
  */
-const WorkspaceRouteGuard = ({ children, darkMode }) => {
+const DesktopOnlyRoute = ({ children, darkMode }) => {
   const { isMobile } = useMobileRouteGuard();
 
-  // Show mobile empty state for workspace management routes
+  // Show mobile empty state for desktop-only routes
   if (isMobile) {
     return <MobileEmptyState darkMode={darkMode} />;
   }
@@ -17,4 +17,4 @@ const WorkspaceRouteGuard = ({ children, darkMode }) => {
   return children;
 };
 
-export default WorkspaceRouteGuard;
+export default DesktopOnlyRoute;
