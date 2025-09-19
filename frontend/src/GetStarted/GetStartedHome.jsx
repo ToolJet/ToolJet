@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
-import useStore from '@/AppBuilder/_stores/store';
 import HomePagePromptSection from './HomePagePromptSection';
 
 const WIDGET_TYPES = {
   APP: {
-    title: 'Create an application',
+    title: 'Create an blank app',
     description: 'Build custom apps that make internal processes efficient',
     icon: 'apps',
     iconColor: '#3E90F1',
@@ -100,11 +99,6 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
 }
 
 function GetStartedHome({ edition, isToolJetCloud }) {
-  const getCreditBalance = useStore((store) => store.ai?.getCreditBalance);
-  useEffect(() => {
-    getCreditBalance?.();
-  }, [getCreditBalance]);
-
   return (
     <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <HomePagePromptSection />
