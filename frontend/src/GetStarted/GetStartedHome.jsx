@@ -9,7 +9,7 @@ import HomePagePromptSection from './HomePagePromptSection';
 const WIDGET_TYPES = {
   APP: {
     title: 'Create an application',
-    description: 'Build apps visually with drag-and-drop components, no coding required',
+    description: 'Build custom apps that make internal processes efficient',
     icon: 'apps',
     iconColor: '#3E90F1',
   },
@@ -21,7 +21,7 @@ const WIDGET_TYPES = {
   },
   WORKFLOW: {
     title: 'Create a workflow',
-    description: 'Automate tasks and connect your apps and data sources with workflows',
+    description: 'Automate repetitive tasks to streamline business process',
     icon: 'workflows',
     iconColor: 'var(--icon-warning)',
   },
@@ -37,7 +37,7 @@ function DividerWithText() {
   return (
     <div className="tw-flex tw-items-center tw-justify-center tw-w-full">
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-mr-4" />
-      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-m-0">Or start with</p>
+      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-m-0">OR START WITH</p>
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-ml-4" />
     </div>
   );
@@ -80,8 +80,8 @@ function GetStartedWidget({ type, to }) {
   );
 }
 
-function GetStartedOptionsRow({ isToolJetCloud }) {
-  if (isToolJetCloud) {
+function GetStartedOptionsRow({ edition, isToolJetCloud }) {
+  if (isToolJetCloud || edition === 'cloud') {
     return (
       <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
         <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
@@ -99,9 +99,8 @@ function GetStartedOptionsRow({ isToolJetCloud }) {
   );
 }
 
-function GetStartedHome({ isToolJetCloud }) {
+function GetStartedHome({ edition, isToolJetCloud }) {
   const getCreditBalance = useStore((store) => store.ai?.getCreditBalance);
-
   useEffect(() => {
     getCreditBalance?.();
   }, [getCreditBalance]);
@@ -110,7 +109,7 @@ function GetStartedHome({ isToolJetCloud }) {
     <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <HomePagePromptSection />
       <DividerWithText />
-      <GetStartedOptionsRow isToolJetCloud={isToolJetCloud} />
+      <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
     </div>
   );
 }
