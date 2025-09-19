@@ -155,7 +155,8 @@
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
         "build-with-ai/ai-credits",
-        "build-with-ai/tooljet-mcp"
+        "build-with-ai/tooljet-mcp",
+        "build-with-ai/privacy"
       ]
     },
     {
