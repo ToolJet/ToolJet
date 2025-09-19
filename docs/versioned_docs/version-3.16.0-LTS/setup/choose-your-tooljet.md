@@ -13,7 +13,7 @@ Please find the latest LTS version here: <br/>
 [Docker Hub - LTS Versions](https://hub.docker.com/r/tooljet/tooljet/tags?page_size=&ordering=&name=ee-lts)
 
 :::info
-Starting from **`v3.5.0-ee-lts`** all releases are AI releases. Checkout the **[Build with AI](/docs/build-with-ai/overview)** section for more information. If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com.
+To use the ToolJet AI feature, you will have to upgrade to **`v3.20.00-ee-lts`** or higher. Checkout the **[Build with AI](/docs/build-with-ai/overview)** section for more information. If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at hello@tooljet.com.
 :::
 
 | Version  | Release Date  | Docker Pull Command   |

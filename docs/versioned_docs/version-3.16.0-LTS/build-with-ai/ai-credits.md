@@ -40,6 +40,32 @@ Monthly credits are recurring credits included with your purchased license. They
 
 Add-on credits can be purchased in addition to your monthly credits and are a one-time purchase that do not renew monthly. These credits can only be purchased in multiples of 100 and are valid for one year from the date of purchase. If you buy additional credits after an initial purchase, the validity of the entire pool of credits is extended based on the latest purchase date. Checkout the [pricing](https://www.tooljet.ai/pricing) page for more information.
 
+## Buy Add-on Credits
+
+### Self-Hosted Deployment
+
+Follow these steps to buy add-on credits on your self-hosted deployment of ToolJet:
+
+1. Go to the Settings > License. <br/>
+   (Example URL - https://app.nexuscorp.com/settings/license)
+2. Click on the **Get AI credits** button in the top-right corner. <br/>
+    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-button.png" alt="AI Credits" />
+3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the **Get AI credits** button at the bottom. <br/>
+    <img className="screenshot-full img-s" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-modal.png" alt="AI Credits" />
+4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your instance.
+
+### Cloud Deployment
+
+Follow these steps to buy add-on credits on ToolJet Cloud:
+
+1. Go to the Settings > Subscription. <br/>
+   (Example URL - https://app.tooljet.ai/nexuscorp/settings/subscription)
+2. Click the **Get AI credits** button. <br/>
+    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-button.jpg" alt="AI Credits" />
+3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the Get AI credits button at the bottom. <br/>
+    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-modal.png" alt="AI Credits" />
+4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your workspace.
+
 ## Credit Allocation
 
 ToolJet AI credits are allocated on a per builder per month basis according to the purchased license. The total credits from all builders, along with any add-on credits purchased, are pooled together and made available collectively.
