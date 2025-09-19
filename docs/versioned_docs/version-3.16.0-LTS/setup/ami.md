@@ -15,13 +15,19 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements).
 :::
 
-## Deployment
+## Deploy using CloudFormation
 
 To deploy all the services at once, simply employ the following template:
 
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/EC2-cloudfomration.yml
 ```
+
+## Deploy using Terraform
+
+Use this terraform script to quickly spin up a vm.
+
+- Deploy on [AWS EC2 Using AMI](https://github.com/ToolJet/ToolJet/tree/develop/terraform/AMI_EC2)
 
 Follow the steps below to deploy ToolJet on AWS AMI instances.
 
