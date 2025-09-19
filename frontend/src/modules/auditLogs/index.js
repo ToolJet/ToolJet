@@ -13,7 +13,7 @@ const getAuditLogsRoutes = (props) => [
     key="audit-logs"
     path="/:workspaceId/audit-logs"
     element={
-      <DesktopOnlyRoute>
+      <DesktopOnlyRoute darkMode={props.darkMode}>
         <AdminRoute {...props}>
           <AuditLogsPage {...props} />
         </AdminRoute>
