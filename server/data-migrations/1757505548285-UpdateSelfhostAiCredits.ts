@@ -104,7 +104,7 @@ export class UpdateSelfhostAiCredits1757505548285 implements MigrationInterface 
           NOW()
         )
       `,
-        [update.newBalance, 'recurring add on', 'recurring', 'credit', 'success', update.selfhostCustomerId]
+        [update.newBalance, 'RECURRING_ADD_ON', 'recurring', 'credit', 'success', update.selfhostCustomerId]
       );
     }
   }

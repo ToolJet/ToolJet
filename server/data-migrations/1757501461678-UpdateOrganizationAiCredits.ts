@@ -87,7 +87,7 @@ export class UpdateOrganizationAiCredits1757501461678 implements MigrationInterf
           $1,
           NULL,
           $2,
-          'recurring add on',
+          'RECURRING_ADD_ON',
           'recurring',
           'credit',
           'success',
@@ -104,7 +104,7 @@ export class UpdateOrganizationAiCredits1757501461678 implements MigrationInterf
     // Remove credit history for this operation
     await queryRunner.query(`
       DELETE FROM organization_ai_credit_history
-      WHERE operation = 'recurring add on'
+      WHERE operation = 'RECURRING_ADD_ON'
         AND wallet_type = 'recurring'
     `);
   }
