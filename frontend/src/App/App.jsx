@@ -506,15 +506,15 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/home"
                   element={
-                    <PrivateRoute>
-                      <DesktopOnlyRoute>
+                    <DesktopOnlyRoute>
+                      <PrivateRoute>
                         <GuardedHomePage
                           switchDarkMode={this.switchDarkMode}
                           darkMode={darkMode}
                           version={this.state.tooljetVersion}
                         />
-                      </DesktopOnlyRoute>
-                    </PrivateRoute>
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
