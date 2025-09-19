@@ -27,6 +27,7 @@ import { ResponseInterceptor } from '@modules/app/interceptors/response.intercep
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
+import { comprehensiveApiMiddleware } from './otel/comprehensive-api-middleware';
 
 // Import helper functions
 import {
@@ -173,6 +174,8 @@ async function setupApplicationMiddleware(app: NestExpressApplication) {
   if (process.env.ENABLE_OTEL === 'true') {
     await startOpenTelemetry();
     app.use(otelMiddleware);
+    // Add comprehensive API performance monitoring
+    app.use(comprehensiveApiMiddleware);
   }
 }
 

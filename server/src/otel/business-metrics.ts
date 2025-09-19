@@ -349,7 +349,7 @@ export const setupResourceMetricCallbacks = () => {
   // Data source connections callback
   if (dataSourceConnectionsGauge) {
     dataSourceConnectionsGauge.addCallback((observableResult: any) => {
-      for (const [key, count] of activeDataSourceConnections.entries()) {
+      for (const [key, count] of Array.from(activeDataSourceConnections.entries())) {
         const [organizationId, dataSourceType] = key.split(':');
         observableResult.observe(count, {
           datasource_type: dataSourceType,
@@ -373,7 +373,7 @@ export const setupResourceMetricCallbacks = () => {
       });
 
       // Observe active users per organization
-      for (const [organizationId, count] of orgCounts.entries()) {
+      for (const [organizationId, count] of Array.from(orgCounts.entries())) {
         observableResult.observe(count, {
           organization_id: organizationId,
           scope: 'organization'
@@ -479,7 +479,7 @@ export const getActiveUserCount = (): number => {
 
 export const getActiveUsersByOrganization = (): Map<string, number> => {
   const orgCounts = new Map<string, number>();
-  for (const sessionKey of activeUserSessions.keys()) {
+  for (const sessionKey of Array.from(activeUserSessions.keys())) {
     const [organizationId] = sessionKey.split(':');
     orgCounts.set(organizationId, (orgCounts.get(organizationId) || 0) + 1);
   }
@@ -490,7 +490,7 @@ export const getActiveUsersByOrganization = (): Map<string, number> => {
 export const cleanupInactiveSessions = () => {
   const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
 
-  for (const [sessionKey, sessionData] of activeUserSessions.entries()) {
+  for (const [sessionKey, sessionData] of Array.from(activeUserSessions.entries())) {
     if (sessionData.lastActivity < thirtyMinutesAgo) {
       const [organizationId, userId] = sessionKey.split(':');
       endUserSession(userId, organizationId);

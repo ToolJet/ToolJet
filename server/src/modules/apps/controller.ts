@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards, Param, Req } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -225,6 +225,75 @@ export class AppsController implements IAppsController {
     };
   }
 
+  // Comprehensive performance monitoring test endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('performance/test')
+  async testComprehensiveMonitoring(@User() user: UserEntity, @Req() req: any) {
+    const {
+      instrumentDatabaseQuery,
+      instrumentPluginQuery,
+      instrumentExternalOperation,
+      generatePerformanceReport
+    } = require('../../otel/comprehensive-api-middleware');
+
+    // Simulate database query
+    const dbQuery = instrumentDatabaseQuery(
+      'SELECT * FROM apps WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 10',
+      'SELECT',
+      'apps'
+    );
+
+    dbQuery.recordConnectionWait(15);
+    await new Promise(resolve => setTimeout(resolve, 50)); // Simulate query time
+    dbQuery.end({
+      rowsReturned: 5,
+      rowsAffected: 0,
+      status: 'success'
+    });
+
+    // Simulate plugin query
+    const pluginQuery = instrumentPluginQuery(
+      'postgresql',
+      'get_user_apps',
+      { limit: 10 }
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 30));
+    pluginQuery.end({
+      status: 'success',
+      rowsReturned: 5,
+      dataSize: 2048
+    });
+
+    // Simulate external operation
+    const externalOp = instrumentExternalOperation(
+      'webhook_call',
+      'slack'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+    externalOp.end({
+      status: 'success',
+      httpMethod: 'POST',
+      statusCode: 200
+    });
+
+    return {
+      success: true,
+      message: 'Comprehensive monitoring test completed',
+      performanceReport: generatePerformanceReport(),
+      data: {
+        simulatedOperations: {
+          databaseQuery: { duration: '50ms', status: 'success' },
+          pluginQuery: { duration: '30ms', status: 'success' },
+          externalOperation: { duration: '200ms', status: 'success' }
+        },
+        userId: user.id,
+        organizationId: user.organizationId
+      }
+    };
+  }
+
   // Test endpoint to manually trigger metrics
   @UseGuards(JwtAuthGuard)
   @Post('metrics/test')
@@ -256,6 +325,78 @@ export class AppsController implements IAppsController {
           { name: 'slow_query', duration: 5000, status: 'error', datasource: 'mysql' }
         ],
         userId: user.id
+      }
+    };
+  }
+
+  // Performance dashboard endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('performance/dashboard')
+  async getPerformanceDashboard(@User() user: UserEntity) {
+    const {
+      generatePerformanceReport,
+      getMonitoringHealth
+    } = require('../../otel/comprehensive-api-middleware');
+
+    const {
+      compareReleasePerformance,
+      analyzeAppBuilderViewerPerformance,
+      getBenchmarkingStats
+    } = require('../../otel/benchmarking-framework');
+
+    const {
+      getPluginPerformanceStats,
+      getDatasourcePerformanceSummary
+    } = require('../../otel/plugin-performance-metrics');
+
+    const {
+      getEnhancedDatabaseStats
+    } = require('../../otel/enhanced-database-monitoring');
+
+    const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
+
+    return {
+      success: true,
+      data: {
+        currentRelease,
+        generatedAt: new Date().toISOString(),
+        monitoringHealth: getMonitoringHealth(),
+        performanceReport: generatePerformanceReport(currentRelease),
+        appBuilderViewerAnalysis: analyzeAppBuilderViewerPerformance(currentRelease),
+        benchmarkingStats: getBenchmarkingStats(),
+        pluginPerformanceStats: getPluginPerformanceStats(),
+        databaseStats: getEnhancedDatabaseStats(),
+        datasourcePerformanceSummary: getDatasourcePerformanceSummary(),
+        organizationId: user.organizationId,
+      }
+    };
+  }
+
+  // Release comparison endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('performance/compare/:previousRelease')
+  async compareReleasePerformance(
+    @User() user: UserEntity,
+    @Param('previousRelease') previousRelease: string
+  ) {
+    const { compareReleasePerformance } = require('../../otel/benchmarking-framework');
+    const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
+
+    const comparisons = compareReleasePerformance(currentRelease, previousRelease);
+
+    return {
+      success: true,
+      data: {
+        currentRelease,
+        previousRelease,
+        comparisons,
+        summary: {
+          totalEndpoints: comparisons.length,
+          regressions: comparisons.filter(c => c.significance === 'regression').length,
+          improvements: comparisons.filter(c => c.significance === 'improvement').length,
+          neutral: comparisons.filter(c => c.significance === 'neutral').length,
+        },
+        organizationId: user.organizationId,
       }
     };
   }
