@@ -80,8 +80,8 @@ function GetStartedWidget({ type, to }) {
   );
 }
 
-function GetStartedOptionsRow({ isToolJetCloud }) {
-  if (isToolJetCloud) {
+function GetStartedOptionsRow({ edition, isToolJetCloud }) {
+  if (isToolJetCloud || edition === 'cloud') {
     return (
       <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
         <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
@@ -99,9 +99,8 @@ function GetStartedOptionsRow({ isToolJetCloud }) {
   );
 }
 
-function GetStartedHome({ isToolJetCloud }) {
+function GetStartedHome({ edition, isToolJetCloud }) {
   const getCreditBalance = useStore((store) => store.ai?.getCreditBalance);
-
   useEffect(() => {
     getCreditBalance?.();
   }, [getCreditBalance]);
@@ -110,7 +109,7 @@ function GetStartedHome({ isToolJetCloud }) {
     <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
       <HomePagePromptSection />
       <DividerWithText />
-      <GetStartedOptionsRow isToolJetCloud={isToolJetCloud} />
+      <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
     </div>
   );
 }
