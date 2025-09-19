@@ -8,7 +8,7 @@ import { OrganizationsAiFeatureRepository } from './organizationAiFeature.reposi
 
 @Module({})
 export class OrganizationPaymentModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { OrganizationPaymentController, OrganizationPaymentService } = await this.getProviders(
       configs,
       'organization-payments',
@@ -22,7 +22,7 @@ export class OrganizationPaymentModule extends SubModule {
         await EmailModule.register(configs),
         await CrmModule.register(configs),
       ],
-      controllers: [OrganizationPaymentController],
+      controllers: isMainImport ? [OrganizationPaymentController] : [],
       providers: [OrganizationPaymentService, FeatureAbilityFactory, OrganizationsAiFeatureRepository],
       exports: [],
     };
