@@ -12,7 +12,9 @@ const OnboardingBackgroundWrapper = ({
 }) => {
   const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
   const isWhiteLabelLogoApplied = whiteLabelFavIcon !== defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  if (window.location.pathname != '/setup' && isWhiteLabelLogoApplied) {
+  const pathSegments = window.location.pathname.split('/').filter(Boolean);
+  const currentRoute = pathSegments[pathSegments.length - 1];
+  if (currentRoute !== 'setup' && isWhiteLabelLogoApplied) {
     const ContentComponent = MiddleComponent ? MiddleComponent : LeftSideComponent;
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;
   }

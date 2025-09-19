@@ -6,6 +6,7 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.WORKFLOWS]: {
     [FEATURE_KEY.EXECUTE_WORKFLOW]: {
       auditLogsKey: 'EXECUTE_WORKFLOW',
+      skipAuditLogs: true,
     },
     [FEATURE_KEY.WORKFLOW_EXECUTION_STATUS]: {},
     [FEATURE_KEY.WORKFLOW_EXECUTION_DETAILS]: {}, //Basic plan users can access worfklows
@@ -26,6 +27,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW]: {
       auditLogsKey: 'WEBHOOK_TRIGGER_WORKFLOW',
       allowFailedAuditLogs: true,
+      skipAuditLogs: true,
     },
     [FEATURE_KEY.UPDATE_WORKFLOW_WEBHOOK_DETAILS]: {},
 

@@ -64,7 +64,7 @@ const BaseLeftNavSideBar = ({
           </ToolTip>
         </li>
         {workflowsEnabled && (
-          <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+          <li className="text-center  cursor-pointer" data-cy="icon-workflows">
             <ToolTip message="Workflows" placement="right">
               <Link
                 to={getPrivateRoute('workflows')}
@@ -72,7 +72,6 @@ const BaseLeftNavSideBar = ({
                 className={`tj-leftsidebar-icon-items  ${
                   router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                 }`}
-                data-cy="icon-workflows"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',

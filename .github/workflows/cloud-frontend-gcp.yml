@@ -42,6 +42,11 @@ jobs:
           git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
           cd repo
 
+          echo "🔎 Main repo: verifying checkout"
+          MAIN_CURRENT=$(git rev-parse --abbrev-ref HEAD)
+          echo "✅ Main repo: successfully checked out branch $MAIN_CURRENT"
+          echo "📍 Main repo: current commit $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
+
           echo "🔁 Updating submodules"
           git submodule update --init --recursive
 
@@ -68,20 +73,24 @@ jobs:
               echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'main'"
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
               PREV=$(git rev-parse --short HEAD || echo "unknown")
-              git checkout main && git pull origin main || {
-                echo "❌ $name: fallback to main failed"
+              git fetch origin lts-3.16:lts-3.16 || {
+                echo "❌ $name: fetch failed for lts-3.16"
+                exit 1
+              }
+              git checkout lts-3.16 || {
+                echo "❌ $name: fallback to lts-3.16 failed"
                 exit 1
               }
               echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
-              echo "✅ $name: now on branch main"
+              echo "✅ $name: now on branch lts-3.16"
             fi
 
             CURRENT=$(git rev-parse --abbrev-ref HEAD)
             echo "🔎 $name: current branch = $CURRENT"
-            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "main" ]; then
-              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'main', got '$CURRENT'"
+            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
+              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
               exit 1
             fi
           '

@@ -30,6 +30,7 @@ export const TableExposedVariables = ({
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
+  const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
@@ -84,6 +85,12 @@ export const TableExposedVariables = ({
   }, [data, setExposedVariables]);
 
   useEffect(() => {
+    if (editedRows.size > 0) {
+      fireEvent('onCellValueChanged');
+    }
+  }, [editedRows, editedFields, fireEvent]);
+
+  useEffect(() => {
     let updatedData = [...data];
     editedRows.forEach((value, key) => {
       updatedData[key] = value;
@@ -94,10 +101,7 @@ export const TableExposedVariables = ({
       dataUpdates: Object.fromEntries(editedRows),
       updatedData: updatedData,
     });
-    if (editedRows.size > 0) {
-      fireEvent('onCellValueChanged');
-    }
-  }, [editedRows, editedFields, data, setExposedVariables, fireEvent]);
+  }, [data, editedRows, editedFields, setExposedVariables]);
 
   useEffect(() => {
     if (addNewRowDetails) {
@@ -353,6 +357,14 @@ export const TableExposedVariables = ({
       debouncedSetProperty.cancel();
     };
   }, [columnSizing, columnSizes, debouncedSetProperty, id]);
+
+  useEffect(() => {
+    function discardChanges() {
+      setExposedVariables({ dataUpdates: [], changeSet: {} });
+      clearEditedRows(id);
+    }
+    setExposedVariables({ discardChanges });
+  }, [clearEditedRows, id, setExposedVariables]);
 
   return null;
 };

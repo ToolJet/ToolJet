@@ -643,8 +643,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
     const dataSourcePrefix = {
       googlecalendar: 'GOOGLE',
+      gmail: 'GOOGLE',
       snowflake: 'SNOWFLAKE',
       microsoft_graph: 'MICROSFT',
+      hubspot: 'HUBSPOT',
     };
     const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
     return key;

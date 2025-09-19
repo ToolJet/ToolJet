@@ -7,7 +7,7 @@ function Checkbox({ value, onChange }) {
   }, [value]);
 
   return (
-    <div className="d-flex align-items-center color-slate12" style={{ width: '142px', marginTop: '16px' }}>
+    <div className="d-flex align-items-center color-slate12" style={{ width: '142px' }}>
       <input
         data-cy={`auto-width-checkbox`}
         type="checkbox"

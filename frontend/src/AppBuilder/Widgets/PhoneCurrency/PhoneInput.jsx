@@ -5,7 +5,7 @@ import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { useInput } from '../BaseComponents/hooks/useInput';
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
@@ -54,8 +54,9 @@ export const PhoneInput = (props) => {
     errTextColor,
     boxShadow,
     borderRadius,
+    widthType,
   } = styles;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const isInitialRender = useRef(true);
 
@@ -203,8 +204,16 @@ export const PhoneInput = (props) => {
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          widthType={widthType}
         />
-        <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
+        <div
+          className="d-flex h-100"
+          style={{
+            boxShadow,
+            borderRadius: `${borderRadius}px`,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+          }}
+        >
           <CountrySelect
             value={{ label: `${en[country]} +${getCountryCallingCodeSafe(country)}`, value: country }}
             options={options}

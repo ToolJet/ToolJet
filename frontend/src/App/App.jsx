@@ -47,6 +47,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -79,7 +80,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
-      showBanner: false,
+      showBanner: false, //Show banner
       // isEditorOrViewer: '',
     };
   }
@@ -88,10 +89,8 @@ class AppComponent extends React.Component {
   };
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
-    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
-    const showBannerCondition =
-      (isAdmin || isBuilder) && setupDate && this.isExistingPlanUser(setupDate) && this.state.showBanner;
+    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
+    const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -119,12 +118,17 @@ class AppComponent extends React.Component {
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
+    hubspotHelper.loadHubspot();
     this.fetchMetadata();
+    // check if version is cloud
+    const data = localStorage.getItem('currentVersion');
+    if (data && data.includes('cloud')) {
+      this.setState({
+        showBanner: true, // show banner if version has "cloud"
+      });
+    }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
-    const featureAccess = await licenseService.getFeatureAccess();
-    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
-    this.setState({ showBanner: isBasicPlan });
     this.updateColorScheme();
     let counter = 0;
     let interval;
@@ -186,9 +190,6 @@ class AppComponent extends React.Component {
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
   };
-  isExistingPlanUser = (date) => {
-    return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
-  };
   updateColorScheme = (darkModeValue) => {
     const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
     if (isDark) {
@@ -226,19 +227,14 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     const isApplicationsPath = window.location.pathname.includes('/applications/');
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
-    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
+    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
     const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
-          {!isApplicationsPath &&
-            (isAdmin || isBuilder) &&
-            showBanner &&
-            setupDate &&
-            this.isExistingPlanUser(setupDate) && (
-              <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
-            )}
+          {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
+            <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
+          )}
           <div
             className={cx('main-wrapper', {
               'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,

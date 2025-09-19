@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
-import { folderService } from '@/_services';
+import { folderService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
@@ -16,7 +16,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 export const Folders = function Folders({
   folders,
@@ -319,7 +318,9 @@ export const Folders = function Folders({
             )}
             style={{ height: '32px' }}
             onClick={() => handleFolderChange({})}
-            data-cy="all-applications-link"
+            data-cy={`all-${
+              appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'applications'
+            }-link`}
           >
             {appType === 'module'
               ? 'All modules'

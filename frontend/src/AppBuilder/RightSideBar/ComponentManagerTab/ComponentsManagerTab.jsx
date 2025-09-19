@@ -11,10 +11,12 @@ import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ModuleManager } from '@/modules/Modules/components';
-import { ComponentModuleTab } from '@/modules/Appbuilder/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
-
+import Tabs from '@/ToolJetUI/Tabs/Tabs';
+import Tab from '@/ToolJetUI/Tabs/Tab';
+import './styles.scss';
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
   constructor(props) {
@@ -53,11 +55,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState(1);
   const [moduleError, setModuleError] = useState(false);
+  const [activeTab, setActiveTab] = useState('components');
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
+  const edition = fetchEdition();
 
   const { hasModuleAccess } = useLicenseStore(
     (state) => ({
@@ -68,11 +71,13 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   // Force re-render when hasModuleAccess changes
   useEffect(() => {
-    // If modules access is denied and we're on the modules tab, switch to components
-    if (!hasModuleAccess && activeTab === 2) {
-      setActiveTab(1);
-    }
-  }, [hasModuleAccess, activeTab]);
+    // If modules access is denied, nothing to do here now
+  }, [hasModuleAccess]);
+
+  useEffect(() => {
+    setSearchQuery('');
+    filterComponents('');
+  }, [activeTab]);
 
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
@@ -82,12 +87,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const handleSearchQueryChange = useCallback(
     debounce((value) => {
       setSearchQuery(value);
-      if (activeTab === 1) {
-        filterComponents(value);
-      }
-      // No need to filter modules here as we pass searchQuery to ModuleManager
+      // Filtering will be handled in the tab content
+      filterComponents(value);
     }, 125),
-    [activeTab]
+    []
   );
 
   const handleToggle = () => {
@@ -95,31 +98,34 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     setRightSidebarOpen(false);
   };
 
-  const filterComponents = useCallback((value) => {
-    if (value !== '') {
-      const fuse = new Fuse(componentList, {
-        keys: ['displayName'],
-        shouldSort: true,
-        threshold: 0.4,
-      });
-      const results = fuse.search(value);
+  const filterComponents = useCallback(
+    (value) => {
+      if (value !== '') {
+        const fuse = new Fuse(componentList, {
+          keys: ['displayName'],
+          shouldSort: true,
+          threshold: 0.4,
+        });
+        const results = fuse.search(value);
 
-      // Find the indices of ToggleSwitchLegacy and ToggleSwitch
-      const legacyIndex = componentList.findIndex((component) => component === 'ToggleSwitchLegacy');
-      const toggleIndex = componentList.findIndex((component) => component === 'ToggleSwitch');
+        // Find the indices of ToggleSwitchLegacy and ToggleSwitch
+        const legacyIndex = componentList.findIndex((component) => component === 'ToggleSwitchLegacy');
+        const toggleIndex = componentList.findIndex((component) => component === 'ToggleSwitch');
 
-      // Swap the indices (if both are found)
-      if (legacyIndex !== -1 && toggleIndex !== -1) {
-        [componentList[legacyIndex], componentList[toggleIndex]] = [
-          componentList[toggleIndex],
-          componentList[legacyIndex],
-        ];
+        // Swap the indices (if both are found)
+        if (legacyIndex !== -1 && toggleIndex !== -1) {
+          [componentList[legacyIndex], componentList[toggleIndex]] = [
+            componentList[toggleIndex],
+            componentList[legacyIndex],
+          ];
+        }
+        setFilteredComponents(results.map((result) => result.item));
+      } else {
+        setFilteredComponents(componentList);
       }
-      setFilteredComponents(results.map((result) => result.item));
-    } else {
-      setFilteredComponents(componentList);
-    }
-  }, []);
+    },
+    [componentList]
+  );
 
   const { t } = useTranslation();
 
@@ -193,66 +199,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     );
   }
 
-  const handleChangeTab = (tab) => {
-    if (tab === 2 && !hasModuleAccess) {
-      setActiveTab(1);
-      return;
-    }
-    setActiveTab(tab);
-    if (tab === 1) setModuleError(false);
-    // When changing tabs, we don't need to reset the search
-    // The search query will be applied to the new tab
-  };
+  // Remove handleChangeTab and related logic
 
-  // Handle module errors by redirecting to components tab
-  useEffect(() => {
-    if (moduleError && activeTab === 2) {
-      setActiveTab(1);
-    }
-  }, [moduleError, activeTab]);
+  // Remove renderSection, replace with Tabs/Tab logic below
 
-  const renderSection = () => {
-    if (activeTab === 1) {
-      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
-    }
-
-    // If there was an error accessing modules, redirect to components tab
-    if (moduleError) {
-      return <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>;
-    }
-
+  const searchBox = () => {
     return (
-      <ModuleErrorBoundary onError={() => setModuleError(true)}>
-        <ModuleManager searchQuery={searchQuery} />
-      </ModuleErrorBoundary>
-    );
-  };
-
-  return (
-    <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      <div className="d-flex align-items-center">
-        {isModuleEditor ? (
-          <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
-        ) : (
-          <ComponentModuleTab onChangeTab={handleChangeTab} hasModuleAccess={hasModuleAccess} />
-        )}
-        <div className="icon-btn cursor-pointer flex-shrink-0 me-3 p-2 h-4 w-4" onClick={handleToggle}>
-          <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
-        </div>
-      </div>
-      <div className="input-icon tj-app-input">
+      <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
           dataCy={`widget-search-box`}
           initialValue={''}
           callBack={(e) => handleSearchQueryChange(e.target.value)}
           onClearCallback={() => {
             setSearchQuery('');
-            if (activeTab === 1) {
-              filterComponents('');
-            }
+            filterComponents('');
           }}
           placeholder={
-            activeTab === 1
+            activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
               : t('globals.searchModules', 'Search modules')
           }
@@ -261,7 +224,63 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           width={266}
         />
       </div>
-      {renderSection()}
+    );
+  };
+
+  const closeIcon = () => {
+    return (
+      <div
+        className="icon-btn cursor-pointer flex-shrink-0 me-3 p-1 h-4 w-4 component-manager-close-icon"
+        onClick={handleToggle}
+      >
+        <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="14" viewBox="0 0 14 14" />
+      </div>
+    );
+  };
+
+  return (
+    <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
+      {isModuleEditor || edition === 'ce' ? (
+        <>
+          <div className="d-flex align-items-center">
+            <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
+          </div>
+          {closeIcon()}
+          {searchBox()}
+          <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+        </>
+      ) : (
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(key) => {
+            setActiveTab(key);
+          }}
+          id="components-manager-tabs"
+          className="mt-2"
+          darkMode={darkMode}
+          closeIcon={closeIcon}
+        >
+          <Tab
+            eventKey="components"
+            title={(() => {
+              const str = t('globals.components', 'Components');
+              return str.charAt(0).toUpperCase() + str.slice(1);
+            })()}
+            darkMode={darkMode}
+          >
+            {searchBox()}
+            <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+          </Tab>
+          {hasModuleAccess && (
+            <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
+              <ModuleErrorBoundary onError={() => setModuleError(true)}>
+                {searchBox()}
+                <ModuleManager searchQuery={searchQuery} />
+              </ModuleErrorBoundary>
+            </Tab>
+          )}
+        </Tabs>
+      )}
     </div>
   );
 };

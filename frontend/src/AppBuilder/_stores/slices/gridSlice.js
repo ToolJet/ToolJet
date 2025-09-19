@@ -128,9 +128,9 @@ export const createGridSlice = (set, get) => ({
 
       // If the component is a container, we need to calculate the height of the container
       let maxHeight = 0;
+      const componentType = getComponentTypeFromId(componentId);
 
       if (isContainer) {
-        const componentType = getComponentTypeFromId(componentId);
         if (componentType === 'Listview') return;
         let visibility = true;
         const component = getResolvedComponent(componentId);

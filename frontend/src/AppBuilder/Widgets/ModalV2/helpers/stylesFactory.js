@@ -23,7 +23,6 @@ export function createModalStyles({
       height: backwardCompatibilityCheck ? computedCanvasHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
-      overflowY: isDisabledModal ? 'hidden' : 'auto',
       padding: `${MODAL_CANVAS_PADDING}px`,
     },
     modalHeader: {

@@ -21,7 +21,7 @@ Explore these hands-on guides to start building your first app. The step-by-step
 - **[Access and Referring Values Within The App-Builder](/docs/app-builder/walkthrough/accessing-values)**
 - **[Create and Managing Variables](/docs/app-builder/walkthrough/variables)**
 - **[Use Gitsync to Sync your Application with a Git Repository](/docs/gitsync)**
-- **[Versioning and Release](/docs/tutorial/versioning-and-release)**
+- **[Versioning and Release](/docs/development-lifecycle/release/version-control)**
 - **[Import and Export Apps](/docs/app-builder/importing-exporting-applications)**
 
 

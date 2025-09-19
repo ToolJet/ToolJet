@@ -48,7 +48,9 @@ import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
+import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -86,7 +88,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = [
+export const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
   'TextArea',
@@ -117,7 +119,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'Tags',
   'Chat',
+  'PopoverMenu',
+  'Statistics',
+  'StarRating',
 ];
 
 export const Inspector = ({
@@ -254,13 +260,6 @@ export const Inspector = ({
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;
       }
-      if (param.name === 'secondarySignDisplay') {
-        if (value === 'negative') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-        } else if (value === 'positive') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-        }
-      }
     } else {
       oldValue = allParams[param.name];
       allParams[param.name] = value;
@@ -337,13 +336,6 @@ export const Inspector = ({
         }
         if (param.type === 'select' && defaultValue) {
           allParams[defaultValue.paramName]['value'] = defaultValue.value;
-        }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
         }
       } else {
         allParams[param.name] = value;
@@ -532,7 +524,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon" style={{ marginLeft: '8px' }}>
+      <div className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -560,17 +552,12 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px' }}
-            >
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
-          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+        <div
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
+            shouldFreeze && 'disabled'
+          }`}
+        >
+          <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
             <>
               <div className="width-unset" data-cy={'component-inspector-options'}>
@@ -845,6 +832,9 @@ const GetAccordion = React.memo(
       case 'RadioButtonV2':
         return <Select {...restProps} />;
 
+      case 'Tags':
+        return <Tags {...restProps} />;
+
       case 'Chat':
         return <Chat {...restProps} />;
 
@@ -865,6 +855,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+      case 'PopoverMenu':
+        return <PopoverMenu {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

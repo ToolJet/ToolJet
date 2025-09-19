@@ -30,10 +30,33 @@ const initialState = {
         app: {},
         isViewer: false,
         isComponentLayoutReady: false,
+        isAppModeSwitchedToVisualPostLayoutGeneration: false,
       },
     },
   },
 };
+
+function isDesignLayoutStepDone(steps, activeStepId) {
+  const designLayoutIndex = steps.findIndex((step) => step.id === 'design_layout');
+  const activeStepIndex = steps.findIndex((step) => step.id === activeStepId);
+
+  if (designLayoutIndex === -1 || activeStepIndex === -1) {
+    return false; // invalid input
+  }
+
+  return activeStepIndex >= designLayoutIndex;
+}
+
+function checkIsAppSwitchedToVisualModePostLayoutGeneration(prevAppState, dataToUpdate) {
+  if (prevAppState?.appBuilderMode === 'ai' && dataToUpdate?.appBuilderMode === 'visual') {
+    return isDesignLayoutStepDone(
+      prevAppState?.aiGenerationMetadata?.steps || [],
+      prevAppState?.aiGenerationMetadata?.active_step
+    );
+  }
+
+  return false;
+}
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
@@ -98,6 +121,7 @@ export const createAppSlice = (set, get) => ({
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
     const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
+    let debugObject = {};
     const currentMode = getCurrentMode(moduleId);
 
     const maxPermanentHeight = Object.values(components).reduce((max, component) => {
@@ -118,7 +142,31 @@ export const createAppSlice = (set, get) => ({
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
+    const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
+    const _components = Object.values(components).map((c) => {
+      return {
+        layouts: c?.layouts,
+        type: c?.componentType,
+        parent: c?.parent,
+        id: c?.id,
+        properties: c?.component?.definition?.properties,
+        others: c?.component?.definition?.others,
+      };
+    });
+    debugObject = {
+      canvasHeight,
+      maxHeight,
+      maxPermanentHeight,
+      temporaryLayoutsMaxHeight,
+      components: _components,
+      temporaryLayouts,
+      bottomPadding,
+      frameHeight,
+      currentMode,
+      currentLayout,
+    };
+    window.tooljetCanvasHeightDebug = debugObject;
   },
   setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
@@ -321,6 +369,10 @@ export const createAppSlice = (set, get) => ({
 
   updateAppData: (dataToUpdate, moduleId = 'canvas') => {
     set((state) => {
+      if (checkIsAppSwitchedToVisualModePostLayoutGeneration(state.appStore.modules[moduleId].app, dataToUpdate)) {
+        state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration = true;
+      }
+
       state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
     });
   },

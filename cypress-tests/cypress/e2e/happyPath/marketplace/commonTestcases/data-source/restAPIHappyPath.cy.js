@@ -13,9 +13,9 @@ const authenticationDropdownSelector =
 const grantTypeDropdown =
   ":nth-child(1) > :nth-child(2) > .react-select__control";
 const addAccessTokenDropdown =
-  ":nth-child(9) > .css-nwhe5y-container > .react-select__control";
+  ":nth-child(8) > .css-nwhe5y-container > .react-select__control";
 const clientAuthenticationDropdown =
-  ":nth-child(14) > .css-nwhe5y-container > .react-select__control";
+  ":nth-child(13) > .css-nwhe5y-container > .react-select__control";
 
 describe("Data source Rest API", () => {
   beforeEach(() => {
@@ -123,9 +123,10 @@ describe("Data source Rest API", () => {
     cy.get(
       restAPISelector.subHeaderLabel(restAPIText.authenticationText)
     ).should("have.text", restAPIText.authenticationText);
-    cy.get(
-      restAPISelector.subHeaderLabel(restAPIText.authenticationTypeLabel)
-    ).should("have.text", restAPIText.authenticationTypeLabel);
+    cy.get(".dynamic-form-element > .form-label").should(
+      "have.text",
+      restAPIText.authenticationTypeLabel
+    );
 
     cy.get(authenticationDropdownSelector).click();
     cy.contains(
@@ -174,10 +175,9 @@ describe("Data source Rest API", () => {
       "have.text",
       restAPIText.oAuthText
     );
-    cy.get(restAPISelector.subHeaderLabel(restAPIText.grantTypeLabel)).should(
-      "have.text",
-      restAPIText.grantTypeLabel
-    );
+    cy.get(
+      ":nth-child(3) > :nth-child(1) > :nth-child(1) > :nth-child(1) > .form-label"
+    ).should("have.text", restAPIText.grantTypeLabel);
     cy.get(grantTypeDropdown).click();
     cy.contains(
       `[id*="react-select-"]`,

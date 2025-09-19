@@ -1,5 +1,5 @@
 ---
-id: elasticsearch
+id: elasticsearch  
 title: Elasticsearch
 ---
 
@@ -14,7 +14,6 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 :::
 
 To connect to your Elasticsearch cluster, the following details are required:
-
 - **Host**
 - **Port**
 - **Username**
@@ -25,7 +24,6 @@ To connect to your Elasticsearch cluster, the following details are required:
 </div>
 
 ToolJet also supports SSL certificate-based connections:
-
 - You can use either CA or Client certificates.
 
 <div style={{textAlign: 'center'}}>
@@ -40,7 +38,7 @@ ToolJet also supports SSL certificate-based connections:
 2. Choose the operation you want to perform on your Elasticsearch cluster.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/beta/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
 :::
 
 </div>
@@ -70,12 +68,10 @@ ToolJet supports the following Elasticsearch operations:
 This operation executes a search query and returns matching search hits. For more details, see the Elasticsearch search guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index to search in.
 - **Query**: The search query in JSON format.
 
 #### Optional Parameter
-
 - **Scroll**: Scroll time.
 
 <div style={{textAlign: 'center'}}>
@@ -83,10 +79,17 @@ This operation executes a search query and returns matching search hits. For mor
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
-Query: { "query": { "match": { "title": "The Great Gatsby" } }, "size": 20 }
+Query:
+  {
+    "query": {
+      "match": {
+        "title": "The Great Gatsby"
+      }
+    },
+    "size": 20
+  }
 Scroll: 1m # Can be in the format of 1m, 1h, 1d.
 ```
 
@@ -95,7 +98,6 @@ Scroll: 1m # Can be in the format of 1m, 1h, 1d.
 This operation adds a JSON document to the specified index or data stream. For more details, see the Elasticsearch index guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index to add the document to
 - **Body**: The document body in JSON format
 
@@ -104,7 +106,6 @@ This operation adds a JSON document to the specified index or data stream. For m
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
 Body:
@@ -112,7 +113,7 @@ Body:
     "title": "1984",
     "author": "George Orwell",
     "year": 1949,
-    "genre": "Dystopian Fiction",
+    "genre": "Dystopian Fiction"
   }
 ```
 
@@ -121,7 +122,6 @@ Body:
 This operation retrieves the specified JSON document from the index. For more details, see the Elasticsearch get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index to get the document from
 - **Id**: The ID of the document to retrieve
 
@@ -130,7 +130,6 @@ This operation retrieves the specified JSON document from the index. For more de
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
 Id: FJXTSZEBsuzUn2y4wZ-W
@@ -141,7 +140,6 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 This operation updates a document using the specified script. For more details, see the Elasticsearch update guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index containing the document
 - **Id**: The ID of the document to update
 - **Body**: The update script or partial document in JSON format
@@ -151,7 +149,6 @@ This operation updates a document using the specified script. For more details, 
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
 Id: FJXTSZEBsuzUn2y4wZ-W
@@ -171,7 +168,6 @@ Body:
 This operation removes a JSON document from the specified index. For more details, see the Elasticsearch delete guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index containing the document
 - **Id**: The ID of the document to delete
 
@@ -180,7 +176,6 @@ This operation removes a JSON document from the specified index. For more detail
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
 Id: FJXTSZEBsuzUn2y4wZ-W
@@ -191,7 +186,6 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 This operation performs multiple index/update/delete operations in a single API call. For more details, see the Elasticsearch bulk guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html)**.
 
 #### Required Parameter
-
 - **Operations**: The bulk operations to perform in JSON format
 
 <div style={{textAlign: 'center'}}>
@@ -199,19 +193,22 @@ This operation performs multiple index/update/delete operations in a single API 
 </div>
 
 #### Example:
-
 ```yaml
 [
   { "index": { "_index": "books", "_id": "book1" } },
   {
     "title": "The Great Gatsby",
     "author": "F. Scott Fitzgerald",
-    "year": 1925,
+    "year": 1925
   },
   { "delete": { "_index": "books", "_id": "book2" } },
   { "index": { "_index": "books", "_id": "book3" } },
-  { "title": "Moby-Dick", "author": "Herman Melville", "year": 1851 },
-  { "delete": { "_index": "books", "_id": "book4" } },
+  {
+    "title": "Moby-Dick",
+    "author": "Herman Melville",
+    "year": 1851
+  },
+  { "delete": { "_index": "books", "_id": "book4" } }
 ]
 ```
 
@@ -220,11 +217,9 @@ This operation performs multiple index/update/delete operations in a single API 
 This operation returns the number of matches for a search query. For more details, see the Elasticsearch count guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html)**.
 
 #### Required Parameter
-
 - **Index**: The name of the index to count documents in.
 
 #### Optional Parameter
-
 - **Query**: The query to filter documents in JSON format
 
 <div style={{textAlign: 'center'}}>
@@ -232,9 +227,16 @@ This operation returns the number of matches for a search query. For more detail
 </div>
 
 #### Example:
-
 ```yaml
-{ "query": { "range": { "timestamp": { "gte": 1901 } } } }
+{
+  "query": {
+    "range": {
+      "timestamp": {
+        "gte": 1901
+      }
+    }
+  }
+}
 ```
 
 ### Check Document Existence
@@ -242,7 +244,6 @@ This operation returns the number of matches for a search query. For more detail
 This operation checks if a document exists in an index. For more details, see the Elasticsearch exists guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html#docs-get-api-response-codes)**.
 
 #### Required Parameter:
-
 - **Index**: The name of the index to check for document existence
 - **Id**: The ID of the document to check
 
@@ -251,7 +252,6 @@ This operation checks if a document exists in an index. For more details, see th
 </div>
 
 #### Example:
-
 ```yaml
 Index: books
 Id: FJXTSZEBsuzUn2y4wZ-W
@@ -262,7 +262,6 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 This operation retrieves multiple documents in a single request. For more details, see the Elasticsearch multi-get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html)**.
 
 #### Required Parameter
-
 - **Operations**: The multi-get operations to perform in JSON format
 
 <div style={{textAlign: 'center'}}>
@@ -270,14 +269,12 @@ This operation retrieves multiple documents in a single request. For more detail
 </div>
 
 #### Example:
-
 ```yaml
 {
-  "docs":
-    [
-      { "_index": "books", "_id": "book124" },
-      { "_index": "books", "_id": "book125" },
-    ],
+  "docs": [
+    { "_index": "books", "_id": "book124" },
+    { "_index": "books", "_id": "book125" }
+  ]
 }
 ```
 
@@ -286,7 +283,6 @@ This operation retrieves multiple documents in a single request. For more detail
 This operation retrieves large numbers of results from a single search request. For more details, see the Elasticsearch scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#scroll-search-results)**.
 
 #### Required Parameter
-
 - **Scroll ID**: The scroll ID for the search
 - **Scroll**: The scroll time
 
@@ -295,7 +291,6 @@ This operation retrieves large numbers of results from a single search request. 
 </div>
 
 #### Example:
-
 ```yaml
 Scroll ID: DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw
 Scroll: 60m
@@ -306,7 +301,6 @@ Scroll: 60m
 This operation clears the search context for a scroll. For more details, see the Elasticsearch clear scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/clear-scroll-api.html)**.
 
 #### Required Parameter
-
 - **Scroll ID**: The scroll ID to clear
 
 <div style={{textAlign: 'center'}}>
@@ -314,7 +308,6 @@ This operation clears the search context for a scroll. For more details, see the
 </div>
 
 #### Example:
-
 ```yaml
 Scroll ID: DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw
 ```

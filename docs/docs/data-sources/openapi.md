@@ -9,13 +9,15 @@ OpenAPI is a specification for designing and documenting RESTful APIs. Using Ope
 
 ## Connection
 
+To establish a connection with the OpenAPI datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
 Connections are created based on OpenAPI specifications. The available authentication methods currently supported are Basic Auth, API Key, Bearer Token, and OAuth 2.0. It is also possible to use specifications that require multiple authentications. Learn more [here](https://swagger.io/docs/specification/authentication/).
 
-OpenAPI datasource accepts specifications in JSON or YAML format only. After providing a valid JSON or YAML spec and selecting OAuth2 as the authentication type, you can enter custom headers and client credentials.
+:::info
+OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
+:::
 
-You can also configure different hosts for different environments from the configuration page. The host configured here takes precedence over the host defined in the query or the specs itself.
-
-<img className="screenshot-full img-l" src="/img/datasource-reference/openapi/openapiconnect-v4.png" alt="OpenAPI" />
+<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-v2.png" alt="OpenAPI" />
 
 </div>
 

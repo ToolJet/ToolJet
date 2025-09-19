@@ -155,7 +155,10 @@ export const ModalWidget = ({ ...restProps }) => {
             <SubContainer
               id={`${id}`}
               canvasHeight={modalBodyHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{
+                backgroundColor: customStyles.modalBody.backgroundColor,
+                overflowY: isDisabled ? 'hidden' : 'auto',
+              }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
               componentType="ModalV2"

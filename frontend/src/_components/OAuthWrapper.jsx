@@ -25,6 +25,7 @@ const OAuthWrapper = ({
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const needConnectionButton =
+    selectedDataSource.kind !== 'openapi' &&
     options?.auth_type?.value === 'oauth2' &&
     options?.grant_type?.value === 'authorization_code' &&
     multiple_auth_enabled !== true;
@@ -105,7 +106,7 @@ const OAuthWrapper = ({
           oauth_configs={oauth_configs}
         />
       </div>
-      {oauth_configs.allowed_scope_field && (
+      {oauth_configs?.allowed_scope_field && (
         <div>
           <label className="form-label mt-3">Scope(s)</label>
           <Input
@@ -115,7 +116,7 @@ const OAuthWrapper = ({
             value={scopes}
             workspaceConstants={workspaceConstants}
           />
-          {oauth_configs.scopeHelperText?.length > 0 && (
+          {oauth_configs?.scopeHelperText?.length > 0 && (
             <span className="text-muted" style={{ fontSize: '12px' }}>
               {oauth_configs.scopeHelperText}
             </span>
@@ -126,9 +127,9 @@ const OAuthWrapper = ({
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
-          helpText={`In ${dataSourceNameCapitalize}, use the URL above when prompted to enter an OAuth callback or redirect URL`}
+          helpText="Save this URL as callback or redirect URL in your OAuth app."
           type="copyToClipboard"
-          disabled="true"
+          disabled={true}
           className="form-control"
         />
       </div>

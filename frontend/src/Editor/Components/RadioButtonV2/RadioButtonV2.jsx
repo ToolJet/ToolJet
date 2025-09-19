@@ -5,6 +5,10 @@ import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { has, isObject } from 'lodash';
 import { getSafeRenderableValue } from '../utils';
+import {
+  getWidthTypeOfComponentStyles,
+  getLabelWidthOfInput,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 export const RadioButtonV2 = ({
   properties,
@@ -31,6 +35,7 @@ export const RadioButtonV2 = ({
     switchOnBackgroundColor,
     labelColor,
     alignment,
+    widthType,
   } = styles;
 
   const isInitialRender = useRef(true);
@@ -181,7 +186,7 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+  const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   return (
     <>
@@ -218,9 +223,16 @@ export const RadioButtonV2 = ({
           isMandatory={isMandatory}
           _width={_width}
           top={alignment !== 'top' && '2px'}
+          widthType={widthType}
         />
 
-        <div className="px-0 h-100 w-100" ref={radioBtnRef}>
+        <div
+          className="px-0 h-100"
+          ref={radioBtnRef}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          }}
+        >
           {isLoading || optionsLoadingState ? (
             <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
           ) : (

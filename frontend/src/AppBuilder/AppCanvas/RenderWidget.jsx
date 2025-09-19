@@ -36,7 +36,11 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Form',
   'FilePicker',
   'Tabs',
-  'RangeSliderV2'
+  'RangeSliderV2',
+  'Statistics',
+  'StarRating',
+  'PopoverMenu',
+  'Tags',
 ];
 
 const RenderWidget = ({

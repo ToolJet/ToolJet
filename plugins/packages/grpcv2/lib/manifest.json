@@ -1,0 +1,311 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "gRPC 2.0 datasource",
+  "description": "A schema defining gRPC 2.0 datasource with server reflection and URL-based proto support",
+  "type": "api",
+  "source": {
+    "name": "gRPC 2.0",
+    "kind": "grpcv2",
+    "options": {
+      "url": {
+        "type": "string"
+      },
+      "proto_files": {
+        "type": "string"
+      },
+      "proto_file_url": {
+        "type": "string"
+      },
+      "metadata": {
+        "type": "array"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "bearer_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "grant_type": {
+        "type": "string"
+      },
+      "add_token_to": {
+        "type": "string"
+      },
+      "header_prefix": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "audience": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "client_auth": {
+        "type": "string"
+      },
+      "custom_auth_params": {
+        "type": "array"
+      },
+      "ssl_enabled": {
+        "type": "boolean"
+      },
+      "ssl_certificate": {
+        "type": "string"
+      },
+      "ca_cert": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_cert": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    }
+  },
+  "defaults": {
+    "url": {
+      "value": ""
+    },
+    "proto_files": {
+      "value": "server_reflection"
+    },
+    "proto_file_url": {
+      "value": ""
+    },
+    "metadata": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "auth_type": {
+      "value": "none"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "access_token_url": {
+      "value": ""
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "audience": {
+      "value": ""
+    },
+    "scopes": {
+      "value": "read, write"
+    },
+    "auth_url": {
+      "value": ""
+    },
+    "client_auth": {
+      "value": "header"
+    },
+    "custom_auth_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "ssl_enabled": {
+      "value": false
+    },
+    "ssl_certificate": {
+      "value": "none"
+    },
+    "ca_cert": {
+      "value": ""
+    },
+    "client_key": {
+      "value": ""
+    },
+    "client_cert": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "renderForm": {
+      "type": "react-form-component",
+      "credentialsInputs": {
+        "title": "CONFIGURATION",
+        "inputs": {
+          "url": {
+            "label": "Server URL",
+            "key": "url",
+            "type": "text",
+            "description": "gRPC server URL (e.g., https://grpcb.in:9001)"
+          },
+          "proto_files": {
+            "label": "Proto files",
+            "key": "proto_files",
+            "type": "dropdown-component-flip",
+            "description": "Choose how to define the proto schema",
+            "list": [
+              {
+                "value": "server_reflection",
+                "name": "Use server reflection for multiple files"
+              },
+              {
+                "value": "import_proto_file",
+                "name": "Import single proto file from URL"
+              }
+            ]
+          },
+          "import_proto_file": {
+            "proto_file_url": {
+              "label": "Proto file URL",
+              "key": "proto_file_url",
+              "type": "text",
+              "description": "URL to the .proto file (e.g., https://example.com/api.proto)"
+            },
+            "metadata": {
+              "label": "Metadata",
+              "key": "metadata",
+              "type": "react-component-headers",
+              "description": "Custom gRPC metadata headers (key-value pairs)",
+              "width": "300px"
+            }
+          },
+          "server_reflection": {
+            "metadata": {
+              "label": "Metadata",
+              "key": "metadata",
+              "type": "react-component-headers",
+              "description": "Custom gRPC metadata headers (key-value pairs)",
+              "width": "300px"
+            }
+          }
+        }
+      },
+      "authenticationInputs": {
+        "title": "AUTHENTICATION",
+        "inputs": {
+          "auth_type": {
+            "key": "auth_type",
+            "type": "react-component-oauth-authentication",
+            "description": "Authentication method for gRPC calls"
+          }
+        }
+      },
+      "sslInputs": {
+        "title": "TRANSPORT LAYER SECURITY",
+        "inputs": {
+          "ssl_enabled": {
+            "label": "SSL/TLS",
+            "key": "ssl_enabled",
+            "type": "toggle",
+            "description": "Enable SSL/TLS connection"
+          },
+          "ssl_certificate": {
+            "label": "SSL/TLS Certificate",
+            "key": "ssl_certificate",
+            "type": "dropdown-component-flip",
+            "description": "SSL/TLS certificate type",
+            "list": [
+              {
+                "value": "none",
+                "name": "None"
+              },
+              {
+                "value": "ca_certificate",
+                "name": "CA certificate"
+              },
+              {
+                "value": "client_certificate",
+                "name": "Client certificate"
+              }
+            ]
+          },
+          "ca_certificate": {
+            "ca_cert": {
+              "label": "CA Certificate",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Certificate Authority certificate"
+            }
+          },
+          "client_certificate": {
+            "client_key": {
+              "label": "Client Key",
+              "key": "client_key",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Client private key"
+            },
+            "client_cert": {
+              "label": "Client Certificate",
+              "key": "client_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Client certificate"
+            },
+            "ca_cert": {
+              "label": "CA Certificate",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Certificate Authority certificate"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
