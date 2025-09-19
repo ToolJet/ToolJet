@@ -7,7 +7,7 @@ import HomePagePromptSection from './HomePagePromptSection';
 
 const WIDGET_TYPES = {
   APP: {
-    title: 'Create an blank app',
+    title: 'Create a blank app',
     description: 'Build custom apps that make internal processes efficient',
     icon: 'apps',
     iconColor: '#3E90F1',
