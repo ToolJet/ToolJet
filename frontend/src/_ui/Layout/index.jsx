@@ -109,6 +109,7 @@ function Layout({
   const canCreateVariableOrConstant = () => {
     return authenticationService.currentSessionValue.user_permissions?.org_constant_c_r_u_d;
   };
+  const isEndUser = authenticationService.currentSessionValue?.role?.name === 'end-user';
 
   return (
     <div className="row m-auto">
@@ -117,7 +118,7 @@ function Layout({
           <div className="tj-leftsidebar-icon-wrap">
             <div className="application-brand" data-cy={`home-page-logo`}>
               <Link
-                to={getPrivateRoute('dashboard')}
+                to={isEndUser ? getPrivateRoute('dashboard') : getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
                 {isWhiteLabellingDataLoading ? '' : logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}

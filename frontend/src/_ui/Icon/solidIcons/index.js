@@ -282,6 +282,8 @@ import LoadingState from './LoadingState.jsx';
 import AITopup from './AITopup.jsx';
 import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
+import MobileEmptyStateIcon from './MobileEmptyStateIcon';
+import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -833,6 +835,11 @@ const Icon = (props) => {
       return <AICrown {...props} />;
     case 'empty-state-modules':
       return <EmptyStateModules {...props} />;
+    case 'mobile-empty-state':
+      return <MobileEmptyStateIcon {...props} />;
+    case 'mobile-empty-state-dark':
+      return <MobileEmptyStateIconDark {...props} />;
+
     case 'play01':
       return <Play01 {...props} />;
     case 'moon':

@@ -9,7 +9,7 @@ import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-
+import pako from 'pako';
 export function Authorize({ navigate }) {
   const [error, setError] = useState('');
   const [inviteeEmail, setInviteeEmail] = useState();
@@ -34,6 +34,19 @@ export function Authorize({ navigate }) {
     const configs = Configs[router.query.origin];
     const authParams = {};
     const utmParams = extractUtmParams(router);
+    const prompt = extractPromptFromState(router);
+
+    // Set AI cookie if prompt is available
+    if (prompt) {
+      aiOnboardingService
+        .setAiCookie({ tj_ai_prompt: prompt })
+        .then(() => {
+          console.log('AI prompt cookie set successfully');
+        })
+        .catch((error) => {
+          console.warn('Failed to set AI prompt cookie:', error);
+        });
+    }
 
     if (configs.responseType === 'hash') {
       if (!window.location.hash) {
@@ -120,6 +133,62 @@ export function Authorize({ navigate }) {
 
     return utmParams;
   };
+
+  const base64UrlToBytes = (base64Url) => {
+    // Convert base64url to base64
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    // Add padding if needed
+    const padded = base64 + '===='.substring(0, (4 - (base64.length % 4)) % 4);
+    // Convert to bytes
+    const binary = atob(padded);
+    return new Uint8Array(binary.split('').map((char) => char.charCodeAt(0)));
+  };
+
+  const extractPromptFromState = (router) => {
+    let compressedPrompt = null;
+
+    // Check URL hash parameters first
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      compressedPrompt = hashParams.get('tj_ai_prompt');
+    }
+
+    // Check query parameters if no prompt found in hash
+    if (!compressedPrompt && router.query.tj_ai_prompt) {
+      compressedPrompt = router.query.tj_ai_prompt;
+    }
+
+    // If still no prompt, check inside the 'state' parameter (both in hash and query)
+    if (!compressedPrompt) {
+      let stateParam = window.location.hash
+        ? new URLSearchParams(window.location.hash.substring(1)).get('state')
+        : router.query.state;
+
+      if (stateParam) {
+        try {
+          const decodedState = decodeURIComponent(stateParam);
+          const stateParams = new URLSearchParams(decodedState);
+          compressedPrompt = stateParams.get('tj_ai_prompt');
+        } catch (error) {
+          console.warn('Error parsing state parameter for prompt:', error);
+        }
+      }
+    }
+
+    // Decompress the prompt if found
+    if (compressedPrompt) {
+      try {
+        const compressedBytes = base64UrlToBytes(compressedPrompt);
+        const decompressed = pako.inflate(compressedBytes, { to: 'string' });
+        return decompressed;
+      } catch (error) {
+        console.warn('Error decompressing prompt:', error);
+      }
+    }
+
+    return null;
+  };
+
   const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
