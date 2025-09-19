@@ -185,6 +185,7 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
+        checkAndSetTrueBuildSuggestionsFlag();
       }, 0);
     }
   }, [pageSwitchInProgress, currentPageId, moduleMode]);
@@ -358,6 +359,7 @@ const useAppData = (
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
             isReleasedApp: isReleasedApp,
+            appType: appData.type,
           },
           moduleId
         );
@@ -630,6 +632,7 @@ const useAppData = (
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
           isReleasedApp: isReleasedApp,
+          appType: appData.type,
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
