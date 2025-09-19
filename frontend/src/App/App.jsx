@@ -427,7 +427,7 @@ class AppComponent extends React.Component {
                     }
                   >
                     <Route path="installed" element={<InstalledPlugins />} />
-                    <Route path="marketplace" element={<MarketplacePlugins />} />/
+                    <Route path="marketplace" element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>} />
                   </Route>
                 )}
 
