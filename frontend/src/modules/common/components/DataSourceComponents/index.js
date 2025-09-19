@@ -10,7 +10,7 @@ import WorkflowsSchema from './Workflows.schema.json';
 import { allManifests } from '@tooljet/plugins/client';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 
-const getSchemaDetailsForRender = (schema) => {
+export const getSchemaDetailsForRender = (schema) => {
   if (schema['tj:version']) {
     const dsm = new DataSourceSchemaManager(schema);
     const initialSourceValues = dsm.getDefaults();

@@ -4,6 +4,7 @@ import { EmailModule } from '@modules/email/module';
 import { CrmModule } from '@modules/CRM/module';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { OrganizationsAiFeatureRepository } from './organizationAiFeature.repository';
 
 @Module({})
 export class OrganizationPaymentModule extends SubModule {
@@ -22,7 +23,7 @@ export class OrganizationPaymentModule extends SubModule {
         await CrmModule.register(configs),
       ],
       controllers: [OrganizationPaymentController],
-      providers: [OrganizationPaymentService, FeatureAbilityFactory],
+      providers: [OrganizationPaymentService, FeatureAbilityFactory, OrganizationsAiFeatureRepository],
       exports: [],
     };
   }
