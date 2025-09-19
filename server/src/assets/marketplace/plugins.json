@@ -312,5 +312,13 @@
     "id": "hubspot",
     "author": "Tooljet",
     "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
+  },
+  {
+    "name": "FedEx",
+    "description": "Plugin to integrate shipping data from FedEx - pickups, tracking, rates, freight, etc.",
+    "version": "1.0.0",
+    "id": "fedex",
+    "author": "Tooljet",
+    "timestamp": "Fri, 05 Sep 2025 05:46:39 GMT"
   }
 ]
