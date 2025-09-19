@@ -85,13 +85,13 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
             {!isUserInZeroToOneFlow && (
               <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
                 <div className="d-flex align-items-center p-0">
-                  <div className="d-flex version-manager-container p-0  align-items-center ">
+                  <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
                         <AppEnvironments darkMode={darkMode} />
-                        <div className="tw-hidden navbar-seperator" />
+                        <div className="tw-hidden navbar-seperator m-0" />
                         <AppVersionsManager darkMode={darkMode} />
-                        <div className="navbar-seperator" />
+                        <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}

@@ -67,6 +67,7 @@
 }
 
 .theme-dark {
+
   .undo-button,
   .redo-button {
     background: 0;
@@ -128,20 +129,24 @@
 
   .react-select__value-container {
     height: 36px;
-    padding: 0 2px !important;
+    padding: 0 !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
     margin: 0;
 
-    & + .react-select__indicators {
+    &+.react-select__indicators {
       display: none;
     }
   }
 
   @media screen and (max-width: 767px) {
     width: 100%;
+  }
+
+  #react-select-2-input {
+    display: none !important;
   }
 }
 
@@ -221,6 +226,7 @@
     background: var(--button-secondary-disabled);
     color: var(--text-disabled);
     cursor: not-allowed;
+
     svg {
       color: var(--icon-default);
     }
@@ -239,6 +245,7 @@
     height: 32px;
   }
 }
+
 .header-container .navbar-seperator {
   border: 0;
   border-right: 1px solid var(--border-weak);
