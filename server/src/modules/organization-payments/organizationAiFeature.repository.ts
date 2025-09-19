@@ -25,13 +25,20 @@ export class OrganizationsAiFeatureRepository extends Repository<OrganizationsAi
     }[]
   > {
     return dbTransactionWrap(async (txnManager: EntityManager) => {
-      return txnManager.find(OrganizationsAiFeature, {
+      const rows = await txnManager.find(OrganizationsAiFeature, {
         select: ['walletType', 'balance', 'expiryDate', 'totalAmount'],
         where: {
           organizationId,
           walletType: In([WalletType.RECURRING, WalletType.TOPUP]),
         },
       });
+
+      // Convert balance and totalAmount to whole numbers
+      return rows.map((r) => ({
+        ...r,
+        balance: Math.floor(Number(r.balance)),
+        totalAmount: Math.floor(Number(r.totalAmount)),
+      }));
     }, manager || this.manager);
   }
 }
