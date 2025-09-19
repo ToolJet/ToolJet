@@ -150,12 +150,12 @@ export function Authorize({ navigate }) {
     // Check URL hash parameters first
     if (window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      compressedPrompt = hashParams.get('ai_prompt');
+      compressedPrompt = hashParams.get('tj_ai_prompt');
     }
 
     // Check query parameters if no prompt found in hash
-    if (!compressedPrompt && router.query.ai_prompt) {
-      compressedPrompt = router.query.ai_prompt;
+    if (!compressedPrompt && router.query.tj_ai_prompt) {
+      compressedPrompt = router.query.tj_ai_prompt;
     }
 
     // If still no prompt, check inside the 'state' parameter (both in hash and query)
@@ -168,7 +168,7 @@ export function Authorize({ navigate }) {
         try {
           const decodedState = decodeURIComponent(stateParam);
           const stateParams = new URLSearchParams(decodedState);
-          compressedPrompt = stateParams.get('ai_prompt');
+          compressedPrompt = stateParams.get('tj_ai_prompt');
         } catch (error) {
           console.warn('Error parsing state parameter for prompt:', error);
         }
