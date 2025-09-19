@@ -21,11 +21,11 @@ You can access this feature by selcting **Learn** from the dropdown on the AI ch
 ### Examples
 
 1. Custom Schema in [Form](/docs/widgets/form/) component: <br/>
-    **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender?
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/doc1.png" alt="tooljet ai doc assistant" />
+    **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender? <br/>
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/form.png" alt="tooljet ai doc assistant" />
 2. Dynamic columns in [Table](/docs/widgets/table/table-properties/) component: <br/>
-    **Prompt**: Can you explain dynamic columns in the Table component?
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/doc2.png" alt="tooljet ai doc assistant" />
+    **Prompt**: Can you explain dynamic columns in the Table component? <br/>
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/table.png" alt="tooljet ai doc assistant" />
  3. Plotly JSON in [Chart](/docs/widgets/chart/) component: <br/>
-    **Prompt**: Can you help me with the structure of the Plotly JSON that I can pass into Chart components?
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/doc3.png" alt="tooljet ai doc assistant" />
+    **Prompt**: Can you help me with the structure of the Plotly JSON that I can pass into Chart components? <br/>
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/tooljet-ai/learn-with-ai/chart.png" alt="tooljet ai doc assistant" />
