@@ -6,7 +6,7 @@ import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
 export class SMTPModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { SMTPService, SmtpController, SMTPUtilService } = await this.getProviders(configs, 'smtp', [
       'service',
       'util.service',
@@ -15,9 +15,11 @@ export class SMTPModule extends SubModule {
     return {
       module: SMTPModule,
       imports: [await InstanceSettingsModule.register(configs)],
-      controllers: [SmtpController],
-      providers: [SMTPService, FeatureAbilityFactory, SMTPUtilService, OrganizationRepository],
-      exports: [SMTPUtilService],
+      controllers: !isMainImport ? [] : [SmtpController],
+      providers: !isMainImport
+        ? [SMTPUtilService]
+        : [SMTPService, FeatureAbilityFactory, SMTPUtilService, OrganizationRepository],
+      exports: isMainImport ? [] : [SMTPUtilService],
     };
   }
 }

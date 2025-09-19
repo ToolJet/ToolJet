@@ -21,7 +21,7 @@ import { OnboardingModule } from '@modules/onboarding/module';
 
 @Module({})
 export class AuthModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       AuthController,
       AuthService,
@@ -65,27 +65,37 @@ export class AuthModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
       ],
-      controllers: [AuthController, OauthController, WebsiteAuthController],
-      providers: [
-        AuthService,
-        UserRepository,
-        OrganizationRepository,
-        RolesRepository,
-        OrganizationUsersRepository,
-        AuthUtilService,
-        OauthService,
-        SamlService,
-        GitOAuthService,
-        GoogleOAuthService,
-        OidcOAuthService,
-        LdapService,
-        SSOResponseRepository,
-        FeatureAbilityFactory,
-        GroupPermissionsRepository,
-        SSOConfigsRepository,
-        WebsiteAuthService,
-      ],
-      exports: [AuthUtilService],
+      controllers: !isMainImport ? [] : [AuthController, OauthController, WebsiteAuthController],
+      providers: !isMainImport
+        ? [
+            AuthUtilService,
+            UserRepository,
+            OrganizationUsersRepository,
+            OrganizationRepository,
+            RolesRepository,
+            SSOConfigsRepository,
+            GroupPermissionsRepository,
+          ]
+        : [
+            AuthService,
+            UserRepository,
+            OrganizationRepository,
+            RolesRepository,
+            OrganizationUsersRepository,
+            AuthUtilService,
+            OauthService,
+            SamlService,
+            GitOAuthService,
+            GoogleOAuthService,
+            OidcOAuthService,
+            LdapService,
+            SSOResponseRepository,
+            FeatureAbilityFactory,
+            GroupPermissionsRepository,
+            SSOConfigsRepository,
+            WebsiteAuthService,
+          ],
+      exports: isMainImport ? [] : [AuthUtilService],
     };
   }
 }

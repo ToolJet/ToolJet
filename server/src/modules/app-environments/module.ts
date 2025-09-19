@@ -3,7 +3,7 @@ import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 
 export class AppEnvironmentsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { AppEnvironmentsController, AppEnvironmentService, AppEnvironmentUtilService } = await this.getProviders(
       configs,
       'app-environments',
@@ -12,9 +12,11 @@ export class AppEnvironmentsModule extends SubModule {
 
     return {
       module: AppEnvironmentsModule,
-      controllers: [AppEnvironmentsController],
-      providers: [AppEnvironmentService, AppEnvironmentUtilService, FeatureAbilityFactory],
-      exports: [AppEnvironmentUtilService],
+      controllers: !isMainImport ? [] : [AppEnvironmentsController],
+      providers: !isMainImport
+        ? [AppEnvironmentUtilService]
+        : [AppEnvironmentService, AppEnvironmentUtilService, FeatureAbilityFactory],
+      exports: isMainImport ? [] : [AppEnvironmentUtilService],
     };
   }
 }

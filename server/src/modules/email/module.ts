@@ -6,7 +6,7 @@ import { SMTPModule } from '@modules/smtp/module';
 import { SubModule } from '@modules/app/sub-module';
 
 export class EmailModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { EmailService } = await import(`${importPath}/email/service`);
     const { EmailUtilService } = await import(`${importPath}/email/util.service`);

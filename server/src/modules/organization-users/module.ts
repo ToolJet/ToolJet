@@ -14,7 +14,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class OrganizationUsersModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { OrganizationUsersController, OrganizationUsersService, OrganizationUsersUtilService, UserDetailsService } =
       await this.getProviders(configs, 'organization-users', [
         'controller',
@@ -32,19 +32,29 @@ export class OrganizationUsersModule extends SubModule {
         await GroupPermissionsModule.register(configs),
         await SetupOrganizationsModule.register(configs),
       ],
-      controllers: [OrganizationUsersController],
-      providers: [
-        OrganizationUsersService,
-        OrganizationUsersUtilService,
-        OrganizationUsersRepository,
-        OrganizationRepository,
-        RolesRepository,
-        UserRepository,
-        UserDetailsService,
-        GroupPermissionsRepository,
-        FeatureAbilityFactory,
-      ],
-      exports: [OrganizationUsersUtilService],
+      controllers: !isMainImport ? [] : [OrganizationUsersController],
+      providers: !isMainImport
+        ? [
+            OrganizationUsersUtilService,
+            OrganizationUsersRepository,
+            OrganizationRepository,
+            RolesRepository,
+            UserRepository,
+            UserDetailsService,
+            GroupPermissionsRepository,
+          ]
+        : [
+            OrganizationUsersService,
+            OrganizationUsersUtilService,
+            OrganizationUsersRepository,
+            OrganizationRepository,
+            RolesRepository,
+            UserRepository,
+            UserDetailsService,
+            GroupPermissionsRepository,
+            FeatureAbilityFactory,
+          ],
+      exports: isMainImport ? [] : [OrganizationUsersUtilService],
     };
   }
 }

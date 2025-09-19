@@ -6,7 +6,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { SubModule } from '@modules/app/sub-module';
 
 export class UsersModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { UsersService, UsersController, UsersUtilService } = await this.getProviders(configs, 'users', [
       'service',
       'util.service',
@@ -16,9 +16,11 @@ export class UsersModule extends SubModule {
     return {
       module: UsersModule,
       imports: [await SessionModule.register(configs)],
-      controllers: [UsersController],
-      providers: [UsersService, UserRepository, UsersUtilService, FeatureAbilityFactory, OrganizationUsersRepository],
-      exports: [UsersUtilService],
+      controllers: !isMainImport ? [] : [UsersController],
+      providers: !isMainImport
+        ? [UsersUtilService, UserRepository]
+        : [UsersService, UserRepository, UsersUtilService, FeatureAbilityFactory, OrganizationUsersRepository],
+      exports: isMainImport ? [] : [UsersUtilService],
     };
   }
 }

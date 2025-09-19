@@ -10,7 +10,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 
 export class GitSyncModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       GitSyncController,
       GitSyncService,
@@ -45,7 +45,7 @@ export class GitSyncModule extends SubModule {
         await AppsModule.register(configs),
         await VersionModule.register(configs),
       ],
-      controllers: [GitSyncController],
+      controllers: !isMainImport ? [] : [GitSyncController],
       providers: [
         OrganizationGitSyncRepository,
         VersionRepository,

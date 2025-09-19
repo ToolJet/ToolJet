@@ -3,7 +3,7 @@ import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 
 export class MetaModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { MetadataService, MetadataController, MetadataUtilService } = await this.getProviders(configs, 'meta', [
       'service',
       'controller',
@@ -12,9 +12,9 @@ export class MetaModule extends SubModule {
 
     return {
       module: MetaModule,
-      controllers: [MetadataController],
-      providers: [MetadataService, MetadataUtilService, FeatureAbilityFactory],
-      exports: [MetadataUtilService],
+      controllers: !isMainImport ? [] : [MetadataController],
+      providers: !isMainImport ? [MetadataUtilService] : [MetadataService, MetadataUtilService, FeatureAbilityFactory],
+      exports: isMainImport ? [] : [MetadataUtilService],
     };
   }
 }

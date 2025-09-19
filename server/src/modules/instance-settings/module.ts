@@ -5,16 +5,18 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class InstanceSettingsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { InstanceSettingsService, InstanceSettingsUtilService, InstanceSettingsController } =
       await this.getProviders(configs, 'instance-settings', ['service', 'controller', 'util.service']);
 
     return {
       module: InstanceSettingsModule,
       imports: [await EncryptionModule.register(configs)],
-      controllers: [InstanceSettingsController],
-      providers: [InstanceSettingsUtilService, InstanceSettingsService, FeatureAbilityFactory, OrganizationRepository],
-      exports: [InstanceSettingsUtilService],
+      controllers: !isMainImport ? [] : [InstanceSettingsController],
+      providers: !isMainImport
+        ? [InstanceSettingsUtilService]
+        : [InstanceSettingsUtilService, InstanceSettingsService, FeatureAbilityFactory, OrganizationRepository],
+      exports: isMainImport ? [] : [InstanceSettingsUtilService],
     };
   }
 }

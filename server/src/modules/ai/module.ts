@@ -15,7 +15,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 
 export class AiModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { AiController } = await import(`${importPath}/ai/controller`);
     const { AiService } = await import(`${importPath}/ai/service`);
@@ -30,11 +30,11 @@ export class AiModule extends SubModule {
       imports: [
         await TooljetDbModule.register(configs),
         await DataQueriesModule.register(configs),
-        await LicenseModule.forRoot(configs),
+        //await LicenseModule.forRoot(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
       ],
-      controllers: [AiController],
+      controllers: !isMainImport ? [] : [AiController],
       providers: [
         AiService,
         AiUtilService,
