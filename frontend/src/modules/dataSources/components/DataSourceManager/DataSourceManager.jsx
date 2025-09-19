@@ -1198,7 +1198,9 @@ class DataSourceManagerComponent extends React.Component {
                           <ButtonSolid
                             className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                             isLoading={isSaving}
-                            disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                            disabled={
+                              isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                            }
                             variant="primary"
                             onClick={this.createDataSource}
                             leftIcon="floppydisk"
@@ -1242,7 +1244,9 @@ class DataSourceManagerComponent extends React.Component {
                           leftIcon="floppydisk"
                           fill={'#FDFDFE'}
                           className="m-2"
-                          disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                          disabled={
+                            isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                          }
                           variant="primary"
                           onClick={this.createDataSource}
                         >
