@@ -4,12 +4,14 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { QueryPermission } from '@entities/query_permissions.entity';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class QueryUsersRepository extends Repository<QueryUser> {
   constructor(
     private dataSource: DataSource,
-    private groupPermissionsRepository: GroupPermissionsRepository
+    private groupPermissionsRepository: GroupPermissionsRepository,
+    private readonly transactionLogger: TransactionLogger
   ) {
     super(QueryUser, dataSource.createEntityManager());
   }
@@ -63,7 +65,9 @@ export class QueryUsersRepository extends Repository<QueryUser> {
         organizationId,
         manager
       );
-      console.log(`Allowed groups fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+      this.transactionLogger.log(
+        `Allowed groups fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
 
       const allowedGroupIds = allowedGroups.map((group) => group.id);
 
@@ -78,7 +82,7 @@ export class QueryUsersRepository extends Repository<QueryUser> {
         .andWhere('group.id IN (:...allowedGroupIds)', { allowedGroupIds })
         .getOne();
 
-      console.log(`QueryUser fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+      this.transactionLogger.log(`QueryUser fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
 
       return !!result;
     }, manager || this.manager);
@@ -97,7 +101,9 @@ export class QueryUsersRepository extends Repository<QueryUser> {
           userId,
         },
       });
-      console.log(`checkQueryUserWithSingle fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`);
+      this.transactionLogger.log(
+        `checkQueryUserWithSingle fetched at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
 
       return !!queryUser;
     }, manager || this.manager);

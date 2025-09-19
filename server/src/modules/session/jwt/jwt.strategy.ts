@@ -36,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(req: Request, payload: JWTPayload) {
     const startTime = Date.now();
-    console.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
+    this.transactionLogger.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
     try {
       const isUserMandatory = !req['isUserNotMandatory'];
       const isGetUserSession = !!req['isGetUserSession'];
