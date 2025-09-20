@@ -5,7 +5,7 @@ title: Learn with AI
 
 The **Learn with AI** is an intelligent assistant designed to help you navigate ToolJet’s documentation with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support by summarizing docs, troubleshooting issues, and guiding you through best practices.
 
-You can access this feature by selcting **Learn** from the dropdown on the AI chat. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
+You can access this feature by selecting **Learn** from the dropdown on the AI chat. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
 
 <img className="screenshot-full img-full"  src="/img/tooljet-ai/learn-with-ai/dropdown.png" alt="tooljet ai doc assistant" />
  
