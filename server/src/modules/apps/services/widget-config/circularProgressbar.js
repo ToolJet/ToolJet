@@ -161,7 +161,7 @@ export const circularProgressbarConfig = {
     },
     textAlignment: {
       type: 'switch',
-      displayName: '',
+      displayName: 'Alignment',
       validation: { schema: { type: 'string' }, defaultValue: 'center' },
       showLabel: false,
       isIcon: true,
@@ -232,6 +232,7 @@ export const circularProgressbarConfig = {
       tooltip: { value: '' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      allowNegativeProgress: { value: '{{false}}' },
     },
     events: [],
     styles: {
