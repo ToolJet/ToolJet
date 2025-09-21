@@ -41,6 +41,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Listview',
   'Statistics',
   'StarRating',
+  'CircularProgressBar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -62,6 +63,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   PopoverMenu: 'Data',
   Statistics: 'Data',
   StarRating: 'Data',
+  CircularProgressBar: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -167,6 +169,7 @@ export const baseComponentProperties = (
       'Tabs',
       'Statistics',
       'StarRating',
+      'CircularProgressBar',
     ],
     Layout: [],
   };
