@@ -18,6 +18,7 @@ export enum ACTION_TYPE {
   PAGE_ADD = 'page_add',
   PAGE_UPDATE = 'page_update',
   PAGE_DELETE = 'page_delete',
+  PAGE_REORDER = 'page_reorder',
 
   // Event actions
   EVENT_ADD = 'event_add',
