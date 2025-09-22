@@ -86,7 +86,14 @@ export const Footer = memo(
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
             {enablePagination && (
-              <Pagination id={id} tableWidth={width} pageIndex={pageIndex} table={table} pageCount={pageCount} />
+              <Pagination
+                id={id}
+                tableWidth={width}
+                pageIndex={pageIndex}
+                table={table}
+                pageCount={pageCount}
+                fireEvent={fireEvent}
+              />
             )}
             <ControlButtons
               id={id}

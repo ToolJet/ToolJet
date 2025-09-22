@@ -12,7 +12,7 @@ import {
     OidcConfig,
     enableInstanceSignup,
 } from "Support/utils/manageSSO";
-import { createGroup } from "Support/utils/manageGroups";
+import { createGroup, verifyUserRole } from "Support/utils/manageGroups";
 import { getUser } from "Support/utils/api";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
@@ -24,19 +24,6 @@ const loginWithOIDC = (params, alias = "@userId") => {
         cy.wrap(userId).as(alias.replace("@", ""));
     });
     cy.wait(4000);
-};
-
-const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
-    cy.get(userIdAlias).then((userId) => {
-        getUser(userId).then((response) => {
-            const groupNames = response.body.userGroups.map((g) => g.name);
-            if (expectedGroups) {
-                expectedGroups.forEach((group) => expect(groupNames).to.include(group));
-            }
-            const roleName = response.body.workspaces[0].userPermission.name;
-            expect(roleName).to.equal(expectedRole);
-        });
-    });
 };
 
 describe("Okta OIDC", () => {
@@ -201,7 +188,6 @@ describe("Okta OIDC", () => {
             const userId = interception.response.body.id;
             cy.wrap(userId).as("userId");
         });
-
 
         //need to check the flow here
         // if (commonSelectors.invitePageHeader.length > 0) {

@@ -1,5 +1,40 @@
 const envVar = Cypress.env("environment");
 
+Cypress.Commands.add('loginByGoogleApi', (state = '') => {
+  cy.log('Starting basic Google SSO login approach');
+
+  cy.request({
+    method: 'POST',
+    url: 'https://oauth2.googleapis.com/token',
+    form: true,
+    body: {
+      grant_type: 'refresh_token',
+      client_id: Cypress.env('googleClientId'),
+      client_secret: Cypress.env('googleClientSecret'),
+      refresh_token: Cypress.env('googleRefreshToken')
+    }
+  }).then(({ body }) => {
+    const { access_token, id_token } = body;
+    cy.log('Successfully obtained Google tokens');
+
+    cy.request({
+      method: 'GET',
+      url: 'https://www.googleapis.com/oauth2/v3/userinfo',
+      headers: { Authorization: `Bearer ${access_token}` }
+    }).then(({ body: userInfo }) => {
+
+      const tooljetBase = 'http://localhost:8082/sso/google/688f4b68-8c3b-41b2-aecb-1c1e9a112de1';
+      const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
+      const fullUrl = `${tooljetBase}#${hash}`;
+
+      cy.visit(fullUrl);
+
+
+    });
+  });
+});
+
+
 Cypress.Commands.add(
   "apiLogin",
   (
