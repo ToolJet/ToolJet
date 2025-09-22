@@ -24,7 +24,7 @@ export const CircularProgressBar = function CircularProgressBar({
     boxShadow,
     trackColor,
     completionColor,
-    textAlignment,
+    alignment,
     negativeColor,
   } = styles;
 
@@ -36,8 +36,10 @@ export const CircularProgressBar = function CircularProgressBar({
 
   const label = labelType === 'custom' ? text : `${exposedVariablesTemporaryState.value}%`;
   const computedStyles = {
-    display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
+    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     boxShadow,
+    alignSelf: 'left',
+    justifyContent: alignment,
   };
 
   const computedProperties = exposedVariablesTemporaryState.isLoading
@@ -135,7 +137,6 @@ export const CircularProgressBar = function CircularProgressBar({
           text: {
             fill: textColor,
             fontSize: textSize,
-            textAnchor: textAlignment,
           },
           trail: {
             stroke: trackColor,

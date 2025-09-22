@@ -10,3 +10,9 @@
       transform: rotate(360deg);
     }
   }
+
+.canvas-component {
+  .CircularProgressbar {
+    width: unset;
+  }
+}

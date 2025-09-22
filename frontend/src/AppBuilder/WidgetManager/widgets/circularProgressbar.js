@@ -129,6 +129,9 @@ export const circularProgressbarConfig = {
     },
     strokeWidth: {
       type: 'slider',
+      options: {
+        className: 'circular-progressbar-stroke-width',
+      },
       displayName: 'Progress bar width',
       validation: {
         schema: { type: 'number' },
@@ -159,16 +162,15 @@ export const circularProgressbarConfig = {
       },
       accordian: 'field',
     },
-    textAlignment: {
+    alignment: {
       type: 'switch',
       displayName: 'Alignment',
       validation: { schema: { type: 'string' }, defaultValue: 'center' },
-      showLabel: false,
       isIcon: true,
       options: [
-        { displayName: 'alignleftinspector', value: 'end', iconName: 'alignleftinspector' },
-        { displayName: 'alignhorizontalcenter', value: 'middle', iconName: 'alignhorizontalcenter' },
-        { displayName: 'alignrightinspector', value: 'start', iconName: 'alignrightinspector' },
+        { displayName: 'alignleftinspector', value: 'flex-start', iconName: 'alignleftinspector' },
+        { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
+        { displayName: 'alignrightinspector', value: 'flex-end', iconName: 'alignrightinspector' },
       ],
       accordian: 'field',
       isFxNotRequired: true,
@@ -245,7 +247,7 @@ export const circularProgressbarConfig = {
       strokeWidth: { value: '{{10}}' },
       circleRatio: { value: '{{1}}' },
       counterClockwise: { value: '{{false}}' },
-      textAlignment: { value: 'middle' },
+      alignment: { value: 'center' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },

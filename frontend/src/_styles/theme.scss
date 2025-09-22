@@ -631,7 +631,7 @@ button {
       }
 
       .properties-container {
-        .field {
+        .field { 
           .form-label {
             font-size: 12px;
           }
@@ -18216,5 +18216,24 @@ section.ai-message-prompt-input-wrapper {
         top: 2px;
       }
     }
+  }
+}
+
+.slider-code-editor-label {
+  height: 28px;
+  display: flex;
+  align-self: start;
+  align-items: center;
+}
+
+.slider-fx-button-container {
+  height: 40px;
+  display: flex;
+  align-items: start;
+}
+
+.circular-progressbar-stroke-width {
+  label{
+    width: 90px
   }
 }
