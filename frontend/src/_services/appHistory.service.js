@@ -24,7 +24,7 @@ function getHistory(appVersionId, page = 0, limit = 20) {
   );
 }
 
-function restoreToEntry(appVersionId, historyId) {
+function restoreToEntry(historyId) {
   const requestOptions = {
     method: 'POST',
     headers: {
