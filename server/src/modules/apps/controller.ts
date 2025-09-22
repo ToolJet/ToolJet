@@ -344,10 +344,7 @@ export class AppsController implements IAppsController {
       getBenchmarkingStats
     } = require('../../otel/benchmarking-framework');
 
-    const {
-      getPluginPerformanceStats,
-      getDatasourcePerformanceSummary
-    } = require('../../otel/plugin-performance-metrics');
+    // Plugin metrics removed - functionality covered by existing database and API metrics
 
     const {
       getEnhancedDatabaseStats
@@ -364,9 +361,7 @@ export class AppsController implements IAppsController {
         performanceReport: generatePerformanceReport(currentRelease),
         appBuilderViewerAnalysis: analyzeAppBuilderViewerPerformance(currentRelease),
         benchmarkingStats: getBenchmarkingStats(),
-        pluginPerformanceStats: getPluginPerformanceStats(),
         databaseStats: getEnhancedDatabaseStats(),
-        datasourcePerformanceSummary: getDatasourcePerformanceSummary(),
         organizationId: user.organizationId,
       }
     };

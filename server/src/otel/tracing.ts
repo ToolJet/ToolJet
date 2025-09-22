@@ -192,33 +192,59 @@ export const sdk = new NodeSDK({
           const query = requestInfo.query;
           const startTime = Date.now();
 
+          // Convert query to string safely
+          let queryString = '';
+          let queryLength = 0;
+
+          if (typeof query === 'string') {
+            queryString = query;
+            queryLength = query.length;
+          } else if (query && typeof query === 'object') {
+            // Handle query objects (common with some PostgreSQL drivers)
+            if (query.text) {
+              queryString = query.text;
+              queryLength = query.text.length;
+            } else if (query.query) {
+              queryString = query.query;
+              queryLength = query.query.length;
+            } else {
+              queryString = JSON.stringify(query);
+              queryLength = queryString.length;
+            }
+          } else {
+            queryString = String(query || '');
+            queryLength = queryString.length;
+          }
+
           // Store request info for response hook using span context
           const spanContext = span.spanContext();
           spanRequestMap.set(spanContext.spanId, {
             startTime,
-            query,
+            query: queryString,
             connectionParameters: requestInfo.connectionParameters
           });
 
           // Extract query operation and table names
-          const operation = getQueryOperation(query);
-          const tables = extractTableNames(query);
+          const operation = getQueryOperation(queryString);
+          const tables = extractTableNames(queryString);
 
           // Add custom attributes
           span.setAttribute(SEMATTRS_DB_OPERATION, operation);
           span.setAttribute('db.query.tables', tables.join(','));
-          span.setAttribute('db.query.length', typeof query === 'string' ? query.length : 0);
+          span.setAttribute('db.query.length', queryLength);
           span.setAttribute('db.query.start_time', startTime);
 
-          // Sanitize and add query statement (limit length for performance)
-          if (typeof query === 'string') {
-            const sanitizedQuery = query.length > 1000
-              ? query.substring(0, 1000) + '...[truncated]'
-              : query;
-            span.setAttribute(SEMATTRS_DB_STATEMENT, sanitizedQuery);
-          } else {
-            span.setAttribute(SEMATTRS_DB_STATEMENT, String(query));
+          // Add query parameters if available
+          if (query && typeof query === 'object' && query.values && Array.isArray(query.values)) {
+            span.setAttribute('db.query.params_count', query.values.length);
+            // Don't log actual parameter values for security reasons
           }
+
+          // Sanitize and add query statement (limit length for performance)
+          const sanitizedQuery = queryString.length > 1000
+            ? queryString.substring(0, 1000) + '...[truncated]'
+            : queryString;
+          span.setAttribute(SEMATTRS_DB_STATEMENT, sanitizedQuery);
 
           // Add connection info
           if (requestInfo.connectionParameters) {
@@ -241,9 +267,24 @@ export const sdk = new NodeSDK({
             // Add response metadata
             span.setAttribute('db.query.duration_ms', duration);
             span.setAttribute('db.query.end_time', endTime);
-            
-            if (responseInfo.data && responseInfo.data.rowCount !== undefined) {
-              span.setAttribute('db.query.rows_affected', responseInfo.data.rowCount);
+
+            // Add result information
+            if (responseInfo.data) {
+              if (responseInfo.data.rowCount !== undefined) {
+                span.setAttribute('db.query.rows_affected', responseInfo.data.rowCount);
+              }
+              if (responseInfo.data.rows && Array.isArray(responseInfo.data.rows)) {
+                span.setAttribute('db.query.rows_returned', responseInfo.data.rows.length);
+              }
+            }
+
+            // Add error information if query failed
+            if (responseInfo.error) {
+              span.setAttribute('db.query.error', true);
+              span.setAttribute('db.query.error_message', responseInfo.error.message || 'Unknown error');
+              span.setAttribute('db.query.error_code', responseInfo.error.code || 'UNKNOWN');
+            } else {
+              span.setAttribute('db.query.error', false);
             }
             
             // Mark slow queries

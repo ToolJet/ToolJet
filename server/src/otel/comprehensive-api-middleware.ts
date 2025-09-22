@@ -26,15 +26,7 @@ import {
   generateRequestId,
 } from './api-performance-metrics';
 
-import {
-  initializePluginPerformanceMetrics,
-  startPluginQuery,
-  endPluginQuery,
-  updateConnectionPool,
-  recordConnectionCreation,
-  normalizeDatasourceKind,
-  generateQueryId,
-} from './plugin-performance-metrics';
+// Plugin metrics removed - functionality covered by existing database and API metrics
 
 import {
   initializeEnhancedDatabaseMonitoring,
@@ -104,7 +96,7 @@ export const initializeComprehensiveApiMonitoring = async (): Promise<void> => {
 
     // Initialize all monitoring components
     await initializeApiPerformanceMetrics();
-    await initializePluginPerformanceMetrics();
+    // Plugin metrics removed - functionality covered by existing database and API metrics
     await initializeEnhancedDatabaseMonitoring();
     await initializeBenchmarkingFramework();
 
@@ -181,12 +173,27 @@ export const comprehensiveApiMiddleware = (req: AuthenticatedRequest, res: Respo
   const originalSend = res.send;
 
   res.json = function(body: any) {
-    collectFinalMetrics(requestId, res.statusCode, JSON.stringify(body).length);
+    let responseSize = 0;
+    try {
+      responseSize = body ? JSON.stringify(body).length : 0;
+    } catch {
+      responseSize = 0;
+    }
+    collectFinalMetrics(requestId, res.statusCode, responseSize);
     return originalJson.call(this, body);
   };
 
   res.send = function(body: any) {
-    const responseSize = typeof body === 'string' ? body.length : JSON.stringify(body).length;
+    let responseSize = 0;
+    try {
+      if (typeof body === 'string') {
+        responseSize = body.length;
+      } else if (body !== null && body !== undefined) {
+        responseSize = JSON.stringify(body).length;
+      }
+    } catch {
+      responseSize = 0;
+    }
     collectFinalMetrics(requestId, res.statusCode, responseSize);
     return originalSend.call(this, body);
   };
