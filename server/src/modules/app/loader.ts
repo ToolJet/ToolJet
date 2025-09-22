@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
+import { LoggingModule } from '@modules/logging/module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -51,16 +52,24 @@ export class AppModuleLoader {
             return logLevel[process.env.NODE_ENV] || 'info';
           })(),
           autoLogging: {
-            ignorePaths: ['/api/health'],
+            ignore: (req) => {
+              if (req.url === '/api/health') {
+                return true;
+              }
+              return false;
+            },
           },
-          prettyPrint:
+          transport:
             process.env.NODE_ENV !== 'production'
               ? {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    levelFirst: true,
+                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  },
                 }
-              : false,
+              : undefined,
           redact: {
             paths: [
               'req.headers.authorization',
@@ -75,12 +84,18 @@ export class AppModuleLoader {
             ],
             censor: '[REDACTED]',
           },
+          customProps: (req, res) => {
+            return {
+              transactionId: res?.['locals']?.tj_transactionId || '',
+            };
+          },
         },
       }),
       TypeOrmModule.forRoot(ormconfig),
       TypeOrmModule.forRoot(tooljetDbOrmconfig),
       RequestContextModule,
       GuardValidatorModule,
+      LoggingModule,
     ];
 
     if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {

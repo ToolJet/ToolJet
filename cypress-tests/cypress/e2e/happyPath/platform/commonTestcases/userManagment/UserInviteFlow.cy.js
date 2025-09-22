@@ -9,7 +9,7 @@ import {
   selectUserGroup,
   inviteUserWithUserGroups,
   inviteUserWithUserRole,
-  fetchAndVisitInviteLink,
+  fetchAndVisitInviteLinkViaMH,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { visitWorkspaceInvitation, addNewUser } from "Support/utils/onboarding";
@@ -47,12 +47,11 @@ describe("user invite flow cases", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     navigateToManageUsers();
-
     manageUsersElements();
 
     cy.get(commonSelectors.cancelButton).click();
     cy.get(usersSelector.usersPageTitle).should("be.visible");
-    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();
 
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
@@ -95,8 +94,11 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(2000);
-    fetchAndVisitInviteLink(data.email);
+    cy.wait(5000);
+    cy.apiLogout()
+
+
+    fetchAndVisitInviteLinkViaMH(data.email);//email invite get and visit
     confirmInviteElements(data.email);
 
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "pass");
@@ -361,7 +363,7 @@ describe("user invite flow cases", () => {
     } else {
       cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
         "have.text",
-        "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?"
+        "Changing user default group from end-user to admin will affect the count of users covered by your plan.Are you sure you want to continue?"
       );
     }
 
