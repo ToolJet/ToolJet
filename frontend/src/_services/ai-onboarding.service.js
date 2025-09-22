@@ -8,14 +8,13 @@ export const aiOnboardingService = {
   deleteAiCookies,
 };
 
-function signInViaOAuth(ssoType, ssoResponse) {
+function signInViaOAuth(ssoType, ssoResponse, utmParams = {}) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ ...ssoResponse }),
+    body: JSON.stringify({ ...ssoResponse, utmParams: utmParams }),
   };
-
   return fetch(`${config.apiUrl}/ai/onboarding/sign-in/common/${ssoType}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {

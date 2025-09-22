@@ -419,3 +419,13 @@ export const commonWidgetSelector = {
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
 };
+
+export const commonQuerySelectors = {
+ queryNameList: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
+  },
+  queryActionButton: (action) => {
+    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+  },
+  queryEditInputField: '[data-cy="query-edit-input-field"]',
+};
