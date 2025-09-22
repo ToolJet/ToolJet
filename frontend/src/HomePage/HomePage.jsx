@@ -158,7 +158,8 @@ class HomePageComponent extends React.Component {
     console.log('ai cookies', aiCookies, 'latest prompt', latestPrompt, 'template id', templateId);
     /* First check the user permission */
     if (latestPrompt || templateId) {
-      console.log('checking is user has builder access');
+      const checkBuilderAccess = this.checkIfUserHasBuilderAccess();
+      console.log('checking is user has builder access', checkBuilderAccess);
       if (!this.checkIfUserHasBuilderAccess()) {
         this.setState({ showInsufficentPermissionModal: true });
         return;
