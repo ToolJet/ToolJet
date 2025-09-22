@@ -589,6 +589,10 @@ jobs:
                 "value": "${{ env.BRANCH_NAME }}"
               },
               {
+                "key": "REPO_URL",
+                "value": "${{ env.REPO_URL }}"
+              },
+              {
                 "key": "CUSTOM_GITHUB_TOKEN",
                 "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
               }

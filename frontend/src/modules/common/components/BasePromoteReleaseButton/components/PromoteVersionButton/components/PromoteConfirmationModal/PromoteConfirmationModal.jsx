@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { gitSyncService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
+import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -173,7 +173,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           isLoading={promotingEnvironment}
           data-cy="promote-button"
         >
-          Promote <ArrowRightIcon />
+          Promote
+          <span style={{ marginTop: '2px' }}>
+            <ArrowRight fill="#FDFDFE" width="22" />
+          </span>
         </ButtonSolid>
       </Modal.Footer>
     </Modal>

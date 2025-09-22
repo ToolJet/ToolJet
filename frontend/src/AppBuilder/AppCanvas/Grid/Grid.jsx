@@ -73,8 +73,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
-  // const [isGroupDragging, setIsGroupDragging] = useState(false);
-  // const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
@@ -112,6 +110,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       Object.keys(currentPageComponents)
         .map((key) => {
           const widget = currentPageComponents[key];
+
           return {
             id: key,
             ...widget,
@@ -141,9 +140,9 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   const noOfBoxs = Object.values(boxList || []).length;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
-    noOfBoxs != 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs, triggerCanvasUpdater]);
 

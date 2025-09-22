@@ -139,12 +139,12 @@ const RenderWidget = ({
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
     (key, value) => {
+      setExposedValue(id, key, value, moduleId);
+      // Trigger an update when the child components is directly linked to any component
+      updateDependencyValues(`components.${id}.${key}`, moduleId);
+
       // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
-      if (onOptionChange === null) {
-        setExposedValue(id, key, value, moduleId);
-        // Trigger an update when the child components is directly linked to any component
-        updateDependencyValues(`components.${id}.${key}`, moduleId);
-      } else {
+      if (onOptionChange !== null) {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
@@ -152,9 +152,9 @@ const RenderWidget = ({
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
-      if (onOptionsChange === null) {
-        setExposedValues(id, 'components', exposedValues, moduleId);
-      } else {
+      setExposedValues(id, 'components', exposedValues, moduleId);
+
+      if (onOptionsChange !== null) {
         onOptionsChange(exposedValues, id, subContainerIndex);
       }
     },

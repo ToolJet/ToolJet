@@ -491,6 +491,34 @@ export const tableConfig = {
       displayName: 'Deselect row',
     },
     {
+      handle: 'selectRows',
+      displayName: 'Select rows',
+      params: [
+        {
+          handle: 'key',
+          displayName: 'Key',
+        },
+        {
+          handle: 'values',
+          displayName: 'Values',
+        },
+      ],
+    },
+    {
+      handle: 'deselectRows',
+      displayName: 'Deselect rows',
+      params: [
+        {
+          handle: 'key',
+          displayName: 'Key',
+        },
+        {
+          handle: 'values',
+          displayName: 'Values',
+        },
+      ],
+    },
+    {
       handle: 'discardChanges',
       displayName: 'Discard Changes',
     },
