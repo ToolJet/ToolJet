@@ -8,7 +8,7 @@ export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, dataCy } = props;
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
@@ -120,7 +120,17 @@ export const CustomComponent = (props) => {
   };
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height, boxShadow }} data-cy={dataCy}>
+    <div
+      className="card"
+      style={{
+        display: visibility ? '' : 'none',
+        height,
+        boxShadow,
+        border: `1px solid ${borderColor} !important`,
+        borderRadius: `${borderRadius}px`,
+      }}
+      data-cy={dataCy}
+    >
       <iframe
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}
