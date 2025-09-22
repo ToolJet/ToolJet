@@ -22,14 +22,25 @@ To create an application, follow these steps:
 6. **App Generation** – Once you confirm all the requirements then a fully fucntional app will be generated.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/app.png" alt="tooljet generate apps" />
 
-## Modifying Application
+### Modifying Application
 
 You can modify any application in ToolJet with AI assistance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt. 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/generate-app/modify.png" alt="tooljet generate apps" />
 
-## Limitations
+### Limitations
 
 ToolJet AI supports generating queries with [RunJS](/docs/data-sources/run-js) and the following data sources:
 
 - [Postgres](/docs/data-sources/postgresql/)
 - [MongoDB](/docs/data-sources/mongodb)
+
+## Generating Code
+
+ToolJet lets you generate JavaScript, Python, or SQL code directly using AI.
+
+1. Click the AI icon in the query panel to ppen the AI code generator. <br/>
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/icon.png" alt="tooljet generate apps" />
+2. Enter a prompt describing the logic or query you want to build. <br/>
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/prompt.png" alt="tooljet generate apps" />
+3. Check the generated code and either insert it directly or click Regenerate to try a different version. <br/>
+    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/results.png" alt="tooljet generate apps" />
