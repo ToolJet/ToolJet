@@ -155,7 +155,6 @@ class HomePageComponent extends React.Component {
     const templateId = aiCookies?.tj_template_id;
     /* First check the user permission */
     if (latestPrompt || templateId) {
-      const checkBuilderAccess = this.checkIfUserHasBuilderAccess();
       if (!this.checkIfUserHasBuilderAccess()) {
         this.setState({ showInsufficentPermissionModal: true });
         return;
