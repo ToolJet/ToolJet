@@ -144,8 +144,6 @@ class HomePageComponent extends React.Component {
 
   checkIfUserHasBuilderAccess = () => {
     const role = authenticationService.currentSessionValue?.role.name;
-    console.log('user role', role);
-    console.log('auth session', authenticationService.currentSessionValue);
     const hasBuilderAccess = role === 'admin' || role === 'builder';
     return hasBuilderAccess;
   };
@@ -155,11 +153,9 @@ class HomePageComponent extends React.Component {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
     const latestPrompt = aiCookies?.tj_ai_prompt;
     const templateId = aiCookies?.tj_template_id;
-    console.log('ai cookies', aiCookies, 'latest prompt', latestPrompt, 'template id', templateId);
     /* First check the user permission */
     if (latestPrompt || templateId) {
       const checkBuilderAccess = this.checkIfUserHasBuilderAccess();
-      console.log('checking is user has builder access', checkBuilderAccess);
       if (!this.checkIfUserHasBuilderAccess()) {
         this.setState({ showInsufficentPermissionModal: true });
         return;
@@ -192,7 +188,6 @@ class HomePageComponent extends React.Component {
 
   componentDidMount() {
     this.handleAiOnboarding();
-    console.log('auth session 2 testing', authenticationService.currentSessionValue);
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
         toast.error('You do not have permission to view workflows');
