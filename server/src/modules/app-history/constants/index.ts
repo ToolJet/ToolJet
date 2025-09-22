@@ -19,6 +19,12 @@ export enum ACTION_TYPE {
   PAGE_UPDATE = 'page_update',
   PAGE_DELETE = 'page_delete',
 
+  // Event actions
+  EVENT_ADD = 'event_add',
+  EVENT_UPDATE = 'event_update',
+  EVENT_DELETE = 'event_delete',
+  EVENT_REORDER = 'event_reorder',
+
   // Batch/bulk actions
   BATCH_UPDATE = 'batch_update',
 
