@@ -21,7 +21,7 @@ export const workflowsText = {
   runjsNodeCode: "return startTrigger.params",
   responseNodeQuery: "return runjs1.data",
   runjsNodeQueryForLargedataSet:
-    "const bigArray = Array.from({ length: 30000 }, (_, i) => `test${i + 1}`);\nreturn { data: bigArray };",
+    "const bigArray = new Array(30000).fill(null).map((_, i) => 'test' + (i + 1)); const result = new Object(); result.data = bigArray; return result;",
 
   responseNodeExpectedValueTextForLargeDataset: "test1",
   workflowResponseNodeQuery: "return workflows1.data",
