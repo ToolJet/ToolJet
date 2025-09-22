@@ -89,10 +89,14 @@ const sanitizeObject = (obj: any) => {
 };
 
 // Database query analysis utilities
-const extractTableNames = (query: string): string[] => {
+const extractTableNames = (query: any): string[] => {
+  if (!query || typeof query !== 'string') {
+    return [];
+  }
+
   const normalizedQuery = query.toLowerCase().replace(/\s+/g, ' ').trim();
   const tables: Set<string> = new Set();
-  
+
   // Match common SQL patterns
   const patterns = [
     /from\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
@@ -101,7 +105,7 @@ const extractTableNames = (query: string): string[] => {
     /insert\s+into\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
     /delete\s+from\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
   ];
-  
+
   patterns.forEach(pattern => {
     let match;
     while ((match = pattern.exec(normalizedQuery)) !== null) {
@@ -110,11 +114,14 @@ const extractTableNames = (query: string): string[] => {
       }
     }
   });
-  
+
   return Array.from(tables);
 };
 
-const getQueryOperation = (query: string): string => {
+const getQueryOperation = (query: any): string => {
+  if (!query || typeof query !== 'string') {
+    return 'OTHER';
+  }
   const normalizedQuery = query.toLowerCase().trim();
   if (normalizedQuery.startsWith('select')) return 'SELECT';
   if (normalizedQuery.startsWith('insert')) return 'INSERT';
@@ -184,7 +191,7 @@ export const sdk = new NodeSDK({
         if (DB_ENABLE_QUERY_ANALYSIS && requestInfo.query) {
           const query = requestInfo.query;
           const startTime = Date.now();
-          
+
           // Store request info for response hook using span context
           const spanContext = span.spanContext();
           spanRequestMap.set(spanContext.spanId, {
@@ -192,23 +199,27 @@ export const sdk = new NodeSDK({
             query,
             connectionParameters: requestInfo.connectionParameters
           });
-          
+
           // Extract query operation and table names
           const operation = getQueryOperation(query);
           const tables = extractTableNames(query);
-          
+
           // Add custom attributes
           span.setAttribute(SEMATTRS_DB_OPERATION, operation);
           span.setAttribute('db.query.tables', tables.join(','));
-          span.setAttribute('db.query.length', query.length);
+          span.setAttribute('db.query.length', typeof query === 'string' ? query.length : 0);
           span.setAttribute('db.query.start_time', startTime);
-          
+
           // Sanitize and add query statement (limit length for performance)
-          const sanitizedQuery = query.length > 1000 
-            ? query.substring(0, 1000) + '...[truncated]'
-            : query;
-          span.setAttribute(SEMATTRS_DB_STATEMENT, sanitizedQuery);
-          
+          if (typeof query === 'string') {
+            const sanitizedQuery = query.length > 1000
+              ? query.substring(0, 1000) + '...[truncated]'
+              : query;
+            span.setAttribute(SEMATTRS_DB_STATEMENT, sanitizedQuery);
+          } else {
+            span.setAttribute(SEMATTRS_DB_STATEMENT, String(query));
+          }
+
           // Add connection info
           if (requestInfo.connectionParameters) {
             span.setAttribute('db.connection.host', requestInfo.connectionParameters.host || 'unknown');
