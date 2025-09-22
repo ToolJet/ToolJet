@@ -60,7 +60,7 @@ export const Text = function Text({
 
   // Create ref for height observation
   const textRef = useRef(null);
-  const heightChangeValue = useHeightObserver(textRef, dynamicHeight);
+  const heightChangeValue = useHeightObserver(textRef, dynamicHeight, id);
 
   // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
@@ -201,7 +201,9 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>}
+          {textFormat === 'plainText' && (
+            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
+          )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>

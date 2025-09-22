@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const useDynamicHeight = ({
   dynamicHeight,
@@ -16,10 +17,11 @@ export const useDynamicHeight = ({
   const prevDynamicHeight = useRef(dynamicHeight);
   const prevHeight = useRef(height);
   const initialRender = useRef(true);
+  const isResizing = useStore((state) => state.resizingComponentId === id);
 
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
-    if (!element) return;
+    if (!element || isResizing) return;
     if (skipAdjustment && dynamicHeight) {
       element.style.height = `${prevHeight.current}px`;
     } else if (dynamicHeight) {

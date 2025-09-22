@@ -92,7 +92,7 @@ export const Table = memo(
 
     // Create ref for height observation
     const tableRef = useRef(null);
-    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight);
+    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight, id);
 
     // Initialize component on the table store
     useEffect(() => {
