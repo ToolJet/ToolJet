@@ -283,6 +283,7 @@ module.exports = {
               badge: false
             },
             "3.16.0-LTS": {
+              label: '3.16 - 3.20 LTS',
               banner: 'none',
               badge: false
             }
