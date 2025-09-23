@@ -43,7 +43,7 @@ export enum ACTION_TYPE {
 
 export const SNAPSHOT_FREQUENCY = 10;
 export const RETENTION_VISIBLE_LIMIT = 100;
-export const RETENTION_BUFFER_LIMIT = 109;
+export const RETENTION_BUFFER_LIMIT = 110; // 11 complete snapshot groups (110 entries)
 
 export enum FEATURE_KEY {
   LIST_HISTORY = 'list_history',
