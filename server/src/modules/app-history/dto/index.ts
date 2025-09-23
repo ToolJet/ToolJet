@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNotEmpty, IsUUID, IsBoolean } from 'class-validator';
 import { ACTION_TYPE, HISTORY_TYPE } from '../constants';
 
 export class CreateHistoryEntryDto {
@@ -27,6 +27,10 @@ export class CreateHistoryEntryDto {
   @IsOptional()
   @IsUUID()
   parentId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isAiGenerated?: boolean;
 }
 
 export class UpdateDescriptionDto {

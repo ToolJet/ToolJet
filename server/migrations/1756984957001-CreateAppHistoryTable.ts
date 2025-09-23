@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
 
-export class CreateAppHistoryTable1756984957000 implements MigrationInterface {
+export class CreateAppHistoryTable1756984957001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -61,6 +61,12 @@ export class CreateAppHistoryTable1756984957000 implements MigrationInterface {
           {
             name: 'change_payload',
             type: 'jsonb',
+            isNullable: false,
+          },
+          {
+            name: 'is_ai_generated',
+            type: 'boolean',
+            default: false,
             isNullable: false,
           },
           {

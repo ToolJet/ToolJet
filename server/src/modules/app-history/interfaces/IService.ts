@@ -10,6 +10,7 @@ export interface HistoryEntryDto {
     lastName: string;
     email: string;
   };
+  isAiGenerated: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

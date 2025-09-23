@@ -61,6 +61,9 @@ export class AppHistory extends BaseEntity {
   @Column({ name: 'change_payload', type: 'jsonb' })
   changePayload: Record<string, any> | any[];
 
+  @Column({ name: 'is_ai_generated', type: 'boolean', default: false })
+  isAiGenerated: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
