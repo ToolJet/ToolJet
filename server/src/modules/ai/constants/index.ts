@@ -8,4 +8,5 @@ export enum FEATURE_KEY {
   REGENERATE_MESSAGE = 'regenerateMessage',
   VOTE_MESSAGE = 'voteMessage',
   GET_CREDITS_BALANCE = 'getCreditsBalance',
+  GET_SELFHOST_CUSTOMER = 'getSelfhostCustomer',
 }

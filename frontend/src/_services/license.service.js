@@ -17,6 +17,7 @@ export const licenseService = {
   updateOrganization,
   addTopUpCredits,
   getAiCreditsBalance,
+  getSelfhostCustomer,
 };
 
 function get() {
@@ -169,4 +170,11 @@ function getAiCreditsBalance() {
   return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
     handleResponse
   );
+}
+
+function getSelfhostCustomer() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/selfhost-customer`, requestOptions).then(handleResponse);
 }
