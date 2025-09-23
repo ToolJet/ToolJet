@@ -1,6 +1,34 @@
 .enterprise-page {
     height: calc(100vh - 108px);
     overflow: auto;
+
+    .page-actions-wrapper {
+        margin: auto;
+        width: 880px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 24px;
+            color: var(--slate12);
+        }
+
+        .coin-icon-credits {
+            height: 16px;
+            width: 16px;
+            path {
+                stroke: var(--base);
+            }
+        }
+
+        .ai-credits-btn {
+            font-size: 12px;
+        }
+    }
     
     .license-page {
         width: 880px;
@@ -34,6 +62,17 @@
 
             .groups-sub-header-wrap {
                 width: 100%;
+
+                .ai-tab-limits {
+                    background: linear-gradient(0deg, #FC5F70 0%, #8E4EC6 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+
+                    &.active {
+                        border-color: rgba(252, 95, 112, 1) !important;
+                    }
+                }
             }
 
             .subscription-footer {
