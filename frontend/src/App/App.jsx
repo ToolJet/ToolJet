@@ -410,13 +410,15 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/home"
                   element={
-                    <PrivateRoute>
-                      <GuardedHomePage
-                        switchDarkMode={this.switchDarkMode}
-                        darkMode={darkMode}
-                        version={this.state.tooljetVersion}
-                      />
-                    </PrivateRoute>
+                    <DesktopOnlyRoute>
+                      <PrivateRoute>
+                        <GuardedHomePage
+                          switchDarkMode={this.switchDarkMode}
+                          darkMode={darkMode}
+                          version={this.state.tooljetVersion}
+                        />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
                   }
                 />
 
@@ -504,13 +506,15 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/home"
                   element={
-                    <PrivateRoute>
-                      <GuardedHomePage
-                        switchDarkMode={this.switchDarkMode}
-                        darkMode={darkMode}
-                        version={this.state.tooljetVersion}
-                      />
-                    </PrivateRoute>
+                    <DesktopOnlyRoute>
+                      <PrivateRoute>
+                        <GuardedHomePage
+                          switchDarkMode={this.switchDarkMode}
+                          darkMode={darkMode}
+                          version={this.state.tooljetVersion}
+                        />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
                   }
                 />
                 <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />

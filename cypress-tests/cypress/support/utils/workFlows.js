@@ -91,7 +91,6 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
   cy.get('[data-cy="tab-output"]').click();
-
   cy.wait(500);
   cy.get("body").then(($body) => {
     if (
@@ -108,6 +107,19 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
     }
   });
   cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="inspector-node-data"]').length) {
+      cy.get('[data-cy="inspector-node-data"]')
+        .parent()
+        .find('.json-tree-node-icon')
+        .first()
+        .then(($icon) => {
+          if ($icon[0].style.transform === "rotate(0deg)") {
+            cy.wrap($icon).click({ force: true }).wait(300);
+          }
+        });
+    }
+  });
+  cy.get("body").then(($body) => {
     const icons = $body.find("span.json-tree-node-icon");
     if (icons.length > 0) {
       cy.wrap(icons.slice(0, limit)).each(($el) => {
@@ -117,7 +129,6 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
       });
     }
   });
-
   cy.get(".json-tree-valuetype", { timeout: 3000 }).then(($vals) => {
     const texts = [...$vals].map((el) => el.innerText.trim());
     const match = texts.some((txt) => txt.includes(expectedText));
