@@ -169,6 +169,7 @@ export const baseComponentProperties = (
       'Tabs',
       'Statistics',
       'StarRating',
+      'Kanban',
     ],
     Layout: [],
   };
