@@ -50,6 +50,8 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 
+const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
+
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
   const { updateIsTJDarkMode, isTJDarkMode } = useStore(
@@ -121,11 +123,11 @@ class AppComponent extends React.Component {
     authorizeWorkspace();
     hubspotHelper.loadHubspot();
     this.fetchMetadata();
-    // check if version is cloud
+    // check if version is cloud or ee
     const data = localStorage.getItem('currentVersion');
-    if (data && data.includes('cloud')) {
+    if (data && (data.includes('cloud') || data.includes('ee'))) {
       this.setState({
-        showBanner: true, // show banner if version has "cloud"
+        showBanner: true, // show banner if version has "cloud" or "ee"
       });
     }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
@@ -229,7 +231,6 @@ class AppComponent extends React.Component {
     const isApplicationsPath = window.location.pathname.includes('/applications/');
     const isAdmin = authenticationService?.currentSessionValue?.admin;
     const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
-    const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
