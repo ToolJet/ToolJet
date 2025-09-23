@@ -99,6 +99,7 @@ export const kanbanConfig = {
         { name: 'small', value: 'sm' },
         { name: 'medium', value: 'lg' },
         { name: 'large', value: 'xl' },
+        { name: 'fullscreen', value: 'fullscreen' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -112,6 +113,16 @@ export const kanbanConfig = {
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         defaultValue: 400,
       },
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: {
