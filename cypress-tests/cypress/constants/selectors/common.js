@@ -380,7 +380,7 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
+  sidebarinspector: "[data-cy='left-sidebar-inspector']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
@@ -421,11 +421,29 @@ export const commonWidgetSelector = {
 };
 
 export const commonQuerySelectors = {
- queryNameList: (queryName) => {
+  queryNameList: (queryName) => {
     return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
   },
   queryActionButton: (action) => {
     return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
   },
   queryEditInputField: '[data-cy="query-edit-input-field"]',
+};
+
+export const inspectorSelectors = {
+  inspectorNode: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-node"]`;
+  },
+  inspectorGlobalsExpandButton: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-expand-button"]`;
+  },
+  inspectorSubNode: (subNodeName) => {
+    return `[data-cy="inspector-${cyParamName(subNodeName)}-subnode-label"]`;
+  },
+  inspectorNodeLabel: (labelName) => {
+    return `[data-cy="inspector-${cyParamName(labelName)}-label"]`;
+  },
+  inspectorNodeValue: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
+  },
 };

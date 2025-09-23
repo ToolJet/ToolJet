@@ -35,7 +35,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 export class WorkflowsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       WorkflowExecutionsService,
       WorkflowExecutionsController,
@@ -131,8 +131,6 @@ export class WorkflowsModule extends SubModule {
         PageService,
         EventsService,
         WorkflowExecutionsService,
-        WorkflowStreamService,
-        WorkflowTriggersListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
         ComponentsService,
@@ -142,13 +140,11 @@ export class WorkflowsModule extends SubModule {
         FeatureAbilityFactory,
         RolesRepository,
         GroupPermissionsRepository,
+        ...(isMainImport ? [WorkflowTriggersListener, WorkflowStreamService] : []),
       ],
-      controllers: [
-        WorkflowsController,
-        WorkflowExecutionsController,
-        WorkflowWebhooksController,
-        WorkflowSchedulesController,
-      ],
+      controllers: isMainImport
+        ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
+        : [],
     };
   }
 }
