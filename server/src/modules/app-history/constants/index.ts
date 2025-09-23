@@ -41,9 +41,19 @@ export enum ACTION_TYPE {
   INITIAL_SNAPSHOT = 'initial_snapshot',
 }
 
+// Snapshot creation frequency: Every 10th change creates a complete state snapshot
+// This means entries 1, 11, 21, 31, etc. are snapshots
+// Entries 2-10, 12-20, 22-30, etc. are deltas (JSON patches)
 export const SNAPSHOT_FREQUENCY = 10;
+
+// Maximum visible entries in the UI history list
 export const RETENTION_VISIBLE_LIMIT = 100;
-export const RETENTION_BUFFER_LIMIT = 110; // 11 complete snapshot groups (110 entries)
+
+// Maximum total entries before cleanup is triggered
+// 110 entries = 11 complete snapshot groups (each group: 1 snapshot + 9 deltas)
+// When entry 111 is created, the oldest complete group (entries 1-10) is deleted
+// This ensures all remaining entries can be reconstructed from their base snapshots
+export const RETENTION_BUFFER_LIMIT = 110;
 
 export enum FEATURE_KEY {
   LIST_HISTORY = 'list_history',
