@@ -172,7 +172,7 @@ describe("Workflows with Datasource", () => {
       workflowsText.restapiNodeName,
       workflowsText.restApiResponseNodeQuery
     );
-    verifyTextInResponseOutputLimited(workflowsText.restApiExpectedValue);
+    cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
     deleteWorkflowAndDS(data.wfName, dsName);
   });

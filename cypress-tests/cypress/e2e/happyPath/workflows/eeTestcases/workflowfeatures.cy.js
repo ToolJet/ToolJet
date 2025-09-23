@@ -136,10 +136,11 @@ describe("Workflows features", () => {
     });
 
     cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .type(workflowsText.runjsNodeQueryForLargedataSet, {
-        parseSpecialCharSequences: false,
-      });
+    .click({ force: true })
+    .realType(workflowsText.runjsNodeQueryForLargedataSet, {
+      parseSpecialCharSequences: false,
+      delay: 0
+    });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
