@@ -26,6 +26,10 @@ export enum ACTION_TYPE {
   EVENT_DELETE = 'event_delete',
   EVENT_REORDER = 'event_reorder',
 
+  // Settings actions
+  GLOBAL_SETTINGS_UPDATE = 'global_settings_update',
+  PAGE_SETTINGS_UPDATE = 'page_settings_update',
+
   // Batch/bulk actions
   BATCH_UPDATE = 'batch_update',
 
