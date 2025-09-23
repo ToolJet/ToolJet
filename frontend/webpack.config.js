@@ -6,6 +6,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
@@ -82,35 +83,177 @@ if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
-module.exports = {
-  mode: environment,
-  optimization: {
-    minimize: environment === 'production',
-    usedExports: true,
-    runtimeChunk: 'single',
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          keep_classnames: true,
-          keep_fnames: true,
-          compress: {
-            drop_debugger: true,
-            drop_console: true,
+module.exports = (env, argv) => {
+  const isAnalyze = env && env.analyze;
+
+  if (isAnalyze) {
+    plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        openAnalyzer: false,
+        reportFilename: 'bundle-report.html',
+      })
+    );
+  }
+
+  return {
+    mode: environment,
+    optimization: {
+      minimize: environment === 'production',
+      usedExports: true,
+      sideEffects: false,
+      runtimeChunk: 'single',
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            keep_classnames: true,
+            keep_fnames: true,
+            compress: {
+              drop_debugger: true,
+              drop_console: true,
+              pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+            },
           },
-        },
-        parallel: environment === 'production',
-      }),
-    ],
-    splitChunks: {
-      cacheGroups: {
-        vendors: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          parallel: environment === 'production',
+        }),
+      ],
+      splitChunks: {
+        chunks: 'all',
+        maxSize: environment === 'production' ? 1000000 : 5000000, // 1MB for prod, 5MB for dev
+        cacheGroups: environment === 'production' ? {
+          // Production: Granular splitting for optimal loading
+          plotly: {
+            test: /[\\/]node_modules[\\/](plotly\.js|react-plotly\.js)/,
+            name: 'plotly',
+            priority: 50,
+            chunks: 'all',
+          },
+          tabler: {
+            test: /[\\/]node_modules[\\/]@tabler/,
+            name: 'tabler-icons',
+            priority: 45,
+            chunks: 'all',
+          },
+          reactSpring: {
+            test: /[\\/]node_modules[\\/]react-spring/,
+            name: 'react-spring',
+            priority: 40,
+            chunks: 'all',
+          },
+          codesandbox: {
+            test: /[\\/]node_modules[\\/]@codesandbox/,
+            name: 'codesandbox',
+            priority: 40,
+            chunks: 'all',
+          },
+          maplibre: {
+            test: /[\\/]node_modules[\\/](maplibre-gl|mapbox-gl)/,
+            name: 'maps',
+            priority: 35,
+            chunks: 'all',
+          },
+          lucide: {
+            test: /[\\/]node_modules[\\/]lucide-react/,
+            name: 'lucide-icons',
+            priority: 35,
+            chunks: 'all',
+          },
+          pdfjs: {
+            test: /[\\/]node_modules[\\/]pdfjs-dist/,
+            name: 'pdf-viewer',
+            priority: 35,
+            chunks: 'all',
+          },
+          three: {
+            test: /[\\/]node_modules[\\/]three/,
+            name: 'three-js',
+            priority: 30,
+            chunks: 'all',
+          },
+          sentry: {
+            test: /[\\/]node_modules[\\/]@sentry/,
+            name: 'sentry',
+            priority: 30,
+            chunks: 'all',
+          },
+          mui: {
+            test: /[\\/]node_modules[\\/]@mui/,
+            name: 'mui',
+            priority: 25,
+            chunks: 'all',
+          },
+          emojiMart: {
+            test: /[\\/]node_modules[\\/]@emoji-mart/,
+            name: 'emoji-mart',
+            priority: 25,
+            chunks: 'all',
+          },
+          posthog: {
+            test: /[\\/]node_modules[\\/]posthog-js/,
+            name: 'posthog',
+            priority: 25,
+            chunks: 'all',
+          },
+          lodash: {
+            test: /[\\/]node_modules[\\/]lodash/,
+            name: 'lodash',
+            priority: 20,
+            chunks: 'all',
+          },
+          ui: {
+            test: /[\\/]node_modules[\\/](@radix-ui|@tanstack)/,
+            name: 'ui-libs',
+            priority: 15,
+            chunks: 'all',
+          },
+          reactBase: {
+            test: /[\\/]node_modules[\\/](react|react-dom)/,
+            name: 'react-base',
+            priority: 10,
+            chunks: 'all',
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 5,
+            chunks: 'all',
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            priority: 1,
+            chunks: 'all',
+            enforce: true,
+          },
+        } : {
+          // Development: Simpler splitting for faster builds
+          plotly: {
+            test: /[\\/]node_modules[\\/](plotly\.js|react-plotly\.js)/,
+            name: 'plotly',
+            priority: 30,
+            chunks: 'all',
+          },
+          heavyLibs: {
+            test: /[\\/]node_modules[\\/](@tabler|lucide-react|@codesandbox|pdfjs-dist)/,
+            name: 'heavy-libs',
+            priority: 25,
+            chunks: 'all',
+          },
+          reactBase: {
+            test: /[\\/]node_modules[\\/](react|react-dom)/,
+            name: 'react-base',
+            priority: 20,
+            chunks: 'all',
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 10,
+            chunks: 'all',
+          },
         },
       },
     },
-  },
   target: 'web',
   resolve: {
     extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
@@ -245,4 +388,5 @@ module.exports = {
       WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup',
     }),
   },
+};
 };

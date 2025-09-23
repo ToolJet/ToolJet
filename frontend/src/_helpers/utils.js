@@ -1,6 +1,7 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _, { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import clone from 'lodash/clone';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { executeAction } from '@/_helpers/appUtils';
@@ -206,7 +207,7 @@ export function resolveReferences(
 ) {
   if (object === '{{{}}}') return '';
 
-  object = _.clone(object);
+  object = clone(object);
   const objectType = typeof object;
   let error;
 
@@ -297,7 +298,7 @@ export function resolveReferences(
 
         if (withError) return [new_array, error];
         return new_array;
-      } else if (!_.isEmpty(object)) {
+      } else if (!isEmpty(object)) {
         Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
@@ -598,7 +599,7 @@ export function validateEmail(email) {
 
 export function constructSearchParams(params = {}) {
   const searchParams = new URLSearchParams('');
-  if (!_.isEmpty(params)) {
+  if (!isEmpty(params)) {
     Object.keys(params).map((key) => {
       const value = params[key];
       value && searchParams.append(key, value);
@@ -691,7 +692,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       'client',
       'server',
       'constants',
-      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
+      ...(!isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
       code,
     ];
     var evalFn = new AsyncFunction(...fnParams);
@@ -709,7 +710,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       currentState?.client,
       currentState?.server,
       currentState?.constants,
-      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
+      ...(!isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
     ];
     result = {
       status: 'ok',
@@ -838,13 +839,13 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     });
 
     const processedParams = {};
-    if (_.isEmpty(query) || queryId === query?.id) {
+    if (isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
     }
 
-    if (!_.isEmpty(query?.options?.parameters)) {
+    if (!isEmpty(query?.options?.parameters)) {
       query.options.parameters?.forEach(
         (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
       );

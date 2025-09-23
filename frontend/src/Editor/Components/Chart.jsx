@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import Plotly from 'plotly.js-dist-min';
-import createPlotlyComponent from 'react-plotly.js/factory';
 import { isStringValidJson } from '@/_helpers/utils';
-const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
@@ -11,6 +7,15 @@ import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getModifiedColor } from './utils';
 
 var tinycolor = require('tinycolor2');
+
+// Dynamically load Plotly to reduce initial bundle size
+const loadPlotly = async () => {
+  const [Plotly, { default: createPlotlyComponent }] = await Promise.all([
+    import('plotly.js-dist-min'),
+    import('react-plotly.js/factory')
+  ]);
+  return createPlotlyComponent(Plotly.default || Plotly);
+};
 
 export const Chart = function Chart({
   width,
@@ -25,6 +30,8 @@ export const Chart = function Chart({
 }) {
   const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
+  const [Plot, setPlot] = useState(null);
+  const [plotlyLoading, setPlotlyLoading] = useState(true);
   const themeChanged = useStore((state) => state.themeChanged);
 
 
@@ -43,6 +50,17 @@ export const Chart = function Chart({
   const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
   const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
   console.log('modifiedAxisColor', modifiedAxisColor);
+
+  // Load Plotly dynamically on component mount
+  useEffect(() => {
+    loadPlotly().then(PlotComponent => {
+      setPlot(() => PlotComponent);
+      setPlotlyLoading(false);
+    }).catch(error => {
+      console.error('Failed to load Plotly:', error);
+      setPlotlyLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -276,8 +294,16 @@ export const Chart = function Chart({
             <div className="spinner-border mt-5" role="status"></div>
           </center>
         </div>
-      ) : (
+      ) : plotlyLoading ? (
+        <div style={{ width }} className="p-2 loader-main-container">
+          <center>
+            <div className="spinner-border mt-5" role="status"></div>
+            <div className="mt-2">Loading chart...</div>
+          </center>
+        </div>
+      ) : Plot ? (
         <PlotComponent
+          Plot={Plot}
           data={plotFromJson ? jsonChartData : memoizedChartData}
           layout={layout}
           config={{
@@ -287,6 +313,12 @@ export const Chart = function Chart({
           onDoubleClick={handleDoubleClick}
           disabledState={disabledState}
         />
+      ) : (
+        <div style={{ width }} className="p-2 error-container">
+          <center>
+            <div className="mt-5">Failed to load chart component</div>
+          </center>
+        </div>
       )}
     </div>
   );
@@ -294,7 +326,7 @@ export const Chart = function Chart({
 
 // onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
 const PlotComponent = memo(
-  ({ data, layout, config, onClick, onDoubleClick, disabledState }) => {
+  ({ Plot, data, layout, config, onClick, onDoubleClick, disabledState }) => {
     return (
       <Plot
         data={data}
