@@ -12,6 +12,10 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
+import { DataSourcesModule } from '@modules/data-sources/module';
+import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { VersionRepository } from '@modules/versions/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -23,6 +27,7 @@ export class AiModule extends SubModule {
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { GraphService } = await import(`${importPath}/ai/services/graph.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
+    const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
 
     return {
       module: AiModule,
@@ -31,6 +36,8 @@ export class AiModule extends SubModule {
         await DataQueriesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await DataSourcesModule.register(configs),
+        await AppEnvironmentsModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
@@ -41,14 +48,16 @@ export class AiModule extends SubModule {
         ComponentsService,
         // ImportExportResourcesService,
         AiConversationRepository,
+        VersionRepository,
         AiConversationMessageRepository,
         AppsRepository,
         AiResponseVoteRepository,
+        OrganizationRepository,
         FeatureAbilityFactory,
         ArtifactRepository,
         DataQueryRepository,
-
         EventsService,
+        AppsUtilService,
       ],
       exports: [AiUtilService],
     };

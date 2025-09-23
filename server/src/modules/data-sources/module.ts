@@ -54,7 +54,7 @@ export class DataSourcesModule extends SubModule {
         OrganizationRepository,
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
-      exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
+      exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector, DataSourcesService],
     };
   }
 }
