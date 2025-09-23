@@ -67,13 +67,19 @@ export function renderCustomStyles(
     componentConfig.component == 'PhoneInput' ||
     componentConfig.component == 'CurrencyInput' ||
     componentConfig.component == 'DaterangePicker' ||
-    componentConfig.component == 'StarRating'
+    componentConfig.component == 'StarRating' ||
+    componentConfig.component == 'PopoverMenu'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
     const getResolvedValue = (key, parentObjectKey = 'styles') => {
+      if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
+        return (
+          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
+        );
+      }
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
       return value && resolveReferences(value);
     };

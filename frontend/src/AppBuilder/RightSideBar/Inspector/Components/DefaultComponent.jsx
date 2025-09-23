@@ -59,6 +59,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Tabs: 'Data',
   RangeSlider: 'Data',
   Link: 'Data',
+  PopoverMenu: 'Data',
   Statistics: 'Data',
   StarRating: 'Data',
 };

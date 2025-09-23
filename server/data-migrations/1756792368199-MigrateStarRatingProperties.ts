@@ -13,7 +13,7 @@ export class MigrateStarRatingProperties1756792368199 implements MigrationInterf
             entityManager,
             async (entityManager: EntityManager) => {
                 return await entityManager.find(Component, {
-                    where: { type: 'Tabs' },
+                    where: { type: 'StarRating' },
                     order: { createdAt: 'ASC' },
                 });
             },

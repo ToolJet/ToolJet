@@ -3,6 +3,10 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
+  deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
+  globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
+  createWorkFlowsButton: '[data-cy="+-create-workflow"]',
+  workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
@@ -414,4 +418,14 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+};
+
+export const commonQuerySelectors = {
+ queryNameList: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
+  },
+  queryActionButton: (action) => {
+    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+  },
+  queryEditInputField: '[data-cy="query-edit-input-field"]',
 };

@@ -72,7 +72,7 @@ export const starratingConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
@@ -102,6 +102,7 @@ export const starratingConfig = {
   styles: {
     labelStyle: {
       type: 'select',
+      displayName: 'Style',
       options: [
         { name: 'Standard', value: 'standard' },
         { name: 'Legacy', value: 'legacy' },
@@ -111,7 +112,6 @@ export const starratingConfig = {
         defaultValue: 'standard',
       },
       accordian: 'label',
-      isFxNotRequired: true,
     },
     labelColor: {
       type: 'colorSwatches',
@@ -261,6 +261,15 @@ export const starratingConfig = {
       },
       accordian: 'Icon',
     },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
     padding: {
       type: 'switch',
       displayName: 'Padding',
@@ -275,20 +284,16 @@ export const starratingConfig = {
       ],
       accordian: 'Container',
     },
-    boxShadow: {
-      type: 'boxShadow',
-      displayName: 'Box Shadow',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: '0px 0px 0px 0px #00000040',
-      },
-      accordian: 'Container',
-    },
   },
   exposedVariables: {
     value: 0,
   },
   actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'value', displayName: 'value', defaultValue: '0' }],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
@@ -305,7 +310,7 @@ export const starratingConfig = {
       params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'resetRating',
+      handle: 'resetValue',
       displayName: 'Reset rating',
       params: [],
     },
@@ -331,7 +336,7 @@ export const starratingConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#ffb400' },
+      textColor: { value: '#EFB82D' },
       labelColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -344,7 +349,7 @@ export const starratingConfig = {
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },
       selectedBackgroundHearts: { value: '#EE5B67' },
-      unselectedBackground: { value: 'var(--cc-default-icon)' },
+      unselectedBackground: { value: 'var(--cc-surface3-surface)' },
     },
   },
 };

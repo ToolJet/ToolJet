@@ -70,6 +70,7 @@ const selectCustomStyles = (width) => {
     }),
     singleValue: (provided) => ({
       ...provided,
+      paddingLeft: '0px',
       color: 'var(--slate12)',
     }),
   };
@@ -98,7 +99,6 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
             IndicatorSeparator: () => null,
             Option,
           }}
-          // menuIsOpen={true}
         />
       </div>
     </div>

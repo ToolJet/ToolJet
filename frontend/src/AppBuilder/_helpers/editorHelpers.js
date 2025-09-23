@@ -14,6 +14,7 @@ import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
+import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
 import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
 import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
 import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
@@ -41,7 +42,7 @@ import { CodeEditor } from '@/Editor/Components/CodeEditor';
 import { Timer } from '@/Editor/Components/Timer';
 import { Statistics } from '@/Editor/Components/Statistics';
 import { Pagination } from '@/Editor/Components/Pagination';
-import { Tags } from '@/Editor/Components/Tags';
+import { Tags } from '@/Editor/Components/Tags/Tags';
 import { Spinner } from '@/Editor/Components/Spinner';
 import { CircularProgressBar } from '@/Editor/Components/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
@@ -160,6 +161,7 @@ export const AllComponents = {
   Chat,
   ModuleContainer,
   ModuleViewer,
+  PopoverMenu,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);

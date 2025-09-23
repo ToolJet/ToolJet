@@ -48,7 +48,9 @@ import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
+import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -117,7 +119,9 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'Tags',
   'Chat',
+  'PopoverMenu',
   'Statistics',
   'StarRating',
 ];
@@ -828,6 +832,9 @@ const GetAccordion = React.memo(
       case 'RadioButtonV2':
         return <Select {...restProps} />;
 
+      case 'Tags':
+        return <Tags {...restProps} />;
+
       case 'Chat':
         return <Chat {...restProps} />;
 
@@ -848,6 +855,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+      case 'PopoverMenu':
+        return <PopoverMenu {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

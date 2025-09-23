@@ -1,7 +1,6 @@
 import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
-import { sanitizeHeaders } from '@tooljet-plugins/common';
 import got from 'got';
-import { GrpcReflection, serviceHelper } from 'grpc-js-reflection-client';
+import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
@@ -12,10 +11,9 @@ import * as fs from 'fs';
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const credentials = buildClientCredentials(sourceOptions);
+    const credentials = buildChannelCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
-
-    const client = await serviceHelper({
+    const serviceHelperOptions: ServiceHelperOptionsType = {
       host: cleanUrl,
       servicePath: serviceName,
       credentials,
@@ -27,7 +25,9 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
         defaults: true,
         oneofs: true
       }
-    });
+    }
+
+    const client = await serviceHelper(serviceHelperOptions) as GrpcClient;
 
     return client;
   } catch (error: unknown) {
@@ -46,7 +46,7 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
       throw new GrpcOperationError(`Service ${serviceName} not found in proto file`);
     }
 
-    const credentials = buildClientCredentials(sourceOptions);
+    const credentials = buildChannelCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
 
     if (typeof service !== 'function') {
@@ -65,7 +65,7 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
   }
 };
 
-export const createGrpcCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
+export const createTransportCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
   if (sourceOptions.ssl_enabled) {
     const options: {
       rootCerts?: Buffer;
@@ -141,7 +141,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const callOptions = {};
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
     const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
@@ -152,7 +152,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
 
     for (const serviceName of serviceNames) {
       try {
-        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, {});
+        const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, callOptions);
 
         const grpcMethods: GrpcMethod[] = methods.map((methodInfo: ListMethodsType) => {
           if (!methodInfo || typeof methodInfo.name !== 'string') {
@@ -355,99 +355,292 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 };
 
 
-const sanitizeMetadata = (sourceOptions: SourceOptions, queryOptions: Partial<QueryOptions>, hasDataSource = true): { [k: string]: string } => {
-  const ensureArrayFormat = (metadata: any) => {
-    if (!metadata) return [];
-    if (Array.isArray(metadata)) return metadata;
+/**
+ * Build all metadata (auth, datasource, query) for NON-TLS connections
+ * Returns Metadata object directly for use with unary gRPC method calls
+ * Note: For non-TLS connections, auth must be included as metadata headers
+ */
+export const buildMetadataForNonTlsConnection = (
+  sourceOptions: SourceOptions,
+  queryOptions?: QueryOptions
+): grpc.Metadata => {
+  const metadata = new grpc.Metadata();
 
-    return [];
-  };
+  // 1. Add datasource metadata (client-id, cp-env, etc.)
+  if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
+    Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
+      metadata.set(key, value);
+    });
+  }
 
-  // Create temporary objects with metadata mapped to headers property for sanitizeHeaders
-  const sourceOptionsWithHeaders = {
-    ...sourceOptions,
-    headers: ensureArrayFormat(sourceOptions.metadata)
-  };
-  const queryOptionsWithHeaders = {
-    ...queryOptions,
-    headers: ensureArrayFormat(queryOptions.metadata)
-  };
+  // 2. Add query metadata
+  if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
+    Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
+      metadata.set(key, value);
+    });
+  }
 
-  return sanitizeHeaders(sourceOptionsWithHeaders, queryOptionsWithHeaders, hasDataSource);
-};
-
-export const buildClientCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
-  const channelCredentials = createGrpcCredentials(sourceOptions);
-  const authMetadata = new grpc.Metadata();
-  const sanitizedMetadata = sanitizeMetadata(sourceOptions, {}, true);
-
-  // Add authentication data to call credentials
+  // 3. Add auth metadata based on auth_type (using raw sourceOptions values)
   switch (sourceOptions.auth_type) {
     case 'api_key':
       if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
-        authMetadata.add(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
+        metadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
       }
       break;
 
     case 'bearer':
       if (sourceOptions.bearer_token) {
-        authMetadata.add('authorization', `Bearer ${sourceOptions.bearer_token}`);
+        metadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
       }
       break;
 
     case 'basic':
       if (sourceOptions.username && sourceOptions.password) {
         const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        authMetadata.add('authorization', `Basic ${credentials}`);
+        metadata.set('authorization', `Basic ${credentials}`);
       }
       break;
 
     case 'oauth2':
-      if (sanitizedMetadata?.access_token) {
+      // For OAuth2, access_token is in datasource metadata (already added above)
+      const sanitizedAuth = extractSanitizedMetadata(sourceOptions.metadata || []);
+      if (sanitizedAuth?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
-          authMetadata.add('authorization', `${prefix}${sanitizedMetadata.access_token}`);
+          metadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
         } else {
-          authMetadata.add('token', sanitizedMetadata.access_token);
+          metadata.set('token', sanitizedAuth.access_token);
         }
       }
       break;
   }
 
-  // Check if we have auth metadata to combine
-  const authEntries = authMetadata.getMap ? Object.keys(authMetadata.getMap()) : [];
-  const hasAuthMetadata = authEntries.length > 0;
-
-  if (hasAuthMetadata) {
-    // Create call credentials from auth metadata
-    const callCredentials = grpc.credentials.createFromMetadataGenerator(
-      (params, callback) => callback(null, authMetadata)
-    );
-
-    // Combine channel and call credentials
-    return grpc.credentials.combineChannelCredentials(
-      channelCredentials,
-      callCredentials
-    );
-  }
-
-  return channelCredentials;
+  // Return the metadata directly for use with unary methods
+  return metadata;
 };
 
-export const buildRequestMetadata = (sourceOptions: SourceOptions, queryOptions: QueryOptions): grpc.Metadata => {
-  const regularMetadata = new grpc.Metadata();
-  const sanitizedMetadata = sanitizeMetadata(sourceOptions, queryOptions, true);
+/**
+ * Prepare gRPC call options for STREAMING methods (like reflection)
+ * Handles ALL metadata via CallCredentials for non-TLS streaming connections
+ * Note: Streaming methods need CallOptions, not Metadata as first parameter
+ */
+export const buildCallOptionsForStreaming = (
+  sourceOptions: SourceOptions,
+  queryOptions?: QueryOptions
+): grpc.CallOptions => {
+  const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
 
-  // Add only non-auth metadata for this specific request
-  if (queryOptions?.metadata) {
-    Object.entries(sanitizedMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        regularMetadata.add(key.toLowerCase(), String(value));
-      }
+  // For streaming methods, wrap metadata in CallCredentials
+  const metadataMap = metadata.getMap();
+  const hasMetadata = metadataMap && Object.keys(metadataMap).length > 0;
+
+  if (hasMetadata) {
+    return {
+      credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
+        callback(null, metadata);
+      })
+    };
+  }
+
+  return {};
+};
+
+/**
+ * Build metadata for TLS connections (datasource + query metadata only)
+ * Combine datasource metadata with query metadata for TLS connections
+ * Since auth is handled at channel level, we can combine all non-auth metadata
+ */
+export const buildMetadataForTlsConnection = (
+  sourceOptions: SourceOptions,
+  queryOptions?: QueryOptions
+): grpc.Metadata => {
+  const combinedMetadata = new grpc.Metadata();
+
+  // 1. Add datasource metadata (client-id, tenant-id, etc.)
+  if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
+
+    Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
+      combinedMetadata.set(key, value);
     });
   }
 
-  return regularMetadata;
+  // 2. Add query metadata
+  if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
+
+    Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
+      combinedMetadata.set(key, value);
+    });
+  }
+
+  return combinedMetadata;
+};
+
+/**
+ * Extract and sanitize metadata from a metadata array
+ * Returns sanitized metadata as key-value pairs
+ */
+const extractSanitizedMetadata = (metadata: unknown): { [k: string]: string } => {
+  type MetadataEntry = [string, string];
+
+  const cleanMetadata = (metadata: [string, unknown][]): [string, unknown][] =>
+    metadata.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+
+  const filterValidMetadataEntries = (metadata: [string, unknown][]): MetadataEntry[] => {
+    return metadata.filter((entry): entry is MetadataEntry => {
+      const [_, value] = entry;
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      // Convert array to string by joining
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
+        entry[1] = value.join(', ');
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const processMetadata = (rawMetadata: [string, unknown][]): { [k: string]: string } => {
+    const cleaned = cleanMetadata(rawMetadata || []);
+    const validMetadata = filterValidMetadataEntries(cleaned);
+    return Object.fromEntries(validMetadata);
+  };
+
+  const ensureArrayFormat = (data: unknown): [string, unknown][] => {
+    if (!data) return [];
+    if (Array.isArray(data)) {
+      // Ensure each item is a tuple with at least 2 elements
+      return data.filter(item => Array.isArray(item) && item.length >= 2)
+        .map(item => [String(item[0]), item[1]]);
+    }
+    return [];
+  };
+
+  return processMetadata(ensureArrayFormat(metadata));
+};
+
+
+export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
+  const channelCredentials = createTransportCredentials(sourceOptions);
+
+  // For TLS connections with auth, use secure combineChannelCredentials approach
+  if (sourceOptions.ssl_enabled) {
+    const authCallOptions = buildAuthCallCredentials(sourceOptions);
+    if (authCallOptions.credentials) {
+      return grpc.credentials.combineChannelCredentials(
+        channelCredentials,
+        authCallOptions.credentials
+      );
+    }
+  }
+
+  // For non-TLS connections, return only channel credentials
+  // All metadata (auth + datasource + query) will be handled per-call
+  return channelCredentials;
+};
+
+/**
+ * Creates CallCredentials for auth only (no datasource or query metadata)
+ * Used for secure TLS channel setup
+ */
+export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.CallOptions => {
+  const authMetadata = new grpc.Metadata();
+
+  switch (sourceOptions.auth_type) {
+    case 'api_key':
+      if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
+        authMetadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
+      }
+      break;
+
+    case 'bearer':
+      if (sourceOptions.bearer_token) {
+        authMetadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
+      }
+      break;
+
+    case 'basic':
+      if (sourceOptions.username && sourceOptions.password) {
+        const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
+        authMetadata.set('authorization', `Basic ${credentials}`);
+      }
+      break;
+
+    case 'oauth2':
+      const sanitizedMetadata = extractSanitizedMetadata(sourceOptions.metadata || []);
+      if (sanitizedMetadata?.access_token) {
+        if (sourceOptions.add_token_to === 'header') {
+          const prefix = sourceOptions.header_prefix || 'Bearer ';
+          authMetadata.set('authorization', `${prefix}${sanitizedMetadata.access_token}`);
+        } else {
+          authMetadata.set('token', sanitizedMetadata.access_token);
+        }
+      }
+      break;
+  }
+
+  const metadataMap = authMetadata.getMap();
+  const hasMetadata = metadataMap && Object.keys(metadataMap).length > 0;
+
+  if (hasMetadata) {
+    return {
+      credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
+        callback(null, authMetadata);
+      })
+    };
+  }
+
+  return {};
+};
+
+/**
+ * Universal gRPC method executor
+ * - TLS connections: All metadata as regular metadata (auth handled at channel level)
+ * - Non-TLS connections: All metadata via CallCredentials (guaranteed delivery)
+ */
+export const executeGrpcMethod = async (
+  client: GrpcClient,
+  methodName: string,
+  message: Record<string, unknown>,
+  sourceOptions: SourceOptions,
+  queryOptions: QueryOptions
+): Promise<Record<string, unknown>> => {
+  const methodFunction = client[methodName] as unknown;
+
+  if (typeof methodFunction !== 'function') {
+    throw new GrpcOperationError(`Method ${methodName} not found on client`);
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new GrpcOperationError(
+        `Request timeout after 2 minutes for method ${methodName}`,
+        { errorType: 'NetworkError', grpcStatus: 'DEADLINE_EXCEEDED' }
+      ));
+    }, 120000);
+
+    const callback = (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
+      clearTimeout(timeout);
+      if (error) {
+        reject(new GrpcOperationError(`gRPC call failed: ${error.message}`, error));
+      } else {
+        resolve(response || {});
+      }
+    };
+
+    if (sourceOptions.ssl_enabled) {
+      // TLS connections: Auth at channel level, all other metadata as regular metadata
+      const metadata = buildMetadataForTlsConnection(sourceOptions, queryOptions);
+      methodFunction.call(client, message, metadata, callback);
+    } else {
+      // Non-TLS connections: All metadata (auth + datasource + query) as direct metadata
+      const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
+      methodFunction.call(client, message, metadata, callback);
+    }
+  });
 };
 
 const createReflectionClient = async (sourceOptions: SourceOptions): Promise<GrpcReflection> => {
@@ -460,7 +653,7 @@ const createReflectionClient = async (sourceOptions: SourceOptions): Promise<Grp
       throw new GrpcOperationError('Server URL is required to create reflection client. Please configure the server URL in your data source settings.');
     }
 
-    const credentials = buildClientCredentials(sourceOptions);
+    const credentials = buildChannelCredentials(sourceOptions);
     const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
     const reflectionClient = new GrpcReflection(cleanUrl, credentials);
 
