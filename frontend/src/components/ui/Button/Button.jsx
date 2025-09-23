@@ -66,10 +66,10 @@ const buttonVariants = cva(
           tw-focus-visible:tw-ring-2 tw-focus-visible:tw-ring-[var(--interactive-focus-outline)] tw-focus-visible:tw-ring-offset-2 tw-focus-visible:tw-ring-offset-background tw-shadow-[0px_1px_0px_0px_rgba(0,0,0,0.10)]`,
       },
       size: {
-        large: 'tw-h-[40px] tw-gap-[8px] tw-py-[10px] tw-rounded-[10px] tw-text-lg',
-        default: 'tw-h-[32px] tw-gap-[6px] tw-py-[7px] tw-rounded-[8px] tw-text-base',
+        large: 'tw-h-[40px] tw-gap-[8px] tw-py-[10px] tw-rounded-[8px] tw-text-lg',
+        default: 'tw-h-[32px] tw-gap-[6px] tw-py-[7px] tw-rounded-[6px] tw-text-base',
         medium: 'tw-h-[28px] tw-gap-[6px] tw-py-[5px] tw-rounded-[6px] tw-text-base',
-        small: 'tw-h-[20px] tw-gap-[4px] tw-py-[2px] tw-rounded-[4px] tw-text-sm',
+        small: 'tw-h-[20px] tw-gap-[4px] tw-py-[2px] tw-rounded-[6px] tw-text-sm',
       },
       iconOnly: {
         true: '',
