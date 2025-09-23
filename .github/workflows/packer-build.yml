@@ -101,7 +101,7 @@ jobs:
           fi
 
       - name: Send Slack Notification
-        if: always()
+        if: success()
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
             message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
