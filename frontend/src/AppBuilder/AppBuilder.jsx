@@ -103,7 +103,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     if (!isEditorLoading && !hasTrackedLoadTime.current && app && appName) {
       // Only track if we have a valid start time from localStorage
       if (loadStartTime.current) {
-        const loadTime = (performance.now() - loadStartTime.current) / 1000;
+        const loadTime = (Date.now() - loadStartTime.current) / 1000;
         hasTrackedLoadTime.current = true;
         
         const mode = storedMode || 'direct';

@@ -342,8 +342,8 @@ class HomePageComponent extends React.Component {
       });
       const workspaceId = getWorkspaceId();
       
-      // Store start time for Create mode load tracking
-      const loadStartTime = performance.now();
+      // Store start time for Create mode load tracking (using Date.now for cross-page timing)
+      const loadStartTime = Date.now();
       localStorage.setItem(`app_create_load_start_${data.id}`, loadStartTime.toString());
       localStorage.setItem(`app_create_mode_${data.id}`, 'create');
       

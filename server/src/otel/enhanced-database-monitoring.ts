@@ -100,77 +100,77 @@ export const initializeEnhancedDatabaseMonitoring = () => {
 
   // === STANDARD OPENTELEMETRY DATABASE METRICS ===
   dbClientOperationDuration = meter.createHistogram('db.client.operation.duration', {
-    description: 'Duration of database client operations',
+    description: 'Duration of database client operations.',
     unit: 's',
   });
 
   dbClientOperationCount = meter.createCounter('db.client.operation.count', {
-    description: 'Number of database client operations',
+    description: 'Number of database client operations.',
   });
 
   dbClientResponseReturnedRows = meter.createHistogram('db.client.response.returned_rows', {
-    description: 'Number of rows returned by database operations',
+    description: 'Number of rows returned by database operations.',
     unit: '{row}',
   });
 
   dbClientConnectionCount = meter.createObservableGauge('db.client.connection.count', {
-    description: 'Number of database client connections',
+    description: 'Number of database client connections.',
   });
 
   dbClientConnectionIdleMax = meter.createObservableGauge('db.client.connection.idle.max', {
-    description: 'Maximum number of idle connections',
+    description: 'Maximum number of idle connections.',
   });
 
   dbClientConnectionIdleMin = meter.createObservableGauge('db.client.connection.idle.min', {
-    description: 'Minimum number of idle connections',
+    description: 'Minimum number of idle connections.',
   });
 
   dbClientConnectionMax = meter.createObservableGauge('db.client.connection.max', {
-    description: 'Maximum number of connections',
+    description: 'Maximum number of connections.',
   });
 
   dbClientConnectionPendingRequests = meter.createObservableGauge('db.client.connection.pending_requests', {
-    description: 'Number of pending connection requests',
+    description: 'Number of pending connection requests.',
   });
 
   dbClientConnectionTimeouts = meter.createCounter('db.client.connection.timeouts', {
-    description: 'Number of connection timeouts',
+    description: 'Number of connection timeouts.',
   });
 
   dbClientConnectionCreateTime = meter.createHistogram('db.client.connection.create_time', {
-    description: 'Time to create a new database connection',
+    description: 'Time to create a new database connection.',
     unit: 's',
   });
 
   dbClientConnectionWaitTime = meter.createHistogram('db.client.connection.wait_time', {
-    description: 'Time spent waiting for a connection',
+    description: 'Time spent waiting for a connection.',
     unit: 's',
   });
 
   dbClientConnectionUseTime = meter.createHistogram('db.client.connection.use_time', {
-    description: 'Time connection was in use',
+    description: 'Time connection was in use.',
     unit: 's',
   });
 
   // === ENHANCED QUERY ANALYSIS METRICS ===
   dbQueryComplexityHistogram = meter.createHistogram('tooljet.db.query.complexity', {
-    description: 'Query complexity score based on joins, subqueries, and conditions',
+    description: 'Query complexity score based on joins, subqueries, and conditions.',
   });
 
   dbSlowQueryCounter = meter.createCounter('tooljet.db.query.slow.total', {
-    description: 'Number of slow database queries detected',
+    description: 'Number of slow database queries detected.',
   });
 
   dbQueryPatternCounter = meter.createCounter('tooljet.db.query.pattern.total', {
-    description: 'Database query patterns by type and frequency',
+    description: 'Database query patterns by type and frequency.',
   });
 
   dbQueryOptimizationSuggestions = meter.createCounter('tooljet.db.query.optimization.suggestions', {
-    description: 'Number of query optimization suggestions generated',
+    description: 'Number of query optimization suggestions generated.',
   });
 
   dbQueryExecutionPlanAnalysis = meter.createHistogram('tooljet.db.query.execution_plan.cost', {
-    description: 'Database query execution plan cost analysis',
+    description: 'Database query execution plan cost analysis.',
   });
 
   // Setup observable gauge callbacks

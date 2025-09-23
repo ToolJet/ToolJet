@@ -212,7 +212,7 @@ export class AppsController implements IAppsController {
     };
     
     const mode = data.mode || 'direct';
-    trackAppLoadTime(appContext, data.loadTime * 1000, mode); // Convert seconds to milliseconds
+    trackAppLoadTime(appContext, data.loadTime, mode); // loadTime should already be in milliseconds
     
     return { 
       success: true,
@@ -296,7 +296,7 @@ export class AppsController implements IAppsController {
     };
     
     console.log('[ToolJet Backend] Manual test - tracking app load time:', appContext);
-    trackAppLoadTime(appContext, 3.14 * 1000); // Convert seconds to milliseconds
+    trackAppLoadTime(appContext, 3140); // 3.14 seconds = 3140 milliseconds
     
     console.log('[ToolJet Backend] Manual test - tracking query execution:', appContext);
     trackQueryExecution(appContext, 'test_query', 250, 'success', 'postgresql');

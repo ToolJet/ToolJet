@@ -157,8 +157,8 @@ export default function AppCard({
             )}
             disabled={app?.current_version_id === null || app?.is_maintenance_on}
             onClick={() => {
-              // Store start time for Launch button load tracking
-              const loadStartTime = performance.now();
+              // Store start time for Launch button load tracking (using Date.now for cross-page timing)
+              const loadStartTime = Date.now();
               localStorage.setItem(`app_launch_load_start_${app.id}`, loadStartTime.toString());
               localStorage.setItem(`app_launch_mode_${app.id}`, 'launch');
               
@@ -277,8 +277,8 @@ export default function AppCard({
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
                     onClick={() => {
-                      // Store start time for Edit button load tracking
-                      const loadStartTime = performance.now();
+                      // Store start time for Edit button load tracking (using Date.now for cross-page timing)
+                      const loadStartTime = Date.now();
                       localStorage.setItem(`app_edit_load_start_${app.id}`, loadStartTime.toString());
                       localStorage.setItem(`app_edit_mode_${app.id}`, 'edit');
                       

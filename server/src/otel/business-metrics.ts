@@ -31,80 +31,89 @@ let apiCallDuration: any;
 let resourceUtilization: any;
 let storageUsage: any;
 
+// Thread safety flags
+let isInitialized = false;
+
 // Initialize all business metrics
 export const initializeBusinessMetrics = () => {
+  if (isInitialized) {
+    console.log('[ToolJet Backend] Business metrics already initialized');
+    return;
+  }
+
   const meter = metrics.getMeter('tooljet-business-metrics', '1.0.0');
   
   // === USER ACTIVITY METRICS ===
   userLoginCounter = meter.createCounter('user_logins_total', {
-    description: 'Total number of user login attempts by status and method',
+    description: 'Total number of user login attempts by status and method.',
   });
   
   userSessionDuration = meter.createHistogram('user_session_duration_seconds', {
-    description: 'Duration of user sessions in seconds',
+    description: 'Duration of user sessions in seconds.',
     unit: 's',
   });
   
   userFeatureUsage = meter.createCounter('user_feature_usage_total', {
-    description: 'Total usage count of different application features',
+    description: 'Total usage count of different application features.',
   });
   
   activeUsersGauge = meter.createObservableGauge('active_users_current', {
-    description: 'Current number of active users by time window',
+    description: 'Current number of active users by time window.',
   });
   
   userActivityGauge = meter.createCounter('user_activity_events_total', {
-    description: 'Total user activity events by type and feature',
+    description: 'Total user activity events by type and feature.',
   });
   
   // === APP PERFORMANCE METRICS ===
-  appLoadTimeHistogram = meter.createHistogram('app_load_time_seconds', {
-    description: 'Time taken for applications to load completely',
-    unit: 's',
+  appLoadTimeHistogram = meter.createHistogram('app_load_time_milliseconds', {
+    description: 'Time taken for applications to load completely.',
+    unit: 'ms',
   });
   
-  appQueryExecutionTime = meter.createHistogram('app_query_execution_seconds', {
-    description: 'Time taken for app queries to execute',
-    unit: 's',
+  appQueryExecutionTime = meter.createHistogram('app_query_execution_milliseconds', {
+    description: 'Time taken for app queries to execute.',
+    unit: 'ms',
   });
   
-  appRenderingTime = meter.createHistogram('app_rendering_time_seconds', {
-    description: 'Time taken for app components to render',
-    unit: 's',
+  appRenderingTime = meter.createHistogram('app_rendering_time_milliseconds', {
+    description: 'Time taken for app components to render.',
+    unit: 'ms',
   });
   
   appErrorRate = meter.createCounter('app_errors_total', {
-    description: 'Total application errors by type and component',
+    description: 'Total application errors by type and component.',
   });
   
   appUsageCounter = meter.createCounter('app_usage_events_total', {
-    description: 'Total app usage events by action and component',
+    description: 'Total app usage events by action and component.',
   });
   
   // === RESOURCE USAGE METRICS ===
   dataSourceConnectionsGauge = meter.createObservableGauge('datasource_connections_active', {
-    description: 'Current active data source connections by type',
+    description: 'Current active data source connections by type.',
   });
   
   apiCallCounter = meter.createCounter('api_calls_total', {
-    description: 'Total API calls by endpoint, method, and status',
+    description: 'Total API calls by endpoint, method, and status.',
   });
   
   apiCallDuration = meter.createHistogram('api_call_duration_seconds', {
-    description: 'Duration of API calls in seconds',
+    description: 'Duration of API calls in seconds.',
     unit: 's',
   });
   
   resourceUtilization = meter.createObservableGauge('resource_utilization_percent', {
-    description: 'Resource utilization percentage by type',
+    description: 'Resource utilization percentage by type.',
     unit: '%',
   });
   
   storageUsage = meter.createObservableGauge('storage_usage_bytes', {
-    description: 'Storage usage in bytes by type',
+    description: 'Storage usage in bytes by type.',
     unit: 'By',
   });
   
+  isInitialized = true;
   console.log('[ToolJet Backend] Business metrics initialized successfully');
 };
 
@@ -120,38 +129,52 @@ export interface UserContext {
 }
 
 export const trackUserLogin = (
-  context: UserContext, 
-  status: 'success' | 'failure', 
+  context: UserContext,
+  status: 'success' | 'failure',
   method: 'password' | 'sso' | 'oauth' | 'magic_link' = 'password'
 ) => {
-  if (userLoginCounter) {
+  if (!isInitialized || !userLoginCounter) {
+    console.warn('[ToolJet Backend] Business metrics not initialized - skipping user login tracking');
+    return;
+  }
+
+  try {
     userLoginCounter.add(1, {
       status,
       method,
       organization_id: context.organizationId,
     });
-    
+
     console.log(`[ToolJet Backend] User login tracked:`, {
       userId: context.userId,
       status,
       method,
       organizationId: context.organizationId
     });
+  } catch (error) {
+    console.error('[ToolJet Backend] Error tracking user login:', error);
   }
 };
 
 export const trackUserSession = (context: UserContext, durationSeconds: number) => {
-  if (userSessionDuration) {
+  if (!isInitialized || !userSessionDuration) {
+    console.warn('[ToolJet Backend] Business metrics not initialized - skipping user session tracking');
+    return;
+  }
+
+  try {
     userSessionDuration.record(durationSeconds, {
       organization_id: context.organizationId,
       user_id: context.userId
     });
-    
+
     console.log(`[ToolJet Backend] User session tracked:`, {
       userId: context.userId,
       duration: durationSeconds,
       organizationId: context.organizationId
     });
+  } catch (error) {
+    console.error('[ToolJet Backend] Error tracking user session:', error);
   }
 };
 
@@ -206,29 +229,47 @@ export interface AppPerformanceContext {
 }
 
 export const trackAppLoadTime = (context: AppPerformanceContext, loadTimeMs: number, mode?: string) => {
-  if (appLoadTimeHistogram) {
+  if (!isInitialized || !appLoadTimeHistogram) {
+    console.warn('[ToolJet Backend] Business metrics not initialized - skipping app load time tracking');
+    return;
+  }
+
+  try {
     const finalMode = mode || 'direct';
-    const loadTimeSeconds = Math.max(0, loadTimeMs / 1000); // Ensure non-negative
-    appLoadTimeHistogram.record(loadTimeSeconds, {
+    const loadTimeMilliseconds = Math.max(0, loadTimeMs); // Keep in milliseconds, ensure non-negative
+    appLoadTimeHistogram.record(loadTimeMilliseconds, {
       app_id: context.appId,
       app_name: context.appName || 'unknown',
       organization_id: context.organizationId,
       environment: context.environment || 'production',
       mode: finalMode
     });
+
+    console.log(`[ToolJet Backend] App load time tracked:`, {
+      appId: context.appId,
+      loadTimeMs: loadTimeMilliseconds,
+      organizationId: context.organizationId
+    });
+  } catch (error) {
+    console.error('[ToolJet Backend] Error tracking app load time:', error);
   }
 };
 
 export const trackQueryExecution = (
-  context: AppPerformanceContext, 
-  queryName: string, 
+  context: AppPerformanceContext,
+  queryName: string,
   executionTimeMs: number,
   status: 'success' | 'error',
   dataSourceType?: string,
   queryText?: string
 ) => {
-  if (appQueryExecutionTime) {
-    appQueryExecutionTime.record(executionTimeMs / 1000, {
+  if (!isInitialized || !appQueryExecutionTime) {
+    console.warn('[ToolJet Backend] Business metrics not initialized - skipping query execution tracking');
+    return;
+  }
+
+  try {
+    appQueryExecutionTime.record(executionTimeMs, { // Keep in milliseconds
       app_id: context.appId,
       app_name: context.appName || 'Unknown App',
       query_name: queryName,
@@ -237,13 +278,15 @@ export const trackQueryExecution = (
       organization_id: context.organizationId,
       query_text: queryText ? (queryText.length > 100 ? queryText.substring(0, 100) + '...' : queryText) : 'unknown'
     });
-    
+
     console.log(`[ToolJet Backend] Query execution tracked:`, {
       appId: context.appId,
       queryName,
       executionTime: executionTimeMs,
       status
     });
+  } catch (error) {
+    console.error('[ToolJet Backend] Error tracking query execution:', error);
   }
 };
 

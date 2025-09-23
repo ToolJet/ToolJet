@@ -31,6 +31,7 @@ export const traceAppLifecycleOperation = async <T>(
   operationFn: () => Promise<T>,
   metadata?: Record<string, any>
 ): Promise<T> => {
+  const startTime = Date.now();
   const span = tracer.startSpan(`app_${operation}`, {
     kind: SpanKind.INTERNAL,
     attributes: {
@@ -48,7 +49,7 @@ export const traceAppLifecycleOperation = async <T>(
     const result = await context.with(trace.setSpan(context.active(), span), operationFn);
 
     span.setStatus({ code: SpanStatusCode.OK });
-    const operationTime = Date.now() - Date.now(); // We'll calculate this properly
+    const operationTime = Date.now() - startTime;
     span.setAttributes({
       'app.operation.success': true,
       'app.operation.completed': true

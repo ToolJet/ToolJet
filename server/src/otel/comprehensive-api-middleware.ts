@@ -44,6 +44,16 @@ import {
   analyzeAppBuilderViewerPerformance,
 } from './benchmarking-framework';
 
+import {
+  initializeBusinessMetrics,
+  setupResourceMetricCallbacks,
+  trackApiCall,
+  trackUserActivity,
+  trackAppUsage,
+  startUserSession,
+  updateUserActivity,
+} from './business-metrics';
+
 /**
  * Comprehensive API Performance Middleware
  *
@@ -96,9 +106,12 @@ export const initializeComprehensiveApiMonitoring = async (): Promise<void> => {
 
     // Initialize all monitoring components
     await initializeApiPerformanceMetrics();
-    // Plugin metrics removed - functionality covered by existing database and API metrics
     await initializeEnhancedDatabaseMonitoring();
     await initializeBenchmarkingFramework();
+
+    // Initialize business metrics
+    initializeBusinessMetrics();
+    setupResourceMetricCallbacks();
 
     isInitialized = true;
     console.log('[ToolJet API Monitoring] Comprehensive performance monitoring initialized successfully');
@@ -164,6 +177,44 @@ export const comprehensiveApiMiddleware = (req: AuthenticatedRequest, res: Respo
     userId,
     appId
   );
+
+  // Track business metrics - API calls and user activity
+  if (organizationId && userId) {
+    // Start user session tracking
+    startUserSession(userId, organizationId);
+
+    // Track API call activity
+    trackUserActivity(
+      { userId, organizationId },
+      endpoint.includes('/apps/') ? 'app_edit' : 'page_view'
+    );
+
+    // Track app usage if this is an app-related endpoint
+    if (appId && operationType.includes('app')) {
+      // Map operation types to valid app usage actions
+      const getAppAction = (opType: string): 'view' | 'edit' | 'publish' | 'clone' | 'delete' | 'export' => {
+        if (opType.includes('view')) return 'view';
+        if (opType.includes('create')) return 'edit';
+        if (opType.includes('update')) return 'edit';
+        if (opType.includes('publish')) return 'publish';
+        if (opType.includes('clone')) return 'clone';
+        if (opType.includes('delete')) return 'delete';
+        if (opType.includes('export')) return 'export';
+        return 'view';
+      };
+
+      trackAppUsage(
+        {
+          appId,
+          appName: 'unknown', // Would need to be extracted from the request or DB
+          organizationId,
+          userId,
+          environment: (process.env.NODE_ENV as any) || 'production'
+        },
+        getAppAction(operationType)
+      );
+    }
+  }
 
   // Add request ID to request object for other modules to use
   (req as any).performanceRequestId = requestId;
@@ -351,6 +402,15 @@ const collectFinalMetrics = (requestId: string, statusCode: number, responseSize
 
   // End API request tracking
   endApiRequest(requestId, statusCode, responseSize);
+
+  // Track API call metrics for business analytics
+  trackApiCall(
+    context.endpoint,
+    context.method,
+    statusCode,
+    totalDuration, // Already in seconds
+    context.organizationId
+  );
 
   // Record benchmark measurement
   const releaseVersion = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';

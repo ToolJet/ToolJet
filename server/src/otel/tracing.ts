@@ -466,20 +466,20 @@ export const startOpenTelemetry = async (): Promise<void> => {
     
     // Use standard OpenTelemetry database metric names
     dbQueryDurationHistogram = meter.createHistogram('db.client.operation.duration', {
-      description: 'Duration of database client operations',
+      description: 'Duration of database client operations.',
       unit: 's', // OpenTelemetry standard uses seconds
     });
     
     dbSlowQueryCounter = meter.createCounter('db.client.operation.slow_total', {
-      description: 'Total number of slow database operations',
+      description: 'Total number of slow database operations.',
     });
     
     dbQueryCounter = meter.createCounter('db.client.operation.count', {
-      description: 'Total number of database operations',
+      description: 'Total number of database operations.',
     });
     
     dbConnectionPoolGauge = meter.createObservableGauge('db_connection_pool_usage', {
-      description: 'Database connection pool usage statistics',
+      description: 'Database connection pool usage statistics.',
     });
     
     // Initialize database monitoring metrics

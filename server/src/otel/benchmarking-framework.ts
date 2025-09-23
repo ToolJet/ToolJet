@@ -92,24 +92,24 @@ export const initializeBenchmarkingFramework = () => {
   const meter = metrics.getMeter('tooljet-benchmarking', '1.0.0');
 
   benchmarkDurationHistogram = meter.createHistogram('tooljet.benchmark.duration', {
-    description: 'Duration measurements for benchmark comparisons',
+    description: 'Duration measurements for benchmark comparisons.',
     unit: 's',
   });
 
   benchmarkComparisonCounter = meter.createCounter('tooljet.benchmark.comparison.total', {
-    description: 'Number of benchmark comparisons performed',
+    description: 'Number of benchmark comparisons performed.',
   });
 
   benchmarkRegressionCounter = meter.createCounter('tooljet.benchmark.regression.detected', {
-    description: 'Number of performance regressions detected',
+    description: 'Number of performance regressions detected.',
   });
 
   benchmarkPerformanceGauge = meter.createObservableGauge('tooljet.benchmark.performance.score', {
-    description: 'Overall performance score for current release',
+    description: 'Overall performance score for current release.',
   });
 
   benchmarkTrendAnalysis = meter.createHistogram('tooljet.benchmark.trend.coefficient', {
-    description: 'Performance trend analysis coefficient',
+    description: 'Performance trend analysis coefficient.',
   });
 
   // Setup observable gauge callback

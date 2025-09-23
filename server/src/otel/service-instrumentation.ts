@@ -19,20 +19,20 @@ export const initializeServiceMetrics = () => {
   const meter = metrics.getMeter('tooljet-services', '1.0.0');
   
   serviceRequestCounter = meter.createCounter('service_requests_total', {
-    description: 'Total number of service requests by service, method, and status',
+    description: 'Total number of service requests by service, method, and status.',
   });
   
   serviceRequestDuration = meter.createHistogram('service_request_duration_seconds', {
-    description: 'Duration of service requests in seconds',
+    description: 'Duration of service requests in seconds.',
     unit: 's',
   });
   
   serviceErrorCounter = meter.createCounter('service_errors_total', {
-    description: 'Total number of service errors by service, method, and error type',
+    description: 'Total number of service errors by service, method, and error type.',
   });
   
   serviceActiveRequests = meter.createUpDownCounter('service_active_requests', {
-    description: 'Number of active service requests by service and method',
+    description: 'Number of active service requests by service and method.',
   });
   
   console.log('[ToolJet Backend] Service layer metrics initialized');

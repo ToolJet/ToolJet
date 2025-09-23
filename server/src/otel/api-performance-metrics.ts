@@ -69,66 +69,66 @@ export const initializeApiPerformanceMetrics = () => {
 
   // === HTTP SERVER METRICS (OpenTelemetry Standard) ===
   httpServerRequestDuration = meter.createHistogram('http.server.request.duration', {
-    description: 'Duration of HTTP server requests',
+    description: 'Duration of HTTP server requests.',
     unit: 's',
   });
 
   httpServerActiveRequests = meter.createUpDownCounter('http.server.active_requests', {
-    description: 'Number of active HTTP server requests',
+    description: 'Number of active HTTP server requests.',
   });
 
   httpServerRequestBodySize = meter.createHistogram('http.server.request.body.size', {
-    description: 'Size of HTTP server request bodies',
+    description: 'Size of HTTP server request bodies.',
     unit: 'By',
   });
 
   httpServerResponseBodySize = meter.createHistogram('http.server.response.body.size', {
-    description: 'Size of HTTP server response bodies',
+    description: 'Size of HTTP server response bodies.',
     unit: 'By',
   });
 
   // === DATABASE CLIENT METRICS (OpenTelemetry Standard) ===
   dbClientOperationDuration = meter.createHistogram('db.client.operation.duration', {
-    description: 'Duration of database client operations',
+    description: 'Duration of database client operations.',
     unit: 's',
   });
 
   dbClientOperationCount = meter.createCounter('db.client.operation.count', {
-    description: 'Number of database client operations',
+    description: 'Number of database client operations.',
   });
 
   dbClientResponseReturnedRows = meter.createHistogram('db.client.response.returned_rows', {
-    description: 'Number of rows returned by database operations',
+    description: 'Number of rows returned by database operations.',
     unit: '{row}',
   });
 
   dbClientConnectionCount = meter.createObservableGauge('db.client.connection.count', {
-    description: 'Number of database client connections',
+    description: 'Number of database client connections.',
   });
 
   dbClientConnectionWaitTime = meter.createHistogram('db.client.connection.wait_time', {
-    description: 'Time spent waiting for database connections',
+    description: 'Time spent waiting for database connections.',
     unit: 's',
   });
 
   // === CUSTOM TOOLJET METRICS ===
   apiExternalOperationDuration = meter.createHistogram('tooljet.api.external_operation.duration', {
-    description: 'Duration of external operations during API requests',
+    description: 'Duration of external operations during API requests.',
     unit: 's',
   });
 
   apiTotalBreakdownDuration = meter.createHistogram('tooljet.api.breakdown.duration', {
-    description: 'API request duration breakdown by operation type',
+    description: 'API request duration breakdown by operation type.',
     unit: 's',
   });
 
   appBuilderViewerPerformance = meter.createHistogram('tooljet.app.builder_viewer.performance', {
-    description: 'Performance metrics for app builder and viewer operations',
+    description: 'Performance metrics for app builder and viewer operations.',
     unit: 's',
   });
 
   apiBusinessOperationDuration = meter.createHistogram('tooljet.api.business_operation.duration', {
-    description: 'Duration of business logic operations during API requests',
+    description: 'Duration of business logic operations during API requests.',
     unit: 's',
   });
 
