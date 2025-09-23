@@ -60,6 +60,10 @@
         .license-content-wrapper {
             background-color: var(--surfaces-surface-01);
 
+            .content-wrapper {
+                padding-left: 24px;
+            }
+
             .groups-sub-header-wrap {
                 width: 100%;
 
@@ -292,7 +296,7 @@
             .license-header-wrap {
                 display: flex;
                 justify-content: space-between;
-                padding: 24px 40px 16px;
+                padding: 24px 24px 16px;
                 align-items: center;
                 height: unset !important;
                 background-color: var(--surfaces-surface-01);
