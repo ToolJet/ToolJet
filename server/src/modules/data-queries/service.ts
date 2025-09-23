@@ -165,6 +165,9 @@ export class DataQueriesService implements IDataQueriesService {
   ): Promise<object> {
     let result = {};
 
+    // Start timing for query execution metrics
+    const queryStartTime = Date.now();
+
     try {
       result = await this.dataQueryUtilService.runQuery(
         user,
@@ -174,14 +177,30 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode
       );
+
+      // Calculate execution time and add to result metadata
+      const executionTimeMs = Date.now() - queryStartTime;
+      result = {
+        ...result,
+        metadata: {
+          ...((result as any).metadata || {}),
+          duration: executionTimeMs
+        }
+      };
+
     } catch (error) {
+      // Calculate execution time for failed queries too
+      const executionTimeMs = Date.now() - queryStartTime;
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
           message: error.message,
           description: error.description,
           data: error.data,
-          metadata: error.metadata,
+          metadata: {
+            ...(error.metadata || {}),
+            duration: executionTimeMs
+          },
         };
       } else {
         console.log(error);
@@ -190,6 +209,9 @@ export class DataQueriesService implements IDataQueriesService {
           message: 'Internal server error',
           description: error.message,
           data: {},
+          metadata: {
+            duration: executionTimeMs
+          },
         };
       }
     }

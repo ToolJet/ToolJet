@@ -28,6 +28,9 @@ let appUsageCounter: any;
 let dataSourceConnectionsGauge: any;
 let apiCallCounter: any;
 let apiCallDuration: any;
+
+// System Info Metrics
+let versionInfoGauge: any;
 let resourceUtilization: any;
 let storageUsage: any;
 
@@ -112,7 +115,25 @@ export const initializeBusinessMetrics = () => {
     description: 'Storage usage in bytes by type.',
     unit: 'By',
   });
-  
+
+  // === SYSTEM INFO METRICS ===
+  versionInfoGauge = meter.createObservableGauge('tooljet_version_info', {
+    description: 'ToolJet version information with version label.',
+  });
+
+  // Register version info callback
+  versionInfoGauge.addCallback((result: any) => {
+    try {
+      const version = globalThis.TOOLJET_VERSION || 'unknown';
+      result.observe(1, {
+        version: version,
+        edition: process.env.NODE_ENV || 'development'
+      });
+    } catch (error) {
+      console.error('[ToolJet Backend] Error observing version info:', error);
+    }
+  });
+
   isInitialized = true;
   console.log('[ToolJet Backend] Business metrics initialized successfully');
 };
