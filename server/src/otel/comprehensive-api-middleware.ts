@@ -282,44 +282,7 @@ export const instrumentDatabaseQuery = (
   };
 };
 
-// === PLUGIN QUERY INSTRUMENTATION ===
-
-export const instrumentPluginQuery = (
-  datasourceKind: string,
-  queryName: string,
-  queryOptions: any,
-  requestId?: string
-) => {
-  if (!isInitialized) return { queryId: null, end: () => {} };
-
-  const queryId = generateQueryId();
-  const context = requestId ? requestContexts.get(requestId) : null;
-
-  startPluginQuery(
-    queryId,
-    normalizeDatasourceKind(datasourceKind),
-    context?.organizationId || 'unknown',
-    context?.appId || 'unknown',
-    queryName,
-    queryOptions
-  );
-
-  return {
-    queryId,
-    recordPhase: (phase: 'connection' | 'preparation' | 'execution' | 'result_processing', duration: number, details?: any) => {
-      // This would be called by the plugin execution code
-    },
-    end: (result: {
-      status: 'success' | 'failure';
-      rowsReturned?: number;
-      dataSize?: number;
-      errorType?: string;
-      errorMessage?: string;
-    }) => {
-      endPluginQuery(queryId, result.status, result);
-    },
-  };
-};
+// Plugin query instrumentation removed - functionality covered by existing database and API metrics
 
 // === EXTERNAL OPERATION INSTRUMENTATION ===
 

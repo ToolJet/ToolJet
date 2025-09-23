@@ -231,7 +231,6 @@ export class AppsController implements IAppsController {
   async testComprehensiveMonitoring(@User() user: UserEntity, @Req() req: any) {
     const {
       instrumentDatabaseQuery,
-      instrumentPluginQuery,
       instrumentExternalOperation,
       generatePerformanceReport
     } = require('../../otel/comprehensive-api-middleware');
@@ -251,19 +250,7 @@ export class AppsController implements IAppsController {
       status: 'success'
     });
 
-    // Simulate plugin query
-    const pluginQuery = instrumentPluginQuery(
-      'postgresql',
-      'get_user_apps',
-      { limit: 10 }
-    );
-
-    await new Promise(resolve => setTimeout(resolve, 30));
-    pluginQuery.end({
-      status: 'success',
-      rowsReturned: 5,
-      dataSize: 2048
-    });
+    // Plugin query simulation removed - functionality covered by database instrumentation
 
     // Simulate external operation
     const externalOp = instrumentExternalOperation(
