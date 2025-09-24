@@ -21,7 +21,7 @@ import { OnboardingModule } from '@modules/onboarding/module';
 
 @Module({})
 export class AuthModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       AuthController,
       AuthService,
@@ -65,7 +65,7 @@ export class AuthModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
       ],
-      controllers: [AuthController, OauthController, WebsiteAuthController],
+      controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController] : [],
       providers: [
         AuthService,
         UserRepository,
