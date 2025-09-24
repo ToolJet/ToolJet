@@ -62,6 +62,7 @@ import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
+import { MetricsModule } from '@modules/metrices/module';
 
 export class AppModule implements OnModuleInit {
   constructor(
@@ -86,55 +87,58 @@ export class AppModule implements OnModuleInit {
     const baseImports = [
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
-      await FilesModule.register(configs),
+      await FilesModule.register(configs, true),
       await EncryptionModule.register(configs),
-      await InstanceSettingsModule.register(configs),
-      await FoldersModule.register(configs),
-      await FolderAppsModule.register(configs),
-      await SMTPModule.register(configs),
-      await RolesModule.register(configs),
-      await GroupPermissionsModule.register(configs),
-      await AppConfigModule.register(configs),
-      await SessionModule.register(configs),
-      await MetaModule.register(configs),
-      await OrganizationsModule.register(configs),
-      await ProfileModule.register(configs),
-      await UsersModule.register(configs),
-      await OrganizationUsersModule.register(configs),
-      await OnboardingModule.register(configs),
-      await AppEnvironmentsModule.register(configs),
-      await OrganizationConstantModule.register(configs),
-      await DataSourcesModule.register(configs),
-      await LoginConfigsModule.register(configs),
-      await AuthModule.register(configs),
-      await ThemesModule.register(configs),
-      await SetupOrganizationsModule.register(configs),
-      await WhiteLabellingModule.register(configs),
+      await InstanceSettingsModule.register(configs, true),
+      await FoldersModule.register(configs, true),
+      await FolderAppsModule.register(configs, true),
+      await SMTPModule.register(configs, true),
+      await RolesModule.register(configs, true),
+      await GroupPermissionsModule.register(configs, true),
+      await AppConfigModule.register(configs, true),
+      await SessionModule.register(configs, true),
+      await MetaModule.register(configs, true),
+      await OrganizationsModule.register(configs, true),
+      await ProfileModule.register(configs, true),
+      await UsersModule.register(configs, true),
+      await OrganizationUsersModule.register(configs, true),
+      await OnboardingModule.register(configs, true),
+      await AppEnvironmentsModule.register(configs, true),
+      await OrganizationConstantModule.register(configs, true),
+      await DataSourcesModule.register(configs, true),
+      await LoginConfigsModule.register(configs, true),
+      await AuthModule.register(configs, true),
+      await ThemesModule.register(configs, true),
+      await SetupOrganizationsModule.register(configs, true),
+      await WhiteLabellingModule.register(configs, true),
       await EmailModule.register(configs),
-      await AppsModule.register(configs),
-      await VersionModule.register(configs),
-      await DataQueriesModule.register(configs),
-      await PluginsModule.register(configs),
-      await ImportExportResourcesModule.register(configs),
-      await TemplatesModule.register(configs),
-      await TooljetDbModule.register(configs),
-      await ModulesModule.register(configs),
-      await AiModule.register(configs),
-      await CustomStylesModule.register(configs),
-      await AppPermissionsModule.register(configs),
+      await AppsModule.register(configs, true),
+      await VersionModule.register(configs, true),
+      await DataQueriesModule.register(configs, true),
+      await PluginsModule.register(configs, true),
+      await ImportExportResourcesModule.register(configs, true),
+      await TemplatesModule.register(configs, true),
+      await TooljetDbModule.register(configs, true),
+      await ModulesModule.register(configs, true),
+      await AiModule.register(configs, true),
+      await CustomStylesModule.register(configs, true),
+      await AppPermissionsModule.register(configs, true),
       await EventsModule.register(configs),
-      await ExternalApiModule.register(configs),
-      await GitSyncModule.register(configs),
-      await AppGitModule.register(configs),
+      await ExternalApiModule.register(configs, true),
+      await GitSyncModule.register(configs, true),
+      await AppGitModule.register(configs, true),
       await CrmModule.register(configs),
-      await OrganizationPaymentModule.register(configs),
+      await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
     ];
 
     const conditionalImports = [];
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs));
+      conditionalImports.push(await WorkflowsModule.register(configs, true));
+    }
+    if (process.env.ENABLE_METRICS === 'true') {
+      conditionalImports.push(MetricsModule);
     }
 
     const imports = [...baseImports, ...conditionalImports];
