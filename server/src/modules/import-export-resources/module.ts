@@ -14,7 +14,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@ee/app-history/module';
 
 export class ImportExportResourcesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { ImportExportResourcesService, ImportExportResourcesController } = await this.getProviders(
       configs,
       'import-export-resources',
@@ -38,7 +38,7 @@ export class ImportExportResourcesModule extends SubModule {
         await OrganizationConstantModule.register(configs),
         await AppHistoryModule.register(configs),
       ],
-      controllers: [ImportExportResourcesController],
+      controllers: isMainImport ? [ImportExportResourcesController] : [],
       providers: [
         AppsRepository,
         ImportExportResourcesService,

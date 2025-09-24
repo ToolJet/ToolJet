@@ -19,7 +19,7 @@ import { FeatureAbilityFactory } from './ability';
 import { AppHistoryModule } from '@ee/app-history/module';
 
 export class TemplatesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { TemplatesService, TemplateAppsController } = await this.getProviders(configs, 'templates', [
       'service',
       'controller',
@@ -69,7 +69,7 @@ export class TemplatesModule extends SubModule {
         PluginsUtilService,
         FeatureAbilityFactory,
       ],
-      controllers: [TemplateAppsController],
+      controllers: isMainImport ? [TemplateAppsController] : [],
     };
   }
 }

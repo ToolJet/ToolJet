@@ -15,7 +15,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@ee/app-history/module';
 
 export class VersionModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       VersionController,
       VersionControllerV2,
@@ -53,7 +53,9 @@ export class VersionModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
       ],
-      controllers: [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2],
+      controllers: isMainImport
+        ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
+        : [],
       providers: [
         ComponentsService,
         EventsService,

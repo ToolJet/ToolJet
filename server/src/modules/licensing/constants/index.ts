@@ -171,6 +171,7 @@ export enum FEATURE_KEY {
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
   GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
   GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
+  GET_SELFHOST_CUSTOMER = 'getSelfhostCustomer',
 }
 
 export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

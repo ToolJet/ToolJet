@@ -36,7 +36,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 import { AppHistoryModule } from '@ee/app-history/module';
 export class WorkflowsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       WorkflowExecutionsService,
       WorkflowExecutionsController,
@@ -135,9 +135,6 @@ export class WorkflowsModule extends SubModule {
         PageService,
         EventsService,
         WorkflowExecutionsService,
-        WorkflowStreamService,
-        WorkflowTriggersListener,
-        WorkflowWebhooksListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
         ComponentsService,
@@ -147,13 +144,11 @@ export class WorkflowsModule extends SubModule {
         FeatureAbilityFactory,
         RolesRepository,
         GroupPermissionsRepository,
+        ...(isMainImport ? [WorkflowWebhooksListener, WorkflowTriggersListener, WorkflowStreamService] : []),
       ],
-      controllers: [
-        WorkflowsController,
-        WorkflowExecutionsController,
-        WorkflowWebhooksController,
-        WorkflowSchedulesController,
-      ],
+      controllers: isMainImport
+        ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
+        : [],
     };
   }
 }
