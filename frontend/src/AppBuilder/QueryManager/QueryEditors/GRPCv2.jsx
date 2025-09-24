@@ -228,7 +228,8 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     const requestId = Date.now() + Math.random();
     currentRequestRef.current = requestId;
 
-    setIsLoadingServices(true);
+    const showLoading = !(options?.service && options?.method);
+    setIsLoadingServices(showLoading);
 
     try {
       const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
@@ -280,7 +281,9 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value, options?.service, options?.method]);
 
   React.useEffect(() => {
-    setIsLoadingServices(true);
+    // When data source changes, only show loading UI if there isn't a prior selection
+    const hadPriorSelection = Boolean(options?.service && options?.method);
+    setIsLoadingServices(!hadPriorSelection);
     setServicesData({ services: [] });
     setSelectedService(null);
     setSelectedMethod(null);
@@ -415,12 +418,12 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                 options={hierarchicalOptions}
                 value={getSelectionValue()}
                 onChange={selectMethod}
-                placeholder={
-                  isLoadingServices ? "Loading services..." :
-                    hierarchicalOptions.length === 0 ? "No services found" :
-                      "Select service"
-                }
-                disabled={isLoadingServices || hierarchicalOptions.length === 0}
+                placeholder={(options?.service && options?.method)
+                  ? `${options.service} → ${options.method}`
+                  : (isLoadingServices
+                    ? "Loading services..."
+                    : (hierarchicalOptions.length === 0 ? "No services found" : "Select service"))}
+                disabled={(!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)}
                 darkMode={darkMode}
               />
             </div>
