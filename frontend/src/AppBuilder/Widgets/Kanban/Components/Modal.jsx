@@ -8,17 +8,25 @@ import { shallow } from 'zustand/shallow';
 import { diff } from 'deep-object-diff';
 import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
+import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanProps, lastSelectedCard }) {
   const isInitialRender = useRef(true);
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
-  const parentRef = useRef(null);
   const { id, containerProps, component, properties } = kanbanProps;
   const { size, modalHeight } = properties;
   const prevLastSelectedCard = useRef(lastSelectedCard);
   const isFullScreen = size === 'fullscreen';
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
+
+  const { modalWidth, parentRef } = useModalEventSideEffects({
+    showModal,
+    size,
+    id,
+    onShowSideEffects,
+  });
 
   // Check if the previous lastSelectedCard data is different from the current lastSelectedCard data
   if (Object.keys(diff(lastSelectedCard, prevLastSelectedCard.current)).length > 0) {
@@ -90,6 +98,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
         {renderCloseButton()}
         <SubContainer
           canvasHeight={400}
+          canvasWidth={modalWidth}
           id={`${id}-modal`}
           index={0} // index will be always 0 as it has only one container
           {...containerProps}
