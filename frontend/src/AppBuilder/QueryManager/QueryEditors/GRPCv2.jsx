@@ -515,6 +515,7 @@ const ControlledTabs = ({
                     lang="javascript"
                     height={'300px'}
                     className="query-hinter"
+                    delayOnChange={false}
                     onChange={(value) => onRawMessageChange(value)}
                     componentName={`${componentName}/request`}
                   />
@@ -574,6 +575,7 @@ const TabContent = ({
                   type="basic"
                   initialValue={option[0]}
                   placeholder="Key"
+                  delayOnChange={false}
                   onChange={(value) => onChange('key', index, value)}
                   componentName={`${componentName}/${tabType}::key::${index}`}
                 />
@@ -583,6 +585,7 @@ const TabContent = ({
                   type="basic"
                   initialValue={option[1]}
                   placeholder="Value"
+                  delayOnChange={false}
                   onChange={(value) => onChange('value', index, value)}
                   componentName={`${componentName}/${tabType}::value::${index}`}
                 />
