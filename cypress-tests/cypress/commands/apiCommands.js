@@ -166,22 +166,25 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
 });
 
 Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
-  cy.request(
-    {
-      method: "DELETE",
-      url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
-      headers: {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: Cypress.env("authToken"),
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
+    cy.request(
+      {
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: Cypress.env("authToken"),
+        },
       },
-    },
-    { log: false }
-  ).then((response) => {
-    expect(response.status).to.equal(200);
-    Cypress.log({
-      name: "App Delete",
-      displayName: "APP DELETED",
-      message: `: ${Cypress.env("appId")}`,
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+      Cypress.log({
+        name: "App Delete",
+        displayName: "APP DELETED",
+        message: `: ${Cypress.env("appId")}`,
+      });
     });
   });
 });
@@ -254,24 +257,29 @@ Cypress.Commands.add("apiLogout", () => {
 Cypress.Commands.add(
   "apiUserInvite",
   (userName, userEmail, userRole = "end-user", metaData = {}) => {
+    let normalizedMetaData = metaData;
+    if (Array.isArray(metaData)) {
+      normalizedMetaData = Object.fromEntries(metaData);
+    }
+
     const requestBody =
       envVar === "Enterprise"
         ? {
-          email: userEmail,
-          firstName: userName,
-          groups: [],
-          lastName: "",
-          role: userRole,
-          userMetadata: metaData,
-        }
+            email: userEmail,
+            firstName: userName,
+            groups: [],
+            lastName: "",
+            role: userRole,
+            userMetadata: normalizedMetaData,
+          }
         : {
-          email: userEmail,
-          firstName: userName,
-          groups: [],
-          lastName: "",
-          role: userRole,
-          userMetadata: metaData,
-        };
+            email: userEmail,
+            firstName: userName,
+            groups: [],
+            lastName: "",
+            role: userRole,
+            userMetadata: normalizedMetaData,
+          };
 
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
@@ -527,53 +535,59 @@ Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   });
 });
 
-Cypress.Commands.add("apiDeleteGranularPermission", (groupName, typesToDelete = []) => {
-  cy.getAuthHeaders().then((headers) => {
-    // Step 1: Get the group by name
-    cy.request({
-      method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-      headers,
-      log: false,
-    }).then((response) => {
-      expect(response.status).to.equal(200);
-      const group = response.body.groupPermissions.find((g) => g.name === groupName);
-      if (!group) throw new Error(`Group with name ${groupName} not found`);
-
-      const groupId = group.id;
-
-      // Step 2: Get all granular permissions for the group
+Cypress.Commands.add(
+  "apiDeleteGranularPermission",
+  (groupName, typesToDelete = []) => {
+    cy.getAuthHeaders().then((headers) => {
+      // Step 1: Get the group by name
       cy.request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers,
         log: false,
-      }).then((granularResponse) => {
-        expect(granularResponse.status).to.equal(200);
-        const granularPermissions = granularResponse.body;
+      }).then((response) => {
+        expect(response.status).to.equal(200);
+        const group = response.body.groupPermissions.find(
+          (g) => g.name === groupName
+        );
+        if (!group) throw new Error(`Group with name ${groupName} not found`);
 
-        // Step 3: Filter if typesToDelete is specified
-        const permissionsToDelete = typesToDelete.length
-          ? granularPermissions.filter((perm) => typesToDelete.includes(perm.type))
-          : granularPermissions;
+        const groupId = group.id;
 
-        // Step 4: Delete each granular permission
-        permissionsToDelete.forEach((permission) => {
-          cy.request({
-            method: "DELETE",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
-            headers,
-            log: false,
-          }).then((deleteResponse) => {
-            expect(deleteResponse.status).to.equal(200);
-            cy.log(`Deleted granular permission: ${permission.name}`);
+        // Step 2: Get all granular permissions for the group
+        cy.request({
+          method: "GET",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+          headers,
+          log: false,
+        }).then((granularResponse) => {
+          expect(granularResponse.status).to.equal(200);
+          const granularPermissions = granularResponse.body;
+
+          // Step 3: Filter if typesToDelete is specified
+          const permissionsToDelete = typesToDelete.length
+            ? granularPermissions.filter((perm) =>
+                typesToDelete.includes(perm.type)
+              )
+            : granularPermissions;
+
+          // Step 4: Delete each granular permission
+          permissionsToDelete.forEach((permission) => {
+            cy.request({
+              method: "DELETE",
+              url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
+              headers,
+              log: false,
+            }).then((deleteResponse) => {
+              expect(deleteResponse.status).to.equal(200);
+              cy.log(`Deleted granular permission: ${permission.name}`);
+            });
           });
         });
       });
     });
-  });
-});
-
+  }
+);
 
 Cypress.Commands.add(
   "apiCreateGranularPermission",
