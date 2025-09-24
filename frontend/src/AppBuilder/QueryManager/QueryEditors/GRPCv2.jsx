@@ -168,7 +168,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
 };
 
 const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
-  const { options, optionsChanged, queryName, queryId, currentEnvironment } = restProps;
+  const { options, optionsChanged, queryName, currentEnvironment, queryId } = restProps;
   const serverUrl = selectedDataSource?.options?.url?.value;
 
   const [servicesData, setServicesData] = React.useState({ services: [] });
@@ -176,35 +176,25 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const [selectedMethod, setSelectedMethod] = React.useState(null);
   const [isLoadingServices, setIsLoadingServices] = React.useState(false);
   const currentRequestRef = React.useRef(null);
-  const currentQueryIdRef = React.useRef(queryId);
-  const optionsRef = React.useRef(options);
-
-  const getInitialMetadata = () => {
+  const isMountedRef = React.useRef(true);
+  const previousQueryIdRef = React.useRef(queryId);
+  const [metadata, setMetadata] = React.useState(() => {
     if (options?.metadata) {
       if (Array.isArray(options.metadata)) {
-        return options.metadata.length > 0 ? options.metadata : [['', '']];
+        return options.metadata;
       } else if (typeof options.metadata === 'string') {
         try {
-          const parsed = JSON.parse(options.metadata);
-          return Array.isArray(parsed) && parsed.length > 0 ? parsed : [['', '']];
+          return JSON.parse(options.metadata);
         } catch (error) {
-          console.warn('Failed to parse initial metadata JSON:', error);
+          console.warn('Failed to parse metadata JSON, using default:', error);
         }
       }
     }
     return [['', '']];
-  };
-
-  const [metadata, setMetadata] = React.useState(getInitialMetadata);
-
+  });
 
   React.useEffect(() => {
-    optionsRef.current = options;
-  }, [options]);
-
-  React.useEffect(() => {
-    if (currentQueryIdRef.current !== queryId) {
-      currentQueryIdRef.current = queryId;
+    if (previousQueryIdRef.current !== queryId) {
       currentRequestRef.current = null;
       setServicesData({ services: [] });
       setSelectedService(null);
@@ -228,24 +218,25 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       } else {
         setMetadata([['', '']]);
       }
+
+      previousQueryIdRef.current = queryId;
     }
-  }, [queryId, options]);
+  }, [queryId, options?.metadata]);
 
   React.useEffect(() => {
-    if (currentQueryIdRef.current === queryId && options?.metadata !== undefined) {
+    if (previousQueryIdRef.current === queryId && options?.metadata) {
       if (Array.isArray(options.metadata)) {
-        if (JSON.stringify(metadata) !== JSON.stringify(options.metadata)) {
-          setMetadata(options.metadata);
-        }
+        setMetadata(options.metadata);
       } else if (typeof options.metadata === 'string') {
         try {
-          const parsedMetadata = JSON.parse(options.metadata);
-          if (JSON.stringify(metadata) !== JSON.stringify(parsedMetadata)) {
-            setMetadata(parsedMetadata);
-          }
+          const newMetadata = JSON.parse(options.metadata);
+          setMetadata(newMetadata);
         } catch (error) {
-          console.warn('Invalid metadata JSON during update:', error);
+          console.warn('Invalid metadata JSON:', error);
+          setMetadata([['', '']]);
         }
+      } else {
+        setMetadata([['', '']]);
       }
     }
   }, [options?.metadata, queryId]);
@@ -253,18 +244,26 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   const loadServices = React.useCallback(async () => {
     if (!selectedDataSource?.id) return;
 
+    // Don't load if component is unmounted or query has changed
+    if (!isMountedRef.current) return;
+
     if (!selectedDataSource?.options?.url?.value) {
       toast.error('Please configure the server URL in your data source settings');
       return;
     }
 
-    const requestId = `${queryId}-${Date.now()}`;
+    // Create a unique request ID
+    const requestId = Date.now() + Math.random();
     currentRequestRef.current = requestId;
 
     setIsLoadingServices(true);
 
     try {
       const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
+
+      if (!isMountedRef.current || currentRequestRef.current !== requestId) {
+        return;
+      }
 
       if (result.status === 'failed') {
         console.error('Failed to discover services:', result.errorMessage);
@@ -275,14 +274,13 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       let restoredService = null;
       let restoredMethod = null;
 
-      const currentOptions = optionsRef.current;
-      if (currentOptions?.service && servicesArray.length > 0) {
-        const foundService = servicesArray.find(s => s.name === currentOptions.service);
+      if (options?.service && servicesArray.length > 0) {
+        const foundService = servicesArray.find(s => s.name === options.service);
         if (foundService) {
           restoredService = foundService;
 
-          if (currentOptions?.method) {
-            const foundMethod = foundService.methods.find(m => m.name === currentOptions.method);
+          if (options?.method) {
+            const foundMethod = foundService.methods.find(m => m.name === options.method);
             if (foundMethod) {
               restoredMethod = foundMethod;
             }
@@ -290,13 +288,13 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         }
       }
 
-      if (currentRequestRef.current === requestId && currentQueryIdRef.current === queryId) {
+      if (currentRequestRef.current === requestId && isMountedRef.current) {
         setServicesData({ services: servicesArray });
         setSelectedService(restoredService);
         setSelectedMethod(restoredMethod);
       }
     } catch (error) {
-      if (currentRequestRef.current !== requestId || currentQueryIdRef.current !== queryId) {
+      if (currentRequestRef.current !== requestId || !isMountedRef.current) {
         return;
       }
 
@@ -304,30 +302,37 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
       const errorMessage = error.errorMessage || error.message || 'Failed to load services';
       toast.error(errorMessage);
     } finally {
-      if (currentRequestRef.current === requestId && currentQueryIdRef.current === queryId) {
+      if (currentRequestRef.current === requestId && isMountedRef.current) {
         setIsLoadingServices(false);
       }
     }
-  }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value, queryId, currentEnvironment?.id]);
+  }, [selectedDataSource?.id, selectedDataSource?.options?.url?.value, options?.service, options?.method, currentEnvironment?.id]);
 
   React.useEffect(() => {
-    if (queryId && selectedDataSource?.id) {
-      loadServices();
-    }
-  }, [loadServices, queryId, selectedDataSource?.id]);
+    setIsLoadingServices(true);
+    setServicesData({ services: [] });
+    setSelectedService(null);
+    setSelectedMethod(null);
+  }, [selectedDataSource?.id]);
 
   React.useEffect(() => {
+    loadServices();
+  }, [loadServices]);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       currentRequestRef.current = null;
+      isMountedRef.current = false;
     };
-  }, []);
+  }, [queryId, selectedDataSource?.id]);
 
   const selectMethod = (selectedOption) => {
     if (!selectedOption || selectedOption.type !== 'method') {
       return;
     }
 
-    if (currentQueryIdRef.current !== queryId) {
+    if (!isMountedRef.current) {
       return;
     }
 
@@ -338,7 +343,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setSelectedMethod(method);
 
     optionsChanged({
-      ...optionsRef.current,
+      ...options,
       service: serviceName,
       method: methodName,
     });
@@ -351,63 +356,54 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     return '';
   };
 
-
   const addMetadata = () => {
-    if (currentQueryIdRef.current !== queryId) {
-      return;
-    }
+    if (!isMountedRef.current) return;
 
-    const currentMetadata = metadata && metadata.length > 0 ? [...metadata] : [];
+    const currentMetadata = [...metadata];
     currentMetadata.push(['', '']);
     setMetadata(currentMetadata);
     optionsChanged({
-      ...optionsRef.current,
+      ...options,
       metadata: currentMetadata,
     });
   };
 
   const removeMetadata = (index) => {
-    if (currentQueryIdRef.current !== queryId) {
-      return;
-    }
+    if (!isMountedRef.current) return;
 
     const currentMetadata = [...metadata];
     currentMetadata.splice(index, 1);
     setMetadata(currentMetadata);
     optionsChanged({
-      ...optionsRef.current,
+      ...options,
       metadata: currentMetadata,
     });
   };
 
   const updateMetadata = (type, index, value) => {
-    if (currentQueryIdRef.current !== queryId) {
-      return;
-    }
+    if (!isMountedRef.current) return;
 
     const currentMetadata = metadata.map((item, i) => {
       if (i === index) {
-        const newItem = [...item];
+        const newItem = [...item]; // Create new array for this item
         newItem[type === 'key' ? 0 : 1] = value;
         return newItem;
       }
-      return [...item];
+      return [...item]; // Create new array for all items to avoid mutation
     });
 
     setMetadata(currentMetadata);
     optionsChanged({
-      ...optionsRef.current,
+      ...options,
       metadata: currentMetadata,
     });
   };
 
   const handleRawMessageChanged = (value) => {
-    if (currentQueryIdRef.current !== queryId) {
-      return;
-    }
+    if (!isMountedRef.current) return;
 
     const updatedOptions = {
-      ...optionsRef.current,
+      ...options,
       raw_message: value,
     };
 
@@ -436,7 +432,6 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         return a.label.localeCompare(b.label);
       })
   }));
-
 
   return (
     <div className="grpcv2-container">
@@ -502,8 +497,6 @@ const ControlledTabs = ({
 }) => {
   const [key, setKey] = React.useState('request');
   const tabs = ['Request', 'Metadata'];
-
-
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="request">
@@ -583,9 +576,8 @@ const TabContent = ({
   addNewKeyValuePair,
   darkMode,
 }) => {
-  const hasContent = options.length > 0 && options.some(opt => opt[0] || opt[1]);
-
-  if (!hasContent) {
+  // Check if we have an empty state
+  if (options.length === 0) {
     return (
       <div className="tab-content-wrapper">
         <div className="d-flex align-items-center justify-content-center" style={{ height: '100px' }}>

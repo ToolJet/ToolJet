@@ -188,7 +188,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         <ElementToRender
           renderCopilot={renderCopilot}
-          key={selectedQuery?.id}
+          key={selectedQueryId}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}
@@ -197,7 +197,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           darkMode={darkMode}
           isEditMode={true} // Made TRUE always to avoid setting default options again
           queryName={queryName}
-          queryId={selectedQuery?.id}
+          queryId={selectedQueryId}
           currentEnvironment={currentEnvironment}
           onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
         />
