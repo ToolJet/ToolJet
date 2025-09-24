@@ -340,6 +340,9 @@ class HomePageComponent extends React.Component {
         app_id: data?.id,
         button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
       });
+
+      posthogHelper.captureEvent('app_created', { entry_source: prompt ? 'prompt' : 'create_button', prompt });
+
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
@@ -603,6 +606,9 @@ class HomePageComponent extends React.Component {
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
+
+      posthogHelper.captureEvent('app_created', { entry_source: 'template' });
+
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`, {
         state: { commitEnabled: this.state.commitEnabled },
       });
