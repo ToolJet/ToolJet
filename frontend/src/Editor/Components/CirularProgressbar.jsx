@@ -38,8 +38,13 @@ export const CircularProgressBar = function CircularProgressBar({
   const computedStyles = {
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     boxShadow,
-    alignSelf: 'left',
+  };
+
+  const innerContainerStyles = {
+    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     justifyContent: alignment,
+    width: '100%',
+    height: '100%',
   };
 
   const computedProperties = exposedVariablesTemporaryState.isLoading
@@ -118,36 +123,34 @@ export const CircularProgressBar = function CircularProgressBar({
   ]);
 
   return (
-    <div
-      style={computedStyles}
-      className={cx({ 'rotate-forever': exposedVariablesTemporaryState.isLoading })}
-      data-cy={dataCy}
-    >
-      <CircularProgressbar
-        key={allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? 'negative' : 'positive'}
-        value={computedProperties.value}
-        text={computedProperties.text}
-        styles={{
-          root: {
-            height: height,
-          },
-          path: {
-            stroke: computedProperties.color,
-          },
-          text: {
-            fill: textColor,
-            fontSize: textSize,
-          },
-          trail: {
-            stroke: trackColor,
-          },
-        }}
-        strokeWidth={strokeWidth}
-        counterClockwise={
-          allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? !counterClockwise : counterClockwise
-        }
-        circleRatio={computedProperties.circleRatio}
-      />
+    <div style={computedStyles} data-cy={dataCy}>
+      <div style={innerContainerStyles} className={cx({ 'rotate-forever': exposedVariablesTemporaryState.isLoading })}>
+        <CircularProgressbar
+          key={allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? 'negative' : 'positive'}
+          value={computedProperties.value}
+          text={computedProperties.text}
+          styles={{
+            root: {
+              height: height,
+            },
+            path: {
+              stroke: computedProperties.color,
+            },
+            text: {
+              fill: textColor,
+              fontSize: textSize,
+            },
+            trail: {
+              stroke: trackColor,
+            },
+          }}
+          strokeWidth={strokeWidth}
+          counterClockwise={
+            allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? !counterClockwise : counterClockwise
+          }
+          circleRatio={computedProperties.circleRatio}
+        />
+      </div>
     </div>
   );
 };
