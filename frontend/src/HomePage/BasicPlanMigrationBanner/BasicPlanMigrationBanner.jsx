@@ -7,7 +7,7 @@ import { Play } from 'lucide-react';
 export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
   return (
     <div className={`${darkMode ? 'theme-dark dark-theme' : ''} basic-plan-migration-banner`}>
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', color: '#1B1F24' }}>
         <div className="banner-icon">
           <SolidIcon name="tooljetai" width={24} height={24} className="" data-name="TJ AI" aria-label="ToolJet AI" />
           <span className="banner-special-text">New</span>
@@ -21,7 +21,7 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
           type="button"
           onClick={() => window.open('https://youtu.be/ejSQSUv0lHQ', '_blank')}
         >
-          <Play fill={'var(--icon-default)'} stroke="none" />
+          <Play fill={'#ACB2B9'} stroke="none" />
           <span className="banner-video-text">Watch</span>
         </div>
       </div>
