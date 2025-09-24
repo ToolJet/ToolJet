@@ -83,7 +83,8 @@ type NewRevampedComponent =
   | 'Steps'
   | 'Statistics'
   | 'StarRating'
-  | 'Tags';
+  | 'Tags'
+  | 'Html';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -115,6 +116,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Statistics',
   'StarRating',
   'Tags',
+  'Html',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -384,9 +386,7 @@ export class AppImportExportService {
         ? await this.entityManager
             .createQueryBuilder(App, 'app')
             .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', {
-              organizationId: user.organizationId,
-            })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .distinct(true)
             .getMany()
         : [];

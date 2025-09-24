@@ -207,7 +207,6 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
           } ${!['Modal', 'ModalV2'].includes(component.component) && (isDisabled || isLoading) ? 'disabled' : ''}`} //required for custom CSS
