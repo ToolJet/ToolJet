@@ -108,13 +108,7 @@ export const TableRow = ({
                 fireEvent('onRowClicked');
                 return;
               }
-
-              if (
-                isEditable ||
-                (['rightActions', 'leftActions'].includes(cell.column.id) &&
-                  allowSelection &&
-                  (!selectRowOnCellEdit || row.getIsSelected()))
-              ) {
+              if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && !selectRowOnCellEdit) {
                 // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
                 e.stopPropagation();
               }
