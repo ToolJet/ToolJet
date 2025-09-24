@@ -93,4 +93,8 @@ export class DuplicateGroupDtoBase {
 export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   addDataSource: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addWorkflows: boolean;
 }

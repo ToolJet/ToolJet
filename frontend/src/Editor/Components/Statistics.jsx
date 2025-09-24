@@ -150,7 +150,7 @@ export const Statistics = function Statistics({
     borderRadius: `${borderRadius ?? 4}px`,
     backgroundColor: backgroundColor ?? 'var(--cc-surface1-surface)',
     margin: '0px auto',
-    border: `0.75px solid ${borderColor ?? 'var(--cc-default-border)'}`,
+    border: `1px solid ${borderColor ?? 'var(--cc-default-border)'}`,
     fontFamily: 'Inter',
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     gap: '1.5rem 2rem',

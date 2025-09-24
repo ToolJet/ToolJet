@@ -97,28 +97,53 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts } = get();
+    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
     const currentMode = getCurrentMode(moduleId);
 
-    const maxPermanentHeight = Object.values(components).reduce((max, component) => {
+    // Only keep canvas components (components with no parent) & show on layout true
+    const currentMainCanvasComponents = Object.entries(components)
+      .filter(
+        ([key, component]) =>
+          !component?.component?.parent &&
+          getResolvedValue(
+            component?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop']
+              .value
+          )
+      )
+      .map(([key, component]) => {
+        return {
+          ...component,
+          id: component.id || key,
+        };
+      });
+
+    const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
+      const visibility =
+        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
+        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
+
+      const height = visibility ? layout.height : 10;
       if (!layout) {
         return max;
       }
-      const sum = layout.top + layout.height;
+      const sum = layout.top + height;
       return Math.max(max, sum);
     }, 0);
 
-    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
-      const sum = layout.top + layout.height;
-      return Math.max(max, sum);
-    }, 0);
+    const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
+      .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
+      .reduce((max, [componentId, layout]) => {
+        const sum = layout.top + layout.height;
+        return Math.max(max, sum);
+      }, 0);
 
     const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
-    setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`, moduleId);
+    const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
+    setCanvasHeight(canvasHeight, moduleId);
   },
   setIsAppSaving: (isSaving, moduleId = 'canvas') => {
     set(
@@ -201,6 +226,7 @@ export const createAppSlice = (set, get) => ({
     const isPreview = getCurrentMode(moduleId) !== 'edit';
     //!TODO clear all queued tasks
     cleanUpStore(true);
+    get().clearTemporaryLayouts();
     setCurrentPageId(pageId, moduleId);
     setComponentNameIdMapping(moduleId);
     setQueryMapping(moduleId);
@@ -295,6 +321,9 @@ export const createAppSlice = (set, get) => ({
   },
   getHomePageId: (moduleId = 'canvas') => {
     return get().appStore.modules[moduleId].app.homePageId;
+  },
+  getAppType: (moduleId = 'canvas') => {
+    return get().appStore.modules[moduleId].app.appType || 'front-end';
   },
   updateIsTJDarkMode: (newMode) => set({ isTJDarkMode: newMode }, false, 'updateIsTJDarkMode'),
   setSelectedUserGroups: (groups) =>
