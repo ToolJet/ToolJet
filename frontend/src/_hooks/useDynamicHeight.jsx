@@ -11,32 +11,45 @@ export const useDynamicHeight = ({
   isContainer = false,
   componentCount = 0,
   visibility,
+  skipAdjustment = false,
 }) => {
   const prevDynamicHeight = useRef(dynamicHeight);
+  const prevHeight = useRef(height);
   const initialRender = useRef(true);
 
   useEffect(() => {
-    if (dynamicHeight) {
-      const element = document.querySelector(`.ele-${id}`);
-      if (element) {
-        element.style.height = 'auto';
-        // Wait for the next frame to ensure the height has updated
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
-        });
-      }
+    const element = document.querySelector(`.ele-${id}`);
+    if (!element) return;
+    if (skipAdjustment && dynamicHeight) {
+      element.style.height = `${prevHeight.current}px`;
+    } else if (dynamicHeight) {
+      element.style.height = 'auto';
+      // Wait for the next frame to ensure the height has updated
+      requestAnimationFrame(() => {
+        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+      });
     } else if (!dynamicHeight && prevDynamicHeight.current) {
-      const element = document.querySelector(`.ele-${id}`);
-      if (element) {
-        element.style.height = `${height}px`;
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
-        });
-      }
+      element.style.height = `${height}px`;
+      requestAnimationFrame(() => {
+        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+      });
     }
+    prevHeight.current = element.offsetHeight;
     prevDynamicHeight.current = dynamicHeight;
     initialRender.current = false;
-  }, [dynamicHeight, id, value, adjustComponentPositions, currentLayout, height, width, isContainer, componentCount, visibility]);
+  }, [
+    dynamicHeight,
+    id,
+    value,
+    adjustComponentPositions,
+    currentLayout,
+    height,
+    width,
+    isContainer,
+    componentCount,
+    visibility,
+    skipAdjustment,
+  ]);
 
   return;
 };
