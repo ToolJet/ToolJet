@@ -88,28 +88,30 @@ export const initializeApiPerformanceMetrics = () => {
   });
 
   // === DATABASE CLIENT METRICS (OpenTelemetry Standard) ===
-  dbClientOperationDuration = meter.createHistogram('db.client.operation.duration', {
-    description: 'Duration of database client operations.',
-    unit: 's',
-  });
+  // NOTE: These metrics are now created in tracing.ts to avoid conflicts
+  // dbClientOperationDuration = meter.createHistogram('db.client.operation.duration', {
+  //   description: 'Duration of database client operations.',
+  //   unit: 's',
+  // });
 
-  dbClientOperationCount = meter.createCounter('db.client.operation.count', {
-    description: 'Number of database client operations.',
-  });
+  // dbClientOperationCount = meter.createCounter('db.client.operation.count', {
+  //   description: 'Number of database client operations.',
+  // });
 
-  dbClientResponseReturnedRows = meter.createHistogram('db.client.response.returned_rows', {
-    description: 'Number of rows returned by database operations.',
-    unit: '{row}',
-  });
+  // dbClientResponseReturnedRows = meter.createHistogram('db.client.response.returned_rows', {
+  //   description: 'Number of rows returned by database operations.',
+  //   unit: '{row}',
+  // });
 
   dbClientConnectionCount = meter.createObservableGauge('db.client.connection.count', {
     description: 'Number of database client connections.',
   });
 
-  dbClientConnectionWaitTime = meter.createHistogram('db.client.connection.wait_time', {
-    description: 'Time spent waiting for database connections.',
-    unit: 's',
-  });
+  // NOTE: This metric conflicts with enhanced-database-monitoring.ts
+  // dbClientConnectionWaitTime = meter.createHistogram('db.client.connection.wait_time', {
+  //   description: 'Time spent waiting for database connections.',
+  //   unit: 's',
+  // });
 
   // === CUSTOM TOOLJET METRICS ===
   apiExternalOperationDuration = meter.createHistogram('tooljet.api.external_operation.duration', {

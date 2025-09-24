@@ -15,7 +15,6 @@ let userLoginCounter: any;
 let userSessionDuration: any;
 let userFeatureUsage: any;
 let activeUsersGauge: any;
-let userActivityGauge: any;
 
 // App Performance Metrics
 let appLoadTimeHistogram: any;
@@ -64,9 +63,6 @@ export const initializeBusinessMetrics = () => {
     description: 'Current number of active users by time window.',
   });
   
-  userActivityGauge = meter.createCounter('user_activity_events_total', {
-    description: 'Total user activity events by type and feature.',
-  });
   
   // === APP PERFORMANCE METRICS ===
   appLoadTimeHistogram = meter.createHistogram('app_load_time_milliseconds', {
@@ -223,20 +219,6 @@ export const trackFeatureUsage = (
   }
 };
 
-export const trackUserActivity = (
-  context: UserContext, 
-  activityType: 'page_view' | 'button_click' | 'form_submit' | 'data_query' | 'app_create' | 'app_edit',
-  details?: Record<string, string>
-) => {
-  if (userActivityGauge) {
-    userActivityGauge.add(1, {
-      activity_type: activityType,
-      organization_id: context.organizationId,
-      user_id: context.userId,
-      ...details
-    });
-  }
-};
 
 // === APP PERFORMANCE TRACKING ===
 
@@ -493,30 +475,15 @@ export const startUserSession = (userId: string, organizationId: string) => {
     lastActivity: now
   });
 
-  // Track session start activity
-  if (userActivityGauge) {
-    userActivityGauge.add(1, {
-      activity_type: 'session_start',
-      organization_id: organizationId,
-      user_id: userId
-    });
-  }
 };
 
 export const endUserSession = (userId: string, organizationId: string) => {
   const sessionKey = `${organizationId}:${userId}`;
   const sessionData = activeUserSessions.get(sessionKey);
 
-  if (sessionData && userActivityGauge) {
+  if (sessionData) {
     const sessionDuration = (Date.now() - sessionData.startTime) / 1000; // Convert to seconds
-
-    // Track session end and duration
-    userActivityGauge.add(1, {
-      activity_type: 'session_end',
-      organization_id: organizationId,
-      user_id: userId,
-      session_duration_seconds: sessionDuration.toString()
-    });
+    // Session duration calculated but user activity events removed
   }
 
   activeUserSessions.delete(sessionKey);

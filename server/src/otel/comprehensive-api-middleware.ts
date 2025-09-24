@@ -48,7 +48,6 @@ import {
   initializeBusinessMetrics,
   setupResourceMetricCallbacks,
   trackApiCall,
-  trackUserActivity,
   trackAppUsage,
   startUserSession,
   updateUserActivity,
@@ -183,11 +182,7 @@ export const comprehensiveApiMiddleware = (req: AuthenticatedRequest, res: Respo
     // Start user session tracking
     startUserSession(userId, organizationId);
 
-    // Track API call activity
-    trackUserActivity(
-      { userId, organizationId },
-      endpoint.includes('/apps/') ? 'app_edit' : 'page_view'
-    );
+    // User activity tracking removed
 
     // Track app usage if this is an app-related endpoint
     if (appId && operationType.includes('app')) {

@@ -133,6 +133,53 @@ const getQueryOperation = (query: any): string => {
   return 'OTHER';
 };
 
+// Sanitize SQL query following OpenTelemetry conventions
+// Replace literals with ? placeholders but preserve query structure
+const sanitizeQueryForMetrics = (query: any): string => {
+  if (!query) {
+    return 'unknown_query';
+  }
+
+  try {
+    // Convert query to string safely
+    let queryString = '';
+    if (typeof query === 'string') {
+      queryString = query;
+    } else if (query && typeof query === 'object') {
+      // Handle query objects (common with some PostgreSQL drivers)
+      if ('text' in query && typeof query.text === 'string') {
+        queryString = query.text;
+      } else if ('query' in query && typeof query.query === 'string') {
+        queryString = query.query;
+      } else {
+        queryString = JSON.stringify(query);
+      }
+    } else {
+      queryString = String(query);
+    }
+
+    // OpenTelemetry sanitization: replace literals with ? but preserve structure
+    let sanitized = queryString
+      .trim()
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/\$\d+/g, '?') // Replace parameterized values ($1, $2, etc.) with ?
+      .replace(/'[^']*'/g, '?') // Replace string literals 'value' with ?
+      .replace(/"[^"]*"/g, '?') // Replace quoted identifiers "table" with ?
+      .replace(/\b\d+\.?\d*\b/g, '?') // Replace numeric literals with ?
+      .replace(/\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b/gi, '?') // Replace UUIDs
+      .replace(/\b[a-f0-9]{32}\b/gi, '?'); // Replace MD5 hashes
+
+    // Limit length for performance (OpenTelemetry recommends 255 chars max)
+    if (sanitized.length > 255) {
+      sanitized = sanitized.substring(0, 252) + '...';
+    }
+
+    return sanitized;
+  } catch (error) {
+    return 'parse_error';
+  }
+};
+
 const isSlowQuery = (duration: number): boolean => {
   return duration >= DB_SLOW_QUERY_THRESHOLD;
 };
@@ -146,17 +193,22 @@ let dbQueryCounter: any;
 // Store request information for response processing
 const spanRequestMap = new Map<string, any>();
 
-export const sdk = new NodeSDK({
-  resource: resource,
-  traceExporter: traceExporter,
-  spanProcessor: new BatchSpanProcessor(traceExporter),
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-    exportIntervalMillis: 10000, // Export every 10 seconds for debugging
-  }),
-  textMapPropagator: new CompositePropagator({
-    propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
-  }),
+// Lazy initialization to prevent issues during migrations
+let sdk: NodeSDK | null = null;
+
+const createSDK = () => {
+  if (!sdk) {
+    sdk = new NodeSDK({
+      resource: resource,
+      traceExporter: traceExporter,
+      spanProcessors: [new BatchSpanProcessor(traceExporter)], // Fixed deprecated option
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: metricExporter,
+        exportIntervalMillis: 10000, // Export every 10 seconds for debugging
+      }),
+      textMapPropagator: new CompositePropagator({
+        propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+      }),
   instrumentations: [
     new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
     new HttpInstrumentation({
@@ -309,25 +361,60 @@ export const sdk = new NodeSDK({
             }
             
             // Record query duration histogram (convert ms to seconds)
+            // Initialize metrics on first use if not already initialized
+            if (!dbQueryDurationHistogram) {
+              console.log('[ToolJet Backend] Initializing database metrics lazily');
+              const meter = metrics.getMeter('tooljet-database', '1.0.0');
+              dbQueryDurationHistogram = meter.createHistogram('db.client.operation.duration', {
+                description: 'Duration of database client operations.',
+                unit: 's'
+                // Note: Histogram boundaries are typically set at the collector/exporter level
+              });
+              dbSlowQueryCounter = meter.createCounter('db.client.operation.slow_total', {
+                description: 'Total number of slow database operations.',
+              });
+              dbQueryCounter = meter.createCounter('db.client.operation.count', {
+                description: 'Total number of database operations.',
+              });
+            }
+
             if (dbQueryDurationHistogram) {
               const operation = getQueryOperation(storedInfo.query);
               const tables = extractTableNames(storedInfo.query);
-              dbQueryDurationHistogram.record(duration / 1000, { // Convert to seconds
+
+              // Create a sanitized query identifier
+              const queryPattern = sanitizeQueryForMetrics(storedInfo.query);
+
+              // Build attributes following OpenTelemetry conventions
+              // NOTE: Avoiding db.query.text as it creates high cardinality that crashes Prometheus exporter
+              const attributes = {
+                'db.system.name': 'postgresql',
                 'db.operation.name': operation.toLowerCase(),
                 'db.namespace': storedInfo.connectionParameters?.database || 'unknown',
-                'db.system': 'postgresql',
-                'db.sql.table': tables.length > 0 ? tables[0] : 'unknown' // Primary table
-              });
+                'db.collection.name': tables.length > 0 ? tables[0] : 'unknown',
+                'db.query.summary': `${operation.toLowerCase()} ${tables.length > 0 ? tables[0] : 'table'}` // Low cardinality summary
+              };
+
+              dbQueryDurationHistogram.record(duration / 1000, attributes);
             }
             
             // Record query counter
             if (dbQueryCounter) {
               const operation = getQueryOperation(storedInfo.query);
-              dbQueryCounter.add(1, {
+              const tables = extractTableNames(storedInfo.query); // Need to extract tables here too
+              const queryPattern = sanitizeQueryForMetrics(storedInfo.query);
+
+              // Build counter attributes following OpenTelemetry conventions
+              // NOTE: Avoiding db.query.text as it creates high cardinality that crashes Prometheus exporter
+              const counterAttributes = {
+                'db.system.name': 'postgresql',
                 'db.operation.name': operation.toLowerCase(),
                 'db.namespace': storedInfo.connectionParameters?.database || 'unknown',
-                'db.system': 'postgresql'
-              });
+                'db.collection.name': tables.length > 0 ? tables[0] : 'unknown',
+                'db.query.summary': `${operation.toLowerCase()} ${tables.length > 0 ? tables[0] : 'table'}` // Low cardinality summary
+              };
+
+              dbQueryCounter.add(1, counterAttributes);
             }
             
             // Clean up stored info to prevent memory leaks
@@ -338,7 +425,10 @@ export const sdk = new NodeSDK({
     }),
     new PinoInstrumentation(),
   ],
-});
+    });
+  }
+  return sdk;
+};
 
 // Helper function to determine activity type from route and method
 const getActivityTypeFromRoute = (route: string, method: string): string => {
@@ -420,18 +510,8 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
 
       // Track user activity for authenticated requests
       if (req.user?.id && organizationId) {
-        const { trackUserActivity, updateUserActivity } = require('../otel/business-metrics');
+        const { updateUserActivity } = require('../otel/business-metrics');
         const activityType = getActivityTypeFromRoute(route, method);
-
-        // Track specific activity
-        trackUserActivity({
-          userId: req.user.id,
-          organizationId: organizationId
-        }, activityType, {
-          endpoint: route,
-          method: method.toUpperCase(),
-          status_code: statusCode.toString()
-        });
 
         // Update user's last activity time
         updateUserActivity(req.user.id, organizationId, activityType);
@@ -458,32 +538,28 @@ process.on('SIGTERM', () => {
 });
 
 export const startOpenTelemetry = async (): Promise<void> => {
+  // Don't initialize OTEL during database migrations
+  const isMigration = process.argv.some(arg =>
+    arg.includes('migration') ||
+    arg.includes('typeorm') ||
+    arg.includes('cli.js')
+  );
+
+  if (isMigration) {
+    console.log('[ToolJet Backend] Skipping OpenTelemetry initialization during migration');
+    return;
+  }
+
   try {
-    await sdk.start();
+    const sdkInstance = createSDK();
+    await sdkInstance.start();
     
-    // Initialize custom database metrics
-    const meter = metrics.getMeter('tooljet-database', '1.0.0');
-    
-    // Use standard OpenTelemetry database metric names
-    dbQueryDurationHistogram = meter.createHistogram('db.client.operation.duration', {
-      description: 'Duration of database client operations.',
-      unit: 's', // OpenTelemetry standard uses seconds
-    });
-    
-    dbSlowQueryCounter = meter.createCounter('db.client.operation.slow_total', {
-      description: 'Total number of slow database operations.',
-    });
-    
-    dbQueryCounter = meter.createCounter('db.client.operation.count', {
-      description: 'Total number of database operations.',
-    });
-    
-    dbConnectionPoolGauge = meter.createObservableGauge('db_connection_pool_usage', {
-      description: 'Database connection pool usage statistics.',
-    });
-    
+    // Note: Database metrics are now lazily initialized in the PostgreSQL instrumentation hooks
+    // to avoid race conditions between SDK startup and first database queries
+
     // Initialize database monitoring metrics
     const { databaseMonitoring } = await import('./database-monitoring');
+    const meter = metrics.getMeter('tooljet-database', '1.0.0');
     databaseMonitoring.initializeMetrics(meter);
     
     // Initialize service layer metrics
