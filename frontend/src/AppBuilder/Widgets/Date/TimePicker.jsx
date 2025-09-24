@@ -187,6 +187,7 @@ export const TimePicker = ({
       componentProps={componentProps}
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };
