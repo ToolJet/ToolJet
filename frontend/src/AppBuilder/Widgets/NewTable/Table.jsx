@@ -55,7 +55,7 @@ export const Table = memo(
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const themeChanged = useStore((state) => state.themeChanged);
-
+    const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
@@ -163,6 +163,7 @@ export const Table = memo(
       id: id,
       height,
       value: heightChangeValue,
+      skipAdjustment: loadingState || tableData.length === 0,
       adjustComponentPositions,
       currentLayout,
       width,
@@ -176,7 +177,7 @@ export const Table = memo(
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: properties.dynamicHeight ? 'auto' : `${height}px`,
+          height: properties.dynamicHeight ? '100%' : `${height}px`,
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,

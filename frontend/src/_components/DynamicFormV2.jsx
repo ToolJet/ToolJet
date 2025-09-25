@@ -32,6 +32,7 @@ const DynamicFormV2 = ({
   clearValidationMessages,
   showValidationErrors,
   clearValidationErrorBanner,
+  elementsProps = null,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -394,6 +395,7 @@ const DynamicFormV2 = ({
           encrypted: isEncrypted,
           buttonText,
           width: width,
+          ...elementsProps?.[key],
         };
       }
       case 'toggle':
