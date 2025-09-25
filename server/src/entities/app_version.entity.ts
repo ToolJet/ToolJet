@@ -10,6 +10,11 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
+
+export enum AppVersionStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+}
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
@@ -49,6 +54,27 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'promoted_from' })
   promotedFrom: string;
+
+  @Column({ name: 'parent_version_id', type: 'uuid', nullable: true })
+  parentVersionId: string;
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: AppVersionStatus,
+    enumName: 'version_status_enum',
+    nullable: true,
+  })
+  status: AppVersionStatus;
+
+  @Column({ name: 'description', type: 'varchar', length: 500, nullable: true })
+  description: string;
+
+  @Column({ name: 'published_at', type: 'timestamp', nullable: true })
+  publishedAt: Date;
+
+  @Column({ name: 'released_at', type: 'timestamp', nullable: true })
+  releasedAt: Date;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
