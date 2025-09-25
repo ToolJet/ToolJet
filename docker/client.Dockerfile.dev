@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:18.20.8-bookworm-slim
+FROM node:24.8.0-bookworm-slim
 
 ENV NODE_ENV=development
 
