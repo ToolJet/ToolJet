@@ -614,3 +614,62 @@ export const getEnhancedDatabaseStats = () => {
 export const generateQueryId = (): string => {
   return `dbq_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
+
+// === COMPATIBILITY LAYER ===
+// Simple database monitoring interface for backward compatibility
+export class DatabaseMonitoring {
+  private static instance: DatabaseMonitoring;
+
+  private constructor() {}
+
+  public static getInstance(): DatabaseMonitoring {
+    if (!DatabaseMonitoring.instance) {
+      DatabaseMonitoring.instance = new DatabaseMonitoring();
+    }
+    return DatabaseMonitoring.instance;
+  }
+
+  public initializeMetrics(meter: any): void {
+    // Delegate to enhanced initialization
+    initializeEnhancedDatabaseMonitoring();
+  }
+
+  public setDataSource(dataSource: any): void {
+    // Enhanced monitoring doesn't need explicit dataSource setting
+    // as it tracks queries individually
+    console.log('[ToolJet Backend] DatabaseMonitoring: DataSource set for enhanced monitoring');
+  }
+
+  public async isHealthy(): Promise<{ healthy: boolean; error?: string; stats?: any }> {
+    try {
+      const stats = getEnhancedDatabaseStats();
+      return {
+        healthy: true,
+        stats: stats.connectionPoolDetails.length > 0 ? {
+          totalConnections: stats.connectionPoolDetails[0]?.maxConnections || 0,
+          activeConnections: stats.connectionPoolDetails[0]?.activeConnections || 0,
+          idleConnections: stats.connectionPoolDetails[0]?.idleConnections || 0,
+          waitingClients: stats.connectionPoolDetails[0]?.pendingRequests || 0,
+        } : null
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        error: error.message || 'Unknown database health check error'
+      };
+    }
+  }
+
+  public getCurrentStats(): any {
+    const stats = getEnhancedDatabaseStats();
+    return stats.connectionPoolDetails.length > 0 ? {
+      totalConnections: stats.connectionPoolDetails[0]?.maxConnections || 0,
+      activeConnections: stats.connectionPoolDetails[0]?.activeConnections || 0,
+      idleConnections: stats.connectionPoolDetails[0]?.idleConnections || 0,
+      waitingClients: stats.connectionPoolDetails[0]?.pendingRequests || 0,
+    } : null;
+  }
+}
+
+// Export singleton instance for backward compatibility
+export const databaseMonitoring = DatabaseMonitoring.getInstance();

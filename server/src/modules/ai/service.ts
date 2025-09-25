@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InstrumentService } from '../../otel/service-instrumentation';
+import { InstrumentService } from '../../otel/business/service-instrumentation';
 import { IAiService } from './interfaces/IService';
 
 @Injectable()

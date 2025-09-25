@@ -1,5 +1,6 @@
 import { metrics, trace, context, Span } from '@opentelemetry/api';
 import { performance } from 'perf_hooks';
+import { ApiPerformanceBenchmark } from '../types';
 
 /**
  * API Performance Metrics for ToolJet
@@ -107,7 +108,7 @@ export const initializeApiPerformanceMetrics = () => {
     description: 'Number of database client connections.',
   });
 
-  // NOTE: This metric conflicts with enhanced-database-monitoring.ts
+  // NOTE: Database monitoring now consolidated in database-monitoring.ts
   // dbClientConnectionWaitTime = meter.createHistogram('db.client.connection.wait_time', {
   //   description: 'Time spent waiting for database connections.',
   //   unit: 's',
@@ -421,20 +422,7 @@ export const createApiSpanWithTiming = (
 
 // === BENCHMARKING UTILITIES ===
 
-export interface ApiPerformanceBenchmark {
-  endpoint: string;
-  method: string;
-  releaseVersion: string;
-  organizationId: string;
-  measurements: {
-    totalDuration: number;
-    dbDuration: number;
-    externalDuration: number;
-    businessLogicDuration: number;
-    queryCount: number;
-    timestamp: number;
-  }[];
-}
+// ApiPerformanceBenchmark interface imported from ../types
 
 const benchmarkData = new Map<string, ApiPerformanceBenchmark>();
 

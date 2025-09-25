@@ -1,7 +1,7 @@
 import { DataSource, EntityManager } from 'typeorm';
 import { updateTimestampForAppVersion } from './utils.helper';
 import { createLogger } from './bootstrap.helper';
-import { databaseMonitoring } from '../otel/database-monitoring';
+import { databaseMonitoring } from '../otel/monitoring/database-monitoring';
 
 let CONNECTION_INSTANCE: DataSource;
 const getConnectionInstance = (): DataSource => {

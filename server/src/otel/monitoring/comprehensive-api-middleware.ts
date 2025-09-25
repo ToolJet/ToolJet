@@ -35,14 +35,14 @@ import {
   endDetailedQuery,
   updateEnhancedConnectionPool,
   generateQueryId as generateDbQueryId,
-} from './enhanced-database-monitoring';
+} from './database-monitoring';
 
 import {
   initializeBenchmarkingFramework,
   recordBenchmarkMeasurement,
   compareReleasePerformance,
   analyzeAppBuilderViewerPerformance,
-} from './benchmarking-framework';
+} from '../analysis/benchmarking-framework';
 
 import {
   initializeBusinessMetrics,
@@ -51,7 +51,7 @@ import {
   trackAppUsage,
   startUserSession,
   updateUserActivity,
-} from './business-metrics';
+} from '../business/business-metrics';
 
 /**
  * Comprehensive API Performance Middleware

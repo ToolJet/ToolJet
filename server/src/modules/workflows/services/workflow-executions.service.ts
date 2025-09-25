@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InstrumentService } from '../../../otel/service-instrumentation';
+import { InstrumentService } from '../../../otel/business/service-instrumentation';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { User } from 'src/entities/user.entity';

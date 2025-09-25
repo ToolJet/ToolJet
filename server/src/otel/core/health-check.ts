@@ -1,24 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { databaseMonitoring, ConnectionPoolStats } from './database-monitoring';
-
-export interface HealthCheckResult {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: string;
-  services: {
-    database: {
-      status: 'healthy' | 'unhealthy';
-      responseTime?: number;
-      connectionPool?: {
-        total: number;
-        active: number;
-        idle: number;
-        waiting: number;
-        utilization: number;
-      };
-      error?: string;
-    };
-  };
-}
+import { databaseMonitoring } from '../monitoring/database-monitoring';
+import { HealthCheckResult, ConnectionPoolStats } from '../types';
 
 @Injectable()
 export class OTELHealthCheckService {

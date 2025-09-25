@@ -233,7 +233,7 @@ export class DataQueriesService implements IDataQueriesService {
     mode?: string
   ): void {
     try {
-      const { trackQueryExecution } = require('../../otel/business-metrics');
+      const { trackQueryExecution } = require('../../otel/business/business-metrics');
       
       console.log('[ToolJet Backend] Raw query result for metrics:', {
         resultKeys: Object.keys(result || {}),

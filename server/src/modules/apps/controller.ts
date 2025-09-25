@@ -20,7 +20,7 @@ import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
 import { isHttpsEnabled } from '@helpers/utils.helper';
-import { traceAppLifecycleOperation } from '../../otel/tracing';
+import { traceAppLifecycleOperation } from '../../otel/core/tracing';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -201,7 +201,7 @@ export class AppsController implements IAppsController {
       mode?: string;
     }
   ) {
-    const { trackAppLoadTime } = require('../../otel/business-metrics');
+    const { trackAppLoadTime } = require('../../otel/business/business-metrics');
     
     const appContext = {
       appId: data.appId,
@@ -233,7 +233,7 @@ export class AppsController implements IAppsController {
       instrumentDatabaseQuery,
       instrumentExternalOperation,
       generatePerformanceReport
-    } = require('../../otel/comprehensive-api-middleware');
+    } = require('../../otel/monitoring/comprehensive-api-middleware');
 
     // Simulate database query
     const dbQuery = instrumentDatabaseQuery(
@@ -285,7 +285,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard)
   @Post('metrics/test')
   testMetrics(@User() user: UserEntity) {
-    const { trackAppLoadTime, trackQueryExecution } = require('../../otel/business-metrics');
+    const { trackAppLoadTime, trackQueryExecution } = require('../../otel/business/business-metrics');
     
     const appContext = {
       appId: 'test-manual-app',
@@ -323,19 +323,19 @@ export class AppsController implements IAppsController {
     const {
       generatePerformanceReport,
       getMonitoringHealth
-    } = require('../../otel/comprehensive-api-middleware');
+    } = require('../../otel/monitoring/comprehensive-api-middleware');
 
     const {
       compareReleasePerformance,
       analyzeAppBuilderViewerPerformance,
       getBenchmarkingStats
-    } = require('../../otel/benchmarking-framework');
+    } = require('../../otel/analysis/benchmarking-framework');
 
     // Plugin metrics removed - functionality covered by existing database and API metrics
 
     const {
       getEnhancedDatabaseStats
-    } = require('../../otel/enhanced-database-monitoring');
+    } = require('../../otel/monitoring/database-monitoring');
 
     const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
 
@@ -361,7 +361,7 @@ export class AppsController implements IAppsController {
     @User() user: UserEntity,
     @Param('previousRelease') previousRelease: string
   ) {
-    const { compareReleasePerformance } = require('../../otel/benchmarking-framework');
+    const { compareReleasePerformance } = require('../../otel/analysis/benchmarking-framework');
     const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
 
     const comparisons = compareReleasePerformance(currentRelease, previousRelease);

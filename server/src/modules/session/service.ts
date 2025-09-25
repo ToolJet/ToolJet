@@ -44,7 +44,7 @@ export class SessionService {
       try {
         const organizationId = user.defaultOrganizationId;
         if (organizationId) {
-          const { endUserSession } = require('../../otel/business-metrics');
+          const { endUserSession } = require('../../otel/business/business-metrics');
           endUserSession(userId, organizationId);
         }
       } catch (error) {

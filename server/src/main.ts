@@ -26,8 +26,8 @@ import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
-import { comprehensiveApiMiddleware } from './otel/comprehensive-api-middleware';
+import { startOpenTelemetry, otelMiddleware } from './otel/core/tracing';
+import { comprehensiveApiMiddleware } from './otel/monitoring/comprehensive-api-middleware';
 
 // Import helper functions
 import {

@@ -1,6 +1,6 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { InstrumentService } from '../../otel/service-instrumentation';
+import { InstrumentService } from '../../otel/business/service-instrumentation';
 import {
   BadRequestException,
   ForbiddenException,
@@ -44,7 +44,8 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
-import { trackAppUsage, trackAppLoadTime, AppPerformanceContext } from '../../otel/business-metrics';
+import { trackAppUsage, trackAppLoadTime } from '../../otel/business/business-metrics';
+import { AppPerformanceContext } from '../../otel/types';
 
 @Injectable()
 export class AppsService implements IAppsService {

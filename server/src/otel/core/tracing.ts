@@ -1,5 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { trackApiCall } from './business-metrics';
+import { trackApiCall } from '../business/business-metrics';
 import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 
 // Import application-level tracing utilities
@@ -14,10 +14,9 @@ import {
   recordBusinessError,
   recordErrorRecovery,
   getCurrentTraceContext,
-  createChildSpan,
-  ApplicationContext,
-  BusinessOperationContext
-} from './application-tracing';
+  createChildSpan
+} from '../business/application-tracing';
+import { ApplicationContext, BusinessOperationContext } from '../types';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -510,7 +509,7 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
 
       // Track user activity for authenticated requests
       if (req.user?.id && organizationId) {
-        const { updateUserActivity } = require('../otel/business-metrics');
+        const { updateUserActivity } = require('../business/business-metrics');
         const activityType = getActivityTypeFromRoute(route, method);
 
         // Update user's last activity time
@@ -558,21 +557,21 @@ export const startOpenTelemetry = async (): Promise<void> => {
     // to avoid race conditions between SDK startup and first database queries
 
     // Initialize database monitoring metrics
-    const { databaseMonitoring } = await import('./database-monitoring');
+    const { databaseMonitoring } = await import('../monitoring/database-monitoring');
     const meter = metrics.getMeter('tooljet-database', '1.0.0');
     databaseMonitoring.initializeMetrics(meter);
     
     // Initialize service layer metrics
-    const { initializeServiceMetrics } = await import('./service-instrumentation');
+    const { initializeServiceMetrics } = await import('../business/service-instrumentation');
     initializeServiceMetrics();
     
     // Initialize business metrics
-    const { initializeBusinessMetrics, setupResourceMetricCallbacks } = await import('./business-metrics');
+    const { initializeBusinessMetrics, setupResourceMetricCallbacks } = await import('../business/business-metrics');
     initializeBusinessMetrics();
     setupResourceMetricCallbacks();
 
     // Initialize comprehensive API monitoring
-    const { initializeComprehensiveApiMonitoring } = await import('./comprehensive-api-middleware');
+    const { initializeComprehensiveApiMonitoring } = await import('../monitoring/comprehensive-api-middleware');
     await initializeComprehensiveApiMonitoring();
 
     console.log('[ToolJet Backend] OpenTelemetry instrumentation initialized with enhanced database, service, business, and comprehensive API monitoring');

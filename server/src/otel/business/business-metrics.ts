@@ -1,5 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import { performance } from 'perf_hooks';
+import { UserContext, AppPerformanceContext } from '../types';
 
 /**
  * Custom Business Metrics for ToolJet
@@ -136,14 +137,7 @@ export const initializeBusinessMetrics = () => {
 
 // === USER ACTIVITY TRACKING ===
 
-export interface UserContext {
-  userId: string;
-  organizationId: string;
-  userEmail?: string;
-  sessionId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-}
+// UserContext interface imported from ../types
 
 export const trackUserLogin = (
   context: UserContext,
@@ -222,14 +216,7 @@ export const trackFeatureUsage = (
 
 // === APP PERFORMANCE TRACKING ===
 
-export interface AppPerformanceContext {
-  appId: string;
-  appName?: string;
-  organizationId: string;
-  userId: string;
-  version?: string;
-  environment?: string;
-}
+// AppPerformanceContext interface imported from ../types
 
 export const trackAppLoadTime = (context: AppPerformanceContext, loadTimeMs: number, mode?: string) => {
   if (!isInitialized || !appLoadTimeHistogram) {

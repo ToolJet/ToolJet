@@ -1,24 +1,11 @@
 import { trace, context, SpanStatusCode, SpanKind } from '@opentelemetry/api';
 import { SEMATTRS_ENDUSER_ID, SEMATTRS_DB_SYSTEM } from '@opentelemetry/semantic-conventions';
+import { ApplicationContext, BusinessOperationContext } from '../types';
 
 // Get the tracer for application-level spans
 const tracer = trace.getTracer('tooljet-application', '1.0.0');
 
-// Types for application context
-export interface ApplicationContext {
-  userId?: string;
-  organizationId?: string;
-  appId?: string;
-  appName?: string;
-  sessionId?: string;
-  userEmail?: string;
-}
-
-export interface BusinessOperationContext extends ApplicationContext {
-  operation: string;
-  resource?: string;
-  resourceId?: string;
-}
+// ApplicationContext and BusinessOperationContext interfaces imported from ../types
 
 // === BUSINESS LOGIC SPANS ===
 

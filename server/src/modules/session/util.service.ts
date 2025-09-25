@@ -29,7 +29,8 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { trackUserLogin, trackUserSession, UserContext, startUserSession, endUserSession } from '../../otel/business-metrics';
+import { trackUserLogin, trackUserSession, startUserSession, endUserSession } from '../../otel/business/business-metrics';
+import { UserContext } from '../../otel/types';
 
 @Injectable()
 export class SessionUtilService {
@@ -305,7 +306,7 @@ export class SessionUtilService {
 
         if (user?.organizationUsers?.length > 0) {
           const organizationId = user.organizationUsers[0].organizationId;
-          const { startUserSession } = require('../../otel/business-metrics');
+          const { startUserSession } = require('../../otel/business/business-metrics');
           startUserSession(userId, organizationId);
         }
       } catch (error) {

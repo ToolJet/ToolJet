@@ -1,5 +1,6 @@
 import { trace, metrics, context, Span } from '@opentelemetry/api';
 import { performance } from 'perf_hooks';
+import { ServiceContext, ServiceSpanOptions } from '../types';
 
 /**
  * Service Layer Instrumentation Utility for ToolJet
@@ -38,24 +39,9 @@ export const initializeServiceMetrics = () => {
   console.log('[ToolJet Backend] Service layer metrics initialized');
 };
 
-export interface ServiceContext {
-  serviceName: string;
-  methodName: string;
-  userId?: string;
-  organizationId?: string;
-  appId?: string;
-  workflowId?: string;
-  dataSourceId?: string;
-  userEmail?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  requestId?: string;
-}
+// ServiceContext interface imported from ../types
 
-export interface ServiceSpanOptions {
-  attributes?: Record<string, string | number | boolean>;
-  tags?: Record<string, string>;
-}
+// ServiceSpanOptions interface imported from ../types
 
 /**
  * Decorator to instrument service methods with tracing and metrics
