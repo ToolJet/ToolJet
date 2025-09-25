@@ -77,6 +77,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
 FROM debian:12-slim
 
 RUN apt-get update && \
+    apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
         curl \
         wget \
