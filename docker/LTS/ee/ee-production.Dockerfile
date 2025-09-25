@@ -77,7 +77,6 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
 FROM debian:12-slim
 
 RUN apt-get update && \
-    apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
         curl \
         wget \
@@ -92,6 +91,21 @@ RUN apt-get update && \
         git \
         openssh-client \
         freetds-dev \
+    && apt-get upgrade -y \
+        git \
+        git-man \
+        libgdk-pixbuf-2.0-0 \
+        libgdk-pixbuf2.0-bin \
+        libgdk-pixbuf2.0-common \
+        libpam-modules \
+        libpam-modules-bin \
+        libpam-runtime \
+        libpam0g \
+        libldap-2.5-0 \
+        libtiff6 \
+        libharfbuzz0b \
+        libgif7 \
+        dpkg \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
