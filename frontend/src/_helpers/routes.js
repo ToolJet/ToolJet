@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
 import _ from 'lodash';
 import { eraseCookie, getCookie } from '.';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -18,10 +19,13 @@ export const getPrivateRoute = (page, params = {}) => {
     integrations: '/integrations/marketplace',
     data_sources: '/data-sources',
     audit_logs: '/audit-logs',
+    home: '/home',
     workflows: '/workflows',
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
     modules: '/modules',
+    subscription: '/settings/subscription',
+    license: '/settings/license',
   };
 
   let url = routes[page];
@@ -171,7 +175,7 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
-    return newPath ? `/${newPath}` : '/';
+    return newPath ? `/${newPath}` : '/home'; //Redirect to Home Page
   }
   return pathname;
 };
@@ -193,7 +197,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   }
   return `/${getWorkspaceId()}`;
 };
-export const getRedirectURL = (path) => {
+export const getRedirectURL = (path, isUserLoggingIn = false) => {
   let redirectLoc = '/';
   const instanceLevelRoutes = [
     '/all-users',
@@ -204,6 +208,16 @@ export const getRedirectURL = (path) => {
     '/smtp',
     '/license',
   ];
+  if (isUserLoggingIn) {
+    const role = authenticationService?.currentSessionValue?.role?.name;
+    const isEndUser = role === 'end-user';
+    const isCommunityEdition = fetchEdition() === 'ce';
+
+    if (isEndUser || isCommunityEdition) {
+      path = '/'; // End-users and CE Edon't have access to Home route
+    }
+  }
+
   if (path) {
     if (instanceLevelRoutes.includes(path)) {
       redirectLoc = `/settings${path}`;
@@ -226,7 +240,8 @@ export const getRedirectTo = (paramObj) => {
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');
-  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/';
+  console.log(combined, 'combined');
+  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/home'; //default redirect to
 };
 
 export const getPreviewQueryParams = () => {

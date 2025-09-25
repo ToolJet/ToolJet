@@ -7,7 +7,7 @@ import { FEATURE_KEY } from './constants';
 
 @Controller('ai')
 export class AiController implements IAiController {
-  constructor() {}
+  constructor() { }
 
   @InitFeature(FEATURE_KEY.FETCH_ZERO_STATE)
   @Get('/zero-state')
@@ -30,6 +30,17 @@ export class AiController implements IAiController {
   @InitFeature(FEATURE_KEY.APPROVE_PRD)
   @Post('conversation/approve-prd')
   async approvePrd(
+    @User() user,
+    @Param('conversationId') conversationId: string,
+    @Body() body,
+    @Res() response: Response
+  ) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.REWIND_STEP)
+  @Post('conversation/rewind-step')
+  async rewindStep(
     @User() user,
     @Param('conversationId') conversationId: string,
     @Body() body,

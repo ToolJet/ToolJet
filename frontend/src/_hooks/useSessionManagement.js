@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { retrieveWhiteLabelFavicon, retrieveWhiteLabelText, setFaviconAndTitle } from '@white-label/whiteLabelling';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 /*
   REMINDER: Don't put specific route login inside this hook. 
@@ -77,8 +78,11 @@ export const useSessionManagement = (initialState = defaultState) => {
 
   const handleInvalidSession = () => {
     /* REDIRECT TO LOGIN PAGE */
-    const redirectTo = `${excludeWorkspaceIdFromURL(pathname)}${location.search}`;
+    let redirectTo = `${excludeWorkspaceIdFromURL(pathname)}${location.search}`;
     const workspaceId = getWorkspaceId();
+    if (redirectTo === '/home' && fetchEdition() === 'ce') {
+      redirectTo = '/'; //No homepage for CE
+    }
     navigate(
       {
         pathname: `/login${workspaceId ? `/${workspaceId}` : ''}`,
