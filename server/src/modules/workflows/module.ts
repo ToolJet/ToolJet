@@ -152,9 +152,13 @@ export class WorkflowsModule extends SubModule {
         GroupPermissionsRepository,
         ...(isMainImport ? [WorkflowTriggersListener, WorkflowStreamService] : []),
       ],
-      controllers: isMainImport
-        ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
-        : [],
+      controllers: [
+        WorkflowsController,
+        WorkflowExecutionsController,
+        WorkflowWebhooksController,
+        WorkflowSchedulesController,
+        WorkflowBundlesController,
+      ],
     };
   }
 }
