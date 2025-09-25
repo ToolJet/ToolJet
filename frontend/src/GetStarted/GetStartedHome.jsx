@@ -4,6 +4,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
 import HomePagePromptSection from './HomePagePromptSection';
+import { authenticationService } from '@/_services';
+import toast from 'react-hot-toast';
 
 const WIDGET_TYPES = {
   APP: {
@@ -65,10 +67,10 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
   );
 }
 
-function GetStartedWidget({ type, to }) {
+function GetStartedWidget({ type, to, onClick }) {
   const { title, description } = WIDGET_TYPES[type];
   return (
-    <GetStartedCard to={to}>
+    <GetStartedCard to={to} onClick={onClick}>
       <WidgetIcon type={type} />
       <ContentBlock
         title={title}
@@ -78,6 +80,31 @@ function GetStartedWidget({ type, to }) {
     </GetStartedCard>
   );
 }
+
+const handleWorkflowClick = (e) => {
+  const currentSession = authenticationService.currentSessionValue;
+  const { user_permissions, workflow_group_permissions, super_admin, admin } = currentSession;
+  const canCreateWorkflow = admin || user_permissions?.workflow_create;
+  const canUpdateWorkflow = workflow_group_permissions?.is_all_editable;
+  const canDeleteWorkflow = user_permissions?.workflow_delete || admin;
+
+  if (
+    !super_admin &&
+    !admin &&
+    !canCreateWorkflow &&
+    !canUpdateWorkflow &&
+    !canDeleteWorkflow &&
+    !workflow_group_permissions?.editable_workflows_id?.length > 0 &&
+    !workflow_group_permissions?.executable_workflows_id?.length > 0
+  ) {
+    toast.error('You do not have permission to view workflows', {
+      style: { maxWidth: '500px' },
+    });
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+};
 
 function GetStartedOptionsRow({ edition, isToolJetCloud }) {
   if (isToolJetCloud || edition === 'cloud') {
@@ -93,7 +120,7 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
     <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
       <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
       <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
-      <GetStartedWidget type="WORKFLOW" to={getPrivateRoute('workflows')} />
+      <GetStartedWidget type="WORKFLOW" to={getPrivateRoute('workflows')} onClick={handleWorkflowClick} />
     </div>
   );
 }
