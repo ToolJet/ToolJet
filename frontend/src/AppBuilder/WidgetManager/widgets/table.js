@@ -692,6 +692,7 @@ export const tableConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: `{{false}}` },
+      selectRowOnCellEdit: { value: '{{false}}' },
     },
     events: [],
     styles: {
