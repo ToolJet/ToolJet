@@ -3,7 +3,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { User } from 'src/entities/user.entity';
 import { Response } from 'express';
-import { IWorkflowExecutionsService } from '../interfaces/IWorkflowExecutionsService';
+import { IWorkflowExecutionsService, ResponseNodeMetadata } from '../interfaces/IWorkflowExecutionsService';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
@@ -22,6 +22,7 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     envId: string,
     response: Response,
     throwOnError?: boolean,
+    executeUsing?: string,
     executionStartTime?: Date,
     extraOptions?: {
       startNodeId?: string;
@@ -64,6 +65,14 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
   }
 
   async findOne(id: string, relations?: string[]): Promise<WorkflowExecution> {
+    throw new Error('Method not implemented.');
+  }
+
+  async buildResponseNodeMetadata(
+    statusText: 'ok' | 'failed',
+    statusCode: number,
+    setHeader?: boolean
+  ): Promise<ResponseNodeMetadata> {
     throw new Error('Method not implemented.');
   }
 

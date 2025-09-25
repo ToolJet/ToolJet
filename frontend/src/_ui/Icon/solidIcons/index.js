@@ -279,6 +279,9 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import DataDatabase from './DataDatabase.jsx';
+import Flash from './Flash.jsx';
+import Json from './Json.jsx';
 import AITopup from './AITopup.jsx';
 import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
@@ -852,6 +855,12 @@ const Icon = (props) => {
       return <Pull {...props} />;
     case 'support':
       return <Support {...props} />;
+    case 'data-database':
+      return <DataDatabase {...props} />;
+    case 'flash':
+      return <Flash {...props} />;
+    case 'json':
+      return <Json {...props} />;
     case 'ai-topup':
       return <AITopup {...props} />;
     case 'ai-topup-white':

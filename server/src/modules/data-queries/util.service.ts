@@ -17,6 +17,8 @@ import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { getQueryVariables } from 'lib/utils';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -64,7 +66,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     queryOptions: object,
     response: Response,
     envId?: string,
-    mode?: string
+    mode?: string,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
@@ -90,7 +93,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         queryOptions,
         organizationId,
         environmentId,
-        user
+        user,
+        opts
       );
 
       queryStatus.setOptions(parsedQueryOptions);
@@ -219,7 +223,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               queryOptions,
               organizationId,
               environmentId,
-              user
+              user,
+              opts
             ));
             queryStatus.setOptions(parsedQueryOptions);
             result = await service.run(
@@ -297,7 +302,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     queryOptions,
     organization_id,
     environmentId = undefined,
-    user = undefined
+    user = undefined,
+    opts?: DataQueryExecutionOptions
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
@@ -311,7 +317,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       queryOptions,
       organization_id,
       environmentId,
-      user
+      user,
+      opts
     );
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
@@ -379,6 +386,40 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
   }
 
   async parseQueryOptions(
+    object: any,
+    options: object,
+    organization_id: string,
+    environmentId?: string,
+    user?: User,
+    opts?: DataQueryExecutionOptions
+  ): Promise<object> {
+    // If workflow bundle context is available, use the enhanced template resolution
+    if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
+      // Create an enhanced options object that includes bundle variables
+      const enhancedOptions = { ...options };
+      
+      // Get all template variables using the bundle-aware getQueryVariables
+      const templateVariables = getQueryVariables(
+        object,
+        enhancedOptions,
+        () => {}, // addLog function - use empty for data queries
+        opts.workflow.bundleContent,
+        opts.workflow.isolate,
+        opts.workflow.context
+      );
+
+      // Merge template variables back into options for resolution
+      Object.assign(enhancedOptions, templateVariables);
+      
+      // Use the standard parseQueryOptions logic but with enhanced options
+      return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
+    }
+
+    // Fallback to original logic for non-bundle contexts
+    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user);
+  }
+
+  private async parseQueryOptionsInternal(
     object: any,
     options: object,
     organization_id: string,
