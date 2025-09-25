@@ -58,7 +58,6 @@ export const Item = React.memo(
           onClick={({ target }) => {
             const { properties } = kanbanProps;
             const { openModalOnCardClick } = properties;
-            console.log({ openModalOnCardClick });
             if (!openModalOnCardClick) return;
             if (
               target.style.cursor.includes('resize') ||
