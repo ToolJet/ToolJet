@@ -12,8 +12,9 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import { FileCode2, Braces } from 'lucide-react';
 
 export const DropdownMenu = (props) => {
-  const { value, onChange, darkMode } = props;
-
+  const { value, onChange, darkMode, meta } = props;
+  const { disableCreateQuery = false } = meta;
+  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
   const dataQueries = useStore((state) => state.dataQuery.queries.modules.canvas, shallow);
   const [searchValue, setSearchValue] = useState('');
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
@@ -97,6 +98,7 @@ export const DropdownMenu = (props) => {
       type: 'query',
     };
     setSelectedSource(option);
+    expandQueryPaneIfNeeded();
     onChange(`{{queries.${id}.data}}`);
   };
 
@@ -258,12 +260,14 @@ export const DropdownMenu = (props) => {
                   <span className="dropdown-menu-item-label">{option.label}</span>
                 </div>
               ))}
-              <AddQueryBtn
-                onQueryCreate={handleChange}
-                darkMode={darkMode}
-                showMenu={showMenu}
-                setShowMenu={setShowMenu}
-              />
+              {!disableCreateQuery && (
+                <AddQueryBtn
+                  onQueryCreate={handleChange}
+                  darkMode={darkMode}
+                  showMenu={showMenu}
+                  setShowMenu={setShowMenu}
+                />
+              )}
             </div>
           </div>
         )}
