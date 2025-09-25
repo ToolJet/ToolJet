@@ -11,15 +11,28 @@
 
 // App History Panel Styles
 .app-history-panel {
-  background-color: white;
+  height: 100%;
   min-height: 0; // Allow flex container to shrink
 
   .app-history-header {
+    height: 52px !important;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px 20px;
     border-bottom: 1px solid var(--border-weak, #E4E7EB);
-  }
 
-  &.theme-dark {
-    background-color: #111827;
+    .app-history-header-title {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-family: 'IBM Plex Sans';
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-default, #1B1F24);
+    }
   }
 
   // Ensure proper scrolling behavior

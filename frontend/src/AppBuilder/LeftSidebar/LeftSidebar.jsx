@@ -131,7 +131,7 @@ export const BaseLeftSidebar = ({
       case 'tooljetai':
         return renderAIChat({ darkMode, isUserInZeroToOneFlow });
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} toggleLeftSidebar={toggleLeftSidebar} />;
+        return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
       //   case 'datasource':
       //     return (
       //       <LeftSidebarDataSources
