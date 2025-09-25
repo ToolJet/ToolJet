@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:18.3.0-buster
+FROM node:18.20.8-bookworm-slim
 
 ENV NODE_ENV=development
 
