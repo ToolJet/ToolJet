@@ -37,7 +37,7 @@ import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 export class WorkflowsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       WorkflowExecutionsService,
       WorkflowExecutionsController,
@@ -47,7 +47,6 @@ export class WorkflowsModule extends SubModule {
       WorkflowsController,
       WorkflowSchedulesService,
       TemporalService,
-      WorkflowWebhooksListener,
       WorkflowTriggersListener,
       FeatureAbilityFactory,
       WorkflowStreamService,
@@ -63,7 +62,6 @@ export class WorkflowsModule extends SubModule {
       'controllers/workflows.controller',
       'services/workflow-schedules.service',
       'services/temporal.service',
-      'listeners/workflow-webhooks.listener',
       'listeners/workflow-triggers.listener',
       'ability/app',
       'services/workflow-stream.service',
@@ -140,9 +138,6 @@ export class WorkflowsModule extends SubModule {
         PageService,
         EventsService,
         WorkflowExecutionsService,
-        WorkflowStreamService,
-        WorkflowTriggersListener,
-        WorkflowWebhooksListener,
         WorkflowWebhooksService,
         OrganizationConstantsService,
         ComponentsService,
@@ -155,14 +150,11 @@ export class WorkflowsModule extends SubModule {
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
+        ...(isMainImport ? [WorkflowTriggersListener, WorkflowStreamService] : []),
       ],
-      controllers: [
-        WorkflowsController,
-        WorkflowExecutionsController,
-        WorkflowWebhooksController,
-        WorkflowSchedulesController,
-        WorkflowBundlesController,
-      ],
+      controllers: isMainImport
+        ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
+        : [],
     };
   }
 }
