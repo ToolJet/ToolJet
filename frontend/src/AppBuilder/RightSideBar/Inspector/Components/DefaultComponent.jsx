@@ -42,6 +42,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Statistics',
   'StarRating',
   'Kanban',
+  'Html',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
