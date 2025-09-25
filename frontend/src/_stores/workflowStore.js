@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { devtools } from 'zustand/middleware';
+import { zustandDevTools } from '@/AppBuilder/_stores/utils';
 
 const useWorkflowStore = create(
-  devtools(
+  zustandDevTools(
     immer((set, get) => ({
       /* Suggestions are accessed from the MultiLine and SingleLine code editor components. */
       suggestions: {
