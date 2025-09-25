@@ -1,7 +1,7 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector, cyParamName } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -49,7 +49,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -246,4 +246,13 @@ export const verifyTooltipDisabled = (selector, message) => {
     .then(() => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
+};
+
+export const fillInputField = (data) => {
+  Object.entries(data).forEach(([key, value]) => {
+    const labelSelector = `[data-cy="${cyParamName(key)}-label"]`;
+    const inputSelector = `[data-cy="${cyParamName(key)}-input"]`;
+    cy.get(labelSelector).should("have.text", key);
+    cy.get(inputSelector).clear().type(value);
+  });
 };
