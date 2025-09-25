@@ -271,8 +271,8 @@ async function getCopilotSuggestion(body) {
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
-  return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then(
-    handleResponse({ avoidUpgradeModal: true })
+  return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
   );
 }
 
