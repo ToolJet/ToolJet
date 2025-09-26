@@ -110,9 +110,11 @@
 }
 
 
-	.app-environment-menu+.navbar-seperator {
-		display: flex;
-	}
+.app-environment-menu+.navbar-seperator {
+	display: flex;
+}
+
+
 .env-container {
 	font-family: 'IBM Plex Sans';
 	box-sizing: border-box;
@@ -189,6 +191,16 @@
 
 		&.env-arrow-roate {
 			transform: rotate(-90deg);
+		}
+	}
+}
+
+.app-environment-menu {
+	.env-container {
+		.env-header {
+			:hover {
+				opacity: 1 !important;
+			}
 		}
 	}
 }
