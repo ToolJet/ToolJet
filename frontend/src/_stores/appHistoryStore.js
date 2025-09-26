@@ -4,15 +4,17 @@ import { create, zustandDevTools } from '../AppBuilder/_stores/utils';
 
 // Initial state
 const initialState = {
-  historyEntries: [], // List of history entries to be grouped by date in UI
-  isLoading: false, // Loading state for fetching history
-  isRestoring: false, // Loading state for restore operation
+  historyEntries: [],
+  isLoading: false,
+  isRestoring: false,
   pagination: {
     page: 0,
     limit: 20,
     total: 0,
     hasMore: false,
   },
+  selectedEntry: {},
+  showRenameEntryModal: false,
 };
 
 const useAppHistoryStore = create(
@@ -122,6 +124,26 @@ const useAppHistoryStore = create(
           },
           false,
           'clearHistory'
+        );
+      },
+
+      setSelectedEntry: (entry) => {
+        set(
+          (state) => {
+            state.selectedEntry = entry;
+          },
+          false,
+          'setSelectedEntry'
+        );
+      },
+
+      setShowRenameEntryModal: (show) => {
+        set(
+          (state) => {
+            state.showRenameEntryModal = show;
+          },
+          false,
+          'setShowRenameEntryModal'
         );
       },
     })),
