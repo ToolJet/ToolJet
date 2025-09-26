@@ -4,10 +4,11 @@ import { EmailModule } from '@modules/email/module';
 import { CrmModule } from '@modules/CRM/module';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { OrganizationsAiFeatureRepository } from './organizationAiFeature.repository';
 
 @Module({})
 export class OrganizationPaymentModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const { OrganizationPaymentController, OrganizationPaymentService } = await this.getProviders(
       configs,
       'organization-payments',
@@ -21,8 +22,8 @@ export class OrganizationPaymentModule extends SubModule {
         await EmailModule.register(configs),
         await CrmModule.register(configs),
       ],
-      controllers: [OrganizationPaymentController],
-      providers: [OrganizationPaymentService, FeatureAbilityFactory],
+      controllers: isMainImport ? [OrganizationPaymentController] : [],
+      providers: [OrganizationPaymentService, FeatureAbilityFactory, OrganizationsAiFeatureRepository],
       exports: [],
     };
   }

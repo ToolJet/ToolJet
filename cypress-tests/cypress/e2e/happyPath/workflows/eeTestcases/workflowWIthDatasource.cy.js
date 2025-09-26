@@ -11,15 +11,9 @@ import {
   fillDataSourceTextField,
   selectAndAddDataSource,
 } from "Support/utils/postgreSql";
-
 import {
-  dataSourceNode,
-  verifyTextInResponseOutput,
-  connectNodeToResponse,
-  createWorkflowApp,
-  fillStartNodeInput,
-  deleteWorkflow,
-  backToWorkFlows,
+  enterJsonInputInStartNode,
+  verifyTextInResponseOutputLimited,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -34,10 +28,10 @@ describe("Workflows with Datasource", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Creating workflows with runjs and validating execution", () => {
+  it("RunJS workflow - execute and validate", () => {
     cy.createWorkflowApp(data.wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode("Run JavaScript code");
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
       force: true,
@@ -45,37 +39,39 @@ describe("Workflows with Datasource", () => {
 
     cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
       .click({ force: true })
-      .realType("return startTrigger.params", { delay: 50 });
+      .realType(workflowsText.runjsNodeCode, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(workflowsText.runjs, "return runjs1.data");
-    cy.verifyTextInResponseOutput("your value");
+    cy.connectNodeToResponseNode(
+      workflowsText.runjs,
+      workflowsText.responseNodeQuery
+    );
+    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
+
     cy.deleteWorkflow(data.wfName);
   });
 
-  it("Creating workflows with postgres and validating execution", () => {
+  it("Postgres workflow - execute and validate", () => {
+    const dsName = `cypress-${data.dataSourceName}-manual-pgsql`;
+
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-manual-pgsql`,
+      dsName,
       "postgresql",
       [
         { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
+        { key: "host", value: Cypress.env("pg_host"), encrypted: false },
         { key: "port", value: 5432, encrypted: false },
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "database", value: "postgres", encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
+        { key: "username", value: Cypress.env("pg_user"), encrypted: false },
         {
           key: "password",
-          value: `${Cypress.env("pg_password")}`,
+          value: Cypress.env("pg_password"),
           encrypted: false,
         },
         { key: "ca_cert", value: null, encrypted: true },
@@ -85,11 +81,8 @@ describe("Workflows with Datasource", () => {
         { key: "connection_string", value: null, encrypted: true },
       ]
     );
-    cy.get(
-      dataSourceSelector.dataSourceNameButton(
-        `cypress-${data.dataSourceName}-manual-pgsql`
-      )
-    )
+
+    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
       .should("be.visible")
       .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -99,66 +92,50 @@ describe("Workflows with Datasource", () => {
     cy.reload();
 
     cy.createWorkflowApp(data.wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode(`cypress-${data.dataSourceName}-manual-pgsql`);
-    cy.get(workflowSelector.nodeName(workflowsText.postgresql)).click({
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(dsName);
+
+    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
       force: true,
     });
-
     cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
-      .realType(
-        `SELECT table_name
-FROM information_schema.tables
-WHERE table_schema = 'public'
-AND table_type = 'BASE TABLE';`,
-        { delay: 50 }
-      );
+      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(
-      workflowsText.postgresql,
-      "return postgresql1.data"
+    cy.connectNodeToResponseNode(
+      workflowsText.postgresqlNodeName,
+      workflowsText.postgresResponseNodeQuery
     );
-    cy.verifyTextInResponseOutput("employees");
+    verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    deleteWorkflowAndDS(
-      data.wfName,
-      `cypress-${data.dataSourceName}-manual-pgsql`
-    );
+    deleteWorkflowAndDS(data.wfName, dsName);
   });
 
-  it("Creating workflows with rest-api and validating execution", () => {
-    cy.get(commonSelectors.globalDataSourceIcon).click();
+  it("REST API workflow - execute and validate", () => {
+    const dsName = `cypress-${data.dataSourceName}-restapi`;
+
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      `cypress-${data.dataSourceName}-restapi`,
+      dsName,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
-        { key: "auth_type", value: "basic" },
+        { key: "url", value: "https://jsonplaceholder.typicode.com" },
+        { key: "auth_type", value: "none" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
         { key: "header_prefix", value: "Bearer " },
         { key: "access_token_url", value: "" },
         { key: "client_id", value: "" },
-        {
-          key: "client_secret",
-          encrypted: true,
-          credential_id: "b044a293-82b4-4381-84fd-d173c86a6a0c",
-        },
+        { key: "client_secret", value: "", encrypted: true },
         { key: "audience", value: "" },
         { key: "scopes", value: "read, write" },
-        { key: "username", value: "user", encrypted: false },
-        { key: "password", value: "pass", encrypted: true },
-        {
-          key: "bearer_token",
-          encrypted: true,
-          credential_id: "21caf3cb-dbde-43c7-9f42-77feffb63062",
-        },
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+        { key: "bearer_token", value: "", encrypted: true },
         { key: "auth_url", value: "" },
         { key: "client_auth", value: "header" },
         { key: "headers", value: [["", ""]] },
@@ -172,40 +149,43 @@ AND table_type = 'BASE TABLE';`,
         { key: "multiple_auth_enabled", value: false, encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
         { key: "retry_network_errors", value: true, encrypted: false },
-        { key: "url_parameters", value: [["", ""]], encrypted: false },
-        { key: "tokenData", encrypted: false },
       ]
     );
-
+    cy.reload();
     cy.createWorkflowApp(data.wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode(`cypress-${data.dataSourceName}-restapi`);
-    cy.get(workflowSelector.nodeName(workflowsText.restapi)).click({
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(dsName);
+
+    cy.get(workflowSelector.nodeName(workflowsText.restapiNodeName)).click({
       force: true,
     });
-
     cy.get(workflowSelector.inputField(workflowsText.restapiUrlInputField))
       .eq(0)
       .click({ force: true })
       .clearAndTypeOnCodeMirror("")
-      .realType(`http://9.234.17.31:8000/delay/10s`, { delay: 50 });
+      .realType(workflowsText.restApiUrl, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(workflowsText.restapi, "return restapi1.data");
-    cy.verifyTextInResponseOutput("<!DOCTYPE html>");
-    deleteWorkflowAndDS(data.wfName, `cypress-${data.dataSourceName}-restapi`);
+    cy.connectNodeToResponseNode(
+      workflowsText.restapiNodeName,
+      workflowsText.restApiResponseNodeQuery
+    );
+    cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
+
+    deleteWorkflowAndDS(data.wfName, dsName);
   });
 
-  it("Creating workflows with harperdb and validating execution", () => {
+  it("HarperDB workflow - execute and validate", () => {
+    const dsName = `cypress-${data.dataSourceName}-harperdb`;
     const Host = Cypress.env("harperdb_host");
     const Port = Cypress.env("harperdb_port");
     const Username = Cypress.env("harperdb_username");
     const Password = Cypress.env("harperdb_password");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.installMarketplacePlugin("HarperDB");
+    cy.installMarketplacePlugin(workflowsText.harperDbPluginName);
 
     selectAndAddDataSource(
       "databases",
@@ -218,19 +198,16 @@ AND table_type = 'BASE TABLE';`,
       harperDbText.hostInputPlaceholder,
       Host
     );
-
     fillDataSourceTextField(
       harperDbText.portLabel,
       harperDbText.portPlaceholder,
       Port
     );
-
     fillDataSourceTextField(
       harperDbText.userNameLabel,
       harperDbText.userNamePlaceholder,
       Username
     );
-
     fillDataSourceTextField(
       harperDbText.passwordlabel,
       harperDbText.passwordPlaceholder,
@@ -252,33 +229,34 @@ AND table_type = 'BASE TABLE';`,
     );
 
     cy.createWorkflowApp(data.wfName);
-    cy.fillStartNodeInput();
-    cy.dataSourceNode(`cypress-${data.dataSourceName}-harperdb`);
-    cy.get(workflowSelector.nodeName(workflowsText.harperdb)).click({
+    enterJsonInputInStartNode();
+    cy.connectDataSourceNode(dsName);
+
+    cy.get(workflowSelector.nodeName(workflowsText.harperdbNodeName)).click({
       force: true,
     });
-
     cy.get('[data-cy$="-select-dropdown"]').click();
 
     cy.get(".react-select__menu")
       .should("be.visible")
       .within(() => {
-        cy.contains(/sql/i).click();
+        cy.contains(workflowsText.harperDbNode).click();
       });
 
     cy.get(workflowSelector.inputField(workflowsText.harperdbInputField))
       .click({ force: true })
-
-      .click()
       .clearAndTypeOnCodeMirror("")
-      .realType(`SELECT * FROM tooljet_harper.tooljet_table;`, { delay: 50 });
+      .realType(workflowsText.harperDbNodeQuery, { delay: 50 });
 
     cy.get("body").click(50, 50);
     cy.wait(500);
 
-    cy.connectNodeToResponse(workflowsText.harperdb, "return harperdb1.data");
-    cy.verifyTextInResponseOutput("Test Record 3");
+    cy.connectNodeToResponseNode(
+      workflowsText.harperdbNodeName,
+      workflowsText.harperDbResponseNodeQuery
+    );
+    cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, `cypress-${data.dataSourceName}-harperdb`);
+    deleteWorkflowAndDS(data.wfName, dsName);
   });
 });

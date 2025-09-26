@@ -265,6 +265,7 @@ const OpenApi = ({
             optionsChanged={optionsChanged}
             securities={securities}
             audience={audience}
+            workspaceConstants={workspaceConstants}
           />
         </>
       )}

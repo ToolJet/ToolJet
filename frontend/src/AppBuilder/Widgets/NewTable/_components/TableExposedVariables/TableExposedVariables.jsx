@@ -146,9 +146,8 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
-    mounted && fireEvent('onPageChanged');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
+  }, [pageIndex, setExposedVariables]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
@@ -210,10 +209,10 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
-      if (clientSidePagination) setPageIndex(targetPageIndex - 1);
+      setPageIndex(targetPageIndex - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables, clientSidePagination]);
+  }, [setPageIndex, setExposedVariables]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
@@ -247,7 +246,7 @@ export const TableExposedVariables = ({
       lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
-      if (key && value) {
+      if (key && (value !== undefined || value !== null)) {
         selectRow(key, value);
       }
     } else {
@@ -299,8 +298,41 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-    setExposedVariables({ selectRow, deselectRow });
-  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection]);
+
+    function selectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = true;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    function deselectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = false;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    setExposedVariables({ selectRow, deselectRow, selectRows, deselectRows });
+  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection, fireEvent, table]);
 
   // CSA to set & clear filters
   useEffect(() => {

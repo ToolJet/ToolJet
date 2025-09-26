@@ -78,24 +78,6 @@ sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 # Start and enable Redis service
 sudo systemctl daemon-reload
 
-
-# Setup Neo4j with APOC plugin
-wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
-echo "deb https://debian.neo4j.com stable 5" | sudo tee /etc/apt/sources.list.d/neo4j.list
-sudo apt-get update
-sudo apt-get install -y neo4j=1:5.26.6
-sudo apt-mark hold neo4j
-
-# Setup APOC plugin
-sudo mkdir -p /var/lib/neo4j/plugins
-sudo wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar
-
-# Update Neo4j config
-echo "dbms.security.procedures.unrestricted=apoc.*" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.directories.plugins=/var/lib/neo4j/plugins" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.security.auth_enabled=true" | sudo tee -a /etc/neo4j/neo4j.conf
-
 # Clean up APT cache
 sudo apt-get clean
 sudo rm -rf /var/lib/apt/lists/*

@@ -124,6 +124,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'PopoverMenu',
   'Statistics',
   'StarRating',
+  'CustomComponent',
+  'Html',
 ];
 
 export const Inspector = ({

@@ -9,6 +9,7 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { navigateToManageUsers, logout } from "Support/utils/common";
+import { getUser } from "Support/utils/api";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {
@@ -636,15 +637,36 @@ export const addAppToGroup = (appName) => {
 
 export const createGroup = (groupName) => {
   return cy.getAuthHeaders().then((headers) => {
-    return cy.request({
-      method: "POST",
-      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+        headers: headers,
+        body: { name: groupName },
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body.id; // Returns the group ID as resolved value
+      });
+  });
+};
+
+export const apiDeleteGroup = (groupId) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
       headers: headers,
-      body: { name: groupName },
     }).then((response) => {
-      expect(response.status).to.equal(201);
-      return response.body.id; // Returns the group ID as resolved value
+      expect(response.status).to.equal(200);
     });
+  });
+};
+
+export const deleteGroup = (groupName, workspaceId) => {
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM permission_groups WHERE name='${groupName}' AND organization_id='${workspaceId}';`,
   });
 };
 
@@ -665,9 +687,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             canEdit: true,
             canView: false,
             hideFromDashboard: false,
-            resourcesToAdd: [
-              { appId: Cypress.env("appId") },
-            ],
+            resourcesToAdd: [{ appId: Cypress.env("appId") }],
           },
         },
       }).then((response) => {
@@ -695,7 +715,6 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
     });
   });
 };
-
 
 export const OpenGroupCardOption = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName))
@@ -925,4 +944,17 @@ export const setupAndUpdateRole = (currentRole, endRole, email) => {
   updateRole(currentRole, endRole, email);
   cy.wait(1000);
   cy.apiLogout();
+};
+
+export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
+  cy.get(userIdAlias).then((userId) => {
+    getUser(userId).then((response) => {
+      const groupNames = response.body.userGroups.map((g) => g.name);
+      if (expectedGroups) {
+        expectedGroups.forEach((group) => expect(groupNames).to.include(group));
+      }
+      const roleName = response.body.workspaces[0].userPermission.name;
+      expect(roleName).to.equal(expectedRole);
+    });
+  });
 };
