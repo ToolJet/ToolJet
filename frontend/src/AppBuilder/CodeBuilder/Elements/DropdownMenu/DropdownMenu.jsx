@@ -215,7 +215,7 @@ export const DropdownMenu = (props) => {
                 {...(searchValue && { trailingAction: 'clear' })}
               />
             </div>
-            {queryOptions.length > 0 ? (
+            {filteredQueries.length > 0 ? (
               <>
                 {/* Query options section */}
                 <div className="dropdown-menu-items dropdown-menu-body dropdown-menu-body-transparent-scrollbar">
@@ -239,9 +239,13 @@ export const DropdownMenu = (props) => {
                   <div className="dropdown-empty-state-content-icon">
                     <FileCode2 color="var(--icon-default)" width={20} height={20} />
                   </div>
-                  <span className="dropdown-empty-state-content-title">No queries created</span>
+                  <span className="dropdown-empty-state-content-title">
+                    {dataQueries.length === 0 ? 'No queries created' : 'No queries found'}
+                  </span>
                   <span className="dropdown-empty-state-content-description">
-                    Create your first query to fetch and display data in your table
+                    {dataQueries.length === 0
+                      ? 'Create your first query to fetch and display data in your table'
+                      : 'Try a different search term or create a new query below'}
                   </span>
                 </div>
               </div>
