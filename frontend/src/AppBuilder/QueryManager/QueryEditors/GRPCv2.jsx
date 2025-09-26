@@ -1,4 +1,5 @@
 import React from 'react';
+import Fuse from 'fuse.js';
 import { Tab, ListGroup, Row, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import cx from 'classnames';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -9,21 +10,63 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import './grpcv2.scss';
 
-const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled, darkMode }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [expandedServices, setExpandedServices] = React.useState(() =>
-    new Set(options.map(service => service.label))
-  );
-  const dropdownRef = React.useRef(null);
+// Custom hook for debouncing values
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = React.useState(value);
 
   React.useEffect(() => {
-    setExpandedServices(new Set(options.map(service => service.label)));
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled, darkMode, isLoading }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [expandedServices, setExpandedServices] = React.useState(
+    () => new Set(options.map((service) => service.label))
+  );
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [isSearchMode, setIsSearchMode] = React.useState(false);
+  const dropdownRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+
+  // Debounce search term to reduce search frequency
+  const debouncedSearchTerm = useDebounce(searchTerm, 150);
+
+  // Pre-compute search index when options change
+  const searchIndex = React.useMemo(() => {
+    const allMethods = options.flatMap((service) =>
+      service.methods.map((method) => ({
+        ...method,
+        serviceLabel: service.label,
+        serviceValue: service.value,
+      }))
+    );
+
+    return new Fuse(allMethods, {
+      keys: ['label', 'serviceLabel'],
+      threshold: 0.4,
+      shouldSort: true,
+    });
+  }, [options]);
+
+  React.useEffect(() => {
+    setExpandedServices(new Set(options.map((service) => service.label)));
   }, [options]);
 
   React.useEffect(() => {
     if (disabled) {
       setIsOpen(false);
       setExpandedServices(new Set());
+      setIsSearchMode(false);
+      setSearchTerm('');
     }
   }, [disabled]);
 
@@ -31,14 +74,16 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
+        setIsSearchMode(false);
+        setSearchTerm('');
       }
     };
 
-    if (isOpen) {
+    if (isOpen || isSearchMode) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [isOpen]);
+  }, [isOpen, isSearchMode]);
 
   const toggleService = (serviceName) => {
     const newExpanded = new Set(expandedServices);
@@ -53,114 +98,182 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
   const selectMethod = (methodOption) => {
     if (methodOption.disabled) return;
     onChange(methodOption);
-    setTimeout(() => setIsOpen(false), 0);
+    setIsOpen(false);
+    setIsSearchMode(false);
+    setSearchTerm('');
   };
 
   const getDisplayValue = () => {
     if (disabled) return placeholder;
+    if (isSearchMode) return searchTerm;
 
-    const selectedMethod = options
-      .flatMap(service => service.methods)
-      .find(method => method.value === value);
+    const selectedMethod = options.flatMap((service) => service.methods).find((method) => method.value === value);
     return selectedMethod ? `${selectedMethod.serviceName} → ${selectedMethod.label}` : placeholder;
   };
 
+  const handleInputChange = (inputValue) => {
+    setSearchTerm(inputValue);
+    if (inputValue.trim() && !isOpen) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleInputFocus = () => {
+    setIsSearchMode(true);
+    setIsOpen(true);
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setIsSearchMode(false);
+      setSearchTerm('');
+      setIsOpen(false);
+      inputRef.current?.blur();
+    }
+  };
+
+  // Optimized fuzzy search using pre-computed index and debounced search term
+  const getFilteredOptions = React.useMemo(() => {
+    if (!debouncedSearchTerm.trim()) return options;
+
+    // Use pre-computed search index
+    const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
+
+    // Group results by service using optimized approach
+    const grouped = {};
+    results.forEach((method) => {
+      if (!grouped[method.serviceLabel]) {
+        grouped[method.serviceLabel] = {
+          ...options.find((s) => s.label === method.serviceLabel),
+          methods: [],
+        };
+      }
+      grouped[method.serviceLabel].methods.push(method);
+    });
+    return Object.values(grouped);
+  }, [debouncedSearchTerm, options, searchIndex]);
+
   return (
-    <div ref={dropdownRef} className={cx('grpcv2-dropdown', {
-      'grpcv2-dropdown--dark': darkMode
-    })}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
+    <div
+      ref={dropdownRef}
+      className={cx('grpcv2-dropdown', {
+        'grpcv2-dropdown--dark': darkMode,
+      })}
+    >
+      <div
         className={cx('grpcv2-dropdown__button', {
-          'grpcv2-dropdown__button--open': isOpen
+          'grpcv2-dropdown__button--open': isOpen,
+          'grpcv2-dropdown__button--search': isSearchMode,
         })}
       >
-        <span className="grpcv2-dropdown__button__text">
-          {getDisplayValue()}
-        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          disabled={disabled}
+          value={isSearchMode ? searchTerm : ''}
+          placeholder={getDisplayValue()}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={handleInputFocus}
+          onKeyDown={handleInputKeyDown}
+          className={cx('grpcv2-dropdown__input', {
+            'grpcv2-dropdown__input--search': isSearchMode,
+            'grpcv2-dropdown__input--display': !isSearchMode,
+          })}
+        />
+        {!isSearchMode && (
+          <div
+            className="grpcv2-dropdown__overlay"
+            onClick={() => {
+              if (!disabled) {
+                setIsSearchMode(true);
+                setIsOpen(true);
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }
+            }}
+          >
+            <span className="grpcv2-dropdown__button__text">{getDisplayValue()}</span>
+          </div>
+        )}
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           className={cx('grpcv2-dropdown__button__arrow', {
-            'grpcv2-dropdown__button__arrow--open': isOpen
+            'grpcv2-dropdown__button__arrow--open': isOpen,
           })}
+          onClick={() => {
+            if (!disabled && !isSearchMode) {
+              setIsOpen(!isOpen);
+            }
+          }}
         >
-          <path
-            d="M4 6l4 4 4-4"
-            stroke="#6a727c"
-            strokeWidth="1.5"
-            fill="none"
-          />
+          <path d="M4 6l4 4 4-4" stroke="#6a727c" strokeWidth="1.5" fill="none" />
         </svg>
-      </button>
+      </div>
 
       {isOpen && (
         <div className="grpcv2-dropdown__menu">
-          {options.map((service, index) => (
-            <React.Fragment key={service.value}>
-              {index > 0 && (
-                <div className="grpcv2-dropdown__separator" />
-              )}
-              <div>
-                <div
-                  onClick={() => toggleService(service.label)}
-                  className="grpcv2-dropdown__service"
-                >
-                  <span className="grpcv2-dropdown__service__name">{service.label}</span>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    className={cx('grpcv2-dropdown__service__arrow', {
-                      'grpcv2-dropdown__service__arrow--collapsed': !expandedServices.has(service.label)
-                    })}
-                  >
-                    <path
-                      d="M5 8l5-5 5 5"
-                      stroke="#687076"
-                      strokeWidth="1.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-
-                {expandedServices.has(service.label) && service.methods.map((method) => (
-                  <div
-                    key={method.value}
-                    onClick={() => !method.disabled && selectMethod(method)}
-                    className={cx('grpcv2-dropdown__method', {
-                      'grpcv2-dropdown__method--disabled': method.disabled,
-                      'grpcv2-dropdown__method--selected': method.value === value
-                    })}
-                  >
-                    <ArrowUpDown
+          {(isLoading || (options.length === 0 && !debouncedSearchTerm.trim())) ? (
+            <div className="grpcv2-dropdown__loading">Loading services...</div>
+          ) : getFilteredOptions.length === 0 ? (
+            <div className="grpcv2-dropdown__no-results">No results found</div>
+          ) : (
+            getFilteredOptions.map((service, index) => (
+              <React.Fragment key={service.value}>
+                {index > 0 && <div className="grpcv2-dropdown__separator" />}
+                <div>
+                  <div onClick={() => toggleService(service.label)} className="grpcv2-dropdown__service">
+                    <span className="grpcv2-dropdown__service__name">{service.label}</span>
+                    <svg
                       width="20"
-                      fill={method.isStreaming ? "#889096" : "#4368e3"}
-                    />
-                    {method.disabled ? (
-                      <OverlayTrigger
-                        placement="right"
-                        overlay={
-                          <Tooltip id={`tooltip-${method.value}`} className="grpcv2-streaming-tooltip">
-                            Streaming RPCs are not supported currently
-                          </Tooltip>
-                        }
-                      >
-                        <span className="grpcv2-dropdown__method__name">{method.label}</span>
-                      </OverlayTrigger>
-                    ) : (
-                      <span className="grpcv2-dropdown__method__name">{method.label}</span>
-                    )}
+                      height="20"
+                      viewBox="0 0 20 20"
+                      className={cx('grpcv2-dropdown__service__arrow', {
+                        'grpcv2-dropdown__service__arrow--collapsed': !expandedServices.has(service.label),
+                      })}
+                    >
+                      <path
+                        d="M5 8l5-5 5 5"
+                        stroke="#687076"
+                        strokeWidth="1.5"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </div>
-                ))}
-              </div>
-            </React.Fragment>
-          ))}
+
+                  {expandedServices.has(service.label) &&
+                    service.methods.map((method) => (
+                      <div
+                        key={method.value}
+                        onClick={() => !method.disabled && selectMethod(method)}
+                        className={cx('grpcv2-dropdown__method', {
+                          'grpcv2-dropdown__method--disabled': method.disabled,
+                          'grpcv2-dropdown__method--selected': method.value === value,
+                        })}
+                      >
+                        <ArrowUpDown width="20" fill={method.isStreaming ? '#889096' : '#4368e3'} />
+                        {method.disabled ? (
+                          <OverlayTrigger
+                            placement="right"
+                            overlay={
+                              <Tooltip id={`tooltip-${method.value}`} className="grpcv2-streaming-tooltip">
+                                Streaming RPCs are not supported currently
+                              </Tooltip>
+                            }
+                          >
+                            <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                          </OverlayTrigger>
+                        ) : (
+                          <span className="grpcv2-dropdown__method__name">{method.label}</span>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </React.Fragment>
+            ))
+          )}
         </div>
       )}
     </div>
@@ -191,7 +304,6 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     }
     return [['', '']];
   });
-
 
   // Handle query switching - reset state when switching to a different query
   React.useEffect(() => {
@@ -239,17 +351,17 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         throw new Error('Failed to discover services');
       }
 
-      const servicesArray = Array.isArray(result.data) ? result.data : (result.data || []);
+      const servicesArray = Array.isArray(result.data) ? result.data : result.data || [];
       let restoredService = null;
       let restoredMethod = null;
 
       if (options?.service && servicesArray.length > 0) {
-        const foundService = servicesArray.find(s => s.name === options.service);
+        const foundService = servicesArray.find((s) => s.name === options.service);
         if (foundService) {
           restoredService = foundService;
 
           if (options?.method) {
-            const foundMethod = foundService.methods.find(m => m.name === options.method);
+            const foundMethod = foundService.methods.find((m) => m.name === options.method);
             if (foundMethod) {
               restoredMethod = foundMethod;
             }
@@ -307,7 +419,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     }
 
     const { serviceName, methodName, method } = selectedOption;
-    const service = servicesData.services.find(s => s.name === serviceName);
+    const service = servicesData.services.find((s) => s.name === serviceName);
 
     setSelectedService(service);
     setSelectedMethod(method);
@@ -374,13 +486,13 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     optionsChanged(updatedOptions);
   };
 
-  const hierarchicalOptions = servicesData.services.map(service => ({
+  const hierarchicalOptions = servicesData.services.map((service) => ({
     type: 'service',
     label: service.name,
     value: `service:${service.name}`,
     service: service,
     methods: service.methods
-      .map(method => ({
+      .map((method) => ({
         type: 'method',
         label: method.name,
         value: `${service.name}:${method.name}`,
@@ -394,23 +506,21 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         if (a.disabled && !b.disabled) return 1;
         if (!a.disabled && b.disabled) return -1;
         return a.label.localeCompare(b.label);
-      })
+      }),
   }));
 
   return (
     <div className="grpcv2-container">
       <div className="d-flex grpcv2-request-section">
-        <div className="d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500">
-          Request
-        </div>
+        <div className="d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500">Request</div>
         <div className="d-flex flex-column align-items-start grpcv2-request-section__content">
           <div className="d-flex grpcv2-request-section__fields">
-            <div className={cx('grpcv2-server-url', {
-              'grpcv2-server-url--dark': darkMode
-            })}>
-              <span className="grpcv2-server-url__text">
-                {serverUrl}
-              </span>
+            <div
+              className={cx('grpcv2-server-url', {
+                'grpcv2-server-url--dark': darkMode,
+              })}
+            >
+              <span className="grpcv2-server-url__text">{serverUrl}</span>
             </div>
 
             <div className="flex-grow-1">
@@ -418,13 +528,20 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                 options={hierarchicalOptions}
                 value={getSelectionValue()}
                 onChange={selectMethod}
-                placeholder={(options?.service && options?.method)
-                  ? `${options.service} → ${options.method}`
-                  : (isLoadingServices
-                    ? "Loading services..."
-                    : (hierarchicalOptions.length === 0 ? "No services found" : "Select service"))}
-                disabled={(!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)}
+                placeholder={
+                  options?.service && options?.method
+                    ? `${options.service} → ${options.method}`
+                    : isLoadingServices
+                    ? 'Loading services...'
+                    : hierarchicalOptions.length === 0
+                    ? 'No services found'
+                    : 'Select service'
+                }
+                disabled={
+                  (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)
+                }
                 darkMode={darkMode}
+                isLoading={isLoadingServices}
               />
             </div>
           </div>
@@ -491,10 +608,7 @@ const ControlledTabs = ({
         </div>
 
         <div className="col tw-pl-0">
-          <Tab.Content
-            bsPrefix="rest-api-tab-content"
-            className="query-manager-border-color rounded"
-          >
+          <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
             <Tab.Pane eventKey="metadata" bsPrefix="rest-api-tabpanes" transition={false}>
               <GRPCv2Component.TabContent
                 options={metadata}
@@ -594,8 +708,9 @@ const TabContent = ({
                 />
               </div>
               <button
-                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${darkMode ? 'delete-field-option-dark' : ''
-                  }`}
+                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
+                  darkMode ? 'delete-field-option-dark' : ''
+                }`}
                 role="button"
                 onClick={() => {
                   removeKeyValuePair(index);
@@ -616,7 +731,7 @@ const BaseUrl = ({ dataSourceURL, theme }) => {
     <span
       className={cx('col-6 grpcv2-base-url', {
         'grpcv2-base-url--default': theme === 'default',
-        'grpcv2-base-url--dark': theme !== 'default'
+        'grpcv2-base-url--dark': theme !== 'default',
       })}
       htmlFor=""
     >
