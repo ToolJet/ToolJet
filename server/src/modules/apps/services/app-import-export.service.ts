@@ -2723,6 +2723,17 @@ function migrateProperties(
     }
   }
 
+  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
+  // The migration for Kanban will then be handled automatically along with other revamped components.
+  if (['Kanban'].includes(componentType)) {
+    if (general?.tooltip) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
+      delete general?.tooltip;
+    }
+  }
+
   return { properties, styles, general, generalStyles, validation };
 }
 

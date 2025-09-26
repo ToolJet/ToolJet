@@ -41,6 +41,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'StarRating',
   'PopoverMenu',
   'Tags',
+  'Kanban',
 ];
 
 const RenderWidget = ({
