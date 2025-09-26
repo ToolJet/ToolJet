@@ -105,7 +105,7 @@
         scrollbar-color: #8890991F transparent;
 
         &::-webkit-scrollbar {
-            width: 10px;
+            width: 10px !important;
             height: 50px;
           }
         

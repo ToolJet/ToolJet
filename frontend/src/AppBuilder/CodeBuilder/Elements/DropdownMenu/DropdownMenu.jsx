@@ -100,6 +100,7 @@ export const DropdownMenu = (props) => {
     setSelectedSource(option);
     expandQueryPaneIfNeeded();
     onChange(`{{queries.${id}.data}}`);
+    setIsOpen(false);
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -239,14 +240,26 @@ export const DropdownMenu = (props) => {
                   <div className="dropdown-empty-state-content-icon">
                     <FileCode2 color="var(--icon-default)" width={20} height={20} />
                   </div>
-                  <span className="dropdown-empty-state-content-title">
-                    {dataQueries.length === 0 ? 'No queries created' : 'No queries found'}
-                  </span>
-                  <span className="dropdown-empty-state-content-description">
-                    {dataQueries.length === 0
-                      ? 'Create your first query to fetch and display data in your table'
-                      : 'Try a different search term or create a new query below'}
-                  </span>
+                  {dataQueries.length === 0 && (
+                    <span className="dropdown-empty-state-content-title">No queries created</span>
+                  )}
+                  {dataQueries.length === 0 ? (
+                    <span className="dropdown-empty-state-content-description">
+                      Create your first query to fetch and display data in your table
+                    </span>
+                  ) : (
+                    <>
+                      <span className="dropdown-empty-state-content-description" style={{ marginTop: '8px' }}>
+                        No queries found matching
+                      </span>
+                      <span
+                        className="dropdown-empty-state-content-description"
+                        style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                      >
+                        ‘{searchValue}’
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             )}

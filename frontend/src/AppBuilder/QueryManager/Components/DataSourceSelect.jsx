@@ -25,6 +25,7 @@ function DataSourceSelect({
   onNewNode,
   defaultDataSources,
   onQueryCreate,
+  skipClosePopup = false,
 }) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
@@ -44,7 +45,9 @@ function DataSourceSelect({
   const handleChangeDataSource = (source) => {
     createDataQuery(source, false, {}, 'canvas', null, { callbackFunction: onQueryCreate });
     setPreviewData(null);
-    closePopup();
+    if (!skipClosePopup) {
+      closePopup();
+    }
   };
 
   useEffect(() => {

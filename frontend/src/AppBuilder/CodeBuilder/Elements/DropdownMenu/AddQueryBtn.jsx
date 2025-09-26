@@ -34,6 +34,7 @@ const AddQueryBtn = ({ darkMode, disabled: _disabled, onQueryCreate, showMenu, s
             darkMode={darkMode}
             closePopup={() => setShowMenu(false)}
             onQueryCreate={onQueryCreate}
+            skipClosePopup={true}
           />
         </Popover>
       }
