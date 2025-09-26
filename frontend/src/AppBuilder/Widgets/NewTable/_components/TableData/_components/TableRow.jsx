@@ -109,15 +109,11 @@ export const TableRow = ({
                 return;
               }
 
-              if (
-                isEditable ||
-                (['rightActions', 'leftActions'].includes(cell.column.id) &&
-                  allowSelection &&
-                  (!selectRowOnCellEdit || row.getIsSelected()))
-              ) {
-                // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
+              if (isEditable && allowSelection && !selectRowOnCellEdit) {
                 e.stopPropagation();
+                fireEvent('onRowClicked');
               }
+
               setExposedVariables({
                 selectedCell: {
                   columnName: cell.column.columnDef?.header,

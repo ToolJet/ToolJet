@@ -34,5 +34,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_WORKFLOW]: {
       auditLogsKey: 'CREATE_WORKFLOW',
     },
+
+    [FEATURE_KEY.NPM_PACKAGES]: {
+      auditLogsKey: 'NPM_PACKAGES',
+    },
   },
 };

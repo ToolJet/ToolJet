@@ -19,6 +19,7 @@ interface Features {
   [FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW]: FeatureConfig;
   [FEATURE_KEY.UPDATE_WORKFLOW_WEBHOOK_DETAILS]: FeatureConfig;
   [FEATURE_KEY.CREATE_WORKFLOW]: FeatureConfig;
+  [FEATURE_KEY.NPM_PACKAGES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
