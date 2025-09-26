@@ -141,7 +141,7 @@ export class OnboardingService implements IOnboardingService {
             manager
           );
         }
-        return await this.onboardingUtilService.createUserInWorkspace(
+        return await this.onboardingUtilService.createUserOrPersonalWorkspace(
           userParams,
           existingUser,
           signingUpOrganization,
