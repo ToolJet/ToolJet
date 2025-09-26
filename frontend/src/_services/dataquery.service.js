@@ -11,11 +11,13 @@ export const dataqueryService = {
   changeQueryDataSource,
   updateStatus,
   bulkUpdateQueryOptions,
+  createWorkflowQuery,
+  invoke,
 };
 
-function getAll(appVersionId) {
+function getAll(appVersionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${appVersionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
 function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
@@ -34,6 +36,21 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     `${config.apiUrl}/data-queries/data-sources/${data_source_id}/versions/${app_version_id}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
+  const body = {
+    app_id,
+    app_version_id,
+    name,
+    kind,
+    options,
+    data_source_id,
+    plugin_id,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data-queries/workflow-node`, requestOptions).then(handleResponse);
 }
 
 function update(id, versionId, name, options, dataSourceId) {
@@ -72,7 +89,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -80,7 +97,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId) {
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
-  }`;
+  }?mode=${mode}`;
 
   //For public/released apps
   if (!environmentId || !versionId) {
@@ -117,4 +134,21 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}/data-source`, requestOptions).then(
     handleResponse
   );
+}
+
+function invoke(dataSourceId, methodName, environmentId) {
+  const body = {
+    method: methodName,
+    environmentId: environmentId
+  };
+
+  const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+
+  const requestOptions = { 
+    method: 'POST', 
+    headers: authHeader(), 
+    credentials: 'include', 
+    body: JSON.stringify(body) 
+  };
+  return fetch(url, requestOptions).then(handleResponse);
 }

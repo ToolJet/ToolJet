@@ -4,19 +4,30 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const Color = ({
   value,
   onChange,
   pickerStyle = {},
+  colorMap = {},
   cyLabel,
   asBoxShadowPopover = true,
   meta,
   outerWidth = '142px',
   component,
   styleDefinition,
+  componentType = 'color',
+  CustomOptionList = () => {},
+  SwatchesToggle = () => {},
+  componentId,
 }) => {
-  value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
+  const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  if (component == 'PopoverMenu') {
+    value = computeColorForPopoverMenu(value, meta, componentId);
+  } else if (component == 'Button') {
+    value = computeColor(styleDefinition, value, meta);
+  }
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -68,9 +79,11 @@ export const Color = ({
   const ColorPicker = () => {
     return (
       <>
-        {showPicker && (
+        {SwatchesToggle()}
+        {showPicker && componentType === 'swatches' && CustomOptionList()}
+        {showPicker && componentType === 'color' && (
           <div>
-            <div style={coverStyles} onClick={() => setShowPicker(false)} />
+            {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
@@ -93,21 +106,18 @@ export const Color = ({
         style={outerStyles}
       >
         <div
-          className="col-auto"
+          className="color-icon"
           style={{
-            float: 'right',
-            width: '24px',
-            height: '24px',
-            borderRadius: ' 6px',
-            border: `1px solid var(--slate7, #D7DBDF)`,
-            boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
+            marginLeft: '4px',
             backgroundColor: value,
           }}
           data-cy={`${String(cyLabel)}-picker-icon`}
         ></div>
 
         <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
-          {value}
+          {colorMap?.[value]
+            ? 'Brand/' + colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1)
+            : value}
         </div>
       </div>
     );

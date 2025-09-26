@@ -27,6 +27,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
+  const currentEnvironment = useStore((state) => state.selectedEnvironment);
   const paramListContainerRef = useRef(null);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
@@ -226,6 +227,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           darkMode={darkMode}
           isEditMode={true} // Made TRUE always to avoid setting default options again
           queryName={queryName}
+          currentEnvironment={currentEnvironment}
           onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
         />
       </div>
@@ -304,17 +306,16 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
-      .filter((ds) => ds.kind === selectedQuery?.kind);
+      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
     if (isEmpty(selectableDataSources)) {
       return '';
     }
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
-
+      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -412,7 +413,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
           {activeTab === 3 && renderQueryOptions()}
-          <div className="pb-5" />
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}

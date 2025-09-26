@@ -9,7 +9,10 @@ import useStore from '@/AppBuilder/_stores/store';
 export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { delay: 150 },
+      activationConstraint: { 
+        delay: 250,
+        distance: 10
+      },
     })
     // useSensor(KeyboardSensor, {
     //   coordinateGetter: sortableKeyboardCoordinates,
@@ -36,7 +39,7 @@ export function SortableList({ items, onChange, renderItem }) {
       }}
     >
       <SortableContext items={items}>
-        {items.map((item) => (
+        {items?.map((item) => (
           <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
         ))}
       </SortableContext>

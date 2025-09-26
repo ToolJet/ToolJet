@@ -29,8 +29,7 @@ export class SetupOrganizationsController implements ISetupOrganizationsControll
     @Res({ passthrough: true }) response: Response
   ) {
     const result = await this.setupOrganizationsService.create(
-      organizationCreateDto.name,
-      organizationCreateDto.slug,
+      { name: organizationCreateDto.name, slug: organizationCreateDto.slug },
       user
     );
 

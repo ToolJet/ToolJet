@@ -15,6 +15,29 @@
       "api_key": {
         "type": "string",
         "encrypted": true
+      },
+      "provider": {
+        "type": "string"
+      },
+      "oauth2": {
+        "type": "boolean"
+      },
+      "code": {
+        "type": "string",
+        "encrypted": true
+      },
+      "access_type": {
+        "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "credential_source": {
+        "type": "string"
       }
     },
     "customTesting": true,

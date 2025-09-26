@@ -535,12 +535,11 @@ const RenderFilterSection = ({ darkMode }) => {
 
           <ButtonSolid
             customStyles={{
-              height: '30px',
               maxWidth: '30px',
             }}
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border rounded-end col-2"
+            className="px-1 rounded-0 border rounded-end col-2 qm-delete-btn"
             onClick={() => removeFilterConditionEntry(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />

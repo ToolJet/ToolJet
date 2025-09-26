@@ -20,19 +20,6 @@ export const modalConfig = {
         defaultValue: 'This title can be changed',
       },
     },
-    titleAlignment: {
-      type: 'select',
-      displayName: 'Title alignment',
-      options: [
-        { name: 'left', value: 'left' },
-        { name: 'center', value: 'center' },
-        { name: 'right', value: 'right' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'left',
-      },
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -94,27 +81,27 @@ export const modalConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     headerTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header title color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     bodyBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#ffffffff',
+        defaultValue: 'var(--cc-surface1-surface)',
       },
     },
     disabledState: {
@@ -134,7 +121,7 @@ export const modalConfig = {
       },
     },
     triggerButtonBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button background color',
       validation: {
         schema: { type: 'string' },
@@ -142,7 +129,7 @@ export const modalConfig = {
       },
     },
     triggerButtonTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button text color',
       validation: {
         schema: { type: 'string' },
@@ -183,12 +170,12 @@ export const modalConfig = {
     },
     events: [],
     styles: {
-      headerBackgroundColor: { value: '#ffffffff' },
-      headerTextColor: { value: '#000000' },
-      bodyBackgroundColor: { value: '#ffffffff' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerTextColor: { value: 'var(--cc-primary-text)' },
+      bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      triggerButtonBackgroundColor: { value: '#4D72FA' },
+      triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

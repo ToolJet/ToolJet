@@ -9,9 +9,12 @@ import { IPageHelperService } from '../interfaces/services/IPageUtilService';
 
 @Injectable()
 export class PageHelperService implements IPageHelperService {
-  constructor(protected eventHandlerService: EventsService, protected licenseTermsService: LicenseTermsService) {}
+  constructor(
+    protected eventHandlerService: EventsService,
+    protected licenseTermsService: LicenseTermsService
+  ) {}
 
-  public async fetchPages(appVersionId: string): Promise<Page[]> {
+  public async fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     let allPages = [];
     return await dbTransactionWrap(async (manager: EntityManager) => {
       allPages = await manager.find(Page, {
@@ -25,10 +28,10 @@ export class PageHelperService implements IPageHelperService {
       });
 
       return allPages;
-    });
+    }, manager);
   }
 
-  public async reorderPages(udpateObject, appVersionId: string): Promise<void> {
+  public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const updateArr = [];
       const diff = udpateObject.diff;
@@ -40,36 +43,42 @@ export class PageHelperService implements IPageHelperService {
     }, appVersionId);
   }
 
-  public async rearrangePagesOrderPostDeletion(pageDeleted: Page, manager: EntityManager): Promise<void> {
-    const appVersionId = pageDeleted.appVersionId;
-    // if user is not licensed, then just update the index of the pages
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const pages = await manager.find(Page, {
-        where: {
-          appVersionId: pageDeleted.appVersionId,
-          isPageGroup: false,
-        },
-        order: {
-          index: 'ASC',
-        },
-      });
-      const updateArr = [];
-      pages.forEach((page, index) => {
-        updateArr.push(
-          manager.update(Page, page.id, {
-            index,
-          })
-        );
-      });
-      await Promise.all(updateArr);
-    }, appVersionId);
+  public async rearrangePagesOrderPostDeletion(
+    pageDeleted: Page,
+    manager: EntityManager,
+    organizationId: string
+  ): Promise<void> {
+    // Use the existing manager to avoid nested transactions
+    const pages = await manager.find(Page, {
+      where: {
+        appVersionId: pageDeleted.appVersionId,
+        isPageGroup: false,
+      },
+      order: {
+        index: 'ASC',
+      },
+    });
+    const updateArr = [];
+    for (let i = 0; i < pages.length; i++) {
+      updateArr.push(
+        manager.update(Page, pages[i].id, {
+          index: i,
+        })
+      );
+    }
+    await Promise.all(updateArr);
   }
 
-  public async deletePageGroup(page: Page, appVersionId: string, deleteAssociatedPages: boolean): Promise<void> {
+  public async deletePageGroup(
+    page: Page,
+    appVersionId: string,
+    deleteAssociatedPages: boolean,
+    organizationId: string
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  public async preparePageObject(dto: CreatePageDto, appVersionId: string): Promise<Page> {
+  public async preparePageObject(dto: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
     const page = new Page();
     page.id = dto.id;
     page.name = dto.name;
@@ -77,6 +86,14 @@ export class PageHelperService implements IPageHelperService {
     page.appVersionId = appVersionId;
     page.autoComputeLayout = true;
     page.index = dto.index;
+    page.appId = dto.appId;
+    page.url = dto.url;
+    page.type = dto.type;
+    page.openIn = dto.openIn;
     return page;
+  }
+
+  public async findModuleContainer(appVersionId: string, organizationId: string): Promise<void> {
+    return null;
   }
 }

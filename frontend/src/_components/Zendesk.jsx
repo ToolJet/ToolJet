@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Input from '@/_ui/Input';
@@ -18,17 +18,26 @@ const Zendesk = ({
   isDisabled,
   optionsChanged,
 }) => {
+  const [whiteLabelText, setWhiteLabelText] = useState('');
   const [authStatus, setAuthStatus] = useState(null);
-  const whiteLabelText = retrieveWhiteLabelText();
+  useEffect(() => {
+    async function fetchLabel() {
+      const text = await retrieveWhiteLabelText();
+      setWhiteLabelText(text);
+    }
+    fetchLabel();
+  }, []);
 
   function authZendesk() {
     const provider = 'zendesk';
     setAuthStatus('waiting_for_url');
 
     const scope = options?.access_type?.value === 'read' ? 'read' : 'read%20write';
+    const subDomain = options?.subdomain?.value;
+    const client_id = options?.client_id?.value;
 
     try {
-      const authUrl = `https://${options?.subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${options?.client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
+      const authUrl = `https://${subDomain}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${client_id}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
       localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
       optionchanged('provider', provider).then(() => {

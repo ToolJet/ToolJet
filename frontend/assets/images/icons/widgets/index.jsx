@@ -13,8 +13,6 @@ import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
 import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
-import Divider from './divider.jsx';
-import DividerHorizondal from './dividerhorizontal.jsx';
 import Downstatistics from './downstatistics.jsx';
 import Dropdown from './dropdown.jsx';
 import Filepicker from './filepicker.jsx';
@@ -59,8 +57,15 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
 import DatepickerV2 from './datepickerv2.jsx';
+import HorizontalDivider from './horizontalDivider.jsx';
+import PhoneInput from './phoneinput.jsx';
+import EmailInput from './emailinput.jsx';
+import Chat from './chat.jsx';
+import CurrencyInput from './currencyinput.jsx';
+import PopoverMenu from './popovermenu.jsx';
 
 const WidgetIcon = (props) => {
+  // TO_DO -> Use widget type instead of widget name
   switch (props.name) {
     case 'boundedbox':
       return <BoundedBox {...props} />;
@@ -86,9 +91,8 @@ const WidgetIcon = (props) => {
       return <Customcomponent {...props} />;
     case 'datetimepickerlegacy':
       return <Datepicker {...props} />;
+    case 'datepickerlegacy':
     case 'datepicker':
-      return <Datepicker {...props} />;
-    case 'datepickerv2':
       return <DatepickerV2 {...props} />;
     case 'timepicker':
       return <TimePicker {...props} />;
@@ -99,16 +103,19 @@ const WidgetIcon = (props) => {
       return <Datepicker {...props} />;
     case 'datetimepickerv2':
       return <DateTimePickerV2 {...props} />;
+    case 'emailinput':
+      return <EmailInput {...props} />;
+    case 'phoneinput':
+      return <PhoneInput {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
     case 'horizontaldivider':
-      return <Divider {...props} />;
-    case 'divider-horizondal':
-      return <DividerHorizondal {...props} />;
+      return <HorizontalDivider {...props} />;
     case 'downstatistics':
       return <Downstatistics {...props} />;
     case 'dropdown':
     case 'dropdownv2':
+    case 'dropdownlegacy':
       return <Dropdown {...props} />;
     case 'filepicker':
       return <Filepicker {...props} />;
@@ -141,6 +148,7 @@ const WidgetIcon = (props) => {
       return <Modal {...props} />;
     case 'multiselect':
     case 'multiselectv2':
+    case 'multiselectlegacy':
       return <Multiselect {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
@@ -150,11 +158,15 @@ const WidgetIcon = (props) => {
       return <Passwordinput {...props} />;
     case 'pdf':
       return <Pdf {...props} />;
+    case 'popovermenu':
+      return <PopoverMenu {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':
+    case 'radiobuttonlegacy':
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
+    case 'rangesliderlegacy':
     case 'rangeslider':
       return <Rangeslider {...props} />;
     case 'rating':
@@ -180,6 +192,7 @@ const WidgetIcon = (props) => {
     case 'text':
       return <Text {...props} />;
     case 'textarea':
+    case 'textarealegacy':
       return <TextArea {...props} />;
     case 'textinput':
       return <Textinput {...props} />;
@@ -189,6 +202,7 @@ const WidgetIcon = (props) => {
       return <Timer {...props} />;
     case 'toggleswitch':
     case 'toggleswitchv2':
+    case 'toggleswitchlegacy':
       return <Toggleswitch {...props} />;
 
     case 'treeselect':
@@ -197,7 +211,11 @@ const WidgetIcon = (props) => {
       return <Upstatistics {...props} />;
     case 'verticaldivider':
       return <Verticaldivider {...props} />;
-
+    case 'chat':
+      return <Chat {...props} />;
+    case 'currencyinput':
+    case 'currencyinputlegacy':
+      return <CurrencyInput {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

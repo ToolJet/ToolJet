@@ -1,5 +1,17 @@
 import React from 'react';
-function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width, top }) {
+function Label({
+  label,
+  width,
+  labelRef,
+  color,
+  defaultAlignment,
+  direction,
+  auto,
+  isMandatory,
+  _width,
+  top,
+  widthType,
+}) {
   return (
     <>
       {label && (width > 0 || auto) && (
@@ -7,13 +19,12 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
           ref={labelRef}
           style={{
             width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${_width}%` : '100%',
-            maxWidth: defaultAlignment === 'side' ? '70%' : '100%',
+            maxWidth: widthType === 'ofField' && defaultAlignment === 'side' ? '70%' : '100%', // Maintaining this for backward compatibility
             display: 'flex',
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize: '12px',
             height: defaultAlignment === 'top' && '20px',
-            overflow: 'hidden',
           }}
         >
           <p
@@ -39,7 +50,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
             {isMandatory && (
               <span
                 style={{
-                  color: 'var(--status-error-strong)',
+                  color: 'var(--cc-error-systemStatus)',
                   position: 'absolute',
                   right: direction == 'right' ? '0px' : '4px',
                   top: '0px',

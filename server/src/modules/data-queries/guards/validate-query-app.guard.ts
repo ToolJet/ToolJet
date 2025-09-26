@@ -9,38 +9,59 @@ import {
 import { User } from '@entities/user.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class ValidateQueryAppGuard implements CanActivate {
-  constructor(private readonly versionRepository: VersionRepository, private readonly appsRepository: AppsRepository) {}
+  constructor(
+    private readonly versionRepository: VersionRepository,
+    private readonly appsRepository: AppsRepository,
+    private readonly transactionLogger: TransactionLogger
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const { id, versionId } = request.params;
-    const user: User = request.user;
+    const startTime = Date.now();
+    try {
+      const request = context.switchToHttp().getRequest();
+      const { id, versionId } = request.params;
+      const appId = request.body?.app_id;
+      const user: User = request.user;
 
-    // Check if either id is provided, otherwise throw BadRequestException
-    if (!id) {
-      throw new BadRequestException();
+      if (!id && !versionId && !appId) {
+        throw new BadRequestException();
+      }
+
+      // User is mandatory
+      if (!user) {
+        throw new ForbiddenException();
+      }
+      let app;
+      if (id) {
+        app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
+      }
+      if (!app && appId) {
+        app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
+      }
+      if (!app && versionId) {
+        app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
+      }
+
+      // If app is not found, throw NotFoundException
+      if (!app) {
+        throw new NotFoundException('App not found');
+      }
+
+      // Attach the found app to the request
+      request.tj_app = app;
+      request.tj_resource_id = app.id;
+
+      // Return true to allow the request to proceed
+      return true;
+    } finally {
+      // Any cleanup logic if needed
+      this.transactionLogger.log(
+        `ValidateQueryAppGuard completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
+      );
     }
-
-    // User is mandatory
-    if (!user) {
-      throw new ForbiddenException();
-    }
-
-    const app = await this.appsRepository.findByDataQuery(id, user.organizationId, versionId);
-
-    // If app is not found, throw NotFoundException
-    if (!app) {
-      throw new NotFoundException('App not found');
-    }
-
-    // Attach the found app to the request
-    request.tj_app = app;
-    request.tj_resource_id = app.id;
-
-    // Return true to allow the request to proceed
-    return true;
   }
 }

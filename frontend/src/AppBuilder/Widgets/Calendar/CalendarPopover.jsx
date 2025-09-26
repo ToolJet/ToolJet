@@ -28,6 +28,7 @@ export const CalendarEventPopover = function ({
       parentRef.current &&
       !parentRef.current.contains(event.target) &&
       !event.target.closest('.editor-sidebar') &&
+      !event.target.closest('.left-sidebar-item ') &&
       !isMoveableControlClicked(event)
     ) {
       popoverClosed();

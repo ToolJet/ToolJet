@@ -24,7 +24,7 @@ export const restAPISelector = {
     return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
   },
   addMoreButton: (header) => {
-    return `[data-cy="${cyParamName(header)}-add-more-button"]`;
+    return `[data-cy="${cyParamName(header)}-add-button"]`;
   },
   dropdownLabel: (label) => {
     return `[data-cy="${cyParamName(label)}-dropdown-label"]`;

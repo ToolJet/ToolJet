@@ -13,7 +13,7 @@ export const dataSourceText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (20)",
+  allApis: "APIs (21)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 
@@ -51,6 +51,7 @@ export const dataSourceText = {
   buttonLabelPreview: "Preview",
   buttonLabelCreateAndRun: "Create & Run",
   buttonLabelCreate: "Create",
+  buttonLabelRun: "Run",
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
 

@@ -14,7 +14,7 @@ export interface IOnboardingUtilService {
     currentOrganizationSlug: string;
     onboardingStatus: string;
   }>;
-  createUserOrPersonalWorkspace(
+  createUserInWorkspace(
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization,
@@ -26,6 +26,7 @@ export interface IOnboardingUtilService {
     signingUpOrganization: Organization,
     userParams: { firstName: string; lastName: string; password: string },
     redirectTo?: string,
+    defaultWorkspace?: Organization,
     manager?: EntityManager
   ): Promise<void>;
   processOrganizationSignup(
@@ -40,4 +41,10 @@ export interface IOnboardingUtilService {
     organizationInviteUrl: string;
   }>;
   splitName(name: string): { firstName: string; lastName: string };
+  updateExistingUserDefaultWorkspace(
+    userParams: { password: string; firstName: string; lastName: string },
+    existingUser: User,
+    defaultWorkspace: Organization,
+    manager?: EntityManager
+  );
 }

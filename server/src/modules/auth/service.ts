@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { User } from '../../entities/user.entity';
+import { User } from '@entities/user.entity';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -10,15 +10,18 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
 import { AppAuthenticationDto } from './dto';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { EMAIL_EVENTS } from '@modules/email/constants';
-import { UserRepository } from '../users/repository';
+import { UserRepository } from '../users/repositories/repository';
 import { AuthUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { IAuthService } from './interfaces/IService';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -28,6 +31,7 @@ export class AuthService implements IAuthService {
     protected sessionUtilService: SessionUtilService,
     protected organizationRepository: OrganizationRepository,
     protected instanceSettingsUtilService: InstanceSettingsUtilService,
+    protected setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected eventEmitter: EventEmitter2
   ) {}
 
@@ -72,16 +76,18 @@ export class AuthService implements IAuthService {
         );
 
         const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-        if (defaultOrgDetails) {
+        const activeOrgs = organizationList?.filter((org) => org.status !== 'archived') || [];
+        // Filter out archived organizations to get only active organizations available for login ---> Prevents users from being assigned to an archived organizations during login
+        if (defaultOrgDetails && defaultOrgDetails?.status !== 'archived') {
           // default organization form login enabled
           organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
+        } else if (activeOrgs.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+          organization = activeOrgs[0];
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          organization = await this.organizationRepository.createOne(name, slug, manager);
+          organization = await this.setupOrganizationsUtilService.create({ name, slug }, user, manager);
         } else {
           if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }
@@ -115,14 +121,15 @@ export class AuthService implements IAuthService {
       await this.userRepository.updateOne(user.id, updateData, manager);
 
       if (!isInviteRedirect) {
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId: organization.id,
-        //   resourceId: user.id,
-        //   resourceType: ResourceTypes.USER,
-        //   resourceName: user.email,
-        //   actionType: ActionTypes.USER_LOGIN,
-        // });
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceData: {
+            auth_method: 'password',
+          },
+        });
       }
 
       return await this.sessionUtilService.generateLoginResultPayload(
@@ -182,6 +189,13 @@ export class AuthService implements IAuthService {
         forgotPasswordToken: null,
         passwordRetryCount: 0,
       });
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     }
   }
 
@@ -192,6 +206,14 @@ export class AuthService implements IAuthService {
       return;
     }
     const forgotPasswordToken = uuid.v4();
+    await this.userRepository.updateOne(user.id, { forgotPasswordToken });
+    const auditLogEntry = {
+      userId: user.id,
+      organizationId: user.defaultOrganizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     this.eventEmitter.emit('emailEvent', {
       type: EMAIL_EVENTS.SEND_PASSWORD_RESET_EMAIL,
       payload: {

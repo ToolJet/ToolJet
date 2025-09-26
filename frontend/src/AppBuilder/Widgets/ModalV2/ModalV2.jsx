@@ -14,8 +14,8 @@ import {
 } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFactory';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
-
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -29,6 +29,7 @@ export const ModalV2 = function Modal({
   dataCy,
   height,
 }) {
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -56,7 +57,7 @@ export const ModalV2 = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
@@ -65,7 +66,6 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
-
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
@@ -82,6 +82,7 @@ export const ModalV2 = function Modal({
   }, []);
 
   function hideModal() {
+    fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
   }
@@ -91,17 +92,14 @@ export const ModalV2 = function Modal({
     setShowModal(true);
   }
 
-  useEventListener('resize', onShowSideEffects, window);
+  // useEventListener('resize', onShowSideEffects, window);
 
   const onShowModal = () => {
     openModal();
-    onShowSideEffects();
-    fireEvent('onOpen');
     setSelectedComponentAsModal(id);
   };
 
   const onHideModal = () => {
-    onHideSideEffects(() => fireEvent('onOpen'));
     hideModal();
     setSelectedComponentAsModal(null);
   };
@@ -110,6 +108,18 @@ export const ModalV2 = function Modal({
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
+    }
+    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
+    // Scroll to top of canvas content when modal is opened and disbale page overflow
+    if (showModal) {
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
+    } else {
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
@@ -171,15 +181,15 @@ export const ModalV2 = function Modal({
 
   return (
     <div
-      className="container d-flex align-items-center"
+      className="d-flex align-items-center"
       data-disabled={isDisabledTrigger}
       data-cy={dataCy}
-      style={{ height }}
+      style={{ height: '100%' }}
     >
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary p-1 overflow-hidden"
+          className="jet-button btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -206,8 +216,13 @@ export const ModalV2 = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onShow={() => onShowModal()}
-        onHide={() => onHideModal()}
+        onShow={() => {
+          onShowModal();
+          fireEvent('onOpen');
+        }}
+        onHide={() => {
+          onHideModal();
+        }}
         onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
@@ -236,6 +251,8 @@ export const ModalV2 = function Modal({
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
           onSelectModal: setSelectedComponentAsModal,
+          isFullScreen,
+          darkMode,
         }}
       />
     </div>

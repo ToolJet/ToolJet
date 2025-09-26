@@ -10,6 +10,19 @@ import {
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { Component } from './component.entity';
+import { PagePermission } from './page_permissions.entity';
+
+export enum PageOpenIn {
+  NEW_TAB = 'new_tab',
+  SAME_TAB = 'same_tab',
+}
+
+export enum PageType {
+  DEFAULT = 'default',
+  GROUP = 'group',
+  URL = 'url',
+  APP = 'app',
+}
 
 @Entity({ name: 'pages' })
 export class Page {
@@ -28,7 +41,7 @@ export class Page {
   @Column()
   disabled: boolean;
 
-  @Column('simple-json', { name: 'hidden' })
+  @Column('jsonb', { name: 'hidden' })
   hidden;
 
   @Column()
@@ -55,10 +68,35 @@ export class Page {
   @Column({ name: 'is_page_group', default: false })
   isPageGroup: boolean;
 
+  @Column({ name: 'url', type: 'varchar', nullable: true })
+  url: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: PageOpenIn,
+    name: 'open_in',
+    default: PageOpenIn.SAME_TAB,
+  })
+  openIn: PageOpenIn;
+
+  @Column({
+    type: 'enum',
+    enum: PageType,
+    name: 'type',
+    default: PageType.DEFAULT,
+  })
+  type: PageType;
+
+  @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
+  appId: string | null;
+
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
   @OneToMany(() => Component, (component) => component.page)
   components: Component[];
+
+  @OneToMany(() => PagePermission, (permission) => permission.page)
+  permissions: PagePermission[];
 }

@@ -303,17 +303,16 @@
 .manage-resource-permission {
 
 
-  .tj-text-xxsm {
-    color: var(--slate11)
-  }
-
-
   transition: background-color 0.3s ease;
   border-bottom: 1px solid var(--slate5);
   display: flex;
-  align-items:flex-start;
+  align-items: flex-start;
   padding: 12px;
   gap: 10px;
+
+  .tj-text-xxsm {
+    color: var(--slate11)
+  }
 
   .resource-name {
     display: flex;

@@ -1,16 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { SidebarItem } from './SidebarItem';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
-import { PageMenu } from './PageMenu';
+// import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
+import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import SupportButton from './SupportButton';
+import AvatarGroup from '@/_ui/AvatarGroup';
+// eslint-disable-next-line import/no-unresolved
+import { useOthers, useSelf } from '@y-presence/react';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -22,7 +31,9 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
+  isUserInZeroToOneFlow,
 }) => {
+  const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
     pinned,
     selectedSidebarItem,
@@ -34,29 +45,32 @@ export const BaseLeftSidebar = ({
     resetUnreadErrorCount,
     toggleLeftSidebar,
     isSidebarOpen,
+    isDraggingQueryPane,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
       state.selectedSidebarItem,
       state.setIsLeftSideBarPinned,
       state.setSelectedSidebarItem,
-      state.currentMode,
+      state.modeStore.modules[moduleId].currentMode,
       state.queryPanel.queryPanelHeight,
       state.debugger.unreadErrorCount,
       state.debugger.resetUnreadErrorCount,
       state.toggleLeftSidebar,
       state.isSidebarOpen,
+      state.queryPanel.isDraggingQueryPane,
     ],
     shallow
   );
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
   const handleSelectedSidebarItem = (item) => {
-    pinned && localStorage.setItem('selectedSidebarItem', item);
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
+    localStorage.setItem('selectedSidebarItem', item);
     if (item === selectedSidebarItem && !pinned) {
       return toggleLeftSidebar(false);
     }
@@ -68,24 +82,34 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
-    setPopoverContentHeight(
-      ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
-    );
+    if (isUserInZeroToOneFlow) {
+      setPopoverContentHeight(((window.innerHeight - 48) / window.innerHeight) * 100);
+      return;
+    }
+
+    if (!isDraggingQueryPane) {
+      setPopoverContentHeight(
+        ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+      );
+    } else {
+      setPopoverContentHeight(100);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight]);
+  }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-      case 'page':
-        return (
-          <PageMenu
-            setPinned={setPinned}
-            pinned={pinned}
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-          />
-        );
+      // case 'page':
+      //   return (
+      //     <PageMenu
+      //       setPinned={setPinned}
+      //       pinned={pinned}
+      //       darkMode={darkMode}
+      //       selectedSidebarItem={selectedSidebarItem}
+      //     />
+      //   );
+      case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
           <LeftSidebarInspector
@@ -98,10 +122,12 @@ export const BaseLeftSidebar = ({
             // popoverContentHeight={popoverContentHeight}
             setPinned={setPinned}
             pinned={pinned}
+            moduleId={moduleId}
+            appType={appType}
           />
         );
       case 'tooljetai':
-        return renderAIChat({ darkMode });
+        return renderAIChat({ darkMode, isUserInZeroToOneFlow });
       //   case 'datasource':
       //     return (
       //       <LeftSidebarDataSources
@@ -142,6 +168,7 @@ export const BaseLeftSidebar = ({
             // globalSettingsChanged={globalSettingsChanged}
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
+            isModuleEditor={isModuleEditor}
             // toggleAppMaintenance={toggleAppMaintenance}
             // isMaintenanceOn={isMaintenanceOn}
             // app={app}
@@ -156,72 +183,87 @@ export const BaseLeftSidebar = ({
     return null;
   }
 
+  // TODO: Move icons as slots
+  const renderCommonItems = () => {
+    return (
+      <>
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('inspect')}
+          darkMode={darkMode}
+          icon="inspect"
+          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+          tip="Inspector"
+          ref={setSideBarBtnRefs('inspect')}
+        >
+          <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          icon="debugger"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('debugger')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          count={unreadErrorCount}
+          tip="Debugger"
+          ref={setSideBarBtnRefs('debugger')}
+        >
+          <Bug width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+      </>
+    );
+  };
+
+  const renderLeftSidebarItems = () => {
+    if (isModuleEditor) {
+      return renderCommonItems();
+    }
+    return (
+      <>
+        {renderAISideBarTrigger({
+          selectedSidebarItem: selectedSidebarItem,
+          onClick: () => handleSelectedSidebarItem('tooljetai'),
+          darkMode: darkMode,
+          icon: 'tooljetai',
+          className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
+          tip: 'Build with AI',
+          ref: setSideBarBtnRefs('tooljetai'),
+          children: <SolidIcon width="16" height="16" name="tooljetai" className="tw-text-icon-strong" />,
+        })}
+
+        {!isUserInZeroToOneFlow && (
+          <>
+            {renderCommonItems()}
+            <SidebarItem
+              icon="settings"
+              selectedSidebarItem={selectedSidebarItem}
+              darkMode={darkMode}
+              // eslint-disable-next-line no-unused-vars
+              onClick={(e) => handleSelectedSidebarItem('settings')}
+              className={`left-sidebar-item  left-sidebar-layout`}
+              badge={true}
+              tip="Settings"
+              ref={setSideBarBtnRefs('settings')}
+              isModuleEditor={isModuleEditor}
+            >
+              <Bolt width="16" height="16" className="tw-text-icon-strong" />
+            </SidebarItem>
+          </>
+        )}
+      </>
+    );
+  };
+
   return (
-    <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
-      {renderAISideBarTrigger({
-        selectedSidebarItem: selectedSidebarItem,
-        onClick: () => handleSelectedSidebarItem('tooljetai'),
-        darkMode: darkMode,
-        icon: 'tooljetai',
-        className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-        tip: 'Build with AI',
-        ref: setSideBarBtnRefs('tooljetai'),
-      })}
-      <SidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem('page')}
-        darkMode={darkMode}
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-        tip="Pages"
-        ref={setSideBarBtnRefs('page')}
-      />
-
-      <SidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem('inspect')}
-        darkMode={darkMode}
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Inspector"
-        ref={setSideBarBtnRefs('inspect')}
-      />
-
-      <SidebarItem
-        icon="debugger"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('debugger')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unreadErrorCount}
-        tip="Debugger"
-        ref={setSideBarBtnRefs('debugger')}
-      />
-      <SidebarItem
-        icon="settings"
-        selectedSidebarItem={selectedSidebarItem}
-        darkMode={darkMode}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('settings')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        tip="Settings"
-        ref={setSideBarBtnRefs('settings')}
-      />
-
-      {/* 	{dataSources?.length > 0 && (
-				<LeftSidebarItem
-					selectedSidebarItem={selectedSidebarItem}
-					onClick={() => handleSelectedSidebarItem('datasource')}
-					icon="datasource"
-					className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
-					tip="Sources"
-					ref={setSideBarBtnRefs('datasource')}
-				/>
-			)} */}
-
+    <div
+      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
+      data-cy="left-sidebar-inspector"
+      style={{ zIndex: 9999 }}
+    >
+      {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
@@ -232,13 +274,13 @@ export const BaseLeftSidebar = ({
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
-        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
+        popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="">
+        <div className="tw-flex tw-flex-col tw-gap-2">
           {/* <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
             <LeftSidebarComment
               selectedSidebarItem={showComments ? 'comments' : ''}
@@ -248,11 +290,52 @@ export const BaseLeftSidebar = ({
               ref={setSideBarBtnRefs('comments')}
             />
           </div> */}
+          {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
+          {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+          <SupportButton />
         </div>
       </div>
     </div>
   );
+};
+
+const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
+  const self = useSelf();
+  const others = useOthers();
+  const othersOnSameVersionAndPage = others.filter(
+    (other) =>
+      other?.presence &&
+      self?.presence &&
+      other?.presence?.editingVersionId === self?.presence?.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence?.editingPageId
+  );
+
+  const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
+  const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;
+
+  const mergedAvatars = [self, ...othersOnSameVersionAndPage];
+
+  const transformedAvatars = useMemo(() => {
+    return mergedAvatars.map((other) => ({
+      ...other.presence,
+      text: getAvatarText(other.presence),
+      title: getAvatarTitle(other.presence),
+    }));
+  }, [JSON.stringify(mergedAvatars)]);
+
+  const { updateState } = useAppDataActions();
+  const { areOthersOnSameVersionAndPage, currentVersionId } = useAppInfo();
+
+  useEffect(() => {
+    const areActiveUsersOnSameVersionAndPage = othersOnSameVersionAndPage.length > 0;
+    const shouldUpdateState = areActiveUsersOnSameVersionAndPage !== areOthersOnSameVersionAndPage;
+
+    if (shouldUpdateState) updateState({ areOthersOnSameVersionAndPage: areActiveUsersOnSameVersionAndPage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ others, self, currentVersionId })]);
+
+  return <AvatarGroup avatars={transformedAvatars} maxDisplay={maxDisplay} variant="multiplayer" darkMode={darkMode} />;
 };
 
 export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');

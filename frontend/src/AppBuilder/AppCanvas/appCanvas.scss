@@ -2,6 +2,12 @@
     &:focus-visible{
         outline: none;
     }
+
+    &.page-container {
+        &.position-top {
+            flex-direction: column;
+        }
+    }
 }
 
 .modal-backdrop {
@@ -20,6 +26,7 @@
 .empty-box-cont{
     display: flex;
     justify-content: center;
+    margin: unset !important;
 
     .dotted-cont{
         border: 1px dashed var(--indigo8);

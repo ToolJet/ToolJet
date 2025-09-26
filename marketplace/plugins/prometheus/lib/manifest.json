@@ -1,0 +1,119 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Prometheus datasource",
+  "description": "A schema defining Prometheus datasource",
+  "type": "api",
+  "source": {
+    "name": "Prometheus",
+    "kind": "prometheus",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "server_url": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "ca_cert": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_cert": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "tls_certificate": {
+      "label": "TLS settings",
+      "key": "tls_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "client_certificate",
+          "name": "Client certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "server_url": {
+          "label": "Prometheus server URL",
+          "key": "server_url",
+          "type": "text",
+          "description": "prometheus.example.com"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "your-username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "encrypted": true
+        }
+      }
+    },
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter CA certificate"
+      }
+    },
+    "client_certificate": {
+      "client_key": {
+        "label": "Client Key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client Cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter CA certificate"
+      }
+    }
+  },
+  "required": [
+    "server_url",
+    "username",
+    "password"
+  ]
+}

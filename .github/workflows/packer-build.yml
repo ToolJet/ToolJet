@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,11 +16,14 @@ jobs:
     name: packer-ee
 
     steps:
-      - name: Checkout code to lts-4.0
-        if: contains(github.event.release.tag_name, '-ee-lts')
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Checkout code to lts-3.16 branch
+        if: contains(github.event.release.tag_name, '-lts')
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/lts-4.0
+          ref: refs/heads/lts-3.16
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -56,12 +59,12 @@ jobs:
 
       # Echo RENDER_GITHUB_PAT
       - name: Set PACKER_GITHUB_PAT
-        run: echo "PACKER_GITHUB_PAT=${{ secrets.PACKER_GITHUB_PAT}}" >> $GITHUB_ENV
+        run: echo "PACKER_GITHUB_PAT=${{ secrets.CUSTOM_GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       # Dynamically update setup_machine.sh with PAT
       - name: Validate PAT
         run: |
-          sed -i "s|git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"|git config --global url."https://x-access-token:${ secrets.CUSTOM_GITHUB_TOKEN }@github.com/".insteadOf "https://github.com/"|g" ./deploy/ec2/ee/setup_machine.sh
+          sed -i "s|CUSTOM_GITHUB_TOKEN|${{ secrets.CUSTOM_GITHUB_TOKEN }}|g" ./deploy/ec2/ee/setup_machine.sh
 
       # build artifact
       - name: Build Artifact
@@ -69,18 +72,41 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy
           target: .
           working_directory: deploy/ec2/ee
         env:
           PACKER_LOG: 1
 
+      - name: Cleanup EC2 instances
+        if: always()
+        run: |
+          echo "Checking for running EC2 instances created by Packer in us-west-2..."
+
+          # Get instances with Packer builder tag that are running
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --region us-west-2 \
+            --filters "Name=tag:Name,Values=Packer Builder" \
+                      "Name=instance-state-name,Values=running,pending" \
+            --query 'Reservations[*].Instances[*].InstanceId' \
+            --output text)
+
+          if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
+            echo "Found running instances: $INSTANCE_IDS"
+            echo "Terminating instances..."
+            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
+            echo "Terminated instances: $INSTANCE_IDS"
+          else
+            echo "No running Packer instances found"
+          fi
+
       - name: Send Slack Notification
+        if: always()
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal\`"
+            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
           else
-            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal\`"
+            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

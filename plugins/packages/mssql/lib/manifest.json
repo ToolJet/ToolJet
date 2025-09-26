@@ -2,116 +2,128 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mssql datasource",
   "description": "A schema defining mssql datasource",
-  "type": "database",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "SQL Server",
     "kind": "mssql",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "host": {
-        "type": "string"
-      },
-      "instanceName": {
-        "type": "string"
-      },
-      "port": {
-        "type": "string"
-      },
-      "database": {
-        "type": "string"
-      },
-      "username": {
-        "type": "string"
-      },
-      "password": {
-        "type": "string",
-        "encrypted": true
-      },
-      "connection_options": {
-        "type": "array"
-      }
-    }
-  },
-  "defaults": {
-    "host": {
-      "value": "localhost"
-    },
-    "instanceName": {
-      "value": ""
-    },
-    "port": {
-      "value": 1433
-    },
-    "database": {
-      "value": ""
-    },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "azure": {
-      "value": false
-    }
+    "type": "database"
   },
   "properties": {
     "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter host"
+      "type": "string",
+      "title": "Host",
+      "description": "Enter host",
+      "default": "localhost"
     },
     "instanceName": {
-      "label": "Instance",
-      "key": "instance_name",
-      "type": "text",
+      "type": "string",
+      "title": "Instance",
       "description": "Enter the name of the database instance"
     },
     "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "Enter port"
+      "type": "number",
+      "title": "Port",
+      "description": "Enter port",
+      "default": 1433
     },
     "database": {
-      "label": "Database Name",
-      "key": "database",
-      "type": "text",
+      "type": "string",
+      "title": "Database name",
       "description": "Name of the database"
     },
     "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
+      "type": "string",
+      "title": "Username",
       "description": "Enter username"
     },
     "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
+      "type": "string",
+      "title": "Password",
       "description": "Enter password"
     },
     "connection_options": {
-      "label": "Connection Options",
-      "key": "connection_options",
-      "type": "react-component-headers"
+      "type": "array",
+      "title": "Connection Options",
+      "description": "Connection options"
     },
     "azure": {
-      "label": "Azure (encrypt connection)",
-      "key": "azure",
-      "type": "toggle",
-      "description": "Toggle for azure"
+      "type": "boolean",
+      "title": "Azure (encrypt connection)",
+      "description": "Toggle for azure",
+      "default": false
     }
   },
+  "tj:encrypted": [
+    "password"
+  ],
   "required": [
     "host",
     "port",
+    "database",
     "username",
     "password"
-  ]
+  ],
+  "tj:ui:properties": {
+    "host": {
+      "$ref": "#/properties/host",
+      "key": "host",
+      "label": "Host",
+      "description": "Enter host",
+      "widget": "text-v3",
+      "required": true
+    },
+    "instanceName": {
+      "$ref": "#/properties/instanceName",
+      "key": "instance_name",
+      "label": "Instance",
+      "description": "Enter the name of the database instance",
+      "widget": "text"
+    },
+    "port": {
+      "$ref": "#/properties/port",
+      "key": "port",
+      "label": "Port",
+      "description": "Enter port",
+      "widget": "text-v3",
+      "required": true
+    },
+    "database": {
+      "$ref": "#/properties/database",
+      "key": "database",
+      "label": "Database name",
+      "description": "Name of the database",
+      "widget": "text-v3",
+      "required": true
+    },
+    "username": {
+      "$ref": "#/properties/username",
+      "key": "username",
+      "label": "Username",
+      "description": "Enter username",
+      "widget": "text-v3",
+      "required": true
+    },
+    "password": {
+      "$ref": "#/properties/password",
+      "key": "password",
+      "label": "Password",
+      "description": "Enter password",
+      "widget": "password-v3",
+      "required": true
+    },
+    "connection_options": {
+      "$ref": "#/properties/connection_options",
+      "key": "connection_options",
+      "label": "Connection Options",
+      "widget": "react-component-headers"
+    },
+    "azure": {
+      "$ref": "#/properties/azure",
+      "key": "azure",
+      "label": "Azure (encrypt connection)",
+      "description": "Toggle for azure",
+      "widget": "toggle"
+    }
+  }
 }

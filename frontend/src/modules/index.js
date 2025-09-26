@@ -13,6 +13,7 @@ import Settings from './Settings';
 import Workflows from './workflows';
 import WorkspaceSettings from './WorkspaceSettings';
 import RenderWorkflow from './RenderWorkflow';
+import Modules from './Modules';
 
 export {
   onboarding,
@@ -27,4 +28,5 @@ export {
   getAuditLogsRoutes,
   RenderWorkflow,
   AiBuilder,
+  Modules,
 };

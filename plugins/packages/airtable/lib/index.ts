@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { sanitizeSortPairs } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
@@ -166,5 +166,27 @@ export default class AirtableQueryService implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    try {
+      const apiToken = sourceOptions.personal_access_token;
+      const response = await got('https://api.airtable.com/v0/meta/whoami', {
+        headers: this.authHeader(apiToken),
+      });
+      const responseBody = JSON.parse(response.body);
+
+      if (responseBody && responseBody.id) {
+        return { status: 'ok' };
+      }
+
+      throw new Error('Invalid response from Airtable');
+    } catch (error) {
+      if (error.response?.statusCode === 401) {
+        throw new Error('Authentication failed: Invalid personal access token');
+      }
+
+      throw error;
+    }
   }
 }

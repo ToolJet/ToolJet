@@ -22,6 +22,9 @@ export class OrganizationsAiFeature extends BaseEntity {
   @Column({ name: 'balance', type: 'int' })
   balance: number;
 
+  @Column({ name: 'organization_id', unique: true })
+  organizationId: string;
+
   @Column({ name: 'renew_date', type: 'timestamp' })
   renewDate: Date;
 

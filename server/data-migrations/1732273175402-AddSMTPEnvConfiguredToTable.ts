@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class AddSMTPEnvConfiguredToTable1732273175402 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -9,7 +11,7 @@ export class AddSMTPEnvConfiguredToTable1732273175402 implements MigrationInterf
     await entityManager.insert(InstanceSettings, {
       label: 'SMTP ENV CONFIGURED',
       dataType: 'boolean',
-      value: 'false',
+      value: getTooljetEdition() !== TOOLJET_EDITIONS.EE ? 'true' : 'false',
       key: INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED,
       type: INSTANCE_SETTINGS_TYPE.SYSTEM,
     });

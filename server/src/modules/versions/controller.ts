@@ -25,14 +25,14 @@ export class VersionController implements IVersionController {
     return this.versionService.getAllVersions(app);
   }
 
-  @InitFeature(FEATURE_KEY.CREATE)
+  @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/versions')
   createVersion(@User() user, @App() app: AppEntity, @Body() versionCreateDto: VersionCreateDto) {
     return this.versionService.createVersion(app, user, versionCreateDto);
   }
 
-  @InitFeature(FEATURE_KEY.DELETE)
+  @InitFeature(FEATURE_KEY.APP_VERSION_DELETE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id/versions/:versionId')
   deleteVersion(@User() user: UserEntity, @App() app: AppEntity) {

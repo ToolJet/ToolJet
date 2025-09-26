@@ -63,7 +63,6 @@ export const selectAndAddDataSource = (
       ).click();
     });
 
-  cy.wait(1000);
   cy.get(postgreSqlSelector.buttonSave).should("be.disabled");
   cy.clearAndType(
     '[data-cy="data-source-name-input-field"]',
@@ -86,7 +85,7 @@ export const selectAndAddDataSource = (
 
 export const fillConnectionForm = (data, toggle = "") => {
   cy.get("body").then(($body) => {
-    const editButton = $body.find(".tj-btn");
+    const editButton = $body.find('.datasource-edit-btn');
     if (editButton.length > 0) {
       editButton.click();
     }
@@ -125,8 +124,7 @@ export const fillDataSourceTextField = (
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
     if ($field.is(":disabled")) {
-      cy.get(".datasource-edit-btn").wait(500).click();
-      cy.wait(500);
+      cy.get(".datasource-edit-btn").click();
     }
   });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
@@ -134,9 +132,7 @@ export const fillDataSourceTextField = (
     .should("eq", placeholder.replace(/\u00a0/g, " "));
 
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
-    .wait(500)
     .clear()
-    .wait(500)
     .type(input, args);
 };
 
@@ -178,7 +174,11 @@ export const addEventHandlerToRunQuery = (query) => {
 
 export const addWidgetsToAddUser = () => {
   cy.dragAndDropWidget("Text Input", 200, 160);
-  cy.dragAndDropWidget("Text Input", 400, 160);
+  cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("Jack");
+  cy.dragAndDropWidget("Text Input", 200, 300);
+  cy.get(commonWidgetSelector.draggableWidget("textinput2")).type(
+    "jack@example.com"
+  );
   cy.dragAndDropWidget("Button", 600, 160);
   openEditorSidebar("button1");
   openAccordion(commonWidgetText.accordionEvents);

@@ -1,3 +1,5 @@
+import { cyParamName } from "../../constants/selectors/common";
+
 export const postgreSqlSelector = {
   leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
@@ -87,6 +89,11 @@ export const postgreSqlSelector = {
   recordsInputField: '[data-cy="records-input-field"]',
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
+  sslToggleInput: '[data-cy="ssl-enabled-toggle-input"]',
+  labelEncryptedText: '[data-cy="encrypted-text"]',
+  labelQueryTab: (tabName) => {
+    return `[data-cy="query-tab-${cyParamName(tabName)}"]`;
+  },
 };
 
 export const airTableSelector = {

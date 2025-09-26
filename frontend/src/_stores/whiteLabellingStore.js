@@ -40,7 +40,7 @@ export const useWhiteLabellingStore = create(
               isWhiteLabelDetailsFetched: false,
             });
             whiteLabellingService
-              .get(organizationId)
+              .get(organizationId || workspaceId)
               .then((settings) => {
                 const updatedSettings = {
                   whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],

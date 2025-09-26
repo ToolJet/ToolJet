@@ -244,12 +244,12 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
     return (
-      <div className="datasource-list-container">
+      <div className="datasource-list-container" id="datasource-list-container">
         <div className="datasource-list">
           <div className="datasource-search-holder">
             <SearchBox
               dataCy={`home-page`}
-              className="border-0 homepage-search"
+              className="border-0"
               darkMode={darkMode}
               placeholder={`Search data sources`}
               initialValue={queryString}
@@ -260,7 +260,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
                 setSuggestingDataSource(false);
               }}
             />
-            <div className="liner mb-4"></div>
           </div>
           {suggestingDataSource ? (
             <center className="empty-ds-container">
@@ -300,14 +299,20 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       updateSidebarNAV(type);
       setSelectedDataSource(null);
       setTimeout(() => {
+        const container = document.getElementById('datasource-list-container'); //container to scroll
         const element = document.getElementById(activekey);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+
+        if (container && element) {
+          const offsetTop = element.offsetTop - container.offsetTop;
+          container.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth',
+          });
         }
       }, 100);
     };
     return (
-      <div>
+      <div className="tw-pt-4">
         <SegregatedList
           handleOnSelect={handleOnSelect}
           activeDatasourceList={activeDatasourceList}
@@ -362,8 +367,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       <>
         <div className="row row-deck mt-3">
           {datasources.map((item) => {
-            const tags =
+            const marketplaceTags =
               pluginsWithTags[item.kind] || pluginsWithTags[item.pluginId] || pluginsWithTags[item.plugin_id] || [];
+            const manifestTags = item?.tags || [];
+            const tags = [...new Set([...marketplaceTags, ...manifestTags])];
             return (
               <Card
                 key={item.key}
@@ -375,6 +382,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
                 width={'35px'}
                 actionButton={addDataSourceBtn(item)}
                 className="datasource-card"
+                cardClassName="card--clickable"
                 titleClassName={'datasource-card-title'}
                 tags={tags}
               />

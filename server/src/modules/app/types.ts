@@ -11,13 +11,17 @@ export interface UserAllPermissions {
   isBuilder: boolean;
   isEndUser: boolean;
   user: User;
+  resource: ResourceDetails[];
 }
 
 export interface FeatureConfig {
   license?: LICENSE_FIELD;
   auditLogsKey?: string;
+  skipAuditLogs?: boolean;
   isPublic?: boolean;
+  isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
+  allowFailedAuditLogs?: boolean;
 }
 
 export interface ResourceDetails {

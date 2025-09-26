@@ -32,6 +32,7 @@ class OpenapiComponent extends React.Component {
       },
       spec: selectedDataSource.options?.spec?.value,
       selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path]?.[options?.operation] || null,
+      operationParams: {},
     };
   }
 
@@ -46,9 +47,31 @@ class OpenapiComponent extends React.Component {
     }
   }
 
+  getOperationKey = (operation, path) => {
+    return `${operation}_${path}`;
+  };
+
   changeOperation = (value) => {
     const operation = value.split(',')[0];
     const path = value.split(',')[1];
+
+    if (this.state.options.operation && this.state.options.path) {
+      const currentOperationKey = this.getOperationKey(this.state.options.operation, this.state.options.path);
+      this.setState((prevState) => ({
+        operationParams: {
+          ...prevState.operationParams,
+          [currentOperationKey]: prevState.options.params,
+        },
+      }));
+    }
+
+    const newOperationKey = this.getOperationKey(operation, path);
+    const savedParams = this.state.operationParams[newOperationKey] || {
+      path: {},
+      query: {},
+      request: {},
+      header: {},
+    };
 
     this.setState(
       {
@@ -57,6 +80,7 @@ class OpenapiComponent extends React.Component {
           ...this.state.options,
           path,
           operation,
+          params: savedParams,
         },
       },
       () => {
@@ -153,6 +177,10 @@ class OpenapiComponent extends React.Component {
   };
 
   resolveHosts() {
+    const { selectedDataSource } = this.props;
+    if (selectedDataSource.options?.host?.value) {
+      return [selectedDataSource.options.host.value];
+    }
     const path = this.state.options.path;
     const operation = this.state.selectedOperation;
     if (operation?.servers && operation?.servers.length > 0) {
@@ -197,8 +225,14 @@ class OpenapiComponent extends React.Component {
   }
 
   removeParam = (paramType, paramName) => {
-    const newOptions = JSON.parse(JSON.stringify(this.state.options));
-    newOptions['params'][paramType][paramName] = undefined;
+    const newOptions = { ...this.state.options };
+    const newParams = { ...newOptions.params };
+    const newParamType = { ...newParams[paramType] };
+
+    delete newParamType[paramName];
+
+    newParams[paramType] = newParamType;
+    newOptions.params = newParams;
 
     this.setState(
       {
@@ -223,9 +257,9 @@ class OpenapiComponent extends React.Component {
       queryParams = this.resolveParameters('query');
       headerParams = this.resolveParameters('header');
 
-      if (selectedOperation.requestBody) {
-        const requestType = Object.keys(selectedOperation.requestBody.content)[0];
-        requestBody = selectedOperation.requestBody.content[requestType];
+      if (selectedOperation.request_body) {
+        const requestType = Object.keys(selectedOperation.request_body.content)[0];
+        requestBody = selectedOperation.request_body.content[requestType];
       }
     }
 
@@ -245,13 +279,14 @@ class OpenapiComponent extends React.Component {
                 <div className="col openapi-operation-options">
                   <Select
                     options={this.computeHostOptions(baseUrls)}
-                    value={this.state.options.host}
+                    value={this.props.selectedDataSource.options?.host?.value || this.state.options.host}
                     onChange={this.changeHost}
                     width="100%"
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
                     styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
                     useCustomStyles={true}
+                    isDisabled={!!this.props.selectedDataSource.options?.host?.value}
                   />
                 </div>
               </div>

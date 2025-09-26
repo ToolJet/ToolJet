@@ -3,6 +3,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -18,7 +19,8 @@ const data = {};
 
 describe("Data sources", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.visit("/");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
@@ -49,7 +51,26 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", "RethinkDB", data.dataSourceName);
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      `cypress-${data.dataSourceName}-rethinkdb`,
+      "rethinkdb",
+      [
+        { key: "port", value: "28015", encrypted: false },
+        { key: "host", value: "", encrypted: false },
+        { key: "database", value: "", encrypted: false },
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+      ]
+    );
+    cy.reload();
+    cy.get(`[data-cy="cypress-${data.dataSourceName}-rethinkdb-button"]`)
+      .should("be.visible")
+      .click();
+    cy.get(dataSourceSelector.dsNameInputField).should(
+      "have.value",
+      `cypress-${data.dataSourceName}-rethinkdb`
+    );
 
     cy.get('[data-cy="label-database"]').verifyVisibleElement(
       "have.text",

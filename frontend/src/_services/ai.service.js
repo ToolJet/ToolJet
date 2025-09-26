@@ -4,7 +4,6 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
   generateApp,
-  createComponent,
   createQuery,
   updateComponent,
   createEvent,
@@ -21,7 +20,14 @@ export const aiService = {
   approvePrd,
   getCopilotSuggestion,
   getCreditBalance,
+  fixWithAI,
+  fixLayout,
 };
+
+async function fixLayout(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/fixLayout`, requestOptions).then(handleResponse);
+}
 
 function enrichPrompt(prompt) {
   const body = {
@@ -51,14 +57,6 @@ function generateApp(prompt) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
 
   return fetch(`${config.apiUrl}/ai/generateApp`, requestOptions).then(handleResponse);
-}
-
-function createComponent(prompt) {
-  const body = {
-    prompt,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/create-components`, requestOptions).then(handleResponse);
 }
 
 function createQuery(prompt) {
@@ -225,10 +223,15 @@ async function approvePrd(body, onMessage) {
 
 async function getCopilotSuggestion(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/copilot`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleResponse);
 }
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
   return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then(handleResponse);
+}
+
+async function fixWithAI(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
 }

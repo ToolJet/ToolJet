@@ -88,6 +88,12 @@
       "type": "string",
       "title": "Root Cert",
       "description": "Enter root certificate"
+    },
+    "allow_dynamic_connection_parameters": {
+      "type": "boolean",
+      "title": "Allow dynamic connection parameters",
+      "description": "Turning this on will allow dynamically setting host name and database from application",
+      "default": false
     }
   },
   "tj:encrypted": [
@@ -183,7 +189,16 @@
           "name": "Connection string",
           "value": "string"
         }
-      ]
+      ],
+      "commonFields": {
+        "allow_dynamic_connection_parameters": {
+          "$ref": "#/properties/allow_dynamic_connection_parameters",
+          "key": "allow_dynamic_connection_parameters",
+          "label": "Allow dynamic connection parameters",
+          "description": "Turning this on will allow dynamically setting host name and database from application",
+          "widget": "toggle"
+        }
+      }
     },
     "manual": {
       "ssl_certificate": {
@@ -269,7 +284,7 @@
           "key": "ca_cert",
           "label": "CA Cert",
           "description": "Enter ca certificate",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         }
       },
       "self_signed": {
@@ -278,22 +293,21 @@
           "key": "client_key",
           "label": "Client Key",
           "description": "Enter client key",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         },
         "client_cert": {
           "$ref": "#/properties/client_cert",
           "key": "client_cert",
           "label": "Client Cert",
           "description": "Enter client certificate",
-          "widget": "textarea"
+          "widget": "password-v3-textarea"
         },
         "root_cert": {
           "$ref": "#/properties/root_cert",
           "key": "root_cert",
           "label": "Root Cert",
           "description": "Enter root certificate",
-          "widget": "textarea",
-          "required": true
+          "widget": "password-v3-textarea"
         }
       }
     },
@@ -303,7 +317,7 @@
         "key": "connection_string",
         "label": "Connection string",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
-        "widget": "text",
+        "widget": "password-v3-textarea",
         "required": true
       }
     }

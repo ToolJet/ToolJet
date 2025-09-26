@@ -2,8 +2,8 @@ import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { resolveReferences } from '@/_helpers/utils';
 
-export const Visibility = ({ onVisibilityChange, styleDefinition }) => {
-  const iconVisibility = resolveReferences(styleDefinition?.iconVisibility?.value) || false;
+export const Visibility = ({ onVisibilityChange, styleDefinition, iconVisibility: _iconVisibility }) => {
+  const iconVisibility = !!_iconVisibility || resolveReferences(styleDefinition?.iconVisibility?.value) || false;
 
   return (
     <div

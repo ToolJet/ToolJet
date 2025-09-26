@@ -4,6 +4,7 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
+import './styles.scss';
 
 export const DaterangePicker = ({
   height,
@@ -94,6 +95,11 @@ export const DaterangePicker = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     let startDate = moment(defaultStartDate, format);
     startDate = startDate.isValid() ? startDate.toDate() : null;
 
@@ -157,6 +163,7 @@ export const DaterangePicker = ({
       startDateInUnix: startDate ? moment(startDate).valueOf() : null,
       endDateInUnix: endDate ? moment(endDate).valueOf() : null,
       dateFormat: format,
+      isValid: isValid,
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -215,7 +222,6 @@ export const DaterangePicker = ({
       return;
     }
     validationStatus = isDateRangeValid(startDate, endDate, excludedDates, format);
-    console.log('validationStatus', validationStatus);
     setValidationStatus(validationStatus);
   }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format]);
 
@@ -266,6 +272,7 @@ export const DaterangePicker = ({
     onCalendarOpen: () => {
       setIsCalendarOpen(true);
     },
+    shouldCloseOnSelect: true
   };
 
   const customDateInputProps = {

@@ -5,7 +5,11 @@ import { editions } from './_registry/moduleRegistry';
 
 export function withEditionSpecificComponent(BaseComponent, moduleName) {
   return function EditionSpecificComponent(props) {
-    const edition = fetchEdition(config);
+    let edition = fetchEdition(config);
+    if (edition === 'cloud') {
+      edition = 'ee'; // Treat cloud as enterprise edition for component loading
+    }
+
     const componentName = BaseComponent.name;
 
     if (edition === 'ce') {

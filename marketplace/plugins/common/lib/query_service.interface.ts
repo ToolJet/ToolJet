@@ -6,7 +6,8 @@ export interface QueryService {
     sourceOptions: object,
     queryOptions: object,
     dataSourceId?: string,
-    dataSourceUpdatedAt?: string
+    dataSourceUpdatedAt?: string,
+    context?: object
   ): Promise<QueryResult>;
   getConnection?(queryOptions: object, options: any, checkCache: boolean, dataSourceId: string): Promise<object>;
   testConnection?(sourceOptions: object): Promise<ConnectionTestResult>;

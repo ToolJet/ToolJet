@@ -7,6 +7,11 @@ export const whiteLabellingOptions = {
   WHITE_LABEL_LOGO: 'white_label_logo',
   WHITE_LABEL_FAVICON: 'white_label_favicon',
 };
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'assets/images/tj-logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
+};
 
 export function retrieveWhiteLabelFavicon() {
   const { whiteLabelFavicon } = useWhiteLabellingStore.getState();
@@ -27,8 +32,11 @@ export function retrieveWhiteLabelLogo() {
 export async function setFaviconAndTitle(location) {
   // TODO:Uncomment-if-needed
   // await fetchWhiteLabelDetails(organizationId);
+  if (!location || !location.pathname) {
+    document.title = 'Loading';
+    return;
+  }
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
-
   // Set favicon
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -39,7 +47,7 @@ export async function setFaviconAndTitle(location) {
     links = [link];
   }
   links.forEach((link) => {
-    link.href = whiteLabelFavicon;
+    link.href = whiteLabelFavicon && whiteLabelFavicon;
   });
 
   // Set page title based on route
@@ -54,7 +62,8 @@ export async function setFaviconAndTitle(location) {
     'data-sources': 'Data sources',
     'audit-logs': 'Audit logs',
     'account-settings': 'Profile settings',
-    settings: 'Profile settings',
+    settings: 'Settings',
+    'profile-settings': 'Profile settings',
     login: '',
     signUp: '',
     error: '',
@@ -65,33 +74,55 @@ export async function setFaviconAndTitle(location) {
     'reset-password': '',
     'workspace-constants': 'Workspace constants',
     setup: '',
+    '/': 'Dashboard',
   };
 
-  const pageTitleKey = Object.keys(pageTitles).find((path) => location?.pathname.includes(path));
+  const pageTitleKey = Object.keys(pageTitles)
+    .sort((a, b) => b.length - a.length) // Sort by length descending
+    .find((path) => location?.pathname.includes(path));
   const pageTitle = pageTitles[pageTitleKey] || '';
 
   document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
 }
 
-export async function fetchAndSetWindowTitle(pageDetails) {
-  const whiteLabelText = retrieveWhiteLabelText();
+export async function fetchAndSetWindowTitle(pageDetails, organizationId = null) {
+  const state = useWhiteLabellingStore.getState();
+  if (!state.isWhiteLabelDetailsFetched && state.loadingWhiteLabelDetails) {
+    await fetchWhiteLabelDetails(organizationId);
+  }
+  const whiteLabelText = state.whiteLabelText;
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
+  let mode = pageDetails?.mode || '';
+  let isPreview = !pageDetails?.isReleased || false;
+  const license = pageDetails?.licenseStatus;
+  let appName = pageDetails?.appName;
+  if (appName === undefined || appName === null) {
+    appName = 'Loading...';
+  }
   switch (pageTitleKey) {
     case pageTitles.VIEWER: {
       const titlePrefix = pageDetails?.preview ? 'Preview - ' : '';
-      pageTitle = `${titlePrefix}${pageDetails?.appName || 'My App'}`;
+      pageTitle = `${titlePrefix}${appName || 'My App'}`;
       break;
     }
     case pageTitles.EDITOR:
     case pageTitles.WORKFLOW_EDITOR: {
-      pageTitle = pageDetails?.appName || 'My App';
+      if (mode == 'edit') {
+        pageTitle = `${appName}`;
+      } else {
+        pageTitle = `Preview - ${appName}` || 'My App';
+      }
       break;
     }
     default: {
       pageTitle = pageTitleKey;
       break;
     }
+  }
+  if (!isPreview && mode === 'view') {
+    document.title = `${appName} ${license ? '' : '| ToolJet'}`;
+    return;
   }
   document.title = !(pageDetails?.preview === false) ? `${pageTitle} | ${whiteLabelText}` : `${pageTitle}`;
 }
@@ -122,8 +153,14 @@ export async function resetToDefaultWhiteLabels() {
 
 // Check if current settings match the default values
 export function checkWhiteLabelsDefaultState() {
-  const { isDefaultWhiteLabel } = useWhiteLabellingStore.getState();
-  return isDefaultWhiteLabel;
+  const whiteLabelText = retrieveWhiteLabelText();
+  const whiteLabelFavicon = retrieveWhiteLabelFavicon();
+  const whiteLabelLogo = retrieveWhiteLabelLogo();
+  return (
+    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
+    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
+    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
+  );
 }
 
 export const pageTitles = {

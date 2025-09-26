@@ -11,12 +11,6 @@ export class UpdateUserTypeDto {
   @MaxLength(100)
   userId: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
-  @MaxLength(100)
-  userType: USER_TYPE;
-
   @IsOptional()
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
@@ -26,6 +20,19 @@ export class UpdateUserTypeDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   lastName: string;
+}
+export class UpdateUserTypeInstanceDto {
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(100)
+  userId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(100)
+  userType: USER_TYPE;
 }
 
 @Exclude()

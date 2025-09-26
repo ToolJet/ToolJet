@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, JoinColumn, BaseEntity, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
+import { UserPersonalAccessToken } from './user_personal_access_tokens.entity';
+import { SessionType } from '@modules/external-apis/constants';
 
 @Entity({ name: 'user_sessions' })
 export class UserSessions extends BaseEntity {
@@ -24,4 +26,11 @@ export class UserSessions extends BaseEntity {
 
   @Column({ name: 'last_logged_in' })
   lastLoggedIn: Date;
+
+  @Column({ name: 'session_type', type: 'enum', enum: SessionType, default: 'user' })
+  sessionType: SessionType.USER | SessionType.PAT;
+
+  @ManyToOne(() => UserPersonalAccessToken, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'pat_id' })
+  pat: UserPersonalAccessToken | null;
 }

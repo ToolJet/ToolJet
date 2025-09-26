@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Prometheus Operations",
+  "placeholder": "Operations supported by Prometheus plugin",
+  "type": "api",
+  "defaults": {
+    "operation": "instant_query",
+    "iq_requestMethod": "get",
+    "rq_requestMethod": "get"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "placeholder": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "instant_query",
+          "name": "Instant Query with PromQL"
+        },
+        {
+          "value": "range_query",
+          "name": "Range Query with PromQL"
+        }
+      ]
+    },
+    "instant_query": {
+      "iq_query": {
+        "label": "Query",
+        "key": "iq_query",
+        "type": "codehinter",
+        "tooltip": "Prometheus expression query string",
+        "placeholder": "http_requests_total{job=\"apiserver\", handler=\"/api/comments\"}"
+      },
+      "iq_time": {
+        "label": "Time",
+        "key": "iq_time",
+        "type": "codehinter",
+        "tooltip": "Evaluation timestamp",
+        "placeholder": "2015-07-01T20:10:51.781Z",
+        "helpText": "Expects rfc3339 or unix_timestamp"
+      },
+      "iq_timeout": {
+        "label": "Timeout",
+        "key": "iq_timeout",
+        "type": "codehinter",
+        "tooltip": "Evaluation timeout. Defaults to and is capped by the value of the -query.timeout flag",
+        "placeholder": "60s"
+      },
+      "iq_limit": {
+        "label": "Limit",
+        "key": "iq_limit",
+        "type": "codehinter",
+        "tooltip": "Maximum number of returned series. Doesn’t affect scalars or strings but truncates the number of series for matrices and vectors. 0 means disabled."
+      },
+      "iq_requestMethod": {
+        "label": "Request method",
+        "key": "iq_requestMethod",
+        "type": "dropdown-component-flip",
+        "list": [
+          {
+            "name": "POST",
+            "value": "post"
+          },
+          {
+            "name": "GET",
+            "value": "get"
+          }
+        ]
+      }
+    },
+    "range_query": {
+      "rq_query": {
+        "label": "Query",
+        "key": "rq_query",
+        "type": "codehinter",
+        "tooltip": "Prometheus expression query string",
+        "placeholder": "http_requests_total{job=\"apiserver\", handler=\"/api/comments\"}"
+      },
+      "rq_start": {
+        "label": "Start",
+        "key": "rq_start",
+        "type": "codehinter",
+        "tooltip": "Start timestamp, inclusive",
+        "placeholder": "2025-05-28T11:00:00Z",
+        "helpText": "Expects rfc3339 or unix_timestamp"
+      },
+      "rq_end": {
+        "label": "End",
+        "key": "rq_end",
+        "type": "codehinter",
+        "tooltip": "End timestamp, inclusive",
+        "placeholder": "2025-05-28T12:00:00Z",
+        "helpText": "Expects rfc3339 or unix_timestamp"
+      },
+      "rq_step": {
+        "label": "Step",
+        "key": "rq_step",
+        "type": "codehinter",
+        "tooltip": "Query resolution step width in duration format or float number of seconds",
+        "placeholder": "60s"
+      },
+      "rq_timeout": {
+        "label": "Timeout",
+        "key": "rq_timeout",
+        "type": "codehinter",
+        "tooltip": "Evaluation timeout. Defaults to and is capped by the value of the -query.timeout flag",
+        "placeholder": "60s"
+      },
+      "rq_limit": {
+        "label": "Limit",
+        "key": "rq_limit",
+        "type": "codehinter",
+        "tooltip": "Maximum number of returned series. 0 means disabled."
+      },
+      "rq_requestMethod": {
+        "label": "Request method",
+        "key": "rq_requestMethod",
+        "type": "dropdown-component-flip",
+        "list": [
+          {
+            "name": "POST",
+            "value": "post"
+          },
+          {
+            "name": "GET",
+            "value": "get"
+          }
+        ]
+      }
+    }
+  }
+}

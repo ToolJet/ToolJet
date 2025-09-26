@@ -3,7 +3,7 @@ import { Modal } from 'react-bootstrap';
 import './migration-modal.scss';
 
 export const UserGroupMigrationModal = ({ errorMsg, onHide, ...props }) => {
-  const documentationUrl = 'https://docs.tooljet.com/docs/tutorial/manage-users-groups';
+  const documentationUrl = 'https://docs.tooljet.ai/docs/tutorial/manage-users-groups';
   const userIcon = () => {
     return (
       <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -1001,7 +1001,7 @@
               "parent": "213c0cfa-6353-4c49-9b54-a750eafc66c1",
               "properties": {
                 "source": {
-                  "value": "https://github.com/ToolJet/ToolJet/assets/127945292/d7c59282-2a44-483b-8de2-5da9b5f0b48d"
+                  "value": "https://raw.githubusercontent.com/ToolJet/ToolJet/795762b10c84ffd05450d2640d56f8e769fc7832/frontend/assets/images/logo.svg"
                 }
               },
               "general": {},

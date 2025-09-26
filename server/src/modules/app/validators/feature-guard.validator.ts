@@ -7,9 +7,12 @@ import { GUARDS_METADATA } from '@nestjs/common/constants';
 @Injectable()
 // Validates if all routes are guarded with AbilityGuard
 export class GuardValidator {
-  private unprotectedRoutes: string[] = [];
+  private unprotectedRoutes = new Set<string>();
 
-  constructor(private readonly metadataScanner: MetadataScanner, private readonly modulesContainer: ModulesContainer) {}
+  constructor(
+    private readonly metadataScanner: MetadataScanner,
+    private readonly modulesContainer: ModulesContainer
+  ) {}
   async validateJwtGuard() {
     console.log('Validating if all routes are guarded with AbilityGuard');
 
@@ -53,13 +56,13 @@ export class GuardValidator {
             const hasJwtGuard = this.hasJwtAuthGuard(allGuards);
 
             if (!hasJwtGuard) {
-              this.unprotectedRoutes.push(`${requestMethod} ${routePath}`);
+              this.unprotectedRoutes.add(`${requestMethod} ${routePath}`);
             }
           }
         }
       }
 
-      if (this.unprotectedRoutes.length > 0) {
+      if (this.unprotectedRoutes.size > 0) {
         console.error(
           '\x1b[31m%s\x1b[0m',
           'ERROR: The following routes are not protected by AbilityGuard or its descendants:'
@@ -105,7 +108,7 @@ export class GuardValidator {
 
         return false;
       } catch (error) {
-        console.error('Error checking guard:', guard);
+        console.error('Error checking guard:', guard, error);
         return false;
       }
     });

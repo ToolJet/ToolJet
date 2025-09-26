@@ -16,12 +16,16 @@ export const gitSyncService = {
   confirmPullChanges,
   updateStatus,
   getGitStatus,
+  saveProviderConfigs,
+  updateAppEditState,
+  getAppGitConfigs,
 };
 
-function create(organizationId, gitUrl) {
+function create(organizationId, gitUrl, gitType) {
   const body = {
     organizationId,
     gitUrl,
+    gitType,
   };
 
   const requestOptions = {
@@ -33,7 +37,7 @@ function create(organizationId, gitUrl) {
   return fetch(`${config.apiUrl}/git-sync`, requestOptions).then(handleResponse);
 }
 
-function updateConfig(organizationGitId, updateParam) {
+function updateConfig(organizationGitId, updateParam, gitType = '') {
   const { gitUrl, autoCommit, keyType } = updateParam;
   const body = {
     ...(gitUrl && { gitUrl }),
@@ -46,12 +50,15 @@ function updateConfig(organizationGitId, updateParam) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}?gitType=${gitType}`, requestOptions).then(
+    handleResponse
+  );
 }
 
-function updateStatus(organizationGitId, isEnabled) {
+function updateStatus(organizationGitId, isEnabled, gitType) {
   const body = {
     isEnabled,
+    gitType,
   };
   const requestOptions = {
     method: 'PUT',
@@ -62,31 +69,13 @@ function updateStatus(organizationGitId, isEnabled) {
   return fetch(`${config.apiUrl}/git-sync/status/${organizationGitId}`, requestOptions).then(handleResponse);
 }
 
-function setFinalizeConfig(organizationGitId) {
-  const controller = new AbortController();
-  const timeOut = 2500;
-  const id = setTimeout(() => controller.abort(), timeOut);
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    signal: controller.signal,
-  };
-
-  const response = fetch(`${config.apiUrl}/git-sync/finalize/${organizationGitId}`, requestOptions).then(
-    handleResponse
-  );
-  clearTimeout(id);
-  return response;
-}
-
-function getGitConfig(workspaceId) {
+function getGitConfig(workspaceId, gitType = '') {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/${workspaceId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/git-sync/${workspaceId}?gitType=${gitType}`, requestOptions).then(handleResponse);
 }
 
 function getGitStatus(workspaceId) {
@@ -107,13 +96,15 @@ function syncAppVersion(appGitId, versionId) {
   return fetch(`${config.apiUrl}/app-git/${appGitId}/sync/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function deleteConfig(organizationGitId) {
+function deleteConfig(organizationGitId, gitType) {
   const requestOptions = {
     method: 'DELETE',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}?gitType=${gitType}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function gitPush(body, appGitId, versionId) {
@@ -123,7 +114,7 @@ function gitPush(body, appGitId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -136,7 +127,7 @@ function getAppConfig(organizationId, versionId) {
     credentials: 'include',
     signal: controller.signal,
   };
-  const response = fetch(`${config.apiUrl}/git-sync/${organizationId}/app/${versionId}`, requestOptions).then(
+  const response = fetch(`${config.apiUrl}/app-git/${organizationId}/app/${versionId}`, requestOptions).then(
     handleResponse
   );
   clearTimeout(id);
@@ -149,7 +140,7 @@ function checkForUpdates(appId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}`, requestOptions).then(handleResponse);
 }
 
 function gitPull() {
@@ -158,7 +149,7 @@ function gitPull() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull`, requestOptions).then(handleResponse);
 }
 
 function confirmPullChanges(body, appId) {
@@ -168,7 +159,7 @@ function confirmPullChanges(body, appId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}`, requestOptions).then(handleResponse);
 }
 
 function importGitApp(body) {
@@ -178,5 +169,56 @@ function importGitApp(body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpull/app`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app`, requestOptions).then(handleResponse);
 }
+
+function setFinalizeConfig(organizationGitId, body) {
+  const controller = new AbortController();
+  const timeOut = 2500;
+  const id = setTimeout(() => controller.abort(), timeOut);
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    signal: controller.signal,
+    body: JSON.stringify(body),
+  };
+  const response = fetch(`${config.apiUrl}/git-sync/finalize/${organizationGitId}`, requestOptions).then(
+    handleResponse
+  );
+  clearTimeout(id);
+  return response;
+}
+function saveProviderConfigs(body) {
+  // TO DO Later : Review if we need to use abort controller for this api request
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/git-sync/configs`, requestOptions).then(handleResponse);
+}
+
+function updateAppEditState(appId, allowEditing) {
+  const body = {
+    allowEditing,
+  };
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/configs`, requestOptions).then(handleResponse);
+}
+function getAppGitConfigs(workspaceId, versionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/app-git/${workspaceId}/app/${versionId}/configs`, requestOptions).then(handleResponse);
+}
+// Remove all app-git api's to separate service from here.

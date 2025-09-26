@@ -29,18 +29,29 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateDefaultGroupInExistingWorkspace1720352990850 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const edition = getTooljetEdition() as TOOLJET_EDITIONS;
+    if (edition === TOOLJET_EDITIONS.Cloud) {
+      console.log('Migration is only restricted for non cloud edition.');
+      return; // Exit the migration early
+    }
     const manager = queryRunner.manager;
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
-
-    const licenseService = nestApp.get<LicenseInitService>(LicenseInitService);
-    const licenseValid =
-      getTooljetEdition() === TOOLJET_EDITIONS.CE ? true : await licenseService.initForMigration(manager);
 
     const organizationIds = (
       await manager.find(Organization, {
         select: ['id'],
       })
     ).map((organization) => organization.id);
+
+    if (organizationIds?.length === 0) {
+      console.log('No organizations found, skipping migration.');
+      return;
+    }
+
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+
+    const licenseService = nestApp.get<LicenseInitService>(LicenseInitService);
+    const licenseValid =
+      getTooljetEdition() === TOOLJET_EDITIONS.CE ? true : await licenseService.initForMigration(manager);
 
     const migrationProgress = new MigrationProgress(
       'CreateDefaultGroupInExistingWorkspace1720352990850',
@@ -185,8 +196,8 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
         can_use
       ) VALUES (
         '${granularPermissions.id}', ${createObject?.action?.canConfigure || false}, ${
-      createObject?.action?.canUse || false
-    }
+          createObject?.action?.canUse || false
+        }
       ) RETURNING *;
     `;
     return (await manager.query(query))[0];

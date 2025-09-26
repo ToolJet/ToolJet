@@ -7,8 +7,12 @@ import OnboardingBackgroundWrapper from '@/modules/onboarding/components/Onboard
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import * as envConfigs from 'config';
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 
 const SignupPage = ({ configs, organizationId }) => {
+  const edition = fetchEdition();
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -18,14 +22,17 @@ const SignupPage = ({ configs, organizationId }) => {
     email: '',
     name: '',
   });
-
   const routeState = location.state;
   const organizationToken = routeState?.organizationToken;
   const inviteeEmail = routeState?.inviteeEmail;
   const inviteOrganizationId = organizationId;
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
+  if (!paramInviteOrganizationSlug && edition === 'cloud') {
+    window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup';
+  }
   useEffect(() => {
+    fetchWhiteLabelDetails(organizationId);
     const errorMessage = location?.state?.errorMessage;
     if (errorMessage) {
       toast.error(errorMessage);
@@ -42,7 +49,10 @@ const SignupPage = ({ configs, organizationId }) => {
         .catch((errorObj) => {
           let errorMessage;
           const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
-          if (isThereAnyErrorsArray) {
+          if (errorObj?.error?.includes('reached your limit')) {
+            // Note : The fix is made to handle the case when errorObj?.error is a string and not an object
+            errorMessage = errorObj?.error;
+          } else if (isThereAnyErrorsArray) {
             errorMessage = errorObj?.error?.[0];
           } else if (typeof errorObj?.error?.error === 'string') {
             errorMessage = errorObj?.error?.error;

@@ -1,18 +1,16 @@
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { DynamicModule, Module } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
+import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
-export class AppConfigModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { ConfigService } = await import(`${importPath}/configs/service`);
-    const { ConfigController } = await import(`${importPath}/configs/controller`);
+export class AppConfigModule extends SubModule {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const { ConfigController, ConfigService } = await this.getProviders(configs, 'configs', ['controller', 'service']);
 
     return {
       module: AppConfigModule,
       imports: [await InstanceSettingsModule.register(configs)],
-      controllers: [ConfigController],
+      controllers: isMainImport ? [ConfigController] : [],
       providers: [ConfigService],
     };
   }

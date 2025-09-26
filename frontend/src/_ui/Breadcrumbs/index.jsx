@@ -2,37 +2,12 @@ import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SolidIcon from '../Icon/SolidIcons';
 import { BreadCrumbContext } from '../../App/App';
-import useBreadcrumbs from 'use-react-router-breadcrumbs';
-import { decodeEntities } from '@/_helpers/utils';
+import cx from 'classnames';
 
-export const Breadcrumbs = ({ darkMode, dataCy }) => {
-  const { sidebarNav } = useContext(BreadCrumbContext);
-  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
-  const location = useLocation();
-  const search = location.search || '';
-
-  return (
-    <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
-        if (i == 1 || breadcrumbs?.length == 1) {
-          return (
-            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
-              <p className=" tj-text-xsm ">{breadcrumb}</p>
-              {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
-                {' '}
-                {sidebarNav && decodeEntities(sidebarNav)}
-              </li>
-            </div>
-          );
-        }
-      })}
-    </ol>
-  );
-};
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
+  { path: '/:workspace_id/modules', breadcrumb: 'Modules' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },
@@ -51,3 +26,33 @@ const routes = [
   { path: '/integrations/installed', breadcrumb: 'Integrations' },
   { path: '/integrations/marketplace', breadcrumb: 'Integrations' },
 ];
+import useBreadcrumbs from 'use-react-router-breadcrumbs';
+import { decodeEntities } from '@/_helpers/utils';
+
+export const Breadcrumbs = ({ darkMode, dataCy }) => {
+  const { sidebarNav } = useContext(BreadCrumbContext);
+  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
+  const location = useLocation();
+  const search = location.search || '';
+  return (
+    <ol className="breadcrumb breadcrumb-arrows">
+      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
+        if (i === 1 || breadcrumbs?.length === 1) {
+          return (
+            breadcrumb &&
+            sidebarNav?.length > 0 && (
+              <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+                <p className="tj-text-xsm">{breadcrumb}</p>
+                <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
+                <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                  {sidebarNav && decodeEntities(sidebarNav)}
+                </li>
+              </div>
+            )
+          );
+        }
+        return null;
+      })}
+    </ol>
+  );
+};
