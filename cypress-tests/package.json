@@ -14,7 +14,7 @@
     "cypress-mailhog": "^2.5.0"
   },
   "dependencies": {
-    "cypress-real-events": "^1.7.6",
+    // "cypress-real-events": "^1.7.6",
     "moment": "^2.29.4",
     "node-xlsx": "^0.4.0",
     "pdf-parse": "^1.1.1",
