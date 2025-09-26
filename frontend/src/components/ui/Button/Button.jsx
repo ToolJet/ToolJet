@@ -8,7 +8,7 @@ import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 // eslint-disable-next-line import/no-unresolved
-import { DynamicIcon } from 'lucide-react/dynamic';
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import './Button.scss';
 import {
   getDefaultIconFillColor,
