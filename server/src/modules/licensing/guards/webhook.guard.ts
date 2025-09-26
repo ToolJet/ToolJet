@@ -39,8 +39,11 @@ export class WebhookGuard implements CanActivate {
     const isAuthenticated = await this.validateAuthentication(request, workflowApp);
     if (!isAuthenticated) throw new UnauthorizedException('Invalid authentication token');
 
+    // Workflow must be enabled inorder to use it
+    if (!workflowApp.isMaintenanceOn) throw new HttpException(`Workflow is disabled or does not exist`, 403);
+
     // WebHook endpoint must be enabled inorder to use it
-    if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 404);
+    if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
 
     // Workspace Level -
     if (workflowsLimit.workspace) {
