@@ -1,8 +1,15 @@
-import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
+import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  OAuthUnauthorizedClientError,
+  isEmpty,
+  ConnectionTestResult,
+} from '@tooljet-plugins/common';
 import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets } from './operations';
 import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
-
+import { google } from 'googleapis';
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
     const host = process.env.TOOLJET_HOST;
@@ -239,5 +246,50 @@ export default class GooglesheetsQueryService implements QueryService {
       );
     }
     return accessTokenDetails;
+  }
+
+  async getServiceAccountToken(sourceOptions: SourceOptions) {
+    const serviceAccountKey = JSON.parse(sourceOptions['service_account_key']);
+    serviceAccountKey.private_key = serviceAccountKey.private_key.replace(/\\n/g, '\n');
+
+    const jwtClient = new google.auth.JWT({
+      email: serviceAccountKey?.client_email,
+      key: serviceAccountKey?.private_key,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    const tokenResponse = await jwtClient.authorize();
+
+    if (!tokenResponse || !tokenResponse.access_token)
+      throw new QueryError(
+        'Connection could not be established',
+        'Failed to obtain access token for service account',
+        {}
+      );
+    return tokenResponse.access_token;
+  }
+
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    if (sourceOptions['authentication_type'] !== 'service_account') {
+      throw new QueryError(
+        'Connection could not be established',
+        'For test connection only service account authentication is supported',
+        {}
+      );
+    }
+
+    const accessToken = await this.getConnection(sourceOptions);
+    const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+    if (response.ok) {
+      return { status: 'ok' };
+    } else {
+      return { status: 'failed' };
+    }
+  }
+
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
+    if (isEmpty(sourceOptions['service_account_key']))
+      throw new QueryError('Connection could not be established', 'Service account key is required', {});
+    const accessToken = await this.getServiceAccountToken(sourceOptions);
+    return accessToken;
   }
 }
