@@ -90,7 +90,7 @@ jobs:
           if [ -n "$INSTANCE_IDS" ]; then
             echo "Found instances from build logs: $INSTANCE_IDS"
             echo "Terminating instances..."
-            aws ec2 terminate-instances --region us-west-1 --instance-ids $INSTANCE_IDS
+            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
             echo "Terminated instances: $INSTANCE_IDS"
           else
             echo "No instance IDs found in build logs, checking for any running Packer instances..."
