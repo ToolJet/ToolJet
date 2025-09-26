@@ -15,6 +15,7 @@ const initialState = {
   },
   selectedEntry: {},
   showRenameEntryModal: false,
+  showRestoreEntryModal: false,
 };
 
 const useAppHistoryStore = create(
@@ -144,6 +145,16 @@ const useAppHistoryStore = create(
           },
           false,
           'setShowRenameEntryModal'
+        );
+      },
+
+      setShowRestoreEntryModal: (show) => {
+        set(
+          (state) => {
+            state.showRestoreEntryModal = show;
+          },
+          false,
+          'setShowRestoreEntryModal'
         );
       },
     })),
