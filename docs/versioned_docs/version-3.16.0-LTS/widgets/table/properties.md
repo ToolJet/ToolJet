@@ -10,9 +10,13 @@ The **Table** component displays and manages data, connecting seamlessly with da
 
 ## Data
 
-To populate the **Table** component with data, you need to provide the data in the form of an array of objects under its **Data** property. You can utilize data from queries by referring query data to populate the **Table**. 
+You can populate the Table component by either selecting a data source or by providing Raw JSON.
 
-The **Table** component will **automatically generate all the required columns** when the data is provided. The **Table** also loads one level of **nested data**. 
+When using Raw JSON, supply the data as an array of objects. Each object represents a row in the table.
+
+The Table component will:
+- Automatically generate columns based on the fields present in the data.
+- Load one level of nested data automatically.
 
 Example - Passing an array:
 

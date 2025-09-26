@@ -15,7 +15,7 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Setting List Data
 
-To dynamically populate List View components, you can use specific data properties.
+To dynamically populate List View components, you can either use a data source or enter an array of objects.
 
 Consider this data being passed inside a List View component's `List data` property:
 
@@ -45,15 +45,15 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                    | <div style={{ width:"135px"}}> Expected Value </div>             |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- |
-| List data                                      | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
-| Mode                                           | The layout of the List View component. You can choose between `List` and `Grid` mode.                                                                | `list` or `grid`                                                 |
-| Show bottom border                             | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`.                                | `true` or `false`                                                |
-| Columns                                        | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`.                                  | Any numerical value                                              |
-| Row height                                     | The height of each row in the List View component.                                                                                                   | Any number between 1 and 100                                     |
-| Enable pagination                              | Whether to enable pagination. If enabled, you can set the number of rows per page.                                                                   | `true` or `false`                                                |
-| Rows per page                                  | The number of rows per page. This option is only available when **Enable pagination** is enabled.                                                    | Any numerical value                                              |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| List data | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| Mode | The layout of the List View component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
+| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
+| Columns | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
+| Row height | The height of each row in the List View component. | Any number between 1 and 100 |
+| Enable pagination | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
+| Rows per page | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
 
 </div>
 
@@ -121,10 +121,10 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                  | <div style={{ width:"250px"}}> Expected Value </div>                                                                         |
-| :------------------------------------------- | :----------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Dynamic height                               | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover. Set a display string.    | String                                                                                                                       |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| :------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a display string.    | String |
 
 </div>
 
@@ -143,13 +143,13 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                          |
-| :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Background color                            | You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker.                                                                                              |
-| Border color                                | You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker.                                                                                                 |
-| Visibility                                  | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Disable                                     | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`.                                                                     |
-| Border radius                               | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`.                                                                                                  |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> |
+| :------------------------------------------ | :------------------------------------------------ |
+| Background color | You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Border color | You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
+| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Disable | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
@@ -162,41 +162,16 @@ Any property having **fx** button next to its field can be **programmatically co
 ## Example: Displaying Data in the List View
 
 - Let's start by creating a new app and then dragging the List View component onto the canvas.
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/widgets/list-view/emptylist.png" alt="ToolJet - List view component" />
-
-    </div>
-
+    <img className="screenshot-full img-full" src="/img/widgets/list-view/emptylist.png" alt="ToolJet - List view component" />
 - Now lets create a query and select the REST API from the datasource dropdown. Choose the `GET` method and enter the API endpoint - `https://reqres.in/api/users?page=1`. Save this query and fire it. Inspect the query results from the left sidebar, you'll see that it resulted in the `data` object having an array of objects.
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/widgets/list-view/data.gif" alt="ToolJet - List view component" />
-
-    </div>
-
+    <img className="screenshot-full img-full" src="/img/widgets/list-view/data.gif" alt="ToolJet - List view component" />
 - Now lets edit the `List data` property of the List View component for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the component using the data.
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/widgets/list-view/datadisplay.png" alt="ToolJet - List view component" />
-
-    </div>
-
+    <img className="screenshot-full img-full" src="/img/widgets/list-view/datadisplay.png" alt="ToolJet - List view component" />
 - Finally, we will need to nest components into the first row of List View component and the component will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view component" />
-
-    </div>
+    <img className="screenshot-full img-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view component" />
 
 :::tip
-
 Use `{{listItem.key}}` to display data on the nested components. Example: For displaying the images we used `{{listItem.avatar}}` where **avatar** is one of the key in the objects from the query result.
-
 :::
 
 </div>
