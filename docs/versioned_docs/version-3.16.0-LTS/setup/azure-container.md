@@ -6,7 +6,7 @@ title: Azure Container Apps
 # Deploying ToolJet on Azure Container Apps
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
 :::
 
 :::info
@@ -32,6 +32,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
    <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
 7. Under "Environmental variables", please add the below ToolJet application variables:
+
    ```env
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
@@ -83,6 +84,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
 
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
+
 8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 9. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.

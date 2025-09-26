@@ -8,7 +8,7 @@ title: AWS AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
 :::
 
 :::info
@@ -72,6 +72,7 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    :::
 
    For AWS RDS PostgreSQL connections, first download the certificate bundle:
+
    ```bash
    # Create directory and download certificate
    sudo mkdir -p /home/ubuntu/certs/
@@ -81,6 +82,7 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    ```
 
    Then add these variables to your `.env` file:
+
    ```bash
    PG_HOST=your-rds-endpoint.region.rds.amazonaws.com
    PGSSLMODE=require

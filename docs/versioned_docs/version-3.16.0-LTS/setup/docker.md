@@ -14,7 +14,7 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
 :::
 
 ::::
