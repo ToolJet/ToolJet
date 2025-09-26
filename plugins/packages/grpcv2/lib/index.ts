@@ -2,14 +2,19 @@ import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl
 import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
 import JSON5 from 'json5';
+import { isEmpty } from 'lodash';
 import {
   buildReflectionClient,
   buildProtoFileClient,
+  buildFilesystemClient,
   discoverServicesUsingReflection,
-  discoverServicesUsingProtoFile,
+  discoverServicesUsingProtoUrl,
+  discoverServicesUsingFilesystem,
   loadProtoFromRemoteUrl,
+  loadProtosFromFilesystem,
   extractServicesFromGrpcPackage,
-  executeGrpcMethod
+  executeGrpcMethod,
+  getDefaultProtoDirectory
 } from './operations';
 import { PackageDefinition } from '@grpc/proto-loader';
 
@@ -47,6 +52,8 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
+  // FIXME: Figure better approach to do test connection check
+  // for cases where multiple services are present in proto file, reflection and filesystem
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       if (sourceOptions.proto_files === 'server_reflection') {
@@ -55,6 +62,84 @@ export default class Grpcv2QueryService implements QueryService {
           status: 'ok',
           message: `Successfully connected. Found ${services.length} service(s).`
         };
+      } else if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
+        const directory =
+          isEmpty(sourceOptions.proto_files_directory) ?
+            getDefaultProtoDirectory() :
+            sourceOptions.proto_files_directory;
+
+        const protoFilePattern =
+          isEmpty(sourceOptions.proto_files_pattern) ?
+            '**/*.proto' :
+            sourceOptions.proto_files_pattern;
+
+        let packageDefinition: PackageDefinition;
+        try {
+          packageDefinition = await loadProtosFromFilesystem(
+            directory,
+            protoFilePattern
+          );
+        } catch (filesystemError) {
+          return {
+            status: 'failed',
+            message: `${filesystemError?.message || 'Failed to load proto files from directory'}`
+          };
+        }
+
+        const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+        let services: GrpcService[];
+
+        try {
+          services = extractServicesFromGrpcPackage(grpcObject);
+        } catch (extractError) {
+          return {
+            status: 'failed',
+            message: 'No services found in proto files',
+          };
+        }
+
+        if (services.length === 0) {
+          return {
+            status: 'failed',
+            message: 'No services found in proto files',
+          };
+        }
+
+        const firstService = services[0].name;
+        try {
+          const client = await this.createGrpcClient(sourceOptions, firstService);
+
+          const deadline = new Date();
+          deadline.setSeconds(deadline.getSeconds() + 60);
+
+          const waitForReadyAsync = (client: GrpcClient, deadline: Date): Promise<void> => {
+            return new Promise((resolve, reject) => {
+              client.waitForReady(deadline, (error: any) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  resolve();
+                }
+              });
+            });
+          };
+
+          try {
+            await waitForReadyAsync(client, deadline);
+          } catch (error) {
+            throw new Error(`Cannot connect to host: ${error.message}`);
+          }
+
+          return {
+            status: 'ok',
+            message: `Successfully loaded proto files. Found ${services.length} service(s).`
+          };
+        } catch (connectionError) {
+          return {
+            status: 'failed',
+            message: `Connection error: ${connectionError?.message || 'Failed to connect to gRPC server'}`,
+          };
+        }
       } else {
         let packageDefinition: PackageDefinition;
         try {
@@ -150,10 +235,21 @@ export default class Grpcv2QueryService implements QueryService {
     try {
       this.validateSourceOptionsForDiscovery(sourceOptions);
 
-      if (sourceOptions.proto_files === 'server_reflection') {
-        return await discoverServicesUsingReflection(sourceOptions);
-      } else {
-        return await discoverServicesUsingProtoFile(sourceOptions);
+      switch (sourceOptions.proto_files) {
+        case 'server_reflection':
+          return await discoverServicesUsingReflection(sourceOptions);
+
+        case 'import_proto_file':
+          return await discoverServicesUsingProtoUrl(sourceOptions);
+
+        case 'import_protos_from_filesystem':
+          return await discoverServicesUsingFilesystem(sourceOptions);
+
+        default:
+          throw new GrpcOperationError(
+            `Unsupported proto_files option: ${sourceOptions.proto_files}. ` +
+            `Supported options are: 'server_reflection', 'import_proto_file', 'import_protos_from_filesystem'`
+          );
       }
     } catch (error: unknown) {
       if (error instanceof GrpcOperationError) {
@@ -171,10 +267,18 @@ export default class Grpcv2QueryService implements QueryService {
 
   private async createGrpcClient(sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> {
     // TODO: Can cache clients based on sourceOptions 
-    if (sourceOptions.proto_files === 'server_reflection') {
-      return await buildReflectionClient(sourceOptions, serviceName);
-    } else {
-      return await buildProtoFileClient(sourceOptions, serviceName);
+    switch (sourceOptions.proto_files) {
+      case 'server_reflection':
+        return await buildReflectionClient(sourceOptions, serviceName);
+
+      case 'import_proto_file':
+        return await buildProtoFileClient(sourceOptions, serviceName);
+
+      case 'import_protos_from_filesystem':
+        return await buildFilesystemClient(sourceOptions, serviceName);
+
+      default:
+        throw new GrpcOperationError(`Unsupported proto_files option: ${sourceOptions.proto_files}`);
     }
   }
 
