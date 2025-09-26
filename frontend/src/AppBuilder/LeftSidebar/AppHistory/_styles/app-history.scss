@@ -74,6 +74,12 @@
             margin: 0 -6px;
             padding: 7px 6px;
             background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+
+            .entry-option-btn-wrapper {
+              .entry-option-btn {
+                display: flex;
+              }
+            }
           }
 
           .entry-body {
@@ -84,7 +90,7 @@
             gap: 4px;
 
             .entry-info {
-              width: 258px;
+              width: 252px;
 
               .entry-name {
                 width: 100%;
@@ -130,9 +136,13 @@
             }
           }
 
-          .entry-options-btn-wrapper {
+          .entry-option-btn-wrapper {
             width: 28px;
             height: 28px;
+
+            .entry-option-btn {
+              display: none;
+            }
           }
         }
       }
@@ -399,77 +409,6 @@
   }
 }
 
-// // Popover content specific to app history
-// .sidebar-h-100-popover.apphistory {
-//   width: 400px;
-//   max-width: 90vw;
-
-//   @media (max-width: 768px) {
-//     width: 100vw;
-//     max-width: none;
-//     height: 100vh !important;
-//   }
-// }
-
-// Animation for new history entries
-@keyframes slideInFromTop {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.history-entry.new-entry {
-  animation: slideInFromTop 0.3s ease-out;
-}
-
-// Loading shimmer effect
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-.history-entry-skeleton {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background-color: #e5e7eb;
-  border-radius: 0.25rem;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
-
-  .theme-dark & {
-    background-color: #374151;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
+#history-list-menu.copy-menu-options {
+  top: 0 !important;
 }
