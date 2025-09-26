@@ -69,7 +69,7 @@ export const Input = React.forwardRef(
                 inputVariants({ size }),
                 `tw-peer tw-flex ${buttonSizeVariants({
                   size,
-                })} tw-w-full tw-rounded-[6px] tw-border tw-border-solid tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${
+                })} tw-w-full tw-border tw-border-solid tw-border-border-strong tw-bg-background-surface-layer-01 tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${
                   props.styles
                 }`,
                 className,
