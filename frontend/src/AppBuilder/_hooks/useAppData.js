@@ -32,7 +32,7 @@ import toast from 'react-hot-toast';
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
  **/
-const normalizeQueryTransformationOptions = (query) => {
+export const normalizeQueryTransformationOptions = (query) => {
   if (query?.options) {
     if (query.options.enable_transformation) {
       const enableTransformation = query.options.enable_transformation;
@@ -140,6 +140,9 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
+    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
+  );
 
   const location = useRouter().location;
 
@@ -254,6 +257,10 @@ const useAppData = (
       }
     }
 
+    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
+      setEditorLoading(true, moduleId);
+    }
+
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -315,7 +322,7 @@ const useAppData = (
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
         if (setConversation && setDocsConversation) {
-          setConversation(conversation);
+          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
@@ -537,7 +544,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
@@ -626,6 +633,9 @@ const useAppData = (
           isPublic: appData.isPublic,
           isReleasedApp: isReleasedApp,
           appType: appData.type,
+          appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
+          aiGenerationMetadata: appData.ai_generation_metadata || {},
+          appBuilderMode: appData.appBuilderMode || 'visual',
         });
 
         setGlobalSettings(

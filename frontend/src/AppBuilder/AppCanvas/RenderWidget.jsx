@@ -42,6 +42,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'PopoverMenu',
   'Tags',
   'CircularProgressBar',
+  'Kanban',
 ];
 
 const RenderWidget = ({
@@ -208,7 +209,6 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          role={'Box'}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
           } ${

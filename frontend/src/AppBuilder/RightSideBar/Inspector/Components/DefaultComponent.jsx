@@ -42,6 +42,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Statistics',
   'StarRating',
   'CircularProgressBar',
+  'Kanban',
+  'Html',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -64,6 +66,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Statistics: 'Data',
   StarRating: 'Data',
   CircularProgressBar: 'Data',
+  Kanban: 'Board configuration',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -170,6 +173,7 @@ export const baseComponentProperties = (
       'Statistics',
       'StarRating',
       'CircularProgressBar',
+      'Kanban',
     ],
     Layout: [],
   };

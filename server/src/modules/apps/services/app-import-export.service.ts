@@ -84,7 +84,8 @@ type NewRevampedComponent =
   | 'Statistics'
   | 'StarRating'
   | 'Tags'
-  | 'CircularProgressBar';
+  | 'CircularProgressBar'
+  | 'Html';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -117,6 +118,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'StarRating',
   'Tags',
   'CircularProgressBar',
+  'Html',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -169,7 +171,9 @@ export class AppImportExportService {
         });
 
       if (versionId) {
-        queryAppVersions.andWhere('app_versions.id = :versionId', { versionId });
+        queryAppVersions.andWhere('app_versions.id = :versionId', {
+          versionId,
+        });
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
@@ -180,7 +184,9 @@ export class AppImportExportService {
           .where('data_sources.appVersionId IN(:...versionId)', {
             versionId: appVersions.map((v) => v.id),
           })
-          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
+          .andWhere('data_sources.scope != :scope', {
+            scope: DataSourceScopes.GLOBAL,
+          })
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
@@ -201,7 +207,9 @@ export class AppImportExportService {
         .where('data_query.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
-        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .andWhere('dataSource.scope = :scope', {
+          scope: DataSourceScopes.GLOBAL,
+        })
         .getMany();
 
       const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
@@ -305,7 +313,11 @@ export class AppImportExportService {
       //call the export function for each moduleAppiDs
       await Promise.all(
         moduleAppIds.map(async (moduleAppId) =>
-          moduleApps.push(await this.export(user, moduleAppId.moduleId, { version_id: moduleAppId.versionId }))
+          moduleApps.push(
+            await this.export(user, moduleAppId.moduleId, {
+              version_id: moduleAppId.versionId,
+            })
+          )
         )
       );
 
@@ -469,8 +481,14 @@ export class AppImportExportService {
         : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
       const currentTooljetVersion = !cloning ? tooljetVersion : null;
-
-      const importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user, isGitApp);
+      const existingAppId = appParamsObj.existingAppId;
+      const importedApp = await this.createImportedAppForUser(
+        manager,
+        schemaUnifiedAppParams,
+        user,
+        isGitApp,
+        existingAppId
+      );
 
       const resourceMapping = await this.setupImportedAppAssociations(
         manager,
@@ -492,7 +510,9 @@ export class AppImportExportService {
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
       // hence updating slug explicitly
       //await importedApp.reload(); -> this will not work as we are using transaction
-      const newApp = await manager.findOne(App, { where: { id: importedApp.id } });
+      const newApp = await manager.findOne(App, {
+        where: { id: importedApp.id },
+      });
       newApp.slug = importedApp.id;
       await manager.save(newApp);
       return { newApp, resourceMapping };
@@ -500,14 +520,19 @@ export class AppImportExportService {
   }
 
   async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
-    const mappings = { ...resourceMapping.componentsMapping, ...resourceMapping.dataQueryMapping };
+    const mappings = {
+      ...resourceMapping.componentsMapping,
+      ...resourceMapping.dataQueryMapping,
+    };
     const newComponentIds = Object.values(resourceMapping.componentsMapping);
     const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
 
     if (newComponentIds.length > 0) {
       const components = await manager
         .createQueryBuilder(Component, 'components')
-        .where('components.id IN(:...componentIds)', { componentIds: newComponentIds })
+        .where('components.id IN(:...componentIds)', {
+          componentIds: newComponentIds,
+        })
         .select([
           'components.id',
           'components.properties',
@@ -531,7 +556,9 @@ export class AppImportExportService {
     if (newQueriesIds.length > 0) {
       const dataQueries = await manager
         .createQueryBuilder(DataQuery, 'dataQueries')
-        .where('dataQueries.id IN(:...dataQueryIds)', { dataQueryIds: newQueriesIds })
+        .where('dataQueries.id IN(:...dataQueryIds)', {
+          dataQueryIds: newQueriesIds,
+        })
         .select(['dataQueries.id', 'dataQueries.options'])
         .getMany();
 
@@ -562,8 +589,13 @@ export class AppImportExportService {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
   }
-
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
+  async createImportedAppForUser(
+    manager: EntityManager,
+    appParams: any,
+    user: User,
+    isGitApp = false,
+    existingAppId?
+  ): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -581,7 +613,12 @@ export class AppImportExportService {
 
       await manager.save(importedApp);
       return importedApp;
-    }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+    }, [
+      {
+        dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE,
+        message: 'This app name is already taken.',
+      },
+    ]);
   }
 
   extractImportDataFromAppParams(appParams: Record<string, any>): {
@@ -1234,7 +1271,9 @@ export class AppImportExportService {
       await Promise.all(updateArr);
 
       const newDataQueries = await manager.find(DataQuery, {
-        where: { appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+        where: {
+          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+        },
       });
 
       for (const importedDataQuery of importingDataQueriesForAppVersion) {
@@ -1381,7 +1420,9 @@ export class AppImportExportService {
     const isPluginInstalled = async (kind: string): Promise<boolean> => {
       if (pluginsFound.has(kind)) return true;
 
-      const pluginExists = !!(await manager.findOne(Plugin, { where: { pluginId: kind } }));
+      const pluginExists = !!(await manager.findOne(Plugin, {
+        where: { pluginId: kind },
+      }));
 
       if (pluginExists) pluginsFound.add(kind);
 
@@ -1725,7 +1766,10 @@ export class AppImportExportService {
       if (missingGroups.length > 0) {
         throw new HttpException(
           {
-            message: { type: APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.PERMISSION_CHECK, data: missingGroups },
+            message: {
+              type: APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.PERMISSION_CHECK,
+              data: missingGroups,
+            },
           },
           HttpStatus.BAD_REQUEST
         );
@@ -1865,14 +1909,20 @@ export class AppImportExportService {
         currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
-      const version = await manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appVersion.definition,
-        name: appVersion.name,
-        currentEnvironmentId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      let version;
+      // this case only happens in the AI flow when app is imported within an existing app
+      if (importedApp.editingVersion) {
+        version = importedApp.editingVersion;
+      } else {
+        version = await manager.create(AppVersion, {
+          appId: importedApp.id,
+          definition: appVersion.definition,
+          name: appVersion.name,
+          currentEnvironmentId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
 
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
@@ -2177,7 +2227,9 @@ export class AppImportExportService {
     await manager.update(
       AppVersion,
       { id: version.id },
-      { definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping) }
+      {
+        definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping),
+      }
     );
   }
 
@@ -2262,7 +2314,10 @@ export class AppImportExportService {
     // From Section
     if (joinOptions?.from) {
       const { name = '' } = joinOptions.from;
-      joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
+      joinOptions.from = {
+        ...joinOptions.from,
+        name: tooljetDatabaseMapping[name]?.id ?? name,
+      };
     }
 
     // Sort Section
@@ -2296,7 +2351,12 @@ export class AppImportExportService {
         return { operator, leftField, rightField };
       }
     });
-    return { conditions: { ...joinConditions, conditionsList: [...updatedConditionList] } };
+    return {
+      conditions: {
+        ...joinConditions,
+        conditionsList: [...updatedConditionList],
+      },
+    };
   }
 
   async updateEventActionsForNewVersionWithNewMappingIds(
@@ -2310,7 +2370,10 @@ export class AppImportExportService {
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
       .getMany();
-    const mappings = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping } as Record<string, string>;
+    const mappings = {
+      ...oldDataQueryToNewMapping,
+      ...oldComponentToNewComponentMapping,
+    } as Record<string, string>;
 
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
@@ -2629,7 +2692,10 @@ function migrateProperties(
         };
       }
       if (properties.enablePicker) {
-        properties.enablePicker = { ...properties.enablePicker, fxActive: properties?.enablePicker?.fxActive ?? true };
+        properties.enablePicker = {
+          ...properties.enablePicker,
+          fxActive: properties?.enablePicker?.fxActive ?? true,
+        };
       }
       if (properties.enableMultiple) {
         properties.enableMultiple = {
@@ -2638,20 +2704,32 @@ function migrateProperties(
         };
       }
       if (properties.fileType && !validation.fileType) {
-        validation.fileType = { ...properties.fileType, fxActive: properties?.fileType?.fxActive ?? true };
+        validation.fileType = {
+          ...properties.fileType,
+          fxActive: properties?.fileType?.fxActive ?? true,
+        };
         delete properties.fileType;
       }
 
       if (properties.maxFileCount && !validation.maxFileCount) {
-        validation.maxFileCount = { ...properties.maxFileCount, fxActive: properties?.fileType?.fxActive ?? true };
+        validation.maxFileCount = {
+          ...properties.maxFileCount,
+          fxActive: properties?.fileType?.fxActive ?? true,
+        };
         delete properties.maxFileCount;
       }
       if (properties.maxSize && !validation.maxSize) {
-        validation.maxSize = { ...properties.maxSize, fxActive: properties?.maxSize?.fxActive ?? true };
+        validation.maxSize = {
+          ...properties.maxSize,
+          fxActive: properties?.maxSize?.fxActive ?? true,
+        };
         delete properties.maxSize;
       }
       if (properties.minSize && !validation.minSize) {
-        validation.minSize = { ...properties.minSize, fxActive: properties?.minSize?.fxActive ?? true };
+        validation.minSize = {
+          ...properties.minSize,
+          fxActive: properties?.minSize?.fxActive ?? true,
+        };
         delete properties.minSize;
       }
 
@@ -2696,6 +2774,17 @@ function migrateProperties(
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
       styles.widthType = { value: 'ofField' };
+    }
+  }
+
+  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
+  // The migration for Kanban will then be handled automatically along with other revamped components.
+  if (['Kanban'].includes(componentType)) {
+    if (general?.tooltip) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
+      delete general?.tooltip;
     }
   }
 
