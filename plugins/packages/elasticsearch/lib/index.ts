@@ -79,12 +79,18 @@ export default class ElasticsearchService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const client = await this.getConnection(sourceOptions);
-    await client.info();
+    try{
+      const client = await this.getConnection(sourceOptions);
+      await client.info();
 
-    return {
-      status: 'ok',
-    };
+      return {
+        status: 'ok',
+        message: 'Connection successful',
+      };
+    }catch(err : any){
+      const errorMessage = err || 'Unknown error';
+      throw new QueryError(errorMessage, err,{});
+    }
   }
 
   determineProtocol(sourceOptions: SourceOptions) {
