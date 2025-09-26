@@ -84,6 +84,7 @@ type NewRevampedComponent =
   | 'Statistics'
   | 'StarRating'
   | 'Tags'
+  | 'CircularProgressBar'
   | 'Html';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
@@ -116,6 +117,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Statistics',
   'StarRating',
   'Tags',
+  'CircularProgressBar',
   'Html',
 ];
 
@@ -146,7 +148,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -264,10 +266,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -279,10 +281,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -290,16 +292,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .leftJoinAndSelect('components.permissions', 'permission')
-            .leftJoinAndSelect('permission.users', 'componentUser')
-            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -326,10 +328,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -384,11 +386,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-          .createQueryBuilder(App, 'app')
-          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-          .distinct(true)
-          .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .distinct(true)
+            .getMany()
         : [];
 
     // Process each module from the import data
@@ -1459,10 +1461,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2187,10 +2189,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user?.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2583,6 +2585,58 @@ function migrateProperties(
           validation.maxValue = properties?.maxValue;
         }
         delete properties.maxValue;
+      }
+    }
+
+    // CircularProgressBar
+    if (componentType === 'CircularProgressBar') {
+      if (!properties.labelType) {
+        properties.labelType = { value: 'custom' };
+      }
+
+      if (!properties.text || !properties.text.value) {
+        properties.text = {
+          ...properties.text,
+          value: '',
+        };
+      }
+
+      if (!styles.completionColor) {
+        styles.completionColor = {
+          ...styles.color,
+        };
+      }
+
+      // When CircularProgressBar was released
+      const backwordCompatibilityCheck = !isVersionGreaterThanOrEqual(tooljetVersion, '3.16.33');
+      if (backwordCompatibilityCheck) {
+        if (styles.textSize) {
+          styles.textSize = {
+            ...styles.textSize,
+            fxActive: true,
+          };
+        }
+
+        if (styles.strokeWidth) {
+          styles.strokeWidth = {
+            ...styles.strokeWidth,
+            fxActive: true,
+          };
+        }
+
+        if (styles.counterClockwise) {
+          styles.counterClockwise = {
+            ...styles.counterClockwise,
+            fxActive: true,
+          };
+        }
+
+        if (styles.circleRatio) {
+          styles.circleRatio = {
+            ...styles.circleRatio,
+            fxActive: true,
+          };
+        }
       }
     }
 

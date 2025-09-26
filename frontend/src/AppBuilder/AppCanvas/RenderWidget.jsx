@@ -41,6 +41,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'StarRating',
   'PopoverMenu',
   'Tags',
+  'CircularProgressBar',
   'Kanban',
 ];
 
@@ -210,7 +211,11 @@ const RenderWidget = ({
           }}
           className={`canvas-component ${
             inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${!['Modal', 'ModalV2'].includes(component.component) && (isDisabled || isLoading) ? 'disabled' : ''}`} //required for custom CSS
+          } ${
+            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+              ? 'disabled'
+              : ''
+          }`} //required for custom CSS
         >
           <ComponentToRender
             id={id}

@@ -55,6 +55,7 @@ const MultiLineCodeEditor = (props) => {
     editable = true,
     renderCopilot,
     setCodeEditorView,
+    onInputChange, // Added this prop to immediately handle value changes
   } = props;
   const editorRef = useRef(null);
 
@@ -120,7 +121,10 @@ const MultiLineCodeEditor = (props) => {
     };
   }, [editorView]);
 
-  const handleChange = (val) => (currentValueRef.current = val);
+  const handleChange = (val) => {
+    currentValueRef.current = val;
+    onInputChange && onInputChange(val);
+  };
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);

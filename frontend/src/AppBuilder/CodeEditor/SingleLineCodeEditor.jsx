@@ -586,7 +586,7 @@ const DynamicEditorBridge = (props) => {
       <div
         className={`col-auto pt-0 fx-common fx-button-container ${
           (isEventManagerParam || codeShow) && 'show-fx-button-container'
-        }`}
+        } ${paramType === 'slider' ? 'slider-fx-button-container' : ''}`}
       >
         <FxButton
           active={codeShow}
@@ -614,7 +614,10 @@ const DynamicEditorBridge = (props) => {
     return (
       <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
-          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div
+            className={`field ${paramType === 'slider' ? 'slider-code-editor-label' : ''} ${className}`}
+            data-cy={`${cyLabel}-widget-parameter-label`}
+          >
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
