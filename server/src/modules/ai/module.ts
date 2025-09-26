@@ -25,7 +25,6 @@ export class AiModule extends SubModule {
     const { AiUtilService } = await import(`${importPath}/ai/util.service`);
     const { AgentsService } = await import(`${importPath}/ai/services/agents.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
-    const { GraphService } = await import(`${importPath}/ai/services/graph.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
 
@@ -43,7 +42,6 @@ export class AiModule extends SubModule {
       providers: [
         AiService,
         AiUtilService,
-        GraphService,
         AgentsService,
         ComponentsService,
         // ImportExportResourcesService,
