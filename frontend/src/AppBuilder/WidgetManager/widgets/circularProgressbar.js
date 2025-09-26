@@ -98,7 +98,7 @@ export const circularProgressbarConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface3-surface)',
       },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     color: {
       type: 'colorSwatches',
@@ -107,7 +107,7 @@ export const circularProgressbarConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-primary-brand)',
       },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     negativeColor: {
       type: 'colorSwatches',
@@ -116,7 +116,7 @@ export const circularProgressbarConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-error-systemStatus)',
       },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     completionColor: {
       type: 'colorSwatches',
@@ -125,7 +125,7 @@ export const circularProgressbarConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-success-systemStatus)',
       },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     strokeWidth: {
       type: 'slider',
@@ -137,7 +137,7 @@ export const circularProgressbarConfig = {
         schema: { type: 'number' },
         defaultValue: 10,
       },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     circleRatio: {
       type: 'slider',
@@ -151,16 +151,7 @@ export const circularProgressbarConfig = {
       step: 0.01,
       parseType: 'float',
       staticInputText: '',
-      accordian: 'field',
-    },
-    counterClockwise: {
-      type: 'toggle',
-      displayName: 'Change rotation to counter clockwise',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-      accordian: 'field',
+      accordian: 'progress circle',
     },
     alignment: {
       type: 'switch',
@@ -172,8 +163,17 @@ export const circularProgressbarConfig = {
         { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
         { displayName: 'alignrightinspector', value: 'flex-end', iconName: 'alignrightinspector' },
       ],
-      accordian: 'field',
+      accordian: 'progress circle',
       isFxNotRequired: true,
+    },
+    counterClockwise: {
+      type: 'toggle',
+      displayName: 'Counter clockwise rotation',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      accordian: 'progress circle',
     },
     boxShadow: {
       type: 'boxShadow',

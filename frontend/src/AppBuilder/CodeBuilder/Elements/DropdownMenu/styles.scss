@@ -85,7 +85,7 @@
                 font-weight: 500;
                 color: var(--text-default);
                 margin-top: 8px;
-                width: 236px;
+                width: 228px;
                 text-align: center;
             }
 
@@ -93,7 +93,7 @@
                 font-size: 12px;
                 font-weight: 400;
                 color: var(--text-placeholder);
-                width: 236px;
+                width: 228px;
                 text-align: center;
             }
         }
@@ -105,7 +105,7 @@
         scrollbar-color: #8890991F transparent;
 
         &::-webkit-scrollbar {
-            width: 10px;
+            width: 10px !important;
             height: 50px;
           }
         
