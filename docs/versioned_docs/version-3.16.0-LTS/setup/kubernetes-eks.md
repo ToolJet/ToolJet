@@ -6,7 +6,7 @@ title: Kubernetes (EKS)
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info
