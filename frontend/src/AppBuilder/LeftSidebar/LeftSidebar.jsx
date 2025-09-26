@@ -224,14 +224,10 @@ export const BaseLeftSidebar = ({
     return (
       <>
         {renderAISideBarTrigger({
-          selectedSidebarItem: selectedSidebarItem,
-          onClick: () => handleSelectedSidebarItem('tooljetai'),
-          darkMode: darkMode,
-          icon: 'tooljetai',
-          className: `left-sidebar-item left-sidebar-layout left-sidebar-page-selector`,
-          tip: 'Build with AI',
-          ref: setSideBarBtnRefs('tooljetai'),
-          children: <SolidIcon width="16" height="16" name="tooljetai" className="tw-text-icon-strong" />,
+          darkMode,
+          setSideBarBtnRefs,
+          selectedSidebarItem,
+          handleSelectedSidebarItem,
         })}
 
         {!isUserInZeroToOneFlow && (
@@ -259,7 +255,7 @@ export const BaseLeftSidebar = ({
 
   return (
     <div
-      className={cx('left-sidebar !tw-z-10', { 'dark-theme theme-dark': darkMode })}
+      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999 }}
     >
@@ -299,7 +295,6 @@ export const BaseLeftSidebar = ({
     </div>
   );
 };
-
 const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   const self = useSelf();
   const others = useOthers();

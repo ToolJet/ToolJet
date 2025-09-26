@@ -28,7 +28,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 @Module({})
 export class AppsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       AppsController,
       WorkflowController,
@@ -73,7 +73,7 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await AppEnvironmentsModule.register(configs),
       ],
-      controllers: [AppsController, WorkflowController],
+      controllers: isMainImport ? [AppsController, WorkflowController] : [],
       providers: [
         AppsService,
         WorkflowService,
