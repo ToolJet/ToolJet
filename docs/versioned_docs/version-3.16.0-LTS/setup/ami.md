@@ -8,7 +8,7 @@ title: AWS AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info

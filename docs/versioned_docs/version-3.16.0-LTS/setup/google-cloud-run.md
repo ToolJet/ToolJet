@@ -6,7 +6,7 @@ title: Google Cloud Run
 # Deploying ToolJet on Google Cloud Run
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai/` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info
