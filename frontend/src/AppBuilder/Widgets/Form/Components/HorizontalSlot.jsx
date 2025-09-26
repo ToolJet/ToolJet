@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
-import { showGridLinesOnSlot, hideGridLinesOnSlot } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
-import { useResizable } from '@/AppBuilder/_hooks/useMoveable';
+import { showGridLines, hideGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { useSubContainerResizable } from '@/AppBuilder/_hooks/useSubContainerResizable';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const HorizontalSlot = React.memo(
   ({
@@ -14,12 +17,13 @@ export const HorizontalSlot = React.memo(
     slotName = 'header', // 'header' or 'footer'
     slotStyle = {},
     onResize,
-    isEditing,
     maxHeight,
+    componentType,
   }) => {
+    const { moduleId } = useModuleContext();
+    const isEditing = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'edit', shallow);
     const parsedHeight = parseInt(height, 10);
-
-    const { getRootProps, getHandleProps, getResizeState } = useResizable({
+    const { getRootProps, getHandleProps, getResizeState } = useSubContainerResizable({
       initialHeight: parsedHeight,
       initialWidth: '100%', // Now respects parent's width
       minHeight: 10,
@@ -34,12 +38,11 @@ export const HorizontalSlot = React.memo(
     });
 
     const { height: resizedHeight, isDragging } = getResizeState();
-
     useEffect(() => {
       if (isDragging) {
-        showGridLinesOnSlot(id);
+        showGridLines();
       } else {
-        hideGridLinesOnSlot(id);
+        hideGridLines();
       }
     }, [isDragging, id]);
 
@@ -50,7 +53,12 @@ export const HorizontalSlot = React.memo(
     };
 
     return (
-      <div className={`jet-form-${slotName} wj-form-${slotName}`} style={slotStyle}>
+      <div
+        className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${
+          isEditing ? 'tw-select-none' : ''
+        }`}
+        style={slotStyle}
+      >
         <div
           className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}  ${isEditing && 'is-editing'} ${
             isDragging ? 'dragging' : ''
@@ -68,7 +76,7 @@ export const HorizontalSlot = React.memo(
               backgroundColor: 'transparent',
               overflow: 'hidden',
             }}
-            componentType="Form"
+            componentType={componentType}
           />
           {isEditing && <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />}
         </div>

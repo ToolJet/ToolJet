@@ -1,7 +1,7 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { fullName, generateNextNameAndSlug } from '@helpers/utils.helper';
-import { EntityManager } from 'typeorm';
+import { fullName, generateNextNameAndSlug, getTooljetEdition } from '@helpers/utils.helper';
+import { EntityManager, In } from 'typeorm';
 import {
   getUserStatusAndSource,
   lifecycleEvents,
@@ -26,13 +26,11 @@ import { GroupPermissionsUtilService } from '../group-permissions/util.service';
 import { RolesRepository } from '../roles/repository';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { UserDetailsService } from './services/user-details.service';
 import { FetchUserResponse, InvitedUserType, RoleUpdate, UserFilterOptions } from './types';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constants';
-import { MODULE_INFO } from '@modules/app/constants/module-info';
-import { MODULES } from '@modules/app/constants/modules';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import * as uuid from 'uuid';
@@ -41,7 +39,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
@@ -131,7 +129,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       }
 
       // Step 4 - License check
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     }, manager);
   }
 
@@ -260,6 +258,8 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     metadataFlag: boolean = false
   ): Promise<FetchUserResponse> {
     const userDetails = orgUser.user.userDetails.find((ud) => ud.organizationId === orgUser.organizationId);
+    // Return custom groups for CE, skip for EE basic plan
+    const isEnterpriseVersion = getTooljetEdition() === TOOLJET_EDITIONS.EE;
     let response: FetchUserResponse = {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
@@ -270,9 +270,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: orgUser.user.userPermissions
-        .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
-        .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups:
+        isBasicPlan && isEnterpriseVersion
+          ? []
+          : orgUser.user.userPermissions
+              .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP)
+              .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       roleGroup: orgUser.user.userPermissions
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
@@ -407,7 +410,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     options: UserFilterOptions,
     page = 1
   ): Promise<{ organizationUsers: FetchUserResponse[]; total: number }> {
-    const isBasicPlan = !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.VALID));
+    const isBasicPlan = !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.VALID, user.organizationId));
     const pageSize = 10;
 
     const [organizationUsers, count] = await this.organizationUsersRepository.fetchUsersWithDetails(
@@ -448,22 +451,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           manager
         );
       }
-      const isPersonalWorkspaceAllowed = await this.checkPersonalWorkspaceAllowed();
-      const defaultOrganization =
-        !user && isPersonalWorkspaceAllowed ? await this.createDefaultOrganization(manager) : null;
-
-      const updatedUser = await this.createOrUpdateUser(
-        userParams,
-        user,
-        isPersonalWorkspaceAllowed ? defaultOrganization?.id : null,
-        manager
-      );
-
-      if (defaultOrganization) {
-        await this.addUserAsAdmin(updatedUser.id, defaultOrganization.id, manager);
-        await this.organizationUsersRepository.createOne(updatedUser, defaultOrganization, true, manager);
-      }
-
+      const updatedUser = await this.createOrUpdateUser(userParams, user, null, manager);
       if (inviteNewUserDto.userMetadata) {
         await this.updateUserMetadata(
           manager,
@@ -499,8 +487,8 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       await this.attachUserGroup(inviteNewUserDto.groups, currentOrganization.id, updatedUser.id, true, manager);
 
-      await this.licenseUserService.validateUser(manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
+      await this.licenseUserService.validateUser(manager, currentOrganization.id);
+      await this.licenseOrganizationService.validateOrganization(manager, currentOrganization.id);
 
       /* Send welcome email */
       const inviterName = fullName(currentUser.firstName, currentUser.lastName);
@@ -511,12 +499,41 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         inviterName,
         !user || !!user.invitationToken
       );
+      this.eventEmitter.emit('CRM.Push', {
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        isInvited: true,
+      });
 
+      const groupsArray = [];
+      if (inviteNewUserDto.groups && inviteNewUserDto.groups.length > 0) {
+        const groupQuery = {
+          organizationId: currentOrganization.id,
+          id: In(inviteNewUserDto.groups),
+        };
+        const orgGroupPermissions = await this.groupPermissionsRepository.find({
+          where: groupQuery,
+          select: ['id', 'name'],
+        });
+        groupsArray.push(...orgGroupPermissions.map((group) => group.name));
+      }
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: currentUser.id,
         organizationId: currentOrganization.id,
-        resourceId: currentOrganization.id,
+        resourceId: updatedUser.id,
         resourceName: updatedUser.email,
+        resourceData: {
+          invited_user: {
+            id: updatedUser.id,
+            email: updatedUser.email,
+            first_name: updatedUser.firstName,
+            last_name: updatedUser.lastName,
+            role: inviteNewUserDto.role,
+            group: groupsArray,
+          },
+        },
       });
 
       return organizationUser;
@@ -580,21 +597,17 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     return user;
   }
 
-  addUserToWorkspace = async (
-    user: User,
-    workspace: Organization,
-    manager?: EntityManager
-  ) => {
+  addUserToWorkspace = async (user: User, workspace: Organization, manager?: EntityManager) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create organization user entry if not exists
-      let existingOrgUser = await this.organizationUsersRepository.findOne({
+      const existingOrgUser = await this.organizationUsersRepository.findOne({
         where: {
           userId: user.id,
           organizationId: workspace.id,
-        }
+        },
       });
 
-      if(existingOrgUser){ 
+      if (existingOrgUser) {
         return existingOrgUser;
       }
 
@@ -607,11 +620,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       );
 
       // Add end-user role in default workspace if not already present
-      await this.rolesUtilService.addUserRole(
-        workspace.id,
-        { role: USER_ROLE.END_USER, userId: user.id },
-        manager
-      );
+      await this.rolesUtilService.addUserRole(workspace.id, { role: USER_ROLE.END_USER, userId: user.id }, manager);
 
       return organizationUser;
     }, manager);

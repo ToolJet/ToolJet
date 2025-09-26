@@ -146,7 +146,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
     manager?: EntityManager
   ): Promise<AppEnvironment> {
     const isMultiEnvironmentEnabled = licenseCheck
-      ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT)
+      ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId)
       : false;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {

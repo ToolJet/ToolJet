@@ -15,6 +15,7 @@ import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/Editor/Components/DropdownV2/utils';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -428,7 +429,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {getResolvedValue(item?.label)}
+                                    {getSafeRenderableValue(getResolvedValue(item?.label))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (

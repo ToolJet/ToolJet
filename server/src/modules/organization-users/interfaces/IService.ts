@@ -6,8 +6,8 @@ import { UpdateOrgUserDto } from '../dto';
 export interface IOrganizationUsersService {
   updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto): Promise<void>;
   archive(id: string, organizationId: string, user?: User): Promise<void>;
-  archiveFromAll(userId: string): Promise<void>;
-  unarchiveUser(userId: string): Promise<void>;
+  archiveFromAll(userId: string, user: User): Promise<void>;
+  unarchiveUser(userId: string, user: User): Promise<void>;
   unarchive(user: User, id: string, organizationId: string): Promise<void>;
   inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<void>;
   bulkUploadUsers(currentUser: User, fileStream: any, res: Response): Promise<void>;

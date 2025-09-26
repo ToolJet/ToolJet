@@ -55,6 +55,7 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
+import { chatConfig } from './chat';
 
 export {
   buttonConfig,
@@ -114,4 +115,5 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
 };

@@ -2,12 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
-import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import {
@@ -18,7 +17,7 @@ import {
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from '@modules/users/constants/lifecycle';
-import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '../instance-settings/constants';
+import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '@modules/group-permissions/constants';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -41,6 +40,7 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -48,18 +48,19 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly userRepository: UserRepository,
     protected readonly licenseUserService: LicenseUserService,
     protected readonly configService: ConfigService,
-    protected licenseTermsService: LicenseTermsService,
-    protected organizationUsersUtilService: OrganizationUsersUtilService,
-    protected organizationUsersRepository: OrganizationUsersRepository,
-    protected organizationRepository: OrganizationRepository,
-    protected sessionUtilService: SessionUtilService,
+    protected readonly licenseTermsService: LicenseTermsService,
+    protected readonly organizationUsersUtilService: OrganizationUsersUtilService,
+    protected readonly organizationUsersRepository: OrganizationUsersRepository,
+    protected readonly organizationRepository: OrganizationRepository,
+    protected readonly sessionUtilService: SessionUtilService,
     protected readonly roleUtilService: RolesUtilService,
     protected readonly groupPermissionsUtilService: GroupPermissionsUtilService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly rolesRepository: RolesRepository,
-    protected profileUtilService: ProfileUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+    protected readonly profileUtilService: ProfileUtilService,
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -121,7 +122,7 @@ export class AuthUtilService implements IAuthUtilService {
     try {
       const signedJwt = this.sessionUtilService.verifyToken(token);
       return signedJwt;
-    } catch (err) {
+    } catch {
       return null;
     }
   }
@@ -133,23 +134,13 @@ export class AuthUtilService implements IAuthUtilService {
   ): Promise<User> {
     // User not exist in the workspace, creating
     let user: User;
-    let defaultOrganization: Organization;
     user = await this.userRepository.findByEmail(email);
-
-    const allowPersonalWorkspace =
-      (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
-
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
     );
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User is archived in the workspace');
-    }
-
-    if (!user && allowPersonalWorkspace) {
-      const { name, slug } = generateNextNameAndSlug('My workspace');
-      defaultOrganization = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
@@ -161,11 +152,11 @@ export class AuthUtilService implements IAuthUtilService {
         firstName,
         lastName,
         email,
-        source: defaultOrganization?.id ? WORKSPACE_USER_SOURCE.SIGNUP : source,
-        status: defaultOrganization?.id ? USER_STATUS.ACTIVE : status,
+        source: source,
+        status: status,
         password,
-        role: defaultOrganization?.id ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
-        defaultOrganizationId: defaultOrganization?.id || organization.id,
+        role: USER_ROLE.END_USER,
+        defaultOrganizationId: organization.id,
       },
       manager
     );
@@ -195,24 +186,6 @@ export class AuthUtilService implements IAuthUtilService {
       false,
       manager
     );
-    if (defaultOrganization?.id) {
-      // Setting up default organization
-      await this.organizationUsersRepository.createOne(
-        user,
-        defaultOrganization,
-        false,
-        manager,
-        WORKSPACE_USER_SOURCE.SIGNUP,
-        true
-      );
-      await this.organizationUsersUtilService.attachUserGroup(
-        [USER_ROLE.ADMIN],
-        defaultOrganization.id,
-        user.id,
-        false,
-        manager
-      );
-    }
     return user;
   }
 
@@ -348,17 +321,18 @@ export class AuthUtilService implements IAuthUtilService {
 
       // IF current role is empty -> user not exist
       // IF new role not equals current one
-      if (!currentRole || (newRole !== currentRole && groups.length > 0)) {
+      if (!currentRole || newRole !== currentRole) {
+        const adminUser = await this.groupPermissionsRepository.getAdminUserForOrg(organizationId);
         await this.roleUtilService.editDefaultGroupUserRole(
           organizationId,
-          { newRole, userId, currentRole: currentRoleObj },
+          { newRole, userId, currentRole: currentRoleObj, updatingUserId: adminUser.id },
           manager
         );
       }
 
       if (ssoGroups?.length) {
         await this.organizationUsersUtilService.attachUserGroup(groupsIds, organizationId, userId, true, manager);
-        await this.licenseUserService.validateUser(manager);
+        await this.licenseUserService.validateUser(manager, organizationId);
       }
 
       /* Create avatar if profilePhoto available */
@@ -379,7 +353,7 @@ export class AuthUtilService implements IAuthUtilService {
 
       await Promise.all(
         groups.map(async (group) => {
-          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, manager);
+          const isBuilderGroup = await this.roleUtilService.isEditableGroup(group, group?.organizationId, manager);
           builderLevelRole = builderLevelRole || isBuilderGroup;
         })
       );

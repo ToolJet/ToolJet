@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { DataQueriesService } from './service';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
@@ -21,7 +21,6 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
-import { RunQuerySourceGuard } from './guards/run-query.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -30,8 +29,13 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Get(':versionId')
-  index(@Param('versionId') versionId: string) {
-    return this.dataQueriesService.getAll(versionId);
+  index(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('versionId') versionId: string,
+    @Query('mode') mode?: string
+  ) {
+    return this.dataQueriesService.getAll(user, app, versionId, mode);
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -113,7 +117,8 @@ export class DataQueriesController implements IDataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
-    @Res({ passthrough: true }) response: Response
+    @Res({ passthrough: true }) response: Response,
+    @Query('mode') mode?: string
   ) {
     return this.dataQueriesService.runQueryOnBuilder(
       user,
@@ -122,12 +127,13 @@ export class DataQueriesController implements IDataQueriesController {
       updateDataQueryDto,
       ability,
       dataSource,
-      response
+      response,
+      mode
     );
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard, RunQuerySourceGuard)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,

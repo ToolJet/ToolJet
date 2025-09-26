@@ -17,11 +17,20 @@ import { useNavigate } from 'react-router-dom';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { BulkUploadPrimaryKey } from './BulkUploadPrimaryKey';
 import BulkUpsertPrimaryKey from './BulkUpsertPrimaryKey';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import config from 'config';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout, optionsChanged }) => {
+const ToolJetDbOperations = ({
+  optionchanged,
+  options,
+  darkMode,
+  isHorizontalLayout,
+  optionsChanged,
+  renderCopilot,
+}) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
@@ -48,6 +57,21 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
   const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
   const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
+
+  // Check if SQL mode should be disabled
+  const isSqlModeDisabled = () => {
+    // Check legacy environment variable for backward compatibility
+    if (window.public_config?.TJDB_SQL_MODE_DISABLE === 'true') {
+      return true;
+    }
+
+    const edition = fetchEdition(config);
+    if (edition === 'cloud') {
+      return true;
+    }
+
+    return false;
+  };
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -557,7 +581,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
 
-      {window.public_config?.TJDB_SQL_MODE_DISABLE !== 'true' && (
+      {!isSqlModeDisabled() && (
         <div
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
@@ -700,6 +724,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
             componentName="TooljetDatabase"
             delayOnChange={false}
             className="w-100"
+            renderCopilot={renderCopilot}
           />
         </div>
       )}

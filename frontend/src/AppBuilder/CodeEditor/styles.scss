@@ -660,6 +660,13 @@
     }
 }
 
+
+.code-editor-component {
+    .cm-editor {
+        min-height: 0 !important;
+    }
+}
+
 .cm-searchMatch.cm-searchMatch-selected {
     background-color: #F28F2D !important;
 }
@@ -673,4 +680,14 @@
     .cm-theme{
         height: 100% ;
     }
+}
+
+.codehinter-helper-text {
+    font-family: IBM Plex Sans;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0%;
+    vertical-align: middle;
+    color: var(--text-placeholder, #6A727C);
 }

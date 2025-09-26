@@ -9,6 +9,7 @@ import {
 } from "Selectors/version";
 import { deleteVersionText, releasedVersionText } from "Texts/version";
 import { verifyComponent } from "Support/utils/basicComponents";
+import { appPromote } from "./platform/multiEnv";
 
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(appVersionSelectors.appVersionLabel).click();
@@ -121,6 +122,9 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
 };
 
 export const releasedVersionAndVerify = (currentVersion) => {
+  cy.ifEnv("Enterprise", () => {
+    appPromote("development", "production");
+  });
   cy.contains("Release").click();
 
   cy.get(confirmVersionModalSelectors.yesButton).click();
@@ -146,7 +150,8 @@ export const verifyVersionAfterPreview = (currentVersion) => {
   cy.wait(2000);
   cy.get('[data-cy^="draggable-widget-table"]').should("be.visible");
   cy.url().should("include", `version=${currentVersion}`);
-  cy.get('[data-cy="viewer-page-logo"]').click();
+  // cy.get('[data-cy="viewer-page-logo"]').click();
+  cy.go("back");
   cy.wait(8000);
 };
 

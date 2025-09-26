@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({
   id,
@@ -20,6 +21,7 @@ export const Modal = function Modal({
   dataCy,
   height,
 }) {
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -48,7 +50,7 @@ export const Modal = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
@@ -83,7 +85,6 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      fireEvent('onOpen');
     }
   };
 
@@ -97,7 +98,6 @@ export const Modal = function Modal({
     if (canvasElement && realCanvasEl && modalContainer) {
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
-      fireEvent('onClose');
     }
     if (canvasElement && !hasManyModalsOpen) {
       canvasElement.style.overflow = 'auto';
@@ -189,7 +189,18 @@ export const Modal = function Modal({
       isInitialRender.current = false;
       return;
     }
-
+    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
+    // Scroll to top of canvas content when modal is opened and disbale page overflow
+    if (showModal) {
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
+    } else {
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
+    }
     fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
@@ -203,8 +214,6 @@ export const Modal = function Modal({
       height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
-      overflowX: 'hidden',
-      overflowY: 'auto',
     },
     modalHeader: {
       backgroundColor:
@@ -215,10 +224,9 @@ export const Modal = function Modal({
       backgroundColor: triggerButtonBackgroundColor,
       color: triggerButtonTextColor,
       width: '100%',
-      display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
-      borderColor: 'var(--primary-brand)',
+      borderColor: 'var(--cc-primary-brand)',
     },
   };
 
@@ -245,15 +253,14 @@ export const Modal = function Modal({
       setModalWidth(parentRef.current.offsetWidth);
     }
   }, [showModal, properties.size, id]);
-
   return (
     <div
       className="container d-flex align-items-center"
       data-disabled={disabledState}
       data-cy={dataCy}
-      style={{ height }}
+      style={{ height: '100%' }}
     >
-      {useDefaultButton && (
+      {useDefaultButton && visibility && (
         <button
           disabled={disabledState}
           className="jet-button btn btn-primary p-1 overflow-hidden"
@@ -300,6 +307,7 @@ export const Modal = function Modal({
           hideCloseButton,
           hideModal: onHideModal,
           component,
+          darkMode,
           showConfigHandler: mode === 'edit',
         }}
       >
@@ -308,7 +316,11 @@ export const Modal = function Modal({
             <SubContainer
               id={`${id}`}
               canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{
+                backgroundColor: customStyles.modalBody.backgroundColor,
+                overflowX: 'hidden',
+                overflowY: 'auto',
+              }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -336,6 +348,7 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     hideModal,
     showConfigHandler,
+    darkMode,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -360,6 +373,8 @@ const Component = ({ children, ...restProps }) => {
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {!hideTitleBar && (
@@ -379,6 +394,7 @@ const Component = ({ children, ...restProps }) => {
               className="cursor-pointer"
               data-cy={`modal-close-button`}
               size="sm"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

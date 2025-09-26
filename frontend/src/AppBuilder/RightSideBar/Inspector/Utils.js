@@ -2,6 +2,7 @@ import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
+import { LabeledDivider } from './Components/Form/_components';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -28,13 +29,14 @@ export function renderCustomStyles(
   components = {},
   accordian,
   darkMode = false,
-  placeholder = ''
+  placeholder = '',
+  customMeta
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-  const meta = componentMeta[paramType]?.[accordian]?.[param];
+  const meta = customMeta ?? componentMeta[paramType]?.[accordian]?.[param];
 
   if (
     componentConfig.component == 'DropDown' ||
@@ -54,21 +56,39 @@ export function renderCustomStyles(
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'ModalV2'
+    componentConfig.component == 'ModalV2' ||
+    componentConfig.component == 'RangeSlider' ||
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'DatetimePickerV2' ||
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'DatePickerV2' ||
+    componentConfig.component == 'TextArea' ||
+    componentConfig.component == 'Timepicker' ||
+    componentConfig.component == 'PhoneInput' ||
+    componentConfig.component == 'CurrencyInput' ||
+    componentConfig.component == 'DaterangePicker' ||
+    componentConfig.component == 'StarRating' ||
+    componentConfig.component == 'PopoverMenu'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
-    const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+    const getResolvedValue = (key, parentObjectKey = 'styles') => {
+      if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
+        return (
+          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
+        );
+      }
+      const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
+      return value && resolveReferences(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
       return conditionallyRender.reduce((acc, condition) => {
-        const { key, value } = condition;
-        if (paramTypeDefinition?.[key] ?? value) {
-          const resolvedValue = getResolvedValue(key);
+        const { key, value, parentObjectKey } = condition;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
           acc.push(resolvedValue?.value !== value);
         }
         return acc;
@@ -95,7 +115,7 @@ export function renderCustomStyles(
   return (
     <>
       <Code
-        param={{ name: param, ...component.component.properties[param] }}
+        param={{ name: param, ...component.component.properties?.[param] }}
         definition={definition}
         dataQueries={dataQueries}
         onChange={paramUpdated}
@@ -112,6 +132,7 @@ export function renderCustomStyles(
         component={component}
         accordian={accordian}
         placeholder={placeholder}
+        customMeta={customMeta}
       />
     </>
   );
@@ -128,7 +149,9 @@ export function renderElement(
   components = {},
   darkMode = false,
   placeholder = '',
-  validationFn
+  validationFn,
+  setCodeEditorView = null,
+  customMeta = null
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -141,7 +164,9 @@ export function renderElement(
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
-    componentConfig.component == 'Image'
+    componentConfig.component == 'Image' ||
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'Statistics'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -151,14 +176,19 @@ export function renderElement(
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
         const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
-        if (resolvedValue?.value !== value) return;
+
+        if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) return;
       }
     }
   }
 
+  if (meta?.type === 'sectionSubHeader') {
+    return <LabeledDivider label={meta.displayName} />;
+  }
+
   return (
     <Code
-      param={{ name: param, ...component.component.properties[param] }}
+      param={{ name: param, ...component.component.properties?.[param] }}
       definition={definition}
       dataQueries={dataQueries}
       onChange={paramUpdated}
@@ -176,6 +206,8 @@ export function renderElement(
       placeholder={placeholder}
       validationFn={validationFn}
       isHidden={isHidden}
+      setCodeEditorView={setCodeEditorView}
+      customMeta={customMeta}
     />
   );
 }

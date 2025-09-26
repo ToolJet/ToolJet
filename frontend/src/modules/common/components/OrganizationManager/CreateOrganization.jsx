@@ -8,6 +8,7 @@ import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
 import _ from 'lodash';
 import { FormWrapper } from '@/_components/FormWrapper';
 import { toast } from 'react-hot-toast';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -42,12 +43,19 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       const slugValue = slug.value;
       setIsCreating(true);
       organizationService.createOrganization({ name: name.value, slug: slugValue }).then(
-        () => {
-          toast.success('Workspace created successfully');
+        (data) => {
+          posthogHelper.captureEvent('create_workspace', {
+            workspace_id: data?.organization_id || data?.current_organization_id || data?.id,
+          });
+          // Added this to show the toast for some seconds before re-loading the page
+          toast.success('Workspace created successfully', { duration: 900 });
           setIsCreating(false);
-          const newPath = appendWorkspaceId(slugValue, location.pathname, true);
-          window.history.replaceState(null, null, newPath);
-          window.location.reload();
+          closeModal();
+          setTimeout(() => {
+            const newPath = appendWorkspaceId(slugValue, location.pathname, true);
+            window.history.replaceState(null, null, newPath);
+            window.location.reload();
+          }, 950);
         },
         (error) => {
           setIsCreating(false);
@@ -180,7 +188,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       // this is to denote that the user has tried editing the slug -- so now slug and name are independent of each other
       isSlugSet.current = true;
     }
-  }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
+  }, [name.value, slugProgress, workspaceNameProgress, isSlugSet]);
 
   const isDisabled =
     isCreating ||

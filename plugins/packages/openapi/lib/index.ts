@@ -53,9 +53,13 @@ export default class Openapi implements QueryService {
   ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request, query, header, path: pathParams } = params;
-    const url = new URL(host + this.resolvePathParams(pathParams, path));
+    const resolvedHost = sourceOptions.host || host;
+    const url = new URL(resolvedHost + this.resolvePathParams(pathParams, path));
     const parsedRequest = request ? this.parseRequest(request) : undefined;
-    const json = operation !== 'get' ? this.sanitizeObject(parsedRequest) : undefined;
+    const json =
+      operation !== 'get' && parsedRequest && Object.keys(parsedRequest).length > 0
+        ? this.sanitizeObject(parsedRequest)
+        : undefined;
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method: operation,
@@ -63,8 +67,11 @@ export default class Openapi implements QueryService {
       searchParams: {
         ...query,
       },
-      json,
     };
+
+    if (json && Object.keys(json).length > 0) {
+      _requestOptions.json = json;
+    }
 
     const authValidatedRequestOptions: QueryResult = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
@@ -86,7 +93,8 @@ export default class Openapi implements QueryService {
       const response = await got(url, requestOptions);
       const contentType = response.headers['content-type'];
 
-      result = contentType !== 'application/json' ? response.body : JSON.parse(response.body);
+      result = contentType && contentType.includes('application/json') ? JSON.parse(response.body) : response.body;
+
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,

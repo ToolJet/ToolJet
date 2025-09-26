@@ -1,3 +1,4 @@
+import { User } from '@entities/user.entity';
 import { AllUserResponse, UpdateUserTypeDto } from '@modules/onboarding/dto/user.dto';
 
 export interface IUsersService {
@@ -6,9 +7,9 @@ export interface IUsersService {
     users: AllUserResponse[];
   }>;
 
-  updateUserType(updateUserTypeDto: UpdateUserTypeDto): Promise<void>;
+  updateUserType(updateUserTypeDto: UpdateUserTypeDto, user: User): Promise<void>;
 
-  updatePassword(userId: string, password: string): Promise<void>;
+  updatePassword(userId: string, user: User, password: string): Promise<void>;
 
-  autoUpdateUserPassword(userId: string): Promise<string>;
+  autoUpdateUserPassword(userId: string, user: User): Promise<string>;
 }

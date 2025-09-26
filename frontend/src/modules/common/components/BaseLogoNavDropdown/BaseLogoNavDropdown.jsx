@@ -6,11 +6,12 @@ import { getPrivateRoute, redirectToDashboard, redirectToWorkflows } from '@/_he
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
 import { hasBuilderRole } from '@/_helpers/utils';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' }) => {
   const { admin } = authenticationService?.currentSessionValue ?? {};
   const isWorkflows = type === 'workflows';
-  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+  const workflowsEnabled = admin && isWorkflowsFeatureEnabled();
 
   const handleBackClick = (e) => {
     e.preventDefault();

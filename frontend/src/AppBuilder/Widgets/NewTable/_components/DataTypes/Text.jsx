@@ -117,7 +117,7 @@ export const TextColumn = ({
         onBlur={(e) => {
           setIsEditing(false);
           if (cellValue !== e.target.textContent) {
-            handleContentChange(e.target.innerHTML);
+            handleContentChange(e.target.textContent);
           }
         }}
         onKeyDown={handleKeyDown}

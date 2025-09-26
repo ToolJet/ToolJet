@@ -129,7 +129,7 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       mongoDbText.errorConnectionRefused
     );
@@ -164,7 +164,7 @@ describe("Data source MongoDB", () => {
     }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
       timeout: 95000,
     });
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       "Cannot read properties of null (reading '2')"
     );

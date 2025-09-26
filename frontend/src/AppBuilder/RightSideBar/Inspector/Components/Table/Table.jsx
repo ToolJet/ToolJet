@@ -19,6 +19,27 @@ import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperti
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
+
+import {
+  TextTypeIcon,
+  DatepickerTypeIcon,
+  SelectTypeIcon,
+  MultiselectTypeIcon,
+  BooleanTypeIcon,
+  ImageTypeIcon,
+  LinkTypeIcon,
+  JSONTypeIcon,
+  MarkdownTypeIcon,
+  HTMLTypeIcon,
+  NumberTypeIcon,
+  StringTypeIcon,
+  BadgeTypeIcon,
+  TagsTypeIcon,
+  RadioTypeIcon,
+} from './_assets';
+import { getColumnIcon } from './utils';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
@@ -227,7 +248,10 @@ class TableComponent extends React.Component {
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
-        <Popover.Body className="table-action-popover d-flex flex-column custom-gap-16">
+        <Popover.Body
+          className="table-action-popover d-flex flex-column custom-gap-16"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="field tj-app-input">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
@@ -263,22 +287,31 @@ class TableComponent extends React.Component {
               placeholder="Select position"
             />
           </div>
-          <Color
-            param={{ name: 'actionButtonBackgroundColor' }}
-            paramType="properties"
-            componentMeta={this.state.componentMeta}
-            definition={{ value: action.backgroundColor }}
-            onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
-            cyLabel={`action-button-bg`}
-          />
-          <Color
-            param={{ name: 'actionButtonTextColor' }}
-            paramType="properties"
-            componentMeta={this.state.componentMeta}
-            definition={{ value: action.textColor }}
-            onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
-            cyLabel={`action-button-text`}
-          />
+          <div>
+            <label data-cy="label-action-button-bg" class="form-label">
+              Background color
+            </label>
+            <ColorSwatches
+              value={action?.backgroundColor}
+              onChange={(color) => {
+                console.log('color', color);
+                this.onActionButtonPropertyChanged(index, 'backgroundColor', color);
+              }}
+              cyLabel={`action-button-bg`}
+            />
+          </div>
+          <div>
+            <label data-cy="label-action-button-text" class="form-label">
+              Text color
+            </label>
+            <ColorSwatches
+              value={action?.textColor}
+              onChange={(color) => {
+                this.onActionButtonPropertyChanged(index, 'textColor', color);
+              }}
+              cyLabel={`action-button-text`}
+            />
+          </div>
           <ProgramaticallyHandleProperties
             label="Disable button"
             currentState={this.state.currentState}
@@ -380,7 +413,13 @@ class TableComponent extends React.Component {
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
-    newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
+    newValue.push({
+      name: computeActionName(actions),
+      buttonText: 'Button',
+      backgroundColor: 'var(--cc-surface2-surface)',
+      textColor: 'var(--cc-primary-text)',
+      events: [],
+    });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
   };
 
@@ -487,9 +526,8 @@ class TableComponent extends React.Component {
     `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   handleMakeAllColumnsEditable = (value) => {
-    const columns = resolveReferences(this.props.component.component.definition.properties.columns);
+    const columns = this.props.component.component.definition.properties.columns;
     const columnValues = columns.value || [];
-
     const newValue = columnValues
       .filter((column) => column)
       .map((column) => ({
@@ -588,7 +626,7 @@ class TableComponent extends React.Component {
                   {({ innerRef, droppableProps, placeholder }) => (
                     <div className="w-100 d-flex custom-gap-4 flex-column" {...droppableProps} ref={innerRef}>
                       {filteredColumns.map((item, index) => {
-                        const resolvedItemName = resolveReferences(item.name);
+                        const resolvedItemName = getSafeRenderableValue(resolveReferences(item.name));
                         const isEditable = resolveReferences(item.isEditable);
                         const columnVisibility = item?.columnVisibility ?? true;
                         const getSecondaryText = (text) => {
@@ -633,6 +671,8 @@ class TableComponent extends React.Component {
                               return 'JSON';
                             case 'markdown':
                               return 'Markdown';
+                            case 'html':
+                              return 'HTML';
                             default:
                               capitalize(text ?? '');
                           }
@@ -677,6 +717,7 @@ class TableComponent extends React.Component {
                                         }
                                       }}
                                       darkMode={darkMode}
+                                      showIconOnHover={true}
                                       // menuActions={[
                                       //   {
                                       //     label: 'Delete',
@@ -692,6 +733,7 @@ class TableComponent extends React.Component {
                                       }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
+                                      Icon={getColumnIcon(item?.columnType)}
                                     />
                                   </div>
                                 </OverlayTrigger>
@@ -738,7 +780,11 @@ class TableComponent extends React.Component {
         <div className="field">
           <div className="row g-2">
             <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
-            {actions.value.length === 0 && <NoListItem text={'No action buttons'} dataCy={`-action-button`} />}
+            {actions.value.length === 0 && (
+              <div className="mb-3">
+                <NoListItem text={'No action buttons'} dataCy={`-action-button`} />
+              </div>
+            )}
             <AddNewButton dataCy="button-add-new-action-button" onClick={this.addNewAction} className="mt-0">
               New action button
             </AddNewButton>
@@ -777,6 +823,7 @@ class TableComponent extends React.Component {
       'showBulkUpdateActions',
       'visibility',
       'disabledState',
+      'dynamicHeight',
     ];
 
     items.push({

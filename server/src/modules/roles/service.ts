@@ -31,7 +31,7 @@ export class RolesService implements IRolesService {
       editRoleDto.currentRole = userRole;
       await this.rolesUtilService.editDefaultGroupUserRole(organizationId, editRoleDto, manager);
 
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseUserService.validateUser(manager, organizationId);
     });
   }
 }

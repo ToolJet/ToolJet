@@ -19,7 +19,7 @@ export const CustomOption = (props) => {
     fontSize: '12px',
     lineHeight: '18px',
     fontWeight: '400',
-    color: darkMode ? '#fff' : '#1B1F24',
+    color: 'var(--cc-primary-text)',
     width: '100%',
   };
   const FlagIcon = flags[optionValue];

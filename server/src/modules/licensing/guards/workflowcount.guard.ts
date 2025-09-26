@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, HttpException, Injectable } from '@nestj
 import { LicenseTermsService } from '../interfaces/IService';
 import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class WorkflowCountGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class WorkflowCountGuard implements CanActivate {
     if (!request?.headers['tj-workspace-id']) {
       return false;
     }
-    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
+    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, request?.headers['tj-workspace-id']);
     if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 404);
 
@@ -24,7 +25,7 @@ export class WorkflowCountGuard implements CanActivate {
       (await this.appsRepository.count({
         where: {
           organizationId: request?.headers['tj-workspace-id'] ?? '',
-          type: 'workflow',
+          type: APP_TYPES.WORKFLOW,
         },
       })) >= workflowsLimit.workspace.total
     ) {
@@ -37,7 +38,7 @@ export class WorkflowCountGuard implements CanActivate {
       workflowsLimit.instance.total !== LICENSE_LIMIT.UNLIMITED &&
       (await this.appsRepository.count({
         where: {
-          type: 'workflow',
+          type: APP_TYPES.WORKFLOW,
         },
       })) >= workflowsLimit.instance.total
     ) {

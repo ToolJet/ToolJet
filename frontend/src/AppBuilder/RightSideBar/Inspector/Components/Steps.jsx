@@ -16,6 +16,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import Switch from '@/Editor/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
+import { getSafeRenderableValue } from '@/Editor/Components/utils';
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -292,7 +293,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {getResolvedValue(item.name)}
+                                    {getSafeRenderableValue(getResolvedValue(item.name))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (

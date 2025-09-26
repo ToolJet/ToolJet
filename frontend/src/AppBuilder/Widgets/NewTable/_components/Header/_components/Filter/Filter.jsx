@@ -52,11 +52,17 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
   };
 
   const filterOperationChanged = (index, value) => {
-    const newFilters = [...localFilters];
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      condition: value,
-    };
+    const newFilters = localFilters.map((filter, i) =>
+      i === index
+        ? {
+            ...filter,
+            value: {
+              ...filter.value,
+              condition: value,
+            },
+          }
+        : filter
+    );
 
     if (value === 'isEmpty' || value === 'isNotEmpty') {
       newFilters[index].value.value = '';
@@ -74,11 +80,17 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
   );
 
   const filterValueChanged = (index, value) => {
-    const newFilters = [...localFilters];
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      value: value,
-    };
+    const newFilters = localFilters.map((filter, i) =>
+      i === index
+        ? {
+            ...filter,
+            value: {
+              ...filter.value,
+              value: value,
+            },
+          }
+        : filter
+    );
     setLocalFilters(newFilters);
     debouncedFilterChanged(newFilters);
   };
@@ -93,8 +105,7 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
   }, [applyFilters]);
 
   const removeFilter = (index) => {
-    const newFilters = [...localFilters];
-    newFilters.splice(index, 1);
+    const newFilters = localFilters.filter((_, i) => i !== index);
     setLocalFilters(newFilters);
     applyFilters(newFilters.filter((filter) => filter.id !== ''));
   };

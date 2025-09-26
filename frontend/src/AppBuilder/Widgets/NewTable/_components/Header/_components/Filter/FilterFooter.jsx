@@ -9,7 +9,7 @@ export const FilterFooter = memo(({ addFilter, clearFilters }) => {
         className="tj-text-xsm"
         onClick={addFilter}
         size="sm"
-        customStyles={{ padding: '10px 20px' }}
+        customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         data-cy="button-add-filter"
       >
         <span>+ add filter</span>

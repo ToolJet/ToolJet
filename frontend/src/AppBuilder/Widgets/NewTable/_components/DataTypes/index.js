@@ -14,3 +14,4 @@ export { CustomDropdownColumn } from './CustomDropdown';
 export { TextColumn } from './Text';
 export { JsonColumn } from './JSON';
 export { MarkdownColumn } from './Markdown';
+export { HTMLColumn } from './HTML';

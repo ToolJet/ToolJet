@@ -14,6 +14,7 @@ import ModalBase from '@/_ui/Modal';
 import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 function InviteUsersForm({
   onClose,
@@ -317,7 +318,14 @@ function InviteUsersForm({
                 <div className="tj-drawer-tabs-container">
                   <button
                     className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
-                    onClick={() => setActiveTab(1)}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_invite_with_email', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
+                      setActiveTab(1);
+                    }}
                     data-cy="button-invite-with-email"
                   >
                     <SolidIcon name="mail" width="14" fill={fillColor} />
@@ -325,7 +333,14 @@ function InviteUsersForm({
                   </button>
                   <button
                     className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
-                    onClick={() => setActiveTab(2)}
+                    onClick={() => {
+                      posthogHelper.captureEvent('click_upload_csv_file', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
+                      setActiveTab(2);
+                    }}
                     data-cy="button-upload-csv-file"
                   >
                     <SolidIcon name="fileupload" width="14" fill={fillColor} />

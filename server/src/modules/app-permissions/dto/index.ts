@@ -2,10 +2,10 @@ import { IsUUID, IsEnum, IsArray, IsString, IsOptional, ValidateIf } from 'class
 import { Type } from 'class-transformer';
 import { PAGE_PERMISSION_TYPE } from '../constants';
 
-export class CreatePagePermissionDto {
+export class CreatePermissionDto {
   @IsUUID(4)
   @IsOptional()
-  pageId: string;
+  id: string;
 
   @IsEnum(PAGE_PERMISSION_TYPE)
   type: PAGE_PERMISSION_TYPE;

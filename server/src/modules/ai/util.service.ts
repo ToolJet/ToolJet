@@ -2,6 +2,7 @@ import { IAiUtilService } from './interfaces/IUtilService';
 
 export class AiUtilService implements IAiUtilService {
   constructor() {}
+
   public getAgentAssetPath(filename) {
     throw new Error('Method not implemented.');
   }
@@ -31,14 +32,6 @@ export class AiUtilService implements IAiUtilService {
   }
 
   async getQueriesfromsteps(steps) {
-    throw new Error('Method not implemented.');
-  }
-
-  async createQuerySteps(prd: string, lld: string, tableName, components, organizationId) {
-    throw new Error('Method not implemented.');
-  }
-
-  async createEventSteps(prd: string, Query: any, components: any, organizationId: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

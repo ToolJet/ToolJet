@@ -42,7 +42,7 @@ export const ListItem = ({
   // if ds is already in branch while not available in another
   const icon =
     dataSource.type === DATA_SOURCE_TYPE.SAMPLE ? (
-      <SolidIcon name="tooljet" />
+      <img src="assets/images/tj-logo.svg" />
     ) : (
       getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data)
     );

@@ -85,9 +85,9 @@ export const phoneinputConfig = {
   },
   styles: {
     color: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
     alignment: {
@@ -113,20 +113,9 @@ export const phoneinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    width: {
-      type: 'slider',
-      displayName: 'Width',
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
     auto: {
       type: 'checkbox',
-      displayName: 'auto',
-      showLabel: false,
+      displayName: 'Width',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
@@ -135,35 +124,75 @@ export const phoneinputConfig = {
       },
       isFxNotRequired: true,
     },
+    width: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+    },
 
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
-      validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'field',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
       accordian: 'field',
     },
     accentColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Accent',
-      validation: { schema: { type: 'string' }, defaultValue: '#4368E3' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
     errTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Error text',
-      validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
     borderRadius: {
@@ -270,19 +299,20 @@ export const phoneinputConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#1B1F24' },
-      borderColor: { value: '#CCD1D5' },
-      accentColor: { value: '#4368E3' },
-      errTextColor: { value: '#D72D39' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      borderColor: { value: 'var(--cc-default-border)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: '#fff' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
-      color: { value: '#1B1F24' },
+      color: { value: 'var(--cc-primary-text)' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

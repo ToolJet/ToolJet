@@ -30,7 +30,7 @@ export const ControlButtons = memo(
               minWidth: '32px',
             }}
             leftIcon={icon}
-            fill={`var(--icons-default)`}
+            fill={`var(--cc-table-action-icon-color)`}
             iconWidth="16"
             size="md"
             data-tooltip-id={tooltipId}
@@ -60,7 +60,10 @@ export const ControlButtons = memo(
 
     // Haven't seperated this into a separate component because of UI issues
     const hideColumnsPopover = () => (
-      <Popover className={`${darkMode && 'dark-theme'}`} style={{ maxHeight: `${height - 79}px`, overflowY: 'auto' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme'} dropdown-table-column-hide-common-popover`}
+        style={{ maxHeight: `${height - 79}px`, overflowY: 'auto', backgroundColor: 'var(--cc-surface1-surface)' }}
+      >
         <div
           data-cy={`dropdown-hide-column`}
           className={`dropdown-table-column-hide-common ${
@@ -161,7 +164,7 @@ export const ControlButtons = memo(
             <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
             <ButtonSolid
               variant="ghostBlack"
-              fill={`var(--icons-default)`}
+              fill={`var(--cc-table-action-icon-color)`}
               className={'tj-text-xsm'}
               customStyles={{ minWidth: '32px' }}
               leftIcon="plus"

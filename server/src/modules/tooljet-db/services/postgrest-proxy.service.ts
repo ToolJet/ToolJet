@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import got from 'got';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
-import { validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
+import { isSQLModeDisabled, validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
 import { QueryError } from '@modules/data-sources/types';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from '../types';
 import { maybeSetSubPath } from '@helpers/utils.helper';
@@ -28,8 +28,16 @@ export class PostgrestProxyService {
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
 
-    const dbUser = `user_${organizationId}`;
-    const dbSchema = `workspace_${organizationId}`;
+    const { dbUser, dbSchema } = isSQLModeDisabled()
+      ? {
+          dbUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          dbSchema: 'public',
+        }
+      : {
+          dbUser: `user_${organizationId}`,
+          dbSchema: `workspace_${organizationId}`,
+        };
+
     const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
 
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
@@ -92,8 +100,16 @@ export class PostgrestProxyService {
     body: Record<string, any> = {}
   ) {
     try {
-      const dbUser = `user_${headers['tj-workspace-id']}`;
-      const dbSchema = `workspace_${headers['tj-workspace-id']}`;
+      const { dbUser, dbSchema } = isSQLModeDisabled()
+        ? {
+            dbUser: this.configService.get<string>('TOOLJET_DB_USER'),
+            dbSchema: 'public',
+          }
+        : {
+            dbUser: `user_${headers['tj-workspace-id']}`,
+            dbSchema: `workspace_${headers['tj-workspace-id']}`,
+          };
+
       const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
       const updatedPath = replaceUrlForPostgrest(url);
       let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;

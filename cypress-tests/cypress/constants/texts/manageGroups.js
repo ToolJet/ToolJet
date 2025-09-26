@@ -78,7 +78,7 @@ export const groupsText = {
   allAppsLabel: 'All apps',
   allAppsHelperText: 'This will select all apps in the workspace including any new apps created',
   customLabel: 'Custom',
-  customHelperText: 'Select specific applications you want to add to the group',
+  customHelperText: 'Select specific apps you want to add to the group',
   updateButtonText: 'Update',
   addButtonText: 'Add',
   userRole: 'User role',

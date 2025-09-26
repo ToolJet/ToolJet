@@ -21,6 +21,7 @@ export const getPrivateRoute = (page, params = {}) => {
     workflows: '/workflows',
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
+    modules: '/modules',
   };
 
   let url = routes[page];
@@ -135,6 +136,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'confirm-invite',
     'oauth2',
     'applications',
+    'embed-apps',
     'integrations',
     'settings',
     'licence',
@@ -181,6 +183,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
     const paths = [
       '/applications/',
+      '/embed-apps/',
       '/integrations',
       '/instance-settings',
       '/organization-invitations/',

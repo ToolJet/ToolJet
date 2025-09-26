@@ -1,5 +1,6 @@
 export enum MODULES {
   APP = 'APP',
+  METRICS = 'METRICS',
   SESSION = 'SESSION',
   ROOT = 'ROOT',
   VERSION = 'VERSION',
@@ -22,7 +23,6 @@ export enum MODULES {
   CUSTOM_STYLES = 'CustomStyles',
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',
-  APP_GIT = 'App-Git',
   INSTANCE_SETTINGS = 'instanceSettings',
   LICENSING = 'Licensing',
   FILE = 'file',
@@ -39,4 +39,8 @@ export enum MODULES {
   APP_PERMISSIONS = 'AppPermissions',
   AUDIT_LOGS = 'auditLogs',
   EXTERNAL_APIS = 'externalApis',
+  ORGANIZATION_PAYMENTS = 'organizationPayments',
+  MODULES = 'Modules',
+  APP_GIT = 'AppGit',
+  GIT_SYNC = 'GitSync',
 }

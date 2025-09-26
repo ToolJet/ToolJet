@@ -15,5 +15,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
     can(FEATURE_KEY.VIEW_LOGS, AuditLog);
+    can(FEATURE_KEY.VIEW_RESOURCES, AuditLog);
   }
 }

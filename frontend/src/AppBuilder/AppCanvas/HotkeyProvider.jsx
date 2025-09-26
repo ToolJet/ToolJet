@@ -4,8 +4,10 @@ import useStore from '@/AppBuilder/_stores/store';
 import { pasteComponents, copyComponents } from './appCanvasUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }) => {
+  const { isModuleEditor } = useModuleContext();
   const canvasRef = useRef(null);
   const focusedParentId = useStore((state) => state.focusedParentId, shallow);
   const handleUndo = useStore((state) => state.handleUndo);
@@ -18,10 +20,13 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
+  const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+
   useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
   useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
 
   const paste = async () => {
+    if (isModuleEditor && !focusedParentId) return;
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
@@ -61,6 +66,24 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
       enableReleasedVersionPopupState();
       return;
     }
+
+    // Disable cut, copy, paste, delete shortcuts in module editor
+    // or when a ModuleContainer is selected
+    if (isModuleEditor) {
+      const selectedComponents = getSelectedComponents();
+      if (
+        selectedComponents.length > 0 &&
+        selectedComponents.some((id) => {
+          const componentType = getComponentTypeFromId(id, 'canvas');
+          return componentType === 'ModuleContainer';
+        })
+      ) {
+        if (['KeyC', 'KeyX', 'KeyV', 'KeyD', 'Backspace'].includes(key)) {
+          return;
+        }
+      }
+    }
+
     switch (key) {
       case 'Escape':
         handleEscapeKeyPress(); // clears the selected components

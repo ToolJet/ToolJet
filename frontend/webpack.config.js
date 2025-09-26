@@ -9,9 +9,11 @@ const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
+const isDevEnv = process.env.NODE_ENV === 'development';
 
 // Create path to empty module
 const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
@@ -76,6 +78,10 @@ if (process.env.APM_VENDOR === 'sentry') {
   );
 }
 
+if (isDevEnv) {
+  plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
+}
+
 module.exports = {
   mode: environment,
   optimization: {
@@ -122,7 +128,7 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -197,8 +203,9 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             plugins: [
+              isDevEnv && require.resolve('react-refresh/babel'),
               ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
-            ],
+            ].filter(Boolean),
           },
         },
       },
@@ -235,6 +242,7 @@ module.exports = {
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
       TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
+      WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup',
     }),
   },
 };

@@ -165,7 +165,7 @@
     }
   },
   "properties": {
-    "renderForm":{
+    "renderForm": {
       "type": "react-form-component",
       "credentialsInputs": {
         "title": "CREDENTIALS",
@@ -210,7 +210,6 @@
         "title": "AUTHENTICATION",
         "inputs": {
           "auth_type": {
-            "label": "Authentication type",
             "key": "auth_type",
             "type": "react-component-oauth-authentication",
             "description": "key-value pair headers for rest api"
@@ -226,9 +225,18 @@
             "type": "dropdown-component-flip",
             "description": "Single select dropdown for choosing certificates",
             "list": [
-              { "value": "ca_certificate", "name": "CA certificate" },
-              { "value": "client_certificate", "name": "Client certificate" },
-              { "value": "none", "name": "None" }
+              {
+                "value": "ca_certificate",
+                "name": "CA certificate"
+              },
+              {
+                "value": "client_certificate",
+                "name": "Client certificate"
+              },
+              {
+                "value": "none",
+                "name": "None"
+              }
             ]
           },
           "ca_certificate": {

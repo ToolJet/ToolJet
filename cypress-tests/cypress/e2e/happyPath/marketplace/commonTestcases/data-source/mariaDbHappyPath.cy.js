@@ -125,7 +125,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
+    // cy.get(dataSourceSelector.connectionAlertText).should("be.visible")
     deleteDatasource(`cypress-${data.dataSourceName}-mariadb`);
   });
 
@@ -137,11 +137,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterHost,
       Cypress.env("mariadb_host")
     );
-    // fillDataSourceTextField(
-    //   postgreSqlText.labelPort,
-    //   postgreSqlText.placeholderEnterPort,
-    //   "5432"
-    // );
+    fillDataSourceTextField(
+      postgreSqlText.labelPort,
+      postgreSqlText.placeholderEnterPort,
+      "3309"
+    );
 
     cy.get('[data-cy="label-port"]').verifyVisibleElement("have.text", "Port");
     cy.get('[data-cy="port-text-field"]')

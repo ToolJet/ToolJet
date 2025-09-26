@@ -1,9 +1,15 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { updateCurrentEnvironmentId } from '@helpers/migration.helper';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 /* This migration file will only work for the customers who are migrating from CE to EE */
 export class UpdateCurrentEnvIdOfCeCreatedApps1698737393421 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
+      console.log('Skipping migration as it is not EE edition');
+      return;
+    }
     const manager = queryRunner.manager;
     /* Check for first user or super-admin  */
     const query = `

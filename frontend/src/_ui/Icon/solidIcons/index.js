@@ -1,5 +1,6 @@
 import React from 'react';
 import Apps from './Apps.jsx';
+import AddAppIcon from './AddApp.jsx';
 import Archive from './Archive.jsx';
 import ArrowBack from './ArrowBack.jsx';
 import ArrowDown from './ArrowDown.jsx';
@@ -8,10 +9,14 @@ import ArrowReturn from './ArrowReturn.jsx';
 import ArrowRight from './ArrowRight.jsx';
 import ArrowSort from './ArrowSort.jsx';
 import ArrowSortRectangle from './ArrowSortRectangle.jsx';
+import AddNavItemURL from './AddNavItemURL.jsx';
 import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
+import ArrowUpDown from './ArrowUpDown.jsx';
+import BulbIcon from './Bulb.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
+import Bug from './Bug.jsx';
 import Debugger from './Debugger.jsx';
 import Calender from './Calender.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
@@ -20,7 +25,10 @@ import CheveronLeft from './CheveronLeft.jsx';
 import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
+import CaretDown from './CaretDown.jsx';
+import CaretUp from './CaretUp.jsx';
 import Clock from './Clock.jsx';
+import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
 import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
@@ -74,6 +82,7 @@ import Minus01 from './Minus01.jsx';
 import Mobile from './Mobile.jsx';
 import MoreHorizontal from './MoreHorizontal.jsx';
 import MoreVertical from './MoreVertical.jsx';
+import MoreVertical01 from './MoreVertical01.jsx';
 import Notification from './Notification.jsx';
 import NotificationRinging from './NotificationRinging.jsx';
 import NotificationSide from './NotificationSide.jsx';
@@ -83,6 +92,7 @@ import NewTab from './NewTab.jsx';
 import Open from './Open.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
+import PageUpload from './PageUpload.jsx';
 import Pin from './Pin.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
@@ -95,10 +105,12 @@ import Read from './Read.jsx';
 import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
+import Remove03 from './Remove03.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
 import RightOuterJoin from './RightOuterJoin.jsx';
 import Row from './Row.jsx';
+import Retry from './Retry.jsx';
 import SadRectangle from './SadRectangle.jsx';
 import Search from './Search.jsx';
 import SearchMinus from './SearchMinus.jsx';
@@ -110,6 +122,7 @@ import Settings from './Settings.jsx';
 import Share from './Share.jsx';
 import Shield from './Shield.jsx';
 import ShieldCheck from './ShieldCheck.jsx';
+import Skip from './Skip.jsx';
 import Signpost from './Signpost.jsx';
 import SmileRectangle from './SmileRectangle.jsx';
 import SortArrowDown from './SortArrowDown.jsx';
@@ -213,6 +226,7 @@ import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
 import Outbound from './Outbound.jsx';
 import AddPageGroupIcon from './AddPageGroup.jsx';
+import PageIcon from './PageIcon.jsx';
 import EnterpriseNew from './EnterpriseNew.jsx';
 import ArrowReturn01 from './ArrowReturn01.jsx';
 import ArrowUp01 from './ArrowUp01.jsx';
@@ -225,16 +239,41 @@ import AICrown from './AICrown.jsx';
 import BookDemo from './BookDemo.jsx';
 import Contactv3 from './Contactv3.jsx';
 import PremiumLogo from './PremiumLogo.jsx';
+import PremiumPlan from './PremiumPlan.jsx';
 import StudentIcon from './StudentIcon.jsx';
 import CalendarIcon from './CalendarIcon.jsx';
 import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import EmptyStateModules from './EmptyStateModules.jsx';
 import Code from './Code.jsx';
 import WorkflowV3 from './WorkflowV3.jsx';
 import WorkspaceV3 from './WorkspaceV3.jsx';
+import CurlyBraces from './CurlyBraces.jsx';
+import Sliders from './Sliders.jsx';
+import Asterix from './Asterix.jsx';
+import ArrowDirectionLoop from './ArrowDirectionLoop.jsx';
+import EnterpriseCrown from './EnterrpiseCrown.jsx';
+import FileCode from './FileCode.jsx';
+import Corners from './Corners.jsx';
 import Moon from './Moon.jsx';
+import NoPageEvents from './NoPageEvents.jsx';
+import ArrowRight01 from './ArrowRight01.jsx';
+import DuplicatePage from './DuplicatePage.jsx';
+import Delete01 from './Delete01.jsx';
+import SourceControl from './SourceControl.jsx';
+import Push from './PushIcon.jsx';
+import Pull from './PullIcon.jsx';
+import PropertiesStyles from './PropertiesStyles.jsx';
+import RemoveFolder from './RemoveFolder.jsx';
+import Support from './Support.jsx';
+import ClearHistory from './ClearHistory.jsx';
+import PageDownload from './PageDownload.jsx';
+import Send from './Send.jsx';
+import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
+import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
+import LoadingState from './LoadingState.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -246,6 +285,8 @@ const Icon = (props) => {
       return <DarkIcon {...props} />;
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'addnavitemurl':
+      return <AddNavItemURL {...props} />;
     case 'alignleftinspector':
       return <AlignLeftinspector {...props} />;
     case 'alignrightinspector':
@@ -262,14 +303,20 @@ const Icon = (props) => {
       return <AlignRight {...props} />;
     case 'apps':
       return <Apps {...props} />;
+    case 'add-app':
+      return <AddAppIcon {...props} />;
     case 'archive':
       return <Archive {...props} />;
     case 'arrowback':
       return <ArrowBack {...props} />;
     case 'arrowbackdown':
       return <ArrowBackDown {...props} />;
+    case 'arrowright01':
+      return <ArrowRight01 {...props} />;
     case 'arrowdown':
       return <ArrowDown {...props} />;
+    case 'arrowdirectionloop':
+      return <ArrowDirectionLoop {...props} />;
     case 'arroweft':
       return <Arroweft {...props} />;
     case 'arrowreturn':
@@ -284,16 +331,28 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'arrowupdown':
+      return <ArrowUpDown {...props} />;
+    case 'asterix':
+      return <Asterix {...props} />;
     case 'auditlogs':
       return <AuditLogs {...props} />;
+    case 'bulb':
+      return <BulbIcon {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':
       return <Branch {...props} />;
+    case 'bug':
+      return <Bug {...props} />;
     case 'debugger':
       return <Debugger {...props} />;
     case 'calender':
       return <Calender {...props} />;
+    case 'caretdown':
+      return <CaretDown {...props} />;
+    case 'caretup':
+      return <CaretUp {...props} />;
     case 'checkrectangle':
       return <CheckRectangle {...props} />;
     case 'cheverondown':
@@ -320,6 +379,8 @@ const Icon = (props) => {
       return <Code {...props} />;
     case 'clock':
       return <Clock {...props} />;
+    case 'cursorclick':
+      return <CursorClick {...props} />;
     case 'column':
       return <Column {...props} />;
     case 'columns':
@@ -330,6 +391,8 @@ const Icon = (props) => {
       return <Computer {...props} />;
     case 'copy':
       return <Copy {...props} />;
+    case 'curlybraces':
+      return <CurlyBraces {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
     case 'datasource':
@@ -340,22 +403,30 @@ const Icon = (props) => {
       return <DangerDark {...props} />;
     case 'delete':
       return <Delete {...props} />;
+    case 'delete01':
+      return <Delete01 {...props} />;
     case 'diamond':
       return <Diamond {...props} />;
     case 'downarrow':
       return <DownArrow {...props} />;
+    case 'duplicatepage':
+      return <DuplicatePage {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
     case 'enterprise':
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'nopageevents':
+      return <NoPageEvents {...props} />;
     case 'enterprisesmall':
       return <EnterpriseSmall {...props} />;
     case 'enterprise-new':
       return <EnterpriseNew {...props} />;
     case 'enterprisev3':
       return <EnterpriseV3 {...props} />;
+    case 'enterprisecrown':
+      return <EnterpriseCrown {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
     case 'datasourceGradient':
@@ -370,6 +441,8 @@ const Icon = (props) => {
       return <EyeDisable {...props} />;
     case 'expand':
       return <Expand {...props} />;
+    case 'file-code':
+      return <FileCode {...props} />;
     case 'file01':
       return <File01 {...props} />;
     case 'filedownload':
@@ -450,6 +523,8 @@ const Icon = (props) => {
       return <MoreHorizontal {...props} />;
     case 'morevertical':
       return <MoreVertical {...props} />;
+    case 'morevertical01':
+      return <MoreVertical01 {...props} />;
     case 'notification':
       return <Notification {...props} />;
     case 'notificationringing':
@@ -470,10 +545,16 @@ const Icon = (props) => {
       return <Page {...props} />;
     case 'pageAdd':
       return <PageAdd {...props} />;
+    case 'page-icon':
+      return <PageIcon {...props} />;
+    case 'pageUpload':
+      return <PageUpload {...props} />;
     case 'pin':
       return <Pin {...props} />;
     case 'unpin01':
       return <Unpin01 {...props} />;
+    case 'propertiesstyles':
+      return <PropertiesStyles {...props} />;
     case 'unpin':
       return <Unpin {...props} />;
     case 'play':
@@ -496,6 +577,8 @@ const Icon = (props) => {
       return <Remove {...props} />;
     case 'remove01':
       return <Remove01 {...props} />;
+    case 'removefolder':
+      return <RemoveFolder {...props} />;
     case 'removerectangle':
       return <RemoveRectangle {...props} />;
     case 'rightarrrow':
@@ -506,6 +589,8 @@ const Icon = (props) => {
       return <Row {...props} />;
     case 'reset':
       return <Reset {...props} />;
+    case 'retry':
+      return <Retry {...props} />;
     case 'sadrectangle':
       return <SadRectangle {...props} />;
     case 'search':
@@ -532,14 +617,20 @@ const Icon = (props) => {
       return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
+    case 'corners':
+      return <Corners {...props} />;
     case 'share':
       return <Share {...props} />;
     case 'shield':
       return <Shield {...props} />;
     case 'shieldcheck':
       return <ShieldCheck {...props} />;
+    case 'skip':
+      return <Skip {...props} />;
     case 'signpost':
       return <Signpost {...props} />;
+    case 'sliders':
+      return <Sliders {...props} />;
     case 'smilerectangle':
       return <SmileRectangle {...props} />;
     case 'sortarrowdown':
@@ -674,6 +765,18 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'clearhistory':
+      return <ClearHistory {...props} />;
+    case 'pagedownload':
+      return <PageDownload {...props} />;
+    case 'send':
+      return <Send {...props} />;
+    case 'defaultresponseavatar':
+      return <DefaultResponseAvatar {...props} />;
+    case 'defaultsenderchatavatar':
+      return <DefaultSenderChatIcon {...props} />;
+    case 'loadingstate':
+      return <LoadingState {...props} />;
     case 'arrowdown01':
       return <ArrowDown01 {...props} />;
     case 'arrowreturn01':
@@ -686,12 +789,16 @@ const Icon = (props) => {
       return <ReplaceAll {...props} />;
     case 'remove02':
       return <Remove02 {...props} />;
+    case 'remove03':
+      return <Remove03 {...props} />;
     case 'bookdemo':
       return <BookDemo {...props} />;
     case 'contactv3':
       return <Contactv3 {...props} />;
     case 'premium-logo':
       return <PremiumLogo {...props} />;
+    case 'premium-plan':
+      return <PremiumPlan {...props} />;
     case 'calendar-icon':
       return <CalendarIcon {...props} />;
     case 'calendar-small':
@@ -706,10 +813,20 @@ const Icon = (props) => {
       return <StudentIcon {...props} />;
     case 'ai-crown':
       return <AICrown {...props} />;
+    case 'empty-state-modules':
+      return <EmptyStateModules {...props} />;
     case 'play01':
       return <Play01 {...props} />;
     case 'moon':
       return <Moon {...props} />;
+    case 'source-control':
+      return <SourceControl {...props} />;
+    case 'push-changes':
+      return <Push {...props} />;
+    case 'pull-changes':
+      return <Pull {...props} />;
+    case 'support':
+      return <Support {...props} />;
     default:
       return <Apps {...props} />;
   }

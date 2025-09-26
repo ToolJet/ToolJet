@@ -39,7 +39,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       {showSearchInput && (
         <div className="dropdown-multiselect-widget-search-box-wrapper">
           <span>
-            <SolidIcon name="search01" width="14" />
+            <SolidIcon name="search01" width="14" fill="var(--cc-default-icon)" />
           </span>
           <input
             autoCorrect="off"

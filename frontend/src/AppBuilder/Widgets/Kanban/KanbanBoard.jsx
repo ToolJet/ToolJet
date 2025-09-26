@@ -26,6 +26,7 @@ import cx from 'classnames';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const dropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -40,11 +41,12 @@ const dropAnimation = {
 const TRASH_ID = 'void';
 
 export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
+  const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const [lastSelectedCard, setLastSelectedCard] = useState({});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
@@ -78,7 +80,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
     updateCustomResolvables(
       id,
       flatCardData.map((d) => ({ cardData: d })),
-      'cardData'
+      'cardData',
+      moduleId
     );
   }, []);
 

@@ -51,7 +51,13 @@ export class VersionsCreateService implements IVersionsCreateService {
       );
 
       const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
-        await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+        await this.createNewPagesAndComponentsForVersion(
+          manager,
+          appVersion,
+          versionFrom.id,
+          versionFrom.homePageId,
+          oldDataQueryToNewMapping
+        );
 
       await this.updateEntityReferencesForNewVersion(manager, {
         componentsMapping: oldComponentToNewComponentMapping,
@@ -91,87 +97,44 @@ export class VersionsCreateService implements IVersionsCreateService {
       manager
     );
 
-    if (!versionFrom) {
-      //create default data sources
-      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb', 'workflows']) {
-        const dataSource = await this.dataSourceRepository.createDefaultDataSource(
-          defaultSource,
-          appVersion.id,
-          manager
-        );
-        await this.dataSourceUtilService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
-      }
-    } else {
-      const globalQueries: DataQuery[] = await this.dataQueryRepository.getQueriesByVersionId(
-        versionFrom.id,
-        DataSourceScopes.GLOBAL,
-        manager
-      );
-      const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
-      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+    const globalQueries: DataQuery[] = await this.dataQueryRepository.getQueriesByVersionId(
+      versionFrom.id,
+      DataSourceScopes.GLOBAL,
+      manager
+    );
+    const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
+    const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
 
-      const dataSourceMapping = {};
-      const newDataQueries = [];
-      const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
-      });
+    const dataSourceMapping = {};
+    const newDataQueries = [];
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
+    });
 
-      if (dataSources?.length > 0 || globalDataSources?.length > 0) {
-        if (dataSources?.length > 0) {
-          for (const dataSource of dataSources) {
-            const dataSourceParams: Partial<DataSource> = {
-              name: dataSource.name,
-              kind: dataSource.kind,
-              type: dataSource.type,
-              appVersionId: appVersion.id,
-            };
-            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-            dataSourceMapping[dataSource.id] = newDataSource.id;
+    if (dataSources?.length > 0 || globalDataSources?.length > 0) {
+      if (dataSources?.length > 0) {
+        for (const dataSource of dataSources) {
+          const dataSourceParams: Partial<DataSource> = {
+            name: dataSource.name,
+            kind: dataSource.kind,
+            type: dataSource.type,
+            appVersionId: appVersion.id,
+          };
+          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+          dataSourceMapping[dataSource.id] = newDataSource.id;
 
-            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
-            for (const dataQuery of dataQueries) {
-              const dataQueryParams = {
-                name: dataQuery.name,
-                options: dataQuery.options,
-                dataSourceId: newDataSource.id,
-                appVersionId: appVersion.id,
-              };
-              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-
-              const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
-
-              dataQueryEvents.forEach(async (event, index) => {
-                const newEvent = new EventHandler();
-
-                newEvent.id = uuid.v4();
-                newEvent.name = event.name;
-                newEvent.sourceId = newQuery.id;
-                newEvent.target = event.target;
-                newEvent.event = event.event;
-                newEvent.index = event.index ?? index;
-                newEvent.appVersionId = appVersion.id;
-
-                await manager.save(newEvent);
-              });
-
-              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-              newDataQueries.push(newQuery);
-            }
-          }
-        }
-
-        if (globalQueries?.length > 0) {
-          for (const globalQuery of globalQueries) {
+          for (const dataQuery of dataQueries) {
             const dataQueryParams = {
-              name: globalQuery.name,
-              options: globalQuery.options,
-              dataSourceId: globalQuery.dataSourceId,
+              name: dataQuery.name,
+              options: dataQuery.options,
+              dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
             };
-
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
 
             dataQueryEvents.forEach(async (event, index) => {
               const newEvent = new EventHandler();
@@ -186,45 +149,70 @@ export class VersionsCreateService implements IVersionsCreateService {
 
               await manager.save(newEvent);
             });
-            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+
+            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
         }
+      }
 
-        for (const newQuery of newDataQueries) {
-          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-            newQuery.options,
-            oldDataQueryToNewMapping
-          );
-          newQuery.options = newOptions;
+      if (globalQueries?.length > 0) {
+        for (const globalQuery of globalQueries) {
+          const dataQueryParams = {
+            name: globalQuery.name,
+            options: globalQuery.options,
+            dataSourceId: globalQuery.dataSourceId,
+            appVersionId: appVersion.id,
+          };
 
-          await manager.save(newQuery);
+          const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+          const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+          dataQueryEvents.forEach(async (event, index) => {
+            const newEvent = new EventHandler();
+
+            newEvent.id = uuid.v4();
+            newEvent.name = event.name;
+            newEvent.sourceId = newQuery.id;
+            newEvent.target = event.target;
+            newEvent.event = event.event;
+            newEvent.index = event.index ?? index;
+            newEvent.appVersionId = appVersion.id;
+
+            await manager.save(newEvent);
+          });
+          oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+          newDataQueries.push(newQuery);
         }
+      }
 
-        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-          appVersion.definition,
-          oldDataQueryToNewMapping
-        );
-        await manager.save(appVersion);
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
+        newQuery.options = newOptions;
 
-        for (const appEnvironment of appEnvironments) {
-          for (const dataSource of dataSources) {
-            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-            });
+        await manager.save(newQuery);
+      }
 
-            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-            const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
-            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+      await manager.save(appVersion);
 
-            await manager.save(
-              manager.create(DataSourceOptions, {
-                options: newOptions,
-                dataSourceId: dataSourceMapping[dataSource.id],
-                environmentId: appEnvironment.id,
-              })
-            );
-          }
+      for (const appEnvironment of appEnvironments) {
+        for (const dataSource of dataSources) {
+          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          });
+
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
+          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+          await manager.save(
+            manager.create(DataSourceOptions, {
+              options: newOptions,
+              dataSourceId: dataSourceMapping[dataSource.id],
+              environmentId: appEnvironment.id,
+            })
+          );
         }
       }
     }
@@ -340,7 +328,8 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFromId: string,
-    prevHomePagePage: string
+    prevHomePagePage: string,
+    oldDataQueryToNewMapping: Record<string, unknown>
   ) {
     const pages = await manager
       .createQueryBuilder(Page, 'page')
@@ -360,29 +349,47 @@ export class VersionsCreateService implements IVersionsCreateService {
     const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
+    const parseParentIdAndSuffix = (parentIdString: string) => {
+      if (!parentIdString) {
+        return { baseId: null, suffix: null };
+      }
+      const match = parentIdString.match(/([a-fA-F0-9-]{36})-(.+)/);
+      if (match) {
+        return { baseId: match[1], suffix: match[2] };
+      }
+      return { baseId: parentIdString, suffix: null };
+    };
+
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
-        const parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
+        const { baseId } = parseParentIdAndSuffix(componentParentId);
+        if (!baseId) return false;
 
-        const parentComponent = allComponents.find((comp) => comp.id === parentId);
+        const parentComponent = allComponents.find((comp) => comp.id === baseId);
 
         if (parentComponent) {
           return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
         }
       }
-
       return false;
     };
 
     const isChildOfKanbanModal = (componentParentId: string, allComponents = []) => {
-      if (!componentParentId.includes('modal')) return false;
+      if (!componentParentId || !componentParentId.includes('modal')) return false;
 
       if (componentParentId) {
-        const parentId = componentParentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
-        const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
+        const { baseId } = parseParentIdAndSuffix(componentParentId);
+        if (!baseId) return false;
 
+        const isParentKandban = allComponents.find((comp) => comp.id === baseId)?.type === 'Kanban';
         return isParentKandban;
       }
+      return false;
+    };
+
+    const isChildOfHeaderOrFooter = (componentParentId: string) => {
+      if (!componentParentId) return false;
+      return componentParentId.endsWith('-header') || componentParentId.endsWith('-footer');
     };
 
     for (const page of pages) {
@@ -417,43 +424,75 @@ export class VersionsCreateService implements IVersionsCreateService {
         await manager.save(newEvent);
       });
 
-      page.components.forEach(async (component) => {
+      const tempNewComponents: Component[] = [];
+      for (const component of page.components) {
         const newComponent = new Component();
-        const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
-
         newComponent.id = uuid.v4();
-
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
+        tempNewComponents.push(newComponent);
+      }
 
-        let parentId = component.parent ? component.parent : null;
+      for (const originalComponent of page.components) {
+        const newComponent = tempNewComponents.find(
+          (c) => c.id === oldComponentToNewComponentMapping[originalComponent.id]
+        );
 
-        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
-
-        if (isParentTabOrCalendar) {
-          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
-          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
-          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
-
-          parentId = `${mappedParentId}-${childTabId}`;
-        } else {
-          parentId = oldComponentToNewComponentMapping[parentId];
+        if (!newComponent) {
+          console.error(`ERROR: New component instance not found for original ID ${originalComponent.id}.`);
+          continue;
         }
 
-        newComponent.name = component.name;
-        newComponent.type = component.type;
-        newComponent.pageId = savedPage.id;
-        newComponent.properties = component.properties;
-        newComponent.styles = component.styles;
-        newComponent.validation = component.validation;
-        newComponent.general = component.general;
-        newComponent.generalStyles = component.generalStyles;
-        newComponent.displayPreferences = component.displayPreferences;
-        newComponent.parent = component.parent;
-        newComponent.page = savedPage;
+        Object.assign(newComponent, {
+          name: originalComponent.name,
+          type: originalComponent.type,
+          pageId: savedPage.id,
+          properties: originalComponent.properties,
+          styles: originalComponent.styles,
+          validation: originalComponent.validation,
+          general: originalComponent.general,
+          generalStyles: originalComponent.generalStyles,
+          displayPreferences: originalComponent.displayPreferences,
+          page: savedPage,
+        });
 
-        newComponents.push(newComponent);
+        let parentId = originalComponent.parent ? originalComponent.parent : null;
 
-        component.layouts.forEach((layout) => {
+        if (newComponent?.properties?.buttonToSubmit?.value) {
+          const oldButtonId = newComponent.properties.buttonToSubmit.value;
+          if (oldButtonId && oldComponentToNewComponentMapping[oldButtonId]) {
+            set(newComponent, 'properties.buttonToSubmit.value', oldComponentToNewComponentMapping[oldButtonId]);
+          }
+        }
+
+        if (parentId) {
+          const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
+          const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
+          const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+
+          if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
+            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+            if (mappedBaseParentId) {
+              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+            } else {
+              parentId = null;
+            }
+          } else if (isKanbanModalChildFlag) {
+            const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
+            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+            if (mappedBaseParentId) {
+              parentId = `${mappedBaseParentId}-modal`;
+            } else {
+              parentId = null;
+            }
+          } else {
+            parentId = oldComponentToNewComponentMapping[parentId];
+          }
+        }
+
+        newComponent.parent = parentId;
+
+        originalComponent.layouts.forEach((layout) => {
           const newLayout = new Layout();
           newLayout.id = uuid.v4();
           newLayout.type = layout.type;
@@ -461,7 +500,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
-          newLayout.componentId = layout.componentId;
+          newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
           newLayout.component = newComponent;
@@ -469,6 +508,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           newComponentLayouts.push(newLayout);
         });
 
+        const componentEvents = allEvents.filter((event) => event.sourceId === originalComponent.id);
         componentEvents.forEach(async (event, index) => {
           const newEvent = new EventHandler();
 
@@ -482,37 +522,9 @@ export class VersionsCreateService implements IVersionsCreateService {
 
           await manager.save(newEvent);
         });
-      });
-      newComponents.forEach((component) => {
-        let parentId = component.parent ? component.parent : null;
-        // re establish mapping relationship
-        if (component?.properties?.buttonToSubmit) {
-          const newButtonToSubmitValue =
-            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
-          if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
-        }
 
-        if (!parentId) return;
-
-        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
-
-        if (isParentTabOrCalendar) {
-          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
-          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
-          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
-
-          parentId = `${mappedParentId}-${childTabId}`;
-        } else if (isChildOfKanbanModal(component.parent, page.components)) {
-          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
-          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
-
-          parentId = `${mappedParentId}-modal`;
-        } else {
-          parentId = oldComponentToNewComponentMapping[parentId];
-        }
-
-        component.parent = parentId;
-      });
+        newComponents.push(newComponent);
+      }
 
       await manager.save(newComponents);
       await manager.save(newComponentLayouts);

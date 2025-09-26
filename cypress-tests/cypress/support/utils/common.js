@@ -6,6 +6,7 @@ import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
+import { appPromote } from "Support/utils/platform/multiEnv";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -48,7 +49,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -104,7 +105,7 @@ export const viewAppCardOptions = (appName) => {
   cy.get(commonSelectors.appCard(appName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
-    .realHover()
+    .realHover();
   cy.contains("div", appName)
     .parent()
     .within(() => {
@@ -230,6 +231,9 @@ export const navigateToworkspaceConstants = () => {
 };
 
 export const releaseApp = () => {
+  cy.ifEnv("Enterprise", () => {
+    appPromote("development", "production");
+  });
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");

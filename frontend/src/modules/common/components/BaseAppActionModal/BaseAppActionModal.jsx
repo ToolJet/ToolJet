@@ -4,7 +4,7 @@ import { AppModal } from '@/_components';
 const BaseAppActionModal = ({ configs, modalStates, ...props }) => {
   const getActiveConfig = () => {
     switch (true) {
-      case modalStates.showCreateAppModal || modalStates.showCreateModuleModal:
+      case modalStates.showCreateAppModal:
         return configs.create;
       case modalStates.showCloneAppModal:
         return configs.clone;

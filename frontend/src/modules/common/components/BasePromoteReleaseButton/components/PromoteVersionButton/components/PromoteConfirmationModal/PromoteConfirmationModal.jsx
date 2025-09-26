@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { gitSyncService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
+import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
+  const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -22,7 +24,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     (state) => ({
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
-      creationMode: state.app.creationMode,
+      creationMode: state.appStore.modules[moduleId].app.creationMode,
     }),
     shallow
   );
@@ -36,6 +38,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     onClose();
     setShow(false);
   }, [promotingEnvironment, onClose]);
+  const allowAppEdit = useStore((state) => state.allowEditing);
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
@@ -44,7 +47,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
       currentVersionId,
       async (response) => {
         toast.success(`${selectedVersion.name} has been promoted to ${data.target.name}!`);
-        if (data?.current?.name == 'development' && creationMode !== 'GIT') {
+        if (
+          data?.current?.name == 'development' &&
+          (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
+        ) {
           try {
             const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersion?.id);
             const appGit = gitData?.app_git;
@@ -61,7 +67,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           } catch (err) {
             const status = err?.statusCode;
             const error = err?.error;
-            if (!(status === 404 && error === 'Git Configuration not found')) {
+            if (
+              !(status === 404 && error === 'Git Configuration not found') &&
+              !(error === 'No Git Provider is enabled for the workspace')
+            ) {
               toast.error(error, {
                 style: {
                   width: 'auto',
@@ -164,7 +173,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           isLoading={promotingEnvironment}
           data-cy="promote-button"
         >
-          Promote <ArrowRightIcon />
+          Promote
+          <span style={{ marginTop: '2px' }}>
+            <ArrowRight fill="#FDFDFE" width="22" />
+          </span>
         </ButtonSolid>
       </Modal.Footer>
     </Modal>

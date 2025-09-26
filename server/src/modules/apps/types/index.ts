@@ -10,6 +10,7 @@ interface Features {
   [FEATURE_KEY.GET]: FeatureConfig;
   [FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS]: FeatureConfig;
   [FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS]: FeatureConfig;
+  [FEATURE_KEY.APP_PUBLIC_UPDATE]: FeatureConfig;
   [FEATURE_KEY.GET_ASSOCIATED_TABLES]: FeatureConfig;
   [FEATURE_KEY.GET_ONE]: FeatureConfig;
   [FEATURE_KEY.GET_BY_SLUG]: FeatureConfig;

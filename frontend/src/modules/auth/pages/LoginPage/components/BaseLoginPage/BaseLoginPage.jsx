@@ -11,6 +11,7 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { GeneralFeatureImage } from '@/modules/common/components';
 import { LoginForm } from '..';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handleSSOLoginAttempt }) => {
   const { t } = useTranslation();
@@ -62,6 +63,11 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
     authenticationService.login(email, password, organizationId).then(
       (user) => {
         updateCurrentSession({ isUserLoggingIn: true });
+        posthogHelper.initPosthog(user);
+        posthogHelper.captureEvent('signin_email', {
+          email,
+          workspace_id: organizationId || currentOrganizationName,
+        });
         onLoginSuccess(user, navigate);
       },
       (error) => {

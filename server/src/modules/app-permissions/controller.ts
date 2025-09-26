@@ -8,10 +8,11 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { CreatePagePermissionDto } from './dto';
+import { CreatePermissionDto } from './dto';
+import { ValidAppGuard } from './guards/valid-app.guard';
 
 @InitModule(MODULES.APP_PERMISSIONS)
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+@UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
 @Controller('app-permissions')
 export class AppPermissionsController implements IAppPermissionsController {
   constructor() {}
@@ -53,7 +54,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
-    @Body() body: CreatePagePermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
@@ -65,7 +66,7 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
-    @Body() body: CreatePagePermissionDto,
+    @Body() body: CreatePermissionDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();
@@ -77,6 +78,98 @@ export class AppPermissionsController implements IAppPermissionsController {
     @User() user,
     @Param('appId') appId: string,
     @Param('pageId') pageId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.FETCH_QUERY_PERMISSIONS)
+  @Get(':appId/queries/:queryId')
+  async fetchQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_QUERY_PERMISSIONS)
+  @Post(':appId/queries/:queryId')
+  async createQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_QUERY_PERMISSIONS)
+  @Put(':appId/queries/:queryId')
+  async updateQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_QUERY_PERMISSIONS)
+  @Delete(':appId/queries/:queryId')
+  async deleteQueryPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('queryId') queryId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.FETCH_COMPONENT_PERMISSIONS)
+  @Get(':appId/components/:componentId')
+  async fetchComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_COMPONENT_PERMISSIONS)
+  @Post(':appId/components/:componentId')
+  async createComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_COMPONENT_PERMISSIONS)
+  @Put(':appId/components/:componentId')
+  async updateComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
+    @Body() body: CreatePermissionDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_COMPONENT_PERMISSIONS)
+  @Delete(':appId/components/:componentId')
+  async deleteComponentPermissions(
+    @User() user,
+    @Param('appId') appId: string,
+    @Param('componentId') componentId: string,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
     throw new NotFoundException();

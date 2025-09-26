@@ -115,7 +115,7 @@ describe("Data source DynamoDB", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
       dynamoDbText.errorMissingRegion
     );

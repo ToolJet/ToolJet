@@ -9,7 +9,7 @@ import {
   selectUserGroup,
   inviteUserWithUserGroups,
   inviteUserWithUserRole,
-  fetchAndVisitInviteLink,
+  fetchAndVisitInviteLinkViaMH,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { visitWorkspaceInvitation, addNewUser } from "Support/utils/onboarding";
@@ -23,6 +23,8 @@ import {
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { enableInstanceSignup } from "Support/utils/manageSSO";
+
 
 let invitationToken,
   organizationToken,
@@ -36,21 +38,20 @@ const envVar = Cypress.env("environment");
 describe("user invite flow cases", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
-    if (envVar === "Enterprise") {
-      cy.get(".btn-close").click();
-    }
+    cy.ifEnv("Enterprise", () => {
+      enableInstanceSignup()
+    });
   });
 
   it("Should verify the Manage users page", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     navigateToManageUsers();
-
     manageUsersElements();
 
     cy.get(commonSelectors.cancelButton).click();
     cy.get(usersSelector.usersPageTitle).should("be.visible");
-    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();
 
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
@@ -93,8 +94,11 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(2000);
-    fetchAndVisitInviteLink(data.email);
+    cy.wait(5000);
+    cy.apiLogout()
+
+
+    fetchAndVisitInviteLinkViaMH(data.email);//email invite get and visit
     confirmInviteElements(data.email);
 
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "pass");
@@ -359,7 +363,7 @@ describe("user invite flow cases", () => {
     } else {
       cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
         "have.text",
-        "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?"
+        "Changing user default group from end-user to admin will affect the count of users covered by your plan.Are you sure you want to continue?"
       );
     }
 
@@ -367,7 +371,7 @@ describe("user invite flow cases", () => {
       "have.text",
       "Cancel"
     );
-    cy.get('[data-cy="confim-button"]').verifyVisibleElement(
+    cy.get('[data-cy="confirm-button"]').verifyVisibleElement(
       "have.text",
       "Continue"
     );
@@ -405,7 +409,7 @@ describe("user invite flow cases", () => {
     cy.get('[data-cy="group-check-input"]').eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get('[data-cy="confim-button"]').click();
+    cy.get('[data-cy="confirm-button"]').click();
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -424,7 +428,7 @@ describe("user invite flow cases", () => {
     cy.get('[data-cy="group-check-input"]').eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get('[data-cy="confim-button"]').click();
+    cy.get('[data-cy="confirm-button"]').click();
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

@@ -54,7 +54,6 @@ export const TableRow = ({
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
-          width: cell.column.getSize(),
           backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
             rowData: row.original,
             cellValue: cell.getValue(),
@@ -63,6 +62,7 @@ export const TableRow = ({
           display: 'flex',
           alignItems: 'center',
           textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          width: cell.column.getSize(),
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -75,6 +75,9 @@ export const TableRow = ({
             key={cell.id}
             style={cellStyles}
             className={cx('table-cell td', {
+              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+              'has-left-actions': cell.column.id === 'leftActions',
+              'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
               'table-text-align-right': cell.column.columnDef?.meta?.horizontalAlignment === 'right',
               'table-text-align-left': cell.column.columnDef?.meta?.horizontalAlignment === 'left',
@@ -94,13 +97,23 @@ export const TableRow = ({
               'has-radio': cell.column.columnDef?.meta?.columnType === 'radio',
               'has-toggle': cell.column.columnDef?.meta?.columnType === 'toggle',
               'has-textarea': ['string', 'text'].includes(cell.column.columnDef?.meta?.columnType),
+              'has-multiselect': cell.column.columnDef?.meta?.columnType === 'multiselect',
+              'has-dropdown': cell.column.columnDef?.meta?.columnType === 'dropdown',
               isEditable: isEditable,
             })}
             onClick={(e) => {
+              // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
+              if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
+                e.stopPropagation();
+                fireEvent('onRowClicked');
+                return;
+              }
+
               if (
-                (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
-                allowSelection &&
-                !selectRowOnCellEdit
+                isEditable ||
+                (['rightActions', 'leftActions'].includes(cell.column.id) &&
+                  allowSelection &&
+                  (!selectRowOnCellEdit || row.getIsSelected()))
               ) {
                 // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
                 e.stopPropagation();

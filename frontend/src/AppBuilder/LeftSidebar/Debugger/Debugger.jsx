@@ -10,7 +10,7 @@ function Debugger({ pinned, setPinned }) {
     shallow
   );
 
-  const currentPageId = useStore((state) => state.currentPageId);
+  const currentPageId = useStore((state) => state.modules.canvas.currentPageId);
 
   const logsToBeShown = logs.filter((log) => log.page === currentPageId);
 

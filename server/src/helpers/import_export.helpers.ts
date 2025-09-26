@@ -130,7 +130,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
           valueWithId: `{{${replacedExpression}}}`,
           valueWithBrackets: `{{${bracketNotationExpression}}}`,
         });
-      } catch (error) {
+      } catch {
         replacedString += fullMatch;
         bracketNotationString += fullMatch;
         results.push({
@@ -207,7 +207,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
         valueWithId: `{{${replacedExpression}}}`,
         valueWithBrackets: `{{${bracketNotationExpression}}}`,
       });
-    } catch (error) {
+    } catch {
       replacedString += fullMatch;
       bracketNotationString += fullMatch;
       results.push({
@@ -317,7 +317,7 @@ function replaceIdsInExpression(
     }
 
     return result;
-  } catch (error) {
+  } catch {
     return expression;
   }
 }

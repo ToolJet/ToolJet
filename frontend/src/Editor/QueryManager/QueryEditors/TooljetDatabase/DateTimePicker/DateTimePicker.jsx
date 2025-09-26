@@ -300,7 +300,7 @@ export const DateTimePicker = ({
   return (
     <div
       data-disabled={styles.disabledState}
-      className={cx('datepicker-widget position-relative', {
+      className={cx('datepicker-widget tjdb-datepicker-wrapper position-relative', {
         'theme-tjdb': !darkMode,
         'theme-dark': darkMode,
       })}

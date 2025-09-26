@@ -16,7 +16,8 @@ export const buildTableColumn = (
   handleCellValueChange,
   globalFilter,
   serverSideSearch,
-  tableBodyRef
+  tableBodyRef,
+  t
 ) => {
   return [
     {
@@ -64,6 +65,7 @@ export const buildTableColumn = (
       tableRef: tableBodyRef,
       handleCellValueChange,
       searchText: globalFilter,
+      t,
     }).filter(Boolean),
 
     ...generateActionColumns({

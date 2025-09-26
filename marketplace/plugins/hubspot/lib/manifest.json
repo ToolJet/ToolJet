@@ -1,0 +1,102 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "HubSpot",
+  "description": "Integrate with HubSpot API for CRM and sales automation",
+  "type": "api",
+  "source": {
+    "name": "HubSpot",
+    "kind": "hubspot",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_id": {
+        "type": "string"
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://api.hubapi.com/oauth/v1/token"
+    },
+    "redirect_url": {
+      "value": "http://localhost:8082/oauth2/authorize"
+    },
+    "auth_url": {
+      "value": "https://app.hubspot.com/oauth/authorize"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "access_token_custom_headers": {
+        "value": [
+          ["Content-Type", "application/x-www-form-urlencoded"]
+        ]
+      },
+    "scopes": {
+      "value": "oauth"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for HubSpot",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app",
+              "tooljet_app"
+            ]
+          }
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": true
+      }
+    }
+  },
+  "required": []
+}

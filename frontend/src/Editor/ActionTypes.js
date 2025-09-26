@@ -139,4 +139,10 @@ export const ActionTypes = [
     options: [{ name: 'copy-to-clipboard', type: 'text', default: '' }],
     group: 'other',
   },
+  {
+    name: 'Toggle app mode',
+    id: 'toggle-app-mode',
+    options: [{ name: 'appMode', type: 'text', default: '' }],
+    group: 'other',
+  },
 ];

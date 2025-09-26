@@ -7,7 +7,8 @@ import ReleaseConfirmation from '@/Editor/ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Button } from '@/components/ui/Button/Button';
+import { Earth } from 'lucide-react';
 
 export const ReleaseVersionButton = function DeployVersionButton({ onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
@@ -25,9 +26,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
-
     const { id: versionToBeReleased, name, app_id, appId } = editingVersion;
-
     appsService
       .releaseVersion(app_id || appId, versionToBeReleased)
       .then(() => {
@@ -39,7 +38,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
         setShowConfirmation(false);
       })
       .catch((_error) => {
-        toast.error('Oops, something went wrong');
+        toast.error(`${name} could not be released. Please try again!`);
         setIsReleasing(false);
       });
   };
@@ -60,7 +59,8 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
         onConfirm={onReleaseConfirm}
       />
       <div>
-        <ButtonSolid
+        <Button
+          variant="secondary"
           data-cy={`button-release`}
           className={cx('release-button', {
             'btn-loading': isReleasing,
@@ -69,8 +69,9 @@ export const ReleaseVersionButton = function DeployVersionButton({ onVersionRele
           disabled={isVersionReleased}
           onClick={onReleaseButtonClick}
         >
+          <Earth width="16" height="16" className="tw-text-icon-accent" />
           {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
-        </ButtonSolid>
+        </Button>
       </div>
     </>
   );

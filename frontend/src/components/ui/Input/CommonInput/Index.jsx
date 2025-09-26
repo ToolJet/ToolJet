@@ -6,14 +6,26 @@ import { ButtonSolid } from '../../../../_components/AppButton';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
-  const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
+  const {
+    propertyKey,
+    type,
+    encrypted,
+    validation,
+    isValidatedMessages,
+    isDisabled,
+    isEditing,
+    handleEncryptedFieldsToggle,
+    labelDisabled,
+  } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
 
   const isEncrypted = type === 'password' || encrypted;
+  const isWorkspaceConstant =
+    restProps.placeholder &&
+    (restProps.placeholder.includes('{{constants') || restProps.placeholder.includes('{{secrets'));
 
   const handleChange = (e) => {
     if (validation) {
@@ -39,20 +51,12 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     }
   }, [isValid, isValidatedMessages]);
 
-  const toggleEditing = () => {
-    if (isDisabled) return;
-
-    const willBeInEditMode = !isEditing;
-    setIsEditing(willBeInEditMode);
-    change({ target: { value: '' } });
-  };
-
   return (
     <div>
       <div className="d-flex">
         {label && (
           <div className="tw-flex-shrink-0">
-            <InputLabel disabled={disabled} label={label} required={required} />
+            <InputLabel disabled={labelDisabled ?? disabled} label={label} required={required} />
           </div>
         )}
         {type === 'password' && (
@@ -65,7 +69,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 target="_blank"
                 rel="noreferrer"
                 disabled={isDisabled}
-                onClick={toggleEditing}
+                onClick={(e) => handleEncryptedFieldsToggle(e, propertyKey)}
                 data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
@@ -86,6 +90,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
         required={required}
         response={isValid}
         onChange={handleChange}
+        isWorkspaceConstant={isWorkspaceConstant}
         {...restProps}
       />
       {helperText && (

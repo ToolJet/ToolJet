@@ -14,7 +14,12 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -89,6 +94,7 @@ export const DropdownV2 = ({
     iconColor,
     accentColor,
     padding,
+    widthType,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -113,8 +119,8 @@ export const DropdownV2 = ({
     if (!Array.isArray(schema)) {
       _schema = [];
     }
-    const foundItem = _schema?.find((item) => item?.default === true);
-    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    return defaultItem?.value;
   }
 
   const selectOptions = useMemo(() => {
@@ -124,7 +130,7 @@ export const DropdownV2 = ({
         .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: data?.label,
+          label: getSafeRenderableValue(data?.label),
           value: data?.value,
           isDisabled: data?.disable ?? false,
         }));
@@ -141,15 +147,6 @@ export const DropdownV2 = ({
       setInputValue(value);
       fireEvent('onSelect');
     }
-  }
-
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
   }
 
   const onSearchTextChange = (searchText, actionProps) => {
@@ -277,7 +274,7 @@ export const DropdownV2 = ({
     const validationStatus = validate(currentValue);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
+  }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
@@ -286,16 +283,16 @@ export const DropdownV2 = ({
         setInputValue(null);
       },
       setVisibility: async function (value) {
-        setVisibility(value);
-        setExposedVariable('isVisible', value);
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setIsDropdownLoading(value);
-        setExposedVariable('isLoading', value);
+        setIsDropdownLoading(!!value);
+        setExposedVariable('isLoading', !!value);
       },
       setDisable: async function (value) {
-        setIsDropdownDisabled(value);
-        setExposedVariable('isDisabled', value);
+        setIsDropdownDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
       },
       selectOption: async function (value) {
         let _value = value;
@@ -345,9 +342,7 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: state.isFocused
-            ? getInputFocusedColor({ accentColor })
-            : tinycolor(fieldBorderColor).darken(24).toString(),
+          borderColor: getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -366,8 +361,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -382,6 +377,10 @@ export const DropdownV2 = ({
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
+    }),
+    placeholder: (provided, _state) => ({
+      ...provided,
+      color: 'var(--cc-placeholder-text)',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -403,17 +402,13 @@ export const DropdownV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
-      color:
-        selectedTextColor !== '#1B1F24'
-          ? selectedTextColor
-          : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
+      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
+      opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       display: 'flex',
@@ -428,7 +423,7 @@ export const DropdownV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,
@@ -437,7 +432,7 @@ export const DropdownV2 = ({
       margin: 0,
     }),
   };
-  const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
       <div
@@ -445,8 +440,8 @@ export const DropdownV2 = ({
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) ||
-              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -477,12 +472,16 @@ export const DropdownV2 = ({
           isMandatory={isMandatory}
           _width={_width}
           top={'1px'}
+          widthType={widthType}
         />
         <div
-          className="w-100 px-0 h-100 dropdownV2-widget"
+          className="px-0 h-100 dropdownV2-widget"
           ref={ref}
           onClick={handleClickInsideSelect}
           onTouchEnd={handleClickInsideSelect}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          }}
         >
           <Select
             ref={selectRef}

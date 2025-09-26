@@ -27,7 +27,7 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
         >
           <>
             <FlagIcon style={{ height: '16px' }} />{' '}
-            <span style={{ marginLeft: '6px' }}>
+            <span style={{ marginLeft: '6px', color: 'var(--cc-primary-text)' }}>
               {isCurrencyInput ? ` ${CurrencyMap?.[country]?.prefix}` : ` +${countryCode}`}
             </span>
           </>

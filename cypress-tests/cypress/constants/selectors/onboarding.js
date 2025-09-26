@@ -1,5 +1,5 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const onboardingSelectors = {
@@ -47,19 +47,21 @@ export const onboardingSelectors = {
   backLogo: '[data-cy="back-logo"]',
   backToApps: '[data-cy="back-to-apps"]',
   workspaceName: '[data-cy="workspace-name"]',
-  sampleAppHeader: '[data-cy="we\'ve-created-a-sample-application-for-you!-header"]',
+  sampleAppHeader:
+    '[data-cy="we\'ve-created-a-sample-application-for-you!-header"]',
   stepsDetails: '[data-cy="steps-details"]',
   infoDescription: '[data-cy="info-description"]',
   comparePlansTitle: '[data-cy="compare-plans-title"]',
   basicPlanTitle: '[data-cy="basic-plan-title"]',
   planPrice: '[data-cy="plan-price"]',
   pricePeriod: '[data-cy="price-period"]',
-  flexibleTitle: '[data-cy="flexible-title"]',
-  businessTitle: '[data-cy="business-title"]',
+  flexibleTitle: '[data-cy="pro-title"]',
+  businessTitle: '[data-cy="team-title"]',
   enterpriseTitle: '[data-cy="enterprise-title"]',
   customPricingHeader: '[data-cy="custom-pricing-header"]',
   noCreditCardBanner: '[data-cy="no-credit-card-banner"]',
-  beforeDiveInHeader: '[data-cy="before-we-dive-in,-would-you-like-to-start-your-free-trial?-header"]',
+  beforeDiveInHeader:
+    '[data-cy="before-we-dive-in,-would-you-like-to-start-your-free-trial?-header"]',
   tellUsAbit: '[data-cy="tell-us-a-bit-about-yourself-header"]',
   trialButton: '[data-cy="start-your-14-day-trial-button"]',
   comparePlanDescription: '[data-cy="compare-plans-description"]',
@@ -69,4 +71,17 @@ export const onboardingSelectors = {
   upgradeButton: '[data-cy="upgrade-button"]',
   planToggleInput: '[data-cy="plan-toggle-input"]',
   discountDetails: '[data-cy="discount-details"]',
-} 
+  userGroupSelect: '[data-cy="user-group-select"]',
+  userMetadataLabel: '[data-cy="user-metadata-label"]',
+  emptyKeyValueLabel: '[data-cy="label-empty-key-value"]',
+  encryptedLabel: '[data-cy="encrypted-label"]',
+  keyInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
+  },
+  valueInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
+  },
+  deleteButton: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
+  },
+};

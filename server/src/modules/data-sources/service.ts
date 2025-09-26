@@ -1,9 +1,7 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
-import { AbilityService } from '@modules/ability/interfaces/IService';
-import { MODULES } from '@modules/app/constants/modules';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
@@ -20,52 +18,50 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
-// import { FEATURE_KEY } from './constants';
-import { OrganizationsService } from '@modules/organizations/service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import * as fs from 'fs';
+import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
-    protected readonly abilityService: AbilityService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector,
-    protected readonly organizationsService: OrganizationsService
-  ) {}
+    protected readonly pluginsServiceSelector: PluginsServiceSelector
+  ) { }
 
-  async getForApp(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
+  async getForApp(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
-    const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
-    let staticDataSources = await this.dataSourcesRepository.getAllStaticDataSources(query.appVersionId);
+    let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
 
     if (!shouldIncludeWorkflows) {
       // remove workflowsdefault data source from static data sources
-      staticDataSources = staticDataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+      dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
     }
-    const decamelizedDatasources = decamelizeKeys([...staticDataSources, ...dataSources]);
+    const decamelizedDatasources = decamelizeKeys(dataSources);
     return { data_sources: decamelizedDatasources };
   }
 
-  async getAll(query: GetQueryVariables, user: User): Promise<{ data_sources: object[] }> {
-    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.GLOBAL_DATA_SOURCE }],
-      organizationId: user.organizationId,
-    });
-
+  async getAll(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
       appVersionId: query.appVersionId,
       environmentId: selectedEnvironmentId,
+      types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
     });
     for (const dataSource of dataSources) {
       const parseIfNeeded = (data: any) => {
@@ -120,7 +116,6 @@ export class DataSourcesService implements IDataSourcesService {
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
       const protoFilePath = `${rootDir}/protos/service.proto`;
-      const fs = require('fs');
 
       const filecontent = fs.readFileSync(protoFilePath, 'utf8');
       const rcps = await this.dataSourcesUtilService.getServiceAndRpcNames(filecontent);
@@ -208,8 +203,8 @@ export class DataSourcesService implements IDataSourcesService {
   ): Promise<DataSource> {
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      organizationId,
-      environmentId
+      environmentId,
+      organizationId
     );
     delete dataSource['dataSourceOptions'];
     return dataSource;
@@ -223,8 +218,8 @@ export class DataSourcesService implements IDataSourcesService {
     const { environment_id, dataSourceId } = testDataSourceDto;
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
-      user.defaultOrganizationId,
-      environment_id
+      environment_id,
+      user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
@@ -277,4 +272,46 @@ export class DataSourcesService implements IDataSourcesService {
       dependent_queries: queries.length,
     };
   }
+
+  async invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string
+  ): Promise<QueryResult> {
+    const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
+
+    if (!service.invokeMethod) {
+      throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
+    }
+
+    const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+      dataSource.id,
+      user.organizationId,
+      environmentId
+    );
+
+    const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+      dataSourceOptions.options,
+      user.organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    try {
+      const result = await service.invokeMethod(methodName, sourceOptions);
+      return { status: 'ok', data: result };
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        return {
+          status: 'failed',
+          data: error.data,
+          errorMessage: error.message,
+          metadata: error.metadata
+        };
+      }
+      throw error;
+    }
+  }
+
 }

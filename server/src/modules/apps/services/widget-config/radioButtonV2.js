@@ -116,9 +116,10 @@ export const radiobuttonV2Config = {
       ],
       accordian: 'label',
     },
-    labelWidth: {
-      type: 'slider',
+    auto: {
+      type: 'checkbox',
       displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
         key: 'alignment',
@@ -126,17 +127,45 @@ export const radiobuttonV2Config = {
       },
       isFxNotRequired: true,
     },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
+    labelWidth: {
+      type: 'slider',
       showLabel: false,
-      validation: { schema: { type: 'boolean' } },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
       isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
     borderColor: {
       type: 'colorSwatches',
@@ -279,17 +308,18 @@ export const radiobuttonV2Config = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#11181C' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
-      auto: { value: '{{false}}' },
-      labelWidth: { value: '20' },
-      borderColor: { value: '#FFFFFF' },
-      switchOffBackgroundColor: { value: '#FFFFFF' },
-      switchOnBackgroundColor: { value: '#4368E3' },
-      handleColor: { value: '#FFFFFF' },
-      optionsTextColor: { value: '#11181C' },
+      auto: { value: '{{true}}' },
+      labelWidth: { value: '33' },
+      borderColor: { value: 'var(--cc-default-border)' },
+      switchOffBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      switchOnBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      handleColor: { value: 'var(--cc-surface1-surface)' },
+      optionsTextColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

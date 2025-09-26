@@ -167,9 +167,9 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
             <div className="container-xl">
-              <div className="profile-page-card">
+              <div className="card profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
                     {t('header.profileSettingPage.profile', 'Profile')}
@@ -244,8 +244,7 @@ function SettingsPage(props) {
                   <div></div>
                 </div>
               </div>
-              <br />
-              <div className="profile-page-card">
+              <div className="card profile-page-card tw-mt-16">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-change-password">
                     {t('header.profileSettingPage.changePassword', 'Change password')}

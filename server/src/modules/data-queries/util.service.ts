@@ -63,7 +63,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     response: Response,
-    environmentId?: string
+    envId?: string,
+    mode?: string
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
@@ -78,11 +79,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : app.organizationId;
 
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
-        dataSource.id,
-        organizationId,
-        environmentId
-      );
+      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
+      const environmentId = dataSourceOptions.environmentId;
+
       dataSource.options = dataSourceOptions.options;
 
       let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -320,14 +319,19 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
-  private getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+  protected getCurrentUserToken = (
+    isMultiAuthEnabled: boolean,
+    tokenData: any,
+    userId: string,
+    isAppPublic: boolean
+  ) => {
     if (isMultiAuthEnabled) {
       if (!tokenData || !Array.isArray(tokenData)) return null;
       return !isAppPublic
         ? tokenData.find((token: any) => token.user_id === userId)
         : userId
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : tokenData[0];
+          ? tokenData.find((token: any) => token.user_id === userId)
+          : tokenData[0];
     } else {
       return tokenData;
     }
@@ -432,12 +436,31 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        // d: Simple variable replacement for single {{variable}}
+        if (
+          typeof resolvedValue === 'string' &&
+          (resolvedValue.match(/^{{{.*}}}$/) || // Triple brace objects - accepts anything between {{{ }}}
+            (resolvedValue.startsWith('{{') &&
+              resolvedValue.endsWith('}}') &&
+              (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
+        ) {
+          resolvedValue = options[resolvedValue];
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+
         // c: Replace all occurrences of {{ }} variables
-        if (typeof resolvedValue === 'string' && resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
+        else if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
+        ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
             let replacement = options[variable];
+
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {
               // Ensure parent is a non-empty array before attempting to access its first element
@@ -455,19 +478,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
             }
           }
-          if (parent && key !== null) {
-            parent[key] = resolvedValue;
-          }
-        }
-
-        // d: Simple variable replacement for single {{variable}}
-        if (
-          typeof resolvedValue === 'string' &&
-          resolvedValue.startsWith('{{') &&
-          resolvedValue.endsWith('}}') &&
-          (resolvedValue.match(/{{/g) || [])?.length === 1
-        ) {
-          resolvedValue = options[resolvedValue];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }

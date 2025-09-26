@@ -1,8 +1,9 @@
 // TODO: Remove getTableColumnEvents when the toggle column is removed as it is used only for the toggle column
 import React, { useState, useCallback, useEffect } from 'react';
 import useTableStore from '../../_stores/tableStore';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 
-export const ToggleColumn = ({ id, value, readOnly, onChange, activeColor }) => {
+export const ToggleColumn = ({ id, value, readOnly, onChange, activeColor, horizontalAlignment }) => {
   const [isOn, setIsOn] = useState(() => value);
 
   const { getTableColumnEvents } = useTableStore();
@@ -21,7 +22,9 @@ export const ToggleColumn = ({ id, value, readOnly, onChange, activeColor }) => 
   }, [isOn, readOnly, onChange, id, getTableColumnEvents]);
 
   return (
-    <div className="h-100 d-flex align-items-center">
+    <div
+      className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+    >
       <label className="form-check form-switch form-check-inline m-0">
         <input
           className="form-check-input"

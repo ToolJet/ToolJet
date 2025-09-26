@@ -28,9 +28,7 @@ export const NumberInput = (props) => {
   const handleBlur = (e) => {
     const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(value);
-    e.stopPropagation();
-    props.fireEvent('onBlur');
-    inputLogic.setIsFocused(false);
+    inputLogic.handleBlur(e);
   };
 
   const handleIncrement = (e) => {
@@ -96,14 +94,8 @@ export const NumberInput = (props) => {
                 ? '21px'
                 : '1px',
             right: '1px',
-            borderLeft:
-              inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '1px solid var(--borders-default)',
-            borderBottom:
-              inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '.5px solid var(--borders-default)',
+            borderLeft: '1px solid var(--cc-default-border)',
+            borderBottom: '.5px solid var(--cc-default-border)',
             borderTopRightRadius: props.styles.borderRadius - 1,
             backgroundColor: 'transparent',
           }}
@@ -125,14 +117,8 @@ export const NumberInput = (props) => {
             position: 'absolute',
             right: '1px',
             bottom: '1px',
-            borderLeft:
-              inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '1px solid var(--borders-default)',
-            borderTop:
-              inputLogic.disable || inputLogic.loading
-                ? '1px solid var(--borders-weak-disabled)'
-                : '.5px solid var(--borders-default)',
+            borderLeft: '1px solid var(--cc-default-border)',
+            borderTop: '.5px solid var(--cc-default-border)',
             borderBottomRightRadius: props.styles.borderRadius - 1,
             backgroundColor: 'transparent',
           }}

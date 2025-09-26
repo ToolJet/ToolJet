@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Checkbox Component Tests', () => {
@@ -83,7 +83,7 @@ describe('Checkbox Component Tests', () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Checkbox", 50, 50);
+        cy.dragAndDropWidget("Checkbox", 500, 500);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
@@ -92,8 +92,8 @@ describe('Checkbox Component Tests', () => {
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("checkbox1", exposedValues, verifyValue);
-        verifyNodes(functions, verifyfunctions);
+        openAndVerifyNode("checkbox1", exposedValues, verifyNodeData);
+        verifyNodes(functions, verifyNodeData);
         //id is pending
 
     });

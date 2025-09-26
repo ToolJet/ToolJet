@@ -4,8 +4,8 @@ export const postgreSqlText = {
 
   allDataSources: () => {
     return Cypress.env("marketplace_action")
-      ? "All data sources (45)"
-      : "All data sources (43)";
+      ? "All data sources (46)"
+      : "All data sources (44)";
   },
   commonlyUsed: "Commonly used (5)",
   allDatabase: () => {
@@ -13,17 +13,21 @@ export const postgreSqlText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (21)",
+  allApis: "APIs (22)",
   allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
+  labelConnectionType: "Connection type",
+  manualConnectionOption: "Manual connection",
+  connectionStringOption: "Connection string",
   labelHost: "Host",
   labelPort: "Port",
   labelSSL: "SSL",
   labelDbName: "Database name",
   labelUserName: "Username",
   labelPassword: "Password",
-  label: "Encrypted",
+  labelEncrypted: "Encrypted",
+  labelConnectionOptions: "Connection options",
   sslCertificate: "SSL certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
@@ -49,11 +53,15 @@ export const postgreSqlText = {
   firstQueryName: "postgresql1",
   buttonLabelPreview: "Preview",
   buttonLabelCreateAndRun: "Create & Run",
+  buttonLabelRun: "Run⌘↩",
   buttonLabelCreate: "Create",
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
-
+  queryTabSetup: "Setup",
+  queryTabTransformation: "Transformation",
+  queryTabSettings: "Settings",
   headerTransformations: "Enable Transformations",
+  headerTransformation: "Enable transformation",
   json: "JSON",
   raw: "Raw",
 
@@ -62,9 +70,9 @@ export const postgreSqlText = {
   labelPrimaryKeyColumn: "Primary key column",
   labelRecordsToUpdate: "Records to update",
 
-  toggleLabelRunOnPageLoad: "Run this query on application load?",
-  toggleLabelconfirmation: "Request confirmation before running query?",
-  toggleLabelShowNotification: "Show notification on success?",
+  toggleLabelRunOnPageLoad: "Run this query on application load",
+  toggleLabelconfirmation: "Request confirmation before running query",
+  toggleLabelShowNotification: "Show notification on success",
   labelSuccessMessage: "Success Message",
   labelNotificatioDuration: "Notification duration (s)",
 
@@ -74,6 +82,8 @@ export const postgreSqlText = {
 
   guiOptionBulkUpdate: "Bulk update using primary key",
   buttonTextTestConnection: "Test connection",
+  editButtonText: "Edit",
+  unableAcquireConnectionAlertText: "Unable to acquire a connection",
 
   tabAdvanced: "Advanced",
   labelNoEventhandler: "No event handlers",

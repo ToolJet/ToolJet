@@ -26,6 +26,7 @@ import BaseOnboardingQuestions from './BaseOnboardingQuestions';
 import BaseSetupAdminPage from './BaseSetupAdminPage';
 import UsersTable from './UsersTable';
 import BaseColorSwatches from './BaseColorSwatches';
+import BaseComponentModuleTab from './BaseComponentModuleTab';
 
 export {
   FormTextInput,
@@ -56,4 +57,5 @@ export {
   BaseOnboardingQuestions,
   BaseSetupAdminPage,
   UsersTable,
+  BaseComponentModuleTab,
 };

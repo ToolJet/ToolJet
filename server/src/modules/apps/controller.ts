@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -17,6 +17,9 @@ import { AppAuthGuard } from './guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
 import { IAppsController } from './interfaces/IController';
+import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
+import { Response } from 'express';
+import { isHttpsEnabled } from '@helpers/utils.helper';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -26,7 +29,29 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.CREATE)
   @UseGuards(JwtAuthGuard, AppCountGuard, FeatureAbilityGuard)
   @Post()
-  create(@User() user: UserEntity, @Body() appCreateDto: AppCreateDto) {
+  create(
+    @User() user: UserEntity,
+    @Body() appCreateDto: AppCreateDto,
+    @Res({ passthrough: true }) response: Response,
+    @AiCookies() cookies: Record<string, any>
+  ) {
+    // clear ai cookies
+    // FIXME: can move this to service or middlewares
+    if (cookies.tj_ai_prompt) {
+      response.clearCookie('tj_ai_prompt', {
+        secure: isHttpsEnabled(),
+        httpOnly: true,
+        sameSite: 'lax',
+      });
+    }
+    if (cookies.tj_template_id) {
+      response.clearCookie('tj_template_id', {
+        secure: isHttpsEnabled(),
+        httpOnly: true,
+        sameSite: 'lax',
+      });
+    }
+
     return this.appsService.create(user, appCreateDto);
   }
 
@@ -55,6 +80,13 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
   update(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+    return this.appsService.update(app, appUpdateDto, user);
+  }
+
+  @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/public')
+  updatePublic(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
     return this.appsService.update(app, appUpdateDto, user);
   }
 

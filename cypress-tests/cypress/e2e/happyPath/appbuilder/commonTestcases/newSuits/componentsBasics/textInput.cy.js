@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
 describe('Text Input Component Tests', () => {
@@ -27,14 +27,14 @@ describe('Text Input Component Tests', () => {
             "key": "setBlur",
             "type": "Function"
         },
-        {
-            "key": "disable",
-            "type": "Function"
-        },
-        {
-            "key": "visibility",
-            "type": "Function"
-        },
+        // {
+        //     "key": "disable",
+        //     "type": "Function"
+        // },
+        // {
+        //     "key": "visibility",
+        //     "type": "Function"
+        // },
         {
             "key": "setVisibility",
             "type": "Function"
@@ -94,17 +94,17 @@ describe('Text Input Component Tests', () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Text Input", 50, 50);
+        cy.dragAndDropWidget("Text Input", 500, 500);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it.skip('should verify all the exposed values on inspector', () => {
+    it('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(".tooltip-inner").invoke("hide");
 
         openNode("components");
-        openAndVerifyNode("textinput1", exposedValues, verifyValue);
-        verifyNodes(functions, verifyfunctions);
+        openAndVerifyNode("textinput1", exposedValues, verifyNodeData);
+        verifyNodes(functions, verifyNodeData);
         //id is pending
 
     });

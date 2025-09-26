@@ -1,24 +1,21 @@
-import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { SignUpPageElements } from "Support/utils/onboarding";
 import { fake } from "Fixtures/fake";
-import {
-  verifyConfirmEmailPage,
-  verifyConfirmPageElements,
-  verifyOnboardingQuestions,
-  verifyInvalidInvitationLink,
-} from "Support/utils/onboarding";
-import { dashboardText } from "Texts/dashboard";
-import {
-  verifyandModifyUserRole,
-  verifyandModifySizeOftheCompany,
-} from "Support/utils/selfHostSignUp";
+import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
+import { enableInstanceSignup } from "Support/utils/manageSSO";
+import { SignUpPageElements, verifyConfirmEmailPage, verifyInvalidInvitationLink } from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
 
 describe("User signup", () => {
   const data = {};
   let invitationLink = "";
+
+  before(() => {
+    cy.ifEnv("Enterprise", () => {
+      enableInstanceSignup()
+    });
+
+  });
 
   it("Verify the signup flow and UI elements", () => {
     data.fullName = fake.fullName;

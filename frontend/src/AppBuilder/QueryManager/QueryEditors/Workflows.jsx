@@ -5,15 +5,20 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import useWorkflowStore from '@/_stores/workflowStore';
 
 export function Workflows({ options, optionsChanged, currentState }) {
+  const { moduleId } = useModuleContext();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
 
-  const appId = useStore((state) => state.app.appId);
+  const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
+  const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
+  const appId = workflowIdFromStore || appIdFromStore;
 
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],
@@ -47,6 +52,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
   return (
     <>
       <label className="mb-1">Workflow</label>
+      <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
         value={options.workflowId ?? {}}
@@ -62,12 +68,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        onMenuOpen={() => {
-          setIsMenuOpen(true);
-        }}
-        onMenuClose={() => {
-          setIsMenuOpen(false);
-        }}
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
       />
       <label className="my-2">Params</label>
       <div className="grid"></div>

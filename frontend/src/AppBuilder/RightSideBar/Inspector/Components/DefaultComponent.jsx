@@ -6,7 +6,7 @@ import { renderElement } from '../Utils';
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
-import { AllComponents } from '@/_helpers/editorHelpers';
+import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
@@ -27,10 +27,20 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'CodeEditor',
+  'TextArea',
+  'Container',
+  'Form',
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'Tabs',
+  'RangeSliderV2',
   'Link',
+  'FilePicker',
+  'Listview',
+  'Statistics',
+  'StarRating',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -46,7 +56,12 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Divider: 'Data',
   VerticalDivider: 'Data',
   ModalV2: 'Data',
+  Tabs: 'Data',
+  RangeSlider: 'Data',
   Link: 'Data',
+  PopoverMenu: 'Data',
+  Statistics: 'Data',
+  StarRating: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -144,9 +159,14 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'RangeSliderV2',
       'Divider',
       'VerticalDivider',
       'Link',
+      'FilePicker',
+      'Tabs',
+      'Statistics',
+      'StarRating',
     ],
     Layout: [],
   };

@@ -12,6 +12,9 @@ import {
   IsNotEmpty,
   IsDefined,
   IsObject,
+  IsUrl,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -135,6 +138,52 @@ export class UpdateUserWorkspaceDto {
   groups?: GroupDto[];
 }
 
+export class OrganizationGitCreateDto {
+  @IsString()
+  organizationId: string;
+
+  @IsString()
+  gitUrl: string;
+}
+
+export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppInstallationId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  githubAppPrivateKey: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  githubEnterpriseApiUrl?: string;
+}
+
+export class AppGitPullDto {
+  @IsString()
+  appId: string;
+
+  @IsString()
+  organizationId: string;
+}
+
+export class AppGitPushDto {
+  @IsString()
+  commitMessage: string;
+}
 export class VersionDto {
   id: string;
   name: string;
@@ -203,4 +252,36 @@ export class ImportTooljetDatabaseDto {
 
   // @IsOptional()
   // data: boolean;
+}
+
+export class GeneratePATDto {
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsUUID()
+  @IsOptional()
+  appId: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  sessionExpiry?: number; // In minutes
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  patExpiry?: number; // In minutes
+}
+
+export class ValidatePATSessionDto {
+  @IsUUID()
+  appId: string;
+
+  @IsString()
+  accessToken: string;
 }

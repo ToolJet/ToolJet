@@ -12,6 +12,7 @@ import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
 import { capitalize } from 'lodash';
 import { getPathname } from '@/_helpers/routes';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const Comment = ({
   socket,
@@ -85,6 +86,7 @@ const Comment = ({
   }, [router]);
 
   const handleSubmit = async (comment) => {
+    posthogHelper.captureEvent('save_comment', { appId }); //posthog event
     await commentsService.createComment({
       threadId,
       comment: DOMPurify.sanitize(comment),

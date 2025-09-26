@@ -2,7 +2,8 @@ import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
-const tinycolor = require('tinycolor2');
+import { getModifiedColor } from '@/Editor/Components/utils';
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 const RenderInput = forwardRef((props, ref) => {
   return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
@@ -55,10 +56,11 @@ export const BaseInput = ({
     accentColor,
     iconVisibility: showLeftIcon,
     icon,
+    widthType,
   } = styles;
 
   const { label, placeholder } = properties;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
@@ -78,7 +80,7 @@ export const BaseInput = ({
       : disable || loading
       ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
-    '--tblr-input-border-color-darker': tinycolor(borderColor).darken(24).toString(),
+    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
@@ -137,7 +139,7 @@ export const BaseInput = ({
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex ${
+        className={`text-input scrollbar-container d-flex ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
@@ -164,6 +166,7 @@ export const BaseInput = ({
           _width={_width}
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
+          widthType={widthType}
         />
 
         {showLeftIcon && (
@@ -211,9 +214,12 @@ export const BaseInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           onKeyUp={handleKeyUp}
-          disabled={disable || loading}
+          // disabled={disable || loading}
           placeholder={placeholder}
-          style={finalStyles}
+          style={{
+            ...finalStyles,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
+          }}
           {...additionalInputProps}
         />
 

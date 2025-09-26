@@ -8,6 +8,7 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '../constants';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
+import { User } from '@modules/app/decorators/user.decorator';
 
 @Controller('license/users')
 @InitModule(MODULES.LICENSING)
@@ -17,7 +18,7 @@ export class LicenseUserController implements ILicenseUserController {
 
   @InitFeature(FEATURE_KEY.GET_USER_LIMITS)
   @Get('limits/:type')
-  async getUserLimits(@Param('type') type: LIMIT_TYPE) {
-    return await this.licenseUserService.getUserLimitsByType(type);
+  async getUserLimits(@Param('type') type: LIMIT_TYPE, @User() user) {
+    return await this.licenseUserService.getUserLimitsByType(type, user?.organizationId);
   }
 }

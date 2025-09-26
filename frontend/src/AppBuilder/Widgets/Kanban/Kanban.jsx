@@ -22,6 +22,7 @@ export const Kanban = (props) => {
       id={id}
       ref={parentRef}
       data-disabled={disabledState}
+      className="scrollbar-container"
     >
       <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} id={id} />
     </div>

@@ -15,7 +15,7 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 import {
     resizeQueryPanel
 } from "Support/utils/dataSource";
-import { openNode, verifyNodeData, verifyValue } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/inspector";
 import {
     addNewPage
 } from "Support/utils/multipage";
@@ -49,11 +49,11 @@ describe("Global Actions", () => {
         verifyNodeData("variables", "Object", "1 entry ");
         openNode("variables", 0);
 
-        verifyValue("var", "String", `"test"`);
+        verifyNodeData("var", "String", `"test"`);
 
         openNode("page");
         openNode("variables", 1);
-        verifyValue("pageVar", "String", `"pageTest"`);
+        verifyNodeData("pageVar", "String", `"pageTest"`);
 
         addInputOnQueryField(
             "runjs",

@@ -3,6 +3,9 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import { EntityManager, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import * as crypto from 'crypto';
 
 /**
  * Creates a custom tooljet database connection using a tenant user, for the respective workspace.
@@ -40,6 +43,10 @@ export async function createTooljetDatabaseConnection(
 }
 
 export async function decryptTooljetDatabasePassword(password: string) {
+  if (isSQLModeDisabled()) {
+    return process.env.TOOLJET_DB_PASS;
+  }
+
   const encryptionService = new EncryptionService();
   const decryptedvalue = await encryptionService.decryptColumnValue(
     'organization_tjdb_configurations',
@@ -60,7 +67,18 @@ export async function encryptTooljetDatabasePassword(password: string) {
 }
 
 export function findTenantSchema(organisationId: string): string {
+  if (isSQLModeDisabled()) {
+    return 'public';
+  }
+
   return `workspace_${organisationId}`;
+}
+
+// TODO: Cloud TJDB SQL mode is disabled: Use public schema for cloud edition
+// This is because Postgrest doesn't handle loading large amount of schemas in memory
+// We need to migrate to use Table based access control instead of schema based access control
+export function isSQLModeDisabled(): boolean {
+  return process.env.TJDB_SQL_MODE_DISABLE === 'true' || getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 }
 
 export function concatSchemaAndTableName(schema: string, tableName: string) {
@@ -244,10 +262,42 @@ export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, in
         } else {
           inValidValueColumnsList.push(key);
         }
-      } catch (error) {
+      } catch {
         inValidValueColumnsList.push(key);
       }
     }
   });
   return { inValidValueColumnsList, updatedRequestBody: body };
+}
+
+export function generateTJDBPasswordForRole(length = 30) {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()-_=+[]{};:,.<>?/';
+
+  const allChars = uppercase + lowercase + numbers + symbols;
+
+  const mandatoryChars = [
+    uppercase[Math.floor(Math.random() * uppercase.length)],
+    lowercase[Math.floor(Math.random() * lowercase.length)],
+    numbers[Math.floor(Math.random() * numbers.length)],
+    symbols[Math.floor(Math.random() * symbols.length)],
+  ];
+
+  // Fill the rest securely
+  console.log(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
+  const remaining = Array.from(crypto.randomBytes(length - mandatoryChars.length)).map(
+    (b) => allChars[b % allChars.length]
+  );
+
+  // Combine and shuffle
+  const passwordArray = mandatoryChars.concat(remaining);
+
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+
+  return passwordArray.join('');
 }

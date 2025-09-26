@@ -8,10 +8,13 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
   GetDataSourceOauthUrlDto,
+  InvokeDataSourceMethodDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
@@ -20,20 +23,25 @@ import { OrganizationValidateGuard } from '@modules/app/guards/organization-vali
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { IDataSourcesController } from './interfaces/IController';
 import { ValidateDataSourceGuard } from './guards/validate-query-source.guard';
+import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
+import { DataSource, DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 // TODO: Create guard to get data source from id for FeatureAbilityGuard
 @Controller('data-sources')
 @InitModule(MODULES.GLOBAL_DATA_SOURCE)
 @UseGuards(JwtAuthGuard)
 export class DataSourcesController implements IDataSourcesController {
-  constructor(protected readonly dataSourcesService: DataSourcesService) {}
+  constructor(protected readonly dataSourcesService: DataSourcesService) { }
 
   // Listing of all global data sources
   @InitFeature(FEATURE_KEY.GET)
   @Get(':organizationId')
   @UseGuards(OrganizationValidateGuard, FeatureAbilityGuard)
-  async fetchGlobalDataSources(@User() user: UserEntity) {
-    return this.dataSourcesService.getAll({}, user);
+  async fetchGlobalDataSources(@User() user: UserEntity, @UserPermissionsDecorator() userPermissions: UserPermissions) {
+    return this.dataSourcesService.getAll({}, user, userPermissions);
   }
 
   // TODO: Add guard to validate environmentId & version id
@@ -43,9 +51,15 @@ export class DataSourcesController implements IDataSourcesController {
   async fetchGlobalDataSourcesForVersion(
     @User() user: UserEntity,
     @Param('versionId') appVersionId,
-    @Param('environmentId') environmentId
+    @Param('environmentId') environmentId,
+    @UserPermissionsDecorator() userPermissions: UserPermissions
   ) {
-    return this.dataSourcesService.getForApp({ appVersionId, environmentId, shouldIncludeWorkflows: false }, user);
+    const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    return this.dataSourcesService.getForApp(
+      { appVersionId, environmentId, shouldIncludeWorkflows },
+      user,
+      userPermissions
+    );
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
@@ -95,7 +109,7 @@ export class DataSourcesController implements IDataSourcesController {
     return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId);
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB)
   @UseGuards(FeatureAbilityGuard)
   @Post('sample-db/test-connection')
   testConnectionSampleDb(@User() user, @Body() testDataSourceDto: TestSampleDataSourceDto) {
@@ -148,5 +162,23 @@ export class DataSourcesController implements IDataSourcesController {
   @Post('decrypt')
   async decryptOptions(@Body() options: Record<string, any>) {
     return await this.dataSourcesService.decryptOptions(options);
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, WhitelistPluginGuard)
+  @Post(':id/invoke')
+  async invokeDataSourceMethod(
+    @User() user: UserEntity,
+    @Body() invokeDto: InvokeDataSourceMethodDto,
+    @DataSource() dataSource: DataSourceEntity
+  ): Promise<QueryResult> {
+    const result = await this.dataSourcesService.invokeMethod(
+      dataSource,
+      invokeDto.method,
+      user,
+      invokeDto.environmentId
+    );
+
+    return result;
   }
 }

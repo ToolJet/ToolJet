@@ -10,6 +10,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
+import { Button } from '@/components/ui/Button/Button';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -101,7 +102,7 @@ export const List = ({ updateSelectedDatasource }) => {
     setFilteredData(filtered);
   };
 
-  function handleClose() {
+  function handleClose () {
     setShowInput(false);
     setFilteredData(dataSources);
   }
@@ -141,15 +142,18 @@ export const List = ({ updateSelectedDatasource }) => {
                       Data sources added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
-                    <div
-                      className="datasources-search-btn"
+                    <Button
+                      size="medium"
+                      variant="ghost"
+                      iconOnly
+                      ariaLabel="Search for folders"
                       onClick={() => {
                         setShowInput(true);
                       }}
                       data-cy="added-ds-search-icon"
                     >
-                      <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-                    </div>
+                      <SolidIcon name="search" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                    </Button>
                   </>
                 ) : (
                   <SearchBox
