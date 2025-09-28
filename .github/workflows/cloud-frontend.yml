@@ -121,10 +121,12 @@ jobs:
           WEBSITE_SIGNUP_URL: https://tooljet.ai/ai-create-account
           TOOLJET_EDITION: cloud
 
+      - name: Install Netlify CLI
+        run: npm install netlify-cli@latest --save-dev          
+
       - name: 🚀 Deploy to Netlify
         run: |
-          npm install -g netlify-cli
-          netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_PROD_NETLIFY_SITE_ID }}
+          npx netlify deploy --prod --dir=frontend/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.CLOUD_PROD_NETLIFY_SITE_ID }}
         working-directory: repo
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
