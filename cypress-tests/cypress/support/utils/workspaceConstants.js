@@ -46,7 +46,7 @@ export const existingNameValidation = (
     );
 };
 
-export const addConstantFormUI = () => {
+export const verifyConstantFormUI = () => {
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   cy.get(workspaceConstantsSelectors.nameFieldLabel).should('have.text', 'Name');
@@ -65,10 +65,12 @@ export const switchToConstantTab = (constantType) => {
   cy.contains("button", constantType).click({ force: true });
   cy.wait(500); // Allow time for the tab switch
 };
+
 export const verifyConstantValueVisibility = (constSelector, constValue) => {
   cy.get(constSelector).click();
   cy.get(dataSourceSelector.editorVariablePreview).should('contain.text', constValue);
 }
+
 export const manageWorkspaceConstant = (data) => {
 
   // Function to perform all constant management steps
@@ -83,30 +85,44 @@ export const manageWorkspaceConstant = (data) => {
     cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
     cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
       "have.text",
-      workspaceConstantsText.addConstatntText
+      workspaceConstantsText.addConstatntText(data.envName.toLowerCase())
     );
 
     // Name and value validation
-    contantsNameValidation(commonSelectors.workspaceConstantNameInput, " ", commonSelectors.nameErrorText, commonText.constantsNameError);
-    contantsNameValidation(commonSelectors.workspaceConstantNameInput, "9", commonSelectors.nameErrorText, commonText.constantsNameError);
-    contantsNameValidation(commonSelectors.workspaceConstantNameInput, "%", commonSelectors.nameErrorText, commonText.constantsNameError);
-    contantsNameValidation(commonSelectors.workspaceConstantNameInput, "Test spacing", commonSelectors.nameErrorText, commonText.constantsNameError);
-    contantsNameValidation(
-      commonSelectors.workspaceConstantNameInput,
-      "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5weetr",
-      commonSelectors.nameErrorText,
-      "Constant name has exceeded 50 characters"
-    );
-    contantsNameValidation(commonSelectors.workspaceConstantValueInput, " ", commonSelectors.valueErrorText, commonText.constantsValueError);
-    contantsNameValidation(
-      commonSelectors.workspaceConstantNameInput,
-      "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee",
-      commonSelectors.nameErrorText,
-      "Maximum length has been reached"
-    );
+    const selectorMap = {
+      name: {
+        input: commonSelectors.workspaceConstantNameInput,
+        error: commonSelectors.nameErrorText,
+      },
+      value: {
+        input: commonSelectors.workspaceConstantValueInput,
+        error: commonSelectors.valueErrorText,
+      },
+    };
+
+    const validationTests = [
+      { type: "name", value: " ", expectedError: commonText.constantsNameError },
+      { type: "name", value: "9", expectedError: commonText.constantsNameError },
+      { type: "name", value: "%", expectedError: commonText.constantsNameError },
+      { type: "name", value: "Test spacing", expectedError: commonText.constantsNameError },
+      { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5weetr", expectedError: "Constant name has exceeded 50 characters" },
+      { type: "value", value: " ", expectedError: commonText.constantsValueError },
+      { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", expectedError: "Maximum length has been reached" },
+    ];
+
+    // Loop over the cases
+    validationTests.forEach(({ type, value, expectedError }) => {
+      contantsNameValidation(
+        selectorMap[type].input,
+        value,
+        selectorMap[type].error,
+        expectedError
+      );
+    });
 
     cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type("text");
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+
 
     cy.get(
       workspaceConstantsSelectors.constantsType(data.constantType)
