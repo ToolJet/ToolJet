@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-BASE_DIR="$(dirname "$(dirname "$0")")"
+BASE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 BASE_VERSION_FILE="$BASE_DIR/.version"
 SERVER_VERSION_FILE="$BASE_DIR/server/.version"
@@ -23,7 +23,7 @@ fi
 
 RELEASE_VERSION="v$BASE_VERSION"
 
-echo "Are you sure you want to release version - $RELEASE_VERSION ? (y/n)"
+echo "Are you sure you want to release version - $RELEASE_VERSION  $BASE_DIR? (y/n)"
 read CONFIRM
 
 if [ "$CONFIRM" != "y" ]; then
