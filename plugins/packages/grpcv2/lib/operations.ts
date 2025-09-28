@@ -7,29 +7,134 @@ import * as protoLoader from '@grpc/proto-loader';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+import fg from 'fast-glob';
+import { isEmpty } from 'lodash';
 
+const expandPath = (inputPath: string): string => {
+  if (inputPath.startsWith('~/')) {
+    return path.join(os.homedir(), inputPath.slice(2));
+  } else if (inputPath === '~') {
+    return os.homedir();
+  }
+  return path.resolve(inputPath);
+};
+
+export const getDefaultProtoDirectory = (): string => {
+  return path.join(os.homedir(), 'protos');
+};
+
+const validateFilesystemAccess = (directory: string): string => {
+  // Expand ~ to home directory if needed
+  const expandedDir = expandPath(directory);
+
+  if (!fs.existsSync(expandedDir)) {
+    throw new GrpcOperationError(`Directory does not exist: ${expandedDir}`);
+  }
+
+  const stat = fs.statSync(expandedDir);
+  if (!stat.isDirectory()) {
+    throw new GrpcOperationError(`Path is not a directory: ${expandedDir}`);
+  }
+
+  // Basic security check - prevent path traversal
+  const resolvedPath = path.resolve(expandedDir);
+  if (!resolvedPath.startsWith(process.cwd()) && !resolvedPath.startsWith(os.homedir())) {
+    console.warn(`Directory outside project root or home directory: ${resolvedPath}`);
+  }
+
+  return expandedDir;
+};
+
+export const loadProtosFromFilesystem = async (
+  directory: string,
+  pattern: string = '**/*.proto'
+): Promise<protoLoader.PackageDefinition> => {
+  try {
+    const expandedDir = validateFilesystemAccess(directory);
+
+    const protoFiles = await fg(pattern, {
+      cwd: expandedDir,
+      onlyFiles: true,
+      absolute: true
+    });
+
+    if (protoFiles.length === 0) {
+      throw new GrpcOperationError(
+        `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
+      );
+    }
+
+    // Load all proto files at once - proto-loader handles dependencies automatically
+    const packageDefinition = await protoLoader.load(protoFiles, {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      includeDirs: [expandedDir] // Critical for handling proto imports
+    });
+
+    return packageDefinition;
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Failed to load proto files from filesystem: ${err.message}`, error);
+  }
+};
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const credentials = buildChannelCredentials(sourceOptions);
-    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
-    const serviceHelperOptions: ServiceHelperOptionsType = {
-      host: cleanUrl,
-      servicePath: serviceName,
-      credentials,
-      proto_symbol: serviceName,
-      protoLoaderOptions: {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true
-      }
+    const reflectionClient = await createReflectionClient(sourceOptions);
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
+
+    // list all available services to verify the service exists
+    const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
+
+    if (!serviceNames || serviceNames.length === 0) {
+      throw new GrpcOperationError('No services found via reflection');
     }
 
-    const client = await serviceHelper(serviceHelperOptions) as GrpcClient;
+    if (!serviceNames.includes(serviceName)) {
+      throw new GrpcOperationError(`Service ${serviceName} not found. Available services: ${serviceNames.join(', ')}`);
+    }
 
-    return client;
+    const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, callOptions);
+
+    if (!methods || methods.length === 0) {
+      throw new GrpcOperationError(`Service ${serviceName} has no methods`);
+    }
+
+    const descriptor = await reflectionClient.getDescriptorBySymbol(serviceName, callOptions);
+
+    if (!descriptor) {
+      throw new GrpcOperationError(`Service descriptor not found for ${serviceName}`);
+    }
+
+    const packageObject = descriptor.getPackageObject({
+      keepCase: true,
+      enums: String,
+      longs: String,
+      defaults: true,
+      oneofs: true
+    });
+
+    const service = findServiceInPackage(packageObject, serviceName);
+    if (!service) {
+      throw new GrpcOperationError(`Service ${serviceName} not found in proto descriptor`);
+    }
+
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+
+    const credentials = buildChannelCredentials(sourceOptions);
+    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const grpcClient = new ServiceConstructor(cleanUrl, credentials);
+
+    return grpcClient;
   } catch (error: unknown) {
     const err = toError(error);
     throw new GrpcOperationError(`Failed to create reflection client for service ${serviceName}: ${err.message}`, error);
@@ -62,6 +167,48 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
     }
     const err = toError(error);
     throw new GrpcOperationError(`Failed to create proto file client for service ${serviceName}: ${err.message}`, error);
+  }
+};
+
+export const buildFilesystemClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
+  try {
+    const directory =
+      isEmpty(sourceOptions.proto_files_directory) ?
+        getDefaultProtoDirectory() :
+        sourceOptions.proto_files_directory;
+
+    const protoFilePattern =
+      isEmpty(sourceOptions.proto_files_pattern) ?
+        '**/*.proto' :
+        sourceOptions.proto_files_pattern;
+
+    const packageDefinition = await loadProtosFromFilesystem(
+      directory,
+      protoFilePattern
+    );
+    const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+
+    const service = findServiceInPackage(grpcObject, serviceName);
+    if (!service) {
+      throw new GrpcOperationError(`Service ${serviceName} not found in proto files`);
+    }
+
+    const credentials = buildChannelCredentials(sourceOptions);
+    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const client = new ServiceConstructor(cleanUrl, credentials);
+    return client;
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Failed to create filesystem client for service ${serviceName}: ${err.message}`, error);
   }
 };
 
@@ -191,7 +338,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
   }
 };
 
-export const discoverServicesUsingProtoFile = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
+export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
   try {
     if (!sourceOptions.proto_file_url) {
       throw new GrpcOperationError('Proto file URL is required for service discovery when using proto URL method.');
@@ -199,14 +346,41 @@ export const discoverServicesUsingProtoFile = async (sourceOptions: SourceOption
 
     const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url);
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-
     return extractServicesFromGrpcPackage(grpcObject);
   } catch (error: unknown) {
     if (error instanceof GrpcOperationError) {
       throw error;
     }
     const err = toError(error);
-    throw new GrpcOperationError(`Service discovery via proto file failed: ${err.message}`, error);
+    throw new GrpcOperationError(`Service discovery via proto URL failed: ${err.message}`, error);
+  }
+};
+
+export const discoverServicesUsingFilesystem = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
+  try {
+    const directory =
+      isEmpty(sourceOptions.proto_files_directory) ?
+        getDefaultProtoDirectory() :
+        sourceOptions.proto_files_directory;
+
+    const protoFilePattern =
+      isEmpty(sourceOptions.proto_files_pattern) ?
+        '**/*.proto' :
+        sourceOptions.proto_files_pattern;
+
+    const packageDefinition = await loadProtosFromFilesystem(
+      directory,
+      protoFilePattern
+    );
+
+    const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+    return extractServicesFromGrpcPackage(grpcObject);
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Service discovery via filesystem failed: ${err.message}`, error);
   }
 };
 
