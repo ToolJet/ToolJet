@@ -2157,6 +2157,21 @@ export const createComponentsSlice = (set, get) => ({
 
       const componentName =
         componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+
+      const getComponentProperties = (componentDefinition) => {
+        const properties = componentDefinition.component.definition?.properties;
+        const componentType = componentDefinition.component.component;
+        if (componentType === 'CircularProgressBar') {
+          return {
+            ...properties,
+            text: {
+              value: `{{components.${componentDefinition.id}.value}}%`,
+            },
+          };
+        }
+        return properties;
+      };
+
       const newComponent = {
         id: componentDefinition.id,
         name: componentName,
@@ -2166,7 +2181,7 @@ export const createComponentsSlice = (set, get) => ({
             general: componentDefinition.component.definition?.general,
             generalStyles: componentDefinition.component.definition?.generalStyles,
             others: componentDefinition.component.definition?.others,
-            properties: componentDefinition.component.definition?.properties,
+            properties: getComponentProperties(componentDefinition),
             styles: componentDefinition.component.definition?.styles,
             validation: componentDefinition.component.definition?.validation,
           },

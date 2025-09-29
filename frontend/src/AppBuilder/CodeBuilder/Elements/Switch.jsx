@@ -4,7 +4,7 @@ import React from 'react';
 import cx from 'classnames';
 
 const Switch = ({ value, onChange, cyLabel, meta, paramName, isIcon, component }) => {
-  const options = meta?.options;
+  const options = meta?.options || [];
   const defaultValue =
     paramName == 'defaultValue' && (component == 'Checkbox' || component == 'ToggleSwitchV2') ? `{{${value}}}` : value;
   return (

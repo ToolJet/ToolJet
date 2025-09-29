@@ -94,9 +94,11 @@ export default class S3QueryService implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const region = sourceOptions['region'];
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
+    const useDefaultCredentialProviderChain =
+      sourceOptions['instance_metadata_credentials'] === 'default_credentials_provider_chain';
 
     if (useAWSInstanceProfile) {
       const client = new S3Client({ region, credentials: fromInstanceMetadata() });
@@ -110,6 +112,9 @@ export default class S3QueryService implements QueryService {
       );
 
       const client = new S3Client({ region, credentials });
+      return client;
+    } else if (useDefaultCredentialProviderChain) {
+      const client = new S3Client({ region });
       return client;
     } else {
       const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
