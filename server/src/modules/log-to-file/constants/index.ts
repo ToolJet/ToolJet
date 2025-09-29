@@ -1,6 +1,7 @@
 import * as winston from 'winston';
 import { auditLog } from '@modules/audit-logs/constants';
-import 'winston-daily-rotate-file';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import DailyRotateFile = require('winston-daily-rotate-file');
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
@@ -22,7 +23,7 @@ export const logFileTransportConfig = (filePath, processId) => {
     } else {
       logger.log(`✅ Log directory already exists at ${absoluteLogDir}`);
     }
-    const transport = new winston.transports.DailyRotateFile({
+    const transport = new DailyRotateFile({
       filename: `audit.log`,
       level: 'info',
       zippedArchive: false,
