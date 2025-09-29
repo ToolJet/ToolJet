@@ -124,8 +124,6 @@ export const NoAdminBanner = {
   },
 };
 
-
-
 export const Loading = {
   args: {
     headerText: 'Forgot Password',

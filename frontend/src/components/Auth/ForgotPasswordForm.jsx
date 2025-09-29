@@ -1,13 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { CornerDownLeft } from 'lucide-react';
+import { CornerDownLeft, Info } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormWrapper } from '@/components/Auth/FormWrapper';
+import { InlineInfoCompound } from '@/components/ui/InlineInfo/InlineInfo';
 
 export function ForgotPasswordForm({ className, ...props }) {
   const {
@@ -105,28 +106,13 @@ export function ForgotPasswordForm({ className, ...props }) {
           )}
 
           {showAdminBanner && (
-            <div className="tw-flex tw-items-center tw-gap-2 tw-p-3 tw-bg-background-subtle tw-border tw-border-border-weak tw-rounded-md">
-              <div className="tw-w-6 tw-h-6 tw-flex tw-items-center tw-justify-center">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="tw-text-text-brand"
-                  aria-label="Information icon"
-                >
-                  <title>Information</title>
-                  <path
-                    d="M8 1L9.5 2.5L8 4L6.5 2.5L8 1ZM8 12L6.5 13.5L8 15L9.5 13.5L8 12ZM1 8L2.5 6.5L4 8L2.5 9.5L1 8ZM12 8L13.5 9.5L15 8L13.5 6.5L12 8Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <p className="tw-text-sm tw-text-text-placeholder tw-mb-0" data-cy="admin-contact-banner">
-                {adminContactText}
-              </p>
-            </div>
+            <InlineInfoCompound
+              type="info"
+              background="state-specific"
+              icon={Info}
+              description={adminContactText}
+              data-cy="admin-contact-banner"
+            />
           )}
         </div>
       </form>
