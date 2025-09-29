@@ -5,7 +5,7 @@ import { GoogleSigninButton } from '../GoogleSigninButton';
 import { GitHubSigninButton } from '../GitHubSigninButton';
 
 export default {
-  title: 'Auth/Blocks/LoginPage',
+  title: 'Auth/Flows/Login',
   component: AuthLayout,
   parameters: {
     layout: 'fullscreen',
@@ -44,13 +44,8 @@ export default {
   },
 };
 
-// Login Page with Organization
-export const LoginPageWithOrganization = {
-  parameters: {
-    viewport: {
-      defaultViewport: 'desktop',
-    },
-  },
+// Login with Organization
+export const LoginWithOrganization = {
   args: {
     children: (
       <div className="tw-flex tw-flex-col tw-gap-6 tw-w-full">
@@ -60,7 +55,7 @@ export const LoginPageWithOrganization = {
           signUpUrl="#"
           signUpCTA="Create an account"
           showSignup={true}
-          organizationName="Acme Corporation"
+          organizationName=""
           emailLabel="Email"
           emailPlaceholder="Enter your work email"
           passwordLabel="Password"

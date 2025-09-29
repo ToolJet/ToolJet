@@ -2,7 +2,7 @@ import * as React from 'react';
 import { GoogleSigninButton } from '../GoogleSigninButton';
 
 export default {
-  title: 'Auth/GoogleSigninButton',
+  title: 'Auth/Blocks/GoogleSigninButton',
   component: GoogleSigninButton,
   parameters: {
     layout: 'centered',

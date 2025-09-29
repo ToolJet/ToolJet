@@ -2,7 +2,7 @@ import React from 'react';
 import { GitHubSigninButton } from '../GitHubSigninButton';
 
 export default {
-  title: 'Auth/GitHubSigninButton',
+  title: 'Auth/Blocks/GitHubSigninButton',
   component: GitHubSigninButton,
   parameters: {
     layout: 'centered',
