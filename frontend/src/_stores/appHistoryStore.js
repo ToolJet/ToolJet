@@ -117,17 +117,6 @@ const useAppHistoryStore = create(
         }
       },
 
-      clearHistory: () => {
-        set(
-          (state) => {
-            state.historyEntries = [];
-            state.pagination = { page: 0, limit: 20, total: 0, hasMore: false };
-          },
-          false,
-          'clearHistory'
-        );
-      },
-
       setSelectedEntry: (entry) => {
         set(
           (state) => {
@@ -145,6 +134,30 @@ const useAppHistoryStore = create(
           },
           false,
           'setShowRenameEntryModal'
+        );
+      },
+
+      clearHistory: () => {
+        set(
+          (state) => {
+            state.historyEntries = [];
+            state.pagination = { page: 0, limit: 20, total: 0, hasMore: false };
+          },
+          false,
+          'clearHistory'
+        );
+      },
+
+      // SSE: Update history from server-sent events
+      updateHistoryFromSSE: (historyData) => {
+        set(
+          (state) => {
+            // Replace the history entries with fresh data from SSE
+            state.historyEntries = historyData.entries || [];
+            state.pagination = historyData.pagination || state.pagination;
+          },
+          false,
+          'updateHistoryFromSSE'
         );
       },
 
