@@ -73,6 +73,7 @@ export const formConfig = {
       section: 'data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
       newLine: true,
+      disableCreateQuery: true,
     },
     JSONData: {
       type: 'code',
