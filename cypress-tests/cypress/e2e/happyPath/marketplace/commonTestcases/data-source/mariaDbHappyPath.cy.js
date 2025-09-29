@@ -137,11 +137,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterHost,
       Cypress.env("mariadb_host")
     );
-    // fillDataSourceTextField(
-    //   postgreSqlText.labelPort,
-    //   postgreSqlText.placeholderEnterPort,
-    //   "5432"
-    // );
+    fillDataSourceTextField(
+      postgreSqlText.labelPort,
+      postgreSqlText.placeholderEnterPort,
+      "3309"
+    );
 
     cy.get('[data-cy="label-port"]').verifyVisibleElement("have.text", "Port");
     cy.get('[data-cy="port-text-field"]')

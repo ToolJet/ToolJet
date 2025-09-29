@@ -15,7 +15,7 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = function ({ darkMode }) {
+export const AppVersionsManager = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
@@ -70,7 +70,7 @@ export const AppVersionsManager = function ({ darkMode }) {
     shallow
   );
 
-  let appCreationMode = creationMode;
+  const appCreationMode = creationMode;
   const isEditable = currentMode === 'edit';
 
   // useEffect(() => {
@@ -226,7 +226,6 @@ export const AppVersionsManager = function ({ darkMode }) {
   return (
     <div
       className="d-flex align-items-center p-0"
-      style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
       ref={clickedOutsideRef}
     >
       <div

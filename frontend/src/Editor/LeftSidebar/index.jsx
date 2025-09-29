@@ -235,12 +235,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
   };
 
   return (
-    <div className={cx('left-sidebar', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
+    <div className={cx('left-sidebar tw-z-10', { 'dark-theme theme-dark': darkMode })} data-cy="left-sidebar-inspector">
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
         icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+        className={'left-sidebar-item left-sidebar-layout left-sidebar-page-selector'}
         tip="Pages"
         ref={setSideBarBtnRefs('page')}
       />

@@ -65,12 +65,14 @@ import {
   phoneinputConfig,
   currencyinputConfig,
   chatConfig,
+  popoverMenuConfig,
 } from '../widgets';
 
 export const widgets = [
   // Buttons
   buttonConfig,
   buttonGroupConfig,
+  popoverMenuConfig,
 
   //Data
   tableConfig,
