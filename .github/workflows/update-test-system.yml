@@ -52,6 +52,7 @@ jobs:
             "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
           )
           
           current_user="${{ github.actor }}"
