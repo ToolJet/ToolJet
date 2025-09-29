@@ -3,10 +3,11 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
+import { ListView } from './Components/ListView';
 import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
-import { useHotkeys } from 'react-hotkeys-hook';
+// import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
@@ -27,7 +28,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Student from '@/_ui/Icon/solidIcons/Student';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
-import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
+// import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
@@ -35,7 +36,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
-import { EMPTY_ARRAY } from '@/_stores/editorStore';
+// import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -137,8 +138,8 @@ export const Inspector = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
-  const isVersionReleased = useStore((state) => state.isVersionReleased);
+  // const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
+  // const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -287,6 +288,58 @@ export const Inspector = ({
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
       setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+    }
+
+    try {
+      if (component.component.component === 'Listview' && paramType === 'properties') {
+        const gd = newDefinition?.properties?.generateDataFrom?.value;
+        let qid = newDefinition?.properties?.queryId?.value;
+
+        if (qid && qid.startsWith('{{queries.')) {
+          const parts = qid.split('.');
+          if (parts.length >= 2) {
+            qid = parts[1];
+          }
+        }
+
+        const updates = [];
+
+        if (param.name === 'queryId') {
+          if (qid) {
+            updates.push({
+              param: { name: 'data', ...component.component.properties?.['data'] },
+              attr: 'value',
+              value: `{{queries.${qid}.data}}`,
+              paramType: 'properties',
+            });
+            if (gd !== 'query') {
+              updates.push({
+                param: { name: 'generateDataFrom' },
+                attr: 'value',
+                value: 'query',
+                paramType: 'properties',
+              });
+            }
+          }
+        }
+
+        if (param.name === 'generateDataFrom') {
+          if (value === 'query' && qid) {
+            updates.push({
+              param: { name: 'data', ...component.component.properties?.['data'] },
+              attr: 'value',
+              value: `{{queries.${qid}.data}}`,
+              paramType: 'properties',
+            });
+          }
+        }
+
+        if (updates.length) {
+          paramsUpdated(updates, isParamFromTableColumn);
+        }
+      }
+    } catch (e) {
+      // no-op: best-effort wiring only
     }
 
     componentDefinitionChanged(newComponent, {
@@ -516,8 +569,8 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  // const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  // const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -767,7 +820,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   });
 };
 
-const resolveConditionalStyle = (definition, condition, currentState) => {
+const resolveConditionalStyle = (definition, condition, _currentState) => {
   const conditionExistsInDefinition = definition[condition] ?? false;
   if (conditionExistsInDefinition) {
     switch (condition) {

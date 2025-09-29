@@ -24,4 +24,6 @@ export const TypeMapping = {
   tableRowHeightInput: 'TableRowHeightInput',
   dropdownMenu: 'DropdownMenu',
   query: 'Query',
+  dataDropdown: 'DataDropdown',
+  queryDropdown: 'QueryDropdown',
 };

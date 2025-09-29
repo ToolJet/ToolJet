@@ -564,6 +564,10 @@ const DynamicEditorBridge = (props) => {
       shouldResolve = false;
     }
   }
+  if (fieldMeta?.type === 'queryDropdown') {
+    shouldResolve = false;
+  }
+
   const [_, error, value] =
     type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;

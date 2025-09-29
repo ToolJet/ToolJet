@@ -48,9 +48,20 @@ export const listviewConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    generateDataFrom: {
+      type: 'dataDropdown',
+      displayName: 'Populate data from',
+      options: [
+        { name: 'JSON', value: 'rawJson' },
+        { name: 'Query', value: 'query' },
+      ],
+      section: '',
+      validation: { schema: { type: 'string' } },
+      newLine: true,
+    },
     data: {
       type: 'code',
-      displayName: 'List data',
+      displayName: '',
       validation: {
         schema: {
           type: 'union',
@@ -61,6 +72,27 @@ export const listviewConfig = {
         },
         defaultValue: "[{text: 'Sample text 1'}]",
       },
+      conditionallyRender: {
+        key: 'generateDataFrom',
+        value: 'rawJson',
+      },
+    },
+
+    queryId: {
+      type: 'queryDropdown',
+      displayName: 'Query',
+      section: 'data',
+      conditionallyRender: {
+        key: 'generateDataFrom',
+        value: 'query',
+      },
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'string' }],
+        },
+      },
+      newLine: true,
     },
     dynamicHeight: {
       type: 'toggle',
@@ -194,6 +226,8 @@ export const listviewConfig = {
       { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
     ]}}`,
       },
+      generateDataFrom: { value: 'rawJson' },
+      queryId: { value: '' },
       mode: { value: 'list' },
       columns: { value: '{{3}}' },
       rowHeight: {
