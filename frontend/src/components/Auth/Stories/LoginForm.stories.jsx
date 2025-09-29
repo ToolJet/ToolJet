@@ -1,7 +1,7 @@
 import { LoginForm } from '../LoginForm';
 
 export default {
-  title: 'Auth/LoginForm',
+  title: 'Auth/Blocks/LoginForm',
   component: LoginForm,
   parameters: {
     layout: 'centered',
