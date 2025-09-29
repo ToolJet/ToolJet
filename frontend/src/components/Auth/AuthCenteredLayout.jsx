@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const AuthCenteredLayout = ({ children }) => {
   return (
@@ -7,4 +7,3 @@ export const AuthCenteredLayout = ({ children }) => {
     </div>
   );
 };
-

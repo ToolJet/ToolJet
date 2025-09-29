@@ -2,7 +2,7 @@ import React from 'react';
 import { ForgotPasswordInfoScreen } from '../ForgotPasswordInfoScreen';
 
 export default {
-  title: 'Auth/ForgotPasswordInfoScreen',
+  title: 'Auth/Blocks/ForgotPasswordInfoScreen',
   component: ForgotPasswordInfoScreen,
   parameters: {
     layout: 'centered',
