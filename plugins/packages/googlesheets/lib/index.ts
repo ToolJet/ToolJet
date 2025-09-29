@@ -173,8 +173,12 @@ export default class GooglesheetsQueryService implements QueryService {
           message: 'Invalid JSON',
         };
       }
-
-      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
+      // For OAuth if token is expired or invalid it returns 401 or 403
+      // For other authentication types just throw generic error so that user can re-authenticate
+      if (
+        sourceOptions['authentication_type'] !== 'service_account' &&
+        (error?.response?.statusCode === 401 || error?.response?.statusCode === 403)
+      ) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
           ...error,
           ...errorDetails,
