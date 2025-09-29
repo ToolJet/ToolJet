@@ -1,6 +1,7 @@
 import * as winston from 'winston';
 import { auditLog } from '@modules/audit-logs/constants';
-import DailyRotateFile from 'winston-daily-rotate-file';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import DailyRotateFile = require('winston-daily-rotate-file');
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
