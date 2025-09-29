@@ -123,10 +123,11 @@ export const CustomComponent = (props) => {
     <div
       className="card"
       style={{
+        '--cc-custom-component-border-color': borderColor,
         display: visibility ? '' : 'none',
         height,
         boxShadow,
-        border: `1px solid ${borderColor} !important`,
+        border: `1px solid var(--cc-custom-component-border-color) !important`,
         borderRadius: `${borderRadius}px`,
       }}
       data-cy={dataCy}
