@@ -2,7 +2,7 @@ import React from 'react';
 import { ForgotPasswordForm } from '../ForgotPasswordForm';
 
 export default {
-  title: 'Auth/ForgotPasswordForm',
+  title: 'Auth/Blocks/ForgotPasswordForm',
   component: ForgotPasswordForm,
   parameters: {
     layout: 'centered',
@@ -94,22 +94,6 @@ export const Default = {
     showAdminBanner: true,
   },
 };
-
-export const CustomHeader = {
-  args: {
-    headerText: 'Reset Your Password',
-    signupText: 'New to ToolJet?',
-    signupUrl: '#',
-    signupCTA: 'Create an account',
-    showSignup: true,
-    emailLabel: 'Email address',
-    emailPlaceholder: 'Enter your work email',
-    buttonText: 'Send reset link',
-    adminContactText: 'Contact admin to reset your password',
-    showAdminBanner: true,
-  },
-};
-
 export const NoSignup = {
   args: {
     headerText: 'Forgot Password',
@@ -140,41 +124,7 @@ export const NoAdminBanner = {
   },
 };
 
-export const WithEmailValue = {
-  args: {
-    headerText: 'Forgot Password',
-    signupText: 'New to ToolJet?',
-    signupUrl: '#',
-    signupCTA: 'Create an account',
-    showSignup: true,
-    emailLabel: 'Email address',
-    emailPlaceholder: 'Enter email address',
-    buttonText: 'Send a reset link',
-    adminContactText: 'Contact admin to reset your password',
-    showAdminBanner: true,
-    emailValue: 'user@example.com',
-  },
-};
 
-export const WithValidationError = {
-  args: {
-    headerText: 'Forgot Password',
-    signupText: 'New to ToolJet?',
-    signupUrl: '#',
-    signupCTA: 'Create an account',
-    showSignup: true,
-    emailLabel: 'Email address',
-    emailPlaceholder: 'Enter email address',
-    buttonText: 'Send a reset link',
-    adminContactText: 'Contact admin to reset your password',
-    showAdminBanner: true,
-    emailValue: 'invalid-email',
-    emailValidationMessage: {
-      valid: false,
-      message: 'Please enter a valid email address',
-    },
-  },
-};
 
 export const Loading = {
   args: {
@@ -236,35 +186,5 @@ export const WithValidation = {
 
       return { valid: true, message: 'Email looks good!' };
     },
-  },
-};
-
-export const Minimal = {
-  args: {
-    headerText: 'Reset Password',
-    signupText: '',
-    signupUrl: '#',
-    signupCTA: '',
-    showSignup: false,
-    emailLabel: 'Email',
-    emailPlaceholder: 'Enter your email',
-    buttonText: 'Reset',
-    adminContactText: '',
-    showAdminBanner: false,
-  },
-};
-
-export const CustomAdminText = {
-  args: {
-    headerText: 'Forgot Password',
-    signupText: 'New to ToolJet?',
-    signupUrl: '#',
-    signupCTA: 'Create an account',
-    showSignup: true,
-    emailLabel: 'Email address',
-    emailPlaceholder: 'Enter email address',
-    buttonText: 'Send a reset link',
-    adminContactText: 'Contact your system administrator for password reset assistance',
-    showAdminBanner: true,
   },
 };
