@@ -95,7 +95,6 @@ RUN apt-get update && \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
     && tar -xf node-v22.15.1-linux-x64.tar.xz \
     && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
@@ -139,8 +138,6 @@ WORKDIR /
 
 RUN mkdir -p /app
 
-RUN useradd --create-home --home-dir /home/appuser appuser
-
 # Use the PostgREST binary from the builder stage
 COPY --from=builder /postgrest /usr/local/bin/postgrest
 
@@ -148,7 +145,7 @@ RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
     echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
     chmod +x /usr/local/bin/postgrest
 
-# Copy application with ownership set directly to avoid chown -R
+# Copy application files
 COPY --from=builder /app/package.json ./app/package.json
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
