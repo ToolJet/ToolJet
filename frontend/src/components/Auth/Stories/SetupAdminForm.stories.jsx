@@ -2,7 +2,7 @@ import React from 'react';
 import { SetupAdminForm } from '../SetupAdminForm';
 
 export default {
-  title: 'Auth/SetupAdminForm',
+  title: 'Auth/Blocks/SetupAdminForm',
   component: SetupAdminForm,
   parameters: {
     layout: 'centered',

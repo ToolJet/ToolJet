@@ -2,7 +2,7 @@ import React from 'react';
 import { SignupSuccessInfo } from '../SignupSuccessInfo';
 
 export default {
-  title: 'Auth/SignupSuccessInfo',
+  title: 'Auth/Blocks/SignupSuccessInfo',
   component: SignupSuccessInfo,
   parameters: {
     layout: 'centered',
