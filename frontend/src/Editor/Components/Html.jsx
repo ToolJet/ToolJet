@@ -16,6 +16,7 @@ export const Html = function ({
   const baseStyle = {
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
+    width: '100%',
   };
   const { boxShadow } = styles || {};
 
