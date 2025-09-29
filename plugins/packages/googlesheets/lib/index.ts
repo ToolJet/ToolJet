@@ -99,7 +99,11 @@ export default class GooglesheetsQueryService implements QueryService {
     const operation = queryOptions.operation;
     const spreadsheetId = queryOptions.spreadsheet_id;
     const spreadsheetRange = queryOptions.spreadsheet_range ? queryOptions.spreadsheet_range : 'A1:Z500';
-    const accessToken = sourceOptions['access_token'];
+    const accessToken =
+      sourceOptions['authentication_type'] === 'service_account'
+        ? await this.getConnection(sourceOptions)
+        : sourceOptions['access_token'];
+
     const queryOptionFilter = {
       key: queryOptions.where_field,
       value: queryOptions.where_value,
@@ -248,14 +252,19 @@ export default class GooglesheetsQueryService implements QueryService {
     return accessTokenDetails;
   }
 
-  async getServiceAccountToken(sourceOptions: SourceOptions) {
+  async getServiceAccountToken(sourceOptions) {
     const serviceAccountKey = JSON.parse(sourceOptions['service_account_key']);
     serviceAccountKey.private_key = serviceAccountKey.private_key.replace(/\\n/g, '\n');
+
+    const scope =
+      sourceOptions?.access_type === 'write'
+        ? 'https://www.googleapis.com/auth/spreadsheets'
+        : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
     const jwtClient = new google.auth.JWT({
       email: serviceAccountKey?.client_email,
       key: serviceAccountKey?.private_key,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      scopes: scope,
     });
     const tokenResponse = await jwtClient.authorize();
 

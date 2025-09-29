@@ -58,6 +58,12 @@
       }
     },
     "service_account": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      },
       "service_account_key": {
         "label": "Service Account Key",
         "key": "service_account_key",
