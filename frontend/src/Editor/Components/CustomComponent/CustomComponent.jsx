@@ -129,6 +129,7 @@ export const CustomComponent = (props) => {
         boxShadow,
         border: `1px solid var(--cc-custom-component-border-color) !important`,
         borderRadius: `${borderRadius}px`,
+        overflow: 'clip',
       }}
       data-cy={dataCy}
     >
