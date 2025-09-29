@@ -14,7 +14,7 @@ import {
 import { createNewVersion } from "Support/utils/exportImport";
 
 import {
-  addNewconstants,
+  addAndVerifyConstants,
 } from "Support/utils/workspaceConstants";
 import { editAndVerifyWidgetName } from "Support/utils/commonWidget";
 
@@ -53,19 +53,49 @@ describe("Workspace constants", () => {
     cy.visit(`${data.workspaceSlug}`);
     cy.wait(2000);
 
-    verifyConstantFormUI();
+    cy.ifEnv("Enterprise", () => {
+
+      manageWorkspaceConstant({
+        constantType: "Global",
+        constName: "Example_Constant1",
+        newConstvalue: "UpdatedValue",
+        envName: "Development"
+      });
+      manageWorkspaceConstant({
+        constantType: "Secrets",
+        constName: "Example_Constant1",
+        newConstvalue: "UpdatedValue",
+        envName: "Development"
+      });
+
+
+
+      manageWorkspaceConstant({
+        constantType: "Global",
+        constName: "Example_Constant1",
+        newConstvalue: "UpdatedValue",
+        envName: "Staging"
+      });
+      manageWorkspaceConstant({
+        constantType: "Secrets",
+        constName: "Example_Constant1",
+        newConstvalue: "UpdatedValue",
+        envName: "Staging"
+      });
+    });
+
 
     manageWorkspaceConstant({
       constantType: "Global",
       constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
-      envName: "Development"
+      envName: "Production"
     });
     manageWorkspaceConstant({
       constantType: "Secrets",
       constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
-      envName: "Development"
+      envName: "Production"
     });
   });
 
@@ -78,20 +108,20 @@ describe("Workspace constants", () => {
 
     // create global constants
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    addNewconstants("url", Cypress.env("constants_host"));
-    addNewconstants("restapiHeaderKey", "customHeader");
-    addNewconstants("restapiHeaderValue", "key=value");
-    addNewconstants("deleteConst", "deleteconst");
-    addNewconstants("gconst", "108");
-    addNewconstants("gconstUrl", "http://20.29.40.108:4000/");
-    addNewconstants("gconstEndpoint", "production");
+    addAndVerifyConstants("url", Cypress.env("constants_host"));
+    addAndVerifyConstants("restapiHeaderKey", "customHeader");
+    addAndVerifyConstants("restapiHeaderValue", "key=value");
+    addAndVerifyConstants("deleteConst", "deleteconst");
+    addAndVerifyConstants("gconst", "108");
+    addAndVerifyConstants("gconstUrl", "http://20.29.40.108:4000/");
+    addAndVerifyConstants("gconstEndpoint", "production");
 
     // create secret constants
-    addNewconstants("url", Cypress.env("constants_host"), "Secrets");
-    addNewconstants("restapiHeaderKey", "customHeader", "Secrets");
-    addNewconstants("restapiHeaderValue", "key=value", "Secrets");
-    addNewconstants("sconst", ":4000", "Secrets");
-    addNewconstants("sconstEndpoint", "production");
+    addAndVerifyConstants("url", Cypress.env("constants_host"), "Secrets");
+    addAndVerifyConstants("restapiHeaderKey", "customHeader", "Secrets");
+    addAndVerifyConstants("restapiHeaderValue", "key=value", "Secrets");
+    addAndVerifyConstants("sconst", ":4000", "Secrets");
+    addAndVerifyConstants("sconstEndpoint", "production");
 
     //delete one constant to verify deleted const in inspector
     deleteConstant("deleteConst");

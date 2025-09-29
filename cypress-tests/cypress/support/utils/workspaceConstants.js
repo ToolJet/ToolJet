@@ -3,23 +3,17 @@ import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { commonText, commonWidgetText } from "Texts/common";
-export const contantsNameValidation = (selector, value, errorSelector, error) => {
-  cy.get(selector).click();
-  cy.clearAndType(selector, value);
-  cy.get(errorSelector).verifyVisibleElement(
-    "have.text",
-    error
-  );
-  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-};
 
-export const addNewconstants = (name, value, type = "global") => {
+
+export const addAndVerifyConstants = (name, value, type = "global") => {
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   cy.clearAndType(commonSelectors.workspaceConstantNameInput, name);
   cy.get(commonSelectors.workspaceConstantValueInput).click();
   cy.clearAndType(commonSelectors.workspaceConstantValueInput, value);
   cy.get(workspaceConstantsSelectors.constantsType(type)).check();
   cy.get(workspaceConstantsSelectors.addConstantButton).click();
+  cy.get(workspaceConstantsSelectors.constantName(name).should("exist")
+  );
 };
 export const deleteConstant = (name, constType = "Global") => {
   switchToConstantTab(constType);
@@ -28,6 +22,7 @@ export const deleteConstant = (name, constType = "Global") => {
   ).click();
   cy.get(commonSelectors.yesButton).click();
 }
+
 export const existingNameValidation = (
   constName,
   constValue,
@@ -46,19 +41,33 @@ export const existingNameValidation = (
     );
 };
 
-export const verifyConstantFormUI = () => {
+export const verifyConstantFormUI = (data) => {
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-  cy.get(workspaceConstantsSelectors.nameFieldLabel).should('have.text', 'Name');
-  cy.get(workspaceConstantsSelectors.nameFieldHelperText).should('have.text', workspaceConstantsText.nameFieldHelperText),
-    cy.get(workspaceConstantsSelectors.typeLabel).should('have.text', 'Type'),
-    cy.get(workspaceConstantsSelectors.globalConstLabel).should('have.text', 'Global constants');
-  cy.get(workspaceConstantsSelectors.globalConstHelperText).should('have.text', workspaceConstantsText.globalConstHelperText),
-    cy.get(workspaceConstantsSelectors.secretsConstLabel).should('have.text', 'Secrets');
-  cy.get(workspaceConstantsSelectors.secretsConstHelperText).should('have.text', workspaceConstantsText.secretsConstHelperText),
-    cy.get(workspaceConstantsSelectors.addConstantButton).should('have.text', workspaceConstantsText.addConstantButton);
-  cy.get(commonSelectors.cancelButton).should('have.text', 'Cancel').click();
-}
+  cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
+    "have.text",
+    workspaceConstantsText.addConstatntText(data.envName.toLowerCase())
+  );
+
+  const verificationItems = [
+    { selector: workspaceConstantsSelectors.nameFieldLabel, expectedText: 'Name' },
+    { selector: workspaceConstantsSelectors.nameFieldHelperText, expectedText: workspaceConstantsText.nameFieldHelperText },
+    { selector: workspaceConstantsSelectors.typeLabel, expectedText: 'Type' },
+    { selector: workspaceConstantsSelectors.globalConstLabel, expectedText: 'Global constants' },
+    { selector: workspaceConstantsSelectors.globalConstHelperText, expectedText: workspaceConstantsText.globalConstHelperText },
+    { selector: workspaceConstantsSelectors.secretsConstLabel, expectedText: 'Secrets' },
+    { selector: workspaceConstantsSelectors.secretsConstHelperText, expectedText: workspaceConstantsText.secretsConstHelperText },
+    { selector: workspaceConstantsSelectors.addConstantButton, expectedText: workspaceConstantsText.addConstantButton },
+    { selector: commonSelectors.cancelButton, expectedText: 'Cancel' }
+  ];
+
+  verificationItems.forEach(({ selector, expectedText }) => {
+    cy.get(selector).should('have.text', expectedText);
+  });
+
+  cy.get(commonSelectors.cancelButton).click();
+};
+
 
 // Function to switch to a specific constant tab (Global or Secrets)
 export const switchToConstantTab = (constantType) => {
@@ -82,61 +91,23 @@ export const manageWorkspaceConstant = (data) => {
     cy.get("button.tab.active").contains(data.constantType);
 
     // Add a new constant
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-      "have.text",
-      workspaceConstantsText.addConstatntText(data.envName.toLowerCase())
-    );
+    verifyConstantFormUI(data.envName);
 
-    // Name and value validation
-    const selectorMap = {
-      name: {
-        input: commonSelectors.workspaceConstantNameInput,
-        error: commonSelectors.nameErrorText,
-      },
-      value: {
-        input: commonSelectors.workspaceConstantValueInput,
-        error: commonSelectors.valueErrorText,
-      },
-    };
-
-    const validationTests = [
-      { type: "name", value: " ", expectedError: commonText.constantsNameError },
-      { type: "name", value: "9", expectedError: commonText.constantsNameError },
-      { type: "name", value: "%", expectedError: commonText.constantsNameError },
-      { type: "name", value: "Test spacing", expectedError: commonText.constantsNameError },
-      { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5weetr", expectedError: "Constant name has exceeded 50 characters" },
-      { type: "value", value: " ", expectedError: commonText.constantsValueError },
-      { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", expectedError: "Maximum length has been reached" },
-    ];
-
-    // Loop over the cases
-    validationTests.forEach(({ type, value, expectedError }) => {
-      contantsNameValidation(
-        selectorMap[type].input,
-        value,
-        selectorMap[type].error,
-        expectedError
-      );
-    });
+    VerifyConstantsFormInputValidation();
 
     cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type("text");
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 
+    cy.get(workspaceConstantsSelectors.constantsType(data.constantType)).check();
 
-    cy.get(
-      workspaceConstantsSelectors.constantsType(data.constantType)
-    ).check();
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
     cy.get(commonSelectors.cancelButton).click();
 
     //create constants with max char limit
-    addNewconstants("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", data.constName, data.constantType);
-    cy.get(workspaceConstantsSelectors.constantName("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee")).should(
-      "exist"
-    );
+    addAndVerifyConstants("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", data.constName, data.constantType);
 
-    addNewconstants(data.constName, data.constName, data.constantType);
+
+    addAndVerifyConstants(data.constName, data.constName, data.constantType);
     if (data.constantType === "Global") {
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -225,8 +196,8 @@ export const manageWorkspaceConstant = (data) => {
   performConstantManagement();
 
   //check env total constant count and search constant functionality 
-  addNewconstants("globalconst", "globalvalue");
-  addNewconstants("secretconst", "secretvalue", "Secrets");
+  addAndVerifyConstants("globalconst", "globalvalue");
+  addAndVerifyConstants("secretconst", "secretvalue", "Secrets");
   cy
   cy.get(workspaceConstantsSelectors.envName).should('have.text', `${data.envName} (2)`);
   switchToConstantTab("Global");
@@ -258,3 +229,39 @@ export const manageWorkspaceConstant = (data) => {
   cy.get(workspaceConstantsSelectors.searchField).clear();
   deleteConstant("secretconst", "Secrets");
 };
+
+export const VerifyConstantsFormInputValidation = () => {
+  // Name and value validation
+
+  const selectorMap = {
+    name: {
+      input: commonSelectors.workspaceConstantNameInput,
+      error: commonSelectors.nameErrorText,
+    },
+    value: {
+      input: commonSelectors.workspaceConstantValueInput,
+      error: commonSelectors.valueErrorText,
+    },
+  };
+
+  const validationTests = [
+    { type: "name", value: " ", expectedError: commonText.constantsNameError },
+    { type: "name", value: "9", expectedError: commonText.constantsNameError },
+    { type: "name", value: "%", expectedError: commonText.constantsNameError },
+    { type: "name", value: "Test spacing", expectedError: commonText.constantsNameError },
+    { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5weetr", expectedError: "Constant name has exceeded 50 characters" },
+    { type: "value", value: " ", expectedError: commonText.constantsValueError },
+    { type: "name", value: "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", expectedError: "Maximum length has been reached" },
+  ];
+
+  cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+  validationTests.forEach(({ type, value, expectedError }) => {
+    contantsNameValidation(
+      selectorMap[type].input,
+      value,
+      selectorMap[type].error,
+      expectedError
+    );
+    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+  });
+}
