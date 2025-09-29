@@ -2175,7 +2175,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(app_query_execution_milliseconds_count{status=\"error\"}[5m]),
+          "expr": "rate(app_query_execution_milliseconds_count{status=\"error\"}[5m])",
           "interval": "",
           "legendFormat": "Failed Queries - {{datasource_type}}",
           "refId": "B"
