@@ -8,9 +8,9 @@ export default function AppLogo({ isLoadingFromHeader, className }) {
   return (
     <>
       {url ? (
-        <img src={url} height={26} data-cy="page-logo" />
+        <img src={url} height={26} data-cy="page-logo" alt="App Logo" />
       ) : (
-          <>{isLoadingFromHeader ? <Logo height={26} data-cy="page-logo" /> : <img src={url} className={className} />}</>
+        <>{isLoadingFromHeader ? <Logo height={26} data-cy="page-logo" /> : <img src={url} className={className} />}</>
       )}
     </>
   );

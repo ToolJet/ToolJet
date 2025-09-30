@@ -3,6 +3,23 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 import { syntaxTree } from '@codemirror/language';
 
+/**
+ * Collects all unique JS method hints from all field types
+ * @param {Object} hints - The hints object containing jsHints
+ * @returns {Array} Array of unique JS method hints with type 'js_method'
+ */
+const collectUniqueJSMethodHints = (hints) => {
+  const uniqueHints = new Set();
+  Object.values(hints['jsHints']).forEach((fieldType) => {
+    fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
+  });
+
+  return Array.from(uniqueHints, (hint) => ({
+    hint,
+    type: 'js_method',
+  }));
+};
+
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
@@ -17,14 +34,8 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
       type: 'js_method',
     }));
   } else {
-    JSLangHints = Object.keys(hints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    JSLangHints = collectUniqueJSMethodHints(hints);
   }
 
   const deprecatedWorkspaceVarsHints = ['client', 'server'];
@@ -55,11 +66,14 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     return suggestion.hint.includes(actualInput);
   });
 
+  const lastCharsAfterDot = actualInput.split('.').pop();
   const jsHints = JSLangHints.filter((cm) => {
-    const lastCharsAfterDot = actualInput.split('.').pop();
     if (cm.hint.includes(lastCharsAfterDot)) return true;
+    return false;
+  });
 
-    if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
+  jsHints.sort((a, b) => {
+    return a.hint.startsWith(lastCharsAfterDot) ? -1 : 1;
   });
 
   const searchInput = removeNestedDoubleCurlyBraces(input);
@@ -218,14 +232,8 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
 
   let JSLangHints = [];
   if (lang === 'javascript') {
-    JSLangHints = Object.keys(allHints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    JSLangHints = collectUniqueJSMethodHints(hints);
 
     JSLangHints = JSLangHints.filter((cm) => {
       let lastWordAfterDot = nearestSubstring.split('.');

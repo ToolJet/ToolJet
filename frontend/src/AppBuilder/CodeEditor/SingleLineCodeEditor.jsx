@@ -555,7 +555,7 @@ const DynamicEditorBridge = (props) => {
   // This is to handle the case when the initial value is a string and contains components or queries
   // and we need to replace the ids with names
   // but we don't want to resolve the references as it needs to be displayed as it is
-  if (paramName === 'generateFormFrom') {
+  if (paramName === 'generateFormFrom' || paramName === 'dataSourceSelector') {
     if (
       typeof initialValue === 'string' &&
       (initialValue?.includes('components') || initialValue?.includes('queries'))
@@ -586,7 +586,7 @@ const DynamicEditorBridge = (props) => {
       <div
         className={`col-auto pt-0 fx-common fx-button-container ${
           (isEventManagerParam || codeShow) && 'show-fx-button-container'
-        }`}
+        } ${paramType === 'slider' ? 'slider-fx-button-container' : ''}`}
       >
         <FxButton
           active={codeShow}
@@ -614,7 +614,10 @@ const DynamicEditorBridge = (props) => {
     return (
       <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
-          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div
+            className={`field ${paramType === 'slider' ? 'slider-code-editor-label' : ''} ${className}`}
+            data-cy={`${cyLabel}-widget-parameter-label`}
+          >
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
@@ -653,6 +656,7 @@ const DynamicEditorBridge = (props) => {
         onVisibilityChange={onVisibilityChange}
         iconVisibility={iconVisibility}
         componentId={componentId}
+        darkMode={darkMode}
       />
     );
   };

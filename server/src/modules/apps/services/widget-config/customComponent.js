@@ -21,6 +21,22 @@ export const customComponentConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -37,9 +53,9 @@ export const customComponentConfig = {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
       code: {
-        value: `import React from 'https://esm.sh/react@17.0.2';
-  import ReactDOM from 'https://esm.sh/react-dom@17.0.2';
-  import { Button, Container } from 'https://esm.sh/@material-ui/core@4.12.4?deps=react@17.0.2';
+        value: `import React from 'https://cdn.skypack.dev/react';
+  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
   const MyCustomComponent = ({data, updateData, runQuery}) => (
     <Container>
         <h1>{data.title}</h1>
@@ -60,6 +76,8 @@ export const customComponentConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      borderRadius: { value: '{{6}}' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };
