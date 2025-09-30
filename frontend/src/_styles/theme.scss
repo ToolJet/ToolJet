@@ -639,7 +639,7 @@ button {
       }
 
       .properties-container {
-        .field { 
+        .field {
           .form-label {
             font-size: 12px;
           }
@@ -15886,7 +15886,7 @@ section.ai-message-prompt-input-wrapper {
 
   &.inside-appbuilder {
     margin: 0;
-    padding: 0.5rem 0.625rem;
+    padding: 0.625rem 0.75rem;
 
     /* Elevations/300 */
     box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
@@ -16511,7 +16511,7 @@ section.ai-message-prompt-input-wrapper {
   .conversation-wrapper {
     overflow-y: auto;
     flex-grow: 1;
-    padding: 1rem;
+    padding: 1.25rem;
     z-index: 2;
     scroll-behavior: smooth;
 
@@ -17028,10 +17028,6 @@ section.ai-message-prompt-input-wrapper {
           gap: 8px;
           color: var(--text-default, #1b1f24);
 
-          font-size: 12px;
-          font-style: normal;
-          font-weight: 400;
-          line-height: 18px;
           margin-left: auto;
 
           &.dark-theme {
