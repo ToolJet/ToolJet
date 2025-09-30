@@ -176,8 +176,42 @@
   }
 }
 
-#history-list-menu.copy-menu-options {
-  top: 0 !important;
+#history-list-menu.history-menu-options {
+  width: 144px;
+  border: none;
+  background-color: var(--background-surface-layer-01);
+  border-radius: 10px;
+  
+  &.dark-theme {
+    .popover-body {
+      box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.9), 0px 8px 16px 0px #000000;
+    }
+  }
+  
+  .popover-body {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--background-surface-layer-01);
+    box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05), 0px 8px 16px 0px rgba(48, 50, 51, 0.1);
+  
+    .menu-options {
+      .option {
+        display: flex;
+        padding: 6px 8px;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        align-self: stretch;
+        border-radius: 6px;
+        cursor: pointer;
+  
+        &:hover {
+          background: rgba(136, 144, 153, 0.08);
+        }
+      }
+    }
+  }
 }
 
 .history-restore-modal {
