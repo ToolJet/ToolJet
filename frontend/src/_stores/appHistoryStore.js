@@ -115,11 +115,12 @@ const useAppHistoryStore = create(
       },
 
       // SSE: Update history from server-sent events
-      updateHistoryFromSSE: (historyData) => {
+      updateHistoryFromSSE: (isInitialLoadData = false, historyData) => {
         set(
           (state) => {
             // Replace the history entries with fresh data from SSE
             state.historyEntries = historyData.entries || [];
+            if (isInitialLoadData) state.isLoading = false;
           },
           false,
           'updateHistoryFromSSE'
