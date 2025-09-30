@@ -93,7 +93,6 @@ const CreateVersionModal = ({
       selectedVersionForCreation.id,
       (newVersion) => {
         toast.success('Version Created');
-        console.log('version is created from here');
         setVersionName('');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
