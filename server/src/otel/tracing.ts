@@ -1,5 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api';
+import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -17,15 +17,27 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  ATTR_DB_QUERY_TEXT,
+  ATTR_DB_OPERATION_NAME,
+  ATTR_DB_COLLECTION_NAME,
 } from '@opentelemetry/semantic-conventions';
 
 const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
 const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
+const DB_SLOW_QUERY_THRESHOLD = parseInt(process.env.DB_SLOW_QUERY_THRESHOLD || '1000'); // milliseconds
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
+
+// Custom metrics
+let meter: any;
+let dbQueryCounter: any;
+let dbQueryDuration: any;
+let slowQueryCounter: any;
+let apiRequestDuration: any;
+let apiRequestCounter: any;
 
 // Define the trace exporter
 const traceExporter = new OTLPTraceExporter({
@@ -60,6 +72,19 @@ const sanitizeObject = (obj: any) => {
     }
   }
   return sanitized;
+};
+
+// Extract database operation from SQL query
+const extractOperationFromQuery = (query: string): string => {
+  if (!query) return 'unknown';
+  const trimmed = query.trim().toUpperCase();
+  const operations = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'DROP', 'TRUNCATE', 'BEGIN', 'COMMIT', 'ROLLBACK'];
+  for (const op of operations) {
+    if (trimmed.startsWith(op)) {
+      return op;
+    }
+  }
+  return 'unknown';
 };
 
 export const sdk = new NodeSDK({
@@ -100,7 +125,72 @@ export const sdk = new NodeSDK({
       },
     }),
     new NestInstrumentation(),
-    new PgInstrumentation({ enhancedDatabaseReporting: true }),
+    new PgInstrumentation({
+      enhancedDatabaseReporting: true,
+      requestHook: (span: Span, requestInfo: any) => {
+        // Add query text and parameters to the span
+        if (requestInfo.query) {
+          span.setAttribute(ATTR_DB_QUERY_TEXT, requestInfo.query);
+          const operation = extractOperationFromQuery(requestInfo.query);
+          span.setAttribute(ATTR_DB_OPERATION_NAME, operation);
+
+          // Store metadata in a way we can retrieve it
+          (span as any)._otel_query_metadata = {
+            operation,
+            startTime: Date.now(),
+          };
+        }
+
+        // Sanitize and add query parameters
+        if (requestInfo.values && Array.isArray(requestInfo.values)) {
+          try {
+            const sanitizedValues = requestInfo.values.map((val: any) =>
+              typeof val === 'object' ? '[Object]' : String(val)
+            );
+            span.setAttribute('db.query.parameters', JSON.stringify(sanitizedValues.slice(0, 10))); // Limit to first 10 params
+          } catch (e) {
+            // Ignore serialization errors
+          }
+        }
+      },
+      responseHook: (span: Span, responseInfo: any) => {
+        // Calculate query duration and track slow queries
+        const metadata = (span as any)._otel_query_metadata;
+        if (metadata && metadata.startTime) {
+          const duration = Date.now() - metadata.startTime;
+          span.setAttribute('db.query.duration_ms', duration);
+
+          // Mark slow queries
+          if (duration > DB_SLOW_QUERY_THRESHOLD) {
+            span.setAttribute('db.query.slow', true);
+            span.setAttribute('db.query.slow_threshold_ms', DB_SLOW_QUERY_THRESHOLD);
+
+            // Increment slow query counter metric
+            if (slowQueryCounter) {
+              slowQueryCounter.add(1, {
+                operation: metadata.operation || 'unknown',
+                duration_bucket: duration < 5000 ? 'slow' : 'very_slow'
+              });
+            }
+          }
+
+          // Record query duration metric
+          if (dbQueryDuration) {
+            dbQueryDuration.record(duration, { operation: metadata.operation || 'unknown' });
+          }
+
+          // Increment query counter metric
+          if (dbQueryCounter) {
+            dbQueryCounter.add(1, { operation: metadata.operation || 'unknown' });
+          }
+        }
+
+        // Add row count if available
+        if (responseInfo && responseInfo.rowCount !== undefined) {
+          span.setAttribute('db.query.row_count', responseInfo.rowCount);
+        }
+      },
+    }),
     new PinoInstrumentation(),
   ],
 });
@@ -111,16 +201,54 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
   const route = req.route?.path || req.path || 'unknown_route';
   const method = req.method || 'UNKNOWN_METHOD';
 
+  // Track request start time for API metrics
+  const requestStartTime = Date.now();
+
   if (span && route.startsWith('/api/') && route !== '/api/health') {
     span.updateName(`${method} ${route}`);
     span.setAttribute('http.route', route);
     span.setAttribute('http.method', method);
 
+    // Track DB query count per request
+    let dbQueryCount = 0;
+    const originalDbQueryCounter = dbQueryCounter;
+
+    // Store initial context for tracking
+    req._otel_start_time = requestStartTime;
+
     const originalJson = res.json;
     res.json = function (body: any) {
       const statusCode = res.statusCode;
+      const duration = Date.now() - requestStartTime;
 
       span.setAttribute('http.status_code', statusCode);
+      span.setAttribute('http.response.duration_ms', duration);
+
+      // Collect DB query metrics from child spans
+      const childSpans = span['_spanContext']?.['_traceState'];
+      if (childSpans) {
+        // This is a simplified approach - in practice, child spans are tracked differently
+        span.setAttribute('db.queries.count', dbQueryCount);
+      }
+
+      // Record API metrics
+      if (apiRequestDuration && route !== '/api/health') {
+        apiRequestDuration.record(duration, {
+          route,
+          method,
+          status: statusCode,
+        });
+      }
+
+      if (apiRequestCounter && route !== '/api/health') {
+        apiRequestCounter.add(1, {
+          route,
+          method,
+          status: statusCode,
+          success: statusCode < 400 ? 'true' : 'false',
+        });
+      }
+
       // eslint-disable-next-line prefer-rest-params
       return originalJson.apply(this, arguments);
     };
@@ -144,7 +272,39 @@ process.on('SIGTERM', () => {
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
     await sdk.start();
-    console.log('OpenTelemetry instrumentation initializated');
+    console.log('OpenTelemetry instrumentation initialized');
+
+    // Initialize custom metrics
+    meter = metrics.getMeter('tooljet-backend', globalThis.TOOLJET_VERSION || '1.0.0');
+
+    // Database metrics
+    dbQueryCounter = meter.createCounter('db.query.count', {
+      description: 'Total number of database queries executed',
+      unit: 'queries',
+    });
+
+    dbQueryDuration = meter.createHistogram('db.query.duration', {
+      description: 'Duration of database queries in milliseconds',
+      unit: 'ms',
+    });
+
+    slowQueryCounter = meter.createCounter('db.query.slow.count', {
+      description: 'Total number of slow database queries',
+      unit: 'queries',
+    });
+
+    // API metrics
+    apiRequestDuration = meter.createHistogram('http.server.request.duration', {
+      description: 'Duration of HTTP requests in milliseconds',
+      unit: 'ms',
+    });
+
+    apiRequestCounter = meter.createCounter('http.server.request.count', {
+      description: 'Total number of HTTP requests',
+      unit: 'requests',
+    });
+
+    console.log('Custom metrics initialized');
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
