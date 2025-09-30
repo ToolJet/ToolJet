@@ -103,12 +103,8 @@ export const SingleValue = ({ selectProps = {} }) => {
   const { menuIsOpen, onMenuOpen } = selectProps;
   return (
     <div className="d-inline-flex align-items-center tw-w-full" data-cy="app-version-label" style={{ gap: '8px' }}>
-      <Button onClick={(e) => {
-        if (onMenuOpen && typeof onMenuOpen === 'function') {
-          e.stopPropagation();
-          onMenuOpen();
-        }
-      }} variant="ghost" className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}>
+      <Button
+        variant="ghost" className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}>
         <Tag width="16" height="16" className="tw-text-icon-success" />
 
         <span

@@ -194,7 +194,7 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(true);
+    setForceMenuOpen(prev => !prev);
   };
 
   const customSelectProps = {
