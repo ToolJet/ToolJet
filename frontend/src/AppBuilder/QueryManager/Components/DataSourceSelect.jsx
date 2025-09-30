@@ -17,7 +17,16 @@ import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
 
-function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
+function DataSourceSelect({
+  isDisabled,
+  selectRef,
+  closePopup,
+  workflowDataSources,
+  onNewNode,
+  defaultDataSources,
+  onQueryCreate,
+  skipClosePopup = false,
+}) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
     (gds) => gds.type === DATA_SOURCE_TYPE.GLOBAL
@@ -34,9 +43,11 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const handleChangeDataSource = (source) => {
-    createDataQuery(source);
+    createDataQuery(source, false, {}, 'canvas', null, { callbackFunction: onQueryCreate });
     setPreviewData(null);
-    closePopup();
+    if (!skipClosePopup) {
+      closePopup();
+    }
   };
 
   useEffect(() => {
