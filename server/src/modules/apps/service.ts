@@ -1,5 +1,6 @@
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { InstrumentService } from '../../otel/business/service-instrumentation';
 import {
   BadRequestException,
   ForbiddenException,
@@ -43,6 +44,8 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { trackAppUsage, trackAppLoadTime } from '../../otel/business/business-metrics';
+import { AppPerformanceContext } from '../../otel/types';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -62,6 +65,10 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
   ) {}
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'create' },
+    tags: { 'business_operation': 'app_creation' }
+  })
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -80,6 +87,16 @@ export class AppsService implements IAppsService {
         resourceId: app.id,
         resourceName: app.name,
       });
+
+      // Track app usage business metrics
+      const appContext: AppPerformanceContext = {
+        appId: app.id,
+        appName: app.name,
+        organizationId: user.organizationId,
+        userId: user.id,
+        environment: 'production'
+      };
+      trackAppUsage(appContext, 'edit'); // Creating an app is considered editing
 
       return decamelizeKeys(app);
     });
@@ -150,6 +167,10 @@ export class AppsService implements IAppsService {
     };
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'update' },
+    tags: { 'business_operation': 'app_update' }
+  })
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
@@ -178,6 +199,10 @@ export class AppsService implements IAppsService {
     return response;
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'delete' },
+    tags: { 'business_operation': 'app_deletion' }
+  })
   async delete(app: App, user: User) {
     const { organizationId } = user;
     const { id } = app;
@@ -210,6 +235,10 @@ export class AppsService implements IAppsService {
     });
   }
 
+  @InstrumentService('AppsService', { 
+    attributes: { 'operation.type': 'read', 'operation.scope': 'list' },
+    tags: { 'business_operation': 'app_listing' }
+  })
   async getAllApps(user: User, appListDto: AppListDto): Promise<any> {
     let apps = [];
     let totalFolderCount = 0;

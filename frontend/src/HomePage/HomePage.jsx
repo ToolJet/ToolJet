@@ -344,6 +344,12 @@ class HomePageComponent extends React.Component {
       posthogHelper.captureEvent('app_created', { entry_source: prompt ? 'prompt' : 'create_button', prompt });
 
       const workspaceId = getWorkspaceId();
+      
+      // Store start time for Create mode load tracking (using Date.now for cross-page timing)
+      const loadStartTime = Date.now();
+      localStorage.setItem(`app_create_load_start_${data.id}`, loadStartTime.toString());
+      localStorage.setItem(`app_create_mode_${data.id}`, 'create');
+      
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
         state: { commitEnabled: this.state.commitEnabled, prompt },
       });

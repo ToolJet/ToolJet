@@ -18,6 +18,35 @@ import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import TooljetBanner from './TooljetBanner';
+import config from 'config';
+import { authHeader, handleResponse } from '@/_helpers';
+
+// Function to track app load time
+const trackAppLoadTime = async (appId, appName, loadTime, mode = 'direct') => {
+  try {
+    // Get current environment from ToolJet's environment store
+    const store = useStore.getState();
+    const selectedEnvironment = store.environmentsAndVersionsStore?.selectedEnvironment;
+    const environmentName = selectedEnvironment?.name || 'development';
+    
+    const requestOptions = {
+      method: 'POST',
+      headers: authHeader(),
+      credentials: 'include',
+      body: JSON.stringify({
+        appId: appId,
+        appName: appName,
+        loadTime: loadTime,
+        mode: mode,
+        environment: environmentName
+      })
+    };
+    const response = await fetch(`${config.apiUrl}/apps/metrics/app-load-time`, requestOptions).then(handleResponse);
+    console.log('[ToolJet Frontend] App viewer load time tracked:', { appId, loadTime, mode, environment: environmentName });
+  } catch (error) {
+    console.error('[ToolJet Frontend] Failed to track viewer load time:', error);
+  }
+};
 
 export const Viewer = ({
   id: appId,
@@ -32,6 +61,17 @@ export const Viewer = ({
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
+  
+  // Check if we have a stored start time from Launch button click
+  const launchStartTime = localStorage.getItem(`app_launch_load_start_${appId}`);
+  const launchMode = localStorage.getItem(`app_launch_mode_${appId}`);
+  
+  const storedStartTime = launchStartTime;
+  const storedMode = launchMode || 'direct';
+  
+  const loadStartTime = useRef(storedStartTime ? parseFloat(storedStartTime) : null);
+  const hasTrackedLoadTime = useRef(false);
+  
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
@@ -145,6 +185,25 @@ export const Viewer = ({
       setIsViewer(false, moduleId);
     };
   }, []);
+
+  // Track app load time when loading completes in viewer
+  useEffect(() => {
+    if (!isEditorLoading && !hasTrackedLoadTime.current && appName) {
+      // Only track if we have a valid start time from localStorage
+      if (loadStartTime.current) {
+        const loadTime = (Date.now() - loadStartTime.current) / 1000;
+        hasTrackedLoadTime.current = true;
+        
+        const mode = storedMode || 'direct';
+        
+        trackAppLoadTime(appId, appName || 'Unnamed App', loadTime, mode);
+        
+        // Clean up localStorage
+        localStorage.removeItem(`app_launch_load_start_${appId}`);
+        localStorage.removeItem(`app_launch_mode_${appId}`);
+      }
+    }
+  }, [isEditorLoading, appName, appId]);
 
   const renderHeader = () => {
     if (moduleMode) {

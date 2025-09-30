@@ -42,6 +42,7 @@
     "plugins:reload:prod": "node dist/scripts/plugins-reload.js",
     "typeorm": "typeorm-ts-node-commonjs",
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
+    "test:db-monitoring": "ts-node -r tsconfig-paths/register --transpile-only ./src/otel/test-db-monitoring.ts",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
     "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main"
   },
