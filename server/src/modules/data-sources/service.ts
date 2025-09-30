@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InstrumentService } from '../../otel/business/service-instrumentation';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
@@ -24,7 +23,6 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
-import { trackDataSourceConnection } from '../../otel/business/business-metrics';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -35,10 +33,6 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) { }
 
-  @InstrumentService('DataSourcesService', { 
-    attributes: { 'operation.type': 'read', 'operation.scope': 'app' },
-    tags: { 'business_operation': 'datasource_listing' }
-  })
   async getForApp(
     query: GetQueryVariables,
     user: User,
@@ -116,10 +110,6 @@ export class DataSourcesService implements IDataSourcesService {
     return { data_sources: decamelizedDatasources };
   }
 
-  @InstrumentService('DataSourcesService', { 
-    attributes: { 'operation.type': 'create' },
-    tags: { 'business_operation': 'datasource_creation' }
-  })
   async create(createDataSourceDto: CreateDataSourceDto, user: User): Promise<DataSource> {
     const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
 
@@ -150,9 +140,6 @@ export class DataSourcesService implements IDataSourcesService {
       resourceName: dataSource?.name,
       metadata: dataSource,
     });
-
-    // Track data source connection business metrics
-    trackDataSourceConnection(kind, user.organizationId, 'connect');
 
     return dataSource;
   }
@@ -193,9 +180,6 @@ export class DataSourcesService implements IDataSourcesService {
     }
 
     await this.dataSourcesRepository.delete(dataSourceId);
-
-    // Track data source disconnection business metrics
-    trackDataSourceConnection(dataSource.kind, user.organizationId, 'disconnect');
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
