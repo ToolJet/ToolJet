@@ -41,9 +41,14 @@ export function InviteSignupForm({ className, ...props }) {
   return (
     <FormWrapper>
       <form className={cn('tw-flex tw-flex-col tw-gap-6', className)} onSubmit={onSubmit} {...props}>
-        <div className="tw-flex tw-flex-col tw-gap-2">
-          <h1 className="tw-text-2xl tw-font-semibold tw-text-text-default">{headerText}</h1>
-          {descriptionText && <p className="tw-text-sm tw-text-text-muted">{descriptionText}</p>}
+        <div className="tw-flex tw-flex-col tw-gap-2 tw-min-w-20">
+          <h1 className="tw-text-4xl tw-tracking-tight tw-font-medium tw-mb-0" data-cy="">
+            {headerText}
+          </h1>
+
+          {descriptionText && (
+            <p className="tw-text-balance tw-text-sm tw-text-text-placeholder tw-mb-0">{descriptionText}</p>
+          )}
         </div>
 
         <div className="tw-grid tw-gap-4">
