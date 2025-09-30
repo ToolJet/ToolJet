@@ -38,6 +38,16 @@ let dbQueryDuration: any;
 let slowQueryCounter: any;
 let apiRequestDuration: any;
 let apiRequestCounter: any;
+let activeRequestsGauge: any;
+let requestBodySizeHistogram: any;
+let responseBodySizeHistogram: any;
+let errorRateCounter: any;
+let dbQueriesPerRequestHistogram: any;
+let authAttemptCounter: any;
+let activeUsersGauge: any;
+let userSessionDuration: any;
+let userApiCallCounter: any;
+let uniqueUsersCounter: any;
 
 // Define the trace exporter
 const traceExporter = new OTLPTraceExporter({
@@ -160,6 +170,20 @@ export const sdk = new NodeSDK({
           const duration = Date.now() - metadata.startTime;
           span.setAttribute('db.query.duration_ms', duration);
 
+          // Track queries per request by incrementing on the active HTTP request context
+          const activeContext = context.active();
+          const httpSpan = trace.getSpan(activeContext);
+          if (httpSpan) {
+            try {
+              const req = (httpSpan as any)._request;
+              if (req && req._otel_db_query_count !== undefined) {
+                req._otel_db_query_count++;
+              }
+            } catch (e) {
+              // Ignore if we can't access the request
+            }
+          }
+
           // Mark slow queries
           if (duration > DB_SLOW_QUERY_THRESHOLD) {
             span.setAttribute('db.query.slow', true);
@@ -195,6 +219,41 @@ export const sdk = new NodeSDK({
   ],
 });
 
+// Track active requests per route
+const activeRequestsByRoute = new Map<string, number>();
+
+// Track active users by organization and last activity timestamp
+const activeUsersByOrg = new Map<string, Set<string>>(); // orgId -> Set of userIds
+const userLastActivity = new Map<string, number>(); // userId -> timestamp
+const USER_ACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+// Helper to clean up inactive users
+const cleanupInactiveUsers = () => {
+  const now = Date.now();
+  const inactiveUsers: string[] = [];
+
+  for (const [userId, lastActivity] of userLastActivity.entries()) {
+    if (now - lastActivity > USER_ACTIVITY_TIMEOUT) {
+      inactiveUsers.push(userId);
+    }
+  }
+
+  // Remove inactive users
+  for (const userId of inactiveUsers) {
+    userLastActivity.delete(userId);
+    // Remove from all organizations
+    for (const [orgId, users] of activeUsersByOrg.entries()) {
+      users.delete(userId);
+      if (users.size === 0) {
+        activeUsersByOrg.delete(orgId);
+      }
+    }
+  }
+};
+
+// Periodic cleanup every minute
+setInterval(cleanupInactiveUsers, 60 * 1000);
+
 // Custom Express middleware for tracing and metrics
 export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
   const span = trace.getSpan(context.active());
@@ -209,12 +268,58 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
     span.setAttribute('http.route', route);
     span.setAttribute('http.method', method);
 
+    // Store request reference on span for DB query tracking
+    (span as any)._request = req;
+
+    // Track user activity (extract from JWT token, session, or user object)
+    const userId = req.user?.id || req.session?.userId || req.headers['x-user-id'];
+    const orgId = req.user?.organizationId || req.session?.organizationId || req.headers['x-organization-id'];
+
+    if (userId) {
+      span.setAttribute('user.id', userId);
+      userLastActivity.set(userId, Date.now());
+
+      if (orgId) {
+        span.setAttribute('user.organization_id', orgId);
+        if (!activeUsersByOrg.has(orgId)) {
+          activeUsersByOrg.set(orgId, new Set());
+        }
+        activeUsersByOrg.get(orgId)!.add(userId);
+      }
+
+      // Track API calls per user
+      if (userApiCallCounter) {
+        userApiCallCounter.add(1, {
+          user_id: userId,
+          ...(orgId && { organization_id: orgId }),
+          route,
+          method
+        });
+      }
+    }
+
+    // Track active requests
+    const routeKey = `${method}:${route}`;
+    const currentActive = activeRequestsByRoute.get(routeKey) || 0;
+    activeRequestsByRoute.set(routeKey, currentActive + 1);
+
+    // Track request body size
+    const requestBodySize = req.get('content-length') ? parseInt(req.get('content-length')) :
+                           (req.body ? JSON.stringify(req.body).length : 0);
+    if (requestBodySize > 0) {
+      span.setAttribute('http.request.body.size', requestBodySize);
+      if (requestBodySizeHistogram) {
+        requestBodySizeHistogram.record(requestBodySize, { route, method });
+      }
+    }
+
     // Track DB query count per request
     let dbQueryCount = 0;
     const originalDbQueryCounter = dbQueryCounter;
 
-    // Store initial context for tracking
+    // Store metadata for tracking
     req._otel_start_time = requestStartTime;
+    req._otel_db_query_count = 0;
 
     const originalJson = res.json;
     res.json = function (body: any) {
@@ -224,12 +329,27 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
       span.setAttribute('http.status_code', statusCode);
       span.setAttribute('http.response.duration_ms', duration);
 
-      // Collect DB query metrics from child spans
-      const childSpans = span['_spanContext']?.['_traceState'];
-      if (childSpans) {
-        // This is a simplified approach - in practice, child spans are tracked differently
-        span.setAttribute('db.queries.count', dbQueryCount);
+      // Track response body size
+      const responseBodySize = body ? JSON.stringify(body).length : 0;
+      if (responseBodySize > 0) {
+        span.setAttribute('http.response.body.size', responseBodySize);
+        if (responseBodySizeHistogram) {
+          responseBodySizeHistogram.record(responseBodySize, { route, method, status: statusCode });
+        }
       }
+
+      // Collect DB query metrics from child spans
+      const dbQueries = req._otel_db_query_count || 0;
+      if (dbQueries > 0) {
+        span.setAttribute('db.queries.count', dbQueries);
+        if (dbQueriesPerRequestHistogram) {
+          dbQueriesPerRequestHistogram.record(dbQueries, { route, method });
+        }
+      }
+
+      // Decrement active requests
+      const currentActive = activeRequestsByRoute.get(routeKey) || 1;
+      activeRequestsByRoute.set(routeKey, Math.max(0, currentActive - 1));
 
       // Record API metrics
       if (apiRequestDuration && route !== '/api/health') {
@@ -246,6 +366,23 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
           method,
           status: statusCode,
           success: statusCode < 400 ? 'true' : 'false',
+        });
+      }
+
+      // Track error rates by category
+      if (errorRateCounter && statusCode >= 400) {
+        const errorType = statusCode >= 500 ? '5xx' : '4xx';
+        const errorCategory = statusCode === 401 || statusCode === 403 ? 'auth' :
+                             statusCode === 404 ? 'not_found' :
+                             statusCode === 429 ? 'rate_limit' :
+                             statusCode >= 500 ? 'server_error' : 'client_error';
+
+        errorRateCounter.add(1, {
+          route,
+          method,
+          status: statusCode,
+          error_type: errorType,
+          error_category: errorCategory,
         });
       }
 
@@ -293,6 +430,11 @@ export const startOpenTelemetry = async (): Promise<void> => {
       unit: 'queries',
     });
 
+    dbQueriesPerRequestHistogram = meter.createHistogram('db.queries.per.request', {
+      description: 'Number of database queries per API request',
+      unit: 'queries',
+    });
+
     // API metrics
     apiRequestDuration = meter.createHistogram('http.server.request.duration', {
       description: 'Duration of HTTP requests in milliseconds',
@@ -304,11 +446,146 @@ export const startOpenTelemetry = async (): Promise<void> => {
       unit: 'requests',
     });
 
-    console.log('Custom metrics initialized');
+    activeRequestsGauge = meter.createObservableGauge('http.server.active.requests', {
+      description: 'Number of active HTTP requests',
+      unit: 'requests',
+    });
+
+    // Register callback to report active requests per route
+    activeRequestsGauge.addCallback((observableResult: any) => {
+      for (const [routeKey, count] of activeRequestsByRoute.entries()) {
+        const [method, route] = routeKey.split(':', 2);
+        observableResult.observe(count, { route, method });
+      }
+    });
+
+    requestBodySizeHistogram = meter.createHistogram('http.server.request.body.size', {
+      description: 'Size of HTTP request bodies in bytes',
+      unit: 'bytes',
+    });
+
+    responseBodySizeHistogram = meter.createHistogram('http.server.response.body.size', {
+      description: 'Size of HTTP response bodies in bytes',
+      unit: 'bytes',
+    });
+
+    errorRateCounter = meter.createCounter('http.server.errors', {
+      description: 'HTTP error responses by type and category',
+      unit: 'errors',
+    });
+
+    authAttemptCounter = meter.createCounter('auth.attempts', {
+      description: 'Authentication attempts by outcome',
+      unit: 'attempts',
+    });
+
+    // User metrics
+    activeUsersGauge = meter.createObservableGauge('users.active', {
+      description: 'Number of active users in the last 5 minutes',
+      unit: 'users',
+    });
+
+    // Register callback to report active users per organization
+    activeUsersGauge.addCallback((observableResult: any) => {
+      // Total active users across all organizations
+      const totalActiveUsers = userLastActivity.size;
+      observableResult.observe(totalActiveUsers, { scope: 'total' });
+
+      // Active users per organization
+      for (const [orgId, users] of activeUsersByOrg.entries()) {
+        observableResult.observe(users.size, {
+          scope: 'organization',
+          organization_id: orgId
+        });
+      }
+    });
+
+    userApiCallCounter = meter.createCounter('users.api.calls', {
+      description: 'API calls per user',
+      unit: 'calls',
+    });
+
+    userSessionDuration = meter.createHistogram('users.session.duration', {
+      description: 'User session duration in seconds',
+      unit: 'seconds',
+    });
+
+    uniqueUsersCounter = meter.createCounter('users.unique', {
+      description: 'Unique users seen',
+      unit: 'users',
+    });
+
+    console.log('Custom metrics initialized:', {
+      database: ['db.query.count', 'db.query.duration', 'db.query.slow.count', 'db.queries.per.request'],
+      api: ['http.server.request.duration', 'http.server.request.count', 'http.server.active.requests',
+            'http.server.request.body.size', 'http.server.response.body.size', 'http.server.errors'],
+      auth: ['auth.attempts'],
+      users: ['users.active', 'users.api.calls', 'users.session.duration', 'users.unique']
+    });
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
   }
+};
+
+// Track unique users seen in this session
+const seenUsers = new Set<string>();
+
+// Helper function to track authentication attempts
+export const trackAuthAttempt = (outcome: 'success' | 'failure', method: string, reason?: string) => {
+  if (authAttemptCounter) {
+    authAttemptCounter.add(1, {
+      outcome,
+      method, // e.g., 'password', 'sso', 'oauth', 'api_key'
+      ...(reason && { reason }), // e.g., 'invalid_credentials', 'user_not_found', 'account_locked'
+    });
+  }
+};
+
+// Helper function to track user login (call this after successful authentication)
+export const trackUserLogin = (userId: string, organizationId?: string) => {
+  if (userId && !seenUsers.has(userId)) {
+    seenUsers.add(userId);
+    if (uniqueUsersCounter) {
+      uniqueUsersCounter.add(1, {
+        ...(organizationId && { organization_id: organizationId })
+      });
+    }
+  }
+
+  // Update user activity
+  userLastActivity.set(userId, Date.now());
+  if (organizationId) {
+    if (!activeUsersByOrg.has(organizationId)) {
+      activeUsersByOrg.set(organizationId, new Set());
+    }
+    activeUsersByOrg.get(organizationId)!.add(userId);
+  }
+};
+
+// Helper function to track user logout (call this when user logs out)
+export const trackUserLogout = (userId: string, sessionStartTime: number) => {
+  if (userSessionDuration && sessionStartTime) {
+    const sessionDurationSeconds = (Date.now() - sessionStartTime) / 1000;
+    userSessionDuration.record(sessionDurationSeconds, { user_id: userId });
+  }
+
+  // Remove user from active tracking
+  userLastActivity.delete(userId);
+  for (const [orgId, users] of activeUsersByOrg.entries()) {
+    users.delete(userId);
+    if (users.size === 0) {
+      activeUsersByOrg.delete(orgId);
+    }
+  }
+};
+
+// Get current active users count (for monitoring/debugging)
+export const getActiveUsersCount = (organizationId?: string): number => {
+  if (organizationId) {
+    return activeUsersByOrg.get(organizationId)?.size || 0;
+  }
+  return userLastActivity.size;
 };
 
 export default sdk;
