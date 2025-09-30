@@ -297,6 +297,21 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);
   logger.log('='.repeat(60));
+  logger.log(
+    `Custom ORM logger: ${configService.get<string>('DISABLE_CUSTOM_QUERY_LOGGING') !== 'true' ? 'enabled' : 'disabled'}`
+  );
+  logger.log(
+    `Custom ORM logger logging level: ${configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`ORM logging level: ${configService.get<string>('ORM_LOGGING') || 'Not - configured'}`);
+  logger.log(
+    `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
+  );
+  logger.log(
+    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
+  logger.log('='.repeat(60));
 }
 
 /**
