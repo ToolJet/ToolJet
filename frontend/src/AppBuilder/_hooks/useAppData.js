@@ -144,6 +144,10 @@ const useAppData = (
     (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
   );
 
+  // Used to trigger app refresh flow after restoring app history
+  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
+  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
+
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
@@ -599,8 +603,9 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
+    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
 
-    if (isEnvChanged || isVersionChanged) {
+    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -706,7 +711,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
 
   useEffect(() => {
     if (moduleMode) return;
