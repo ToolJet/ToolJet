@@ -41,19 +41,6 @@ return
 
 <img className="screenshot-full img-full" src="/img/workflows/results/v2/multi-node-response.png" alt="Multi Node Response" />
 
-## Fine Tuning Your Response Using JavaScript
-
-Refine your response by manipulating the data using JavaScript functions. For example, the slice function can be used to select a subset of data:
-
-```js
-return 
-    ({sales: getSalesData.data.slice(0,5),
-    inventory: getInventory.data.slice(0,5),
-    csv: generateCSVData.data})        
-```
-
-<img className="screenshot-full img-full" src="/img/workflows/results/v2/transformed-response.png" alt="Transformed Response" />
-
 ## Workflow Execution
 
 When executing workflows with triggers, the configured data in the **Response** node will be included in the API response. When triggered inside a ToolJet app, the data will be returned in the same format as a regular query.

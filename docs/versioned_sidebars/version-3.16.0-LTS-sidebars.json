@@ -573,7 +573,15 @@
           "label": "Nodes",
           "items": [
             "workflows/nodes/start-trigger",
-            "workflows/nodes/logic",
+            {
+              "type": "category",
+              "label": "Logic Nodes",
+              "items": [
+                "workflows/nodes/logic/js",
+                "workflows/nodes/logic/if-else",
+                "workflows/nodes/logic/loop"
+              ]
+            },
             "workflows/nodes/ds",
             "workflows/nodes/wf",
             "workflows/nodes/response",
