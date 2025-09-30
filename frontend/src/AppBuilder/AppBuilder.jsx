@@ -16,6 +16,8 @@ import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
+import PerformanceMonitor from '@/_components/PerformanceMonitor/PerformanceMonitor';
+import performanceMonitor from '@/_services/performanceMonitor.service';
 
 import ArtifactPreview from './ArtifactPreview';
 
@@ -79,6 +81,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           )}
         </ModuleProvider>
       </ErrorBoundary>
+      <PerformanceMonitor isVisible={true} position="bottom-right" />
     </div>
   );
 };

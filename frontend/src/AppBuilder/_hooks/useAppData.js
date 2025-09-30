@@ -18,6 +18,7 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import performanceMonitor from '@/_services/performanceMonitor.service';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
@@ -261,6 +262,8 @@ const useAppData = (
       setEditorLoading(true, moduleId);
     }
 
+    // Track data load time
+    const dataLoadStartTime = performance.now();
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -531,6 +534,10 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
+        
+        // Track data load completion
+        performanceMonitor.trackDataLoad(dataLoadStartTime);
+        
         // only show if app is not created from prompt
         if (showWalkthrough && !moduleMode) initEditorWalkThrough();
         !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
@@ -548,7 +555,9 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
+      const onLoadStartTime = performance.now();
       runOnLoadQueries(moduleId).then(() => {
+        performanceMonitor.trackOnLoadQueries(onLoadStartTime);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });

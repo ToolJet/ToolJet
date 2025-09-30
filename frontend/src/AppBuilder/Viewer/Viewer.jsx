@@ -18,6 +18,8 @@ import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import TooljetBanner from './TooljetBanner';
+import PerformanceMonitor from '@/_components/PerformanceMonitor/PerformanceMonitor';
+import performanceMonitor from '@/_services/performanceMonitor.service';
 
 export const Viewer = ({
   id: appId,
@@ -32,6 +34,7 @@ export const Viewer = ({
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
+  const viewerMountTime = useRef(performance.now());
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
 
@@ -141,6 +144,10 @@ export const Viewer = ({
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
+
+    // Track Viewer mount time
+    performanceMonitor.trackViewerMount(performance.now() - viewerMountTime.current);
+
     return () => {
       setIsViewer(false, moduleId);
     };
@@ -291,6 +298,7 @@ export const Viewer = ({
             </div>
           </Suspense>
           <Popups darkMode={darkMode} />
+          <PerformanceMonitor isVisible={true} position="bottom-right" />
         </ErrorBoundary>
       </div>
     );
