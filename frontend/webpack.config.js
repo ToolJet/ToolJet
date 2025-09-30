@@ -190,6 +190,11 @@ module.exports = {
           },
           {
             loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                silenceDeprecations: ['global-builtin', 'import', 'color-functions'],
+              },
+            },
           },
         ],
       },
