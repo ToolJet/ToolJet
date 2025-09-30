@@ -15,6 +15,7 @@ import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
+import { OpenTelemetryModule } from 'nestjs-otel';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -110,6 +111,25 @@ export class AppModuleLoader {
       GuardValidatorModule,
       LoggingModule.forRoot(),
     ];
+
+    // Add OpenTelemetry Module if enabled
+    if (process.env.ENABLE_OTEL === 'true') {
+      staticModules.push(
+        OpenTelemetryModule.forRoot({
+          metrics: {
+            hostMetrics: true,
+            apiMetrics: {
+              enable: true,
+              defaultAttributes: {
+                custom: 'metrics',
+              },
+              ignoreRoutes: ['/favicon.ico', '/api/health'],
+              ignoreUndefinedRoutes: false,
+            },
+          },
+        })
+      );
+    }
 
     if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
       staticModules.unshift(
