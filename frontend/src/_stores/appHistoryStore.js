@@ -7,12 +7,6 @@ const initialState = {
   historyEntries: [],
   isLoading: false,
   isRestoring: false,
-  pagination: {
-    page: 0,
-    limit: 20,
-    total: 0,
-    hasMore: false,
-  },
   selectedEntry: {},
   showRenameEntryModal: false,
   showRestoreEntryModal: false,
@@ -23,38 +17,14 @@ const useAppHistoryStore = create(
     immer((set, get) => ({
       ...initialState,
 
-      // Actions with named action types for Redux DevTools
-      loadHistory: async (appVersionId, page = 0, limit = 20) => {
+      setIsLoading: async (value) => {
         set(
           (state) => {
-            state.isLoading = true;
+            state.isLoading = value;
           },
           false,
-          'loadHistory/start'
+          'setIsLoading'
         );
-
-        try {
-          const response = await appHistoryService.getHistory(appVersionId, page, limit);
-
-          set(
-            (state) => {
-              state.historyEntries = page === 0 ? response.entries : [...state.historyEntries, ...response.entries];
-              state.pagination = response.pagination;
-              state.isLoading = false;
-            },
-            false,
-            'loadHistory/success'
-          );
-        } catch (error) {
-          console.error('Failed to load history:', error);
-          set(
-            (state) => {
-              state.isLoading = false;
-            },
-            false,
-            'loadHistory/error'
-          );
-        }
       },
 
       restoreToHistory: async (appVersionId, historyId) => {
@@ -68,9 +38,6 @@ const useAppHistoryStore = create(
 
         try {
           const response = await appHistoryService.restoreToEntry(historyId);
-
-          // Reload history after restoration
-          await get().loadHistory(appVersionId);
 
           set(
             (state) => {
@@ -141,7 +108,6 @@ const useAppHistoryStore = create(
         set(
           (state) => {
             state.historyEntries = [];
-            state.pagination = { page: 0, limit: 20, total: 0, hasMore: false };
           },
           false,
           'clearHistory'
@@ -154,7 +120,6 @@ const useAppHistoryStore = create(
           (state) => {
             // Replace the history entries with fresh data from SSE
             state.historyEntries = historyData.entries || [];
-            state.pagination = historyData.pagination || state.pagination;
           },
           false,
           'updateHistoryFromSSE'
