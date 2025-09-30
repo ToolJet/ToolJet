@@ -22,7 +22,7 @@ function Step({ stepNo, label, active, completed }) {
       )}
 
       <p
-        className={cn('tw-text-base tw-text-text-placeholder tw-font-medium tw-mb-0', {
+        className={cn('tw-text-text-placeholder tw-font-title-default tw-mb-0', {
           'tw-text-text-primary': completed || active,
         })}
       >
