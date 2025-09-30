@@ -29,8 +29,6 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { trackUserLogin, trackUserSession, startUserSession, endUserSession } from '../../otel/business/business-metrics';
-import { UserContext } from '../../otel/types';
 
 @Injectable()
 export class SessionUtilService {
@@ -49,12 +47,6 @@ export class SessionUtilService {
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      // Get user to find organization for session tracking
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      if (user?.organizationId) {
-        endUserSession(userId, user.organizationId);
-      }
-      
       await manager.delete(UserSessions, { userId });
     });
   }
@@ -145,32 +137,6 @@ export class SessionUtilService {
         ...(extraData ? extraData : {}),
         ...(isPatLogin ? { signedPat } : {}),
       };
-
-      // Track user login business metrics
-      if (user && organization) {
-        const userContext: UserContext = {
-          userId: user.id,
-          organizationId: organization.id,
-          userEmail: user.email,
-          sessionId: sessionId,
-          ipAddress: (request as any)?.clientIp || (request && requestIp.getClientIp(request)),
-          userAgent: request?.headers['user-agent']
-        };
-
-        // Determine login method
-        let loginMethod: 'password' | 'sso' | 'oauth' | 'magic_link' = 'password';
-        if (isInstanceSSO || JWTPayload.isSSOLogin) {
-          loginMethod = 'sso';
-        } else if (isPasswordLogin || JWTPayload.isPasswordLogin) {
-          loginMethod = 'password';
-        }
-
-        // Track successful login
-        trackUserLogin(userContext, 'success', loginMethod);
-        
-        // Start user session for active users tracking
-        startUserSession(user.id, organization.id);
-      }
 
       return decamelizeKeys(responsePayload);
     }, manager);
@@ -287,7 +253,7 @@ export class SessionUtilService {
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const session = await manager.save(
+      return await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
@@ -296,24 +262,6 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
-
-      // Track user session start for analytics
-      try {
-        const user = await manager.findOne(User, {
-          where: { id: userId },
-          relations: ['organizationUsers', 'organizationUsers.organization']
-        });
-
-        if (user?.organizationUsers?.length > 0) {
-          const organizationId = user.organizationUsers[0].organizationId;
-          const { startUserSession } = require('../../otel/business/business-metrics');
-          startUserSession(userId, organizationId);
-        }
-      } catch (error) {
-        console.error('[ToolJet Backend] Failed to track user session start:', error);
-      }
-
-      return session;
     }, manager);
   }
 

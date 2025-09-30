@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards, Param, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -20,7 +20,6 @@ import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
 import { isHttpsEnabled } from '@helpers/utils.helper';
-import { traceAppLifecycleOperation } from '../../otel/core/tracing';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -53,19 +52,7 @@ export class AppsController implements IAppsController {
       });
     }
 
-    return traceAppLifecycleOperation('create', {
-      userId: user.id,
-      organizationId: user.organizationId,
-      appName: appCreateDto.name,
-      userEmail: user.email
-    }, async () => {
-      return this.appsService.create(user, appCreateDto);
-    }, {
-      'app.type': appCreateDto.type || 'frontend',
-      'app.icon': appCreateDto.icon,
-      'request.has_ai_prompt': !!cookies.tj_ai_prompt,
-      'request.has_template': !!cookies.tj_template_id
-    });
+    return this.appsService.create(user, appCreateDto);
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
@@ -93,18 +80,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
   update(@User() user, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
-    return traceAppLifecycleOperation('update', {
-      userId: user.id,
-      organizationId: user.organizationId,
-      appId: app.id,
-      appName: app.name,
-      userEmail: user.email
-    }, async () => {
-      return this.appsService.update(app, appUpdateDto, user);
-    }, {
-      'app.current_version': app.editingVersion?.id,
-      'update.fields': Object.keys(appUpdateDto).join(',')
-    });
+    return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
@@ -118,21 +94,8 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Delete(':id')
   delete(@User() user, @App() app: AppEntity) {
-    return traceAppLifecycleOperation('delete', {
-      userId: user.id,
-      organizationId: user.organizationId,
-      appId: app.id,
-      appName: app.name,
-      userEmail: user.email
-    }, async () => {
-      return this.appsService.delete(app, user);
-    }, {
-      'app.version_count': app.appVersions?.length || 0,
-      'app.is_public': app.isPublic,
-      'app.created_at': app.createdAt?.toISOString()
-    });
+    return this.appsService.delete(app, user);
   }
-
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -185,201 +148,5 @@ export class AppsController implements IAppsController {
   @Put(':id/release')
   releaseVersion(@User() user, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
     return this.appsService.release(app, user, versionReleaseDto);
-  }
-
-  // Metrics endpoints
-  @InitFeature(FEATURE_KEY.GET)
-  @UseGuards(JwtAuthGuard)
-  @Post('metrics/app-load-time')
-  trackAppLoadTime(
-    @User() user: UserEntity,
-    @Body() data: { 
-      appId: string; 
-      loadTime: number; 
-      appName?: string;
-      environment?: string;
-      mode?: string;
-    }
-  ) {
-    const { trackAppLoadTime } = require('../../otel/business/business-metrics');
-    
-    const appContext = {
-      appId: data.appId,
-      appName: data.appName || 'Unknown App',
-      organizationId: user.organizationId,
-      userId: user.id,
-      environment: data.environment || 'production'
-    };
-    
-    const mode = data.mode || 'direct';
-    trackAppLoadTime(appContext, data.loadTime, mode); // loadTime should already be in milliseconds
-    
-    return { 
-      success: true,
-      message: 'App load time tracked successfully',
-      data: {
-        appId: data.appId,
-        loadTime: data.loadTime,
-        userId: user.id
-      }
-    };
-  }
-
-  // Comprehensive performance monitoring test endpoint
-  @UseGuards(JwtAuthGuard)
-  @Get('performance/test')
-  async testComprehensiveMonitoring(@User() user: UserEntity, @Req() req: any) {
-    const {
-      instrumentDatabaseQuery,
-      instrumentExternalOperation,
-      generatePerformanceReport
-    } = require('../../otel/monitoring/comprehensive-api-middleware');
-
-    // Simulate database query
-    const dbQuery = instrumentDatabaseQuery(
-      'SELECT * FROM apps WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 10',
-      'SELECT',
-      'apps'
-    );
-
-    dbQuery.recordConnectionWait(15);
-    await new Promise(resolve => setTimeout(resolve, 50)); // Simulate query time
-    dbQuery.end({
-      rowsReturned: 5,
-      rowsAffected: 0,
-      status: 'success'
-    });
-
-    // Plugin query simulation removed - functionality covered by database instrumentation
-
-    // Simulate external operation
-    const externalOp = instrumentExternalOperation(
-      'webhook_call',
-      'slack'
-    );
-
-    await new Promise(resolve => setTimeout(resolve, 200));
-    externalOp.end({
-      status: 'success',
-      httpMethod: 'POST',
-      statusCode: 200
-    });
-
-    return {
-      success: true,
-      message: 'Comprehensive monitoring test completed',
-      performanceReport: generatePerformanceReport(),
-      data: {
-        simulatedOperations: {
-          databaseQuery: { duration: '50ms', status: 'success' },
-          pluginQuery: { duration: '30ms', status: 'success' },
-          externalOperation: { duration: '200ms', status: 'success' }
-        },
-        userId: user.id,
-        organizationId: user.organizationId
-      }
-    };
-  }
-
-  // Test endpoint to manually trigger metrics
-  @UseGuards(JwtAuthGuard)
-  @Post('metrics/test')
-  testMetrics(@User() user: UserEntity) {
-    const { trackAppLoadTime, trackQueryExecution } = require('../../otel/business/business-metrics');
-    
-    const appContext = {
-      appId: 'test-manual-app',
-      appName: 'Manual Test App',
-      organizationId: user.organizationId,
-      userId: user.id,
-      environment: 'test'
-    };
-    
-    console.log('[ToolJet Backend] Manual test - tracking app load time:', appContext);
-    trackAppLoadTime(appContext, 3140); // 3.14 seconds = 3140 milliseconds
-    
-    console.log('[ToolJet Backend] Manual test - tracking query execution:', appContext);
-    trackQueryExecution(appContext, 'test_query', 250, 'success', 'postgresql');
-    trackQueryExecution(appContext, 'slow_query', 5000, 'error', 'mysql');
-    
-    return { 
-      success: true,
-      message: 'Test metrics tracked successfully',
-      data: {
-        loadTime: 3.14,
-        queries: [
-          { name: 'test_query', duration: 250, status: 'success', datasource: 'postgresql' },
-          { name: 'slow_query', duration: 5000, status: 'error', datasource: 'mysql' }
-        ],
-        userId: user.id
-      }
-    };
-  }
-
-  // Performance dashboard endpoint
-  @UseGuards(JwtAuthGuard)
-  @Get('performance/dashboard')
-  async getPerformanceDashboard(@User() user: UserEntity) {
-    const {
-      generatePerformanceReport,
-      getMonitoringHealth
-    } = require('../../otel/monitoring/comprehensive-api-middleware');
-
-    const {
-      compareReleasePerformance,
-      analyzeAppBuilderViewerPerformance,
-      getBenchmarkingStats
-    } = require('../../otel/analysis/benchmarking-framework');
-
-    // Plugin metrics removed - functionality covered by existing database and API metrics
-
-    const {
-      getEnhancedDatabaseStats
-    } = require('../../otel/monitoring/database-monitoring');
-
-    const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
-
-    return {
-      success: true,
-      data: {
-        currentRelease,
-        generatedAt: new Date().toISOString(),
-        monitoringHealth: getMonitoringHealth(),
-        performanceReport: generatePerformanceReport(currentRelease),
-        appBuilderViewerAnalysis: analyzeAppBuilderViewerPerformance(currentRelease),
-        benchmarkingStats: getBenchmarkingStats(),
-        databaseStats: getEnhancedDatabaseStats(),
-        organizationId: user.organizationId,
-      }
-    };
-  }
-
-  // Release comparison endpoint
-  @UseGuards(JwtAuthGuard)
-  @Get('performance/compare/:previousRelease')
-  async compareReleasePerformance(
-    @User() user: UserEntity,
-    @Param('previousRelease') previousRelease: string
-  ) {
-    const { compareReleasePerformance } = require('../../otel/analysis/benchmarking-framework');
-    const currentRelease = process.env.TOOLJET_VERSION || globalThis.TOOLJET_VERSION || '1.0.0';
-
-    const comparisons = compareReleasePerformance(currentRelease, previousRelease);
-
-    return {
-      success: true,
-      data: {
-        currentRelease,
-        previousRelease,
-        comparisons,
-        summary: {
-          totalEndpoints: comparisons.length,
-          regressions: comparisons.filter(c => c.significance === 'regression').length,
-          improvements: comparisons.filter(c => c.significance === 'improvement').length,
-          neutral: comparisons.filter(c => c.significance === 'neutral').length,
-        },
-        organizationId: user.organizationId,
-      }
-    };
   }
 }

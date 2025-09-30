@@ -165,9 +165,6 @@ export class DataQueriesService implements IDataQueriesService {
   ): Promise<object> {
     let result = {};
 
-    // Start timing for query execution metrics
-    const queryStartTime = Date.now();
-
     try {
       result = await this.dataQueryUtilService.runQuery(
         user,
@@ -177,30 +174,14 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode
       );
-
-      // Calculate execution time and add to result metadata
-      const executionTimeMs = Date.now() - queryStartTime;
-      result = {
-        ...result,
-        metadata: {
-          ...((result as any).metadata || {}),
-          duration: executionTimeMs
-        }
-      };
-
     } catch (error) {
-      // Calculate execution time for failed queries too
-      const executionTimeMs = Date.now() - queryStartTime;
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
           message: error.message,
           description: error.description,
           data: error.data,
-          metadata: {
-            ...(error.metadata || {}),
-            duration: executionTimeMs
-          },
+          metadata: error.metadata,
         };
       } else {
         console.log(error);
@@ -209,91 +190,11 @@ export class DataQueriesService implements IDataQueriesService {
           message: 'Internal server error',
           description: error.message,
           data: {},
-          metadata: {
-            duration: executionTimeMs
-          },
         };
       }
     }
 
-    console.log('[ToolJet Backend] About to track query execution metrics');
-    
-    // Track query execution metrics
-    this.trackQueryExecutionMetrics(user, dataQuery, result, environmentId, mode);
-
-    console.log('[ToolJet Backend] Query execution metrics tracking completed');
     return result;
-  }
-
-  private trackQueryExecutionMetrics(
-    user: User,
-    dataQuery: DataQuery,
-    result: any,
-    environmentId?: string,
-    mode?: string
-  ): void {
-    try {
-      const { trackQueryExecution } = require('../../otel/business/business-metrics');
-      
-      console.log('[ToolJet Backend] Raw query result for metrics:', {
-        resultKeys: Object.keys(result || {}),
-        resultStatus: result?.status,
-        resultMetadata: result?.metadata,
-        dataQueryName: dataQuery?.name,
-        dataQueryId: dataQuery?.id,
-        dataSourceKind: dataQuery?.dataSource?.kind,
-        appId: dataQuery?.app?.id,
-        appName: dataQuery?.app?.name,
-        dataQueryKeys: Object.keys(dataQuery || {}),
-        queryOptions: dataQuery?.options
-      });
-      
-      // Extract metadata from result
-      const metadata = result.metadata || {};
-      const status = result.status === 'failed' ? 'error' : 'success';
-      const duration = metadata.duration || 0; // in milliseconds
-      
-      // Get data source type from dataQuery
-      const dataSourceType = dataQuery?.dataSource?.kind || 'unknown';
-      
-      // Extract query text from options
-      const queryText = dataQuery?.options?.query || dataQuery?.options?.sql || dataQuery?.options?.rawQuery || 'unknown';
-      
-      const appContext = {
-        appId: dataQuery?.app?.id || 'unknown',
-        appName: dataQuery?.app?.name || 'Unknown App',
-        organizationId: user?.organizationId || dataQuery?.app?.organizationId || 'unknown',
-        userId: user?.id || 'unknown',
-        environment: environmentId || 'production'
-      };
-      
-      console.log('[ToolJet Backend] Tracking query execution with enhanced logging:', {
-        queryName: dataQuery?.name,
-        status,
-        duration,
-        dataSourceType,
-        queryText: queryText,
-        appContext,
-        trackQueryExecutionExists: typeof trackQueryExecution === 'function'
-      });
-      
-      if (typeof trackQueryExecution === 'function') {
-        trackQueryExecution(
-          appContext,
-          dataQuery?.name || 'unnamed_query',
-          duration,
-          status,
-          dataSourceType,
-          queryText
-        );
-        console.log('[ToolJet Backend] Query execution metrics sent successfully');
-      } else {
-        console.error('[ToolJet Backend] trackQueryExecution is not a function:', typeof trackQueryExecution);
-      }
-    } catch (error) {
-      console.error('[ToolJet Backend] Failed to track query execution metrics:', error);
-      console.error('[ToolJet Backend] Error stack:', error.stack);
-    }
   }
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
