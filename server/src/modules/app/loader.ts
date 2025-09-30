@@ -14,11 +14,24 @@ import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
 import { LoggingModule } from '@modules/logging/module';
+import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+    const getMainDBConnectionModule = (): DynamicModule => {
+      return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
+        ? TypeOrmModule.forRootAsync({
+            inject: [TypeormLoggerService],
+            useFactory: (profilerLogger: TypeormLoggerService) => ({
+              ...ormconfig,
+              logger: profilerLogger,
+            }),
+          })
+        : TypeOrmModule.forRoot(ormconfig);
+    };
+
     // Static imports that are always loaded
     const staticModules = [
       EventEmitterModule.forRoot({
@@ -62,13 +75,13 @@ export class AppModuleLoader {
           transport:
             process.env.NODE_ENV !== 'production'
               ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                },
-              }
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    levelFirst: true,
+                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  },
+                }
               : undefined,
           redact: {
             paths: [
@@ -91,11 +104,11 @@ export class AppModuleLoader {
           },
         },
       }),
-      TypeOrmModule.forRoot(ormconfig),
+      getMainDBConnectionModule(),
       TypeOrmModule.forRoot(tooljetDbOrmconfig),
       RequestContextModule,
       GuardValidatorModule,
-      LoggingModule,
+      LoggingModule.forRoot(),
     ];
 
     if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
