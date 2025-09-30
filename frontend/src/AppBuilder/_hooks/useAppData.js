@@ -488,7 +488,7 @@ const useAppData = (
         setQueryMapping(moduleId);
 
         setResolvedGlobals('environment', editorEnvironment, moduleId);
-        setResolvedGlobals('version', { name: editingVersion?.name }, moduleId);
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',

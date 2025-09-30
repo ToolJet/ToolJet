@@ -19,6 +19,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
+  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const isGitSyncEnabled =
@@ -92,12 +93,14 @@ const CreateVersionModal = ({
       selectedVersionForCreation.id,
       (newVersion) => {
         toast.success('Version Created');
+        console.log('version is created from here');
         setVersionName('');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         appVersionService
           .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
+            setResolvedGlobals('appVersion', { name: data?.editing_version?.name }, moduleId);
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);
           })
