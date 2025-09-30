@@ -194,7 +194,7 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(!forceMenuOpen);
+    setForceMenuOpen(true);
   };
 
   const customSelectProps = {
@@ -212,7 +212,7 @@ export const AppVersionsManager = ({ darkMode }) => {
   useEffect(() => {
     function handleClickOutside(event) {
       if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
-        if (!forceMenuOpen) {
+        if (forceMenuOpen) {
           setForceMenuOpen(false);
         }
       }
