@@ -692,6 +692,7 @@ const useAppData = (
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

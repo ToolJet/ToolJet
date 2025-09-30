@@ -99,7 +99,6 @@ const CreateVersionModal = ({
         appVersionService
           .getAppVersionData(appId, newVersion.id, currentMode)
           .then((data) => {
-            setResolvedGlobals('appVersion', { name: data?.editing_version?.name }, moduleId);
             setCurrentVersionId(newVersion.id);
             handleCommitOnVersionCreation(data);
           })
