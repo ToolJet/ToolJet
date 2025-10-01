@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
-import * as compression from 'compression';
+import * as expressStaticGzip from 'express-static-gzip';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
@@ -195,7 +195,27 @@ function configureUrlPrefix() {
 function setupBodyParsers(app: NestExpressApplication, configService: ConfigService) {
   const maxSize = configService.get<string>('MAX_JSON_SIZE') || '50mb';
 
-  app.use(compression());
+  // Serve pre-compressed static files (gzip and brotli)
+  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+    const urlPrefix = process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, '');
+    app.use(
+      urlPrefix || '/',
+      expressStaticGzip(join(__dirname, '../../../../../', 'frontend/build'), {
+        enableBrotli: true,
+        orderPreference: ['br', 'gz'],
+        serveStatic: {
+          maxAge: '31536000000',
+          immutable: true,
+          setHeaders: (res, path) => {
+            if (path.endsWith('.html')) {
+              res.setHeader('Cache-Control', 'no-cache');
+            }
+          },
+        },
+      })
+    );
+  }
+
   app.use(cookieParser());
   app.use(json({ verify: rawBodyBuffer, limit: maxSize }));
   app.use(

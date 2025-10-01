@@ -43,6 +43,16 @@ const plugins = [
     test: /\.js(\?.*)?$/i,
     algorithm: 'gzip',
   }),
+  new CompressionPlugin({
+    filename: '[path][base].br',
+    algorithm: 'brotliCompress',
+    test: /\.(js|css|html|svg)$/,
+    compressionOptions: {
+      level: 11,
+    },
+    threshold: 10240,
+    minRatio: 0.8,
+  }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
   new webpack.DefinePlugin({
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
@@ -83,6 +93,12 @@ if (isDevEnv) {
 }
 
 module.exports = {
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+  },
   mode: environment,
   optimization: {
     minimize: environment === 'production',
@@ -102,11 +118,39 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      chunks: 'all',
       cacheGroups: {
-        vendors: {
+        defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          name: 'vendors',
+          priority: -10,
+          reuseExistingChunk: true,
+        },
+        common: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+        // Split React and React-DOM into separate chunk
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+          name: 'react-vendor',
+          priority: 10,
+          reuseExistingChunk: true,
+        },
+        // Split Plotly into separate chunk (large library)
+        plotly: {
+          test: /[\\/]node_modules[\\/]plotly\.js-dist-min[\\/]/,
+          name: 'plotly-vendor',
+          priority: 10,
+          reuseExistingChunk: true,
+        },
+        // Split CodeMirror into separate chunk
+        codemirror: {
+          test: /[\\/]node_modules[\\/](@codemirror|@uiw\/react-codemirror)[\\/]/,
+          name: 'codemirror-vendor',
+          priority: 10,
+          reuseExistingChunk: true,
         },
       },
     },
@@ -226,6 +270,8 @@ module.exports = {
   output: {
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    filename: '[name].[contenthash:8].js',
+    chunkFilename: '[name].[contenthash:8].chunk.js',
   },
   externals: {
     // global app config object
