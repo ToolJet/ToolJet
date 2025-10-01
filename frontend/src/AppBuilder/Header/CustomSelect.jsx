@@ -100,10 +100,16 @@ const Menu = (props) => {
 
 export const SingleValue = ({ selectProps = {} }) => {
   const appVersionName = selectProps.value?.appVersionName;
-  const { menuIsOpen, onMenuOpen } = selectProps;
+  const { menuIsOpen, onToggleMenu } = selectProps;
   return (
     <div className="d-inline-flex align-items-center tw-w-full" data-cy="app-version-label" style={{ gap: '8px' }}>
       <Button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onToggleMenu && typeof onToggleMenu === 'function') {
+            onToggleMenu();
+          }
+        }}
         variant="ghost" className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}>
         <Tag width="16" height="16" className="tw-text-icon-success" />
 

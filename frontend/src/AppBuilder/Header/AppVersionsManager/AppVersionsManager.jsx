@@ -194,6 +194,15 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
+
+  };
+
+  const handleToggleMenu = async () => {
+    if (!forceMenuOpen && !appVersionsLazyLoaded) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+      await lazyLoadAppVersions(appId);
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
     setForceMenuOpen(prev => !prev);
   };
 
@@ -221,8 +230,7 @@ export const AppVersionsManager = ({ darkMode }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedOutsideRef]);
+  }, [forceMenuOpen]);
   return (
     <div
       className="d-flex align-items-center p-0"
@@ -246,6 +254,7 @@ export const AppVersionsManager = ({ darkMode }) => {
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
             onMenuOpen={onMenuOpen}
+            onToggleMenu={handleToggleMenu}
             onMenuClose={() => setForceMenuOpen(false)}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
