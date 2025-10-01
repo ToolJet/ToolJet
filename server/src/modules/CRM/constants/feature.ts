@@ -1,4 +1,3 @@
-// Use consistent casing when importing from the same directory
 import { FEATURE_KEY } from '../constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeaturesConfig } from '../types';
