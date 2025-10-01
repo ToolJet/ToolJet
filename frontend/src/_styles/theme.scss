@@ -16468,7 +16468,7 @@ section.ai-message-prompt-input-wrapper {
     z-index: 2;
 
     background-color: #fff;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.25rem;
 
     border-bottom: 1px solid var(--border-weak, #e4e7eb);
 
@@ -16703,14 +16703,6 @@ section.ai-message-prompt-input-wrapper {
           font-style: normal;
           font-weight: 500;
           line-height: 18px;
-        }
-
-        .content {
-          color: var(--text-default, #1b1f24);
-          font-size: 12px;
-          font-style: normal;
-          font-weight: 400;
-          line-height: 170%;
         }
 
         .ai-response-section:first-of-type {
