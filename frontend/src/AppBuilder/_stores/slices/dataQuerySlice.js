@@ -5,6 +5,7 @@ import _, { isEmpty, throttle } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
 
 const initialState = {
   sortBy: 'updated_at',
@@ -57,7 +58,14 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+    createDataQuery: (
+      selectedDataSource,
+      shouldRunQuery,
+      customOptions = {},
+      moduleId = 'canvas',
+      queryName,
+      extraProperties = {}
+    ) => {
       let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
@@ -81,9 +89,9 @@ export const createDataQuerySlice = (set, get) => ({
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
-
+      const callbackFunction = extraProperties?.callbackFunction;
       let cleanSelectedQuery = { ...selectedQuery };
-      if(selectedQuery?.permissions) {
+      if (selectedQuery?.permissions) {
         delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
       }
 
@@ -154,6 +162,9 @@ export const createDataQuerySlice = (set, get) => ({
 
           if (runOnCreate) {
             get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
+          if (callbackFunction) {
+            callbackFunction(data);
           }
         })
         .catch((error) => {
@@ -331,10 +342,10 @@ export const createDataQuerySlice = (set, get) => ({
               type: queryToClone.permissions[0]?.type,
               ...(queryToClone.permissions[0]?.type === 'GROUP'
                 ? {
-                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
-                      (group) => group.permissionGroupsId || group.permission_groups_id
-                    ),
-                  }
+                  groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                    (group) => group.permissionGroupsId || group.permission_groups_id
+                  ),
+                }
                 : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
             };
             appPermissionService
@@ -513,6 +524,69 @@ export const createDataQuerySlice = (set, get) => ({
       } catch (error) {
         return Promise.reject(error);
       }
+    },
+    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas') => {
+      if (!(queriesInfo?.delete?.length || queriesInfo?.update?.length || queriesInfo?.create?.length)) return;
+
+      const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
+      const queriesToUpdate = new Map(queriesInfo.update?.map((query) => [query.id, query]) ?? []);
+      const queriesToCreate = queriesInfo.create ?? [];
+
+      set(
+        (state) => {
+          const queriesValueInState = state.dataQuery.queries.modules[moduleId];
+          const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+          const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+
+          const updatedQueriesValue = queriesValueInState
+            .filter((query) => {
+              const queryToBeDeleted = queryIdsToDelete.has(query.id);
+
+              if (queryToBeDeleted) {
+                delete state.modules[moduleId].queryNameIdMapping[query.name];
+                delete state.modules[moduleId].queryIdNameMapping[query.id];
+
+                delete state.resolvedStore.modules[moduleId].exposedValues.queries[query.id];
+
+                get().removeNode(`queries.${query.id}`, moduleId);
+                get().updateDependencyValues(`queries.${query.id}`, moduleId);
+              }
+
+              return !queryToBeDeleted;
+            })
+            .map((query) => {
+              if (queriesToUpdate.has(query.id)) {
+                const updatedQuery = normalizeQueryTransformationOptions(queriesToUpdate.get(query.id));
+
+                const newOptions = replaceQueryOptionsEntityReferencesWithIds(
+                  updatedQuery.options,
+                  componentNameIdMapping,
+                  queryNameIdMapping
+                );
+
+                state.modules[moduleId].queryIdNameMapping[query.id] = updatedQuery.name;
+
+                return { ...updatedQuery, options: { ...newOptions } };
+              }
+
+              return query;
+            });
+
+          queriesToCreate.forEach((query) => {
+            const normalizedQuery = normalizeQueryTransformationOptions(query);
+            updatedQueriesValue.push(normalizedQuery);
+
+            state.modules[moduleId].queryNameIdMapping[query.name] = query.id;
+            state.modules[moduleId].queryIdNameMapping[query.id] = query.name;
+          });
+
+          state.dataQuery.queries.modules[moduleId] = updatedQueriesValue;
+        },
+        false,
+        'performDeletionUpdationAndCreationOfQuery'
+      );
+
+      get().checkAndSetTrueBuildSuggestionsFlag();
     },
   },
 });

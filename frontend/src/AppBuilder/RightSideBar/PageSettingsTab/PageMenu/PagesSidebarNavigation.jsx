@@ -6,7 +6,7 @@ import * as Icons from '@tabler/icons-react';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { APP_HEADER_HEIGHT } from '../../../AppCanvas/appCanvasConstants';
+import { APP_HEADER_HEIGHT, LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
@@ -42,6 +42,7 @@ export const PagesSidebarNavigation = ({
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
@@ -411,6 +412,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const switchToHomePage = () => {
+    if (currentPageId === homePageId) return;
+
     const page = pages.find((p) => p.id === homePageId);
 
     const queryParams = {
@@ -454,6 +457,9 @@ export const PagesSidebarNavigation = ({
     return null;
   }
 
+  const rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_WIDTH : 0;
+  const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
+
   return (
     <div
       style={{
@@ -463,13 +469,12 @@ export const PagesSidebarNavigation = ({
           justifyContent: 'center',
           width: '100%',
         }),
+        ...(currentMode !== 'view' &&
+          (position === 'top' || isPagesSidebarHidden) && {
+            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+          }),
         position: 'relative', // Add relative positioning to the parent
       }}
-      className={cx({
-        'right-sidebar-open':
-          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
-        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
-      })}
     >
       <button
         ref={measurementContainerRef}

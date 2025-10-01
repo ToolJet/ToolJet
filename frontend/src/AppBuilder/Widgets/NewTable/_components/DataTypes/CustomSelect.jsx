@@ -39,6 +39,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
       style={{
         backgroundColor: 'var(--cc-surface1-surface)',
         border: '1px solid var(--cc-default-border)',
+        minWidth: '200px',
       }}
     >
       <div
