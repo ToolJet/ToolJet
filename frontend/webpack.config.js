@@ -40,8 +40,23 @@ const plugins = [
     hash: environment === 'production',
   }),
   new CompressionPlugin({
-    test: /\.js(\?.*)?$/i,
+    test: /\.(js|css|html|svg)$/,
+    filename: '[path][base].gz',
     algorithm: 'gzip',
+    threshold: 10240,
+    minRatio: 0.8,
+  }),
+  new CompressionPlugin({
+    test: /\.(js|css|html|svg)$/,
+    filename: '[path][base].br',
+    algorithm: 'brotliCompress',
+    compressionOptions: {
+      params: {
+        [require('zlib').constants.BROTLI_PARAM_QUALITY]: 11,
+      },
+    },
+    threshold: 10240,
+    minRatio: 0.8,
   }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
   new webpack.DefinePlugin({
@@ -87,29 +102,64 @@ module.exports = {
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
-    runtimeChunk: 'single',
+    runtimeChunk: {
+      name: (entrypoint) => `runtime-${entrypoint.name}`,
+    },
     minimizer: [
       new TerserPlugin({
         terserOptions: {
+          parse: { ecma: 8 },
           keep_classnames: true,
           keep_fnames: true,
           compress: {
+            ecma: 5,
+            warnings: false,
+            comparisons: false,
+            inline: 2,
             drop_debugger: true,
             drop_console: true,
+          },
+          mangle: { safari10: true },
+          output: {
+            ecma: 5,
+            comments: false,
+            ascii_only: true,
           },
         },
         parallel: environment === 'production',
       }),
     ],
     splitChunks: {
+      chunks: 'all',
       cacheGroups: {
+        // Separate React & core libs
+        vendorsReact: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+          name: 'vendors-react',
+          priority: 40,
+        },
+        // Large UI libraries
+        vendorsUI: {
+          test: /[\\/]node_modules[\\/](@mui|@emotion|lodash|moment|date-fns)[\\/]/,
+          name: 'vendors-ui',
+          priority: 30,
+        },
+        // Other node_modules
         vendors: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          name: 'vendors',
+          priority: 20,
+        },
+        // Common code used across chunks
+        common: {
+          minChunks: 2,
+          priority: 10,
+          reuseExistingChunk: true,
+          enforce: true,
         },
       },
     },
+    moduleIds: 'deterministic', // Better long-term caching
   },
   target: 'web',
   resolve: {
@@ -226,6 +276,13 @@ module.exports = {
   output: {
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    filename:
+      environment === 'production' ? 'static/js/[name].[contenthash:8].js' : 'static/js/[name].js',
+    chunkFilename:
+      environment === 'production'
+        ? 'static/js/[name].[contenthash:8].chunk.js'
+        : 'static/js/[name].chunk.js',
+    assetModuleFilename: 'static/media/[name].[hash][ext]',
   },
   externals: {
     // global app config object

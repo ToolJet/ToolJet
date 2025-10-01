@@ -3,6 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
+import * as expressStaticGzip from 'express-static-gzip';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
@@ -125,6 +126,29 @@ async function bootstrap() {
     // Setup static assets
     appLogger.log('Setting up static assets...');
     app.use(`${urlPrefix}/assets`, express.static(join(__dirname, '/assets')));
+
+    // Setup pre-compressed static file serving for frontend build
+    if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+      appLogger.log('Configuring pre-compressed static file serving...');
+      app.use(
+        urlPrefix || '/',
+        expressStaticGzip(join(__dirname, '../../../frontend/build'), {
+          enableBrotli: true,
+          orderPreference: ['br', 'gz'], // Prefer Brotli over gzip
+          serveStatic: {
+            maxAge: '1y',
+            immutable: true,
+            setHeaders: (res, path) => {
+              if (path.endsWith('.html')) {
+                res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+              }
+            },
+          },
+        })
+      );
+      appLogger.log('✅ Pre-compressed static file serving configured');
+    }
+
     appLogger.log('✅ Static assets configured');
 
     // Validate JWT guard

@@ -137,6 +137,18 @@ export class AppModuleLoader {
           // Have to remove trailing slash of SUB_PATH.
           serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
           rootPath: join(__dirname, '../../../../../', 'frontend/build'),
+          serveStaticOptions: {
+            maxAge: '1y', // Cache static assets for 1 year
+            immutable: true,
+            setHeaders: (res, path) => {
+              // Don't cache HTML files aggressively
+              if (path.endsWith('.html')) {
+                res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+              } else {
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+              }
+            },
+          },
         })
       );
     }
