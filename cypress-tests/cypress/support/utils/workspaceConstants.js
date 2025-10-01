@@ -4,17 +4,27 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { commonText, commonWidgetText } from "Texts/common";
 
+export const contantsNameValidation = (selector, value, errorSelector, error) => {
+  cy.get(selector).click();
+  cy.clearAndType(selector, value);
+  cy.get(errorSelector).verifyVisibleElement(
+    "have.text",
+    error
+  );
+  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+};
 
 export const addAndVerifyConstants = (name, value, type = "global") => {
+  switchToConstantTab(type);
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   cy.clearAndType(commonSelectors.workspaceConstantNameInput, name);
   cy.get(commonSelectors.workspaceConstantValueInput).click();
   cy.clearAndType(commonSelectors.workspaceConstantValueInput, value);
   cy.get(workspaceConstantsSelectors.constantsType(type)).check();
   cy.get(workspaceConstantsSelectors.addConstantButton).click();
-  cy.get(workspaceConstantsSelectors.constantName(name).should("exist")
-  );
+  cy.get(workspaceConstantsSelectors.constantName(name)).should("exist");
 };
+
 export const deleteConstant = (name, constType = "Global") => {
   switchToConstantTab(constType);
   cy.get(
@@ -41,14 +51,8 @@ export const existingNameValidation = (
     );
 };
 
-export const verifyConstantFormUI = (data) => {
-  cy.get(commonSelectors.workspaceConstantsIcon).click();
+export const verifyConstantFormUI = () => {
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-  cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-    "have.text",
-    workspaceConstantsText.addConstatntText(data.envName.toLowerCase())
-  );
-
   const verificationItems = [
     { selector: workspaceConstantsSelectors.nameFieldLabel, expectedText: 'Name' },
     { selector: workspaceConstantsSelectors.nameFieldHelperText, expectedText: workspaceConstantsText.nameFieldHelperText },
@@ -71,8 +75,7 @@ export const verifyConstantFormUI = (data) => {
 
 // Function to switch to a specific constant tab (Global or Secrets)
 export const switchToConstantTab = (constantType) => {
-  cy.contains("button", constantType).click({ force: true });
-  cy.wait(500); // Allow time for the tab switch
+  cy.get(`[data-cy="${constantType.toLowerCase()}-constants-button"]`).click()
 };
 
 export const verifyConstantValueVisibility = (constSelector, constValue) => {
@@ -80,125 +83,16 @@ export const verifyConstantValueVisibility = (constSelector, constValue) => {
   cy.get(dataSourceSelector.editorVariablePreview).should('contain.text', constValue);
 }
 
-export const manageWorkspaceConstant = (data) => {
+export const verifySearch = (data) => {
 
-  // Function to perform all constant management steps
-  const performConstantManagement = () => {
-
-    switchToConstantTab(data.constantType);
-
-    cy.get(workspaceConstantsSelectors.envName).should('have.text', `${data.envName} (0)`);
-    cy.get("button.tab.active").contains(data.constantType);
-
-    // Add a new constant
-    verifyConstantFormUI(data.envName);
-
-    VerifyConstantsFormInputValidation();
-
-    cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type("text");
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-    cy.get(workspaceConstantsSelectors.constantsType(data.constantType)).check();
-
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-    cy.get(commonSelectors.cancelButton).click();
-
-    //create constants with max char limit
-    addAndVerifyConstants("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", data.constName, data.constantType);
-
-
-    addAndVerifyConstants(data.constName, data.constName, data.constantType);
-    if (data.constantType === "Global") {
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        workspaceConstantsText.constantCreatedToast(
-          data.constantType.charAt(0).toUpperCase() + data.constantType.slice(1)
-        )
-      );
-      cy.get(workspaceConstantsSelectors.alertInfoText).should('have.text', "To resolve a global workspace constant use {{constants.access_token}}Read documentation");
-    }
-    else if (data.constantType === "Secrets") {
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        workspaceConstantsText.secretConstantCreatedToast
-      );
-      cy.get(workspaceConstantsSelectors.alertInfoText).should('have.text', "To resolve a secret workspace constant use {{secrets.access_token}}Read documentation");
-    }
-
-    // Edit and verify the constant
-    cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
-    cy.get('[data-cy="name-input-field"]').should(
-      "have.attr",
-      "data-tooltip-content",
-      "Cannot edit constant name"
-    );
-    cy.get('input[type="radio"]').should("be.disabled");
-
-    //update same value and add const should be disabled
-    cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type(data.constName);
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-    //update different value 
-    cy.clearAndType(commonSelectors.workspaceConstantValueInput, data.newConstvalue);
-    cy.get(workspaceConstantsSelectors.addConstantButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Constant updated successfully"
-    );
-    cy.get(
-      `[data-cy="${data.constName.toLowerCase()}-constant-visibility"]`
-    ).click();
-    cy.wait(500);
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName))
-      .should("be.visible")
-      .and("have.text", data.newConstvalue);
-
-    // Delete and verify the constant
-    cy.get(
-      workspaceConstantsSelectors.constDeleteButton(data.constName)
-    ).click();
-    cy.get(commonSelectors.modalMessage).verifyVisibleElement(
-      "have.text",
-      `Are you sure you want to delete ${data.constName} from ${data.envName.toLowerCase()}?`
-    );
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
-      "exist"
-    );
-    cy.get(
-      workspaceConstantsSelectors.constDeleteButton(data.constName)
-    ).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
-      "not.exist"
-    );
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Constant deleted successfully"
-    );
-    cy.get('.tab-count.active').should('have.text', '(1)');
-
-    //delete existing constant to validate empty screen
-    deleteConstant("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", data.constantType);
-
-    // Verify empty state after deletion
-    cy.get(workspaceConstantsSelectors.emptyStateImage).should('be.visible');
-    cy.get(workspaceConstantsSelectors.emptyStateHeader).verifyVisibleElement(
-      "have.text",
-      workspaceConstantsText.emptyStateHeader
-    );
-    cy.get(workspaceConstantsSelectors.emptyStateText).should('have.text', workspaceConstantsText.emptyStateText);
-    cy.get(workspaceConstantsSelectors.tableAddNewConstButton)
-      .should('be.visible');
-  };
-
-  // Perform the constant management steps
-  performConstantManagement();
-
-  //check env total constant count and search constant functionality 
-  addAndVerifyConstants("globalconst", "globalvalue");
   addAndVerifyConstants("secretconst", "secretvalue", "Secrets");
-  cy
+
+  addAndVerifyConstants("globalconst", "globalvalue");
+
+  cy.get('[data-cy="home-page-icon"]').click()
+  cy.wait(500)
+  cy.get(commonSelectors.workspaceConstantsIcon).click();
+
   cy.get(workspaceConstantsSelectors.envName).should('have.text', `${data.envName} (2)`);
   switchToConstantTab("Global");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "globalconst");
@@ -216,6 +110,9 @@ export const manageWorkspaceConstant = (data) => {
   cy.get(workspaceConstantsSelectors.searchField).clear();
   deleteConstant("globalconst");
 
+  cy.get('[data-cy="home-page-icon"]').click()
+  cy.wait(500)
+  cy.get(commonSelectors.workspaceConstantsIcon).click();
   switchToConstantTab("Secrets");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "secretconst");
   cy.get(workspaceConstantsSelectors.constantName("secretconst")).should(
@@ -231,8 +128,6 @@ export const manageWorkspaceConstant = (data) => {
 };
 
 export const VerifyConstantsFormInputValidation = () => {
-  // Name and value validation
-
   const selectorMap = {
     name: {
       input: commonSelectors.workspaceConstantNameInput,
@@ -264,4 +159,121 @@ export const VerifyConstantsFormInputValidation = () => {
     );
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
   });
+  cy.get(commonSelectors.cancelButton).click();
+}
+
+export const constantsCRUDAndValidations = (data) => {
+  cy.get('[data-cy="home-page-icon"]').click()
+  cy.wait(500)
+  cy.get(commonSelectors.workspaceConstantsIcon).click();
+  selectEnv(data.envName)
+  switchToConstantTab(data.constantType);
+  VerifyEmptyScreenUI(data.envName)
+
+  cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+  cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
+    "have.text",
+    workspaceConstantsText.addConstatntText(data.envName.toLowerCase())
+  );
+
+  cy.clearAndType(commonSelectors.workspaceConstantNameInput, data.constName);
+  cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type("text");
+  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+  cy.get(workspaceConstantsSelectors.constantsType(data.constantType)).check();
+
+  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
+  cy.get(commonSelectors.cancelButton).click();
+
+  addAndVerifyConstants(data.constName, data.constName, data.constantType);
+
+  const type = data.constantType;
+  const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
+
+  if (type === "Global" || type === "Secrets") {
+    const expectedToast =
+      type === "Global"
+        ? workspaceConstantsText.constantCreatedToast(typeCapitalized)
+        : workspaceConstantsText.secretConstantCreatedToast;
+
+    const expectedInfoText =
+      type === "Global"
+        ? "To resolve a global workspace constant use {{constants.access_token}}Read documentation"
+        : "To resolve a secret workspace constant use {{secrets.access_token}}Read documentation";
+
+    cy.verifyToastMessage(commonSelectors.toastMessage, expectedToast, false);
+    cy.get(workspaceConstantsSelectors.alertInfoText).should("have.text", expectedInfoText);
+  }
+
+  // Edit and verify the constant
+  cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+  cy.get('[data-cy="name-input-field"]').should(
+    "have.attr",
+    "data-tooltip-content",
+    "Cannot edit constant name"
+  );
+  cy.get('input[type="radio"]').should("be.disabled");
+
+  //update same value and add const should be disabled
+  cy.get(commonSelectors.workspaceConstantValueInput).click().clear().type(data.constName);
+  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+
+  //update different value 
+  cy.clearAndType(commonSelectors.workspaceConstantValueInput, data.newConstvalue);
+  cy.get(workspaceConstantsSelectors.addConstantButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Constant updated successfully"
+  );
+  cy.get(
+    `[data-cy="${data.constName.toLowerCase()}-constant-visibility"]`
+  ).click();
+  cy.wait(500);
+  cy.get(workspaceConstantsSelectors.constantValue(data.constName))
+    .should("be.visible")
+    .and("have.text", data.newConstvalue);
+
+
+  // Delete and verify the constant
+  cy.get(
+    workspaceConstantsSelectors.constDeleteButton(data.constName)
+  ).click();
+  cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+    "have.text",
+    `Are you sure you want to delete ${data.constName} from ${data.envName.toLowerCase()}?`
+  );
+  cy.get(commonSelectors.cancelButton).click();
+  cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
+    "exist"
+  );
+  cy.get(
+    workspaceConstantsSelectors.constDeleteButton(data.constName)
+  ).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
+    "not.exist"
+  );
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Constant deleted successfully"
+  );
+  cy.get(workspaceConstantsSelectors.constantName(name)).should('not.exist')
+
+};
+
+export const VerifyEmptyScreenUI = (envName) => {
+  cy.get(workspaceConstantsSelectors.emptyStateImage).should('be.visible');
+  cy.get(workspaceConstantsSelectors.emptyStateHeader).verifyVisibleElement(
+    "have.text",
+    workspaceConstantsText.emptyStateHeader
+  );
+  cy.get(workspaceConstantsSelectors.emptyStateText).should('have.text', workspaceConstantsText.emptyStateText);
+  cy.get(workspaceConstantsSelectors.tableAddNewConstButton)
+    .should('be.visible');
+
+  cy.get(workspaceConstantsSelectors.envName).should('have.text', `${envName} (0)`);
+
+}
+
+export const selectEnv = (envName) => {
+  cy.get(`[data-cy="${envName.toLowerCase()}-list-item"]`).click({ force: true })
 }

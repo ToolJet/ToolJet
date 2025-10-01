@@ -3,7 +3,7 @@ import { fake } from "Fixtures/fake";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { releaseApp, navigateToAppEditor } from "Support/utils/common";
-import { manageWorkspaceConstant, verifyConstantFormUI, deleteConstant, verifyConstantValueVisibility } from "Support/utils/workspaceConstants";
+import { constantsCRUDAndValidations, selectEnv, VerifyEmptyScreenUI, VerifyConstantsFormInputValidation, verifySearch, switchToConstantTab, verifyConstantFormUI, deleteConstant, verifyConstantValueVisibility } from "Support/utils/workspaceConstants";
 import {
   importSelectors,
 } from "Selectors/exportImport";
@@ -40,11 +40,10 @@ describe("Workspace constants", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
-    cy.viewport(1800, 1800);
-
+    // cy.viewport(1800, 1800);
   });
 
-  it.only("Verify workspace constants UI and CRUD operations", () => {
+  it("Verify workspace constants UI and CRUD operations", () => {
     data.firstName = fake.firstName;
     data.workspaceName = data.firstName;
     data.workspaceSlug = data.firstName.toLowerCase();
@@ -53,30 +52,35 @@ describe("Workspace constants", () => {
     cy.visit(`${data.workspaceSlug}`);
     cy.wait(2000);
 
+    cy.get(commonSelectors.workspaceConstantsIcon).click();
+    verifyConstantFormUI();
+    VerifyConstantsFormInputValidation();
+
     cy.ifEnv("Enterprise", () => {
 
-      manageWorkspaceConstant({
+      constantsCRUDAndValidations({
         constantType: "Global",
         constName: "Example_Constant1",
         newConstvalue: "UpdatedValue",
         envName: "Development"
       });
-      manageWorkspaceConstant({
+
+      constantsCRUDAndValidations({
         constantType: "Secrets",
         constName: "Example_Constant1",
         newConstvalue: "UpdatedValue",
         envName: "Development"
       });
 
+      verifySearch({ envName: "Development" })
 
-
-      manageWorkspaceConstant({
+      constantsCRUDAndValidations({
         constantType: "Global",
         constName: "Example_Constant1",
         newConstvalue: "UpdatedValue",
         envName: "Staging"
       });
-      manageWorkspaceConstant({
+      constantsCRUDAndValidations({
         constantType: "Secrets",
         constName: "Example_Constant1",
         newConstvalue: "UpdatedValue",
@@ -85,13 +89,13 @@ describe("Workspace constants", () => {
     });
 
 
-    manageWorkspaceConstant({
+    constantsCRUDAndValidations({
       constantType: "Global",
       constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
       envName: "Production"
     });
-    manageWorkspaceConstant({
+    constantsCRUDAndValidations({
       constantType: "Secrets",
       constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
@@ -100,6 +104,7 @@ describe("Workspace constants", () => {
   });
 
   it("Verify global and secret constants in the editor, inspector, data sources, static queries, query preview, and preview", () => {
+
     data.workspaceName = fake.firstName;
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
