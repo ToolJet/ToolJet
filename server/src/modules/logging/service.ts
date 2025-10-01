@@ -2,6 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { RequestContext } from '@modules/request-context/service';
 import pino, { Logger as PinoBaseLogger } from 'pino';
 import { ConfigService } from '@nestjs/config';
+import { ignoreLogPaths } from '../logging/constant';
 
 @Injectable()
 export class TransactionLogger implements LoggerService {
@@ -77,27 +78,46 @@ export class TransactionLogger implements LoggerService {
       data.msg,
     ];
   }
+  private shouldIgnoreLog(): boolean {
+    const route = RequestContext.getRoute();
+    return route ? ignoreLogPaths.includes(route) : false;
+  }
 
   // Use detached logger so no req/res objects are appended
   log(message: any, ...optionalParams: any[]) {
+    if (this.shouldIgnoreLog()) {
+      return;
+    }
     TransactionLogger.baseLogger.info(...this.processData(message, ...optionalParams));
   }
 
   error(message: any, ...optionalParams: any[]) {
+    if (this.shouldIgnoreLog()) {
+      return;
+    }
     TransactionLogger.baseLogger.error(...this.processData(message, ...optionalParams));
   }
 
   warn(message: any, ...optionalParams: any[]) {
+    if (this.shouldIgnoreLog()) {
+      return;
+    }
     TransactionLogger.baseLogger.warn(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed debug level logs
   debug(message: any, ...optionalParams: any[]) {
+    if (this.shouldIgnoreLog()) {
+      return;
+    }
     TransactionLogger.baseLogger.debug(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed trace level logs
   trace(message: any, ...optionalParams: any[]) {
+    if (this.shouldIgnoreLog()) {
+      return;
+    }
     TransactionLogger.baseLogger.trace(...this.processData(message, ...optionalParams));
   }
 }
