@@ -138,12 +138,15 @@ export class AppModuleLoader {
           serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
           rootPath: join(__dirname, '../../../../../', 'frontend/build'),
           serveStaticOptions: {
-            maxAge: '31536000000', // 1 year cache for hashed assets
-            immutable: true,
+            index: 'index.html',
+            maxAge: 0, // Default to no cache
             setHeaders: (res, path) => {
-              // Don't cache HTML files (they need to fetch fresh to get new JS hashes)
-              if (path.endsWith('.html')) {
-                res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+              // Cache static assets with content hashes for 1 year
+              if (path.match(/\.(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)$/)) {
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+              } else if (path.endsWith('.html')) {
+                // HTML files: no cache to always get latest references
+                res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
               }
             },
           },

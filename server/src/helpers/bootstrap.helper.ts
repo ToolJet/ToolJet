@@ -86,23 +86,27 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
  * Replaces subpath placeholders in static assets
  */
 export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
   logger.log('Starting subpath placeholder replacement...');
 
-  for (const fileName of filesToReplaceAssetPath) {
+  const buildPath = join(__dirname, '../../../../', 'frontend/build');
+
+  // Dynamically find all JS files (including hashed ones like main.64dcf3ac.js)
+  const jsFiles = fs
+    .readdirSync(buildPath)
+    .filter((file) => file.endsWith('.js') && !file.endsWith('.gz') && !file.endsWith('.br'));
+
+  // Always process index.html + all JS files
+  const filesToProcess = ['index.html', ...jsFiles];
+
+  let newValue = process.env.SUB_PATH;
+
+  logger.log(`Found ${jsFiles.length} JS files to process`);
+  logger.log(`SUB_PATH value: "${newValue || '(not set)'}"`);
+
+  for (const fileName of filesToProcess) {
     try {
-      const file = join(__dirname, '../../../../', 'frontend/build', fileName);
+      const file = join(buildPath, fileName);
       logger.log(`Processing file: ${fileName}`);
-
-      let newValue = process.env.SUB_PATH;
-
-      if (process.env.SUB_PATH === undefined) {
-        newValue = fileName === 'index.html' ? '/' : '';
-        logger.log(`Using default value for ${fileName}: "${newValue}"`);
-      } else {
-        logger.log(`Using SUB_PATH value for ${fileName}: "${newValue}"`);
-      }
 
       if (!fs.existsSync(file)) {
         logger.warn(`File not found: ${file}`);
@@ -110,9 +114,20 @@ export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
       }
 
       const data = fs.readFileSync(file, { encoding: 'utf8' });
-      const result = data
-        .replace(/__REPLACE_SUB_PATH__\/api/g, join(newValue, '/api'))
-        .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+      let result;
+      if (newValue === undefined) {
+        // No SUB_PATH set
+        newValue = fileName === 'index.html' ? '/' : '';
+        result = data
+          .replace(/__REPLACE_SUB_PATH__\/api/g, '/api')
+          .replace(/__REPLACE_SUB_PATH__/g, newValue);
+      } else {
+        // SUB_PATH is set
+        result = data
+          .replace(/__REPLACE_SUB_PATH__\/api/g, join(newValue, '/api'))
+          .replace(/__REPLACE_SUB_PATH__/g, newValue);
+      }
 
       fs.writeFileSync(file, result, { encoding: 'utf8' });
       logger.log(`✅ Successfully processed: ${fileName}`);
