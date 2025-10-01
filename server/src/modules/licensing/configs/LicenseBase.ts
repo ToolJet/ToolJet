@@ -342,6 +342,9 @@ export default class LicenseBase {
   }
 
   public get licenseType(): string {
+    if (!this.isValid || this.isExpired) {
+      return LICENSE_TYPE.BASIC;
+    }
     return this._type || LICENSE_TYPE.ENTERPRISE;
   }
 

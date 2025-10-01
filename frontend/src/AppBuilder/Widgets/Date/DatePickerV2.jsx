@@ -227,6 +227,7 @@ export const DatePickerV2 = ({
       componentProps={componentProps}
       customHeaderProps={customHeaderProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };
