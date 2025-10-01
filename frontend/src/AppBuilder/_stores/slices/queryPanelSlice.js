@@ -263,19 +263,22 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            const processedResult = { data: result };
-            await processQueryResults(processedResult);
+            await processQueryResults(result);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
           },
           onError: (e) => {
+            const cleanData = typeof e?.error === 'object' ? { ...e.error } : e?.error;
+            if (cleanData?.metadata) delete cleanData.metadata; // Remove metadata from the data object if present
+
             handleFailure({
               status: 'failed',
               message: e?.error?.message || 'Error running workflow',
               description: e?.error?.description || null,
-              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
+              data: cleanData,
+              metadata: e?.error?.metadata,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
@@ -523,6 +526,8 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
               : {}),
           },
           moduleId
@@ -599,7 +604,7 @@ export const createQueryPanelSlice = (set, get) => ({
         queryExecutionPromise
           .then(async (data) => {
             if (data.status === 'needs_oauth') {
-              localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+              localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
