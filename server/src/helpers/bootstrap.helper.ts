@@ -41,8 +41,7 @@ export function rawBodyBuffer(req: any, res: any, buf: Buffer, encoding: BufferE
 /**
  * Handles licensing initialization for Enterprise Edition
  */
-export async function handleLicensingInit(app: NestExpressApplication) {
-  const logger = createLogger('Licensing');
+export async function handleLicensingInit(app: NestExpressApplication, logger: any) {
   const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
 
   logger.log(`Current edition: ${tooljetEdition}`);
@@ -86,8 +85,7 @@ export async function handleLicensingInit(app: NestExpressApplication) {
 /**
  * Replaces subpath placeholders in static assets
  */
-export function replaceSubpathPlaceHoldersInStaticAssets() {
-  const logger = createLogger('StaticAssets');
+export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
   const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
 
   logger.log('Starting subpath placeholder replacement...');
@@ -129,8 +127,7 @@ export function replaceSubpathPlaceHoldersInStaticAssets() {
 /**
  * Sets up security headers including CORS and CSP
  */
-export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService) {
-  const logger = createLogger('Security');
+export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService, logger: any) {
   logger.log('Setting up security headers...');
 
   try {
@@ -229,9 +226,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 /**
  * Builds the application version string
  */
-export function buildVersion(): string {
-  const logger = createLogger('Version');
-
+export function buildVersion(logger: any): string {
   try {
     logger.log('Reading version from .version file...');
     const rawVersion = fs.readFileSync('./.version', 'utf8').trim();
@@ -297,9 +292,25 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`CORS Enabled: ${corsEnabled}`);
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
+  logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);
+  logger.log('='.repeat(60));
+  logger.log(
+    `Custom ORM logger: ${configService.get<string>('DISABLE_CUSTOM_QUERY_LOGGING') !== 'true' ? 'enabled' : 'disabled'}`
+  );
+  logger.log(
+    `Custom ORM logger logging level: ${configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`ORM logging level: ${configService.get<string>('ORM_LOGGING') || 'Not - configured'}`);
+  logger.log(
+    `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
+  );
+  logger.log(
+    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
+  );
+  logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
 }
 

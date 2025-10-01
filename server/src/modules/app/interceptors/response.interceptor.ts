@@ -39,7 +39,9 @@ export class ResponseInterceptor implements NestInterceptor {
         if (features && !Array.isArray(features)) {
           features = [features];
         }
-
+        if (!features || features.length === 0) {
+          return;
+        }
         const featureInfo: FeatureConfig = MODULE_INFO?.[module]?.[features[0]];
 
         if (!featureInfo || featureInfo?.skipAuditLogs || !logsData || !logsData?.userId) {
