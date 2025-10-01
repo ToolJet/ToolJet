@@ -98,6 +98,9 @@ export const AppVersionsManager = ({ darkMode }) => {
       });
     }
 
+    // Close menu when selecting a version
+    setForceMenuOpen(false);
+
     changeEditorVersionAction(
       appId,
       id,
@@ -203,7 +206,9 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(prev => !prev);
+    setForceMenuOpen(prev => {
+      return !prev;
+    });
   };
 
   const customSelectProps = {
@@ -255,7 +260,6 @@ export const AppVersionsManager = ({ darkMode }) => {
             {...customSelectProps}
             onMenuOpen={onMenuOpen}
             onToggleMenu={handleToggleMenu}
-            onMenuClose={() => setForceMenuOpen(false)}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
             isEditable={isEditable}
