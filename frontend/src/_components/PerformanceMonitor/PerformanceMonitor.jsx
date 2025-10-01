@@ -1,17 +1,25 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import performanceMonitor from '@/_services/performanceMonitor.service';
+import useStore from '@/AppBuilder/_stores/store';
 import './performanceMonitor.scss';
 
 const PerformanceMonitor = ({ isVisible = true, position = 'bottom-right' }) => {
   // Don't render in production unless explicitly enabled
-  const isDisabled = process.env.NODE_ENV === 'production' && 
-                    process.env.REACT_APP_ENABLE_PERFORMANCE_MONITOR !== 'true';
-  
+  const isDisabled =
+    process.env.NODE_ENV === 'production' && process.env.REACT_APP_ENABLE_PERFORMANCE_MONITOR !== 'true';
+
   const [metrics, setMetrics] = useState(performanceMonitor.getMetrics());
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLogging, setIsLogging] = useState(false);
   const [logs, setLogs] = useState([]);
-  const canvasRenderStartRef = useRef(null);
+
+  // Get component mapping from store to calculate total components
+  const componentNameIdMapping = useStore((state) => state.getComponentNameIdMapping?.('canvas') || {});
+
+  // Calculate total components count
+  const totalComponents = useMemo(() => {
+    return Object.keys(componentNameIdMapping).length;
+  }, [componentNameIdMapping]);
 
   useEffect(() => {
     performanceMonitor.startMonitoring();
@@ -83,19 +91,25 @@ const PerformanceMonitor = ({ isVisible = true, position = 'bottom-right' }) => 
     setLogs([]);
   }, []);
 
-  const getScoreColor = useMemo(() => (score) => {
-    if (score >= 90) return '#10b981';
-    if (score >= 75) return '#f59e0b';
-    return '#ef4444';
-  }, []);
+  const getScoreColor = useMemo(
+    () => (score) => {
+      if (score >= 90) return '#10b981';
+      if (score >= 75) return '#f59e0b';
+      return '#ef4444';
+    },
+    []
+  );
 
-  const getMetricStatus = useMemo(() => (value, goodThreshold, warningThreshold) => {
-    if (!value) return 'na';
-    const numValue = parseFloat(value);
-    if (numValue <= goodThreshold) return 'good';
-    if (numValue <= warningThreshold) return 'warning';
-    return 'poor';
-  }, []);
+  const getMetricStatus = useMemo(
+    () => (value, goodThreshold, warningThreshold) => {
+      if (!value) return 'na';
+      const numValue = parseFloat(value);
+      if (numValue <= goodThreshold) return 'good';
+      if (numValue <= warningThreshold) return 'warning';
+      return 'poor';
+    },
+    []
+  );
 
   if (!isVisible || isDisabled) return null;
 
@@ -277,6 +291,10 @@ const PerformanceMonitor = ({ isVisible = true, position = 'bottom-right' }) => 
                 <span className="metric-value accent">{metrics.app.queries}</span>
                 <span className="metric-label">Mounts:</span>
                 <span className="metric-value accent">{metrics.app.mountCount}</span>
+              </div>
+              <div className="metric-row">
+                <span className="metric-label">Components:</span>
+                <span className="metric-value accent">{totalComponents}</span>
               </div>
             </div>
           </div>

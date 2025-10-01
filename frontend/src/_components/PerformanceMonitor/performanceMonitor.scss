@@ -33,10 +33,15 @@
   }
 
   &.collapsed {
+    display: block !important;
     min-width: 300px;
-    
+
     .monitor-header {
       border-radius: 12px;
+    }
+
+    .monitor-content {
+      display: none;
     }
   }
 
@@ -276,7 +281,7 @@
   .performance-monitor {
     min-width: 360px;
     max-width: calc(100vw - 40px);
-    
+
     &.bottom-right,
     &.bottom-left,
     &.top-right,
@@ -290,7 +295,7 @@
       .metrics-grid {
         .metric-row {
           grid-template-columns: 70px 1fr;
-          
+
           &:has(.metric-label:nth-child(3)) {
             grid-template-columns: 70px 1fr;
           }
