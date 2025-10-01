@@ -169,7 +169,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
         break;
       case 'tooljetdb':
-        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/tooljet-db/querying-tooljet-db`;
+        docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
         break;
       case 'runjs':
         docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
