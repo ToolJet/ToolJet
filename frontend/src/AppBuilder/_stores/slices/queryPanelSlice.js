@@ -35,6 +35,7 @@ const initialState = {
   renamingQueryId: null,
   deletingQueryId: null,
   asyncQueryRuns: [],
+  queryRunning: false
 };
 
 export const createQueryPanelSlice = (set, get) => ({
@@ -129,6 +130,14 @@ export const createQueryPanelSlice = (set, get) => ({
         },
         false,
         'setPreviewLoading'
+      ),
+    setQueryRunning: (status) =>
+      set(
+        (state) => {
+          state.queryPanel.queryRunning = status;
+        },
+        false,
+        'setQueryRunning'
       ),
     setPreviewData: (data) =>
       set(
@@ -323,12 +332,14 @@ export const createQueryPanelSlice = (set, get) => ({
         runTransformation,
         triggerWorkflow,
         executeMultilineJS,
+        setQueryRunning,
       } = queryPanel;
       const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
       if (queryUpdatePromise) {
         setResolvedQuery(queryId, {
           isLoading: true,
         });
+        setQueryRunning(true);
         return queryUpdatePromise.then(() =>
           get().queryPanel.runQuery(
             queryId,
@@ -411,6 +422,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
           setPreviewLoading(false);
+          setQueryRunning(false)
           set(
             (state) => {
               state.dataQuery.queryConfirmationList = [...queryConfirmationList, queryConfirmation];
@@ -448,6 +460,8 @@ export const createQueryPanelSlice = (set, get) => ({
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
+
+        setQueryRunning(false);
 
         if (dataQuery.options.showSuccessNotification) {
           const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
@@ -492,6 +506,8 @@ export const createQueryPanelSlice = (set, get) => ({
           setPreviewData(errorData);
         }
 
+        setQueryRunning(false);
+
         get().debugger.log({
           logLevel: 'error',
           type: 'query',
@@ -502,10 +518,10 @@ export const createQueryPanelSlice = (set, get) => ({
           error:
             query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
-                  substitutedVariables: options,
-                  request: errorData?.data?.requestObject,
-                  response: errorData?.data?.responseObject,
-                }
+                substitutedVariables: options,
+                request: errorData?.data?.requestObject,
+                response: errorData?.data?.responseObject,
+              }
               : errorData,
           isQuerySuccessLog: false,
         });
@@ -516,19 +532,19 @@ export const createQueryPanelSlice = (set, get) => ({
             isLoading: false,
             ...(errorData?.data?.type === 'tj-401'
               ? {
-                  metadata: errorData?.metadata,
-                  response: errorData?.data?.responseObject,
-                }
+                metadata: errorData?.metadata,
+                response: errorData?.data?.responseObject,
+              }
               : query.kind === 'restapi'
-              ? {
+                ? {
                   metadata: errorData?.metadata,
                   request: errorData?.data?.requestObject,
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
-              : query.kind === 'workflows'
-              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
-              : {}),
+                : query.kind === 'workflows'
+                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+                  : {}),
           },
           moduleId
         );
@@ -552,6 +568,8 @@ export const createQueryPanelSlice = (set, get) => ({
           setPreviewLoading(true);
           queryPreviewData && setPreviewData('');
         }
+
+        setQueryRunning(true);
 
         setResolvedQuery(
           queryId,
@@ -691,6 +709,7 @@ export const createQueryPanelSlice = (set, get) => ({
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
+            setQueryRunning(false);
             resolve({ status: 'failed', message: errorMessage });
           });
       });
@@ -821,7 +840,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 handleFailure: handleFailurePreview,
                 shouldSetPreviewData: true,
                 setPreviewData,
-                setResolvedQuery: () => {}, // No resolvedQuery for preview
+                setResolvedQuery: () => { }, // No resolvedQuery for preview
                 resolve,
               });
 
@@ -853,33 +872,33 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatusCode === 400 ||
                 queryStatusCode === 404 ||
                 queryStatusCode === 422: {
-                let errorData = {};
-                switch (query.kind) {
-                  case 'runpy':
-                    errorData = data.data;
-                    break;
-                  case 'tooljetdb':
-                    if (data?.error) {
-                      errorData = {
-                        message: data?.error?.message || 'Something went wrong',
-                        description: data?.error?.message || 'Something went wrong',
-                        status: data?.statusText || 'Failed',
-                        data: data?.error || {},
-                      };
-                    } else {
+                  let errorData = {};
+                  switch (query.kind) {
+                    case 'runpy':
+                      errorData = data.data;
+                      break;
+                    case 'tooljetdb':
+                      if (data?.error) {
+                        errorData = {
+                          message: data?.error?.message || 'Something went wrong',
+                          description: data?.error?.message || 'Something went wrong',
+                          status: data?.statusText || 'Failed',
+                          data: data?.error || {},
+                        };
+                      } else {
+                        errorData = data;
+                        errorData.description = data.errorMessage || 'Something went wrong';
+                      }
+                      break;
+                    default:
                       errorData = data;
-                      errorData.description = data.errorMessage || 'Something went wrong';
-                    }
-                    break;
-                  default:
-                    errorData = data;
-                    break;
-                }
+                      break;
+                  }
 
-                onEvent('onDataQueryFailure', queryEvents);
-                if (!calledFromQuery) setPreviewData(errorData);
-                break;
-              }
+                  onEvent('onDataQueryFailure', queryEvents);
+                  if (!calledFromQuery) setPreviewData(errorData);
+                  break;
+                }
               case queryStatus === 'needs_oauth': {
                 const url = data.data.auth_url; // Backend generates and return sthe auth url
                 const kind = data.data?.kind;
@@ -896,33 +915,33 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatus === 'Created' ||
                 queryStatus === 'Accepted' ||
                 queryStatus === 'No Content': {
-                toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-                  icon: '🚀',
-                });
-                if (query.options.enableTransformation) {
-                  const language = query.options.transformationLanguage;
-                  finalData = await runTransformation(
-                    finalData,
-                    query.options.transformations?.[language] ?? query.options.transformation,
-                    query.options.transformationLanguage,
-                    query,
-                    'edit',
-                    moduleId
-                  );
-                  if (finalData?.status === 'failed') {
-                    onEvent('onDataQueryFailure', queryEvents);
-                    setPreviewLoading(false);
-                    setIsPreviewQueryLoading(false);
-                    resolve({ status: data.status, data: finalData });
-                    if (!calledFromQuery) setPreviewData(finalData);
-                    return;
+                  toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
+                    icon: '🚀',
+                  });
+                  if (query.options.enableTransformation) {
+                    const language = query.options.transformationLanguage;
+                    finalData = await runTransformation(
+                      finalData,
+                      query.options.transformations?.[language] ?? query.options.transformation,
+                      query.options.transformationLanguage,
+                      query,
+                      'edit',
+                      moduleId
+                    );
+                    if (finalData?.status === 'failed') {
+                      onEvent('onDataQueryFailure', queryEvents);
+                      setPreviewLoading(false);
+                      setIsPreviewQueryLoading(false);
+                      resolve({ status: data.status, data: finalData });
+                      if (!calledFromQuery) setPreviewData(finalData);
+                      return;
+                    }
                   }
-                }
 
-                if (!calledFromQuery) setPreviewData(finalData);
-                onEvent('onDataQuerySuccess', queryEvents, 'edit');
-                break;
-              }
+                  if (!calledFromQuery) setPreviewData(finalData);
+                  onEvent('onDataQuerySuccess', queryEvents, 'edit');
+                  break;
+                }
             }
             setPreviewLoading(false);
             setIsPreviewQueryLoading(false);

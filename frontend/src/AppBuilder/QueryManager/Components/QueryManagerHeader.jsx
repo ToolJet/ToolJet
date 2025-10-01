@@ -252,9 +252,8 @@ const RunButton = ({ buttonLoadingState }) => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const isInDraft = selectedQuery?.status === 'draft';
-  const isLoading = useStore(
-    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
-  );
+  const isLoading = useStore((state) => state.queryPanel.queryRunning);
+
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
   const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
