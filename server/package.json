@@ -121,6 +121,7 @@
     "module-from-string": "^3.3.1",
     "moment": "^2.29.4",
     "nest-winston": "^1.9.4",
+    "nestjs-otel": "^7.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
