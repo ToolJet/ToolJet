@@ -139,7 +139,8 @@ const DropdownIndicator = ({ selectProps }) => {
       className="cell-icon-display"
       style={{ alignSelf: 'center' }}
       onMouseDown={(e) => {
-        selectProps.onMenuInputFocus();
+        const isOpen = selectProps.menuIsOpen;
+        selectProps.onMenuOpen(!isOpen);
 
         const tdElement = e.currentTarget.closest('td');
         if (tdElement) {
