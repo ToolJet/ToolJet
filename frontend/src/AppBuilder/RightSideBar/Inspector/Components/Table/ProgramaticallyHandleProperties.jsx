@@ -58,6 +58,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.labelColor;
       case 'optionColor':
         return props?.optionColor;
+      case 'allowHalfStar':
+        return props?.allowHalfStar;
       default:
         return;
     }

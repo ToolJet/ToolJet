@@ -5,7 +5,6 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import { useTrail } from 'react-spring';
 import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
-import useValidationStyle from '../DataTypes/_hooks/useValidationStyle';
 
 export const RatingColumn = ({
   isEditable,
@@ -17,9 +16,7 @@ export const RatingColumn = ({
   row,
   id,
 }) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
   const getResolvedValue = useStore.getState().getResolvedValue;
-
   const cellTextColor = useTextColor(id, textColor);
 
   // Rating-specific properties with defaults
@@ -27,8 +24,9 @@ export const RatingColumn = ({
   const allowHalfStar = getResolvedValue(column.allowHalfStar) || false;
   const iconType = getResolvedValue(column.iconType) || 'stars';
   const tooltips = getResolvedValue(column.tooltips) || [];
-  const selectedColor = getResolvedValue(column.selectedColor) || '#FFCB05';
-  const unselectedColor = getResolvedValue(column.unselectedColor) || '#D1D5DB';
+  const selectedBgColorStars = getResolvedValue(column.selectedBgColorStars) || '#EFB82D';
+  const selectedBgColorHearts = getResolvedValue(column.selectedBgColorHearts) || '#EE5B67';
+  const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--icon-weak)';
 
   const [announceValue, setAnnounceValue] = React.useState('');
 
@@ -55,18 +53,6 @@ export const RatingColumn = ({
     opacity: 1,
     transform: 'scale(1)',
   });
-
-  const validationData = validateWidget({
-    validationObject: {
-      minValue: { value: column.minValue },
-      maxValue: { value: column.maxValue },
-      customRule: { value: column.customRule },
-    },
-    widgetValue: cellValue,
-    customResolveObjects: { cellValue },
-  });
-  const { isValid, validationError } = validationData;
-  useValidationStyle(id, row, validationError);
 
   function handleClick(idx) {
     if (!isEditable) return;
@@ -108,8 +94,11 @@ export const RatingColumn = ({
           aria-label={`Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${maxRating}`}
           aria-required="false"
           aria-disabled={!isEditable}
-          className={`rating-widget-group d-flex justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+          className={`rating-widget-group d-flex w-100 justify-content-${determineJustifyContentValue(
+            horizontalAlignment
+          )}`}
           style={{ color: cellTextColor || 'inherit' }}
+          onMouseLeave={() => setHoverIndex(null)}
         >
           {animatedStars.map((props, index) => {
             const ratingValue = index + 1;
@@ -131,10 +120,10 @@ export const RatingColumn = ({
                 allowHalfStar={allowHalfStar}
                 key={index}
                 index={index}
-                color={iconType === 'stars' ? selectedColor : selectedColor}
+                color={iconType === 'stars' ? selectedBgColorStars : selectedBgColorHearts}
                 style={{ ...props }}
                 setHoverIndex={setHoverIndex}
-                unselectedBackground={unselectedColor}
+                unselectedBackground={unselectedBgColor}
                 iconType={iconType}
                 allowEditing={isEditable}
                 currentRatingIndex={currentRatingIndex}
@@ -150,10 +139,5 @@ export const RatingColumn = ({
     );
   };
 
-  return (
-    <div className={`h-100 d-flex flex-column justify-content-center ${!isValid ? 'is-invalid' : ''}`}>
-      {renderRatingWidget()}
-      {!isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
-    </div>
-  );
+  return <div className={`h-100 d-flex flex-column justify-content-center`}>{renderRatingWidget()}</div>;
 };

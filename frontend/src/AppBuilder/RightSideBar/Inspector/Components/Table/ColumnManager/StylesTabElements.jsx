@@ -228,8 +228,19 @@ export const StylesTabElements = ({
               param={{ name: 'Selected color' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Selected color' } } }}
-              definition={{ value: column?.selectedColor || '#FFCB05' }}
-              onChange={(name, value, color) => onColumnItemChange(index, 'selectedColor', color)}
+              definition={{
+                value:
+                  column.iconType === 'stars'
+                    ? column?.selectedBgColorStars || '#EFB82D'
+                    : column?.selectedBgColorHearts || '#EE5B67',
+              }}
+              onChange={(name, value, color) => {
+                if (column.iconType === 'stars') {
+                  onColumnItemChange(index, 'selectedBgColorStars', color);
+                } else {
+                  onColumnItemChange(index, 'selectedBgColorHearts', color);
+                }
+              }}
               shouldFlexDirectionBeRow={true}
             />
           </div>
@@ -238,29 +249,9 @@ export const StylesTabElements = ({
               param={{ name: 'Unselected color' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Unselected color' } } }}
-              definition={{ value: column?.unselectedColor || '#D1D5DB' }}
-              onChange={(name, value, color) => onColumnItemChange(index, 'unselectedColor', color)}
+              definition={{ value: column?.unselectedColor || 'var(--icon-weak)' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'unselectedBgColor', color)}
               shouldFlexDirectionBeRow={true}
-            />
-          </div>
-          <div className="field px-3">
-            <label className="form-label">{t('widget.Table.iconType', 'Icon type')}</label>
-            <Select
-              className={'select-search'}
-              meta={{
-                options: [
-                  { label: 'Stars', value: 'stars' },
-                  { label: 'Hearts', value: 'hearts' },
-                ],
-              }}
-              value={column.iconType || 'stars'}
-              search={false}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'iconType', value);
-              }}
-              placeholder={t('Select') + '...'}
-              width={'100%'}
             />
           </div>
         </div>
