@@ -127,9 +127,8 @@ export const Folders = function Folders({
     const search = `${name ? `?folder=${name}` : ''}`;
     navigate(
       {
-        pathname: `/${getWorkspaceId()}${
-          appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
-        }`,
+        pathname: `/${getWorkspaceId()}${appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
+          }`,
         search,
       },
       { replace: true }
@@ -324,9 +323,9 @@ export const Folders = function Folders({
             {appType === 'module'
               ? 'All modules'
               : t(
-                  `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
-                  'All apps'
-                )}
+                `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+                'All apps'
+              )}
           </a>
         </div>
       )}
@@ -389,7 +388,8 @@ export const Folders = function Folders({
             <input
               type="text"
               onChange={handleInputChange}
-              className="form-control"
+              className={`form-control${errorText ? ' is-invalid error' : ''}`}
+              style={errorText ? { border: '1px solid #DB4324' } : {}}
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
               value={newFolderName}
