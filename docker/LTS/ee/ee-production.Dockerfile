@@ -92,19 +92,6 @@ RUN apt-get update && \
         git \
         openssh-client \
         freetds-dev \
-        git-man \
-        libgdk-pixbuf-2.0-0 \
-        libgdk-pixbuf2.0-bin \
-        libgdk-pixbuf2.0-common \
-        libpam-modules \
-        libpam-modules-bin \
-        libpam-runtime \
-        libpam0g \
-        libldap2 \
-        libtiff6 \
-        libharfbuzz0b \
-        libgif7 \
-        dpkg \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
