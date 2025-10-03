@@ -66,6 +66,7 @@ export const RenderPage = ({
         CustomIcon={!labelStyle?.icon?.hidden && IconElement}
         customStyles={computeStyles}
         darkMode={darkMode}
+        ariaLabel={page?.name}
       >
         {!labelStyle?.label?.hidden && (
           <div

@@ -95,7 +95,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         ) : (
           <button
             onClick={() => setShowModal((show) => !show)}
-            className="add-params-btn"
+            className="add-params-btn query-manager-add-params-btn"
             id="runjs-param-add-btn"
             data-cy={`runjs-add-param-button`}
             style={{ background: 'none', border: 'none' }}

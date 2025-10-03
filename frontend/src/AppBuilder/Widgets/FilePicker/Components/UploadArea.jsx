@@ -13,6 +13,9 @@ const UploadArea = ({
   isDragReject,
   isDisabled,
   isFocused,
+  isVisible,
+  isLoading,
+  isMandatory,
   uiErrorMessage,
   onFocus,
   onBlur,
@@ -24,6 +27,7 @@ const UploadArea = ({
   maxCount,
   fileTypeCategory,
   selectedFilesLength,
+  id,
 }) => {
   // --- Refactored Conditions for Readability ---
   const canShowInstructionText = !isDragActive && selectedFilesLength < maxCount;
@@ -53,7 +57,15 @@ const UploadArea = ({
       tabIndex={isDisabled ? -1 : 0}
       style={{ borderRadius: `${borderRadius}px`, height }}
     >
-      <input {...getInputProps()} />
+      <input
+        {...getInputProps()}
+        aria-labelledby={`${id}-label`}
+        id={`component-${id}`}
+        aria-hidden={!isVisible}
+        aria-disabled={isDisabled}
+        aria-busy={isLoading}
+        aria-required={isMandatory}
+      />
 
       {hasUiError && (
         <div className="ui-error-message-container">

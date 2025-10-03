@@ -412,6 +412,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const switchToHomePage = () => {
+    if (currentPageId === homePageId) return;
+
     const page = pages.find((p) => p.id === homePageId);
 
     const queryParams = {
