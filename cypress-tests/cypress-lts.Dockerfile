@@ -42,7 +42,7 @@ COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
+RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
 
@@ -96,6 +96,7 @@ RUN apt-get update && \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
     && tar -xf node-v22.15.1-linux-x64.tar.xz \
     && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
@@ -107,18 +108,6 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-# Install Neo4j + APOC
-RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
-    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
-    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
-    mkdir -p /var/lib/neo4j/plugins && \
-    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -139,14 +128,17 @@ WORKDIR /
 
 RUN mkdir -p /app
 
+RUN useradd --create-home --home-dir /home/appuser appuser
+
 # Use the PostgREST binary from the builder stage
-COPY --from=builder /postgrest /usr/local/bin/postgrest
+COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
 
 RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
     echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
     chmod +x /usr/local/bin/postgrest
 
-# Copy application files
+
+# Copy application with ownership set directly to avoid chown -R
 COPY --from=builder /app/package.json ./app/package.json
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
