@@ -36,8 +36,8 @@ const langSupport = Object.freeze({
 
 const MultiLineCodeEditor = (props) => {
   const {
-    darkMode,
-    height,
+    darkMode = 'false',
+    height = '300', //default height set to 300px
     initialValue,
     lang,
     className,
@@ -57,7 +57,6 @@ const MultiLineCodeEditor = (props) => {
     onInputChange, // Added this prop to immediately handle value changes
   } = props;
   const editorRef = useRef(null);
-
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
@@ -133,7 +132,16 @@ const MultiLineCodeEditor = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
-  const heightInPx = typeof height === 'string' && height?.includes('px') ? height : `${height}px`;
+  // Convert height to proper format
+  const getHeightValue = () => {
+    if (!height) return '300px'; // Default height
+    if (typeof height === 'string') {
+      return height.includes('px') ? height : `${height}px`;
+    }
+    return `${height}px`;
+  };
+
+  const heightValue = getHeightValue();
 
   const theme = darkMode ? okaidia : githubLight;
   const langExtention = langSupport[lang] ?? null;
@@ -255,6 +263,7 @@ const MultiLineCodeEditor = (props) => {
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
           isQueryManager={isInsideQueryPane}
+          position={{ height: height }}
         />
 
         <CodeHinter.Portal
@@ -264,21 +273,24 @@ const MultiLineCodeEditor = (props) => {
           componentName={componentName}
           key={componentName}
           forceUpdate={forceUpdate}
-          optionalProps={{ styles: { height: 300 }, cls: '' }}
+          optionalProps={{ styles: { height: height ? height : '300' }, cls: '' }}
           darkMode={darkMode}
           selectors={{ className: 'preview-block-portal' }}
           dragResizePortal={true}
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
+            <div
+              className="codehinter-container w-100"
+              data-cy={`${cyLabel}-input-field`}
+              style={{ height: heightValue }}
+            >
               <CodeMirror
                 ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
-                height={'100%'}
-                minHeight={heightInPx}
-                {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
+                height={heightValue}
+                maxHeight={heightValue}
                 width="100%"
                 theme={theme}
                 extensions={[
@@ -313,11 +325,12 @@ const MultiLineCodeEditor = (props) => {
                 basicSetup={setupConfig}
                 style={{
                   overflowY: 'auto',
+                  height: heightValue,
                 }}
                 className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
                 indentWithTab={false}
                 readOnly={readOnly}
-                editable={editable} //for transformations in query manager
+                editable={editable}
                 onCreateEditor={(view) => {
                   setEditorView(view);
                   if (setCodeEditorView) {
