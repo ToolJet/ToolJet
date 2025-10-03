@@ -10,7 +10,7 @@
       "key": "clickup_operation",
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
-      "spec_url": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/clickup-api-v2-reference.json"
+      "spec_url": "https://tooljet-openapi-spec.s3.us-west-1.amazonaws.com/clickup-api-v2-reference.json"
     }
   }
 }
