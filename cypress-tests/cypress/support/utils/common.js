@@ -23,7 +23,7 @@ export const logout = () => {
 export const navigateToManageUsers = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
-  cy.get(commonSelectors.manageUsersOption).click();
+  cy.get(commonSelectors.manageUsersOption).click({ force: true });
 };
 
 export const navigateToManageGroups = () => {

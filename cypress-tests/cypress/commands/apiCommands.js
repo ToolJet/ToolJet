@@ -1,39 +1,36 @@
 const envVar = Cypress.env("environment");
 
-Cypress.Commands.add('loginByGoogleApi', (state = '') => {
-  cy.log('Starting basic Google SSO login approach');
+Cypress.Commands.add("loginByGoogleApi", (state = "") => {
+  cy.log("Starting basic Google SSO login approach");
 
   cy.request({
-    method: 'POST',
-    url: 'https://oauth2.googleapis.com/token',
+    method: "POST",
+    url: "https://oauth2.googleapis.com/token",
     form: true,
     body: {
-      grant_type: 'refresh_token',
-      client_id: Cypress.env('googleClientId'),
-      client_secret: Cypress.env('googleClientSecret'),
-      refresh_token: Cypress.env('googleRefreshToken')
-    }
+      grant_type: "refresh_token",
+      client_id: Cypress.env("googleClientId"),
+      client_secret: Cypress.env("googleClientSecret"),
+      refresh_token: Cypress.env("googleRefreshToken"),
+    },
   }).then(({ body }) => {
     const { access_token, id_token } = body;
-    cy.log('Successfully obtained Google tokens');
+    cy.log("Successfully obtained Google tokens");
 
     cy.request({
-      method: 'GET',
-      url: 'https://www.googleapis.com/oauth2/v3/userinfo',
-      headers: { Authorization: `Bearer ${access_token}` }
+      method: "GET",
+      url: "https://www.googleapis.com/oauth2/v3/userinfo",
+      headers: { Authorization: `Bearer ${access_token}` },
     }).then(({ body: userInfo }) => {
-
-      const tooljetBase = 'http://localhost:8082/sso/google/688f4b68-8c3b-41b2-aecb-1c1e9a112de1';
+      const tooljetBase =
+        "http://localhost:8082/sso/google/688f4b68-8c3b-41b2-aecb-1c1e9a112de1";
       const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
       const fullUrl = `${tooljetBase}#${hash}`;
 
       cy.visit(fullUrl);
-
-
     });
   });
 });
-
 
 Cypress.Commands.add(
   "apiLogin",
@@ -156,6 +153,10 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
       }
       expect(response.status).to.equal(201);
       Cypress.env("appId", response.allRequestResponses[0]["Response Body"].id);
+      Cypress.env(
+        "user_id",
+        response.allRequestResponses[0]["Response Body"].user_id
+      );
       Cypress.log({
         name: "App create",
         displayName: "APP CREATED",
@@ -1064,6 +1065,63 @@ Cypress.Commands.add(
           .then((tokenResp) => {
             cy.visit(autherizationUrl);
           });
+      });
+    });
+  }
+);
+
+Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
+  cy.getCookie("tj_auth_token")
+    .should("exist")
+    .then((cookie) => {
+      return cy
+        .request({
+          method: "PUT",
+          url: `http://localhost:3000/api/v2/apps/${Cypress.env("appId")}/versions/${Cypress.env("editingVersionId")}/global_settings`,
+          body: { globalSettings },
+          headers: {
+            "Content-Type": "application/json",
+            "tj-workspace-id": Cypress.env("workspaceId") || "",
+            Cookie: `tj_auth_token=${cookie.value}`,
+          },
+          failOnStatusCode: false,
+        })
+        .then((response) => {
+          expect(response.status, "update global settings status").to.eq(200);
+          return response.body;
+        });
+    });
+});
+
+Cypress.Commands.add(
+  "apiPromoteAppVersion",
+  (targetEnvId = Cypress.env("environmentId")) => {
+    cy.getCookie("tj_auth_token").then((cookie) => {
+      cy.request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
+          "appId"
+        )}/versions/${Cypress.env("editingVersionId")}/promote`,
+        body: { currentEnvironmentId: targetEnvId },
+        headers: {
+          "Content-Type": "application/json",
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+      }).then((response) => {
+        expect(response.status, "Promote app version status").to.eq(200);
+        const editorEnv = response.body.editorEnvironment;
+
+        if (editorEnv.name === "staging") {
+          Cypress.env("stagingEnvId", editorEnv.id);
+        } else if (editorEnv.name === "production") {
+          Cypress.env("productionEnvId", editorEnv.id);
+        }
+        Cypress.log({
+          name: "App promoted",
+          message: `Environment: ${editorEnv.name} (${editorEnv.id})`,
+        });
+        return response.body;
       });
     });
   }
