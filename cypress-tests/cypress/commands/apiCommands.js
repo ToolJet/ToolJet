@@ -1126,3 +1126,28 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/profile`,
+      headers: {
+        "Content-Type": "application/json",
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      },
+      body: {
+        first_name: firstName,
+        last_name: lastName,
+      },
+      failOnStatusCode: false,
+    }).then((response) => {
+      expect(response.status).to.eq(200);
+      Cypress.log({
+        name: "Profile updated",
+        message: `Updated to ${firstName} ${lastName}`,
+      });
+    });
+  });
+});

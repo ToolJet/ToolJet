@@ -22,6 +22,29 @@ describe("Globals - Inspector", () => {
 
     navigateAndVerifyInspector(["globals", "currentUser"], dataList);
 
+    cy.apiUpdateProfile({
+      firstName: "UpdatedThe",
+      lastName: "UpdatedDeveloper",
+    }).then(() => {
+      cy.reload();
+
+      const dataListAfter = [
+        ["email", `"dev@tooljet.io"`],
+        ["firstName", `"UpdatedThe"`],
+        ["lastName", `"UpdatedDeveloper"`],
+        ["id", `"${Cypress.env("user_id").slice(0, 31)}...`],
+        ["avatarId", `null`],
+        ["groups", `[2]`],
+        ["role", `"admin"`],
+        ["ssoUserInfo", `{0}`],
+      ];
+
+      navigateAndVerifyInspector(["globals", "currentUser"], dataListAfter);
+    });
+    cy.apiUpdateProfile({
+      firstName: "The",
+      lastName: "developer",
+    });
     cy.apiDeleteApp();
   });
 
