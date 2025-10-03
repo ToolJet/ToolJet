@@ -67,7 +67,7 @@ export class AppModuleLoader {
           })(),
           autoLogging: {
             ignore: (req) => {
-              if (req.url === '/api/health') {
+              if (req.url === '/api/health' || req.url === '/api/metrics') {
                 return true;
               }
               return false;
@@ -99,9 +99,8 @@ export class AppModuleLoader {
             censor: '[REDACTED]',
           },
           customProps: (req, res) => {
-            return {
-              transactionId: res?.['locals']?.tj_transactionId || '',
-            };
+            const id = res?.['locals']?.tj_transactionId;
+            return id ? { transactionId: id } : {};
           },
         },
       }),
