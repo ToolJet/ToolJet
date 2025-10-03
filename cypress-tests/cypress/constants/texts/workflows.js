@@ -47,7 +47,7 @@ AND table_type = 'BASE TABLE';`,
 
   runjsCodeForWebhooks: 'return "Verifying webhooks response"',
   runjsExpectedValueForWebhooks: "Verifying webhooks response",
-  expectedStatusCodeText: 201,
+  expectedStatusCodeText: 200,
   exportFixturePath: "cypress/fixtures/exportedApp.json",
   workflowLabel: "Workflow",
 };
