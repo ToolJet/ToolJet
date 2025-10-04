@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { determineJustifyContentValue } from '@/_helpers/utils';
-import DOMPurify from 'dompurify';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
+import React, { useState, useEffect, useRef } from "react";
+import { determineJustifyContentValue } from "@/_helpers/utils";
+import DOMPurify from "dompurify";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import useStore from "@/AppBuilder/_stores/store";
+import { shallow } from "zustand/shallow";
 
 const Text = ({
   isEditable,
@@ -44,7 +44,7 @@ const Text = ({
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
   const cellStyles = {
-    color: cellTextColor ?? 'inherit',
+    color: cellTextColor ?? "inherit",
   };
   const [isEditing, setIsEditing] = useState(false);
 
@@ -59,21 +59,23 @@ const Text = ({
   const _renderTextArea = () => (
     <div
       ref={editableCellValueRef}
-      contentEditable={'true'}
-      className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
-        darkMode ? ' textarea-dark-theme' : ''
+      contentEditable={"true"}
+      className={`${
+        !isValid ? "is-invalid" : ""
+      } h-100 long-text-input text-container ${
+        darkMode ? " textarea-dark-theme" : ""
       }`}
       style={{
-        color: cellTextColor ? cellTextColor : 'inherit',
+        color: cellTextColor ? cellTextColor : "inherit",
         maxWidth: containerWidth,
-        outline: 'none',
-        border: 'none',
-        background: 'inherit',
-        overflowY: 'auto',
-        whiteSpace: 'pre-wrap',
-        position: 'static',
-        display: 'flex',
-        alignItems: 'center',
+        outline: "none",
+        border: "none",
+        background: "inherit",
+        overflowY: "auto",
+        whiteSpace: "pre-wrap",
+        position: "static",
+        display: "flex",
+        alignItems: "center",
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -81,17 +83,27 @@ const Text = ({
         if (isEditable && cellValue !== e.target.textContent) {
           const div = e.target;
           let content = div.innerHTML;
-          handleCellValueChange(cell.row.index, column.key || column.name, content, cell.row.original);
+          handleCellValueChange(
+            cell.row.index,
+            column.key || column.name,
+            content,
+            cell.row.original
+          );
         }
       }}
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
       onKeyDown={(e) => {
         e.persist();
-        if (e.key === 'Enter' && !e.shiftKey && isEditable) {
+        if (e.key === "Enter" && !e.shiftKey && isEditable) {
           editableCellValueRef.current.blur();
           const div = e.target;
           let content = div.innerHTML;
-          handleCellValueChange(cell.row.index, column.key || column.name, content, cell.row.original);
+          handleCellValueChange(
+            cell.row.index,
+            column.key || column.name,
+            content,
+            cell.row.original
+          );
         }
       }}
       onFocus={(e) => {
@@ -112,12 +124,12 @@ const Text = ({
       <span
         style={{
           maxHeight: isMaxRowHeightAuto
-            ? 'fit-content'
+            ? "fit-content"
             : maxRowHeightValue
             ? `${maxRowHeightValue}px`
-            : cellSize === 'condensed'
-            ? '39px'
-            : '45px',
+            : cellSize === "condensed"
+            ? "39px"
+            : "45px",
         }}
         ref={nonEditableCellValueRef}
       >
@@ -129,10 +141,10 @@ const Text = ({
   const getOverlay = () => {
     return (
       <div
-        className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table ${darkMode && "dark-theme"}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
+        style={{ whiteSpace: "pre-wrap", color: "var(--text-primary)" }}
       >
         <span
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
@@ -146,9 +158,11 @@ const Text = ({
   };
 
   const _showOverlay = isEditable
-    ? ref.current && ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight
+    ? ref.current &&
+      ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight
     : ref.current &&
-      (ref.current?.parentElement?.clientWidth < nonEditableCellValueRef.current?.clientWidth ||
+      (ref.current?.parentElement?.clientWidth <
+        nonEditableCellValueRef.current?.clientWidth ||
         ref.current?.parentElement?.clientHeight < ref.current?.scrollHeight);
 
   return (
@@ -156,13 +170,13 @@ const Text = ({
       <OverlayTrigger
         placement="bottom"
         overlay={_showOverlay ? getOverlay() : <div></div>}
-        trigger={_showOverlay && ['hover']}
+        trigger={_showOverlay && ["hover", "focus"]}
         rootClose={true}
         show={_showOverlay && showOverlay && !isEditing}
       >
         <div
           className={`h-100 d-flex ${
-            _showOverlay && isEditable ? '' : 'justify-content-center'
+            _showOverlay && isEditable ? "" : "justify-content-center"
           } flex-column position-relative`}
           style={{ ...(isEditing && { zIndex: 2 }) }}
         >
@@ -172,11 +186,17 @@ const Text = ({
             }}
             onMouseLeave={() => setHovered(false)}
             ref={ref}
-            className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+            className={`${!isValid ? "is-invalid h-100" : ""} ${
+              isEditing ? "h-100 content-editing" : ""
+            }`}
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>
-          {isEditable && <div className={isValid ? '' : 'invalid-feedback text-truncate'}>{validationError}</div>}
+          {isEditable && (
+            <div className={isValid ? "" : "invalid-feedback text-truncate"}>
+              {validationError}
+            </div>
+          )}
         </div>
       </OverlayTrigger>
     </>

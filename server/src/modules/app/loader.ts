@@ -1,18 +1,18 @@
-import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from './constants';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
-import { ConfigModule } from '@nestjs/config';
-import { getEnvVars } from '../../../scripts/database-config-utils';
-import { LoggerModule } from 'nestjs-pino';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormconfig, tooljetDbOrmconfig } from '../../../ormconfig';
-import { RequestContextModule } from '@modules/request-context/module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { GuardValidatorModule } from './validators/feature-guard.validator';
-import { SentryModule } from '@modules/observability/sentry/module';
+import { DynamicModule } from "@nestjs/common";
+import { getImportPath } from "./constants";
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ScheduleModule } from "@nestjs/schedule";
+import { BullModule } from "@nestjs/bull";
+import { ConfigModule } from "@nestjs/config";
+import { getEnvVars } from "../../../scripts/database-config-utils";
+import { LoggerModule } from "nestjs-pino";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { ormconfig, tooljetDbOrmconfig } from "../../../ormconfig";
+import { RequestContextModule } from "@modules/request-context/module";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
+import { GuardValidatorModule } from "./validators/feature-guard.validator";
+import { SentryModule } from "@modules/observability/sentry/module";
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -31,49 +31,51 @@ export class AppModuleLoader {
       ScheduleModule.forRoot(),
       BullModule.forRoot({
         redis: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT) || 6379,
+          host: process.env.REDIS_HOST || "localhost",
+          port: parseInt(process.env.REDIS_PORT || "6379", 10),
         },
-      }),
+      } as any),
       await ConfigModule.forRoot({
         isGlobal: true,
-        envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+        envFilePath: [`../.env.${process.env.NODE_ENV}`, "../.env"],
         load: [() => getEnvVars()],
       }),
       LoggerModule.forRoot({
         pinoHttp: {
           level: (() => {
             const logLevel = {
-              production: 'info',
-              development: 'debug',
-              test: 'error',
+              production: "info",
+              development: "debug",
+              test: "error",
             };
-            return logLevel[process.env.NODE_ENV] || 'info';
+            return logLevel[process.env.NODE_ENV] || "info";
           })(),
           autoLogging: {
-            ignorePaths: ['/api/health'],
+            ignorePaths: ["/api/health"],
           },
           prettyPrint:
-            process.env.NODE_ENV !== 'production'
+            process.env.NODE_ENV !== "production"
               ? {
                   colorize: true,
                   levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  translateTime: "UTC:mm/dd/yyyy, h:MM:ss TT Z",
                 }
               : false,
           redact: {
             paths: [
-              'req.headers.authorization',
-              'req.headers.cookie',
-              'res.headers.authorization',
+              "req.headers.authorization",
+              "req.headers.cookie",
+              "res.headers.authorization",
               'res.headers["set-cookie"]',
               'req.headers["proxy-authorization"]',
               'req.headers["www-authenticate"]',
               'req.headers["authentication-info"]',
               'req.headers["x-forwarded-for"]',
-              ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
+              ...(process.env.LOGGER_REDACT
+                ? process.env.LOGGER_REDACT?.split(",")
+                : []),
             ],
-            censor: '[REDACTED]',
+            censor: "[REDACTED]",
           },
         },
       }),
@@ -83,17 +85,23 @@ export class AppModuleLoader {
       GuardValidatorModule,
     ];
 
-    if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+    if (
+      process.env.SERVE_CLIENT !== "false" &&
+      process.env.NODE_ENV === "production"
+    ) {
       staticModules.unshift(
         ServeStaticModule.forRoot({
           // Have to remove trailing slash of SUB_PATH.
-          serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
-          rootPath: join(__dirname, '../../../../../', 'frontend/build'),
+          serveRoot:
+            process.env.SUB_PATH === undefined
+              ? ""
+              : process.env.SUB_PATH.replace(/\/$/, ""),
+          rootPath: join(__dirname, "../../../../../", "frontend/build"),
         })
       );
     }
 
-    if (process.env.APM_VENDOR == 'sentry') {
+    if (process.env.APM_VENDOR == "sentry") {
       staticModules.unshift(
         SentryModule.forRoot({
           dsn: process.env.SENTRY_DNS,
@@ -120,14 +128,18 @@ export class AppModuleLoader {
       try {
         if (process.env.LOG_FILE_PATH) {
           // Add log-to-file module if LOG_FILE_PATH is set
-          const { LogToFileModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`);
+          const { LogToFileModule } = await import(
+            `${await getImportPath(configs.IS_GET_CONTEXT)}/log-to-file/module`
+          );
           dynamicModules.push(await LogToFileModule.register(configs));
         }
 
-        const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
+        const { AuditLogsModule } = await import(
+          `${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`
+        );
         dynamicModules.push(await AuditLogsModule.register(configs));
       } catch (error) {
-        console.error('Error loading dynamic modules:', error);
+        console.error("Error loading dynamic modules:", error);
       }
     }
 

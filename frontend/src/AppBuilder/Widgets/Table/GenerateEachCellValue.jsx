@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { isEmpty } from 'lodash';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
-import { useMounted } from '@/_hooks/use-mount';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import DOMPurify from 'dompurify';
+import React, { useEffect, useRef, useState } from "react";
+import { isEmpty } from "lodash";
+import useStore from "@/AppBuilder/_stores/store";
+import { shallow } from "zustand/shallow";
+import { useMounted } from "@/_hooks/use-mount";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import DOMPurify from "dompurify";
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -27,9 +27,17 @@ export default function GenerateEachCellValue({
   const cellRef = useRef(null);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
-  const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
+  const [showHighlightedCells, setHighlighterCells] = React.useState(
+    globalFilter ? true : false
+  );
   // const [isNullCellClicked, setIsNullCellClicked] = React.useState(false);
-  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
+  const columnTypeAllowToRenderMarkElement = [
+    "text",
+    "string",
+    "default",
+    "number",
+    undefined,
+  ];
   const ref = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -68,7 +76,7 @@ export default function GenerateEachCellValue({
   };
 
   const handleKeyUp = (e) => {
-    if (e.key === 'Tab') {
+    if (e.key === "Tab") {
       isTabKeyPressed.current = true;
       setHighlighterCells(false);
     }
@@ -77,7 +85,7 @@ export default function GenerateEachCellValue({
   let validationData = {};
 
   if (cell.column.isEditable && showHighlightedCells) {
-    if (cell.column.columnType === 'number') {
+    if (cell.column.columnType === "number") {
       validationData = {
         ...validateWidget({
           validationObject: {
@@ -93,7 +101,9 @@ export default function GenerateEachCellValue({
         }),
       };
     }
-    if (['string', undefined, 'default', 'text'].includes(cell.column.columnType)) {
+    if (
+      ["string", undefined, "default", "text"].includes(cell.column.columnType)
+    ) {
       validationData = {
         ...validateWidget({
           validationObject: {
@@ -126,10 +136,10 @@ export default function GenerateEachCellValue({
   const getOverlay = () => {
     return (
       <div
-        className={`overlay-cell-table ${darkMode && 'dark-theme'}`}
+        className={`overlay-cell-table ${darkMode && "dark-theme"}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}
+        style={{ whiteSpace: "pre-wrap", color: "var(--text-primary)" }}
       >
         <span
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
@@ -142,23 +152,28 @@ export default function GenerateEachCellValue({
   };
 
   let htmlElement = cellValue;
-  if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
+  if (
+    cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())
+  ) {
     if (globalFilter) {
       // Function to escape special characters
       const escapeRegExp = (string) => {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
       };
       var normReq = globalFilter
         .toLowerCase()
-        .replace(/\s+/g, ' ')
+        .replace(/\s+/g, " ")
         .trim()
-        .split(' ')
+        .split(" ")
         .sort((a, b) => b.length - a.length)
         .map(escapeRegExp); // Escape special characters in each term
 
       htmlElement = cellValue
         .toString()
-        .replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
+        .replace(
+          new RegExp(`(${normReq.join("|")})`, "gi"),
+          (match) => `<mark>${match}</mark>`
+        );
     }
   }
 
@@ -166,7 +181,7 @@ export default function GenerateEachCellValue({
     return (
       <div
         className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper"
-        style={{ oveflow: 'hidden' }}
+        style={{ oveflow: "hidden" }}
         onMouseMove={() => {
           if (!hovered) setHovered(true);
         }}
@@ -178,7 +193,9 @@ export default function GenerateEachCellValue({
           }}
           ref={ref}
           tabIndex={0}
-          className={`table-column-type-div-element ${columnType === 'text' && 'h-100 my-1'}`}
+          className={`table-column-type-div-element ${
+            columnType === "text" && "h-100 my-1"
+          }`}
         >
           <span
             dangerouslySetInnerHTML={{
@@ -189,11 +206,14 @@ export default function GenerateEachCellValue({
 
         <div
           style={{
-            display: cell.column.isEditable && validationData.validationError ? 'block' : 'none',
-            width: '100%',
-            marginTop: ' 0.25rem',
-            fontSize: ' 85.7142857%',
-            color: '#d63939',
+            display:
+              cell.column.isEditable && validationData.validationError
+                ? "block"
+                : "none",
+            width: "100%",
+            marginTop: " 0.25rem",
+            fontSize: " 85.7142857%",
+            color: "#d63939",
           }}
         >
           {validationData.validationError}
@@ -207,14 +227,19 @@ export default function GenerateEachCellValue({
       onClick={handleCellClick}
       onBlur={handleCellBlur}
       onKeyUp={handleKeyUp}
-      className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
+      className={`w-100 h-100 ${
+        columnType === "selector" &&
+        "d-flex align-items-center justify-content-center"
+      }`}
       ref={cellRef}
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+      {!isColumnTypeAction &&
+      columnTypeAllowToRenderMarkElement.includes(columnType) &&
+      showHighlightedCells ? (
         <OverlayTrigger
           placement="bottom"
           overlay={_showOverlay ? getOverlay() : <div></div>}
-          trigger={_showOverlay && ['hover']}
+          trigger={_showOverlay && ["hover", "focus"]}
           rootClose={true}
           show={_showOverlay && showOverlay}
         >

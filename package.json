@@ -3,8 +3,8 @@
   "version": "1.18.0",
   "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "engines": {
-    "node": "22.15.1",
-    "npm": "10.9.2"
+    "node": ">=22.15.1",
+    "npm": ">=10.9.2"
   },
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx}": [
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
+    "cross-env": "^10.1.0",
     "eslint": "^9.28.0",
     "eslint-plugin-jest": "^28.13.3",
     "eslint-plugin-prettier": "^5.4.1",
@@ -30,7 +31,8 @@
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",
     "prebuild:plugins:prod": "npm run install:plugins",
-    "build:plugins:prod": "NODE_ENV=production npm run build:plugins",
+    "build:plugins:prod": "cross-env NODE_ENV=production npm run build:plugins",
+    "start:prod": "cross-env NODE_ENV=production node dist/src/main",
     "postbuild:plugins:prod": "npm --prefix plugins prune --production",
     "prebuild:frontend": "npm --prefix frontend install --production=false",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
@@ -39,7 +41,6 @@
     "build:server": "NODE_ENV=production npm --prefix server run build",
     "postbuild:server": "npm --prefix server prune --production",
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
-    "start:prod": "npm --prefix server run start:prod",
     "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall && npm run plugins:reload",
     "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod && npm run plugins:reload:prod",
     "db:create": "npm --prefix server run db:create",
@@ -61,7 +62,6 @@
     "plugins:reload": "npm --prefix server run plugins:reload",
     "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "prepare": "husky install",
     "update-version": "node update-version.js"
   },
   "dependencies": {

@@ -1,13 +1,21 @@
-import './styles.scss';
-import React, { useContext, useEffect, useState } from 'react';
-import Select from '@/_ui/Select';
-import { TooljetDatabaseContext } from '../index';
-import { operators } from '../constants';
-import { debounce } from 'lodash';
-import { ToolTip } from '@/_components';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import "./styles.scss";
+import React, { useContext, useEffect, useState } from "react";
+import Select from "@/_ui/Select";
+import { TooljetDatabaseContext } from "../index";
+import { operators } from "../constants";
+import { debounce } from "lodash";
+import { ToolTip } from "@/_components";
+import SolidIcon from "@/_ui/Icon/SolidIcons";
 
-export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '', generateMessage }) => {
+export const FilterForm = ({
+  filters,
+  setFilters,
+  index,
+  column = "",
+  operator = "",
+  value = "",
+  generateMessage,
+}) => {
   const { columns, setPageCount } = useContext(TooljetDatabaseContext);
 
   const [filterInputValue, setFilterInputValue] = useState(value);
@@ -52,27 +60,41 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   };
 
   const handleSelectOpen = () => {
-    document.body.classList.add('react-select-open');
-    const selectControl = document.querySelector('.select-operation-field .react-select__control');
+    document.body.classList.add("react-select-open");
+    const selectControl = document.querySelector(
+      ".select-operation-field .react-select__control"
+    );
     if (selectControl) {
       const rect = selectControl.getBoundingClientRect();
-      document.documentElement.style.setProperty('--select-width', `${rect.width}px`);
-      document.documentElement.style.setProperty('0', `${rect.left}px`);
-      document.documentElement.style.setProperty('100%', `${rect.bottom + window.scrollY}px`);
+      document.documentElement.style.setProperty(
+        "--select-width",
+        `${rect.width}px`
+      );
+      document.documentElement.style.setProperty("0", `${rect.left}px`);
+      document.documentElement.style.setProperty(
+        "100%",
+        `${rect.bottom + window.scrollY}px`
+      );
     }
   };
 
   const handleSelectClose = () => {
-    document.body.classList.remove('react-select-open');
+    document.body.classList.remove("react-select-open");
   };
 
-  const displayColumns = columns.map(({ accessor }) => ({ value: accessor, label: accessor }));
+  const displayColumns = columns.map(({ accessor }) => ({
+    value: accessor,
+    label: accessor,
+  }));
 
   return (
     <div className="row g-0 d-flex align-items-center justify-content-center tw-w-[525px]">
       <div className="col-11">
         <div className="row g-0 align-items-center">
-          <div className="col-4 select-column-field width-lg" data-cy="select-column-field">
+          <div
+            className="col-4 select-column-field width-lg"
+            data-cy="select-column-field"
+          >
             <Select
               useMenuPortal={false}
               placeholder="Select.."
@@ -87,11 +109,14 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
           <ToolTip
             message={generateMessage(operator)}
-            trigger={['hover']}
-            delay={{ show: '0', hide: '0' }}
-            show={['gt', 'lte', 'gte'].includes(operator)}
+            trigger={["hover", "focus"]}
+            delay={{ show: "0", hide: "0" }}
+            show={["gt", "lte", "gte"].includes(operator)}
           >
-            <div className="col-4 select-operation-field width-sm" data-cy="select-operation-field">
+            <div
+              className="col-4 select-operation-field width-sm"
+              data-cy="select-operation-field"
+            >
               <Select
                 placeholder="Select.."
                 useMenuPortal={false}
@@ -118,7 +143,11 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
         </div>
       </div>
-      <div className="col-1 delete-icon-wrapper" data-cy="delete-icon" onClick={handleDelete}>
+      <div
+        className="col-1 delete-icon-wrapper"
+        data-cy="delete-icon"
+        onClick={handleDelete}
+      >
         <SolidIcon name="trash" fill="#E54D2E" width="14" />
       </div>
     </div>

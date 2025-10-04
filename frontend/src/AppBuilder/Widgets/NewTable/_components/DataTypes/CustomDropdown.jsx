@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import SelectSearch from 'react-select-search';
-import '@/_styles/editor/react-select-search.scss';
-import { useTranslation } from 'react-i18next';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import SelectSearch from "react-select-search";
+import "@/_styles/editor/react-select-search.scss";
+import { useTranslation } from "react-i18next";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 
 export const CustomDropdownColumn = ({
   options = [],
@@ -21,7 +21,7 @@ export const CustomDropdownColumn = ({
   const sanitizedValue = useMemo(() => {
     if (!multiple) return value;
     if (!Array.isArray(value)) return [];
-    return value.every((val) => typeof val !== 'object') ? value : [];
+    return value.every((val) => typeof val !== "object") ? value : [];
   }, [value, multiple]);
 
   const handleMouseMove = useCallback(() => {
@@ -39,12 +39,18 @@ export const CustomDropdownColumn = ({
       if (!valueProps) return null;
 
       const stringValue = String(valueProps.value);
-      const values = stringValue.includes(',') ? stringValue.split(', ') : stringValue.split(' ');
+      const values = stringValue.includes(",")
+        ? stringValue.split(", ")
+        : stringValue.split(" ");
 
       return (
         <div>
           {values.map((val, index) => (
-            <span key={index} {...(!isEditable ? {} : valueProps)} className="badge bg-blue-lt p-2 mx-1">
+            <span
+              key={index}
+              {...(!isEditable ? {} : valueProps)}
+              className="badge bg-blue-lt p-2 mx-1"
+            >
               {val}
             </span>
           ))}
@@ -68,21 +74,23 @@ export const CustomDropdownColumn = ({
       return (
         <div
           style={{ maxWidth: width, width }}
-          className={`overlay-cell-table overlay-badges-table ${darkMode ? 'dark-theme' : ''}`}
+          className={`overlay-cell-table overlay-badges-table ${
+            darkMode ? "dark-theme" : ""
+          }`}
         >
           {labels.map((label) => (
             <span
               key={label}
               style={{
-                padding: '2px 6px',
-                background: 'var(--surfaces-surface-03)',
-                borderRadius: '6px',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                wordWrap: 'break-word',
-                display: 'flex',
-                flexWrap: 'wrap',
-                overflow: 'auto',
+                padding: "2px 6px",
+                background: "var(--surfaces-surface-03)",
+                borderRadius: "6px",
+                color: "var(--text-primary)",
+                fontSize: "12px",
+                wordWrap: "break-word",
+                display: "flex",
+                flexWrap: "wrap",
+                overflow: "auto",
               }}
             >
               {label}
@@ -96,14 +104,17 @@ export const CustomDropdownColumn = ({
 
   const isOverflowing = useCallback((element) => {
     if (!element) return false;
-    return element.clientHeight < element.scrollHeight || element.clientWidth < element.scrollWidth;
+    return (
+      element.clientHeight < element.scrollHeight ||
+      element.clientWidth < element.scrollWidth
+    );
   }, []);
 
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={getOverlay(sanitizedValue, width, options)}
-      trigger={multiple && sanitizedValue?.length >= 1 && ['hover']}
+      trigger={multiple && sanitizedValue?.length >= 1 && ["hover", "focus"]}
       rootClose={true}
       show={multiple && sanitizedValue?.length >= 1 && showOverlay}
     >
@@ -111,9 +122,9 @@ export const CustomDropdownColumn = ({
         className={`custom-select d-flex align-items-center table-custom-select-badge-badges w-100 h-100 position-relative ${
           contentWrap
             ? autoHeight
-              ? 'content--wrap'
-              : 'content--wrap-content--overflow-hidden'
-            : 'content--overflow-hidden'
+              ? "content--wrap"
+              : "content--wrap-content--overflow-hidden"
+            : "content--overflow-hidden"
         }`}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -126,7 +137,7 @@ export const CustomDropdownColumn = ({
           search={false}
           onChange={onChange}
           multiple={multiple}
-          placeholder={t('globals.select', 'Select') + '...'}
+          placeholder={t("globals.select", "Select") + "..."}
           className="select-search"
         />
       </div>
