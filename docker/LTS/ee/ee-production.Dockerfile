@@ -75,7 +75,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
-FROM debian:13.1-slim
+FROM debian:13-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
