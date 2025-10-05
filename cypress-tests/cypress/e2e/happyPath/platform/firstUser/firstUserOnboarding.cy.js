@@ -272,7 +272,7 @@ describe("Self host onboarding", () => {
       onboardingStepThree();
     });
 
-    cy.get(commonSelectors.skipbutton).click();
+    // cy.get(commonSelectors.skipbutton).click();
     cy.backToApps();
 
     logout();

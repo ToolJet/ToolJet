@@ -203,7 +203,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).invoke("removeAttr", "target").click();
+  cy.get(selector).eq(1).invoke("removeAttr", "target").click();
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -563,7 +563,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
