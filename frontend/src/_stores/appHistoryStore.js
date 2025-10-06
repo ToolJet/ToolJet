@@ -127,6 +127,16 @@ const useAppHistoryStore = create(
         );
       },
 
+      pushHistoryEntry: (newEntry) => {
+        set(
+          (state) => {
+            state.historyEntries.unshift(newEntry);
+          },
+          false,
+          'pushHistoryEntry'
+        );
+      },
+
       setShowRestoreEntryModal: (show) => {
         set(
           (state) => {
