@@ -18,6 +18,7 @@ import {
   cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
+  validateUrlForSSRF,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
@@ -53,6 +54,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url);
+
     const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,

@@ -30,6 +30,12 @@ import {
   checkIfContentTypeIsJson,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from './oauth';
+import {
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  isPrivateIP,
+  getSSRFConfig,
+} from './ssrf-protection';
 
 export {
   QueryError,
@@ -61,4 +67,8 @@ export {
   redactHeaders,
   cookiesToString,
   sanitizeSortPairs,
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  isPrivateIP,
+  getSSRFConfig,
 };

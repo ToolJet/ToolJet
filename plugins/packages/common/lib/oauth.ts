@@ -7,6 +7,7 @@ import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
 import { isEmpty } from 'lodash';
+import { validateUrlForSSRF } from './ssrf-protection';
 
 export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
   const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
@@ -177,6 +178,9 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
     throw new Error('Missing required fields in sourceOptions');
   }
 
+  // SSRF Protection: Validate access token URL
+  await validateUrlForSSRF(sourceOptions.access_token_url);
+
   const headersObject = sanitizeParams(sourceOptions.access_token_custom_headers);
 
   try {
@@ -273,6 +277,10 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
     throw new QueryError('Refresh token not found', error.response, {});
   }
   const accessTokenUrl = sourceOptions['access_token_url'];
+
+  // SSRF Protection: Validate access token URL
+  await validateUrlForSSRF(accessTokenUrl);
+
   const clientId = sourceOptions['client_id'];
   const clientSecret = sourceOptions['client_secret'];
   const grantType = 'refresh_token';

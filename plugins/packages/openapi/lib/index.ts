@@ -8,6 +8,7 @@ import {
   getRefreshedToken,
   validateAndSetRequestOptionsBasedOnAuthType,
   getAuthUrl,
+  validateUrlForSSRF,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -55,6 +56,10 @@ export default class Openapi implements QueryService {
     const { request, query, header, path: pathParams } = params;
     const resolvedHost = sourceOptions.host || host;
     const url = new URL(resolvedHost + this.resolvePathParams(pathParams, path));
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url.toString());
+
     const parsedRequest = request ? this.parseRequest(request) : undefined;
     const json =
       operation !== 'get' && parsedRequest && Object.keys(parsedRequest).length > 0
