@@ -53,6 +53,14 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       .filter((component) => !IGNORED_ITEMS.includes(component));
   }, [componentTypes]);
 
+  const searchList = useMemo(() => {
+    return componentTypes
+      .filter((component) => !IGNORED_ITEMS.includes(component.component))
+      .map((component) => {
+        return { component: component.component, displayName: component.displayName };
+      });
+  }, [componentTypes]);
+
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleError, setModuleError] = useState(false);
@@ -101,7 +109,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const filterComponents = useCallback(
     (value) => {
       if (value !== '') {
-        const fuse = new Fuse(componentList, {
+        const fuse = new Fuse(searchList, {
           keys: ['displayName'],
           shouldSort: true,
           threshold: 0.4,
@@ -119,7 +127,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             componentList[legacyIndex],
           ];
         }
-        setFilteredComponents(results.map((result) => result.item));
+        setFilteredComponents(results.map((result) => result.item.component));
       } else {
         setFilteredComponents(componentList);
       }

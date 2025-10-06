@@ -604,7 +604,7 @@ export const createQueryPanelSlice = (set, get) => ({
         queryExecutionPromise
           .then(async (data) => {
             if (data.status === 'needs_oauth') {
-              localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+              localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
@@ -1254,7 +1254,12 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        const executionResponse = await workflowExecutionsService.trigger(
+          workflowAppId,
+          resolvedParams,
+          appEnvId,
+          query.id
+        );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
         return { data: e?.message, status: 'failed' };

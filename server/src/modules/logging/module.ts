@@ -1,9 +1,20 @@
-import { Global, Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { TransactionLogger } from './service';
+import { TypeormLoggerService } from './services/typeorm-logger.service';
 
-@Global()
-@Module({
-  providers: [TransactionLogger],
-  exports: [TransactionLogger],
-})
-export class LoggingModule {}
+@Module({})
+export class LoggingModule {
+  static forRoot(): DynamicModule {
+    const providers = [
+      TransactionLogger,
+      ...(process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true' ? [TypeormLoggerService] : []),
+    ];
+
+    return {
+      module: LoggingModule,
+      providers,
+      global: true,
+      exports: providers,
+    };
+  }
+}

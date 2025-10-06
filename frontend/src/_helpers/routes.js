@@ -208,7 +208,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/smtp',
     '/license',
   ];
-  if (isUserLoggingIn) {
+  if (isUserLoggingIn && !path) {
     const role = authenticationService?.currentSessionValue?.role?.name;
     const isEndUser = role === 'end-user';
     const isCommunityEdition = fetchEdition() === 'ce';

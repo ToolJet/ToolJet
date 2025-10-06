@@ -83,7 +83,9 @@ type NewRevampedComponent =
   | 'Steps'
   | 'Statistics'
   | 'StarRating'
-  | 'Tags';
+  | 'Tags'
+  | 'CircularProgressBar'
+  | 'Html';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -115,6 +117,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Statistics',
   'StarRating',
   'Tags',
+  'CircularProgressBar',
+  'Html',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -384,9 +388,7 @@ export class AppImportExportService {
         ? await this.entityManager
             .createQueryBuilder(App, 'app')
             .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', {
-              organizationId: user.organizationId,
-            })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .distinct(true)
             .getMany()
         : [];
@@ -2586,6 +2588,58 @@ function migrateProperties(
       }
     }
 
+    // CircularProgressBar
+    if (componentType === 'CircularProgressBar') {
+      if (!properties.labelType) {
+        properties.labelType = { value: 'custom' };
+      }
+
+      if (!properties.text || !properties.text.value) {
+        properties.text = {
+          ...properties.text,
+          value: '',
+        };
+      }
+
+      if (!styles.completionColor) {
+        styles.completionColor = {
+          ...styles.color,
+        };
+      }
+
+      // When CircularProgressBar was released
+      const backwordCompatibilityCheck = !isVersionGreaterThanOrEqual(tooljetVersion, '3.16.33');
+      if (backwordCompatibilityCheck) {
+        if (styles.textSize) {
+          styles.textSize = {
+            ...styles.textSize,
+            fxActive: true,
+          };
+        }
+
+        if (styles.strokeWidth) {
+          styles.strokeWidth = {
+            ...styles.strokeWidth,
+            fxActive: true,
+          };
+        }
+
+        if (styles.counterClockwise) {
+          styles.counterClockwise = {
+            ...styles.counterClockwise,
+            fxActive: true,
+          };
+        }
+
+        if (styles.circleRatio) {
+          styles.circleRatio = {
+            ...styles.circleRatio,
+            fxActive: true,
+          };
+        }
+      }
+    }
+
     // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
@@ -2720,6 +2774,17 @@ function migrateProperties(
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
       styles.widthType = { value: 'ofField' };
+    }
+  }
+
+  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
+  // The migration for Kanban will then be handled automatically along with other revamped components.
+  if (['Kanban'].includes(componentType)) {
+    if (general?.tooltip) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
+      delete general?.tooltip;
     }
   }
 
