@@ -115,7 +115,7 @@
     }
 
     .app-creation-time {
-      // display: none;
+      display: inline-block; // keep visible by default; override where needed
     }
 
     .appcard-buttons-wrap {
@@ -186,6 +186,16 @@
   background-color: var(--page-weak) !important;
   border-top: 1px solid var(--border-weak) !important;
   width: calc(100% - 336px) !important;
+  padding: 0 12px;
+
+  .footer-text {
+    font-size: 13px;
+    line-height: 1.2;
+    color: var(--text-muted, #6c757d);
+    white-space: nowrap;
+    display: inline-block;
+    padding: 4px 8px;
+  }
 
   @media only screen and (max-width: 768px) {
     position: unset;
@@ -200,6 +210,7 @@
       display: flex !important;
       align-items: center;
       justify-content: center;
+      padding: 6px 0;
     }
   }
 }

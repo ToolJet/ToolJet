@@ -33,34 +33,36 @@ const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9, a
     setPageCount((previous) => {
       if (previous - 1 < 1) {
         pageChanged(previous);
-        return previous;
-      }
-      pageChanged(previous - 1);
-      return previous - 1;
-    });
-  };
+        return (
+          <div className="home-page-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
+            <div className="table-footer row gx-0 w-100 align-items-center">
+              <div className="col-5" />
 
-  return (
-    <div className="home-page-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0">
-        <div className="col-5"></div>
-        <div className="col d-flex align-items-center justify-content-end">
-          <div className="col">
-            <Pagination
-              darkMode={darkMode}
-              gotoNextPage={gotoNextPage}
-              gotoPreviousPage={gotoPreviousPage}
-              currentPage={pageCount}
-              totalPage={totalPages}
-              isDisabled={dataLoading}
-            />
+              <div className="col d-flex align-items-center justify-content-end">
+                <div className="col pagination-container">
+                  <Pagination
+                    darkMode={darkMode}
+                    gotoNextPage={gotoNextPage}
+                    gotoPreviousPage={gotoPreviousPage}
+                    currentPage={pageCount}
+                    totalPage={totalPages}
+                    isDisabled={dataLoading}
+                  />
+                </div>
+
+                <div className="col-4 mx-2 d-flex align-items-center justify-content-end">
+                  {dataLoading ? (
+                    <Skeleton count={1} height={12} width={80} />
+                  ) : (
+                    <span className="animation-fade footer-text">
+                      {pageRange} of {count} {appType === 'module' ? 'modules' : 'apps'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="col-4 mx-2">
-            {dataLoading ? (
-              <Skeleton count={1} height={2} />
-            ) : (
-              <span className="animation-fade">
-                {pageRange} of {count} {appType === 'module' ? 'modules' : 'apps'}
+        );
               </span>
             )}
           </div>
