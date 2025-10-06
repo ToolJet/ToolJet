@@ -423,7 +423,7 @@ export default function generateColumnsData({
       };
 
       // Add sorting configuration for specific column types
-      if (columnType === 'number' || columnType === 'rating') {
+      if (columnType === 'number') {
         columnDef.sortingFn = (rowA, rowB, columnId) => {
           const a = rowA.getValue(columnId);
           const b = rowB.getValue(columnId);
