@@ -447,6 +447,17 @@ class TableComponent extends React.Component {
         isDateSelectionEnabled: true,
       };
     }
+    if (item === 'columnType' && value === 'rating') {
+      column = {
+        ...column,
+        maxRating: 5,
+        defaultRating: 3,
+        iconType: 'stars',
+        selectedBgColorStars: '#EFB82D',
+        selectedBgColorHearts: '#EE5B67',
+        unselectedBgColor: 'var(--icon-weak)',
+      };
+    }
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;

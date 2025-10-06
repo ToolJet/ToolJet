@@ -224,34 +224,31 @@ export const StylesTabElements = ({
       {column.columnType === 'rating' && (
         <div className="d-flex flex-column custom-gap-16">
           <div className="field px-3">
-            <Color
-              param={{ name: 'Selected color' }}
+            <ProgramaticallyHandleProperties
+              label="Selected color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property={column.iconType === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Selected color' }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Selected color' } } }}
-              definition={{
-                value:
-                  column.iconType === 'stars'
-                    ? column?.selectedBgColorStars || '#EFB82D'
-                    : column?.selectedBgColorHearts || '#EE5B67',
-              }}
-              onChange={(name, value, color) => {
-                if (column.iconType === 'stars') {
-                  onColumnItemChange(index, 'selectedBgColorStars', color);
-                } else {
-                  onColumnItemChange(index, 'selectedBgColorHearts', color);
-                }
-              }}
-              shouldFlexDirectionBeRow={true}
             />
           </div>
           <div className="field px-3">
-            <Color
-              param={{ name: 'Unselected color' }}
+            <ProgramaticallyHandleProperties
+              label="Unselected color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="unselectedBgColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Unselected color' }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Unselected color' } } }}
-              definition={{ value: column?.unselectedColor || 'var(--icon-weak)' }}
-              onChange={(name, value, color) => onColumnItemChange(index, 'unselectedBgColor', color)}
-              shouldFlexDirectionBeRow={true}
             />
           </div>
         </div>

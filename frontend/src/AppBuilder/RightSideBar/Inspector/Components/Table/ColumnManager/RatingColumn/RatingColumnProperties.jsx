@@ -17,9 +17,7 @@ const RatingColumnProperties = ({
   return (
     <div className="field" style={{ marginTop: '-8px' }}>
       <div className="px-3 mb-3">
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>
-          Options
-        </label>
+        <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Options</label>
       </div>
       <div className="field mb-2 px-3">
         <label className="">{t('widget.Table.maxRating', 'Max rating')}</label>
