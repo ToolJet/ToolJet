@@ -24,6 +24,7 @@ export const Listview = function Listview({
   currentLayout,
   darkMode,
   dataCy,
+  currentMode,
 }) {
   const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
@@ -45,7 +46,6 @@ export const Listview = function Listview({
     enablePagination = false,
     mode = 'list',
     columns = 1,
-    dynamicHeight,
     dataSourceSelector,
   } = combinedProperties;
 
@@ -56,12 +56,14 @@ export const Listview = function Listview({
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
   const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
   const computedStyles = {
     backgroundColor,
     border: '1px solid',
     borderColor,
-    height: dynamicHeight ? '100%' : enablePagination ? height - 54 : height,
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+    height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
@@ -84,8 +86,8 @@ export const Listview = function Listview({
   const [childrenData, setChildrenData] = useState({});
 
   useDynamicHeight({
-    dynamicHeight: dynamicHeight,
-    id: id,
+    dynamicHeight: isDynamicHeightEnabled,
+    id,
     height,
     value: data,
     adjustComponentPositions,

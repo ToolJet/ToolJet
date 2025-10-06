@@ -28,6 +28,7 @@ export const Text = function Text({
   dataCy,
   adjustComponentPositions,
   currentLayout,
+  currentMode,
 }) {
   let {
     textSize,
@@ -50,19 +51,19 @@ export const Text = function Text({
     isScrollRequired,
   } = styles;
   const isInitialRender = useRef(true);
-  const { loadingState, textFormat, disabledState, dynamicHeight } = properties;
+  const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   count = count + 1;
 
   // Create ref for height observation
   const textRef = useRef(null);
-  const heightChangeValue = useHeightObserver(textRef, dynamicHeight);
+  const heightChangeValue = useHeightObserver(textRef, isDynamicHeightEnabled);
 
-  // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
@@ -72,7 +73,7 @@ export const Text = function Text({
   }, [properties.visibility, loadingState, disabledState]);
 
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     value: heightChangeValue,
@@ -150,7 +151,8 @@ export const Text = function Text({
   };
 
   const computedStyles = {
-    height: dynamicHeight ? 'auto' : `${height}px`,
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+    height: isDynamicHeightEnabled ? 'auto' : `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
@@ -172,12 +174,12 @@ export const Text = function Text({
 
   const commonStyles = {
     width: '100%',
-    height: '100%',
+    ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : { height: '100%' }),
     display: 'flex',
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
-    ...(!dynamicHeight && {
+    ...(!isDynamicHeightEnabled && {
       overflowX: isScrollRequired === 'disabled' && 'hidden',
       overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
     }),
@@ -201,7 +203,9 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>}
+          {textFormat === 'plainText' && (
+            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
+          )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>

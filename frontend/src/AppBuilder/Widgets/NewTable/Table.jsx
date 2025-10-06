@@ -28,6 +28,7 @@ export const Table = memo(
     setExposedVariables,
     adjustComponentPositions,
     currentLayout,
+    currentMode,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -76,6 +77,8 @@ export const Table = memo(
     const data =
       restOfProperties.dataSourceSelector === 'rawJson' ? restOfProperties.data : restOfProperties.dataSourceSelector;
 
+    const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+
     const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
@@ -95,7 +98,7 @@ export const Table = memo(
 
     // Create ref for height observation
     const tableRef = useRef(null);
-    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight);
+    const heightChangeValue = useHeightObserver(tableRef, isDynamicHeightEnabled);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -162,7 +165,7 @@ export const Table = memo(
     // Added to handle the dynamic value (fx) on the table column properties
 
     useDynamicHeight({
-      dynamicHeight: properties.dynamicHeight,
+      isDynamicHeightEnabled,
       id: id,
       height,
       value: heightChangeValue,
@@ -180,7 +183,7 @@ export const Table = memo(
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: properties.dynamicHeight ? '100%' : `${height}px`,
+          height: isDynamicHeightEnabled ? '100%' : `${height}px`,
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,

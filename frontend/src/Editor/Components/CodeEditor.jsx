@@ -30,14 +30,16 @@ export const CodeEditor = ({
   adjustComponentPositions,
   currentLayout,
   width,
+  currentMode,
 }) => {
-  const { enableLineNumber, mode, placeholder, dynamicHeight } = properties;
+  const { enableLineNumber, mode, placeholder } = properties;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const { visibility, disabledState } = styles;
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [value, setValue] = useState('');
 
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     value: forceDynamicHeightUpdate,
@@ -52,7 +54,7 @@ export const CodeEditor = ({
   }, 500);
 
   const editorStyles = {
-    height: dynamicHeight ? 'auto' : height,
+    height: isDynamicHeightEnabled ? 'auto' : height,
     display: !visibility ? 'none' : 'block',
   };
 
@@ -70,10 +72,10 @@ export const CodeEditor = ({
 
   const theme = darkMode ? okaidia : githubLight;
   const langExtention = langSupport?.[mode?.toLowerCase()];
-  
+
   const editorHeight = React.useMemo(() => {
-    return dynamicHeight ? 'auto' : height || 'auto';
-  }, [height, dynamicHeight]);
+    return isDynamicHeightEnabled ? 'auto' : height || 'auto';
+  }, [height, isDynamicHeightEnabled]);
 
   useEffect(() => {
     const _setValue = (value) => {
@@ -91,11 +93,10 @@ export const CodeEditor = ({
       <div
         className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
-          height: dynamicHeight ? 'auto' : height || 'auto',
-          ...(dynamicHeight
-            ? { minHeight: '0', maxHeight: '100%' }
+          height: isDynamicHeightEnabled ? '100%' : height || '100%',
+          ...(isDynamicHeightEnabled
+            ? { minHeight: `${height}px`, maxHeight: '100%', overflow: 'auto' }
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
-
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
         }}
@@ -104,8 +105,8 @@ export const CodeEditor = ({
           value={value}
           placeholder={placeholder}
           height={'100%'}
-          minHeight={dynamicHeight ? 'none' : editorHeight}
-          maxHeight={dynamicHeight ? 'none' : editorHeight}
+          minHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
+          maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
           extensions={[langExtention ?? javascript()]}
@@ -115,9 +116,11 @@ export const CodeEditor = ({
             setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}
-          style={{
-            ...(dynamicHeight ? {} : { overflowY: 'auto' }),
-          }}
+          style={
+            {
+              // ...(isDynamicHeightEnabled ? {} : { overflowY: 'auto' }),
+            }
+          }
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
         />

@@ -5,11 +5,12 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
-  const { properties, height, width, id, adjustComponentPositions, currentLayout } = props;
+  const { properties, height, width, id, adjustComponentPositions, currentLayout, currentMode } = props;
   const { inputRef, value } = inputLogic;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
   const resizeTextArea = () => {
-    if (!inputRef.current || !properties.dynamicHeight) {
+    if (!inputRef.current || !isDynamicHeightEnabled) {
       inputRef.current.style.height = `${height}px`;
       return;
     }
@@ -18,11 +19,12 @@ export const TextArea = (props) => {
   };
 
   useEffect(() => {
+    if (!isDynamicHeightEnabled) return;
     resizeTextArea();
-  }, [width, height, properties.dynamicHeight,properties.placeholder, value]);
+  }, [width, height, isDynamicHeightEnabled, properties.placeholder, value]);
 
   useDynamicHeight({
-    dynamicHeight: properties.dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     value: JSON.stringify({ value, placeholder: properties.placeholder }),
@@ -32,5 +34,5 @@ export const TextArea = (props) => {
     visibility: properties.visibility,
   });
 
-  return <BaseInput {...props} {...inputLogic} inputType="textarea" />;
+  return <BaseInput {...props} {...inputLogic} isDynamicHeightEnabled={isDynamicHeightEnabled} inputType="textarea" />;
 };

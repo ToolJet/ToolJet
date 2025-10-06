@@ -15,12 +15,13 @@ export const RichTextEditor = function RichTextEditor({
   dataCy,
   adjustComponentPositions,
   currentLayout,
+  currentMode,
 }) {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
-  const dynamicHeight = properties.dynamicHeight ?? false;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -28,7 +29,7 @@ export const RichTextEditor = function RichTextEditor({
   const [isLoading, setIsLoading] = useState(properties?.loadingState);
 
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id: id,
     height,
     value: currentValue,
@@ -67,7 +68,12 @@ export const RichTextEditor = function RichTextEditor({
   return (
     <div
       data-disabled={isDisabled}
-      style={{ height: dynamicHeight ? 'auto' : `${height}px`, display: isVisible ? '' : 'none', boxShadow }}
+      style={{
+        height: isDynamicHeightEnabled ? 'auto' : `${height}px`,
+        ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+        display: isVisible ? '' : 'none',
+        boxShadow,
+      }}
       data-cy={dataCy}
       className="scrollbar-container"
       component-id={id}
@@ -79,7 +85,7 @@ export const RichTextEditor = function RichTextEditor({
       <DraftEditor
         isInitialRender={isInitialRender}
         handleChange={handleChange}
-        height={dynamicHeight ? 'auto' : height}
+        height={height}
         width={width}
         placeholder={placeholder}
         defaultValue={defaultValue}
@@ -91,7 +97,7 @@ export const RichTextEditor = function RichTextEditor({
         setIsDisabled={setIsDisabled}
         setIsVisible={setIsVisible}
         setIsLoading={setIsLoading}
-        dynamicHeight={dynamicHeight}
+        isDynamicHeightEnabled={isDynamicHeightEnabled}
       ></DraftEditor>
     </div>
   );

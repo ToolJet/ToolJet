@@ -65,6 +65,7 @@ export const Tabs = function Tabs({
   darkMode,
   dataCy,
   properties,
+  currentMode,
 }) {
   const { tabWidth, boxShadow } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -74,11 +75,13 @@ export const Tabs = function Tabs({
     setExposedVariables,
     setExposedVariable
   );
-  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions, dynamicHeight } = properties;
+  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   // config for tabs. Includes title
   const tabs = isExpectedDataType(properties.tabs, 'array');
   let parsedTabs = tabs;
@@ -146,7 +149,7 @@ export const Tabs = function Tabs({
   const [bgColor, setBgColor] = useState('#fff');
 
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     adjustComponentPositions,
@@ -350,7 +353,8 @@ export const Tabs = function Tabs({
       data-disabled={isDisabled}
       className="card tabs-component scrollbar-container"
       style={{
-        height: dynamicHeight ? '100%' : padding === 'default' ? height : height + 4,
+        height: isDynamicHeightEnabled ? '100%' : padding === 'default' ? height : height + 4,
+        ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
         boxShadow,
@@ -538,7 +542,7 @@ export const Tabs = function Tabs({
                     parsedHideTabs={parsedHideTabs}
                     bgColor={bgColor}
                     darkMode={darkMode}
-                    dynamicHeight={dynamicHeight}
+                    isDynamicHeightEnabled={isDynamicHeightEnabled}
                     currentTab={currentTab}
                     isTransitioning={isTransitioning}
                   />
@@ -575,7 +579,7 @@ export const Tabs = function Tabs({
                         parsedHideTabs={parsedHideTabs}
                         bgColor={bgColor}
                         darkMode={darkMode}
-                        dynamicHeight={dynamicHeight}
+                        isDynamicHeightEnabled={isDynamicHeightEnabled}
                         currentTab={currentTab}
                         isTransitioning={isTransitioning}
                       />
@@ -612,7 +616,7 @@ const TabContent = memo(function TabContent({
   parsedHideTabs,
   bgColor,
   darkMode,
-  dynamicHeight,
+  isDynamicHeightEnabled,
   currentTab,
   isTransitioning,
 }) {
@@ -627,7 +631,7 @@ const TabContent = memo(function TabContent({
     <div
       data-disabled={disable}
       activetab={currentTab}
-      className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
+      className={`tab-pane active ${isDynamicHeightEnabled && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
         display: 'block',
         height: '100%',
@@ -656,11 +660,11 @@ const TabContent = memo(function TabContent({
       ) : (
         <SubContainer
           id={`${id}-${tab.id}`}
-          canvasHeight={dynamicHeight ? '100%' : '200'}
+          canvasHeight={isDynamicHeightEnabled ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
           styles={{
-            overflow: isTransitioning || dynamicHeight ? 'hidden' : 'hidden auto',
+            overflow: isTransitioning || isDynamicHeightEnabled ? 'hidden' : 'hidden auto',
             backgroundColor: fieldBackgroundColor || bgColor,
             opacity: disable ? 0.5 : 1,
             width: '100%', // Ensure it doesn't exceed container width

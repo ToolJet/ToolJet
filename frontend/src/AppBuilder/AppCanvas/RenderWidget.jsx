@@ -56,6 +56,7 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
   moduleId,
+  currentMode,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -235,6 +236,7 @@ const RenderWidget = ({
             adjustComponentPositions={adjustComponentPositions}
             componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
+            currentMode={currentMode}
           />
         </div>
       </OverlayTrigger>

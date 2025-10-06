@@ -288,7 +288,10 @@ class DraftEditor extends React.Component {
         <div
           className={className}
           ref={this.editorContainerRef}
-          style={{ height: this.props.dynamicHeight ? 'auto' : `${this.props.height - 60}px` }}
+          style={{
+            height: this.props.isDynamicHeightEnabled ? 'auto' : `${this.props.height - 60}px`,
+            ...(this.props.isDynamicHeightEnabled && { minHeight: `${this.props.height - 60}px` }),
+          }}
           onClick={this.focus}
         >
           <Editor

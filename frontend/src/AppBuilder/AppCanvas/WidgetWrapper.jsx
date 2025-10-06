@@ -133,6 +133,7 @@ const WidgetWrapper = memo(
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}
             moduleId={moduleId}
+            currentMode={mode}
           />
         </div>
       </>

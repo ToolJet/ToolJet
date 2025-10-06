@@ -25,6 +25,7 @@ export const Container = ({
   adjustComponentPositions,
   currentLayout,
   componentCount = 0,
+  currentMode,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -33,10 +34,10 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-  const { dynamicHeight, headerHeight = 80, showHeader } = properties;
-
+  const { headerHeight = 80, showHeader } = properties;
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   useDynamicHeight({
-    dynamicHeight: properties.dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     adjustComponentPositions,
@@ -55,7 +56,7 @@ export const Container = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow } = styles;
-  const headerMaxHeight = dynamicHeight ? 10000 : parseInt(height, 10) - 100 - 10;
+  const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -76,7 +77,8 @@ export const Container = ({
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height: dynamicHeight ? '100%' : height,
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
@@ -145,7 +147,7 @@ export const Container = ({
                 // Prevent the scroll when dragging a widget inside the container or moving out of the container
                 overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
-              canvasHeight={dynamicHeight ? '100%' : height}
+              canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
               componentType="Container"
