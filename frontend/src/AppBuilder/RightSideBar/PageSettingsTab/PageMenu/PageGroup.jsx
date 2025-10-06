@@ -9,7 +9,6 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
 import { buildTree } from './Tree/utilities';
 import { Overlay, Popover } from 'react-bootstrap';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
@@ -253,12 +252,11 @@ const RenderPageGroup = ({
           )}
         </FolderList>
         <div className="icon-btn cursor-pointer flex-shrink-0">
-          <SolidIcon
-            fill="var(--icon-default)"
-            name={isExpanded ? 'caretup' : 'caretdown'}
-            width="16"
-            viewBox="0 0 16 16"
-          />
+          {isExpanded ? (
+            <Icons.IconChevronUp size={16} color="var(--icon-default)" />
+          ) : (
+            <Icons.IconChevronDown size={16} color="var(--icon-default)" />
+          )}
         </div>
       </div>
 
@@ -416,8 +414,7 @@ export const RenderPageAndPageGroup = ({
             className={`tj-list-item page-name more-btn-pages width-unset ${showPopover && 'tj-list-item-selected'}`}
             style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
           >
-            <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
-
+            <Icons.IconDotsVertical size={16} color="var(--icon-weak)" />
             <div style={{ marginLeft: '6px' }}>More</div>
           </button>
 

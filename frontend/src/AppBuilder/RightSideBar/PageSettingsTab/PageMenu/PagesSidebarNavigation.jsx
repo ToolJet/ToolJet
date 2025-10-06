@@ -576,7 +576,7 @@ export const PagesSidebarNavigation = ({
               >
                 {!logoHidden && (
                   <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
-                    <AppLogo isLoadingFromHeader={false} />
+                    <AppLogo height={32} isLoadingFromHeader={false} />
                   </div>
                 )}
                 {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
@@ -642,6 +642,7 @@ export const PagesSidebarNavigation = ({
             <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
               <DarkModeToggle
                 toggleForCanvas={true}
+                toggleSize="large"
                 switchDarkMode={switchDarkMode}
                 darkMode={darkMode}
                 tooltipPlacement={position === 'top' ? 'bottom' : 'right'}

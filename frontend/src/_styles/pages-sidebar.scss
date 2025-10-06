@@ -247,7 +247,7 @@
 
         .app-name {
             display: flex;
-            gap: 6px;
+            gap: 12px;
             font-weight: 500;
             font-size: 16px;
             color: var(--text-default);
@@ -287,7 +287,7 @@
         .tj-list-item {
             justify-content: start;
             padding: 8px 12px;
-            font-weight: 400;
+            font-weight: 500;
             color: var(--text-placeholder);
             outline: none !important;
         }
@@ -464,7 +464,7 @@
             .page-dark-mode-btn-wrapper {
                 padding: 0px;
                 margin-top: 0px;
-                padding-left: 15px;
+                padding-left: 76px;
                 bottom: 0px !important;
             }
 

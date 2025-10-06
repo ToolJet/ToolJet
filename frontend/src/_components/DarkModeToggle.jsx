@@ -17,6 +17,7 @@ export const DarkModeToggle = function DarkModeToggle({
   tooltipPlacement = 'bottom',
   showText = false,
   toggleForCanvas = false,
+  toggleSize = 'default',
 }) {
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const setGlobalSettings = useStore((state) => state.setGlobalSettings, shallow);
@@ -59,7 +60,7 @@ export const DarkModeToggle = function DarkModeToggle({
         className={classnames('left-sidebar-item')}
         onClick={toggleDarkMode}
         variant="ghost"
-        size="default"
+        size={toggleSize}
         iconOnly
       >
         {darkMode ? (
