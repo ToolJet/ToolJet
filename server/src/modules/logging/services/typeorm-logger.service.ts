@@ -34,9 +34,15 @@ export class TypeormLoggerService implements Logger {
   logQuery(query: string, parameters?: any[], queryRunner?: QueryRunner) {}
 
   logQuerySlow(time: number, query: string, parameters?: any[]) {
-    if (this.getLogLevel() === 'error' || this.getLogLevel() === 'warn') {
+    if (this.getLogLevel() === 'error') {
       return;
     }
-    this.logger.log(`QUERY (${time} ms):`, query, '-- PARAMETERS:', parameters);
+    if (this.getLogLevel() === 'query' || this.getLogLevel() === 'warn') {
+      if (time > 30) {
+        this.logger.warn(`SLOW QUERY (${time} ms):`, query, '-- PARAMETERS:', parameters);
+        return;
+      }
+      this.logger.log(`QUERY (${time} ms):`, query, '-- PARAMETERS:', parameters);
+    }
   }
 }
