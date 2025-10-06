@@ -579,7 +579,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     environmentId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId);
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge, manager);
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};

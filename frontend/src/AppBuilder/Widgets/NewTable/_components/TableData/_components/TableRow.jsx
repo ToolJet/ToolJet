@@ -108,8 +108,8 @@ export const TableRow = ({
                 fireEvent('onRowClicked');
                 return;
               }
-
-              if (isEditable && allowSelection && !selectRowOnCellEdit) {
+              // if the cell is editable and the row is selected, don't unselect the row
+              if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
                 e.stopPropagation();
                 fireEvent('onRowClicked');
               }

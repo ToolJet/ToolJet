@@ -39,6 +39,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
       style={{
         backgroundColor: 'var(--cc-surface1-surface)',
         border: '1px solid var(--cc-default-border)',
+        minWidth: '200px',
       }}
     >
       <div
@@ -132,16 +133,35 @@ const CustomMultiValueContainer = ({ children }) => (
   </div>
 );
 
-const DropdownIndicator = ({ selectProps }) => (
-  <div className="cell-icon-display" style={{ alignSelf: 'center' }}>
-    <SolidIcon
-      name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
-      width="16"
-      height="16"
-      fill="#6A727C"
-    />
-  </div>
-);
+const DropdownIndicator = ({ selectProps }) => {
+  return (
+    <div
+      className="cell-icon-display"
+      style={{ alignSelf: 'center' }}
+      onMouseDown={(e) => {
+        const isOpen = selectProps.menuIsOpen;
+        selectProps.onMenuOpen(!isOpen);
+
+        const tdElement = e.currentTarget.closest('td');
+        if (tdElement) {
+          const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          });
+          tdElement.dispatchEvent(clickEvent);
+        }
+      }}
+    >
+      <SolidIcon
+        name={selectProps.menuIsOpen ? 'arrowUpTriangle' : 'arrowDownTriangle'}
+        width="16"
+        height="16"
+        fill="#6A727C"
+      />
+    </div>
+  )
+};
 
 const getOverlay = (value, containerWidth, darkMode) => {
   if (!isArray(value)) return <div />;
@@ -298,8 +318,8 @@ export const CustomSelectColumn = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -308,8 +328,8 @@ export const CustomSelectColumn = ({
     if (isMulti && value?.length) {
       return isArray(value)
         ? options?.filter((option) =>
-            value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
-          )
+          value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
+        )
         : [];
     }
     return options?.find((option) => option.value === value) || [];
@@ -350,7 +370,7 @@ export const CustomSelectColumn = ({
         <div
           className="w-100 d-flex align-items-center"
           ref={containerRef}
-          onClick={() => {
+          onClick={(e) => {
             if (isNewRow && isEditable) {
               setIsFocused((prev) => !prev);
             }
