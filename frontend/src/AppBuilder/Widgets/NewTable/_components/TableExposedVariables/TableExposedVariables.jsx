@@ -127,13 +127,6 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
-    } else if (!allowSelection) {
-      setExposedVariables({
-        selectedRow: {},
-        selectedRowId: null,
-        selectedRows: [],
-        selectedRowsId: [],
-      });
     } else {
       setExposedVariables({
         selectedRows: [],
