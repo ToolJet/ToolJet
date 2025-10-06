@@ -52,10 +52,6 @@ export class CrmIntegrationDto {
 
   @IsOptional()
   @IsBoolean()
-  paymentTry?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
   isInvited?: boolean;
 
   @IsOptional()
