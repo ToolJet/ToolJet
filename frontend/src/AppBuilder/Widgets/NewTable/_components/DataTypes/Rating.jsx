@@ -5,6 +5,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import { useTrail } from 'react-spring';
 import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 
 export const RatingColumn = ({
   isEditable,
@@ -27,6 +28,7 @@ export const RatingColumn = ({
   const selectedBgColorStars = getResolvedValue(column.selectedBgColorStars) || '#EFB82D';
   const selectedBgColorHearts = getResolvedValue(column.selectedBgColorHearts) || '#EE5B67';
   const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--icon-weak)';
+  const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
 
   const [announceValue, setAnnounceValue] = React.useState('');
 
@@ -97,7 +99,7 @@ export const RatingColumn = ({
           className={`rating-widget-group d-flex w-100 justify-content-${determineJustifyContentValue(
             horizontalAlignment
           )}`}
-          style={{ color: cellTextColor || 'inherit' }}
+          style={{ color: cellTextColor || 'inherit', flexWrap: contentWrap ? 'wrap' : 'nowrap' }}
           onMouseLeave={() => setHoverIndex(null)}
         >
           {animatedStars.map((props, index) => {
