@@ -1077,7 +1077,7 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
       return cy
         .request({
           method: "PUT",
-          url: `http://localhost:3000/api/v2/apps/${Cypress.env("appId")}/versions/${Cypress.env("editingVersionId")}/global_settings`,
+          url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env("appId")}/versions/${Cypress.env("editingVersionId")}/global_settings`,
           body: { globalSettings },
           headers: {
             "Content-Type": "application/json",
