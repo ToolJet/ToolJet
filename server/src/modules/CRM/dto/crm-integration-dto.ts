@@ -1,5 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsBoolean, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsEmail, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class UtmParamsDto {
   @IsOptional()
@@ -68,8 +67,6 @@ export class CrmIntegrationDto {
   isSignedUpUsingGithubSSO?: boolean;
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => UtmParamsDto)
   utmParams?: UtmParamsDto;
 
   [key: string]: any;
