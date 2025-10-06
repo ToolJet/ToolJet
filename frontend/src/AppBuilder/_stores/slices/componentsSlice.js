@@ -988,12 +988,8 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
-      getResolvedComponent,
       removeNode,
       checkIfParentIsFormAndDeleteField,
-      deleteTemporaryLayouts,
-      currentLayout,
-      adjustComponentPositions,
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
@@ -1002,7 +998,6 @@ export const createComponentsSlice = (set, get) => ({
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
-    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
 
@@ -1030,13 +1025,6 @@ export const createComponentsSlice = (set, get) => ({
       findAllChildComponents(componentId);
     });
 
-    toDeleteComponents.forEach((componentId) => {
-      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
-      if (isDynamicHeightEnabled) {
-        adjustComponentPositions(componentId, currentLayout, true);
-      }
-    });
-
     set(
       withUndoRedo((state) => {
         const page = state.modules?.[moduleId]?.pages.find((page) => page.id === currentPageId);
@@ -1047,9 +1035,6 @@ export const createComponentsSlice = (set, get) => ({
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
               (componentId) => {
-                if (componentId === id) {
-                  childParentMapping[id] = containerId;
-                }
                 return componentId !== id;
               }
             );
@@ -1119,12 +1104,6 @@ export const createComponentsSlice = (set, get) => ({
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName, moduleId);
     });
-    componentIds.forEach((componentId) => {
-      if (childParentMapping[componentId]) {
-        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
-      }
-      deleteTemporaryLayouts(componentId);
-    });
   },
 
   pasteComponents: async (components, moduleId = 'canvas') => {
@@ -1169,13 +1148,10 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
-      getResolvedComponent,
-      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
       checkParentAndUpdateFormFields,
-      deleteTemporaryLayouts,
       getCurrentPageIndex,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -1242,23 +1218,6 @@ export const createComponentsSlice = (set, get) => ({
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
 
-      // Adjust component positions
-
-      //If new parent is dynamic, adjust the parent positions
-      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
-      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
-      if (isParentDynamic) {
-        adjustComponentPositions(transformedParentId, currentLayout, false, true);
-      }
-
-      // If the parent is changed, adjust the old parent positions
-      if (oldParentId !== newParentId) {
-        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
-        if (isParentDynamic) {
-          adjustComponentPositions(oldParentId, currentLayout, false, true);
-        }
-      }
-
       if (
         newParentComponentType === 'Listview' ||
         newParentComponentType === 'Kanban' ||
@@ -1295,10 +1254,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1308,14 +1267,6 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
-
-    Object.keys(componentLayouts).forEach((componentId) => {
-      deleteTemporaryLayouts(componentId);
-      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
-      if (isDynamic) {
-        adjustComponentPositions(componentId, currentLayout, false, false);
-      }
-    });
 
     if (saveAfterAction) {
       saveComponentChanges(diff, 'components/layout', 'update', moduleId);
@@ -2232,7 +2183,7 @@ export const createComponentsSlice = (set, get) => ({
     }
     return value;
   },
-    performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+  performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
     const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
 
     const currentPageId = getCurrentPageId(moduleId);

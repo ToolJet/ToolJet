@@ -25,7 +25,6 @@ import {
   getDraggingWidgetWidth,
   positionGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
-  getInitialPosition,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
@@ -56,7 +55,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
-  const temporaryHeight = useStore((state) => state.temporaryLayouts?.[selectedComponents?.[0]]?.height, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
@@ -67,10 +65,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const canvasWidth = NO_OF_GRIDS * gridWidth;
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
-  const getTemporaryLayouts = useStore((state) => state.getTemporaryLayouts, shallow);
   const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
-  const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   // const [dragParentId, setDragParentId] = useState(null);
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
@@ -152,15 +148,11 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const handleResizeStop = useCallback(
     (boxList) => {
-      const temporaryLayouts = getTemporaryLayouts();
-
       boxList.forEach(({ id, height, width, x, y, gw }) => {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
 
-        // Consider temporary layout position if it exists
-        const temporaryLayout = temporaryLayouts[id];
-        y = temporaryLayout?.top ?? Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
+        y = Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
 
         gw = gw ? gw : gridWidth;
 
@@ -340,7 +332,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList]);
+  }, [boxList]);
 
   useEffect(() => {
     reloadGrid();
@@ -611,7 +603,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          const temporaryLayouts = getTemporaryLayouts();
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
@@ -627,13 +618,13 @@ export default function Grid({ gridWidth, currentLayout }) {
           handleActivateTargets(currentWidget.component?.parent);
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
-          const diffHeight = e.height - (temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height);
+          const diffHeight = e.height - currentWidget.height;
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
-          // Calculate positions considering temporary layouts'
+          // Calculate positions
           let transformX = currentWidget.left * _gridWidth;
-          let transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
+          let transformY = currentWidget.top;
 
           if (isLeftChanged) {
             // Left resize
@@ -688,26 +679,11 @@ export default function Grid({ gridWidth, currentLayout }) {
             handleDeactivateTargets();
             clearActiveTargetClassNamesAfterSnapping(selectedComponents);
             useStore.getState().setResizingComponentId(null);
-            const temporaryLayouts = getTemporaryLayouts();
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
             hideGridLines();
-            const isVerticalExpansionRestricted = checkHoveredComponentDynamicHeight(e.target.id);
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
-            const directions = e.lastEvent?.direction;
-            if (isVerticalExpansionRestricted && directions[1] !== 0) {
-              const { height, width, transformX, transformY } = getInitialPosition(
-                currentWidget,
-                temporaryLayouts,
-                _gridWidth
-              );
-              e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-              e.target.style.width = `${width}px`;
-              e.target.style.height = `${height}px`;
-              toast.error('Component with dynamic height enabled \n cannot be resized vertically');
-              return;
-            }
             if (!e.lastEvent) {
               return;
             }
@@ -755,10 +731,6 @@ export default function Grid({ gridWidth, currentLayout }) {
               x: transformX,
               y: transformY,
             };
-            if (isVerticalExpansionRestricted) {
-              resizeData.height = currentWidget.height;
-              resizeData.y = currentWidget.top;
-            }
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }

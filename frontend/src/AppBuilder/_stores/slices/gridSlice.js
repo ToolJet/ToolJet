@@ -114,7 +114,6 @@ export const createGridSlice = (set, get) => ({
       setTemporaryLayouts,
       toggleCanvasUpdater,
       temporaryLayouts,
-      deleteContainerTemporaryLayouts,
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
@@ -142,8 +141,6 @@ export const createGridSlice = (set, get) => ({
         const element = document.querySelector(`.dynamic-${componentId}`);
         if (!element) {
           maxHeight = visibility ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height : 10;
-          // deleteContainerTemporaryLayouts(componentId);
-          // return;
         } else {
           if (!visibility) {
             maxHeight = 10;
