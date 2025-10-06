@@ -90,6 +90,8 @@ RUN apt-get update && \
         redis \
         libaio1t64 \
         git \
+        openssh-client \
+        freetds-dev \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
