@@ -131,6 +131,9 @@ const useAppHistoryStore = create(
         set(
           (state) => {
             state.historyEntries.unshift(newEntry);
+            if (state.historyEntries.length > 100) {
+              state.historyEntries.pop();
+            }
           },
           false,
           'pushHistoryEntry'
