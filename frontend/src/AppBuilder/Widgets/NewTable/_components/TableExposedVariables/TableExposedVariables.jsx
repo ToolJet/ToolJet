@@ -127,13 +127,6 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
-    } else if (!allowSelection) {
-      setExposedVariables({
-        selectedRow: {},
-        selectedRowId: null,
-        selectedRows: [],
-        selectedRowsId: [],
-      });
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -298,8 +291,41 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-    setExposedVariables({ selectRow, deselectRow });
-  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection]);
+
+    function selectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = true;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    function deselectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = false;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    setExposedVariables({ selectRow, deselectRow, selectRows, deselectRows });
+  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection, fireEvent, table]);
 
   // CSA to set & clear filters
   useEffect(() => {

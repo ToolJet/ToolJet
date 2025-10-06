@@ -25,6 +25,7 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { ThemesModule } from '@modules/organization-themes/module';
 import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 import { App } from '@entities/app.entity';
 import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
@@ -32,9 +33,11 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 import { AppHistoryModule } from '@ee/app-history/module';
+import { OrganizationRepository } from '@modules/organizations/repository';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
@@ -46,10 +49,12 @@ export class WorkflowsModule extends SubModule {
       WorkflowsController,
       WorkflowSchedulesService,
       TemporalService,
-      WorkflowWebhooksListener,
       WorkflowTriggersListener,
       FeatureAbilityFactory,
       WorkflowStreamService,
+      NpmRegistryService,
+      BundleGenerationService,
+      WorkflowBundlesController,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -59,10 +64,12 @@ export class WorkflowsModule extends SubModule {
       'controllers/workflows.controller',
       'services/workflow-schedules.service',
       'services/temporal.service',
-      'listeners/workflow-webhooks.listener',
       'listeners/workflow-triggers.listener',
       'ability/app',
       'services/workflow-stream.service',
+      'services/npm-registry.service',
+      'services/bundle-generation.service',
+      'controllers/workflow-bundles.controller',
     ]);
 
     // Get apps related providers
@@ -93,8 +100,7 @@ export class WorkflowsModule extends SubModule {
           WorkflowExecution,
           WorkflowExecutionEdge,
           WorkflowExecutionNode,
-          WorkflowExecutionNode,
-          WorkflowExecutionEdge,
+          WorkflowBundle,
         ]),
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
@@ -131,6 +137,7 @@ export class WorkflowsModule extends SubModule {
         OrganizationConstantRepository,
         VersionRepository,
         AppGitRepository,
+        OrganizationRepository,
         AppsService,
         PageService,
         EventsService,
@@ -142,13 +149,20 @@ export class WorkflowsModule extends SubModule {
         WorkflowSchedulesService,
         TemporalService,
         FeatureAbilityFactory,
+        NpmRegistryService,
+        BundleGenerationService,
+        WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
-        ...(isMainImport ? [WorkflowWebhooksListener, WorkflowTriggersListener, WorkflowStreamService] : []),
+        ...(isMainImport ? [WorkflowTriggersListener, WorkflowStreamService] : []),
       ],
-      controllers: isMainImport
-        ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
-        : [],
+      controllers: [
+        WorkflowsController,
+        WorkflowExecutionsController,
+        WorkflowWebhooksController,
+        WorkflowSchedulesController,
+        WorkflowBundlesController,
+      ],
     };
   }
 }

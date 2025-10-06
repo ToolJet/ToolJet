@@ -14,7 +14,12 @@ const copyFunction = (input) => {
   copyToClipboard(text);
 };
 
-export function handleResponse(response, avoidRedirection = false, queryParamToUpdate = null) {
+export function handleResponse(
+  response,
+  avoidRedirection = false,
+  queryParamToUpdate = null,
+  avoidUpgradeModal = false
+) {
   return response.text().then((text) => {
     let modalBody = (
       <>
@@ -78,7 +83,7 @@ export function handleResponse(response, avoidRedirection = false, queryParamToU
           edition: edition,
         });
 
-        if (!message?.includes('expired')) {
+        if (!message?.includes('expired') || avoidUpgradeModal) {
           ReactDOM.render(modalEl, document.getElementById('modal-div'));
         }
       } else if ([400].indexOf(response.status) !== -1) {
