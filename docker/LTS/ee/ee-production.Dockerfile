@@ -75,7 +75,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -88,7 +88,7 @@ RUN apt-get update && \
         tar \
         postgresql-client \
         redis \
-        libaio1 \
+        libaio1t64 \
         git \
         openssh-client \
         freetds-dev \
