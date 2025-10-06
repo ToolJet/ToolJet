@@ -68,6 +68,7 @@ jobs:
 
       # build artifact
       - name: Build Artifact
+        id: packer-build
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
@@ -78,7 +79,40 @@ jobs:
         env:
           PACKER_LOG: 1
 
+      - name: Cleanup EC2 instances
+        if: always()
+        run: |
+          echo "Extracting instance IDs from Packer build logs..."
+
+          # Extract instance IDs from the previous step's logs
+          INSTANCE_IDS=$(echo "${{ steps.packer-build.outputs.stdout }}" | grep -o "Instance ID: i-[a-zA-Z0-9]*" | sed 's/Instance ID: //' | tr '\n' ' ')
+
+          if [ -n "$INSTANCE_IDS" ]; then
+            echo "Found instances from build logs: $INSTANCE_IDS"
+            echo "Terminating instances..."
+            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
+            echo "Terminated instances: $INSTANCE_IDS"
+          else
+            echo "No instance IDs found in build logs, checking for any running Packer instances..."
+
+            # Fallback to AWS query if no instances found in logs
+            FALLBACK_INSTANCE_IDS=$(aws ec2 describe-instances \
+              --region us-west-1 \
+              --filters "Name=instance-state-name,Values=running,pending" \
+              --query 'Reservations[*].Instances[*].InstanceId' \
+              --output text)
+
+            if [ -n "$FALLBACK_INSTANCE_IDS" ] && [ "$FALLBACK_INSTANCE_IDS" != "None" ]; then
+              echo "Found running Packer instances: $FALLBACK_INSTANCE_IDS"
+              aws ec2 terminate-instances --region us-west-1 --instance-ids $FALLBACK_INSTANCE_IDS
+              echo "Terminated fallback instances: $FALLBACK_INSTANCE_IDS"
+            else
+              echo "No Packer instances found to cleanup"
+            fi
+          fi
+
       - name: Send Slack Notification
+        if: success()
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
             message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"

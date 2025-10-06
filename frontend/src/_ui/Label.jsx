@@ -11,6 +11,8 @@ function Label({
   _width,
   top,
   widthType,
+  inputId,
+  id,
 }) {
   return (
     <>
@@ -26,6 +28,8 @@ function Label({
             fontSize: '12px',
             height: defaultAlignment === 'top' && '20px',
           }}
+          htmlFor={inputId}
+          id={id}
         >
           <p
             style={{
