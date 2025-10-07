@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
 
-export class CreateAppHistoryTable1756984957001 implements MigrationInterface {
+export class CreateAppHistoryTable1756984957003 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -12,11 +12,6 @@ export class CreateAppHistoryTable1756984957001 implements MigrationInterface {
             isPrimary: true,
             generationStrategy: 'uuid',
             default: 'gen_random_uuid()',
-          },
-          {
-            name: 'app_id',
-            type: 'uuid',
-            isNullable: false,
           },
           {
             name: 'app_version_id',
@@ -101,16 +96,6 @@ export class CreateAppHistoryTable1756984957001 implements MigrationInterface {
     await queryRunner.createForeignKey(
       'app_history',
       new TableForeignKey({
-        columnNames: ['app_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'apps',
-        onDelete: 'CASCADE',
-      })
-    );
-
-    await queryRunner.createForeignKey(
-      'app_history',
-      new TableForeignKey({
         columnNames: ['app_version_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'app_versions',
@@ -151,11 +136,6 @@ export class CreateAppHistoryTable1756984957001 implements MigrationInterface {
     // Drop foreign keys first
     const table = await queryRunner.getTable('app_history');
     
-    const appIdForeignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf('app_id') !== -1);
-    if (appIdForeignKey) {
-      await queryRunner.dropForeignKey('app_history', appIdForeignKey);
-    }
-
     const appVersionIdForeignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf('app_version_id') !== -1);
     if (appVersionIdForeignKey) {
       await queryRunner.dropForeignKey('app_history', appVersionIdForeignKey);

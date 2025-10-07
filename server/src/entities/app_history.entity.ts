@@ -10,7 +10,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { User } from './user.entity';
 
@@ -26,9 +25,6 @@ import { User } from './user.entity';
 export class AppHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ name: 'app_id', type: 'uuid' })
-  appId: string;
 
   @Column({ name: 'app_version_id', type: 'uuid' })
   appVersionId: string;
@@ -71,10 +67,6 @@ export class AppHistory extends BaseEntity {
   updatedAt: Date;
 
   // Relations
-  @ManyToOne(() => App, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'app_id' })
-  app: App;
-
   @ManyToOne(() => AppVersion, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
