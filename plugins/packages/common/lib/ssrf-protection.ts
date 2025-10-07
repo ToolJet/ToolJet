@@ -2,22 +2,6 @@ import { URL } from 'url';
 import { QueryError } from './query.error';
 import * as dns from 'dns/promises';
 
-/**
- * SSRF Protection Configuration
- *
- * This module provides utilities to prevent Server-Side Request Forgery (SSRF) attacks
- * by validating URLs, hostnames, and IP addresses before making external HTTP requests.
- */
-
-/**
- * Cloud Metadata Endpoints
- *
- * These are the primary SSRF targets in cloud environments.
- * Block access to cloud metadata services that expose sensitive information.
- *
- * For self-hosted deployments, we only block these specific endpoints by default,
- * not all private IPs, since users may legitimately need to access internal services.
- */
 const CLOUD_METADATA_ENDPOINTS = [
   // AWS EC2 metadata endpoint (most common SSRF target)
   /^169\.254\.169\.254$/,
@@ -45,40 +29,19 @@ const CLOUD_METADATA_ENDPOINTS = [
 
 interface SSRFProtectionOptions {
   enabled?: boolean;
-  allowedHosts?: string[];
   dnsResolutionCheck?: boolean;
 }
 
-/**
- * Get SSRF protection configuration from environment variables
- *
- * For self-hosted deployments:
- * - SSRF protection is DISABLED by default (opt-in)
- * - When enabled, blocks cloud metadata endpoints (169.254.169.254, etc.)
- * - Does NOT block private IPs or localhost (self-hosted users need access to internal services)
- * - URL schemes are NOT restricted to allow maximum flexibility
- */
 export function getSSRFConfig(): SSRFProtectionOptions {
   const enabled = process.env.SSRF_PROTECTION_ENABLED === 'true'; // Disabled by default (opt-in)
-  const allowedHosts = process.env.ALLOWED_HOSTS_WHITELIST
-    ? process.env.ALLOWED_HOSTS_WHITELIST.split(',').map(h => h.trim()).filter(h => h.length > 0)
-    : [];
   const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK === 'true'; // Disabled by default
 
   return {
     enabled,
-    allowedHosts,
     dnsResolutionCheck,
   };
 }
 
-/**
- * Check if an IP address or hostname is a cloud metadata endpoint
- *
- * Only blocks cloud metadata endpoints, not all private IPs.
- * This allows self-hosted users to access internal services while
- * protecting against the most critical SSRF vector.
- */
 export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
   if (!ipOrHostname) return false;
 
@@ -88,18 +51,10 @@ export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
   return CLOUD_METADATA_ENDPOINTS.some(pattern => pattern.test(normalized));
 }
 
-/**
- * Legacy function name for backward compatibility
- * Now only checks for cloud metadata endpoints, not all private IPs
- */
 export function isPrivateIP(ip: string): boolean {
   return isCloudMetadataEndpoint(ip);
 }
 
-/**
- * Check if a hostname resolves to a cloud metadata endpoint
- * This helps prevent DNS rebinding attacks targeting cloud metadata
- */
 export async function resolvesToCloudMetadata(hostname: string): Promise<boolean> {
   try {
     const addresses = await dns.resolve(hostname);
@@ -112,35 +67,11 @@ export async function resolvesToCloudMetadata(hostname: string): Promise<boolean
   }
 }
 
-/**
- * Legacy function name for backward compatibility
- */
 export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
   return resolvesToCloudMetadata(hostname);
 }
 
-/**
- * Validate hostname against whitelist (if provided)
- */
-export function isHostnameAllowed(hostname: string, allowedHosts: string[]): boolean {
-  if (allowedHosts.length === 0) {
-    return true; // No whitelist configured, allow all
-  }
 
-  // Check exact match
-  if (allowedHosts.includes(hostname)) {
-    return true;
-  }
-
-  // Check wildcard patterns (e.g., *.example.com)
-  return allowedHosts.some(allowedHost => {
-    if (allowedHost.startsWith('*.')) {
-      const domain = allowedHost.substring(2);
-      return hostname.endsWith('.' + domain) || hostname === domain;
-    }
-    return false;
-  });
-}
 
 /**
  * Main SSRF validation function
@@ -176,18 +107,7 @@ export async function validateUrlForSSRF(
 
   const hostname = url.hostname.toLowerCase();
 
-  // 1. Validate hostname against whitelist (if configured)
-  if (config.allowedHosts && config.allowedHosts.length > 0) {
-    if (!isHostnameAllowed(hostname, config.allowedHosts)) {
-      throw new QueryError(
-        'Hostname not allowed',
-        'This hostname is not in the allowed hosts list',
-        { hostname }
-      );
-    }
-  }
-
-  // 2. Check for cloud metadata endpoints
+  // 1. Check for cloud metadata endpoints
   // When SSRF protection is enabled, block access to cloud metadata endpoints
   // Does NOT block private IPs or localhost (self-hosted users need these)
   if (isCloudMetadataEndpoint(hostname)) {
@@ -198,7 +118,7 @@ export async function validateUrlForSSRF(
     );
   }
 
-  // 3. DNS resolution check (if enabled)
+  // 2. DNS resolution check (if enabled)
   if (config.dnsResolutionCheck) {
     const resolves = await resolvesToCloudMetadata(hostname);
     if (resolves) {
@@ -235,17 +155,6 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   }
 
   const hostname = url.hostname.toLowerCase();
-
-  // Validate whitelist
-  if (config.allowedHosts && config.allowedHosts.length > 0) {
-    if (!isHostnameAllowed(hostname, config.allowedHosts)) {
-      throw new QueryError(
-        'Hostname not allowed',
-        'This hostname is not in the allowed hosts list',
-        { hostname }
-      );
-    }
-  }
 
   // Check cloud metadata endpoints
   if (isCloudMetadataEndpoint(hostname)) {
