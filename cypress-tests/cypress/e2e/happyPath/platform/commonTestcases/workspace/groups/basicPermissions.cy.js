@@ -1,7 +1,7 @@
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
-import { addNewconstants } from "Support/utils/workspaceConstants";
+import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
 import { commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
@@ -96,7 +96,7 @@ describe("Manage Groups", () => {
 
         // Constants management
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addNewconstants(data.firstName, data.appName);
+        addAndVerifyConstants(data.firstName, data.appName);
         cy.get(
             workspaceConstantsSelectors.constDeleteButton(data.firstName)
         ).click();
@@ -198,7 +198,7 @@ describe("Manage Groups", () => {
 
         // Constants management
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addNewconstants(data.firstName, data.appName);
+        addAndVerifyConstants(data.firstName, data.appName);
         cy.get(
             workspaceConstantsSelectors.constDeleteButton(data.firstName)
         ).click();
