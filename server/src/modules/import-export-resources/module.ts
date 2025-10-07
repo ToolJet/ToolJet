@@ -11,7 +11,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { FeatureAbilityFactory } from './ability/app';
 import { FeatureAbilityFactory as DataSourceFeatureAbility } from './ability/data-source';
 import { SubModule } from '@modules/app/sub-module';
-import { AppHistoryModule } from '@ee/app-history/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 
 export class ImportExportResourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {

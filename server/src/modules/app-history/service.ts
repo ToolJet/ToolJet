@@ -27,10 +27,7 @@ export class AppHistoryService implements IAppHistoryService {
     throw new Error('Method not implemented.');
   }
 
-  async restoreToPoint(
-    appVersionId: string,
-    historyId: string
-  ): Promise<{
+  async restoreToPoint(historyId: string): Promise<{
     success: boolean;
     newVersion: number;
     restoredAt: string;

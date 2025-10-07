@@ -12,7 +12,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
-import { AppHistoryModule } from '@ee/app-history/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';

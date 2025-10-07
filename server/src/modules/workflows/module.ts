@@ -36,7 +36,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
-import { AppHistoryModule } from '@ee/app-history/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe, Req, Res } from '@nestjs/common';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 
@@ -22,10 +22,7 @@ export class AppHistoryController {
 
   @InitFeature(FEATURE_KEY.RESTORE_HISTORY)
   @Post(':historyId/restore')
-  async restoreHistory(
-    @Param('versionId', ParseUUIDPipe) versionId: string,
-    @Param('historyId', ParseUUIDPipe) historyId: string
-  ): Promise<any> {
+  async restoreHistory(@Param('historyId', ParseUUIDPipe) historyId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
@@ -35,6 +32,24 @@ export class AppHistoryController {
     @Param('historyId', ParseUUIDPipe) historyId: string,
     @Body() updateDto: any
   ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Get(':appVersionId/stream')
+  async streamHistory(
+    @Param('appVersionId') appVersionId: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Get(':appVersionId/events')
+  async getEvents(
+    @Param('appVersionId') appVersionId: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }
