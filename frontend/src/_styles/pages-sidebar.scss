@@ -212,10 +212,7 @@
         // margin-left: 48px;
         z-index: 1;
         background: var(--base, #FFF);
-        padding: 1rem;
         border-right: 1px solid var(--slate6);
-        padding-top: 24px;
-        padding-bottom: 0px;
         display: flex;
         flex-direction: column;
         
@@ -229,10 +226,10 @@
 
         .page-dark-mode-btn-wrapper {
             position: relative;
-            bottom: 2px;
-            justify-content: center;
-            padding-top: 16px;
-            margin-top: auto;
+            bottom: 0px !important;
+            justify-content: space-between;
+            padding: 10px;
+            border-top: 1px solid #E4E7EB;
 
             .sidebar-svg-icon {
                 width: 32px;
@@ -251,19 +248,16 @@
             font-weight: 500;
             font-size: 16px;
             color: var(--text-default);
-            margin-left: 0px;
+            padding: 24px 16px;
             align-items: baseline;
             width: unset !important;
-            margin-bottom: 20px;
             min-height: 28px;
 
             .app-text {
-                -webkit-line-clamp: 3;
-                line-clamp: 3;
-                -webkit-box-orient: vertical;
-                display: -webkit-box;
-                max-width: 260px;
+                white-space: nowrap;
+                overflow: hidden;
                 text-overflow: ellipsis;
+                max-width: 260px;
             }
 
             .collapse-icon {
@@ -275,8 +269,12 @@
             }
         }
 
+        .page-handler-wrapper {
+            padding: 0 8px;
+        }
+
         .page-name {
-            margin-left: 6px;
+            margin-left: 10px;
         }
 
         .left-sidebar-header-btn {
@@ -287,6 +285,7 @@
         .tj-list-item {
             justify-content: start;
             padding: 8px 12px;
+            margin-bottom: 6px !important;
             font-weight: 500;
             color: var(--text-placeholder);
             outline: none !important;
@@ -345,9 +344,9 @@
 
             .tj-list-item {
                 justify-content: center;
-                padding: 8px;
-                width: 32px;
-                height: 32px;
+                padding: 10px;
+                width: 40px;
+                height: 40px;
 
                 .page-name {
                     display: none !important;
@@ -375,6 +374,11 @@
                     margin-bottom: 20px
                 }
             }
+
+            .page-dark-mode-btn-wrapper {
+                display: block !important;
+                padding: 0;
+            }
         }
 
         &.text-only {
@@ -387,7 +391,7 @@
             border: none;
         }
         .accordion-body{
-            padding: 4px 0 4px 16px !important;
+            padding: 4px 0 4px 32px !important;
             border-bottom: 0px !important;
         }
         .accordion-header{
@@ -462,10 +466,9 @@
             }
 
             .page-dark-mode-btn-wrapper {
-                padding: 0px;
-                margin-top: 0px;
+                justify-content: center;
+                border-top: none !important;
                 padding-left: 76px;
-                bottom: 0px !important;
             }
 
             .accordion-item {
@@ -546,6 +549,7 @@
 
             .page-name {
                 width: 100% !important;
+                margin-left: 6px;
             }
 
             .position-relative {
@@ -645,7 +649,7 @@
             display: flex;
             align-items: center;
             font-size: 14px;
-            margin-left: 6px;
+            margin-left: 10px;
         }
 
         .tj-list-item-selected {

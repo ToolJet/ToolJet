@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _, { set } from 'lodash';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
-import FolderList from '@/_ui/FolderList/FolderList';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { APP_HEADER_HEIGHT, LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
-import OverflowTooltip from '@/_components/OverflowTooltip';
+import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPage, RenderPageAndPageGroup } from './PageGroup';
@@ -18,7 +15,7 @@ import { shallow } from 'zustand/shallow';
 import { Overlay, Popover } from 'react-bootstrap';
 import { buildTree } from './Tree/utilities';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
-// import useSidebarMargin from './useSidebarMargin';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -48,7 +45,6 @@ export const PagesSidebarNavigation = ({
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
-  const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isReleasedVersionId } = useStore(
@@ -62,7 +58,6 @@ export const PagesSidebarNavigation = ({
   const navRef = useRef(null);
   const moreRef = useRef(null);
   const linkRefs = useRef({});
-  const observer = useRef(null);
   const headerRef = useRef(null);
   const darkModeToggleRef = useRef(null);
 
@@ -584,21 +579,6 @@ export const PagesSidebarNavigation = ({
                     {name?.trim() ? name : appName}
                   </div>
                 )}
-                {collapsable &&
-                  !isTopPositioned &&
-                  style == 'texticon' &&
-                  position === 'side' &&
-                  !isPagesSidebarHidden && (
-                    <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
-                      <SolidIcon
-                        className="cursor-pointer"
-                        fill="var(--icon-strong)"
-                        width="14px"
-                        viewBox="0 0 15 15"
-                        name={isSidebarPinned ? 'remove03' : 'menu'}
-                      />
-                    </div>
-                  )}
               </div>
             )}
             {isLicensed && !isPagesSidebarHidden ? (
@@ -647,6 +627,21 @@ export const PagesSidebarNavigation = ({
                 darkMode={darkMode}
                 tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
               />
+              {collapsable && !isTopPositioned && position === 'side' && !isPagesSidebarHidden && (
+                <ButtonComponent
+                  className="left-sidebar-item"
+                  onClick={toggleSidebarPinned}
+                  variant="ghost"
+                  size="large"
+                  iconOnly
+                >
+                  {isSidebarPinned ? (
+                    <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
+                  ) : (
+                    <IconLayoutSidebarRightCollapse size={16} className="tw-text-icon-strong" />
+                  )}
+                </ButtonComponent>
+              )}
             </div>
           )}
         </div>
