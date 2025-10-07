@@ -645,7 +645,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
           // Apply container bounds
           const elemContainer = e.target.closest('.real-canvas');
-          const containerHeight = elemContainer.clientHeight;
+          const containerHeight = elemContainer.scrollHeight;
           const containerWidth = elemContainer.clientWidth;
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
