@@ -16,7 +16,6 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { AiCacheService } from '@ee/ai/ai-cache';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -28,6 +27,7 @@ export class AiModule extends SubModule {
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
+    const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
     return {
       module: AiModule,
