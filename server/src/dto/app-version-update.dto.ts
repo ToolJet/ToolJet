@@ -43,4 +43,7 @@ export class AppVersionUpdateDto {
 
   @IsOptional()
   status: AppVersionStatus;
+
+  @IsOptional()
+  description: string;
 }

@@ -300,8 +300,7 @@ export class VersionService implements IVersionService {
       const parentVersion = await this.versionRepository.findVersion(versionFromId);
       const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
       const childVersionAppsCount = childVersionApps.length;
-      // Set the auto-generated version name
-      draftVersionDto.versionName = `${parentVersion?.app?.name}_${childVersionAppsCount + 1}`;
+      draftVersionDto.versionName = `${parentVersion?.name}_${childVersionAppsCount + 1}`;
     }
     return await this.createVersion(app, user, draftVersionDto);
   }

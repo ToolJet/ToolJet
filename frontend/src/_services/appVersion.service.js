@@ -16,6 +16,7 @@ export const appVersionService = {
   clonePage,
   findAllEventsWithSourceId,
   cloneGroup,
+  createDraftVersion,
 };
 
 function getAll(appId) {
@@ -58,6 +59,22 @@ function create(appId, versionName, versionFromId, currentEnvironmentId) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+}
+
+function createDraftVersion(appId, versionName, versionFromId, currentEnvironmentId) {
+  const body = {
+    versionName,
+    versionFromId,
+    environmentId: currentEnvironmentId,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/draft-versions`, requestOptions).then(handleResponse);
 }
 
 function del(appId, versionId) {

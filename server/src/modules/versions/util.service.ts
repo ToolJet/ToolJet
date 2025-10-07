@@ -76,6 +76,9 @@ export class VersionUtilService implements IVersionUtilService {
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
     }
+    if (appVersionUpdateDto?.description && appVersion.description !== appVersionUpdateDto.description) {
+      editableParams['description'] = appVersionUpdateDto.description;
+    }
 
     await this.versionRepository.update(appVersion.id, editableParams);
     return;

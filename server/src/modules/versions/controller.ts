@@ -40,7 +40,7 @@ export class VersionController implements IVersionController {
   }
   @InitFeature(FEATURE_KEY.DRAFT_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
-  @Post(':id/versions/draft')
+  @Post(':id/draft-versions')
   createDraftVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() draftVersionDto: DraftVersionDto) {
     return this.versionService.createDraftVersion(app, user, draftVersionDto);
   }
