@@ -349,18 +349,18 @@ export const addUserMetadata = (metadataList) => {
         onboardingText.userMetadataLabel,
         index
       ),
-      key
+      `${key}`
     );
     cy.clearAndType(
       onboardingSelectors.valueInputField(
         onboardingText.userMetadataLabel,
         index
       ),
-      value
+      `${value}`
     );
-    cy.get(`[data-cy="user-metadata-${index}"] [data-cy="icon-hidden"]`).should(
-      "be.visible"
-    );
+    cy.get(`[data-cy="user-metadata-${index}"] [data-cy="icon-hidden"]`)
+      .should("be.visible")
+      .click();
     cy.get(
       onboardingSelectors.deleteButton(onboardingText.userMetadataLabel, index)
     ).should("be.visible");
@@ -387,11 +387,31 @@ export const userMetadataOnboarding = (
   cy.apiUserInvite(firstName, email, userRole, metadata);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.continueButton).click();
-  cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
   return cy.wrap(metadataCount);
+};
+
+export const verifyUserMetadataElements = (index = 0) => {
+  cy.get(onboardingSelectors.userMetadataLabel).should("be.visible");
+  cy.get(onboardingSelectors.emptyKeyValueLabel).should("be.visible");
+  cy.get(commonSelectors.buttonSelector("add-more"))
+    .should("be.visible")
+    .click();
+  cy.get(onboardingSelectors.encryptedLabel).should("be.visible");
+  cy.get(
+    onboardingSelectors.keyInputField(onboardingText.userMetadataLabel, index)
+  ).should("be.visible");
+  cy.get(
+    onboardingSelectors.valueInputField(onboardingText.userMetadataLabel, index)
+  ).should("be.visible");
+};
+
+export const selectUserGroup = (groupName) => {
+  cy.get(onboardingSelectors.userGroupSelect).should("be.visible").click();
+  cy.contains(`[id*="react-select-"]`, groupName).should("be.visible").click();
+  cy.get(onboardingSelectors.userGroupSelect)
+    .should("contain.text", groupName)
+    .click();
 };

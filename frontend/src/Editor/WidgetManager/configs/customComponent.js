@@ -21,6 +21,22 @@ export const customComponentConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -60,6 +76,8 @@ export const customComponentConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      borderRadius: { value: '{{6}}' },
+      borderColor: { value: 'var(--cc-default-border)' },
     },
   },
 };
