@@ -54,7 +54,7 @@ export const CodeEditor = ({
   }, 500);
 
   const editorStyles = {
-    height: isDynamicHeightEnabled ? 'auto' : height,
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: !visibility ? 'none' : 'block',
   };
 
@@ -93,9 +93,9 @@ export const CodeEditor = ({
       <div
         className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
-          height: isDynamicHeightEnabled ? '100%' : height || '100%',
+          height: isDynamicHeightEnabled ? `max(100%, ${height + 1}px)` : height || '100%',
           ...(isDynamicHeightEnabled
-            ? { minHeight: `${height}px`, maxHeight: '100%', overflow: 'auto' }
+            ? { minHeight: height - 1, maxHeight: '100%', overflow: 'auto' }
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,

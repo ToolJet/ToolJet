@@ -31,7 +31,7 @@ export const TextArea = (props) => {
     adjustComponentPositions,
     currentLayout,
     width,
-    visibility: properties.visibility,
+    visibility: inputLogic.visibility,
   });
 
   return <BaseInput {...props} {...inputLogic} isDynamicHeightEnabled={isDynamicHeightEnabled} inputType="textarea" />;

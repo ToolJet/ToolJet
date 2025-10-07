@@ -47,6 +47,7 @@ export const Listview = function Listview({
     mode = 'list',
     columns = 1,
     dataSourceSelector,
+    dynamicHeight,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
@@ -56,7 +57,7 @@ export const Listview = function Listview({
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
   const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const computedStyles = {
     backgroundColor,
@@ -86,7 +87,7 @@ export const Listview = function Listview({
   const [childrenData, setChildrenData] = useState({});
 
   useDynamicHeight({
-    dynamicHeight: isDynamicHeightEnabled,
+    isDynamicHeightEnabled,
     id,
     height,
     value: data,

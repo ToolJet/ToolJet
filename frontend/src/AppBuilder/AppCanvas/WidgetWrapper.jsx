@@ -44,12 +44,12 @@ const WidgetWrapper = memo(
       const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
     });
+
     const visibility = useStore((state) => {
       const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
       const componentExposedVisibility = state.getExposedValueOfComponent(id, moduleId)?.isVisible;
-      if (componentExposedVisibility === false) return false;
-      if (component?.properties?.visibility === false || component?.styles?.visibility === false) return false;
-      return true;
+      if (componentExposedVisibility !== undefined) return componentExposedVisibility;
+      return component?.properties?.visibility || component?.styles?.visibility;
     });
 
     useEffect(() => {
@@ -69,6 +69,7 @@ const WidgetWrapper = memo(
 
     const width = gridWidth * newLayoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
+    console.log('height', height);
     const styles = {
       width: width + 'px',
       height: visibility === false ? '10px' : `${height}px`,

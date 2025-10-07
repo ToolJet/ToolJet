@@ -190,6 +190,9 @@ class DraftEditor extends React.Component {
         const controlsHeight = this.controlsRef.current.offsetHeight;
         const editorHeight = this.props.height - 46 - controlsHeight;
         this.editorContainerRef.current.style.height = `${editorHeight}px`;
+        if (this.props.isDynamicHeightEnabled) {
+          this.editorContainerRef.current.style.height = `auto`;
+        }
       }
     });
 

@@ -919,6 +919,7 @@ export const Table = React.memo(
       adjustComponentPositions,
       currentLayout,
       width,
+      visibility: parsedWidgetVisibility,
     });
 
     const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);

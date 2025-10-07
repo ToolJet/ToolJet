@@ -184,6 +184,7 @@ export const Table = memo(
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
           height: isDynamicHeightEnabled ? '100%' : `${height}px`,
+          ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,

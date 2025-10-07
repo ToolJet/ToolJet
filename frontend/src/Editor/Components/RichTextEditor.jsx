@@ -69,7 +69,7 @@ export const RichTextEditor = function RichTextEditor({
     <div
       data-disabled={isDisabled}
       style={{
-        height: isDynamicHeightEnabled ? 'auto' : `${height}px`,
+        height: isDynamicHeightEnabled ? '100%' : `${height}px`,
         ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? '' : 'none',
         boxShadow,
