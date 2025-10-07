@@ -9,7 +9,9 @@ import { onboardingSelectors } from "Selectors/onboarding";
 const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
-  cy.get(`[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`).should(($el) => {
+  cy.get(
+    `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
+  ).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
       commonText.breadcrumbworkspaceSettingTitle
     );
@@ -375,32 +377,36 @@ export const fetchAndVisitInviteLinkViaMH = (email) => {
     expect(mails).to.have.length.greaterThan(0);
     const lastMail = mails[mails.length - 1];
     const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
-    const mailBody = mailContent.Body || mailContent.Html || '';
+    const mailBody = mailContent.Body || mailContent.Html || "";
 
     // Clean the email body by removing quoted-printable encoding and HTML entities
     let cleanedBody = mailBody
-      .replace(/=\r?\n/g, '') // Remove quoted-printable line breaks (= at end of line)
-      .replace(/=3D/g, '=')   // Decode =3D back to =
+      .replace(/=\r?\n/g, "") // Remove quoted-printable line breaks (= at end of line)
+      .replace(/=3D/g, "=") // Decode =3D back to =
       .replace(/&quot;/g, '"')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
 
     // Extract URL from href attribute or plain text
-    let inviteUrl = '';
+    let inviteUrl = "";
 
     // Try to find URL in href attribute first
-    const hrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i);
+    const hrefMatch = cleanedBody.match(
+      /href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i
+    );
     if (hrefMatch) {
       inviteUrl = hrefMatch[1];
     } else {
       // Fallback: look for URL in plain text
-      const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i);
-      inviteUrl = urlMatch ? urlMatch[0] : '';
+      const urlMatch = cleanedBody.match(
+        /https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i
+      );
+      inviteUrl = urlMatch ? urlMatch[0] : "";
     }
 
     expect(inviteUrl).to.not.be.empty;
-    cy.log('Found invite URL: ' + inviteUrl);
+    cy.log("Found invite URL: " + inviteUrl);
     cy.visit(inviteUrl);
   });
 };
@@ -435,4 +441,38 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+};
+export const verifyUserStatusAndMetadata = (
+  email,
+  expectedStatus = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.searchUser(email);
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get("td small").should("have.text", expectedStatus);
+      cy.get("td[data-name='meta-header'] .metadata")
+        .should("be.visible")
+        .and("have.text", expectedMetadata);
+    });
+};
+
+export const openEditUserDetails = (
+  email,
+  activeStatusText = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.navigateToManageUsers();
+
+  verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
+
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get('[data-cy="user-actions-button"]').click();
+    });
+  cy.get('[data-cy="edit-user-details-button"]')
+    .verifyVisibleElement("have.text", "Edit user details")
+    .click();
 };

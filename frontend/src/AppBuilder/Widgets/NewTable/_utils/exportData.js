@@ -1,7 +1,7 @@
-import * as XLSX from 'xlsx';
+import zipcelx from 'zipcelx';
 import Papa from 'papaparse';
 import generateFile from '@/_lib/generate-file';
-import JsPDF from 'jspdf';
+import * as JsPDFNamespace from 'jspdf';
 // eslint-disable-next-line import/no-unresolved
 import 'jspdf-autotable';
 import moment from 'moment';
@@ -42,13 +42,14 @@ export const exportToCSV = (table, componentName) => {
 // Export to Excel
 export const exportToExcel = (table, componentName) => {
   const { headers, data } = getData(table);
-  const ws = XLSX.utils.json_to_sheet(data);
-  // Add headers to the first row
-  XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
   const fileName = getExportFileName(componentName);
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+  const config = {
+    filename: fileName,
+    sheet: {
+      data: [headers, ...data],
+    },
+  };
+  zipcelx(config);
 };
 
 // Export to PDF
@@ -56,6 +57,7 @@ export const exportToPDF = async (table, componentName) => {
   const { headers, data } = getData(table);
   const pdfData = data.map((obj) => Object.values(obj));
   const fileName = getExportFileName(componentName);
+  const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace;
   const doc = new JsPDF();
   doc.autoTable({
     head: [headers],

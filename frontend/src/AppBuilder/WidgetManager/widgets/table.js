@@ -700,12 +700,12 @@ export const tableConfig = {
                 value: 'Crafting',
               },
               {
-                label: 'Voluntering',
-                value: 'Voluntering',
+                label: 'Volunteering',
+                value: 'Volunteering',
               },
               {
-                label: 'Garndening',
-                value: 'Garndening',
+                label: 'Gardening',
+                value: 'Gardening',
               },
               {
                 label: 'Dancing',
