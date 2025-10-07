@@ -93,7 +93,7 @@ export const CodeEditor = ({
       <div
         className={`code-hinter codehinter-default-input code-editor-widget scrollbar-container`}
         style={{
-          height: isDynamicHeightEnabled ? `max(100%, ${height + 1}px)` : height || '100%',
+          height: isDynamicHeightEnabled ? '100%' : height || '100%',
           ...(isDynamicHeightEnabled
             ? { minHeight: height - 1, maxHeight: '100%', overflow: 'auto' }
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
@@ -105,7 +105,7 @@ export const CodeEditor = ({
           value={value}
           placeholder={placeholder}
           height={'100%'}
-          minHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
+          minHeight={isDynamicHeightEnabled ? `${height}px` : editorHeight}
           maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
@@ -116,11 +116,6 @@ export const CodeEditor = ({
             setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}
-          style={
-            {
-              // ...(isDynamicHeightEnabled ? {} : { overflowY: 'auto' }),
-            }
-          }
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
         />

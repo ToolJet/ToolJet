@@ -69,7 +69,7 @@ const WidgetWrapper = memo(
 
     const width = gridWidth * newLayoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
-    console.log('height', height);
+
     const styles = {
       width: width + 'px',
       height: visibility === false ? '10px' : `${height}px`,
