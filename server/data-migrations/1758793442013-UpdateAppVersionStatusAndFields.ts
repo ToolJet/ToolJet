@@ -1,6 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { AppVersionStatus } from 'src/entities/app_version.entity';
 export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,38 +8,30 @@ export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationIn
             JOIN app_environments ae ON av.current_environment_id = ae.id
             WHERE ae.name = 'development'
         `);
-
-    const allReleasedVersionIds = await queryRunner.query(`
-            SELECT 
-                av.id as version_id
-            FROM apps a
-            INNER JOIN app_versions av ON a.current_version_id = av.id
+    const allNonDevelopmentVersionIDs = await queryRunner.query(`
+            SELECT av.id
+            FROM app_versions av
+            LEFT JOIN app_environments ae ON av.current_environment_id = ae.id 
+                AND ae.name = 'development'
+            WHERE ae.id IS NULL
         `);
 
     // Convert query results to arrays of IDs
     const developmentVersionIds = allDevelopmentVersionIds.map((row) => row.id);
-    const releasedVersionIds = allReleasedVersionIds.map((row) => row.version_id);
+    const nonDevelopmentVersionIDs = allNonDevelopmentVersionIDs.map((row) => row.id);
 
-    const edition = getTooljetEdition();
-    // Handle CE edition specific logic
-    if (edition === TOOLJET_EDITIONS.CE) {
-      if (releasedVersionIds && releasedVersionIds.length) {
-        await queryRunner.query(
-          `UPDATE app_versions SET status = ${AppVersionStatus.PUBLISHED} WHERE id = ANY($1::uuid[])`,
-          [developmentVersionIds]
-        );
-      }
-      if (developmentVersionIds && developmentVersionIds.length) {
-        await queryRunner.query(
-          `UPDATE app_versions SET status = ${AppVersionStatus.DRAFT} WHERE id = ANY($1::uuid[])`,
-          [releasedVersionIds]
-        );
-      }
+    if (nonDevelopmentVersionIDs && nonDevelopmentVersionIDs.length) {
+      await queryRunner.query(
+        `UPDATE app_versions SET status = '${AppVersionStatus.PUBLISHED}' WHERE id = ANY($1::uuid[])`,
+        [nonDevelopmentVersionIDs]
+      );
     }
-    // else if (edition === TOOLJET_EDITIONS.EE) {
-    // }
-
-    // Get the development environment ID
+    if (developmentVersionIds && developmentVersionIds.length) {
+      await queryRunner.query(
+        `UPDATE app_versions SET status = '${AppVersionStatus.DRAFT}' WHERE id = ANY($1::uuid[])`,
+        [developmentVersionIds]
+      );
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
