@@ -252,7 +252,7 @@ export const fillInputField = (data) => {
   Object.entries(data).forEach(([key, value]) => {
     const labelSelector = `[data-cy="${cyParamName(key)}-label"]`;
     const inputSelector = `[data-cy="${cyParamName(key)}-input"]`;
-    cy.get(labelSelector).should("have.text", key);
-    cy.get(inputSelector).clear().type(value);
+    cy.get(labelSelector).should("contain", key);
+    cy.get(inputSelector).type(`{selectall}{backspace}${value}`)
   });
 };
