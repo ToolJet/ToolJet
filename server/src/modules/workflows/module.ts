@@ -1,6 +1,9 @@
 import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { UserRepository } from '@modules/users/repositories/repository';
@@ -34,6 +37,9 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
+
+const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
+const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
@@ -44,11 +50,16 @@ export class WorkflowsModule extends SubModule {
       WorkflowWebhooksService,
       WorkflowsController,
       WorkflowSchedulesService,
-      TemporalService,
+      // TemporalService,
+      WorkflowSchedulerService,
+      WorkflowScheduleProcessor,
+      WorkflowExecutionProcessor,
       WorkflowWebhooksListener,
       WorkflowTriggersListener,
+      AppsActionsListener,
       FeatureAbilityFactory,
       WorkflowStreamService,
+      ScheduleBootstrapService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -58,10 +69,15 @@ export class WorkflowsModule extends SubModule {
       'controllers/workflows.controller',
       'services/workflow-schedules.service',
       'services/temporal.service',
+      'services/workflow-scheduler.service',
+      'processors/workflow-schedule.processor',
+      'processors/workflow-execution.processor',
       'listeners/workflow-webhooks.listener',
       'listeners/workflow-triggers.listener',
+      'listeners/app-actions.listener',
       'ability/app',
       'services/workflow-stream.service',
+      'services/schedule-bootstrap.service',
     ]);
 
     // Get apps related providers
@@ -105,6 +121,22 @@ export class WorkflowsModule extends SubModule {
             },
           ],
         }),
+        // Register BullMQ queues for workflow scheduling and execution
+        BullModule.registerQueue({
+          name: WORKFLOW_SCHEDULE_QUEUE,
+        }),
+        BullModule.registerQueue({
+          name: WORKFLOW_EXECUTION_QUEUE,
+        }),
+        // Register queues with Bull Board for dashboard visibility
+        BullBoardModule.forFeature({
+          name: WORKFLOW_SCHEDULE_QUEUE,
+          adapter: BullMQAdapter,
+        }),
+        BullBoardModule.forFeature({
+          name: WORKFLOW_EXECUTION_QUEUE,
+          adapter: BullMQAdapter,
+        }),
         await AppsModule.register(configs),
         await TooljetDbModule.register(configs),
         await DataQueriesModule.register(configs),
@@ -138,11 +170,24 @@ export class WorkflowsModule extends SubModule {
         ComponentsService,
         PageHelperService,
         WorkflowSchedulesService,
-        TemporalService,
+        // TemporalService,
+        WorkflowSchedulerService,
         FeatureAbilityFactory,
         RolesRepository,
         GroupPermissionsRepository,
-        ...(isMainImport ? [WorkflowWebhooksListener, WorkflowTriggersListener, WorkflowStreamService] : []),
+        ...(isMainImport ? [
+          WorkflowWebhooksListener,
+          WorkflowTriggersListener,
+          WorkflowStreamService,
+          AppsActionsListener,
+          // Only register BullMQ processors and schedule bootstrap when WORKER=true
+          // This allows running dedicated HTTP-only instances and worker instances
+          ...(process.env.WORKER === 'true' ? [
+            WorkflowScheduleProcessor,
+            WorkflowExecutionProcessor,
+            ScheduleBootstrapService,
+          ] : []),
+        ] : []),
       ],
       controllers: isMainImport
         ? [WorkflowsController, WorkflowExecutionsController, WorkflowWebhooksController, WorkflowSchedulesController]
