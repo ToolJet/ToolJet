@@ -639,7 +639,7 @@ button {
       }
 
       .properties-container {
-        .field { 
+        .field {
           .form-label {
             font-size: 12px;
           }
@@ -2231,6 +2231,7 @@ tr:focus {
 
 body {
   color: #3e525b;
+  overflow: hidden;
 }
 
 .RichEditor-root {
@@ -18150,7 +18151,7 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .circular-progressbar-stroke-width {
-  label{
+  label {
     width: 90px
   }
 }
