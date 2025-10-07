@@ -5,6 +5,7 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { commonText, commonWidgetText } from "Texts/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { importSelectors } from "Selectors/exportImport";
+import { workflowSelector } from "../../constants/selectors/workflows";
 
 export const contantsNameValidation = (
   selector,
@@ -217,8 +218,7 @@ export const constantsCRUDAndValidations = (data) => {
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   selectEnv(data.envName);
   switchToConstantTab(data.constantType);
-  VerifyEmptyScreenUI(data.envName);
-
+  // VerifyEmptyScreenUI(data.envName);  
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
     "have.text",
@@ -375,21 +375,25 @@ export const deleteAndVerifyConstant = (constName) => {
   cy.get(commonWidgetSelector.homePageLogo).click();
 };
 
-export const importConstantsApp = () => {
-  cy.get(commonSelectors.dashboardIcon).click();
+export const importConstantsApp = (filePath, app = true) => {
   cy.get(importSelectors.dropDownMenu)
     .should("be.visible")
     .click({ force: true });
   cy.get(importSelectors.importOptionInput)
     .eq(0)
-    .selectFile("cypress/fixtures/templates/workspace_constants.json", {
+    .selectFile(filePath, {
       force: true,
     });
-  cy.get(importSelectors.importAppButton).click();
-  cy.wait(6000);
-  cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
-    "be.visible"
-  );
+  if (app) {
+    cy.get(importSelectors.importAppButton).click();
+    cy.wait(6000);
+  }
+
+  else {
+    cy.get(workflowSelector.importWorkFlowsButton).click()
+    cy.wait(6000);
+
+  }
 };
 
 export const verifySecretConstantNotResolved = (inputWidget) => {

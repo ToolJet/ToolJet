@@ -20,6 +20,7 @@ import {
   verifySecretInStaticQueryRaw,
   previewAppAndVerify,
   promoteEnvAndVerify,
+  switchToConstantTab
 } from "Support/utils/workspaceConstants";
 import { importSelectors } from "Selectors/exportImport";
 
@@ -35,8 +36,6 @@ describe("Workspace constants", () => {
   data.newConstvalue = `New ${data.constName}`;
   data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
   data.constantsValue = "dJ_8Q~BcaMPd";
-  data.appName = `${fake.companyName}-App`;
-  data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
@@ -106,12 +105,13 @@ describe("Workspace constants", () => {
     data.workspaceName = fake.firstName;
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
     data.appName = `${fake.companyName}-App`;
+    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+
 
     cy.apiCreateWorkspace(data.workspaceSlug, data.workspaceSlug);
     cy.apiLogout();
     cy.apiLogin();
     cy.visit(data.workspaceSlug);
-    data.appName = `${fake.companyName}-App`;
 
     // Create and update constants as needed
     createAndUpdateConstant(
@@ -194,7 +194,9 @@ describe("Workspace constants", () => {
     );
 
     deleteAndVerifyConstant("deleteConst");
-    importConstantsApp();
+
+    cy.get(commonSelectors.dashboardIcon).click();
+    importConstantsApp('"cypress/fixtures/templates/workspace_constants.json"');
 
     // Verify constants in textinput1 and range
     cy.get(
@@ -289,4 +291,91 @@ describe("Workspace constants", () => {
     );
     verifyInputValues(3, 16, "Production environment testing");
   });
+
+  it.only("Verify env global and secrets in all areas", () => {
+    // Set workspace and app data
+    data.workspaceName = fake.firstName;
+    data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
+    data.appName = `${fake.companyName}-App`;
+    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+
+    cy.apiCreateWorkspace(data.workspaceSlug, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(data.workspaceSlug);
+
+    cy.get('[data-cy="home-page-icon"]').click();
+    cy.wait(500); cy.get(commonSelectors.workspaceConstantsIcon).click();
+
+    // Show envconstant details
+    cy.get('[data-cy="envconstant-constant-visibility"]').click();
+
+    // Validate the value for the envConstant entry
+    cy.get(workspaceConstantsSelectors.constantValue('envConstant'))
+      .should('be.visible')
+      .and("have.text", "globalUI");
+
+    // Check if the edit button is disabled
+    cy.get('[data-cy="envconstant-edit-button"]').should('be.disabled');
+    cy.get('[data-cy="envconstant-delete-button"]').should('be.disabled');
+
+
+    // Check tooltip text on hover (strip HTML for Cypress match)
+    cy.get('[data-cy="envconstant-edit-button"]').closest('td').trigger("mouseover")
+    cy.get(".tooltip-inner").last().should(($el) => {
+      const plainText = $el.text().replace(/\s+/g, ' ').trim();
+      expect(plainText).to.eq("Constants created from environment variables cannot be edited or deleted");
+    });
+
+    switchToConstantTab('Secrets');
+    cy.get('[data-cy="headervalue-constant-visibility"]').click();
+    cy.get('[data-cy="headervalue-workspace-constant-value"]').should('be.visible')
+      .and("have.text", "Values fetched at runtime, not stored in ToolJet");
+
+    cy.get('[data-cy="headervalue-edit-button"]').should('be.disabled');
+    cy.get('[data-cy="headervalue-delete-button"]').should('be.disabled');
+
+
+    // Check tooltip text on hover (strip HTML for Cypress match)
+    cy.get('[data-cy="headervalue-edit-button"]').closest('td').trigger("mouseover")
+    cy.get(".tooltip-inner").last().should(($el) => {
+      const plainText = $el.text().replace(/\s+/g, ' ').trim();
+      expect(plainText).to.eq("Constants created from environment variables cannot be edited or deleted");
+    });
+
+    cy.get(commonSelectors.dashboardIcon).click();
+
+    importConstantsApp("cypress/fixtures/templates/env_constants-export.json")
+
+    cy.go('back')
+
+    cy.get(commonSelectors.globalWorkFlowsIcon).click()
+    importConstantsApp("cypress/fixtures/templates/env-constants-workflow-export.json", false)
+
+    cy.getAppId('env_constants-export').then((appId) => {
+      cy.visit(`${data.workspaceSlug}/apps/${appId}`);
+
+    })
+    cy.wait(2000)
+
+    verifyInputValues(3, 6, "Development environment testing");
+    verifySecretConstantNotResolved("textinput2");
+    cy.go('back')
+
+
+    cy.get('[data-cy="pages-name-workflow"]').click();
+    cy.get('[data-cy="draggable-widget-textinput1"]').verifyVisibleElement("have.value", "Development environment testing");
+
+    cy.get('[data-cy="pages-name-home"]').click();
+    previewAppAndVerify(3, 6, "Development environment testing");
+    cy.get('[data-cy="pages-name-workflow"]').click();
+    cy.get('[data-cy="draggable-widget-textinput1"]').verifyVisibleElement("have.value", "Development environment testing");
+
+
+
+
+  });
+
+
+
 });

@@ -230,23 +230,14 @@ export const navigateToworkspaceConstants = () => {
   cy.get(commonSelectors.workspaceConstantsOption).click();
 };
 
-export const releaseApp = (promote = true) => {
-
-  if (promote) {
-    cy.ifEnv("Enterprise", () => {
-      appPromote("development", "production");
-    });
-    cy.get(commonSelectors.releaseButton).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-    cy.wait(1000);
-  }
-  else {
-    cy.get(commonSelectors.releaseButton).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-    cy.wait(1000);
-  }
+export const releaseApp = () => {
+  cy.ifEnv("Enterprise", () => {
+    appPromote("development", "production");
+  });
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
 };
 
 export const verifyTooltipDisabled = (selector, message) => {
