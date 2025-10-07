@@ -31,7 +31,13 @@ describe('GitHub SSO Tests', () => {
     const TEST_SSO_ID = 'dbe8cc6f-8300-403a-9691-3ba304f2a744';
     beforeEach(() => {
         cy.apiLogin();
-        cy.getAuthHeaders().as('adminHeaders');
+        cy.getAuthHeaders().as('adminHeaders').then((adminHeaders) => {
+
+            cy.apiUpdateSSOConfig(emptyGitConfig, 'instance', adminHeaders);
+            cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
+            cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
+            cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
+        });
     });
 
     const cleanupTestUser = () => {
@@ -39,10 +45,7 @@ describe('GitHub SSO Tests', () => {
     };
 
     it('should verify sso without configuration on instance', () => {
-        cy.get('@adminHeaders').then((adminHeaders) => {
-            cy.apiUpdateSSOConfig(
-                emptyGitConfig, 'instance', adminHeaders);
-        });
+
         toggleSsoViaUI('GitHub')
         cy.apiLogout();
         cy.visit('/');
@@ -51,12 +54,6 @@ describe('GitHub SSO Tests', () => {
     });
 
     it('should verify sso without configuration on workspace', () => {
-        cy.get('@adminHeaders').then((adminHeaders) => {
-            cy.apiUpdateSSOConfig(
-                emptyGitConfig, 'instance', adminHeaders);
-            cy.apiUpdateSSOConfig(
-                emptyGitConfig, 'workspace', adminHeaders);
-        });
 
         toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL)
         cy.apiLogout();
@@ -67,12 +64,6 @@ describe('GitHub SSO Tests', () => {
     });
 
     it('should verify signup via sso to instance', () => {
-        cy.get('@adminHeaders').then((adminHeaders) => {
-            cy.apiUpdateSSOConfig(
-                emptyGitConfig, 'instance', adminHeaders);
-            cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
-            cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
-        });
 
         toggleSsoViaUI('GitHub');
         fillInputField(instanceGitHubConfig);
@@ -101,13 +92,8 @@ describe('GitHub SSO Tests', () => {
 
     it('should verify signup via sso to workspace', () => {
         const orgId = Cypress.env("workspaceId");
-        cy.get('@adminHeaders').then((adminHeaders) => {
-            updateSsoId(TEST_SSO_ID, 'git', `'${orgId}'`);
-            cy.apiUpdateSSOConfig(emptyGitConfig, 'instance', adminHeaders);
-            cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
-            cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
-            cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
-        });
+
+        updateSsoId(TEST_SSO_ID, 'git', `'${orgId}'`);
 
         toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL);
         fillInputField(workspaceGitHubConfig);
@@ -133,10 +119,15 @@ describe('GitHub SSO Tests', () => {
             cleanupTestUser();
         });
     });
-    it('should verify signup and login via sso to workspace', () => {
+    it('should verify invite and login via sso to workspace', () => {
         cy.apiUserInvite(TEST_USER_NAME, TEST_USER_EMAIL);
-        fetchAndVisitInviteLink(TEST_USER_EMAIL);
 
+
+        toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL);
+        fillInputField(workspaceGitHubConfig);
+        cy.get(commonSelectors.saveButton).eq(1).click();
+        cy.apiLogout();
+        fetchAndVisitInviteLink(TEST_USER_EMAIL);
         cy.get(GIT_SSO_BUTTON_SELECTOR).click();
         gitHubSignInWithAssertion();
 

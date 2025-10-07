@@ -1,6 +1,6 @@
 const envVar = Cypress.env("environment");
 
-Cypress.Commands.add('loginByGoogleApi', (state = '') => {
+Cypress.Commands.add('apiLoginByGoogle', (defaultid = '/688f4b68-8c3b-41b2-aecb-1c1e9a112de1', state = '') => {
   cy.log('Starting basic Google SSO login approach');
 
   cy.request({
@@ -23,7 +23,7 @@ Cypress.Commands.add('loginByGoogleApi', (state = '') => {
       headers: { Authorization: `Bearer ${access_token}` }
     }).then(({ body: userInfo }) => {
 
-      const tooljetBase = 'http://localhost:8082/sso/google/688f4b68-8c3b-41b2-aecb-1c1e9a112de1';
+      const tooljetBase = `http://localhost:8082/sso/google${defaultid}`;
       const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
       const fullUrl = `${tooljetBase}#${hash}`;
 
