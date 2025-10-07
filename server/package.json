@@ -73,7 +73,7 @@
     "nodemailer": "^6.6.3",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
-    "pg": "^8.7.1",
+    "pg": "^8.16.3",
     "pino-pretty": "^6.0.0",
     "protobufjs": "^7.2.3",
     "reflect-metadata": "^0.1.13",
