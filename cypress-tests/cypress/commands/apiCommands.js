@@ -484,7 +484,7 @@ Cypress.Commands.add("apiGetEnvironments", () => {
 });
 
 Cypress.Commands.add(
-  "apiCreateWsConstant",
+  "apiCreateWorkspaceConstant",
   (constantName, value, types = [], environmentNames = []) => {
     cy.apiGetEnvironments().then((environments) => {
       const envIds = environmentNames

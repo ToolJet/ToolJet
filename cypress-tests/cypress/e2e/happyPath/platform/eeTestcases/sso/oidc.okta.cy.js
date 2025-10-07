@@ -18,7 +18,7 @@ import {
     verifyUserRole,
     deleteGroup,
 } from "Support/utils/manageGroups";
-import { getUser } from "Support/utils/api";
+import { getUser } from "Support/utils/externalApi";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { uiOktaLogin } from "Support/utils/manageSSO";
 

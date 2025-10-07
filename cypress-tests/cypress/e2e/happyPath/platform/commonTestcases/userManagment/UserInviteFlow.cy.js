@@ -28,7 +28,7 @@ import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 import { createGroup } from "Support/utils/manageGroups";
-import { verifyUserInGroups } from "Support/utils/api";
+import { verifyUserInGroups } from "Support/utils/externalApi";
 
 
 let invitationToken,

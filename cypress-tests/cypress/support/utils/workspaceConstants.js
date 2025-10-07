@@ -348,7 +348,7 @@ export const createAndUpdateConstant = (
   envs,
   updates = {}
 ) =>
-  cy.apiCreateWsConstant(name, value, types, envs).then((res) => {
+  cy.apiCreateWorkspaceConstant(name, value, types, envs).then((res) => {
     const id = res.body.constant.id;
     Object.entries(updates).forEach(([updateEnv, updateValue]) => {
       cy.apiUpdateWsConstant(id, updateValue, updateEnv);

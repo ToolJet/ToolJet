@@ -134,13 +134,13 @@ describe("Workspace constants", () => {
         production: "http://20.29.40.108:4000/production",
       }
     );
-    cy.apiCreateWsConstant(
+    cy.apiCreateWorkspaceConstant(
       "restapiHeaderKey",
       "customHeader",
       ["Global", "Secret"],
       ["development", "staging", "production"]
     );
-    cy.apiCreateWsConstant(
+    cy.apiCreateWorkspaceConstant(
       "restapiHeaderValue",
       "key=value",
       ["Global", "Secret"],
@@ -159,7 +159,7 @@ describe("Workspace constants", () => {
       ["Global"],
       ["development", "staging", "production"]
     );
-    cy.apiCreateWsConstant(
+    cy.apiCreateWorkspaceConstant(
       "gconstUrl",
       "http://20.29.40.108:4000/",
       ["Global"],
@@ -176,7 +176,7 @@ describe("Workspace constants", () => {
       }
     );
 
-    cy.apiCreateWsConstant(
+    cy.apiCreateWorkspaceConstant(
       "sconst",
       ":4000",
       ["Secret"],
@@ -351,12 +351,10 @@ describe("Workspace constants", () => {
 
     cy.get(commonSelectors.globalWorkFlowsIcon).click()
     importConstantsApp("cypress/fixtures/templates/env-constants-workflow-export.json", false)
-
-    cy.getAppId('env_constants-export').then((appId) => {
-      cy.visit(`${data.workspaceSlug}/apps/${appId}`);
-
-    })
+    cy.go('back')
     cy.wait(2000)
+
+    cy.get(commonSelectors.dashboardIcon).click();
 
     verifyInputValues(3, 6, "Development environment testing");
     verifySecretConstantNotResolved("textinput2");

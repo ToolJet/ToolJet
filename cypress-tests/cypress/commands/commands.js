@@ -27,8 +27,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector, { timeout: 20000 }).clear();
-  cy.get(selector).type(text, { log: false });
+  cy.get(selector).type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -203,7 +202,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).eq(1).invoke("removeAttr", "target").click();
+  cy.get(selector).last().invoke("removeAttr", "target").click();
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
