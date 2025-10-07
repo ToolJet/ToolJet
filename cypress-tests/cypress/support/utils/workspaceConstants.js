@@ -1,10 +1,10 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
-import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { commonText, commonWidgetText } from "Texts/common";
-import { appPromote } from "Support/utils/platform/multiEnv";
 import { importSelectors } from "Selectors/exportImport";
+import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { appPromote } from "Support/utils/platform/multiEnv";
+import { commonText } from "Texts/common";
+import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { workflowSelector } from "../../constants/selectors/workflows";
 
 export const contantsNameValidation = (
@@ -120,7 +120,7 @@ export const verifySearch = (data) => {
 
   cy.get(workspaceConstantsSelectors.envName).should(
     "have.text",
-    `${data.envName} (2)`
+    `${data.envName} (10)`
   );
   switchToConstantTab("Global");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "globalconst");
@@ -218,7 +218,7 @@ export const constantsCRUDAndValidations = (data) => {
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   selectEnv(data.envName);
   switchToConstantTab(data.constantType);
-  // VerifyEmptyScreenUI(data.envName);  
+  // VerifyEmptyScreenUI(data.envName);
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
     "have.text",
@@ -331,7 +331,7 @@ export const VerifyEmptyScreenUI = (envName) => {
 
   cy.get(workspaceConstantsSelectors.envName).should(
     "have.text",
-    `${envName} (0)`
+    `${envName} (8)`
   );
 };
 
@@ -369,30 +369,20 @@ export const verifyInputValues = (
   }
 };
 
-export const deleteAndVerifyConstant = (constName) => {
-  cy.get(commonSelectors.workspaceConstantsIcon).click();
-  deleteConstant(constName);
-  cy.get(commonWidgetSelector.homePageLogo).click();
-};
-
 export const importConstantsApp = (filePath, app = true) => {
   cy.get(importSelectors.dropDownMenu)
     .should("be.visible")
     .click({ force: true });
-  cy.get(importSelectors.importOptionInput)
-    .eq(0)
-    .selectFile(filePath, {
-      force: true,
-    });
+  cy.get(importSelectors.importOptionInput).eq(0).selectFile(filePath, {
+    force: true,
+  });
   if (app) {
     cy.get(importSelectors.importAppButton).click();
-    cy.wait(6000);
-  }
-
-  else {
-    cy.get(workflowSelector.importWorkFlowsButton).click()
-    cy.wait(6000);
-
+    cy.get('[data-cy="draggable-widget-textinput1"]').should("be.visible");
+    cy.wait(3000);
+  } else {
+    cy.get(workflowSelector.importWorkFlowsButton).click();
+    cy.wait(3000);
   }
 };
 
@@ -462,4 +452,14 @@ export const promoteEnvAndVerify = (
   verifyInputValues(start, end, expectedValue);
   verifySecretConstantNotResolved("textinput2");
   previewAppAndVerify(start, end, expectedValue);
+};
+
+export const assertTooltipText = (selector, expected) => {
+  cy.get(selector).closest("td").trigger("mouseover");
+  cy.get(".tooltip-inner")
+    .last()
+    .should(($el) => {
+      const plainText = $el.text().replace(/\s+/g, " ").trim();
+      expect(plainText).to.eq(expected);
+    });
 };
