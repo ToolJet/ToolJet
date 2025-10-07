@@ -536,6 +536,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return result;
   }
 
+  /* Handle auth flow starting from Querymanager */
   async authorizeOauth2(
     dataSource: DataSource,
     code: string,
@@ -546,7 +547,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
-    // Auth flow starts from datasource config page from querymanager
     if (
       ['googlesheets', 'slack', 'zendesk', 'salesforce', 'googlecalendar', 'snowflake', 'microsoft_graph'].includes(
         dataSource.kind
@@ -576,24 +576,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       } else {
         tokenOptions = newTokenData;
       }
-    }
-    // Auth flow starts in query manager
-    else {
-      let newToken = {};
-
-      // Datasources using third party library for token generation
-      if (['salesforce'].includes(dataSource.kind)) {
-        const queryService = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
-        const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
-        for (const [key, value] of accessDetails) {
-          newToken[key] = value;
-        }
-        if (isMultiAuthEnabled) {
-          newToken['user_id'] = userId;
-        }
-      } else {
-        newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
-      }
+    } else {
+      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
       const tokenData = this.getCurrentToken(
         isMultiAuthEnabled,
         dataSource.options['tokenData']?.value,
@@ -763,7 +747,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return JSON.stringify(errorObj);
   }
 
-  /* this function only for getting auth token for googlesheets and related plugins*/
+  /* This function fetches auth token only for OAuth plugins */
   async fetchAPITokenFromPlugins(
     dataSource: DataSource,
     code: string,
