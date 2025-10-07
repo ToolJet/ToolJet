@@ -16510,79 +16510,6 @@ section.ai-message-prompt-input-wrapper {
       display: none;
     }
 
-    .zero-state-wrapper {
-      margin-bottom: 20px;
-
-      header {
-        .logo {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          display: flex;
-          width: 40px;
-          height: 40px;
-          border-radius: 24px;
-          border: 1px solid var(--border-weak, #e4e7eb);
-          background: var(--background-surface-layer-01, #ffffff);
-        }
-
-        .greeting {
-          margin-top: 12px;
-
-          h1 {
-            margin: 0;
-            color: var(--text-default, #1b1f24);
-            font-size: 16px;
-            font-style: normal;
-            font-weight: 500;
-          }
-
-          p {
-            color: var(--text-placeholder, #6a727c);
-            font-size: 12px;
-            font-style: normal;
-            font-weight: 400;
-            margin-top: 4px;
-          }
-        }
-      }
-
-      .get-started {
-        margin-top: 24px;
-
-        h2 {
-          display: flex;
-          padding: 6px 0px;
-          color: var(--text-placeholder, #6a727c);
-          font-size: 11px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 20px;
-          margin: 0;
-        }
-
-        .suggestion {
-          display: flex;
-          padding: 4px 8px;
-          align-items: center;
-          gap: 4px;
-          border-radius: 6px;
-
-          p {
-            margin: 0;
-            color: var(--text-default, #1b1f24);
-            font-size: 12px;
-            font-style: normal;
-            font-weight: 400;
-          }
-
-          // &:hover {
-          //   background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-          // }
-        }
-      }
-    }
-
     .message-wrapper {
       &+.message-wrapper {
         margin-top: 1.5rem;
@@ -16680,19 +16607,17 @@ section.ai-message-prompt-input-wrapper {
         }
 
         h1 {
-          color: var(--text-default, #1b1f24);
-          font-size: 16px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 24px;
+          font-size: var(--font-size-x-large);
+          font-weight: var(--font-weight-medium);
+          line-height: var(--line-height-x-large);
+          letter-spacing: var(--letter-spacing-x-large);
         }
 
         h2 {
-          color: var(--text-default, #1b1f24);
-          font-size: 12px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 18px;
+          font-size: var(--font-size-large);
+          font-weight: var(--font-weight-medium);
+          line-height: var(--line-height-large);
+          letter-spacing: var(--letter-spacing-large);
         }
 
         .ai-response-section {
