@@ -8,6 +8,13 @@ describe("Globals - Inspector", () => {
     cy.openApp("?key=value");
   });
 
+  after(() => {
+    cy.apiUpdateProfile({
+      firstName: "The",
+      lastName: "developer",
+    });
+  });
+
   it("should verify the values of current user inside globals inspector", () => {
     const dataList = [
       ["email", `"dev@tooljet.io"`],
@@ -41,10 +48,12 @@ describe("Globals - Inspector", () => {
 
       navigateAndVerifyInspector(["globals", "currentUser"], dataListAfter);
     });
+
     cy.apiUpdateProfile({
       firstName: "The",
       lastName: "developer",
     });
+
     cy.apiDeleteApp();
   });
 
