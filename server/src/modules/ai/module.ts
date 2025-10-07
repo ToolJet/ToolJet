@@ -41,7 +41,6 @@ export class AiModule extends SubModule {
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
-        AiService,
         AiUtilService,
         AgentsService,
         ComponentsService,
@@ -58,6 +57,7 @@ export class AiModule extends SubModule {
         EventsService,
         AppsUtilService,
         AiCacheService,
+        ...(isMainImport ? [AiService, AiCacheService] : []),
       ],
       exports: [AiUtilService],
     };
