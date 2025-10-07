@@ -24,3 +24,19 @@ export class PromoteVersionDto {
   @Transform(({ value }) => sanitizeInput(value))
   currentEnvironmentId: string;
 }
+export class DraftVersionDto {
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty({ message: 'Version name cannot be empty.' })
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  versionName: string;
+
+  @IsUUID()
+  @IsOptional()
+  versionFromId: string;
+
+  @IsUUID()
+  @IsOptional()
+  environmentId: string;
+}

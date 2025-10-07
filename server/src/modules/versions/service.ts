@@ -1,8 +1,8 @@
 import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
-import { PromoteVersionDto, VersionCreateDto } from './dto';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { EntityManager, MoreThan } from 'typeorm';
@@ -38,7 +38,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) { }
+  ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -50,6 +50,10 @@ export class VersionService implements IVersionService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
     const { versionName, versionFromId } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      // need to add logic to get the version name -> from the version created at from
+      throw new BadRequestException('Version name cannot be empty.');
+    }
     const { organizationId } = user;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -69,6 +73,8 @@ export class VersionService implements IVersionService {
           currentEnvironmentId: firstPriorityEnv?.id,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
         })
       );
 
@@ -124,7 +130,10 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          app.organizationId
+        );
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -216,7 +225,6 @@ export class VersionService implements IVersionService {
     return;
   }
 
-
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { currentEnvironmentId } = promoteVersionDto;
@@ -279,5 +287,22 @@ export class VersionService implements IVersionService {
         return { editorEnvironment: nextEnvironment, environments };
       }
     });
+  }
+  async createDraftVersion(
+    app: App,
+    user: User,
+    draftVersionDto: DraftVersionDto,
+    manager?: EntityManager
+  ): Promise<void> {
+    const { versionName, versionFromId } = draftVersionDto;
+
+    if (!versionName || versionName.trim().length === 0) {
+      const parentVersion = await this.versionRepository.findVersion(versionFromId);
+      const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
+      const childVersionAppsCount = childVersionApps.length;
+      // Set the auto-generated version name
+      draftVersionDto.versionName = `${parentVersion?.app?.name}_${childVersionAppsCount + 1}`;
+    }
+    return await this.createVersion(app, user, draftVersionDto);
   }
 }

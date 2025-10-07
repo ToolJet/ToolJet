@@ -1,6 +1,7 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
+import { AppVersionStatus } from '@entities/app_version.entity';
 
 export class AppVersionUpdateDto {
   @IsString()
@@ -39,4 +40,7 @@ export class AppVersionUpdateDto {
   @IsOptional()
   @IsBoolean()
   is_user_switched_version: boolean;
+
+  @IsOptional()
+  status: AppVersionStatus;
 }
