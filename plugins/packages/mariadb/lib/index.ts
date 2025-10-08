@@ -151,11 +151,11 @@ export default class Mariadb implements QueryService {
       const cachedConnectionPool = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
       if (cachedConnectionPool) return cachedConnectionPool;
 
-      const connectionPool = await this.buildConnectionPool(sourceOptions);
+      const connectionPool = this.buildConnectionPool(sourceOptions);
       cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connectionPool);
       return connectionPool;
     }
-    return await this.buildConnectionPool(sourceOptions);
+    return this.buildConnectionPool(sourceOptions);
   }
 
   private toJson(data) {
