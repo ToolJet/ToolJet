@@ -59,6 +59,7 @@ export enum FEATURE_KEY {
   LIST_HISTORY = 'list_history',
   RESTORE_HISTORY = 'restore_history',
   UPDATE_DESCRIPTION = 'update_description',
+  STREAM_HISTORY = 'stream_history',
 }
 
 export const MODULE_NAME = 'AppHistory';

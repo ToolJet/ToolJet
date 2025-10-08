@@ -14,5 +14,8 @@ export const FEATURES = {
     [FEATURE_KEY.UPDATE_DESCRIPTION]: {
       license: LICENSE_FIELD.APP_HISTORY,
     },
+    [FEATURE_KEY.STREAM_HISTORY]: {
+      license: LICENSE_FIELD.APP_HISTORY,
+    },
   },
 };

@@ -17,6 +17,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -28,7 +29,6 @@ export class ModulesModule {
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
-    const { AppHistoryModule } = await import(`${importPath}/app-history/module`);
 
     return {
       module: ModulesModule,

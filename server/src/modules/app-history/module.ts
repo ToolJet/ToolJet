@@ -8,6 +8,8 @@ import { FeatureAbilityFactory } from './ability';
 
 @Module({})
 export class AppHistoryModule extends SubModule {
+  private static isProcessorRegistered = false;
+
   static async register(_configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(_configs?.IS_GET_CONTEXT);
 
@@ -35,22 +37,32 @@ export class AppHistoryModule extends SubModule {
       AppHistoryUtilService,
     ];
 
+    // Always register the queue for dependency injection
+    const imports: any[] = [
+      BullModule.registerQueue({
+        name: 'app-history',
+        defaultJobOptions: {
+          removeOnComplete: 10,
+          removeOnFail: 50,
+          attempts: 1,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+        },
+      }),
+    ];
+
+    // Only register the processor once to avoid duplicate handlers
+    if (!this.isProcessorRegistered) {
+      const { HistoryQueueProcessor } = await import(`${importPath}/app-history/queue/history-queue.processor`);
+      providers.push(HistoryQueueProcessor);
+      this.isProcessorRegistered = true;
+    }
+
     return {
       module: AppHistoryModule,
-      imports: [
-        BullModule.registerQueue({
-          name: 'app-history',
-          defaultJobOptions: {
-            removeOnComplete: 10,
-            removeOnFail: 50,
-            attempts: 1,
-            backoff: {
-              type: 'exponential',
-              delay: 2000,
-            },
-          },
-        }),
-      ],
+      imports,
       controllers: [AppHistoryController],
       providers,
       exports: [

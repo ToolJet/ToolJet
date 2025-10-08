@@ -55,7 +55,7 @@ function updateDescription(historyId, data) {
 
 async function streamHistoryUpdates(appVersionId, onMessage, onError = () => {}) {
   const controller = new AbortController();
-  fetchEventSource(`${config.apiUrl}/app-history-sse/apps/versions/${appVersionId}/stream`, {
+  fetchEventSource(`${config.apiUrl}/app-history/apps/versions/${appVersionId}/stream`, {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
