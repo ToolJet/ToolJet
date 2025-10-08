@@ -22,9 +22,6 @@ export class AppHistoryModule extends SubModule {
       `${importPath}/app-history/services/app-state-aggregator.service`
     );
     const { AppStateRepository } = await import(`${importPath}/app-history/repositories/app-state.repository`);
-    const { QueueHistoryIntegrationService } = await import(
-      `${importPath}/app-history/services/queue-history-integration.service`
-    );
     const { AppHistoryUtilService } = await import(`${importPath}/app-history/util.service`);
 
     const providers: any[] = [
@@ -34,7 +31,6 @@ export class AppHistoryModule extends SubModule {
       NameResolverRepository,
       AppStateAggregatorService,
       NameResolverService,
-      QueueHistoryIntegrationService,
       FeatureAbilityFactory,
       VersionRepository,
       AppsRepository,
@@ -76,7 +72,6 @@ export class AppHistoryModule extends SubModule {
         NameResolverRepository,
         AppStateAggregatorService,
         NameResolverService,
-        QueueHistoryIntegrationService,
         AppHistoryUtilService,
         FeatureAbilityFactory,
       ],
