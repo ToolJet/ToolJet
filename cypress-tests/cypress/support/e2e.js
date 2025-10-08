@@ -17,7 +17,7 @@
 import "../commands/commands";
 import "../commands/apiCommands";
 import '../commands/workflowCommands';
-import "cypress-real-events";
+// import "cypress-real-events";
 import "@cypress/code-coverage/support";
 
 // Alternatively you can use CommonJS syntax:
