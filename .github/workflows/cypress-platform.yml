@@ -157,6 +157,18 @@ jobs:
             sleep 5
           done'
 
+      - name: Show ToolJet App logs (1)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (2)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (3)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (4)
+        run: sudo docker logs Tooljet-app
+
       - name: Create Cypress environment file
         id: create-json-tj
         uses: jsdaniell/create-json@1.1.2
