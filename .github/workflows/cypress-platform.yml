@@ -112,14 +112,10 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-
-          # Only add EE-specific env vars if edition is ee
-          if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          fi
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
         run: docker system prune -af
