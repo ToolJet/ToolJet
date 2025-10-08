@@ -1,4 +1,4 @@
-import readXlsxFile from 'read-excel-file';
+import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import JSON5 from 'json5'; // Import JSON5 for more lenient parsing
 
@@ -37,16 +37,22 @@ export const processCSV = (str, delimiter = ',') => {
 
 export const processXls = async (base64Str) => {
   try {
+    // Decode base64 to binary string
     const binary = atob(base64Str.split(',')[1] || base64Str);
-    const len = binary.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
-    const file = new File([bytes], 'upload.xlsx');
-    const rows = await readXlsxFile(file, { includeEmptyRows: false });
-    if (!rows.length) return {};
-    const [headers, ...dataRows] = rows;
-    const data = dataRows.map((r) => Object.fromEntries(headers.map((h, i) => [String(h), r[i] ?? ''])));
-    return { Sheet1: data };
+
+    // Use XLSX library which supports both XLS and XLSX formats
+    const workbook = XLSX.read(binary, { type: 'binary' });
+
+    // Get the first sheet
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+
+    // Convert to JSON with header row
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+    if (!jsonData.length) return {};
+
+    return { Sheet1: jsonData };
   } catch (error) {
     console.error('Error processing XLS/XLSX:', error);
     toast.error('Failed to parse Excel file.');
