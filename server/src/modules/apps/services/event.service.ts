@@ -5,9 +5,13 @@ import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 
 import { CreateEventHandlerDto, UpdateEvent } from '../dto/event';
 import { App } from '@entities/app.entity';
 import { IEventsService } from '../interfaces/services/IEventService';
+import { ACTION_TYPE } from '@modules/app-history/constants';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
 
 @Injectable()
 export class EventsService implements IEventsService {
+  constructor(protected appHistoryUtilService: AppHistoryUtilService) {}
+
   async findEventById(eventId: string): Promise<EventHandler> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
@@ -44,7 +48,7 @@ export class EventsService implements IEventsService {
     });
   }
 
-  async createEvent(eventHandler: CreateEventHandlerDto, versionId) {
+  async createEvent(eventHandler: CreateEventHandlerDto, versionId, skipHistoryCapture: boolean = false) {
     if (!eventHandler.attachedTo) {
       throw new BadRequestException('No attachedTo found');
     }
@@ -57,7 +61,7 @@ export class EventsService implements IEventsService {
       throw new BadRequestException('No event found');
     }
 
-    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       if (
         eventHandler.eventType === 'component' ||
         eventHandler.eventType === 'table_column' ||
@@ -109,10 +113,52 @@ export class EventsService implements IEventsService {
       const event = await manager.save(EventHandler, newEvent);
       return event;
     }, versionId);
+
+    // Skip history capture if requested (e.g., when called from AI service)
+    if (skipHistoryCapture) {
+      return result;
+    }
+
+    // Queue history capture after successful event creation
+    setImmediate(async () => {
+      try {
+        // Resolve component name for better history description
+        let componentName = 'Unknown Component';
+
+        if (eventHandler.attachedTo) {
+          try {
+            const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(
+              eventHandler.attachedTo
+            );
+            componentName = componentWithPage.componentName;
+          } catch (error) {
+            console.error('Failed to resolve component name for event creation:', error);
+          }
+        }
+
+        await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.EVENT_ADD, {
+          eventName: eventHandler.event?.eventId || 'Unknown Event',
+          componentName,
+          componentId: eventHandler.attachedTo,
+          operation: 'create',
+          eventData: {
+            id: result.id,
+            name: eventHandler.event?.eventId,
+            attachedTo: eventHandler.attachedTo,
+            eventType: eventHandler.eventType,
+            index: eventHandler.index,
+          },
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for event creation:', error);
+      }
+    });
+
+    return result;
   }
 
   async updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string) {
-    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
           const { event_id, diff } = event;
@@ -143,6 +189,53 @@ export class EventsService implements IEventsService {
         })
       );
     }, appVersionId);
+
+    // Queue history capture after successful event update
+    setImmediate(async () => {
+      try {
+        const actionType = updateType === 'reorder' ? ACTION_TYPE.EVENT_REORDER : ACTION_TYPE.EVENT_UPDATE;
+
+        // For single event updates, try to resolve names
+        let componentName = 'Unknown Component';
+        let eventName = 'Unknown Event';
+
+        if (events.length === 1 && events[0]) {
+          try {
+            // Get the first event to resolve names
+            const firstEvent = events[0];
+            const eventDetails = await this.findEventById(firstEvent.event_id);
+
+            if (eventDetails) {
+              eventName = eventDetails.name || 'Unknown Event';
+
+              if (eventDetails.sourceId) {
+                const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(
+                  eventDetails.sourceId
+                );
+                componentName = componentWithPage.componentName;
+              }
+            }
+          } catch (error) {
+            console.error('Failed to resolve event/component names:', error);
+          }
+        }
+
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
+          eventName: events.length === 1 ? eventName : undefined,
+          componentName: events.length === 1 ? componentName : undefined,
+          eventCount: events.length,
+          operation: updateType,
+          eventData: events.map((event) => ({
+            id: event.event_id,
+            diff: event.diff,
+          })),
+        });
+      } catch (error) {
+        console.error(`Failed to queue history capture for event ${updateType}:`, error);
+      }
+    });
+
+    return result;
   }
 
   async updateEventsOrderOnDelete(sourceId: string, deletedIndex: number) {
@@ -160,7 +253,7 @@ export class EventsService implements IEventsService {
   }
 
   async deleteEvent(eventId: string, appVersionId: string) {
-    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
         where: { id: eventId },
       });
@@ -180,6 +273,21 @@ export class EventsService implements IEventsService {
       await this.updateEventsOrderOnDelete(sourceId, deletedIndex);
       return deleteResponse;
     }, appVersionId);
+
+    // Queue history capture with minimal data - queue will resolve names from previous state
+    setImmediate(async () => {
+      try {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.EVENT_DELETE, {
+          eventId,
+          operation: 'delete',
+          // No need to pre-fetch eventName or componentName - queue processor will resolve from history
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for event deletion:', error);
+      }
+    });
+
+    return result;
   }
 
   getEvents(app: App, sourceId: string): Promise<EventHandler[]> {

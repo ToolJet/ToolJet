@@ -6,7 +6,6 @@ import { AppsRepository } from '@modules/apps/repository';
 import { BullModule } from '@nestjs/bull';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
-import { NameResolverService } from '@modules/app-history/services/name-resolver.service';
 import { AppHistoryRepository } from '@modules/app-history/repository';
 @Module({})
 export class AppHistoryModule extends SubModule {
@@ -29,7 +28,6 @@ export class AppHistoryModule extends SubModule {
       AppStateRepository,
       NameResolverRepository,
       AppStateAggregatorService,
-      NameResolverService,
       FeatureAbilityFactory,
       VersionRepository,
       AppsRepository,
@@ -69,7 +67,6 @@ export class AppHistoryModule extends SubModule {
         AppStateRepository,
         NameResolverRepository,
         AppStateAggregatorService,
-        NameResolverService,
         AppHistoryUtilService,
         FeatureAbilityFactory,
       ],
