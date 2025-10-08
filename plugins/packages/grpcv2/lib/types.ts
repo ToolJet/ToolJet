@@ -38,8 +38,11 @@ export interface GrpcErrorDetails extends Record<string, unknown> {
 
 export type SourceOptions = {
   url: string;
-  proto_files: 'server_reflection' | 'import_proto_file';
+  proto_files: 'server_reflection' | 'import_proto_file' | 'import_protos_from_filesystem';
   proto_file_url?: string;
+  // Filesystem proto files
+  proto_files_directory?: string;
+  proto_files_pattern?: string;
   auth_type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'api_key';
   username?: string;
   password?: string;

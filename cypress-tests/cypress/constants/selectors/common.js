@@ -183,8 +183,8 @@ export const commonSelectors = {
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
   confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
-  labelEmailInput: '[data-cy="email-label"]',
-  inputFieldEmailAddress: '[data-cy="email-input"]',
+  labelEmailInput: '[data-cy="email-address-label"]',
+  inputFieldEmailAddress: '[data-cy="email-address-input"]',
   closeButton: '[data-cy="close-button"]',
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
@@ -236,7 +236,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
   inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
-  groupInputFieldLabel: '[data-cy="user-group-label"]',
+  groupInputFieldLabel: '[data-cy="select-group-label"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
   yesButton: '[data-cy="yes-button"]',
 

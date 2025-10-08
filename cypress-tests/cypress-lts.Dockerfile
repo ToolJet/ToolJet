@@ -39,9 +39,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins ci --omit=dev
+RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build && npm --prefix plugins prune --omit=dev
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
 
@@ -108,18 +109,6 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install Neo4j + APOC
-RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
-    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
-    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
-    mkdir -p /var/lib/neo4j/plugins && \
-    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
 
@@ -150,66 +139,23 @@ RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
 
 
 # Copy application with ownership set directly to avoid chown -R
-COPY --from=builder --chown=appuser:0 /app/package.json ./app/package.json
-COPY --from=builder --chown=appuser:0 /app/plugins/dist ./app/plugins/dist
-COPY --from=builder --chown=appuser:0 /app/plugins/client.js ./app/plugins/client.js
-COPY --from=builder --chown=appuser:0 /app/plugins/node_modules ./app/plugins/node_modules
-COPY --from=builder --chown=appuser:0 /app/plugins/packages/common ./app/plugins/packages/common
-COPY --from=builder --chown=appuser:0 /app/plugins/package.json ./app/plugins/package.json
-COPY --from=builder --chown=appuser:0 /app/frontend/build ./app/frontend/build
-COPY --from=builder --chown=appuser:0 /app/server/package.json ./app/server/package.json
-COPY --from=builder --chown=appuser:0 /app/server/.version ./app/server/.version
-COPY --from=builder --chown=appuser:0 /app/server/ee/keys ./app/server/ee/keys
-COPY --from=builder --chown=appuser:0 /app/server/node_modules ./app/server/node_modules
-COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templates
-COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
-COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
-COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
+COPY --from=builder /app/package.json ./app/package.json
+COPY --from=builder /app/plugins/dist ./app/plugins/dist
+COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+COPY --from=builder /app/frontend/build ./app/frontend/build
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
-# Set group write permissions for frontend build files to support RedHat arbitrary user assignment
-RUN chmod -R g+w /app/frontend/build
-
-RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
-    chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
-    chmod -R 770 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
-    chmod -R 644 /var/lib/neo4j/plugins/*.jar && \
-    chown -R appuser:0 /var/lib/neo4j/plugins && \
-    chmod 755 /var/lib/neo4j/plugins
-
-# Create directory /home/appuser and set ownership to appuser
-RUN mkdir -p /home/appuser \
-    && chown -R appuser:0 /home/appuser \
-    && chmod g+s /home/appuser \
-    && chmod -R g=u /home/appuser \
-    && npm cache clean --force
-
-# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/ \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/ \
-    && chmod g+s /tmp/.npm/npm-cache/ \
-    && chmod -R g=u /tmp/.npm/npm-cache \
-    && npm cache clean --force
-
-# Set npm cache directory globally
-RUN npm config set cache /tmp/.npm/npm-cache/ --global
-ENV npm_config_cache /tmp/.npm/npm-cache/
-
-# Create directory /tmp/.npm/npm-cache/_logs and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/_logs \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/_logs \
-    && chmod g+s /tmp/.npm/npm-cache/_logs \
-    && chmod -R g=u /tmp/.npm/npm-cache/_logs
-
-# Create Redis data, log, and configuration directories
-RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
-    && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
-    && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
-    && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
-
-ENV HOME=/home/appuser
-# Switch back to appuser
-USER appuser
 WORKDIR /app
 
 RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
