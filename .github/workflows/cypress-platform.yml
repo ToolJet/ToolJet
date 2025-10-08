@@ -22,11 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         edition:
-          - ${{ 
-              (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-              contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
-              contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
-              contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || ''
+          - ${{
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || ''
             }}
         exclude:
           - edition: ""
@@ -118,9 +118,11 @@ jobs:
             echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
             echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
             echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
             echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
           fi
+
+      - name: clean up old docker containers
+        run: docker system prune -af
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -189,7 +191,7 @@ jobs:
   Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -249,7 +251,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
 
       - name: Set up environment variables
         run: |
@@ -323,7 +324,7 @@ jobs:
           until curl --silent --fail http://localhost:3000/apps; do
             sleep 5
           done'
-          
+
       - name: Create Cypress environment file
         id: create-json-tj-subpath
         uses: jsdaniell/create-json@1.1.2
@@ -351,7 +352,7 @@ jobs:
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -504,7 +505,6 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
-      
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -525,7 +525,7 @@ jobs:
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -586,7 +586,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
 
       - name: Set up environment variables
         run: |
@@ -678,7 +677,6 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
-
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
