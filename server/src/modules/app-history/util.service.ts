@@ -12,8 +12,8 @@ import { TransactionLogger } from '@modules/logging/service';
 @Injectable()
 export class AppHistoryUtilService {
   constructor(
-    @InjectQueue('app-history') private readonly historyQueue: Queue,
-    private readonly logger: TransactionLogger
+    @InjectQueue('app-history') protected readonly historyQueue: Queue,
+    protected readonly logger: TransactionLogger
   ) {}
 
   /**

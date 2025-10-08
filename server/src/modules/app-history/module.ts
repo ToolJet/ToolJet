@@ -7,7 +7,7 @@ import { BullModule } from '@nestjs/bull';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
 import { NameResolverService } from '@modules/app-history/services/name-resolver.service';
-
+import { AppHistoryRepository } from '@modules/app-history/repository';
 @Module({})
 export class AppHistoryModule extends SubModule {
   private static isProcessorRegistered = false;
@@ -17,7 +17,6 @@ export class AppHistoryModule extends SubModule {
 
     const { AppHistoryController } = await import(`${importPath}/app-history/controller`);
     const { AppHistoryService } = await import(`${importPath}/app-history/service`);
-    const { AppHistoryRepository } = await import(`${importPath}/app-history/repository`);
     const { AppStateAggregatorService } = await import(
       `${importPath}/app-history/services/app-state-aggregator.service`
     );
@@ -67,7 +66,6 @@ export class AppHistoryModule extends SubModule {
       providers,
       exports: [
         AppHistoryService,
-        AppHistoryRepository,
         AppStateRepository,
         NameResolverRepository,
         AppStateAggregatorService,
