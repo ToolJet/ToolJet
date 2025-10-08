@@ -49,7 +49,7 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    const { versionName, versionFromId } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
     if (!versionName || versionName.trim().length === 0) {
       // need to add logic to get the version name -> from the version created at from
       throw new BadRequestException('Version name cannot be empty.');
@@ -75,6 +75,7 @@ export class VersionService implements IVersionService {
           updatedAt: new Date(),
           status: AppVersionStatus.DRAFT,
           parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
+          description: versionDescription ? versionDescription : null,
         })
       );
 

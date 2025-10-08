@@ -16,6 +16,9 @@ export class VersionCreateDto {
   @IsUUID()
   @IsOptional()
   environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
 }
 
 export class PromoteVersionDto {
@@ -39,4 +42,7 @@ export class DraftVersionDto {
   @IsUUID()
   @IsOptional()
   environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
 }
