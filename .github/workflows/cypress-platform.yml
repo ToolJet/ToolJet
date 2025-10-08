@@ -149,6 +149,17 @@ jobs:
 
       - name: docker logs
         run: sudo docker logs Tooljet-app
+      - name: Show ToolJet App logs (1)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (2)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (3)
+        run: sudo docker logs Tooljet-app
+
+      - name: Show ToolJet App logs (4)
+        run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
