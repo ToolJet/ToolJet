@@ -1254,7 +1254,12 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        const executionResponse = await workflowExecutionsService.trigger(
+          workflowAppId,
+          resolvedParams,
+          appEnvId,
+          query.id
+        );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
         return { data: e?.message, status: 'failed' };
