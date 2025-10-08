@@ -52,46 +52,23 @@ export class ComponentsService implements IComponentsService {
     }
 
     // Queue history capture after successful component creation
-    // Note: This runs asynchronously and will not block the API response
-    // If this fails, it won't affect the component creation
-    setImmediate(async () => {
-      try {
-        // Extract component data directly from componentDiff
-        const componentData = componentDiff as Record<string, any>;
-        const componentIds = Object.keys(componentData);
+    try {
+      // Extract component IDs - let the queue processor resolve names from componentData
+      const componentData = componentDiff as Record<string, any>;
+      const componentIds = Object.keys(componentData);
 
-        // Extract component names from the creation data
-        const componentNames = componentIds.map((id) => {
-          const component = componentData[id];
-          // Use component name, fallback to type, then to 'Unknown Component'
-          return component?.name || component?.type || 'Unknown Component';
-        });
-
-        // Resolve page name (with fallback)
-        let pageName = 'Unknown Page';
-        try {
-          const resolvedPageNames = await this.appHistoryUtilService.resolvePageNames([pageId]);
-          pageName = resolvedPageNames[pageId] || 'Unknown Page';
-        } catch (error) {
-          console.error('Failed to resolve page name for history:', error);
-          // Continue with fallback name - don't block history capture
-        }
-
-        // Queue the history capture
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_ADD, {
-          pageId,
-          pageName,
-          componentNames,
-          componentIds,
-          operation: 'create',
-          componentData: componentDiff,
-        });
-      } catch (error) {
-        // Log the error but don't throw - component creation already succeeded
-        console.error('Failed to queue history capture for component creation:', error);
-        // History capture failure doesn't affect the component creation success
-      }
-    });
+      // The queue processor will resolve names from componentData and previous state
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_ADD, {
+        pageId,
+        componentIds,
+        operation: 'create',
+        componentData: componentDiff,
+      });
+    } catch (error) {
+      // Log the error but don't throw - component creation already succeeded
+      console.error('Failed to queue history capture for component creation:', error);
+      // History capture failure doesn't affect the component creation success
+    }
 
     return result;
   }
@@ -105,30 +82,19 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
 
     // Queue history capture after successful component update
-    setImmediate(async () => {
-      try {
-        // Resolve names for better history descriptions
-        const componentIds = Object.keys(componentDiff);
-        if (componentIds.length > 0) {
-          // Get page info for first component to determine page name
-          const firstComponentId = componentIds[0];
-          const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(firstComponentId);
-          const resolvedNames = await this.appHistoryUtilService.resolveComponentNames(componentIds);
-
-          const componentNames = componentIds.map((id) => resolvedNames[id] || 'Unnamed Component');
-
-          await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
-            componentNames,
-            pageName: componentWithPage.pageName,
-            componentIds,
-            operation: 'update',
-            componentData: componentDiff,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to queue history capture for component update:', error);
+    try {
+      // Extract component IDs - let the queue processor resolve names from componentData and previous state
+      const componentIds = Object.keys(componentDiff);
+      if (componentIds.length > 0) {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
+          componentIds,
+          operation: 'update',
+          componentData: componentDiff,
+        });
       }
-    });
+    } catch (error) {
+      console.error('Failed to queue history capture for component update:', error);
+    }
 
     return result;
   }
@@ -141,19 +107,17 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
-    // Queue history capture with minimal data - queue will resolve names from previous state
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_DELETE, {
-          componentIds,
-          operation: 'delete',
-          isComponentCut,
-          // No need to pre-fetch componentNames or pageName - queue processor will resolve from history
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for component deletion:', error);
-      }
-    });
+    // Queue history capture
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_DELETE, {
+        componentIds,
+        operation: 'delete',
+        isComponentCut,
+        // No need to pre-fetch componentNames or pageName - queue processor will resolve from history
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for component deletion:', error);
+    }
 
     return result;
   }
@@ -201,29 +165,19 @@ export class ComponentsService implements IComponentsService {
     }
 
     // Queue history capture after successful layout change
-    setImmediate(async () => {
-      try {
-        // Resolve names for better history descriptions
-        const componentIds = Object.keys(componenstLayoutDiff);
-        if (componentIds.length > 0) {
-          const firstComponentId = componentIds[0];
-          const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(firstComponentId);
-          const resolvedNames = await this.appHistoryUtilService.resolveComponentNames(componentIds);
-
-          const componentNames = componentIds.map((id) => resolvedNames[id] || 'Unnamed Component');
-
-          await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
-            componentNames,
-            pageName: componentWithPage.pageName,
-            componentIds,
-            operation: 'layout_change',
-            layoutData: componenstLayoutDiff,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to queue history capture for component layout change:', error);
+    try {
+      // Extract component IDs - let the queue processor resolve names from layoutData and previous state
+      const componentIds = Object.keys(componenstLayoutDiff);
+      if (componentIds.length > 0) {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
+          componentIds,
+          operation: 'layout_change',
+          layoutData: componenstLayoutDiff,
+        });
       }
-    });
+    } catch (error) {
+      console.error('Failed to queue history capture for component layout change:', error);
+    }
 
     return result;
   }
@@ -386,32 +340,24 @@ export class ComponentsService implements IComponentsService {
     }, appVersionId);
 
     // Queue history capture after successful batch operations
-    setImmediate(async () => {
-      try {
-        // For batch operations, try to resolve component names if available
-        const componentIds = Object.keys(batchOperations || {});
-        let changeDescription = 'batch operations';
+    try {
+      // For batch operations, let the queue processor resolve names from batchData
+      // Extract all component IDs from all operations
+      const allComponentIds = [
+        ...(batchOperations.create ? Object.keys(batchOperations.create.diff) : []),
+        ...(batchOperations.update ? Object.keys(batchOperations.update.diff) : []),
+        ...(batchOperations.delete ? batchOperations.delete.diff : []),
+      ];
 
-        if (componentIds.length > 0) {
-          try {
-            const resolvedNames = await this.appHistoryUtilService.resolveComponentNames(componentIds);
-            const componentNames = componentIds.map((id) => resolvedNames[id] || 'component').join(', ');
-            changeDescription = `${componentIds.length} component changes (${componentNames})`;
-          } catch (error) {
-            console.error('Failed to resolve component names for batch operations:', error);
-          }
-        }
-
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.BATCH_UPDATE, {
-          changeCount: componentIds.length,
-          description: changeDescription,
-          operation: 'batch_operations',
-          batchData: batchOperations,
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for batch operations:', error);
-      }
-    });
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.BATCH_UPDATE, {
+        componentIds: allComponentIds,
+        changeCount: allComponentIds.length,
+        operation: 'batch_operations',
+        batchData: batchOperations,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for batch operations:', error);
+    }
 
     return result;
   }

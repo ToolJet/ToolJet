@@ -274,18 +274,15 @@ export class EventsService implements IEventsService {
       return deleteResponse;
     }, appVersionId);
 
-    // Queue history capture with minimal data - queue will resolve names from previous state
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.EVENT_DELETE, {
-          eventId,
-          operation: 'delete',
-          // No need to pre-fetch eventName or componentName - queue processor will resolve from history
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for event deletion:', error);
-      }
-    });
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.EVENT_DELETE, {
+        eventId,
+        operation: 'delete',
+        // No need to pre-fetch eventName or componentName - queue processor will resolve from history
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for event deletion:', error);
+    }
 
     return result;
   }

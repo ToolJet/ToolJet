@@ -83,19 +83,17 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     // Queue history capture after successful data query creation
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(dataQueryDto.app_version_id, ACTION_TYPE.QUERY_ADD, {
-          queryName: dataQueryDto.name || 'Unnamed Query',
-          queryId: result.id,
-          operation: 'create',
-          queryData: dataQueryDto,
-          userId: user?.id,
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for data query creation:', error);
-      }
-    });
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(dataQueryDto.app_version_id, ACTION_TYPE.QUERY_ADD, {
+        queryName: dataQueryDto.name || 'Unnamed Query',
+        queryId: result.id,
+        operation: 'create',
+        queryData: dataQueryDto,
+        userId: user?.id,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for data query creation:', error);
+    }
 
     return result;
   }
@@ -114,31 +112,17 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     // Queue history capture after successful data query update
-    setImmediate(async () => {
-      try {
-        // Resolve query name for better history description
-        let queryName = updateDataQueryDto.name || 'Unnamed Query';
-
-        if (!updateDataQueryDto.name) {
-          try {
-            const resolvedNames = await this.appHistoryUtilService.resolveQueryNames([dataQueryId]);
-            queryName = resolvedNames[dataQueryId] || 'Unnamed Query';
-          } catch (error) {
-            console.error('Failed to resolve query name:', error);
-          }
-        }
-
-        await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.QUERY_UPDATE, {
-          queryName,
-          queryId: dataQueryId,
-          operation: 'update',
-          queryData: updateDataQueryDto,
-          userId: user?.id,
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for data query update:', error);
-      }
-    });
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.QUERY_UPDATE, {
+        queryName: updateDataQueryDto.name || 'Unnamed Query',
+        queryId: dataQueryId,
+        operation: 'update',
+        queryData: updateDataQueryDto,
+        userId: user?.id,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for data query update:', error);
+    }
   }
 
   async delete(dataQueryId: string) {
@@ -161,17 +145,15 @@ export class DataQueriesService implements IDataQueriesService {
 
     // Queue history capture with minimal data - queue will resolve name from previous state
     if (appVersionId) {
-      setImmediate(async () => {
-        try {
-          await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.QUERY_DELETE, {
-            queryId: dataQueryId,
-            operation: 'delete',
-            // No need to pre-fetch queryName - queue processor will resolve from history
-          });
-        } catch (error) {
-          console.error('Failed to queue history capture for data query deletion:', error);
-        }
-      });
+      try {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.QUERY_DELETE, {
+          queryId: dataQueryId,
+          operation: 'delete',
+          // No need to pre-fetch queryName - queue processor will resolve from history
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for data query deletion:', error);
+      }
     }
   }
 

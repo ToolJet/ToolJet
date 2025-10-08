@@ -95,26 +95,24 @@ export class VersionService implements IVersionService {
       return decamelizeKeys(appVersion);
     });
 
-    // Queue initial history capture asynchronously for the created version
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(
-          result.id,
-          ACTION_TYPE.INITIAL_SNAPSHOT,
-          {
-            operation: 'version_create',
-            versionName: versionCreateDto.versionName,
-            versionFromId: versionCreateDto.versionFromId,
-            appId: app.id,
-            appName: app.name,
-          },
-          false,
-          user.id
-        );
-      } catch (error) {
-        console.error('Failed to queue initial history capture for version creation:', error);
-      }
-    });
+    // Queue initial history capture for the created version
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(
+        result.id,
+        ACTION_TYPE.INITIAL_SNAPSHOT,
+        {
+          operation: 'version_create',
+          versionName: versionCreateDto.versionName,
+          versionFromId: versionCreateDto.versionFromId,
+          appId: app.id,
+          appName: app.name,
+        },
+        false,
+        user.id
+      );
+    } catch (error) {
+      console.error('Failed to queue initial history capture for version creation:', error);
+    }
 
     return result;
   }
@@ -233,18 +231,16 @@ export class VersionService implements IVersionService {
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
-    // Queue history capture asynchronously for settings changes
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersion.id, ACTION_TYPE.GLOBAL_SETTINGS_UPDATE, {
-          operation: 'update_settings',
-          settings: appVersionUpdateDto.globalSettings || appVersionUpdateDto,
-          settingsType: 'global',
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for settings update:', error);
-      }
-    });
+    // Queue history capture for settings changes
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersion.id, ACTION_TYPE.GLOBAL_SETTINGS_UPDATE, {
+        operation: 'update_settings',
+        settings: appVersionUpdateDto.globalSettings || appVersionUpdateDto,
+        settingsType: 'global',
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for settings update:', error);
+    }
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 

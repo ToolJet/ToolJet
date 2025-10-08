@@ -52,22 +52,20 @@ export class PageService implements IPageService {
     }, appVersionId);
 
     // Queue history capture after successful page creation
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_ADD, {
-          operation: 'create',
-          pageId: result.id,
-          pageName: result.name,
-          pageData: {
-            name: result.name,
-            handle: result.handle,
-            type: result.type,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for page creation:', error);
-      }
-    });
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_ADD, {
+        operation: 'create',
+        pageId: result.id,
+        pageName: result.name,
+        pageData: {
+          name: result.name,
+          handle: result.handle,
+          type: result.type,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for page creation:', error);
+    }
 
     return result;
   }
@@ -326,22 +324,20 @@ export class PageService implements IPageService {
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
     // Queue history capture after successful page reordering
-    setImmediate(async () => {
-      try {
-        // Extract page IDs and their new indexes from the diff
-        const reorderData = diff.diff || diff;
-        const pageIds = Object.keys(reorderData);
+    try {
+      // Extract page IDs and their new indexes from the diff
+      const reorderData = diff.diff || diff;
+      const pageIds = Object.keys(reorderData);
 
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_REORDER, {
-          operation: 'reorder',
-          pageIds,
-          reorderData,
-          affectedCount: pageIds.length,
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for page reordering:', error);
-      }
-    });
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_REORDER, {
+        operation: 'reorder',
+        pageIds,
+        reorderData,
+        affectedCount: pageIds.length,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for page reordering:', error);
+    }
 
     return result;
   }
@@ -363,24 +359,22 @@ export class PageService implements IPageService {
     });
 
     // Queue history capture after successful page update
-    setImmediate(async () => {
-      try {
-        // Check if this is a page settings update (non-layout properties)
-        const settingsProperties = ['disabled', 'hidden', 'url', 'openIn', 'type', 'icon', 'name', 'handle'];
-        const isSettingsUpdate = Object.keys(pageUpdates.diff).some((key) => settingsProperties.includes(key));
+    try {
+      // Check if this is a page settings update (non-layout properties)
+      const settingsProperties = ['disabled', 'hidden', 'url', 'openIn', 'type', 'icon', 'name', 'handle'];
+      const isSettingsUpdate = Object.keys(pageUpdates.diff).some((key) => settingsProperties.includes(key));
 
-        const actionType = isSettingsUpdate ? ACTION_TYPE.PAGE_SETTINGS_UPDATE : ACTION_TYPE.PAGE_UPDATE;
+      const actionType = isSettingsUpdate ? ACTION_TYPE.PAGE_SETTINGS_UPDATE : ACTION_TYPE.PAGE_UPDATE;
 
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
-          operation: isSettingsUpdate ? 'update_page_settings' : 'page_update',
-          pageId: pageUpdates.pageId,
-          pageData: pageUpdates.diff,
-          isSettingsUpdate,
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for page update:', error);
-      }
-    });
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
+        operation: isSettingsUpdate ? 'update_page_settings' : 'page_update',
+        pageId: pageUpdates.pageId,
+        pageData: pageUpdates.diff,
+        isSettingsUpdate,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for page update:', error);
+    }
 
     return result;
   }
@@ -423,18 +417,16 @@ export class PageService implements IPageService {
     }, appVersionId);
 
     // Queue history capture with minimal data - queue will resolve name from previous state
-    setImmediate(async () => {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_DELETE, {
-          operation: 'delete',
-          pageId: pageId,
-          deleteAssociatedPages,
-          // No need to pre-fetch pageName - queue processor will resolve from history
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for page deletion:', error);
-      }
-    });
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_DELETE, {
+        operation: 'delete',
+        pageId: pageId,
+        deleteAssociatedPages,
+        // No need to pre-fetch pageName - queue processor will resolve from history
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for page deletion:', error);
+    }
 
     return result;
   }
