@@ -224,7 +224,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-    return newParentId === 'canvas' ? 'real-canvas' : newParentId;
+    return newParentId === 'canvas' ? undefined : newParentId;
   } else {
     const [slotId] = document
       .elementsFromPoint(event.clientX, event.clientY)
