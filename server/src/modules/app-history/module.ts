@@ -5,6 +5,8 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { BullModule } from '@nestjs/bull';
 import { FeatureAbilityFactory } from './ability';
+import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
+import { NameResolverService } from '@modules/app-history/services/name-resolver.service';
 
 @Module({})
 export class AppHistoryModule extends SubModule {
@@ -20,8 +22,6 @@ export class AppHistoryModule extends SubModule {
       `${importPath}/app-history/services/app-state-aggregator.service`
     );
     const { AppStateRepository } = await import(`${importPath}/app-history/repositories/app-state.repository`);
-    const { NameResolverRepository } = await import(`${importPath}/app-history/repositories/name-resolver.repository`);
-    const { NameResolverService } = await import(`${importPath}/app-history/services/name-resolver.service`);
     const { QueueHistoryIntegrationService } = await import(
       `${importPath}/app-history/services/queue-history-integration.service`
     );
