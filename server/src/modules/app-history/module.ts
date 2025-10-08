@@ -19,6 +19,7 @@ export class AppHistoryModule extends SubModule {
     const { AppStateAggregatorService } = await import(
       `${importPath}/app-history/services/app-state-aggregator.service`
     );
+    const { AppStateRepository } = await import(`${importPath}/app-history/repositories/app-state.repository`);
     const { NameResolverService } = await import(`${importPath}/app-history/services/name-resolver.service`);
     const { QueueHistoryIntegrationService } = await import(
       `${importPath}/app-history/services/queue-history-integration.service`
@@ -28,6 +29,7 @@ export class AppHistoryModule extends SubModule {
     const providers: any[] = [
       AppHistoryService,
       AppHistoryRepository,
+      AppStateRepository,
       AppStateAggregatorService,
       NameResolverService,
       QueueHistoryIntegrationService,
@@ -68,6 +70,7 @@ export class AppHistoryModule extends SubModule {
       exports: [
         AppHistoryService,
         AppHistoryRepository,
+        AppStateRepository,
         AppStateAggregatorService,
         NameResolverService,
         QueueHistoryIntegrationService,
