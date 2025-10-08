@@ -62,14 +62,7 @@ export class AppHistoryModule extends SubModule {
       imports,
       controllers: [AppHistoryController],
       providers,
-      exports: [
-        AppHistoryService,
-        AppStateRepository,
-        NameResolverRepository,
-        AppStateAggregatorService,
-        AppHistoryUtilService,
-        FeatureAbilityFactory,
-      ],
+      exports: [AppHistoryUtilService],
     };
   }
 }
