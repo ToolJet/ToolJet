@@ -152,7 +152,7 @@
     "url-join": "^5.0.0",
     "use-react-router-breadcrumbs": "^4.0.1",
     "uuid": "9.0.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "y-websocket": "^1.4.5",
     "yjs": "^13.5.46",
     "zipcelx": "^1.6.2",
