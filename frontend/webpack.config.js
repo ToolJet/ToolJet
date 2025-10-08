@@ -190,6 +190,11 @@ module.exports = {
           },
           {
             loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                silenceDeprecations: ['global-builtin', 'import', 'color-functions'],
+              },
+            },
           },
         ],
       },
@@ -221,6 +226,9 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
+    },
+    client: {
+      overlay: false,
     },
   },
   output: {
