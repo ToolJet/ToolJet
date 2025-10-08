@@ -131,7 +131,8 @@ jobs:
           elif [ "${{ matrix.edition }}" = "ee" ]; then
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
-
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
       - name: Install Docker Compose
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -143,18 +144,10 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
+      - name: sleep
+        run: sleep 30
+
       - name: docker logs
-        run: sudo docker logs Tooljet-app
-      - name: Show ToolJet App logs (1)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (2)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (3)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (4)
         run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
@@ -163,18 +156,6 @@ jobs:
           until curl --silent --fail http://localhost:3000; do
             sleep 5
           done'
-
-      - name: Show ToolJet App logs (1)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (2)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (3)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (4)
-        run: sudo docker logs Tooljet-app
 
       - name: Create Cypress environment file
         id: create-json-tj
