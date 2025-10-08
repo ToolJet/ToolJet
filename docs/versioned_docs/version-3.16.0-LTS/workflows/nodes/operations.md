@@ -5,7 +5,7 @@ title: Node Operations
 
 <br/>
 
-You can perform the following operation on the workflow nodes:
+You can perform the following operation on the nodes:
 
 ### Error Handling
 
