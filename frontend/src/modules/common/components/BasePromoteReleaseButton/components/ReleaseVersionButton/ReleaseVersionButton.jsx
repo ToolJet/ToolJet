@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from '@/AppBuilder/Header/ReleaseConfirmation';
 import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+
+import { Globe } from 'lucide-react';
+import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -67,23 +69,25 @@ const ReleaseVersionButton = function DeployVersionButton() {
         onConfirm={onReleaseConfirm}
       />
       <div>
-        <ButtonSolid
-          data-cy={`button-release`}
-          className={cx('release-button', {
-            'btn-loading': isReleasing,
-            'released-button': isVersionReleased,
-          })}
-          disabled={isVersionReleased || !isReleaseVersionEnabled}
-          onClick={onReleaseButtonClick}
+        <ToolTip
+          message="You don't have access to release application. Contact admin to know more."
+          placement="bottom"
+          show={!isReleaseVersionEnabled}
         >
-          <ToolTip
-            message="You don't have access to release application. Contact admin to know more."
-            placement="bottom"
-            show={!isReleaseVersionEnabled}
+          <Button
+            variant="secondary"
+            data-cy={`button-release`}
+            className={cx('tw-text-text-default',{
+              'released-button': isVersionReleased,
+            })}
+            isLoading={isReleasing}
+            disabled={isVersionReleased}
+            onClick={onReleaseButtonClick}
           >
-            <div>{isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}</div>
-          </ToolTip>
-        </ButtonSolid>
+            <Globe width="16" height="16" className="tw-text-icon-accent" />
+            {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+          </Button>
+        </ToolTip>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 export const ssoText = {
   pagetitle: " Workspace login",
+
   workspaceLoginPage: {
     enableSignupLabel: "Enable Signup",
     helperText: "New account will be created for user's first time SSO sign in",
@@ -62,6 +63,21 @@ export const ssoText = {
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get locked out",
   toggleUpdateToast: (toggle) => {
-    return `Saved ${toggle} SSO configurations`
-  }
+    return `Saved ${toggle} SSO configurations`;
+  },
+};
+
+export const ssoEeText = {
+  samlModalElements: {
+    toggleLabel: "SAML",
+    NameLabel: "Name",
+    metaDataLabel: "Identity provider metadata",
+    baseDNHelperText:
+      "Ensure the Identity provider metadata is in XML format. You can download it from your IdP's site",
+    groupAttributeLabel: "Group attribute",
+    groupAttributeHelperText:
+      "Define attribute for user-to-group mapping based on the IdP",
+  },
+  enabledLabel: "Enabled",
+  testclientId: "test-client-id",
 };

@@ -123,9 +123,9 @@ describe("Data source GraphQL", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
-    cy.get(commonSelectors.appCreateButton).click();
+    cy.get("[data-cy=create-new-apps-button]").click();
     cy.get(commonSelectors.appNameInput).click().type(data.dsName);
-    cy.get(commonSelectors.createAppButton).click();
+    cy.get('[data-cy="create-app"]').click();
     cy.skipWalkthrough();
 
     cy.get('[data-cy="show-ds-popover-button"]').click();

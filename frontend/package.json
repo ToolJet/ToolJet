@@ -76,6 +76,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.28",
     "lodash": "^4.17.21",
+    "lucide-react": "^0.525.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
     "papaparse": "^5.3.2",
