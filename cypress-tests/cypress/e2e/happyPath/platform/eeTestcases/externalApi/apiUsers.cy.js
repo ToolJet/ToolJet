@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import {
-    createUser, getAllUsers, getUser, updateUser, createGroup, validateUserInGroup, updateUserRole,
+    createUser, getAllUsers, getUser, updateUser, createGroup, verifyUserInGroups, updateUserRole,
     getAllWorkspaces, replaceUserWorkspace, replaceUserWorkspacesRelations
-} from 'Support/utils/api';
+} from 'Support/utils/externalApi';
 import { groupsSelector } from "Selectors/manageGroups";
 import { commonSelectors } from 'Selectors/common';
 import { searchUser, navigateToManageUsers, logout, navigateToManageGroups } from 'Support/utils/common';
@@ -102,9 +102,9 @@ describe("API Test", () => {
                     cy.get("td small").should("have.text", "active");
                 });
 
-            validateUserInGroup(data.email, "my-workspace", "end-user");
-            validateUserInGroup(data.email, data.workspaceSlug, "builder");
-            validateUserInGroup(data.email, data.workspaceSlug1, "admin", false);
+            verifyUserInGroups(data.email, ["end-user"]);
+            verifyUserInGroups(data.email, ["builder"], true, data.workspaceSlug);
+            verifyUserInGroups(data.email, ["admin"], false, data.workspaceSlug1);
             cy.apiLogout();
 
             cy.apiLogin(data.email, "password");
@@ -213,8 +213,8 @@ describe("API Test", () => {
 
         // Replace user workspaces relations
         cy.apiLogin();
-        validateUserInGroup(updatedUserData.email, "my-workspace", data.group2);
-        validateUserInGroup(updatedUserData.email, data.workspaceSlug, data.group3);
+        verifyUserInGroups(updatedUserData.email, [data.group2]);
+        verifyUserInGroups(updatedUserData.email, [data.group3], true, data.workspaceSlug);
         cy.visit(data.workspaceSlug1);
         navigateToManageUsers();
         searchUser(updatedUserData.email);
@@ -227,8 +227,8 @@ describe("API Test", () => {
             expect(response.status).to.eq(200);
         });
         navigateToManageUsers();
-        validateUserInGroup(updatedUserData.email, "my-workspace", data.group2, false);
-        validateUserInGroup(updatedUserData.email, data.workspaceSlug, data.group3, false);
+        verifyUserInGroups(updatedUserData.email, [data.group2], false, "my-workspace");
+        verifyUserInGroups(updatedUserData.email, [data.group3], false, data.workspaceSlug);
 
         cy.visit(data.workspaceSlug1);
         navigateToManageUsers();
@@ -267,14 +267,14 @@ describe("API Test", () => {
                 .then((response) => {
                     expect(response.status).to.eq(200);
                 });
-            validateUserInGroup(userData2.email, "my-workspace", "builder");
+            verifyUserInGroups(userData2.email, ["builder"], true, "my-workspace");
 
             //update role to end-user and validate user is removed from builder's group
             updateUserRole(workspaceId1, { newRole: "end-user", userId: userId1 })
                 .then((response) => {
                     expect(response.status).to.eq(200);
                 });
-            validateUserInGroup(userData2.email, "my-workspace", data.group5, false);
+            verifyUserInGroups(userData2.email, [data.group5], false);
 
             // update role to builders and validate app's owner role can't be updated
             updateUserRole(workspaceId1, { newRole: "builder", userId: userId1 })
@@ -338,8 +338,8 @@ describe("API Test", () => {
 
             // No change if empty request body
             replaceAndValidate({}).then(() => {
-                validateUserInGroup(userData3.email, "my-workspace", data.group1);
-                validateUserInGroup(userData3.email, "my-workspace", data.group2);
+                verifyUserInGroups(userData3.email, [data.group1], true, "my-workspace");
+                verifyUserInGroups(userData3.email, [data.group2], true, "my-workspace");
             });
 
             // Archive the user and verify status
@@ -355,18 +355,18 @@ describe("API Test", () => {
 
             // Reactivate user and validate groups
             replaceAndValidate({ status: "active" }).then(() => {
-                validateUserInGroup(userData3.email, "my-workspace", data.group1);
-                validateUserInGroup(userData3.email, "my-workspace", data.group2);
+                verifyUserInGroups(userData3.email, [data.group1], true, "my-workspace");
+                verifyUserInGroups(userData3.email, [data.group2], true, "my-workspace");
             });
 
             // Update groups and validate removal
             replaceAndValidate({ groups: [{ name: data.group1 }] }).then(() => {
-                validateUserInGroup(userData3.email, "my-workspace", data.group2, false);
+                verifyUserInGroups(userData3.email, [data.group2], false, "my-workspace");
             });
 
             //Empty group array, user removed from groups
             replaceAndValidate({ groups: [] }).then(() => {
-                validateUserInGroup(userData3.email, "my-workspace", data.group1, false);
+                verifyUserInGroups(userData3.email, [data.group1], false, "my-workspace");
             });
 
             //Conflict permission
@@ -374,8 +374,8 @@ describe("API Test", () => {
 
             //Add user in groups and validate
             replaceAndValidate({ groups: [{ name: data.group1 }, { name: data.group2 }] });
-            validateUserInGroup(userData3.email, "my-workspace", data.group1);
-            validateUserInGroup(userData3.email, "my-workspace", data.group2);
+            verifyUserInGroups(userData3.email, [data.group1], true, "my-workspace");
+            verifyUserInGroups(userData3.email, [data.group2], true, "my-workspace");
         });
     });
 });

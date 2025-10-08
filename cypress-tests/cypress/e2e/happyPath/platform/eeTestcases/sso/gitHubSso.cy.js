@@ -3,37 +3,41 @@ import { toggleSsoViaUI, updateSsoId, gitHubSignInWithAssertion } from "Support/
 import { fillInputField } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
-describe('Google SSO Tests', () => {
+describe('GitHub SSO Tests', () => {
     const TEST_USER_EMAIL = 'qatooljet@gmail.com';
     const TEST_USER_NAME = 'The QA';
     const WORKSPACE_URL = '/my-workspace';
     const WORKSPACE_SETTINGS_URL = '/my-workspace/workspace-settings/workspace-login';
-    const GOOGLE_SSO_BUTTON_SELECTOR = '[data-cy="google-sso-button"]';
+    const GIT_SSO_BUTTON_SELECTOR = '[data-cy="git-sso-button"]';
 
-    const emptyGoogleConfig = {
-        "type": "google",
+    const emptyGitConfig = {
+        "type": "git",
         "configs": {
             "clientId": "",
+            "clientSecret": "",
+            "hostName": ""
         },
         "enabled": false
     };
 
-    const googleSsoConfig = Cypress.env("googleSsoConfig");
+    const instanceGitHubConfig = Cypress.env("instanceGitHubConfig");
+    const workspaceGitHubConfig = Cypress.env("workspaceGitHubConfig");
 
     const ERROR_MESSAGES = {
-        USER_NOT_EXIST_SIGNUP: "Google login failed - User does not exist, please sign up",
-        USER_NOT_IN_WORKSPACE: "Google login failed - User does not exist in the workspace"
+        USER_NOT_EXIST_SIGNUP: "GitHub login failed - User does not exist, please sign up",
+        USER_NOT_IN_WORKSPACE: "GitHub login failed - User does not exist in the workspace"
     };
 
-    const TEST_SSO_ID = '688f4b68-8c3b-41b2-aecb-1c1e9a112de1';
+    const TEST_SSO_ID = 'dbe8cc6f-8300-403a-9691-3ba304f2a744';
     beforeEach(() => {
         cy.apiLogin();
         cy.getAuthHeaders().as('adminHeaders').then((adminHeaders) => {
-            cy.apiUpdateSSOConfig(emptyGoogleConfig, 'instance', adminHeaders);
+
+            cy.apiUpdateSSOConfig(emptyGitConfig, 'instance', adminHeaders);
             cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
             cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
-            cy.apiUpdateSSOConfig(emptyGoogleConfig, 'workspace', adminHeaders);
-        });;
+            cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
+        });
     });
 
     const cleanupTestUser = () => {
@@ -42,41 +46,35 @@ describe('Google SSO Tests', () => {
 
     it('should verify sso without configuration on instance', () => {
 
-        toggleSsoViaUI('Google')
+        toggleSsoViaUI('GitHub')
         cy.apiLogout();
         cy.visit('/');
-        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
-        cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
-        });
-
+        cy.get(GIT_SSO_BUTTON_SELECTOR).click();
+        gitHubSignInWithAssertion({ type: 'failure' });
     });
 
     it('should verify sso without configuration on workspace', () => {
 
-        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL)
+        toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL)
         cy.apiLogout();
 
         cy.visit(WORKSPACE_URL);
-        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
-        cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
-        });
+        cy.get(GIT_SSO_BUTTON_SELECTOR).click();
+        gitHubSignInWithAssertion({ type: 'failure' });
     });
-
 
     it('should verify signup via sso to instance', () => {
 
-        toggleSsoViaUI('Google');
-        fillInputField(googleSsoConfig);
+        toggleSsoViaUI('GitHub');
+        fillInputField(instanceGitHubConfig);
         cy.get(commonSelectors.saveButton).eq(1).click();
 
         cy.wait(1000);
         cy.apiLogout();
         cy.visit('/');
-        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
+        cy.get(GIT_SSO_BUTTON_SELECTOR).click();
 
-        cy.apiLoginByGoogle('');
+        gitHubSignInWithAssertion();
         cy.verifyToastMessage(commonSelectors.toastMessage, ERROR_MESSAGES.USER_NOT_EXIST_SIGNUP);
 
         cy.apiLogin();
@@ -84,8 +82,8 @@ describe('Google SSO Tests', () => {
             cy.apiUpdateAllowSignUp(true, 'instance', freshAdminHeaders);
             cy.apiLogout();
 
-            cy.apiLoginByGoogle('');
-
+            cy.visit('/');
+            cy.get(GIT_SSO_BUTTON_SELECTOR).click();
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
             cleanupTestUser();
@@ -94,18 +92,19 @@ describe('Google SSO Tests', () => {
 
     it('should verify signup via sso to workspace', () => {
         const orgId = Cypress.env("workspaceId");
-        updateSsoId(TEST_SSO_ID, 'google', `'${orgId}'`);
 
-        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
-        fillInputField(googleSsoConfig);
+        updateSsoId(TEST_SSO_ID, 'git', `'${orgId}'`);
+
+        toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL);
+        fillInputField(workspaceGitHubConfig);
         cy.get(commonSelectors.saveButton).eq(1).click();
 
         cy.wait(1000);
         cy.apiLogout();
         cy.visit(WORKSPACE_URL);
-        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
+        cy.get(GIT_SSO_BUTTON_SELECTOR).click();
 
-        cy.apiLoginByGoogle();
+        gitHubSignInWithAssertion();
         cy.verifyToastMessage(commonSelectors.toastMessage, ERROR_MESSAGES.USER_NOT_IN_WORKSPACE);
 
         cy.apiLogin();
@@ -114,25 +113,28 @@ describe('Google SSO Tests', () => {
             cy.apiLogout();
 
             cy.visit(WORKSPACE_URL);
-            cy.apiLoginByGoogle();
+            cy.get(GIT_SSO_BUTTON_SELECTOR).click();
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
             cleanupTestUser();
         });
     });
     it('should verify invite and login via sso to workspace', () => {
-        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
-        fillInputField(googleSsoConfig);
-        cy.get(commonSelectors.saveButton).eq(1).click();
-
         cy.apiUserInvite(TEST_USER_NAME, TEST_USER_EMAIL);
-        fetchAndVisitInviteLink(TEST_USER_EMAIL);
-        cy.pause()
 
-        cy.apiLoginByGoogle()
+
+        toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL);
+        fillInputField(workspaceGitHubConfig);
+        cy.get(commonSelectors.saveButton).eq(1).click();
+        cy.apiLogout();
+        fetchAndVisitInviteLink(TEST_USER_EMAIL);
+        cy.get(GIT_SSO_BUTTON_SELECTOR).click();
+        gitHubSignInWithAssertion();
+
         cy.get(commonSelectors.acceptInviteButton).click()
         cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
         cleanupTestUser();
     });
+
 });
