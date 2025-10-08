@@ -4,7 +4,6 @@ import _ from 'lodash';
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
-import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
 import * as Icons from '@tabler/icons-react';
@@ -41,24 +40,18 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
             <div className="card-body">
               <IconElement />
               <span>{_.truncate(pageGroup?.name, { length: 22 })}</span>
-              <svg
-                className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
-                width={17}
-                height={16}
-                viewBox="0 0 17 16"
-                fill="black"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M11.1257 4L5.27446 4C4.50266 4 4.02179 4.83721 4.41068 5.50387L7.33631 10.5192C7.72218 11.1807 8.67798 11.1807 9.06386 10.5192L11.9895 5.50387C12.3784 4.83721 11.8975 4 11.1257 4Z"
-                  fill="#ACB2B9"
-                />
-              </svg>
+              <div className={`page-group-collapse`}>
+                {isExpanded ? (
+                  <Icons.IconChevronUp size={16} color="var(--icon-default, #ACB2B9)" />
+                ) : (
+                  <Icons.IconChevronDown size={16} color="var(--icon-default, #ACB2B9)" />
+                )}
+              </div>
             </div>
           </div>
         </div>
         {isExpanded && (
-          <div style={{ paddingLeft: '16px' }}>
+          <div style={{ paddingLeft: '32px' }}>
             {pages.map((page) => {
               const isHomePage = page.id === homePageId;
               const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
@@ -215,7 +208,6 @@ const MobileNavigationMenu = ({
     },
     bmMenu: {
       background: darkMode ? '#202B37' : '#fff',
-      padding: '16px 16px',
     },
     bmMorphShape: {
       fill: '#373a47',
@@ -224,18 +216,17 @@ const MobileNavigationMenu = ({
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: 'var(--base)',
     },
     bmItem: {
-      display: 'inline-block',
-      padding: '0.5rem 0rem',
       width: '100%',
-      overflow: 'hidden',
     },
     bmOverlay: {
       background: 'rgba(0, 0, 0, 0.3)',
       top: '0px',
+    },
+    bmBurgerButton: {
+      position: 'relative',
+      borderRadius: '8px',
     },
   };
 
@@ -267,86 +258,74 @@ const MobileNavigationMenu = ({
         }
         right={false}
       >
-        <div style={{ height: '95%' }} className="pt-0">
-          <Header styles={{ paddingBottom: '24px' }} className={'mobile-header'}>
-            <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
-              <div className="icon-btn">
-                <SolidIcon name="remove03" />
-              </div>
-            </div>
-            <div className="d-flex flex-grow-1 justify-content-center">
-              <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-                <Link
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                  data-cy="viewer-page-logo"
-                  onClick={() => {
-                    redirectToDashboard();
-                  }}
-                >
-                  {!hideLogo && <AppLogo isLoadingFromHeader={false} viewer={true} />}
-                  {!hideHeader && (
-                    <div className="d-flex align-items-center app-title">
-                      <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
-                    </div>
-                  )}
-                </Link>
-              </h1>
-            </div>
-          </Header>
-
-          <div style={{ paddingBottom: '56px' }} className="w-100 overflow-auto h-100">
-            <div className={`pages-container ${darkMode && 'dark'}`}>
-              {isLicensed ? (
-                <RenderPageGroups
-                  pages={pages}
-                  currentPageId={currentPageId}
-                  darkMode={darkMode}
-                  handlepageSwitch={handlepageSwitch}
-                  currentPage={currentPage}
-                />
-              ) : (
-                pages?.map((page) => {
-                  const isHomePage = page.id === homePageId;
-                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-                  // eslint-disable-next-line import/namespace
-                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
-                  const pageVisibility = getPagesVisibility('canvas', page?.id);
-
-                  return pageVisibility || page?.disabled ? null : (
-                    <div
-                      key={page.handle}
-                      onClick={() => handlepageSwitch(page?.id)}
-                      className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
-                    >
-                      <div className={`card  ${page?.id === currentPageId ? 'active' : ''}`}>
-                        <div className="card-body">
-                          <IconElement style={{ width: '16px', height: '16px' }} />
-                          <span>{_.truncate(page?.name, { length: 22 })}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+        <Header className={'mobile-header'}>
+          <div onClick={() => setHamburgerMenuOpen(false)} className="cursor-pointer">
+            <div className="icon-btn">
+              <Icons.IconX size={16} />
             </div>
           </div>
+          <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
+            <Link
+              data-cy="viewer-page-logo"
+              onClick={() => {
+                redirectToDashboard();
+              }}
+            >
+              <h1 className="navbar-brand d-flex align-items-center justify-content-center tw-gap-[12px] p-0">
+                {!hideLogo && <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />}
+                {!hideHeader && (
+                  <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
+                )}
+              </h1>
+            </Link>
+          </div>
+        </Header>
+
+        <div className="h-100 tw-p-[8px] tw-overflow-y-auto">
+          <div className={`pages-container ${darkMode && 'dark'}`}>
+            {isLicensed ? (
+              <RenderPageGroups
+                pages={pages}
+                currentPageId={currentPageId}
+                darkMode={darkMode}
+                handlepageSwitch={handlepageSwitch}
+                currentPage={currentPage}
+              />
+            ) : (
+              pages?.map((page) => {
+                const isHomePage = page.id === homePageId;
+                const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+                // eslint-disable-next-line import/namespace
+                const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
+                const pageVisibility = getPagesVisibility('canvas', page?.id);
+
+                return pageVisibility || page?.disabled ? null : (
+                  <div
+                    key={page.handle}
+                    onClick={() => handlepageSwitch(page?.id)}
+                    className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
+                  >
+                    <div className={`card  ${page?.id === currentPageId ? 'active' : ''}`}>
+                      <div className="card-body">
+                        <IconElement style={{ width: '16px', height: '16px' }} />
+                        <span>{_.truncate(page?.name, { length: 22 })}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
+
         {showDarkModeToggle && (
-          <div>
-            <div className="d-flex justify-content-center">
-              <div className={`d-flex align-items-center justify-content-center`}>
-                <DarkModeToggle
-                  switchDarkMode={changeToDarkMode}
-                  darkMode={darkMode}
-                  showText={false}
-                  tooltipPlacement={'top'}
-                />
-              </div>
-            </div>
+          <div className="page-dark-mode-btn-wrapper">
+            <DarkModeToggle
+              switchDarkMode={changeToDarkMode}
+              darkMode={darkMode}
+              showText={false}
+              tooltipPlacement={'top'}
+            />
           </div>
         )}
       </MobileMenu>

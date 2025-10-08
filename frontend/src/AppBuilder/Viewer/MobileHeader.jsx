@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import _, { isEmpty } from 'lodash';
-import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
@@ -11,7 +10,7 @@ import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
-import { resolveReferences } from '@/_helpers/utils';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const MobileHeader = ({
   showHeader,
@@ -36,7 +35,7 @@ const MobileHeader = ({
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const { showOnMobile } = properties ?? {};
+  const { showOnMobile, name, hideLogo, hideHeader } = properties ?? {};
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -44,19 +43,24 @@ const MobileHeader = ({
 
   const _renderAppNameAndLogo = () => (
     <div
-      className={classNames('d-flex', 'align-items-center', 'justify-content-center')}
+      className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]"
       style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
     >
-      <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-        <Link
-          data-cy="viewer-page-logo"
-          onClick={() => {
-            redirectToDashboard();
-          }}
+      <Link
+        data-cy="viewer-page-logo"
+        onClick={() => {
+          redirectToDashboard();
+        }}
+      >
+        <h1
+          className={classNames('navbar-brand', 'd-flex align-items-center justify-content-center tw-gap-[12px] p-0')}
         >
-          <AppLogo isLoadingFromHeader={false} viewer={true} />
-        </Link>
-      </h1>
+          {!hideLogo && <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />}
+          {!hideHeader && (
+            <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
+          )}
+        </h1>
+      </Link>
     </div>
   );
 
@@ -124,20 +128,11 @@ const MobileHeader = ({
   return (
     <div>
       {!isEmpty(editingVersion) && !isReleasedVersionId && (
-        <Header className={'preview-settings-mobile'} styles={{ height: '44px' }}>
-          {_renderPreviewSettings()}
-        </Header>
+        <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
       )}
-      <Header
-        styles={{
-          height: '46px',
-        }}
-        className={'mobile-nav-container'}
-      >
-        <div className="d-flex w-100">
-          {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
-          <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
-        </div>
+      <Header className={'mobile-nav-container'}>
+        {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
+        {_renderAppNameAndLogo()}
       </Header>
     </div>
   );
