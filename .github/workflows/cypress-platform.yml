@@ -145,17 +145,39 @@ jobs:
         run: docker ps -a
 
       - name: sleep
-        run: sleep 30
+        run: sleep 80
 
       - name: docker logs
         run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
-          timeout 500 bash -c '
-          until curl --silent --fail http://localhost:3000; do
-            sleep 5
-          done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=300
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker logs Tooljet-app --tail=50
+            exit 1
+          fi
+
+          echo "✅ Server is ready!"
 
       - name: Create Cypress environment file
         id: create-json-tj
