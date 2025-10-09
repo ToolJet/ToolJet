@@ -67,6 +67,10 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
             redirectToErrorPage(ERROR_TYPES.NO_ACCESSIBLE_PAGES);
             return;
           }
+          if (error?.data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED_PREVIEW);
+            return;
+          }
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
           return;
         }

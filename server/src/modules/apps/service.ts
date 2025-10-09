@@ -94,7 +94,11 @@ export class AppsService implements IAppsService {
     };
     /* If the request comes from preview which needs version id */
     if (versionName || environmentName || (versionId && envId)) {
-      if (!ability.can(FEATURE_KEY.UPDATE, App, app.id)) {
+      // Check edit permission first
+      const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+      const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+      if (!hasEditPermission && !hasViewPermission) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -118,12 +122,21 @@ export class AppsService implements IAppsService {
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
+
       const environment = await this.appsUtilService.validateVersionEnvironment(
         environmentName,
         envId,
         version.currentEnvironmentId,
         app.organizationId
       );
+
+      // For view-only users, restrict access to production environment
+      if (!hasEditPermission && hasViewPermission && environment && environment.name.toLowerCase() === 'production') {
+        throw new ForbiddenException({
+          organizationId: app.organizationId,
+          message: 'restricted-preview',
+        });
+      }
       if (version) response['versionName'] = version.name;
       if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
@@ -271,9 +284,7 @@ export class AppsService implements IAppsService {
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)
       : [];
 
-    const pagesForVersion = app.editingVersion
-      ? await this.pageService.findPagesForVersion(app.editingVersion.id)
-      : [];
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
       : [];
@@ -349,9 +360,7 @@ export class AppsService implements IAppsService {
         ? await this.versionRepository.findVersion(app.currentVersionId)
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-      const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id)
-        : [];
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
         app.organizationId,

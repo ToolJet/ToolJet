@@ -28,12 +28,37 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const previewInitialEnvironmentId = !envFromQueryParams
         ? null
         : response.environments.find((environment) => environment.name === envFromQueryParams)?.id;
+
       let selectedEnvironment = response.editorEnvironment;
+
+      // Check if user is view-only and current environment is production
+      const currentSession = authenticationService.currentSessionValue;
+      const { app_group_permissions } = currentSession;
+
+      // Get app ID from the response (similar to how AppEnvironments.jsx gets it)
+      const appId = response.editorVersion?.app?.id;
+
+      const hasEditPermission =
+        app_group_permissions?.is_all_editable || (appId && app_group_permissions?.editable_apps_id?.includes(appId));
+
+      // Check if user is viewer without edit permission
+      const isViewOnlyUser = !hasEditPermission;
+      const isProductionEnvironment = selectedEnvironment?.name === 'production';
+
+      // If view-only user is in production, redirect to development environment
+      if (isViewOnlyUser && isProductionEnvironment && !previewInitialEnvironmentId) {
+        const developmentEnvironment = response.environments.find((env) => env.name === 'development');
+        if (developmentEnvironment) {
+          selectedEnvironment = developmentEnvironment;
+        }
+      }
+
       if (previewInitialEnvironmentId) {
         selectedEnvironment = response.environments.find(
           (environment) => environment.id === previewInitialEnvironmentId
         );
       }
+
       set((state) => ({
         ...state,
         selectedEnvironment,
