@@ -356,22 +356,18 @@ export const createGridSlice = (set, get) => ({
         return hasHorizontalOverlap;
       });
 
+      const oldChangedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const oldChangedCompHeight =
+        temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
+
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
         const element = document.querySelector(`.ele-${component.id}`);
         if (!element) continue;
-        let newTop = 0;
-        if (index === 0) {
-          const initalVerticalGap = component.layouts[currentLayout].top - changedCompInitialBottom;
-          newTop = changedCompBottom + initalVerticalGap;
-        } else {
-          const prevComponent = targetComponents[index - 1];
-          const prevComponentInitialBottom =
-            prevComponent.layouts[currentLayout].top + prevComponent.layouts[currentLayout].height;
-          const initalVerticalGap = component.layouts[currentLayout].top - prevComponentInitialBottom;
-          const prevComponentBottom = updatedLayouts[prevComponent.id].top + updatedLayouts[prevComponent.id].height;
-          newTop = prevComponentBottom + initalVerticalGap;
-        }
+        const verticalGap =
+          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) - oldChangedCompBottom;
+        const newTop = changedCompBottom + verticalGap;
 
         updatedLayouts[component.id] = {
           ...component.layouts[currentLayout],
