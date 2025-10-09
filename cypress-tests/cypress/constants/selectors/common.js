@@ -3,6 +3,10 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
+  deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
+  globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
+  createWorkFlowsButton: '[data-cy="+-create-workflow"]',
+  workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
@@ -376,7 +380,7 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
+  sidebarinspector: "[data-cy='left-sidebar-inspector']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
@@ -414,4 +418,32 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+};
+
+export const commonQuerySelectors = {
+  queryNameList: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
+  },
+  queryActionButton: (action) => {
+    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+  },
+  queryEditInputField: '[data-cy="query-edit-input-field"]',
+};
+
+export const inspectorSelectors = {
+  inspectorNode: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-node"]`;
+  },
+  inspectorGlobalsExpandButton: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-expand-button"]`;
+  },
+  inspectorSubNode: (subNodeName) => {
+    return `[data-cy="inspector-${cyParamName(subNodeName)}-subnode-label"]`;
+  },
+  inspectorNodeLabel: (labelName) => {
+    return `[data-cy="inspector-${cyParamName(labelName)}-label"]`;
+  },
+  inspectorNodeValue: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
+  },
 };

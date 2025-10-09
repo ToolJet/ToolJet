@@ -4,6 +4,7 @@ import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
 import _, { isArray, isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
+import { cn } from '@/lib/utils';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
@@ -34,6 +35,7 @@ import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanv
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
+import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -74,8 +76,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
-  // const [isGroupDragging, setIsGroupDragging] = useState(false);
-  // const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
@@ -114,6 +114,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       Object.keys(currentPageComponents)
         .map((key) => {
           const widget = currentPageComponents[key];
+
           return {
             id: key,
             ...widget,
@@ -143,9 +144,9 @@ export default function Grid({ gridWidth, currentLayout }) {
   };
 
   const noOfBoxs = Object.values(boxList || []).length;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
-    noOfBoxs != 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs, triggerCanvasUpdater]);
 
@@ -238,6 +239,14 @@ export default function Grid({ gridWidth, currentLayout }) {
               draggable="false"
             />
             <span>components</span>
+
+            <hr
+              className={cn(
+                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
+              )}
+            />
+
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
           </div>
         </span>
       </div>

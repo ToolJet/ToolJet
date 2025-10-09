@@ -13,18 +13,33 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { SentryModule } from '@modules/observability/sentry/module';
+import { LoggingModule } from '@modules/logging/module';
+import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
+import { OpenTelemetryModule } from 'nestjs-otel';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+    const getMainDBConnectionModule = (): DynamicModule => {
+      return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
+        ? TypeOrmModule.forRootAsync({
+            inject: [TypeormLoggerService],
+            useFactory: (profilerLogger: TypeormLoggerService) => ({
+              ...ormconfig,
+              logger: profilerLogger,
+            }),
+          })
+        : TypeOrmModule.forRoot(ormconfig);
+    };
+
     // Static imports that are always loaded
     const staticModules = [
       EventEmitterModule.forRoot({
         wildcard: false,
         newListener: false,
         removeListener: false,
-        maxListeners: 5,
+        maxListeners: process.env.NODE_ENV === 'test' ? 0 : 5,
         verboseMemoryLeak: true,
         ignoreErrors: false,
       }),
@@ -51,16 +66,24 @@ export class AppModuleLoader {
             return logLevel[process.env.NODE_ENV] || 'info';
           })(),
           autoLogging: {
-            ignorePaths: ['/api/health'],
+            ignore: (req) => {
+              if (req.url === '/api/health' || req.url === '/api/metrics') {
+                return true;
+              }
+              return false;
+            },
           },
-          prettyPrint:
+          transport:
             process.env.NODE_ENV !== 'production'
               ? {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    levelFirst: true,
+                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  },
                 }
-              : false,
+              : undefined,
           redact: {
             paths: [
               'req.headers.authorization',
@@ -75,13 +98,37 @@ export class AppModuleLoader {
             ],
             censor: '[REDACTED]',
           },
+          customProps: (req, res) => {
+            const id = res?.['locals']?.tj_transactionId;
+            return id ? { transactionId: id } : {};
+          },
         },
       }),
-      TypeOrmModule.forRoot(ormconfig),
+      getMainDBConnectionModule(),
       TypeOrmModule.forRoot(tooljetDbOrmconfig),
       RequestContextModule,
       GuardValidatorModule,
+      LoggingModule.forRoot(),
     ];
+
+    // Add OpenTelemetry Module if enabled
+    if (process.env.ENABLE_OTEL === 'true') {
+      staticModules.push(
+        OpenTelemetryModule.forRoot({
+          metrics: {
+            hostMetrics: true,
+            apiMetrics: {
+              enable: true,
+              defaultAttributes: {
+                custom: 'metrics',
+              },
+              ignoreRoutes: ['/favicon.ico', '/api/health'],
+              ignoreUndefinedRoutes: false,
+            },
+          },
+        })
+      );
+    }
 
     if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
       staticModules.unshift(
