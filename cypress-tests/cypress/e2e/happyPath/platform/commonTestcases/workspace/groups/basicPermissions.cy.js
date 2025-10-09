@@ -24,7 +24,7 @@ import {
     exportAppModalSelectors,
     importSelectors,
 } from "Selectors/exportImport";
-import { dashboardText } from "../../../../../../constants/texts/dashboard";
+import { dashboardText } from "Texts/dashboard";
 
 describe("Manage Groups", () => {
     let data = {};
