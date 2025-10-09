@@ -8,14 +8,19 @@
     --background-surface-layer-01: #FFFFFF;
     --background-surface-layer-02: #F6F8FA;
     --background-surface-layer-03: #E4E7EB;
+    
     --background-accent-strong: #4368E3;
     --background-accent-weak: #ECF0FE;
+
     --background-success-strong: #1E823B;
     --background-success-weak: #E8F3EB;
+
     --background-error-strong: #D72D39;
     --background-error-weak: #FCEEEF;
+
     --background-warning-strong: #BF4F03;
     --background-warning-weak: #FAEFE7;
+
     --background-inverse: #1B1F24;
 
 
@@ -23,12 +28,16 @@
     --text-default: #1B1F24;
     --text-medium: #2D343B;
     --text-placeholder: #6A727C;
+
     --text-inverse: #F6F8FA;
+
     --text-brand: #4368E3;
     --text-selected: #4368E3;
+
     --text-success: #1E823B;
     --text-warning: #BF4F03;
     --text-danger: #D72D39;
+
     --text-on-solid: #FFFFFF;
     --text-disabled: #ACB2B9;
     --text-disabled-on-solid: #FFFFFF99;
@@ -52,6 +61,7 @@
     --border-strong: #ACB2B9;
     --border-default: #CCD1D5;
     --border-weak: #E4E7EB;
+
     --border-accent-strong: #4368E3;
     --border-accent-weak: #97AEFC;
     --border-success-strong: #1E823B;
@@ -120,6 +130,25 @@
     --elevation-600-box-shadow: 0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
     --elevation-700-box-shadow: 0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
     --elevation-100-box-shadow: 0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+
+
+    --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
     
 }
 
