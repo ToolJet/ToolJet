@@ -194,12 +194,13 @@ class AppComponent extends React.Component {
     this.setState({ showBanner: false });
   };
   updateColorScheme = (darkModeValue) => {
-    const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
-    if (isDark) {
-      document.documentElement.style.setProperty('color-scheme', 'dark');
-    } else {
-      document.documentElement.style.removeProperty('color-scheme');
-    }
+    //Commenting for now as it creates issue with posthog dark mode theme
+    // const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
+    // if (isDark) {
+    //   document.documentElement.style.setProperty('color-scheme', 'dark');
+    // } else {
+    //   document.documentElement.style.removeProperty('color-scheme');
+    // }
   };
   render() {
     const { updateAvailable, isEditorOrViewer, showBanner } = this.state;

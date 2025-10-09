@@ -22,6 +22,7 @@ import { IAuthService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -33,7 +34,7 @@ export class AuthService implements IAuthService {
     protected instanceSettingsUtilService: InstanceSettingsUtilService,
     protected setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected eventEmitter: EventEmitter2
-  ) {}
+  ) { }
 
   async login(
     response: Response,
@@ -154,7 +155,7 @@ export class AuthService implements IAuthService {
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
 
-      return decamelizeKeys({
+      return decamelizeKeysExcept({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         currentOrganizationName: organization.name,
@@ -169,7 +170,7 @@ export class AuthService implements IAuthService {
           createdAt: user.createdAt,
         },
         ...permissionData,
-      });
+      }, ['metadata']);
     });
   }
 
