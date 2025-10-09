@@ -4,6 +4,7 @@ import { MODULES } from '@modules/app/constants/modules';
 
 interface Features {
   [FEATURE_KEY.EXECUTE_WORKFLOW]: FeatureConfig;
+  [FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATUS]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_DETAILS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKFLOW_EXECUTIONS]: FeatureConfig;
