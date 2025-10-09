@@ -105,6 +105,7 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -112,14 +113,10 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-
-          # Only add EE-specific env vars if edition is ee
-          if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          fi
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
         run: docker system prune -af
@@ -136,6 +133,9 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
 
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
       - name: Install Docker Compose
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -147,38 +147,40 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
+      - name: sleep
+        run: sleep 80
+
       - name: docker logs
-        run: sudo docker logs Tooljet-app
-      - name: Show ToolJet App logs (1)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (2)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (3)
-        run: sudo docker logs Tooljet-app
-
-      - name: Show ToolJet App logs (4)
         run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
-          timeout 500 bash -c '
-          until curl --silent --fail http://localhost:3000; do
-            sleep 5
-          done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
 
-      - name: Show ToolJet App logs (1)
-        run: sudo docker logs Tooljet-app
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
 
-      - name: Show ToolJet App logs (2)
-        run: sudo docker logs Tooljet-app
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
 
-      - name: Show ToolJet App logs (3)
-        run: sudo docker logs Tooljet-app
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker logs Tooljet-app --tail=100
+            exit 1
+          fi
 
-      - name: Show ToolJet App logs (4)
-        run: sudo docker logs Tooljet-app
+          echo "✅ Server is ready!"
 
       - name: Create Cypress environment file
         id: create-json-tj
@@ -298,6 +300,7 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -305,15 +308,11 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-
-          # Only add EE-specific env vars if edition is ee
-          if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
-            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          fi
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -327,6 +326,9 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
 
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
       - name: Install Docker Compose
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -338,15 +340,36 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
+      - name: sleep
+        run: sleep 80
+
       - name: docker logs
         run: sudo docker logs Tooljet-app
 
       - name: Wait for the server to be ready
         run: |
-          timeout 500 bash -c '
-          until curl --silent --fail http://localhost:3000/apps; do
-            sleep 5
-          done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker logs Tooljet-app --tail=100
+            exit 1
+          fi
+          echo "✅ Server is ready!"
 
       - name: Create Cypress environment file
         id: create-json-tj-subpath
@@ -468,15 +491,11 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
-
-          # Add EE-specific env vars if edition is ee
-          if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
-            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          fi
+          echo "PGRST_SERVER_PORT=3001" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -490,6 +509,9 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
 
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
       - name: Install Docker Compose
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -500,6 +522,9 @@ jobs:
 
       - name: Checking containers
         run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
 
       - name: docker logs
         run: sudo docker logs Tooljet-app
@@ -517,9 +542,30 @@ jobs:
           sudo systemctl reload nginx
           sudo netstat -tulpn | grep 4001
 
-      - name: Wait for server
+      - name: Wait for the server to be ready
         run: |
-          timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/; do sleep 5; done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker logs Tooljet-app --tail=100
+            exit 1
+          fi
+          echo "✅ Server is ready!"
 
       - name: Create Cypress environment file
         id: create-json-tj-proxy
@@ -633,6 +679,7 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -640,15 +687,10 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-
-          # Only add EE-specific env vars if edition is ee
-          if [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-            echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-            echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-            echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
-            echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          fi
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -662,6 +704,9 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
 
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
       - name: Install Docker Compose
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -672,6 +717,9 @@ jobs:
 
       - name: Checking containers
         run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
 
       - name: docker logs
         run: sudo docker logs Tooljet-app
@@ -689,9 +737,30 @@ jobs:
           sudo systemctl reload nginx
           sudo netstat -tulpn | grep 4001
 
-      - name: Wait for server
+      - name: Wait for the server to be ready
         run: |
-          timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/apps/; do sleep 5; done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            sudo docker logs Tooljet-app --tail=100
+            exit 1
+          fi
+          echo "✅ Server is ready!"
 
       - name: Create Cypress environment file
         id: create-json-tj-proxy-subpath
