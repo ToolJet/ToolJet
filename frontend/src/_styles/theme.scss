@@ -639,7 +639,7 @@ button {
       }
 
       .properties-container {
-        .field { 
+        .field {
           .form-label {
             font-size: 12px;
           }
@@ -7699,33 +7699,33 @@ tbody {
   background-color: transparent !important;
 }
 
-.app-environment-menu {
-  display: flex;
-  align-items: center;
-  min-width: 170px;
-  max-width: 180px;
-  height: 28px;
-  font-size: 12px;
-  margin-left: 1rem;
+// .app-environment-menu {
+//   display: flex;
+//   align-items: center;
+//   min-width: 170px;
+//   max-width: 180px;
+//   height: 28px;
+//   font-size: 12px;
+//   margin-left: 1rem;
 
-  @media screen and (max-width: 767px) {
-    margin-left: 0 !important;
-    width: 100%;
-    max-width: unset !important;
-  }
+//   @media screen and (max-width: 767px) {
+//     margin-left: 0 !important;
+//     width: 100%;
+//     max-width: unset !important;
+//   }
 
-  .app-environment-list-item {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+//   .app-environment-list-item {
+//     white-space: nowrap;
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+//   }
 
-  .app-environment-name {
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 20px;
-  }
-}
+//   .app-environment-name {
+//     font-weight: 400;
+//     font-size: 12px;
+//     line-height: 20px;
+//   }
+// }
 
 .tooljet-logo-loader {
   height: 100vh;
@@ -18150,7 +18150,7 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .circular-progressbar-stroke-width {
-  label{
+  label {
     width: 90px
   }
 }

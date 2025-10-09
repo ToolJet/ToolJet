@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
-import { CustomSelect } from '../CustomSelect';
+import { VersionManagementDropDown } from '../VersionManagementDropDown/VersionManagementDropDown';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
@@ -8,6 +8,7 @@ import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './style.scss';
+import { Version } from 'sass';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
@@ -197,7 +198,6 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-
   };
 
   const handleToggleMenu = async () => {
@@ -206,7 +206,7 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(prev => {
+    setForceMenuOpen((prev) => {
       return !prev;
     });
   };
@@ -236,11 +236,10 @@ export const AppVersionsManager = ({ darkMode }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [forceMenuOpen]);
+
+  console.log('testing options', options, selectedVersion);
   return (
-    <div
-      className="d-flex align-items-center p-0"
-      ref={clickedOutsideRef}
-    >
+    <div className="d-flex align-items-center p-0" ref={clickedOutsideRef}>
       <div
         className={cx('d-flex version-manager-container p-0', {
           'w-100': isViewer && currentLayout === 'mobile',
@@ -252,7 +251,7 @@ export const AppVersionsManager = ({ darkMode }) => {
           })}
           data-cy="app-version-selector"
         >
-          <CustomSelect
+          <VersionManagementDropDown
             isLoading={appVersionStatus === 'loading'}
             options={options}
             value={selectedVersion?.id}

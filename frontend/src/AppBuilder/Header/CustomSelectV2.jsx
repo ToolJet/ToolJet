@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
-import Select, { SelectV2 } from '@/_ui/Select';
-import { components } from 'react-select';
+import { SelectV2 } from '@/_ui/Select';
 import { EditVersionModal } from './EditVersionModal';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
@@ -12,8 +11,9 @@ import useStore from '@/AppBuilder/_stores/store';
 
 import { Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
+import './VersionManagementDropDown/styles/version-management-dropdown.scss';
 
-// TODO: edit version modal and add version modal
+// Refactored Menu component with separate divs for each section
 const Menu = (props) => {
   const isEditable = props.selectProps.isEditable;
   const creationMode = props?.selectProps?.appCreationMode;
@@ -21,60 +21,62 @@ const Menu = (props) => {
   const [isVersionCreationEnabled, setIsVersionCreationEnabled] = useState(
     creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit)
   );
+  const currentEnvironment = props.selectProps.value?.currentEnvironment || 'production';
+
   useEffect(() => {
     setIsVersionCreationEnabled(creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit));
   }, [allowAppEdit, creationMode]);
 
   return (
-    <components.Menu {...props}>
-      <div>
-        {isEditable && !props?.selectProps?.value?.isReleasedVersion && (
-          <ToolTip
-            message="New versions cannot be created for non-editable apps"
-            show={!isVersionCreationEnabled}
-            placement="right"
-          >
-            <div
-              className="cursor-pointer"
-              style={{ padding: '8px 12px' }}
-              onClick={() =>
-                !props?.selectProps?.value?.isReleasedVersion &&
-                isVersionCreationEnabled &&
-                props.selectProps.setShowEditAppVersion(true)
-              }
-            >
-              <div className="row" style={{ padding: '8px 12px' }}>
-                <div className="col-10 text-truncate tj-text-xsm color-slate12" data-cy="current-version">
-                  {props?.selectProps?.value?.appVersionName &&
-                    decodeEntities(props?.selectProps?.value?.appVersionName)}
-                </div>
-                <div className={cx('col-1', { 'disabled-action-tooltip': !isVersionCreationEnabled })}>
-                  <EditWhite />
-                </div>
+    <div className="version-management-dropdown-menu">
+      {/* Environment Selection Section */}
+      <div className="environment-selector-section">
+        <div className="environment-selector">
+          <div className="environment-items-container">
+            {defaultAppEnvironments.map((env) => (
+              <div
+                key={env.name}
+                className={cx('environment-item', 'tj-text-xsm', {
+                  'active-environment': currentEnvironment === env.name,
+                })}
+                onClick={() => {
+                  // Handle environment selection here
+                  if (props.selectProps.onEnvironmentChange) {
+                    props.selectProps.onEnvironmentChange(env.name);
+                  }
+                }}
+                data-cy={`environment-${env.name}`}
+              >
+                <span className="environment-name">{env.name.charAt(0).toUpperCase() + env.name.slice(1)}</span>
               </div>
-            </div>
-          </ToolTip>
-        )}
-        <hr className="m-0" />
-        <div>{props.children}</div>
-        {isEditable && (
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <hr className="section-divider" />
+
+      {/* Options List Section */}
+      <div className="options-section">{props.children}</div>
+
+      {/* Create New Version Section */}
+      {isEditable && (
+        <div className="create-version-section">
           <ToolTip
             message={'New versions cannot be created for non-editable apps'}
             show={!isVersionCreationEnabled}
             placement="right"
           >
             <div
-              className="cursor-pointer tj-text-xsm"
-              style={{
-                padding: '8px 12px',
-                color: `${isVersionCreationEnabled ? '#3E63DD' : '#C1C8CD'}`,
-                cursor: `${isVersionCreationEnabled ? 'pointer' : 'none'}`,
-              }}
+              className={cx('create-version-container', 'tj-text-xsm', {
+                enabled: isVersionCreationEnabled,
+                disabled: !isVersionCreationEnabled,
+              })}
               onClick={() => isVersionCreationEnabled && props?.setShowCreateAppVersion(true)}
               data-cy="create-new-version-button"
             >
               <svg
-                className="icon me-1"
+                className="add-icon"
                 width="34"
                 height="34"
                 viewBox="0 0 34 34"
@@ -89,12 +91,12 @@ const Menu = (props) => {
                   fill={`${isVersionCreationEnabled ? '#3E63DD' : '#C1C8CD'}`}
                 />
               </svg>
-              Create new version
+              <span className="create-version-text">Create new version</span>
             </div>
           </ToolTip>
-        )}
-      </div>
-    </components.Menu>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -102,7 +104,7 @@ export const SingleValue = ({ selectProps = {} }) => {
   const appVersionName = selectProps.value?.appVersionName;
   const { menuIsOpen, onToggleMenu } = selectProps;
   return (
-    <div className="d-inline-flex align-items-center tw-w-full" data-cy="app-version-label" style={{ gap: '8px' }}>
+    <div className="single-value-container" data-cy="app-version-label">
       <Button
         onClick={(e) => {
           e.stopPropagation();
@@ -111,12 +113,14 @@ export const SingleValue = ({ selectProps = {} }) => {
           }
         }}
         variant="ghost"
-        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
+        className={`single-value-button ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
       >
         <Tag width="16" height="16" className="tw-text-icon-success" />
 
         <span
-          className={cx('app-version-name text-truncate', { 'color-light-green': selectProps.value.isReleasedVersion })}
+          className={cx('app-version-name text-truncate', {
+            'color-light-green': selectProps.value.isReleasedVersion,
+          })}
           data-cy={`${appVersionName}-current-version-text`}
         >
           {appVersionName && decodeEntities(appVersionName)}
@@ -126,11 +130,21 @@ export const SingleValue = ({ selectProps = {} }) => {
   );
 };
 
-export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) => {
+export const CustomSelectV2 = ({ currentEnvironment, onSelectVersion, ...props }) => {
   const [showEditAppVersion, setShowEditAppVersion] = useState(false);
   const [showCreateAppVersion, setShowCreateAppVersion] = useState(false);
+  const [selectedEnvironment, setSelectedEnvironment] = useState(currentEnvironment || 'production');
 
   const { deleteVersion, deleteAppVersion, resetDeleteModal, isEditable } = props;
+
+  const handleEnvironmentChange = (environment) => {
+    setSelectedEnvironment(environment);
+    // Call parent handler if available
+    if (props.onEnvironmentChange) {
+      props.onEnvironmentChange(environment);
+    }
+  };
+
   return (
     <>
       {isEditable && showCreateAppVersion && (
@@ -147,9 +161,10 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
           {...props}
           showEditAppVersion={showEditAppVersion}
           setShowEditAppVersion={setShowEditAppVersion}
-          currentEnvironment={currentEnvironment}
+          currentEnvironment={selectedEnvironment}
         />
       )}
+
       {/* TODO[future]:: use environments list instead of hard coded defaultAppEnvironments data */}
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
@@ -166,8 +181,8 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
           Menu: (props) => (
             <Menu
               {...props}
-              className="!tw-w-44"
-              currentEnvironment={currentEnvironment}
+              className="!tw-w-80"
+              currentEnvironment={selectedEnvironment}
               setShowCreateAppVersion={setShowCreateAppVersion}
             />
           ),
@@ -176,6 +191,11 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         setShowEditAppVersion={setShowEditAppVersion}
         setShowCreateAppVersion={setShowCreateAppVersion}
         styles={{ border: 0 }}
+        onEnvironmentChange={handleEnvironmentChange}
+        value={{
+          ...props.value,
+          currentEnvironment: selectedEnvironment,
+        }}
         {...props}
       />
     </>

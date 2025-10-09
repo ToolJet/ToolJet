@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
@@ -17,6 +17,7 @@ import SaveIndicator from './SaveIndicator';
 import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
+  const [showVersionDropdown, setShowVersionDropdown] = useState(false);
   const { moduleId, isModuleEditor } = useModuleContext();
   const { isSaving, saveError, isVersionReleased, aiGenerationMetadata } = useStore(
     (state) => ({
@@ -30,6 +31,10 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
 
   const activeStepDetails = aiGenerationMetadata.steps?.find((step) => step.id === aiGenerationMetadata.active_step);
   const activeStep = activeStepDetails?.hidden ? activeStepDetails.parent_step_id : aiGenerationMetadata.active_step;
+
+  const toggleVersionDropdown = () => {
+    setShowVersionDropdown(!showVersionDropdown);
+  };
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -76,7 +81,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                 </div>
               </div>
             </div>
-
             {isUserInZeroToOneFlow && (
               <Steps
                 steps={
@@ -99,8 +103,8 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                   <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
-                        <AppEnvironments darkMode={darkMode} />
                         <div className="tw-hidden navbar-seperator m-0" />
+                        {/* <AppEnvironments darkMode={darkMode} /> */}
                         <AppVersionsManager darkMode={darkMode} />
                         <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
