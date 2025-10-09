@@ -314,6 +314,9 @@ jobs:
           echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
+      - name: clean up old docker containers
+        run: docker system prune -af
+
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
@@ -496,6 +499,9 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: docker system prune -af
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -691,6 +697,9 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: docker system prune -af
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
