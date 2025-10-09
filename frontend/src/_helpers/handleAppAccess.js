@@ -7,7 +7,7 @@ import { ERROR_TYPES } from './constants';
 
 /*  appId, versionId are only for old preview URLs */
 export const handleAppAccess = async (componentType, slug, version_id, environment_id) => {
-  const previewQueryParams = getPreviewQueryParams();
+  const previewQueryParams = getPreviewQueryParams(slug);
   const isOldLocalPreview = version_id && environment_id ? true : false;
   const isLocalPreview = !_.isEmpty(previewQueryParams);
   const queryParams = {
@@ -107,10 +107,19 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
   }
 };
 
-const getPreviewQueryParams = () => {
+const getPreviewQueryParams = (slug) => {
   const queryParams = getQueryParams();
+  const envParam = (queryParams['env'] || '').toLowerCase();
+  // Only coerce production->development for view-only users
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+  const hasEditPermission =
+    appPerms?.is_all_editable ||
+    (slug && Array.isArray(appPerms?.editable_apps_id) && appPerms.editable_apps_id.includes(slug));
+  const isViewOnly = !hasEditPermission;
+  const safeEnv = isViewOnly && envParam === 'production' ? 'development' : envParam;
   return {
     ...(queryParams['version'] && { version_name: queryParams.version }),
-    ...(queryParams['env'] && { environment_name: queryParams.env }),
+    ...(safeEnv && { environment_name: safeEnv }),
   };
 };

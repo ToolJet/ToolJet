@@ -247,7 +247,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  environmentChangedAction: async (environment, onSuccess, onFailure) => {
+  environmentChangedAction: async (environment, _onSuccess, _onFailure) => {
     try {
       const environmentId = environment.id;
       let selectedVersion;
@@ -265,13 +265,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             useStore.getState()?.license?.featureAccess
           ),
         };
-
-        const versionIsAvailableInEnvironment = environment?.priority <= get().currentAppVersionEnvironment?.priority;
+        // Compare against the environment where the selected version currently lives
+        const versionIsAvailableInEnvironment = environment?.priority <= get().appVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
           const { appId } = useStore.getState().appStore.modules.canvas.app;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
+            // Preserve the currently selected version when switching environments (e.g., version=v5)
+            editorVersionId: get().selectedVersion?.id,
           });
           selectedVersion = response.editorVersion;
           const appVersionEnvironment = get().environments.find(
