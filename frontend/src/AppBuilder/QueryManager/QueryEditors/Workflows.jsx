@@ -52,6 +52,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
   return (
     <>
       <label className="mb-1">Workflow</label>
+      <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
         value={options.workflowId ?? {}}
@@ -67,12 +68,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        onMenuOpen={() => {
-          setIsMenuOpen(true);
-        }}
-        onMenuClose={() => {
-          setIsMenuOpen(false);
-        }}
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
       />
       <label className="my-2">Params</label>
       <div className="grid"></div>

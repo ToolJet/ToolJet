@@ -7,6 +7,8 @@ import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
+import 'cypress-mailhog';
+
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
@@ -25,8 +27,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector, { timeout: 20000 }).clear();
-  cy.get(selector).type(text, { log: false });
+  cy.get(selector).type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -201,7 +202,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).invoke("removeAttr", "target").click();
+  cy.get(selector).last().invoke("removeAttr", "target").click();
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -410,25 +411,25 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
-      SELECT id FROM organizations WHERE name = 'My workspace';`,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
+  // cy.task("dbConnection", {
+  //   dbconfig: Cypress.env("app_db"),
+  //   sql: `
+  //     SELECT id FROM organizations WHERE name = 'My workspace';`,
+  // }).then((resp) => {
+  //   const workspaceId = resp.rows[0].id;
 
-    cy.apiLogin(
-      "dev@tooljet.io",
-      "password",
-      workspaceId,
-      "/my-workspace"
-    ).then(() => {
-      cy.visit("/");
-      cy.wait(2000);
-      cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    });
+  cy.apiLogin(
+    "dev@tooljet.io",
+    "password",
+    // workspaceId,
+    // "/my-workspace"
+  ).then(() => {
+    cy.visit("/");
+    cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   });
 });
+// });
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
@@ -656,4 +657,11 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
         cy.get('[data-cy="right-sidebar-plus-button"]').click();
       }
     })
+});
+
+Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
+  cy.task("dbConnection", {
+    dbconfig: db,
+    sql: query,
+  });
 });

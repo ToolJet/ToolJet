@@ -16,7 +16,8 @@
 // Import commands.js using ES2015 syntax:
 import "../commands/commands";
 import "../commands/apiCommands";
-import "cypress-real-events";
+import '../commands/workflowCommands';
+// import "cypress-real-events";
 import "@cypress/code-coverage/support";
 
 // Alternatively you can use CommonJS syntax:

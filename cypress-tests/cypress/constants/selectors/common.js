@@ -3,6 +3,10 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
+  deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
+  globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
+  createWorkFlowsButton: '[data-cy="+-create-workflow"]',
+  workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
@@ -179,8 +183,8 @@ export const commonSelectors = {
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
   confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
-  labelEmailInput: '[data-cy="email-label"]',
-  inputFieldEmailAddress: '[data-cy="email-input"]',
+  labelEmailInput: '[data-cy="email-address-label"]',
+  inputFieldEmailAddress: '[data-cy="email-address-input"]',
   closeButton: '[data-cy="close-button"]',
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
@@ -232,7 +236,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
   inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
-  groupInputFieldLabel: '[data-cy="user-group-label"]',
+  groupInputFieldLabel: '[data-cy="select-group-label"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
   yesButton: '[data-cy="yes-button"]',
 
@@ -376,7 +380,7 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
+  sidebarinspector: "[data-cy='left-sidebar-inspector']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
@@ -414,4 +418,32 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+};
+
+export const commonQuerySelectors = {
+  queryNameList: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
+  },
+  queryActionButton: (action) => {
+    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+  },
+  queryEditInputField: '[data-cy="query-edit-input-field"]',
+};
+
+export const inspectorSelectors = {
+  inspectorNode: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-node"]`;
+  },
+  inspectorGlobalsExpandButton: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-expand-button"]`;
+  },
+  inspectorSubNode: (subNodeName) => {
+    return `[data-cy="inspector-${cyParamName(subNodeName)}-subnode-label"]`;
+  },
+  inspectorNodeLabel: (labelName) => {
+    return `[data-cy="inspector-${cyParamName(labelName)}-label"]`;
+  },
+  inspectorNodeValue: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
+  },
 };

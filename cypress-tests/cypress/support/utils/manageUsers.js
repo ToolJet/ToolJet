@@ -1,4 +1,4 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
@@ -7,9 +7,12 @@ import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 const envVar = Cypress.env("environment");
+import { fillInputField } from "Support/utils/common";
 
 export const manageUsersElements = () => {
-  cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+  cy.get(
+    `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
+  ).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
       commonText.breadcrumbworkspaceSettingTitle
     );
@@ -130,9 +133,9 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-  cy.exec("mkdir -p ./cypress/downloads/");
+  cy.exec("mkdir -p ./cypress/downloads/", { failOnNonZeroExit: false });
   cy.wait(3000);
-  cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
   cy.wait(3000);
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000);
@@ -268,47 +271,59 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(onboardingSelectors.nameInput, firstName);
-  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+  fillInputField({ "Name": firstName, "Email address": email });
 };
 
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
+};
+
+
+export const selectGroup = (groupName, timeout = 1000) => {
+  cy.get(usersSelector.groupSelector).eq(0).type(groupName);
+  cy.wait(timeout);
+  cy.get(usersSelector.groupSelectInput).eq(0).check();
+};
+
+export const updateUserGroup = (groupName) => {
+  cy.get(usersSelector.userActionButton).click();
+  cy.get(usersSelector.editUserDetailsButton).click();
+  selectGroup(groupName);
+
 };
 
 export const inviteUserWithUserGroups = (
   firstName,
   email,
-  groupName1,
-  groupName2
+  ...groupNames
 ) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[0]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[1]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -370,20 +385,59 @@ export const fetchAndVisitInviteLink = (email) => {
     });
 };
 
+export const fetchAndVisitInviteLinkViaMH = (email) => {
+  cy.mhGetMailsByRecipient(email).then((mails) => {
+    expect(mails).to.have.length.greaterThan(0);
+    const lastMail = mails[mails.length - 1];
+    const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
+    const mailBody = mailContent.Body || mailContent.Html || "";
+
+    // Clean the email body by removing quoted-printable encoding and HTML entities
+    let cleanedBody = mailBody
+      .replace(/=\r?\n/g, "") // Remove quoted-printable line breaks (= at end of line)
+      .replace(/=3D/g, "=") // Decode =3D back to =
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+
+    // Extract URL from href attribute or plain text
+    let inviteUrl = "";
+
+    // Try to find URL in href attribute first
+    const hrefMatch = cleanedBody.match(
+      /href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i
+    );
+    if (hrefMatch) {
+      inviteUrl = hrefMatch[1];
+    } else {
+      // Fallback: look for URL in plain text
+      const urlMatch = cleanedBody.match(
+        /https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i
+      );
+      inviteUrl = urlMatch ? urlMatch[0] : "";
+    }
+
+    expect(inviteUrl).to.not.be.empty;
+    cy.log("Found invite URL: " + inviteUrl);
+    cy.visit(inviteUrl);
+  });
+};
+
 export const inviteUserWithUserRole = (firstName, email, role) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.get(usersSelector.groupSelector).eq(0).type(role);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
   });
 
@@ -400,4 +454,38 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+};
+export const verifyUserStatusAndMetadata = (
+  email,
+  expectedStatus = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.searchUser(email);
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get("td small").should("have.text", expectedStatus);
+      cy.get("td[data-name='meta-header'] .metadata")
+        .should("be.visible")
+        .and("have.text", expectedMetadata);
+    });
+};
+
+export const openEditUserDetails = (
+  email,
+  activeStatusText = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.navigateToManageUsers();
+
+  verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
+
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get('[data-cy="user-actions-button"]').click();
+    });
+  cy.get('[data-cy="edit-user-details-button"]')
+    .verifyVisibleElement("have.text", "Edit user details")
+    .click();
 };

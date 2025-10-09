@@ -20,6 +20,7 @@ export const Image = function Image({
   width,
   parentId = null,
   dataCy,
+  id,
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
@@ -165,6 +166,10 @@ export const Image = function Image({
     <img
       src={sourceURL}
       className={`zoom-image-wrap`}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
+      aria-busy={isLoading}
+      id={`component-${id}`}
       style={{
         backgroundColor: backgroundColor || (borderType === 'img-thumbnail' ? '#f4f6fa' : ''),
         padding: padding === 'default' ? '0px' : Number.parseInt(customPadding),
@@ -218,14 +223,14 @@ export const Image = function Image({
   const ImageControls = (zoomIn, zoomOut) => {
     return (
       <div className="img-control-wrapper">
-        <button className="img-control-btn" onClick={() => zoomIn()}>
+        <button className="img-control-btn" onClick={() => zoomIn()} aria-label="Zoom in">
           <ZoomInImage />
         </button>
-        <button className="img-control-btn" onClick={() => zoomOut()}>
+        <button className="img-control-btn" onClick={() => zoomOut()} aria-label="Zoom out">
           <ZoomOutImage />
         </button>
         {rotateButton && (
-          <button className="img-control-btn" onClick={rotateImage}>
+          <button className="img-control-btn" onClick={rotateImage} aria-label="Rotate image">
             <RotateImage />
           </button>
         )}
