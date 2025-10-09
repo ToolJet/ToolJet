@@ -562,23 +562,27 @@ jobs:
               },
               {
                 "key": "REDIS_HOST",
-                "value": "${{ secrets.RENDER_REDIS_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "REDIS_PORT",
-                "value": "${{ secrets.RENDER_REDIS_PORT }}"
+                "value": "6379"
               },
               {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
+                "key": "REDIS_DB",
+                "value": "0"
               },
               {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-ee-pr-${{ env.PR_NUMBER }}"
+                "key": "REDIS_TLS_ENABLED",
+                "value": "false"
               },
               {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
+                "key": "REDIS_PASSWORD",
+                "value": ""
+              },
+              {
+                "key": "WORKER",
+                "value": "true"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
@@ -970,23 +974,27 @@ jobs:
               },
               {
                 "key": "REDIS_HOST",
-                "value": "${{ secrets.RENDER_REDIS_HOST }}"
+                "value": "localhost"
               },
               {
                 "key": "REDIS_PORT",
-                "value": "${{ secrets.RENDER_REDIS_PORT }}"
+                "value": "6379"
               },
               {
-                "key": "TEMPORAL_SERVER_ADDRESS",
-                "value": "https://auto-setup-1-25-1.onrender.com"
+                "key": "REDIS_DB",
+                "value": "0"
               },
               {
-                "key": "TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS",
-                "value": "tooljet-cloud-pr-${{ env.PR_NUMBER }}"
+                "key": "REDIS_TLS_ENABLED",
+                "value": "false"
               },
               {
-                "key": "TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE",
-                "value": "default"
+                "key": "REDIS_PASSWORD",
+                "value": ""
+              },
+              {
+                "key": "WORKER",
+                "value": "true"
               },
               {
                 "key": "TOOLJET_MARKETPLACE_URL",
