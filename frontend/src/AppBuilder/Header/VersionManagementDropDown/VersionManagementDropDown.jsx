@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { SelectV2 } from '@/_ui/Select';
+import SelectV2 from '@/_ui/Select';
+import Select from '@/_ui/Select';
 import { EditVersionModal } from '../EditVersionModal';
 import { decodeEntities } from '@/_helpers/utils';
 import { CreateVersionModal, AppEnvironments } from '@/modules/Appbuilder/components';
@@ -8,6 +9,9 @@ import { Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import './styles/version-management-dropdown.scss';
 import { darkMode } from '../../../../tailwind.config';
+import AppEnvironmentV2 from '../../../../ee/modules/Appbuilder/components/AppEnvironmentsV2';
+
+// import { Menu } from './Menu';
 
 // Refactored Menu component with separate divs for each section
 const Menu = (props) => {
@@ -16,14 +20,14 @@ const Menu = (props) => {
   return (
     <div className="version-management-dropdown-menu">
       <div className="environment-selector-section">
-        <AppEnvironments darkMode={darkMode} />
+        {/* <AppEnvironments darkMode={darkMode} /> */}
 
         {/* <div className="environment-selector">
           <div className="environment-items-container">
           </div>
         </div> */}
       </div>
-      <hr className="section-divider" />
+      {/* <hr className="section-divider" /> */}
       {/* Options List Section */}
       {/* <div className="options-section">{props.children}</div> */}
       {/* Create New Version Section */}
@@ -63,6 +67,7 @@ const Menu = (props) => {
       {/* </ToolTip> */}
       {/* </div> */}
       {/* )} */}
+      <AppEnvironmentV2 darkMode={darkMode} />
     </div>
   );
 };
@@ -97,12 +102,14 @@ export const SingleValue = ({ selectProps = {} }) => {
   );
 };
 
-export const VersionManagementDropDown = ({ onSelectVersion, ...props }) => {
-  console.log('dark mode', darkMode);
+export const VersionManagementDropDown = ({ onSelectVersion, isEditable, value, ...props }) => {
   const [showEditAppVersion, setShowEditAppVersion] = useState(false);
   const [showCreateAppVersion, setShowCreateAppVersion] = useState(false);
 
-  const { isEditable } = props;
+  const components = {
+    Menu: (menuProps) => <Menu {...menuProps} className="!tw-w-80" setShowCreateAppVersion={setShowCreateAppVersion} />,
+    SingleValue,
+  };
 
   return (
     <>
@@ -123,26 +130,15 @@ export const VersionManagementDropDown = ({ onSelectVersion, ...props }) => {
         />
       )}
 
-      {/* TODO[future]:: use environments list instead of hard coded defaultAppEnvironments data */}
-      {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
-      {/* <ConfirmDialog
-        show={deleteVersion.showModal}
-        message={`Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
-        onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
-        onCancel={resetDeleteModal}
-      /> */}
       <SelectV2
-        width={'100%'}
-        data-cy={`test-version-selector`}
+        width="100%"
+        data-cy="test-version-selector"
         hasSearch={false}
-        components={{
-          Menu: (props) => <Menu {...props} className="!tw-w-80" setShowCreateAppVersion={setShowCreateAppVersion} />,
-          SingleValue,
-        }}
+        components={components}
         setShowEditAppVersion={setShowEditAppVersion}
         setShowCreateAppVersion={setShowCreateAppVersion}
         styles={{ border: 0 }}
-        value={props.value}
+        value={value}
         {...props}
       />
     </>

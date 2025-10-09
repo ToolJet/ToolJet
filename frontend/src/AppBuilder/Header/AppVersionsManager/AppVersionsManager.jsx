@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './style.scss';
 import { Version } from 'sass';
+import { CustomSelect } from '../CustomSelect';
 
 const appVersionLoadingStatus = Object.freeze({
   loading: 'loading',
