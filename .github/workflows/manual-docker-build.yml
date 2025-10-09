@@ -63,3 +63,16 @@ jobs:
       - name: Show the full Docker tag
         run: |
           echo "✅ Docker image will be tagged as: ${{ steps.taggen.outputs.tag }}"
+          echo "DOCKER_IMAGE_TAG=${{ steps.taggen.outputs.tag }}" >> $GITHUB_ENV
+
+      - name: Save Docker tag for vulnerability scan
+        run: |
+          mkdir -p ./artifacts
+          echo "${{ steps.taggen.outputs.tag }}" > ./artifacts/docker-image-tag.txt
+          
+      - name: Upload Docker tag artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-tag
+          path: ./artifacts/docker-image-tag.txt
+          retention-days: 1
