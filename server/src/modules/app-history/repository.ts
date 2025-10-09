@@ -227,4 +227,24 @@ export class AppHistoryRepository {
       return await manager.save(AppHistory, entity);
     });
   }
+
+  async getVersionAndAppIdForHistory(
+    historyId: string
+  ): Promise<{ appVersionId: string | null; appId: string | null }> {
+    return await dbTransactionWrap(async (manager) => {
+      const history = await manager.findOne(AppHistory, {
+        where: { id: historyId },
+        relations: ['appVersion'],
+      });
+
+      if (!history) {
+        return { appVersionId: null, appId: null };
+      }
+
+      return {
+        appVersionId: history.appVersionId,
+        appId: history.appVersion?.appId || null,
+      };
+    });
+  }
 }

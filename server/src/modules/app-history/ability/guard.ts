@@ -7,10 +7,8 @@ import { MODULES } from '@modules/app/constants/modules';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
-  protected getResource(): ResourceDetails {
-    return {
-      resourceType: MODULES.APP_HISTORY,
-    };
+  protected getResource(): ResourceDetails | ResourceDetails[] {
+    return [{ resourceType: MODULES.APP_HISTORY }, { resourceType: MODULES.APP }];
   }
 
   protected getAbilityFactory() {
