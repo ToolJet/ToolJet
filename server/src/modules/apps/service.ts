@@ -86,17 +86,28 @@ export class AppsService implements IAppsService {
   }
 
   async validatePrivateAppAccess(app: App, ability: AppAbility, validateAppAccessDto: ValidateAppAccessDto) {
-    const { versionName, environmentName, versionId, envId } = validateAppAccessDto;
+    const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
       slug: app.slug,
       type: app.type,
     };
+    // Enforce access type for viewer users: only access_type=view is allowed
+    const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+    const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+    console.log({ hasEditPermission, hasViewPermission });
+    if (!hasEditPermission) {
+      // Viewer role: require access_type=view explicitly; reject edit or missing
+      if (accessType?.toLowerCase() !== 'view') {
+        throw new ForbiddenException({
+          organizationId: app.organizationId,
+          type: 'restricted-preview',
+        });
+      }
+    }
     /* If the request comes from preview which needs version id */
     if (versionName || environmentName || (versionId && envId)) {
-      // Check edit permission first
-      const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
-      const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+      // Check permissions (already computed above)
 
       if (!hasEditPermission && !hasViewPermission) {
         throw new ForbiddenException(
