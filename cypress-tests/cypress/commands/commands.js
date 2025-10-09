@@ -27,8 +27,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector, { timeout: 20000 }).clear();
-  cy.get(selector).type(text, { log: false });
+  cy.get(selector).type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -203,7 +202,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).invoke("removeAttr", "target").click();
+  cy.get(selector).last().invoke("removeAttr", "target").click();
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -563,7 +562,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -658,4 +657,11 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
         cy.get('[data-cy="right-sidebar-plus-button"]').click();
       }
     })
+});
+
+Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
+  cy.task("dbConnection", {
+    dbconfig: db,
+    sql: query,
+  });
 });
