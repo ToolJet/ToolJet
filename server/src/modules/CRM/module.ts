@@ -10,7 +10,6 @@ export class CrmModule extends SubModule {
       'controller',
       'service',
     ]);
-    console.log('CRM Module initialized with configs:', configs, 'isMainImport:', isMainImport, CrmController);
     return {
       module: CrmModule,
       imports: [await EmailModule.register(configs)],
