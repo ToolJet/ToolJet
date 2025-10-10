@@ -18,6 +18,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
+  const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
     if (item === activeRightSideBarTab && !isRightSidebarPinned) {
@@ -63,13 +64,15 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         icon="propertiesstyles"
         iconOnly
         iconWidth="14"
-        tip="Component properties"
+        tip={isAnyComponentSelected ? 'Component properties' : 'No component selected'}
+        disabled={!isAnyComponentSelected}
       >
         <PencilRuler
           width="16"
           height="16"
           className={`${
-            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+            (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong',
+            !isAnyComponentSelected && 'tw-text-text-disabled')
           }`}
         />
       </SidebarItem>
