@@ -7,6 +7,7 @@ import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 const envVar = Cypress.env("environment");
+import { fillInputField } from "Support/utils/common";
 
 export const manageUsersElements = () => {
   cy.get(
@@ -270,47 +271,59 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(onboardingSelectors.nameInput, firstName);
-  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+  fillInputField({ "Name": firstName, "Email address": email });
 };
 
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
+};
+
+
+export const selectGroup = (groupName, timeout = 1000) => {
+  cy.get(usersSelector.groupSelector).eq(0).type(groupName);
+  cy.wait(timeout);
+  cy.get(usersSelector.groupSelectInput).eq(0).check();
+};
+
+export const updateUserGroup = (groupName) => {
+  cy.get(usersSelector.userActionButton).click();
+  cy.get(usersSelector.editUserDetailsButton).click();
+  selectGroup(groupName);
+
 };
 
 export const inviteUserWithUserGroups = (
   firstName,
   email,
-  groupName1,
-  groupName2
+  ...groupNames
 ) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[0]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[1]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -417,14 +430,14 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.get(usersSelector.groupSelector).eq(0).type(role);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
   });
 
