@@ -749,7 +749,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
             const resizeData = {
               id: e.target.id,
-              height: height,
+              height: directions[1] !== 0 ? height : currentWidget.height,
               width: width,
               x: transformX,
               y: transformY,
