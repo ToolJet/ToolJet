@@ -1,8 +1,8 @@
-import React from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
+import React from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from './avatar';
 
 export default {
-  title: "Components/UI/Avatar",
+  title: 'Components/Avatar',
   component: Avatar,
 };
 
@@ -19,5 +19,3 @@ export const Fallback = () => (
     <AvatarFallback>CN</AvatarFallback>
   </Avatar>
 );
-
-
