@@ -123,11 +123,30 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 
 ### Enabling Workflow Scheduling
 
-To activate workflow scheduling, set the following environment variable:
+Please deploy the below containers to enable workflows scheduling.
+
+#### Worker container:
+
+You can use the same `tooljet/tooljet:ee-lts-latest` image tag and ensure it has env variables from the tooljet-app container.
+
+To activate workflow scheduling, set the following environment variables:
 
 ```bash
-WORKER=true
+WORKFLOW_WORKER=true
+ENABLE_WORKFLOW_SCHEDULING=true
+TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
 ```
+
+Under the containers tab, please make sure the command `npm, run, worker:prod` is set.
+<img className="screenshot-full img-m" src="/img/cloud-run/tooljet-worker-settings.png" alt="ToolJet Worker Settings" />
+
+#### Temporal server container:
+
+1. Set the image tag as `temporalio/auto-setup:1.25.1`
+   <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-settings.png" alt="Temporal Settings" />
+2. Add the below env variables to the temporal container:
+   <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-variables-and-secrets.png" alt="Temporal Variables and Secrets" />
 
 ## Upgrading to the Latest LTS Version
 

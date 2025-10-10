@@ -109,13 +109,17 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 
 ### Enabling Workflow Scheduling
 
-To activate workflow scheduling, set the following environment variable in your ToolJet deployment:
+Create workflow deployment:
 
 ```bash
-WORKER=true
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/workflow-deployment.yaml
 ```
 
-**Note:** Ensure that this environment variable is added to your OpenShift deployment configuration (e.g., in your deployment.yaml file).
+**Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment.
+
+`ENABLE_WORKFLOW_SCHEDULING=true`
+`TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default`
+`TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>`
 
 ## Upgrading to the Latest LTS Version
 

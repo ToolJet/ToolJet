@@ -131,18 +131,6 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
-## Workflows
-
-ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
-
-### Enabling Workflow Scheduling
-
-To activate workflow scheduling, set the following environment variable:
-
-```bash
-WORKER=true
-```
-
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
