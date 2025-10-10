@@ -62,11 +62,21 @@ export const createGroup = (groupName) => {
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
     cy.get(groupsSelector.createGroupButton).click();
 }
-export const validateUserInGroup = (email, workspaceSlug, groupName, shouldExist = true) => {
+
+export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, workspaceSlug = 'my-workspace') => {
     if (workspaceSlug) cy.visit(workspaceSlug);
     navigateToManageGroups();
-    cy.get(groupsSelector.groupLink(groupName)).click();
-    cy.get(groupsSelector.usersLink).click();
-    const userRow = `[data-cy="${email}-user-row"]`;
-    cy.get(userRow).should(shouldExist ? "exist" : "not.exist");
+
+    groupNames.forEach((groupName) => {
+        cy.get(groupsSelector.groupLink(groupName)).click();
+        cy.get(groupsSelector.usersLink).click();
+
+        cy.get(groupsSelector.userRow(email))
+            .should(shouldExist ? "exist" : "not.exist")
+            .then(($el) => {
+                if (shouldExist) {
+                    cy.wrap($el).scrollIntoView().should('be.visible');
+                }
+            });
+    });
 };

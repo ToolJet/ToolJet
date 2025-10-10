@@ -255,7 +255,16 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph', 'hubspot', 'gmail'];
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'microsoft_graph',
+      'hubspot',
+      'gmail',
+    ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -393,6 +402,16 @@ class DataSourceManagerComponent extends React.Component {
 
   updateSuggestedDatasources = () => {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
+  };
+
+  checkShouldRenderFooterComponent = (datasourceKind, datasourceOptions) => {
+    switch (datasourceKind) {
+      case 'googlesheets': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      default:
+        return true;
+    }
   };
 
   setValidationMessages = (errors, schema, interactedFields) => {
@@ -953,7 +972,10 @@ class DataSourceManagerComponent extends React.Component {
       'snowflake',
       'microsoft_graph',
       'hubspot',
-      'gmail'];
+      'gmail',
+    ];
+
+    const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
     return (
       pluginsLoaded && (
         <div>
@@ -1083,6 +1105,7 @@ class DataSourceManagerComponent extends React.Component {
 
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
+                  shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
                       options?.auth_type?.value === 'oauth2' &&
