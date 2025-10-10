@@ -18050,12 +18050,13 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 .create-version-modal{
-  height: 502px;
+  height: 540px;
   .loader-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 180px;
+      height: 100%; // take up full height of parent
+      transform: translateY(-10%);
     }
   .modal-body{
     height: 446px !important;

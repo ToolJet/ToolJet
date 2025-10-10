@@ -142,7 +142,7 @@ const CreateVersionModal = ({
           }}
         >
           <div className="mb-3 pb-2">
-            <div className="col mt-2">
+            <div className="col">
               <label className="form-label" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
               </label>
@@ -162,7 +162,7 @@ const CreateVersionModal = ({
                 {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 50 characters')}
               </small>
             </div>
-            <div className="col mt-3 mb-3">
+            <div className="col mt-3">
               <label className="form-label" data-cy="version-description-label">
                 {t('editor.appVersionManager.versionDescription', 'Version Description')}
               </label>
@@ -235,10 +235,11 @@ const CreateVersionModal = ({
               }}
             >
               <div className="" data-cy="workspace-constant-helper-text">
-                The new version will be created in development environment
+                Creating this version will lock it. Any edits afterwards will automatically start a new draft.
               </div>
             </div>
           </Alert>
+          <hr className="section-divider" />
 
           <div className="mb-3">
             <div className="col d-flex justify-content-end">
