@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
-import Select, { SelectV2 } from '@/_ui/Select';
+import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersionModal } from './EditVersionModal';
 import { ConfirmDialog } from '@/_components';
@@ -110,9 +110,7 @@ export const SingleValue = ({ selectProps = {} }) => {
             onToggleMenu();
           }
         }}
-        variant="ghost"
-        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
-      >
+        variant="ghost" className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}>
         <Tag width="16" height="16" className="tw-text-icon-success" />
 
         <span
@@ -158,7 +156,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />
-      <SelectV2
+      <Select
         width={'100%'}
         data-cy={`test-version-selector`}
         hasSearch={false}
