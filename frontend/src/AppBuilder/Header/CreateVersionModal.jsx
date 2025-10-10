@@ -162,7 +162,7 @@ const CreateVersionModal = ({
                 {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 50 characters')}
               </small>
             </div>
-            <div className="col mt-3">
+            <div className="col mt-2">
               <label className="form-label" data-cy="version-description-label">
                 {t('editor.appVersionManager.versionDescription', 'Version Description')}
               </label>
