@@ -69,16 +69,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   lazyLoadAppVersions: async (appId) => {
     try {
-      console.log('testing app id', appId);
-      console.log('again test-11', get().selectedEnvironment.id);
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, get().selectedEnvironment.id);
-      console.log('response', response);
       set({
         versionsPromotedToEnvironment: response.appVersions,
         appVersionsLazyLoaded: true,
       });
     } catch (error) {
-      console.log('testing error', error);
       console.error('Error while getting the versions', error);
     }
   },

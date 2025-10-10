@@ -84,7 +84,7 @@ const Menu = (props) => {
                   // fill={`${props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`}
                 />
               </svg>
-              Create new version-11
+              Create new version
             </div>
           </ToolTip>
         )}
