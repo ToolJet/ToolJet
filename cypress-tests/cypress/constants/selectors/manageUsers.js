@@ -77,5 +77,7 @@ export const usersSelector = {
   editUserDetailsButton: '[data-cy="edit-user-details-button"]',
   fullNameLabel: '[data-cy="label-full-name-input-field"]',
   groupChip: '[data-cy="group-chip"]',
+  groupSelector: '[data-cy="user-group-select"]>>>>>',
+  groupSelectInput: '[data-cy="group-check-input"]',
 
 };

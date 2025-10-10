@@ -1,5 +1,6 @@
 export enum FEATURE_KEY {
   EXECUTE_WORKFLOW = 'execute_workflow',
+  EXECUTE_WORKFLOW_FROM_APP = 'execute_workflow_from_app',
   WORKFLOW_EXECUTION_STATUS = 'workflow_execution_status',
   WORKFLOW_EXECUTION_DETAILS = 'workflow_execution_details',
   LIST_WORKFLOW_EXECUTIONS = 'list_workflow_executions',

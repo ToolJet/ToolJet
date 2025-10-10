@@ -4,6 +4,7 @@ import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
 import _, { isArray, isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
+import { cn } from '@/lib/utils';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
@@ -33,6 +34,7 @@ import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollH
 import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
+import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -235,6 +237,14 @@ export default function Grid({ gridWidth, currentLayout }) {
               draggable="false"
             />
             <span>components</span>
+
+            <hr
+              className={cn(
+                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
+              )}
+            />
+
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
           </div>
         </span>
       </div>
