@@ -128,28 +128,13 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 
 ### Enabling Workflow Scheduling
 
-To activate workflows scheduling, set the following environment variables:
+To activate workflows scheduling, set the following environment variable:
 
 ```bash
-WORKFLOW_WORKER=true
-ENABLE_WORKFLOW_SCHEDULING=true
-TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
-TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
+WORKER=true
 ```
 
-**Note**: Workflows scheduling requires a Temporal server to be deployed. Restarting the server using `./setup_app`.
-
-### Deploying Temporal with Docker Compose
-
-Below is a `docker-compose` template to set up Temporal.
-
-```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/ec2-temporal/docker-compose.yml
-```
-
-This setup can be deployed on a different EC2 instance. To enable seamless communication, ensure that both the application server and the Temporal server are in the same VPC.
-
-**Note**: Ensure that port 7233 is configured for gRPC in the security group.
+**Note**: After updating the `.env` file, restart the server using `./setup_app`.
 
 ## Upgrading to the Latest LTS Version
 
