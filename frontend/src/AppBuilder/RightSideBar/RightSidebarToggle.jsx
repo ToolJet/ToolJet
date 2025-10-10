@@ -71,9 +71,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
           width="16"
           height="16"
           className={`${
-            (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong',
-            !isAnyComponentSelected && 'tw-text-text-disabled')
+            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
           }`}
+          style={{ color: !isAnyComponentSelected ? 'var(--text-disabled)' : undefined }}
         />
       </SidebarItem>
       {appType !== 'module' && (
