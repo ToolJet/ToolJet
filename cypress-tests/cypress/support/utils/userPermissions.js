@@ -2,7 +2,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { createFolder, deleteFolder } from "Support/utils/common";
-import { addNewconstants } from "Support/utils/workspaceConstants";
+import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
 
 const appOperations = {
   createApp: (appName) => {
@@ -39,7 +39,7 @@ const folderOperations = {
 const constantsOperations = {
   createConstant: (name, value) => {
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    addNewconstants(name, value);
+    addAndVerifyConstants(name, value);
   },
 
   deleteConstant: (name) => {

@@ -519,8 +519,11 @@ export const OidcConfig = (groupMapping, level = "workspace", extra = {}) => {
   return cy.apiUpdateSSOConfig(config, level);
 };
 
-export const samlConfig = () => {
-  cy.apiUpdateSSOConfig(config);
+export const uiOktaLogin = (email, password) => {
+  cy.get('input[name="identifier"]').type(email);
+  cy.get(".button-primary").click();
+  cy.get('input[name="credentials.passcode"]').type(password);
+  cy.get(".button-primary").click();
 };
 
 
