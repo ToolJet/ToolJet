@@ -13,9 +13,8 @@
   },
   "dependencies": {
     "cypress-real-events": "^1.7.6",
-    "moment": "^2.30.1",
-    "node-xlsx": "^0.21.0",
+ develop
     "pdf-parse": "^1.1.1",
-    "pg": "^8.8.0"
+    "pg": "^8.16.3"
   }
 }
