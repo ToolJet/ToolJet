@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zendesk Dark Theme Example</title>
+  <style>
+    body {
+      background-color: #1F2937;
+      color: #F9FAFB;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #4F46E5;
+      margin-bottom: 20px;
+    }
+    
+    .info-box {
+      background-color: #374151;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    code {
+      background-color: #111827;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌙 Zendesk Widget Dark Theme Example</h1>
+    
+    <div class="info-box">
+      <p><strong>This page demonstrates Zendesk Web Widget with dark theme enabled.</strong></p>
+      <p>Look for the chat widget in the bottom-right corner. It should match the dark theme of this page.</p>
+      <p>Replace <code>YOUR_ZENDESK_KEY</code> with your actual Zendesk Widget Key.</p>
+    </div>
+    
+    <div class="info-box">
+      <h2>Features Enabled:</h2>
+      <ul>
+        <li>Dark color scheme</li>
+        <li>Custom theme color (#1F2937)</li>
+        <li>Custom launcher color (#4F46E5)</li>
+        <li>Custom launcher text color</li>
+        <li>Responsive design</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Zendesk Widget Configuration -->
+  <script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=YOUR_ZENDESK_KEY"></script>
+  
+  <script type="text/javascript">
+    // Configure Zendesk Widget with dark theme
+    window.zESettings = {
+      webWidget: {
+        color: {
+          theme: "#1F2937",           // Dark background
+          launcher: "#4F46E5",        // Purple/Indigo launcher button
+          launcherText: "#FFFFFF",    // White text on launcher
+          button: "#4F46E5",          // Button color
+          resultLists: "#1F2937",     // Result lists background
+          header: "#111827",          // Header background
+          articleLinks: "#4F46E5"     // Article link color
+        },
+        launcher: {
+          chatLabel: {
+            "en-US": "Need Help?",
+            "es": "¿Necesitas ayuda?",
+            "fr": "Besoin d'aide?",
+            "de": "Brauchen Sie Hilfe?"
+          }
+        },
+        answerBot: {
+          avatar: {
+            url: "https://your-domain.com/avatar.png", // Optional: Custom avatar
+            name: {
+              "*": "Support Bot"
+            }
+          }
+        },
+        chat: {
+          departments: {
+            enabled: [],
+            select: "Support"
+          },
+          prechatForm: {
+            greeting: {
+              "*": "Welcome! How can we help you today?"
+            }
+          },
+          offlineForm: {
+            greeting: {
+              "*": "We're currently offline. Leave us a message and we'll get back to you soon."
+            }
+          }
+        },
+        contactForm: {
+          title: {
+            "*": "Leave us a message"
+          }
+        },
+        talk: {
+          nickname: "Support Team"
+        },
+        helpCenter: {
+          messageButton: {
+            "*": "Leave a message"
+          }
+        }
+      }
+    };
+
+    // Apply additional customization after widget loads
+    if (typeof zE !== 'undefined') {
+      zE('webWidget', 'updateSettings', {
+        webWidget: {
+          color: {
+            theme: '#1F2937',
+            launcher: '#4F46E5'
+          }
+        }
+      });
+      
+      // Optional: Auto-open the widget
+      // zE('webWidget', 'open');
+      
+      // Optional: Show the widget
+      zE('webWidget', 'show');
+    }
+  </script>
+</body>
+</html>

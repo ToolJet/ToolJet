@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercom Dark Theme Example</title>
+  <style>
+    body {
+      background-color: #1F2937;
+      color: #F9FAFB;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #4F46E5;
+      margin-bottom: 20px;
+    }
+    
+    .info-box {
+      background-color: #374151;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    code {
+      background-color: #111827;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌙 Intercom Dark Theme Example</h1>
+    
+    <div class="info-box">
+      <p><strong>This page demonstrates Intercom widget with dark theme enabled.</strong></p>
+      <p>Look for the chat widget in the bottom-right corner. It should match the dark theme of this page.</p>
+      <p>Replace <code>YOUR_INTERCOM_APP_ID</code> with your actual Intercom App ID.</p>
+    </div>
+    
+    <div class="info-box">
+      <h2>Features Enabled:</h2>
+      <ul>
+        <li>Dark theme mode</li>
+        <li>Custom background color (#1F2937)</li>
+        <li>Custom action color (#4F46E5)</li>
+        <li>Automatic theme detection</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Intercom Widget with Dark Theme -->
+  <script>
+    // Configure Intercom settings
+    window.intercomSettings = {
+      api_base: "https://api-iam.intercom.io",
+      app_id: "YOUR_INTERCOM_APP_ID", // Replace with your actual App ID
+      
+      // Dark theme configuration
+      theme: "dark",
+      background_color: "#1F2937",  // Dark gray background
+      action_color: "#4F46E5",      // Purple/Indigo accent color
+      
+      // Optional: Custom launcher text
+      custom_launcher_selector: '.intercom-launcher',
+      
+      // Optional: Alignment and positioning
+      alignment: 'right',
+      horizontal_padding: 20,
+      vertical_padding: 20
+    };
+  </script>
+  
+  <!-- Intercom Installation Script -->
+  <script>
+    (function(){
+      var w=window;
+      var ic=w.Intercom;
+      if(typeof ic==="function"){
+        ic('reattach_activator');
+        ic('update',w.intercomSettings);
+      } else {
+        var d=document;
+        var i=function(){
+          i.c(arguments);
+        };
+        i.q=[];
+        i.c=function(args){
+          i.q.push(args);
+        };
+        w.Intercom=i;
+        var l=function(){
+          var s=d.createElement('script');
+          s.type='text/javascript';
+          s.async=true;
+          s.src='https://widget.intercom.io/widget/YOUR_INTERCOM_APP_ID';
+          var x=d.getElementsByTagName('script')[0];
+          x.parentNode.insertBefore(s, x);
+        };
+        if(document.readyState==='complete'){
+          l();
+        } else if(w.attachEvent){
+          w.attachEvent('onload',l);
+        } else {
+          w.addEventListener('load',l,false);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

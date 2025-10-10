@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crisp Dark Theme Example</title>
+  <style>
+    body {
+      background-color: #1F2937;
+      color: #F9FAFB;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #4F46E5;
+      margin-bottom: 20px;
+    }
+    
+    .info-box {
+      background-color: #374151;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    code {
+      background-color: #111827;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌙 Crisp Dark Theme Example</h1>
+    
+    <div class="info-box">
+      <p><strong>This page demonstrates Crisp chat widget with dark theme enabled.</strong></p>
+      <p>Look for the chat widget in the bottom-right corner. It should match the dark theme of this page.</p>
+      <p>Replace <code>YOUR_WEBSITE_ID</code> with your actual Crisp Website ID.</p>
+    </div>
+    
+    <div class="info-box">
+      <h2>Features Enabled:</h2>
+      <ul>
+        <li>Dark color scheme</li>
+        <li>Custom theme color (#1F2937)</li>
+        <li>Custom button color (#4F46E5)</li>
+        <li>Safe mode enabled</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Crisp Widget with Dark Theme -->
+  <script type="text/javascript">
+    // Initialize Crisp
+    window.$crisp = [];
+    window.CRISP_WEBSITE_ID = "YOUR_WEBSITE_ID"; // Replace with your actual Website ID
+    
+    (function(){
+      var d = document;
+      var s = d.createElement("script");
+      s.src = "https://client.crisp.chat/l.js";
+      s.async = 1;
+      d.getElementsByTagName("head")[0].appendChild(s);
+    })();
+    
+    // Configure dark theme after script loads
+    window.$crisp.push(["safe", true]);
+    
+    // Set dark theme colors
+    window.$crisp.push(["config", "color:theme", ["#1F2937"]]);
+    window.$crisp.push(["config", "color:button", ["#4F46E5"]]);
+    
+    // Optional: Customize chat box position
+    window.$crisp.push(["config", "position:reverse", [false]]);
+    
+    // Optional: Set custom text
+    window.$crisp.push(["config", "hide:on:away", [false]]);
+    window.$crisp.push(["config", "hide:on:mobile", [false]]);
+    
+    // Optional: Auto-open behavior
+    // window.$crisp.push(["do", "chat:open"]);
+  </script>
+</body>
+</html>
