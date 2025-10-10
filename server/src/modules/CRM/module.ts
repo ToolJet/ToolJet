@@ -14,7 +14,7 @@ export class CrmModule extends SubModule {
       module: CrmModule,
       imports: [await EmailModule.register(configs)],
       controllers: isMainImport ? [CrmController] : [],
-      providers: [CRMService, CrmListenerService], // Register CRM Listener service
+      providers: isMainImport ? [CRMService, CrmListenerService] : [], // Register CRM Listener service
       exports: [CrmListenerService], // Export the CRM Listener if needed elsewhere
     };
   }
