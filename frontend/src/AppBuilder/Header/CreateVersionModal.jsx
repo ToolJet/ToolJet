@@ -16,12 +16,13 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
+  const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled =
     orgGit?.org_git?.git_ssh?.is_enabled ||
     orgGit?.org_git?.git_https?.is_enabled ||
@@ -124,8 +125,9 @@ const CreateVersionModal = ({
         setVersionName('');
         setShowCreateAppVersion(false);
       }}
-      title={t('editor.appVersionManager.createVersion', 'Create new version')}
-      customClassName="git-sync-modal"
+      title={'Create new version'}
+      customClassName="create-version-modal"
+      // customClassName="git-sync-modal"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">
@@ -133,14 +135,14 @@ const CreateVersionModal = ({
         </div>
       ) : (
         <form
-          className="commit-form"
+          className="create-version-form"
           onSubmit={(e) => {
             e.preventDefault();
             createVersion();
           }}
         >
           <div className="mb-3 pb-2">
-            <div className="col">
+            <div className="col mt-2">
               <label className="form-label" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
               </label>
@@ -156,10 +158,34 @@ const CreateVersionModal = ({
                 minLength="1"
                 maxLength="25"
               />
+              <small className='version-name-helper-text'>
+                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 50 characters')}
+              </small>
+            </div>
+            <div className="col mt-3 mb-3">
+              <label className="form-label" data-cy="version-description-label">
+                {t('editor.appVersionManager.versionDescription', 'Version Description')}
+              </label>
+              <textarea
+                type="text"
+                onChange={(e) => setVersionDescription(e.target.value)}
+                className="form-control app-version-description"
+                data-cy="version-description-input-field"
+                placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
+                disabled={isCreatingVersion}
+                value={versionDescription}
+                autoFocus={true}
+                minLength="1"
+                maxLength="500"
+              />
+              <small className='version-description-helper-text'>
+                {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
+              </small>
             </div>
           </div>
+          {/* // 320 , 502 */}
 
-          <div className="mb-4 pb-2 version-select">
+          {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
               {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
             </label>
@@ -175,7 +201,7 @@ const CreateVersionModal = ({
                 maxMenuHeight={100}
               />
             </div>
-          </div>
+          </div> */}
 
           {isGitSyncEnabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>

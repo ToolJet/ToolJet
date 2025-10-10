@@ -18049,3 +18049,19 @@ section.ai-message-prompt-input-wrapper {
     width: 90px
   }
 }
+.create-version-modal{
+  height: 502px;
+  .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+    }
+  .modal-body{
+    height: 446px !important;
+    padding: 24px !important;
+  }
+  .create-version-form{
+    height: 320px !important;
+  }
+}
