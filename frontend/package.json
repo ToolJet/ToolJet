@@ -65,7 +65,7 @@
     "react-datetime": "^3.2.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^18.2.0",
+    "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-easy-sort": "^1.5.1",
     "react-google-login": "^5.2.2",
