@@ -221,7 +221,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
               switchDarkMode={switchDarkMode}
               isSidebarPinned={isViewerSidebarPinned}
-              toggleSidebarPinned={toggleSidebarPinned}
+              setIsSidebarPinned={setIsSidebarPinned}
               darkMode={darkMode}
               canvasMaxWidth={canvasMaxWidth}
             />

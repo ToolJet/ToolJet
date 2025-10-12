@@ -16,6 +16,14 @@ import { Overlay, Popover } from 'react-bootstrap';
 import { buildTree } from './Tree/utilities';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import {
+  Sidebar as SidebarWrapper,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarProvider,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -24,7 +32,7 @@ export const PagesSidebarNavigation = ({
   darkMode,
   showHeader,
   isSidebarPinned,
-  toggleSidebarPinned,
+  setIsSidebarPinned,
   height,
   canvasMaxWidth,
   switchDarkMode,
@@ -455,6 +463,187 @@ export const PagesSidebarNavigation = ({
   const rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_WIDTH : 0;
   const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
 
+  const Header = () => {
+    if (!collapsable && headerHidden && logoHidden) {
+      return null;
+    }
+
+    return (
+      <div
+        ref={headerRef}
+        style={{
+          marginRight: headerHidden && logoHidden && position == 'top' && '0px',
+        }}
+        className="app-name"
+      >
+        {!logoHidden && (
+          <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+            <AppLogo height={32} isLoadingFromHeader={false} />
+          </div>
+        )}
+        {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
+          <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
+            {name?.trim() ? name : appName}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const Body = () => {
+    if (isLicensed && !isPagesSidebarHidden) {
+      return (
+        <RenderPageAndPageGroup
+          switchPageWrapper={switchPageWrapper}
+          pages={pages}
+          labelStyle={labelStyle}
+          computeStyles={computeStyles}
+          darkMode={darkMode}
+          switchPage={switchPage}
+          linkRefs={linkRefs}
+          visibleLinks={visibleLinks}
+          overflowLinks={overflowLinks}
+          moreBtnRef={moreRef}
+          navRef={navRef}
+          position={position}
+          isSidebarPinned={isSidebarPinned}
+          currentMode={currentMode}
+        />
+      );
+    } else {
+      return (
+        !isPagesSidebarHidden && (
+          <RenderPagesWithoutGroup
+            darkMode={darkMode}
+            homePageId={homePageId}
+            labelStyle={labelStyle}
+            isSidebarPinned={isSidebarPinned}
+            pages={pages}
+            currentPageId={currentPageId}
+            computeStyles={computeStyles}
+            switchPageWrapper={switchPageWrapper}
+            moreBtnRef={moreRef}
+            visibleLinks={visibleLinks}
+            overflowLinks={overflowLinks}
+            position={position}
+            currentMode={currentMode}
+          />
+        )
+      );
+    }
+  };
+
+  const Footer = ({ toggleSidebar }) => {
+    const handleToggle = () => {
+      if (position === 'side' && toggleSidebar && typeof toggleSidebar === 'function') {
+        toggleSidebar();
+      } else return;
+    };
+
+    if (appMode === 'auto') {
+      return (
+        <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+          <DarkModeToggle
+            toggleForCanvas={true}
+            toggleSize="large"
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+            tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
+          />
+          {collapsable && !isTopPositioned && position === 'side' && !isPagesSidebarHidden && (
+            <ButtonComponent className="left-sidebar-item" onClick={handleToggle} variant="ghost" size="large" iconOnly>
+              {isSidebarPinned ? (
+                <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
+              ) : (
+                <IconLayoutSidebarRightCollapse size={16} className="tw-text-icon-strong" />
+              )}
+            </ButtonComponent>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const FooterWithToggle = () => {
+    // The useSidebar hook must be used within a SidebarProvider
+    const { toggleSidebar } = useSidebar();
+
+    return <Footer toggleSidebar={toggleSidebar} />;
+  };
+
+  const Sidebar = () => {
+    return (
+      <div
+        ref={(el) => {
+          navRef.current = el;
+          navigationRef.current = el;
+        }}
+        className={cx('navigation-area', {
+          'navigation-hover-trigger': currentMode === 'edit',
+          // close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
+          'icon-only':
+            (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
+            (style === 'texticon' &&
+              (collapsable ? !isSidebarPinned : false) &&
+              position === 'side' &&
+              !isPagesSidebarHidden),
+          'position-top': position === 'top' || isPagesSidebarHidden,
+          'text-only': style === 'text',
+          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+          'no-preview-settings': isReleasedVersionId,
+        })}
+        style={{
+          // width: 226,
+          position: 'sticky',
+          height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
+          top: '0px',
+          bottom: '0px',
+          background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
+          border: `${styles?.pillRadius?.value}px`,
+          borderRight:
+            !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
+              ? `1px solid ${styles?.borderColor?.value}`
+              : '',
+          borderBottom:
+            !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
+              ? `1px solid ${styles?.borderColor?.value}`
+              : '',
+          overflow: 'scroll',
+          boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
+          maxWidth: (() => {
+            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
+              return canvasMaxWidth;
+            }
+          })(),
+        }}
+        onClick={handleSidebarClick}
+      >
+        {position === 'side' ? (
+          // Using shadcn sidebar component when the page menu is side aligned
+          <>
+            <SidebarHeader>
+              <Header />
+            </SidebarHeader>
+            <SidebarContent>
+              <Body />
+            </SidebarContent>
+            <SidebarFooter>
+              <FooterWithToggle />
+            </SidebarFooter>
+          </>
+        ) : (
+          <>
+            <Header />
+            <Body />
+            <Footer />
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -514,137 +703,23 @@ export const PagesSidebarNavigation = ({
       </button>
       {/* Wrapper div to maintain hover state between navigation and tooltip */}
       <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
-        <div
-          ref={(el) => {
-            navRef.current = el;
-            navigationRef.current = el;
-          }}
-          className={cx('navigation-area', {
-            'navigation-hover-trigger': currentMode === 'edit',
-            close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-            'icon-only':
-              (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
-              (style === 'texticon' &&
-                (collapsable ? !isSidebarPinned : false) &&
-                position === 'side' &&
-                !isPagesSidebarHidden),
-            'position-top': position === 'top' || isPagesSidebarHidden,
-            'text-only': style === 'text',
-            // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-            // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-            'no-preview-settings': isReleasedVersionId,
-          })}
-          style={{
-            width: 226,
-            position: 'sticky',
-            height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
-            top: '0px',
-            bottom: '0px',
-            background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
-            border: `${styles?.pillRadius?.value}px`,
-            borderRight:
-              !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
-                ? `1px solid ${styles?.borderColor?.value}`
-                : '',
-            borderBottom:
-              !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
-                ? `1px solid ${styles?.borderColor?.value}`
-                : '',
-            overflow: 'scroll',
-            boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
-            maxWidth: (() => {
-              if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
-                return canvasMaxWidth;
-              }
-            })(),
-          }}
-          onClick={handleSidebarClick}
-        >
-          <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
-            {(collapsable || !headerHidden || !logoHidden) && (
-              <div
-                ref={headerRef}
-                style={{
-                  marginRight: headerHidden && logoHidden && position == 'top' && '0px',
-                }}
-                className="app-name"
-              >
-                {!logoHidden && (
-                  <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
-                    <AppLogo height={32} isLoadingFromHeader={false} />
-                  </div>
-                )}
-                {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
-                  <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
-                    {name?.trim() ? name : appName}
-                  </div>
-                )}
-              </div>
-            )}
-            {isLicensed && !isPagesSidebarHidden ? (
-              <RenderPageAndPageGroup
-                switchPageWrapper={switchPageWrapper}
-                pages={pages}
-                labelStyle={labelStyle}
-                computeStyles={computeStyles}
-                darkMode={darkMode}
-                switchPage={switchPage}
-                linkRefs={linkRefs}
-                visibleLinks={visibleLinks}
-                overflowLinks={overflowLinks}
-                moreBtnRef={moreRef}
-                navRef={navRef}
-                position={position}
-                isSidebarPinned={isSidebarPinned}
-                currentMode={currentMode}
-              />
-            ) : (
-              !isPagesSidebarHidden && (
-                <RenderPagesWithoutGroup
-                  darkMode={darkMode}
-                  homePageId={homePageId}
-                  labelStyle={labelStyle}
-                  isSidebarPinned={isSidebarPinned}
-                  pages={pages}
-                  currentPageId={currentPageId}
-                  computeStyles={computeStyles}
-                  switchPageWrapper={switchPageWrapper}
-                  moreBtnRef={moreRef}
-                  visibleLinks={visibleLinks}
-                  overflowLinks={overflowLinks}
-                  position={position}
-                  currentMode={currentMode}
-                />
-              )
-            )}
-          </div>
-          {appMode === 'auto' && (
-            <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-              <DarkModeToggle
-                toggleForCanvas={true}
-                toggleSize="large"
-                switchDarkMode={switchDarkMode}
-                darkMode={darkMode}
-                tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
-              />
-              {collapsable && !isTopPositioned && position === 'side' && !isPagesSidebarHidden && (
-                <ButtonComponent
-                  className="left-sidebar-item"
-                  onClick={toggleSidebarPinned}
-                  variant="ghost"
-                  size="large"
-                  iconOnly
-                >
-                  {isSidebarPinned ? (
-                    <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
-                  ) : (
-                    <IconLayoutSidebarRightCollapse size={16} className="tw-text-icon-strong" />
-                  )}
-                </ButtonComponent>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Main sidebar content */}
+        {position === 'side' ? (
+          // Using shadcn sidebar component when the page menu is side aligned
+          <SidebarProvider
+            open={isSidebarPinned}
+            onOpenChange={setIsSidebarPinned}
+            sidebarWidth="226px"
+            sidebarWidthIcon="44px"
+          >
+            <SidebarWrapper>
+              <Sidebar />
+            </SidebarWrapper>
+          </SidebarProvider>
+        ) : (
+          <Sidebar />
+        )}
+
         {/* Show tooltip when tab is active */}
         {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
           <div

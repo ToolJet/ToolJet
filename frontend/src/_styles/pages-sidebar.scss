@@ -210,6 +210,7 @@
     
     .navigation-area {
         // margin-left: 48px;
+        width: 100%;
         z-index: 1;
         background: var(--base, #FFF);
         border-right: 1px solid var(--slate6);
@@ -329,7 +330,6 @@
         }
 
         &.icon-only {
-            width: 44px !important;
             padding: 8px 6px 16px 6px;
 
             .page-handler-wrapper {
