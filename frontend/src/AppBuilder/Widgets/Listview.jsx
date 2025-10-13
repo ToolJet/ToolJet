@@ -302,6 +302,7 @@ export const Listview = function Listview({
               listViewMode={mode}
               darkMode={darkMode}
               componentType="Listview"
+              hasNoScroll={true}
             />
           </div>
         ))}

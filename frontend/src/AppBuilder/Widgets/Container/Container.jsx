@@ -94,7 +94,6 @@ export const Container = ({
     ...headerBgColor,
   };
   const containerContentStyles = {
-    overflow: 'hidden auto',
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -144,8 +143,6 @@ export const Container = ({
               styles={{
                 ...contentBgColor,
                 borderRadius: `${borderRadius}px`,
-                // Prevent the scroll when dragging a widget inside the container or moving out of the container
-                overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
