@@ -431,21 +431,84 @@ jobs:
         run: |
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           echo "Base branch: $BASE_BRANCH"
-          
-          if [[ "$BASE_BRANCH" == "main" || "$BASE_BRANCH" == release/* ]]; then
-            DOCKERFILE="./docker/pre-release/ee/ee-preview.Dockerfile"
-            echo "Using pre-release track"
-          elif [[ "$BASE_BRANCH" == "lts-3.16" || "$BASE_BRANCH" == release-lts/* ]]; then
-            DOCKERFILE="./docker/LTS/ee/ee-preview.Dockerfile"
-            echo "Using LTS track"
+          ULTIMATE_TARGET=""
+
+          # Function to check if branch is a known target
+          is_known_target() {
+            local branch=$1
+            if [[ "$branch" == "main" || "$branch" == "develop" || "$branch" == release/* ]]; then
+              echo "pre-release"
+            elif [[ "$branch" == "lts-3.16" || "$branch" == release-lts/* || "$branch" == *lts* ]]; then
+              echo "lts"
+            else
+              echo ""
+            fi
+          }
+
+          # Check if base branch is a known target
+          ULTIMATE_TARGET=$(is_known_target "$BASE_BRANCH")
+
+          if [[ -z "$ULTIMATE_TARGET" ]]; then
+            echo "Base branch '$BASE_BRANCH' is not a known target. Tracing PR chain..."
+
+            CURRENT_BRANCH="$BASE_BRANCH"
+            MAX_DEPTH=5
+            DEPTH=0
+
+            while [[ $DEPTH -lt $MAX_DEPTH ]]; do
+              echo "  Checking level $((DEPTH+1)): $CURRENT_BRANCH"
+
+              PR_RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&head=${{ github.repository_owner }}:${CURRENT_BRANCH}")
+
+              UPSTREAM_BASE=$(echo "$PR_RESPONSE" | jq -r '.[0].base.ref // empty')
+
+              if [[ -z "$UPSTREAM_BASE" ]]; then
+                echo "  No upstream PR found for $CURRENT_BRANCH"
+                break
+              fi
+
+              echo "  Found upstream: $CURRENT_BRANCH → $UPSTREAM_BASE"
+
+              # Check if upstream is a known target
+              ULTIMATE_TARGET=$(is_known_target "$UPSTREAM_BASE")
+
+              if [[ -n "$ULTIMATE_TARGET" ]]; then
+                echo "  ✓ Found ultimate target: $UPSTREAM_BASE ($ULTIMATE_TARGET)"
+                break
+              fi
+
+              # Move up the chain
+              CURRENT_BRANCH="$UPSTREAM_BASE"
+              DEPTH=$((DEPTH+1))
+            done
+
+            # Fallback logic
+            if [[ -z "$ULTIMATE_TARGET" ]]; then
+              if [[ "$BASE_BRANCH" == *lts* ]]; then
+                echo "Branch name contains 'lts', using LTS track"
+                ULTIMATE_TARGET="lts"
+              else
+                echo "No upstream PR found, defaulting to pre-release track"
+                ULTIMATE_TARGET="pre-release"
+              fi
+            fi
           else
-            echo "Error: Unsupported base branch '$BASE_BRANCH'"
-            echo "Supported branches: main, release/*, lts-3.16, release-lts/*"
-            exit 1
+            echo "Base branch is a known target: $ULTIMATE_TARGET"
           fi
-          
+
+          # Set Dockerfile based on ultimate target
+          if [[ "$ULTIMATE_TARGET" == "lts" ]]; then
+            DOCKERFILE="./docker/LTS/ee/ee-preview.Dockerfile"
+            echo "✓ Using LTS track"
+          else
+            DOCKERFILE="./docker/pre-release/ee/ee-preview.Dockerfile"
+            echo "✓ Using pre-release track"
+          fi
+
           echo "Selected Dockerfile: $DOCKERFILE"
           echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
+          echo "ULTIMATE_TARGET=$ULTIMATE_TARGET" >> $GITHUB_ENV
 
       - name: Creating deployment for Enterprise Edition
         id: create-ee-deployment
