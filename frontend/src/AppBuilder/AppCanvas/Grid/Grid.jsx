@@ -683,6 +683,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             });
             hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            const directions = e.lastEvent?.direction;
             if (!e.lastEvent) {
               return;
             }
