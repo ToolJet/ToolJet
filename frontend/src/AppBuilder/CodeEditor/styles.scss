@@ -385,6 +385,13 @@
     }
 }
 
+.codehinter-popup{
+    .cm-editor{
+        border-radius: 0 0 4px 4px !important;
+        //box-shadow: none !important;
+    }
+}
+
 .rest-api-tab-content {
     .fields-container {
         .rest-api-codehinter-key-field {
