@@ -9,7 +9,7 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { navigateToManageUsers, logout } from "Support/utils/common";
-import { getUser } from "Support/utils/api";
+import { getUser } from "Support/utils/externalApi";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {

@@ -44,4 +44,5 @@ export enum MODULES {
   APP_GIT = 'AppGit',
   GIT_SYNC = 'GitSync',
   APP_HISTORY = 'AppHistory',
+  CRM = 'CRM',
 }

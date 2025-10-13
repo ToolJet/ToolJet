@@ -484,7 +484,7 @@ Cypress.Commands.add("apiGetEnvironments", () => {
 });
 
 Cypress.Commands.add(
-  "apiCreateWsConstant",
+  "apiCreateWorkspaceConstant",
   (constantName, value, types = [], environmentNames = []) => {
     cy.apiGetEnvironments().then((environments) => {
       const envIds = environmentNames
@@ -505,12 +505,40 @@ Cypress.Commands.add(
             },
           }).then((createResponse) => {
             expect(createResponse.status).to.equal(201);
+            const id = createResponse.body.constant.id
           });
         });
       });
     });
   }
 );
+
+Cypress.Commands.add(
+  "apiUpdateWsConstant",
+  (id, updateValue, envName) => {
+    cy.apiGetEnvironments().then((environments) => {
+      const environment = environments.find((env) => env.name === envName);
+      const envId = environment.id;
+
+      cy.getAuthHeaders().then((headers) => {
+        cy.request({
+          method: "PATCH",
+          url: `${Cypress.env("server_host")}/api/organization-constants/${id}`,
+          headers: headers,
+          body: {
+            value: String(updateValue), // ensure it's a string
+            environment_id: envId
+          }
+        }).then((response) => {
+          expect(response.status).to.equal(200);
+          response.body; // returns the PATCH response body
+        });
+      });
+    });
+  }
+);
+
+
 
 Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   cy.getAuthHeaders().then((headers) => {
@@ -560,8 +588,8 @@ Cypress.Commands.add(
           // Step 3: Filter if typesToDelete is specified
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-                typesToDelete.includes(perm.type)
-              )
+              typesToDelete.includes(perm.type)
+            )
             : granularPermissions;
 
           // Step 4: Delete each granular permission
