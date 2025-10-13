@@ -27,6 +27,7 @@ export class AiModule extends SubModule {
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
+    const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
     return {
       module: AiModule,
@@ -40,7 +41,6 @@ export class AiModule extends SubModule {
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
-        AiService,
         AiUtilService,
         AgentsService,
         ComponentsService,
@@ -56,6 +56,8 @@ export class AiModule extends SubModule {
         DataQueryRepository,
         EventsService,
         AppsUtilService,
+        AiCacheService,
+        ...(isMainImport ? [AiService, AiCacheService] : []),
       ],
       exports: [AiUtilService],
     };

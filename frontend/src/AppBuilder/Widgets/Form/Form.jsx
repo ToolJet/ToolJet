@@ -100,7 +100,6 @@ const FormComponent = (props) => {
   };
 
   const formContent = {
-    overflow: 'hidden auto',
     display: 'flex',
     height: canHeight || '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -436,7 +435,6 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    // overflow: 'hidden auto',
                     height: '100%',
                   }}
                   darkMode={darkMode}
