@@ -16,7 +16,7 @@ import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-function InviteUsersForm({
+function InviteUsersForm ({
   onClose,
   manageUser,
   changeNewUserOption,
@@ -245,10 +245,10 @@ function InviteUsersForm({
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
-          groupsToRemove.length ||
-          newRole ||
-          newGroupsToAdd.length ||
-          JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
+      groupsToRemove.length ||
+      newRole ||
+      newGroupsToAdd.length ||
+      JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
       : !inValidUserDetail || activeTab == 2;
   };
 
@@ -394,7 +394,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="email-label">
+                    <label className="form-label" data-cy="email-address-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <ToolTip
@@ -412,7 +412,7 @@ function InviteUsersForm({
                           name="email"
                           onChange={changeNewUserOption.bind(this, 'email')}
                           value={fields['email']}
-                          data-cy="email-input"
+                          data-cy="email-address-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-email">
@@ -422,7 +422,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
-                    <label className="form-label" data-cy="user-group-label">
+                    <label className="form-label" data-cy={isEditing ? 'user-group-label' : 'select-group-label'}>
                       {isEditing
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select groups')}
@@ -452,9 +452,8 @@ function InviteUsersForm({
                       Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
-                      href={`${window.public_config?.TOOLJET_HOST}${
-                        window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                      }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
+                      href={`${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                        }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
