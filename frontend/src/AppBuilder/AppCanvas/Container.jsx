@@ -133,8 +133,8 @@ const Container = React.memo(
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
-          const scrollLeft = realCanvas?.scrollLeft || 0;
-          const scrollTop = realCanvas?.scrollTop || 0;
+          const scrollLeft = realCanvas.scrollLeft || 0;
+          const scrollTop = realCanvas.scrollTop || 0;
           const x = e.clientX - rect.left + scrollLeft;
           const y = e.clientY - rect.top + scrollTop;
           setLastCanvasClickPosition({ x, y });
