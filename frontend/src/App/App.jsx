@@ -132,7 +132,6 @@ class AppComponent extends React.Component {
     }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
-    this.updateColorScheme();
     let counter = 0;
     let interval;
 
@@ -169,15 +168,11 @@ class AppComponent extends React.Component {
     // Update margin when showBanner changes
     this.updateMargin();
     // Update color scheme if darkMode changed
-    if (prevProps.darkMode !== this.props.darkMode) {
-      this.updateColorScheme();
-    }
   }
 
   switchDarkMode = (newMode) => {
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
-    this.updateColorScheme(newMode);
   };
 
   isEditorOrViewerFromPath = () => {
@@ -192,15 +187,6 @@ class AppComponent extends React.Component {
   };
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
-  };
-  updateColorScheme = (darkModeValue) => {
-    //Commenting for now as it creates issue with posthog dark mode theme
-    // const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
-    // if (isDark) {
-    //   document.documentElement.style.setProperty('color-scheme', 'dark');
-    // } else {
-    //   document.documentElement.style.removeProperty('color-scheme');
-    // }
   };
   render() {
     const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
