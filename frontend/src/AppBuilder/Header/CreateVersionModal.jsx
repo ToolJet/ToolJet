@@ -16,7 +16,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -127,7 +127,6 @@ const CreateVersionModal = ({
       }}
       title={'Create new version'}
       customClassName="create-version-modal"
-      // customClassName="git-sync-modal"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">
@@ -158,7 +157,7 @@ const CreateVersionModal = ({
                 minLength="1"
                 maxLength="25"
               />
-              <small className='version-name-helper-text'>
+              <small className="version-name-helper-text">
                 {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 50 characters')}
               </small>
             </div>
@@ -178,7 +177,7 @@ const CreateVersionModal = ({
                 minLength="1"
                 maxLength="500"
               />
-              <small className='version-description-helper-text'>
+              <small className="version-description-helper-text">
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
               </small>
             </div>
@@ -225,7 +224,7 @@ const CreateVersionModal = ({
             </div>
           )}
 
-          <Alert svg="tj-info">
+          <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
             <div
               className="d-flex align-items-center"
               style={{
@@ -234,7 +233,7 @@ const CreateVersionModal = ({
                 width: '100%',
               }}
             >
-              <div className="" data-cy="workspace-constant-helper-text">
+              <div className="create-version-helper-text" data-cy="create-version-helper-text">
                 Creating this version will lock it. Any edits afterwards will automatically start a new draft.
               </div>
             </div>

@@ -18049,21 +18049,73 @@ section.ai-message-prompt-input-wrapper {
     width: 90px
   }
 }
+
 //consider movoing it to separate scss file --> need to fix
-.create-version-modal{
-  height: 540px;
-  .loader-container {
+.create-version-modal {
+  height: 502px;
+  width: 340px;
+
+  .create-version-form {
+    .alert-component{
+      border-radius: 6px;
+      background: #ECF0FE;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%; // take up full height of parent
-      transform: translateY(-10%);
+      padding: 12px;
+      align-items: flex-start;
+      gap: 6px;
+      align-self: stretch;
+      .create-version-helper-text{
+        color: var(--text-medium, #2D343B);
+        font-family: "IBM Plex Sans";
+        font-size: 12px !important;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+      }
     }
-  .modal-body{
+    .version-name-helper-text {
+      color: var(--Slate-10, #7E868C);
+      font-family: "IBM Plex Sans";
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 16px;
+    }
+    .version-description-helper-text{
+      color: var(--Slate-10, #7E868C);
+      font-family: "IBM Plex Sans";
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 16px;
+    }
+    .create-version-alert{
+      border-radius: 6px;
+      background: #ECF0FE;
+      display: flex;
+      padding: 12px;
+      align-items: flex-start;
+      gap: 6px;
+      align-self: stretch;
+      width: 272px;
+      height: 78px;
+    }
+  }
+
+  .loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; // take up full height of parent
+    transform: translateY(-10%);
+  }
+
+  .modal-body {
     height: 446px !important;
     padding: 24px !important;
   }
-  .create-version-form{
+
+  .create-version-form {
     height: 320px !important;
   }
 }
