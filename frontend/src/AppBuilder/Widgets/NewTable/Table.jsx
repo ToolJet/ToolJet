@@ -29,6 +29,7 @@ export const Table = memo(
     adjustComponentPositions,
     currentLayout,
     currentMode,
+    subContainerIndex,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -174,6 +175,7 @@ export const Table = memo(
       currentLayout,
       width,
       visibility,
+      subContainerIndex,
     });
 
     return (

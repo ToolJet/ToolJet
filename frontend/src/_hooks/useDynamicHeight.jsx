@@ -12,10 +12,10 @@ export const useDynamicHeight = ({
   componentCount = 0,
   visibility,
   skipAdjustment = false,
+  subContainerIndex,
 }) => {
   const prevDynamicHeight = useRef(isDynamicHeightEnabled);
   const prevHeight = useRef(height);
-  const initialRender = useRef(true);
 
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
@@ -26,17 +26,16 @@ export const useDynamicHeight = ({
       element.style.height = 'auto';
       // Wait for the next frame to ensure the height has updated
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+        adjustComponentPositions(id, currentLayout, isContainer, subContainerIndex);
       });
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       element.style.height = `${height}px`;
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+        adjustComponentPositions(id, currentLayout, isContainer, subContainerIndex);
       });
     }
     prevHeight.current = element.offsetHeight;
     prevDynamicHeight.current = isDynamicHeightEnabled;
-    initialRender.current = false;
   }, [
     isDynamicHeightEnabled,
     id,
@@ -49,6 +48,7 @@ export const useDynamicHeight = ({
     componentCount,
     visibility,
     skipAdjustment,
+    subContainerIndex,
   ]);
 
   return;

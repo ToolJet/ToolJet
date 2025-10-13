@@ -68,6 +68,7 @@ const RenderWidget = ({
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
     shallow
   );
+
   const resolvedStyles = useStore(
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
     shallow
@@ -235,6 +236,7 @@ const RenderWidget = ({
             componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
             currentMode={currentMode}
+            subContainerIndex={subContainerIndex}
           />
         </div>
       </OverlayTrigger>

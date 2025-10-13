@@ -66,6 +66,7 @@ export const Tabs = function Tabs({
   dataCy,
   properties,
   currentMode,
+  subContainerIndex,
 }) {
   const { tabWidth, boxShadow } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -158,6 +159,7 @@ export const Tabs = function Tabs({
     value: currentTab,
     componentCount,
     visibility: widgetVisibility,
+    subContainerIndex,
   });
 
   useEffect(() => {

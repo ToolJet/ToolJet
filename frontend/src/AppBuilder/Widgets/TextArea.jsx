@@ -5,7 +5,8 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
-  const { properties, height, width, id, adjustComponentPositions, currentLayout, currentMode } = props;
+  const { properties, height, width, id, adjustComponentPositions, currentLayout, currentMode, subContainerIndex } =
+    props;
   const { inputRef, value } = inputLogic;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
@@ -32,6 +33,7 @@ export const TextArea = (props) => {
     currentLayout,
     width,
     visibility: inputLogic.visibility,
+    subContainerIndex,
   });
 
   return <BaseInput {...props} {...inputLogic} isDynamicHeightEnabled={isDynamicHeightEnabled} inputType="textarea" />;

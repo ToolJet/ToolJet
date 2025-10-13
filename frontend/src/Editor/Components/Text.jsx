@@ -29,6 +29,7 @@ export const Text = function Text({
   adjustComponentPositions,
   currentLayout,
   currentMode,
+  subContainerIndex,
 }) {
   let {
     textSize,
@@ -81,6 +82,7 @@ export const Text = function Text({
     currentLayout,
     width,
     visibility,
+    subContainerIndex,
   });
 
   useEffect(() => {

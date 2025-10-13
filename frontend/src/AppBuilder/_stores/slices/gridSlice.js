@@ -1,6 +1,7 @@
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
+import { isTruthyOrZero } from '@/_helpers/appUtils';
 
 const initialState = {
   hoveredComponentForGrid: '',
@@ -107,7 +108,7 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
-  adjustComponentPositions: (componentId, currentLayout = 'desktop', shouldReset = false, isContainer = false) => {
+  adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
     const {
       getResolvedValue,
       getCurrentPageComponents,
@@ -125,14 +126,27 @@ export const createGridSlice = (set, get) => ({
       // Getting all the components on the current page
       const currentPageComponents = getCurrentPageComponents();
 
+      // This is done in order to modify the component id if the sub container index exists
+      const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
+
+      // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
+      const transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
+
       // If the component is a container, we need to calculate the height of the container
       let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
 
       // Determine component visibility by checking multiple sources in priority order
-      const component = getResolvedComponent(componentId);
+      const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
       const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
       const componentDisplay = component?.others?.[displayProperty];
+
+      if (!component?.properties?.dynamicHeight) return;
+
+      if (componentType === 'Listview' && doesSubContainerIndexExist) {
+        const rowHeight = component?.properties.rowHeight;
+        containerHeight = rowHeight;
+      }
 
       // Priority: exposed visibility > component properties > component styles
       const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
@@ -144,11 +158,8 @@ export const createGridSlice = (set, get) => ({
       }
 
       // If the component is a container, we go to each and every child component and calculate the height of the container
-      if (isContainer) {
+      if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
         let contentHeight = 0;
-        // Exit if its a listview because we are not managing the height of individual rows currently
-        if (componentType === 'Listview') return;
-
         const element = document.querySelector(`.dynamic-${componentId}`);
         // If the component is not a dynamic component, we use the height of the component from the layouts
         if (!element) {
@@ -179,9 +190,10 @@ export const createGridSlice = (set, get) => ({
 
             // Dynamic height layouts
             const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
+              const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
               return {
                 ...acc,
-                ...(temporaryLayouts[id] && { [id]: temporaryLayouts[id] }),
+                ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
               };
             }, {});
 
@@ -232,12 +244,10 @@ export const createGridSlice = (set, get) => ({
               // If the component is a tabs, we add 20px for the bottom
             } else if (componentType === 'Tabs') {
               extraHeight = 20;
+            } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
+              extraHeight -= 40;
             }
-            if (Object.keys(mergedLayouts).length === 0) {
-              contentHeight = 250;
-            } else {
-              contentHeight = currentMax + 50 + extraHeight;
-            }
+            contentHeight = currentMax + 50 + extraHeight;
           }
         }
         if (visibility) {
@@ -266,15 +276,18 @@ export const createGridSlice = (set, get) => ({
       const changedComponent = boxList.find((box) => box.id === componentId);
       if (!changedComponent) return;
 
-      const componentElement = document.querySelector(`.ele-${componentId}`);
+      const componentElement =
+        doesSubContainerIndexExist && componentType !== 'Listview'
+          ? document.querySelector(`.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`)
+          : document.querySelector(`.ele-${componentId}`);
+
       if (!componentElement) return;
 
       // Get the actual new height from the DOM
       // If the component is a container, we use the container height calculated above
       // If the component is not a container, we use the offset height of the component
-      const newHeight = shouldReset
-        ? 0
-        : isContainer
+      const newHeight =
+        isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
           ? containerHeight
           : visibility
             ? componentElement.offsetHeight
@@ -289,9 +302,9 @@ export const createGridSlice = (set, get) => ({
 
       // Update the changed component's height in layouts
       const updatedLayouts = {
-        [componentId]: {
+        [transformedComponentId]: {
           ...changedComponent.layouts[currentLayout],
-          ...temporaryLayouts?.[componentId],
+          ...temporaryLayouts?.[transformedComponentId],
           height: newHeight,
         },
       };
@@ -301,10 +314,10 @@ export const createGridSlice = (set, get) => ({
       const changedCompLeft = changedComponent.layouts[currentLayout].left;
       const changedCompWidth = changedComponent.layouts[currentLayout].width;
       const changedCompRight = changedCompLeft + changedCompWidth;
-      const changedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const changedCompTop =
+        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const changedCompBottom = changedCompTop + newHeight;
       const changedCompInitialTop = changedComponent.layouts[currentLayout].top;
-      const changedCompInitialBottom = changedCompInitialTop + changedComponent.layouts[currentLayout].height;
 
       //Fetch all the components that are below the changed component
       const componentsToAdjust = boxList.filter((box) => {
@@ -334,11 +347,14 @@ export const createGridSlice = (set, get) => ({
       let currentRight = changedCompRight;
       let currentBottom = changedCompBottom;
 
-      const componentsToAdjustSorted = componentsToAdjust.sort(
-        (a, b) =>
-          (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) -
-          (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top)
-      );
+      const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
+        const transformedAId = doesSubContainerIndexExist ? `${a.id}-${subContainerIndex}` : a.id;
+        const transformedBId = subContainerIndex !== null ? `${b.id}-${subContainerIndex}` : b.id;
+        return (
+          (temporaryLayouts?.[transformedAId]?.top ?? a.layouts[currentLayout].top) -
+          (temporaryLayouts?.[transformedBId]?.top ?? b.layouts[currentLayout].top)
+        );
+      });
 
       const targetComponents = componentsToAdjustSorted.filter((component) => {
         const compLeft = component.layouts[currentLayout].left;
@@ -356,44 +372,57 @@ export const createGridSlice = (set, get) => ({
         return hasHorizontalOverlap;
       });
 
-      const oldChangedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const oldChangedCompTop =
+        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const oldChangedCompHeight =
-        temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
+        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
       const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
         const element = document.querySelector(`.ele-${component.id}`);
         if (!element) continue;
+        const transformedTargetComponentId = doesSubContainerIndexExist
+          ? `${component.id}-${subContainerIndex}`
+          : component.id;
+
         const verticalGap =
-          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) - oldChangedCompBottom;
+          (temporaryLayouts?.[transformedTargetComponentId]?.top ?? component.layouts[currentLayout].top) -
+          oldChangedCompBottom;
         const newTop = changedCompBottom + verticalGap;
 
-        updatedLayouts[component.id] = {
+        updatedLayouts[transformedTargetComponentId] = {
           ...component.layouts[currentLayout],
-          ...temporaryLayouts?.[component.id],
+          ...temporaryLayouts?.[transformedTargetComponentId],
           top: newTop,
         };
         const newBottom =
-          newTop + (temporaryLayouts?.[component.id]?.height ?? component.layouts[currentLayout].height);
+          newTop +
+          (temporaryLayouts?.[transformedTargetComponentId]?.height ?? component.layouts[currentLayout].height);
         if (newBottom > currentBottom) {
           currentBottom = newBottom;
         }
       }
 
-      if (shouldReset) {
-        setTemporaryLayouts(updatedLayouts);
-      } else {
-        if (isContainer) {
+      if (isContainer) {
+        if (componentType !== 'Listview' && doesSubContainerIndexExist) {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
-        setTemporaryLayouts(updatedLayouts);
       }
 
+      setTemporaryLayouts(updatedLayouts);
+
       toggleCanvasUpdater();
-      if (changedComponent.component?.parent) {
-        adjustComponentPositions(changedComponent.component?.parent?.slice(0, 36), currentLayout, shouldReset, true);
+      if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
+        adjustComponentPositions(
+          isContainer && isTruthyOrZero(subContainerIndex)
+            ? componentId
+            : changedComponent.component?.parent?.slice(0, 36),
+          currentLayout,
+          true,
+          componentType === 'Listview' ? null : subContainerIndex
+        );
       }
       return updatedLayouts;
     } catch (error) {

@@ -16,6 +16,7 @@ export const RichTextEditor = function RichTextEditor({
   adjustComponentPositions,
   currentLayout,
   currentMode,
+  subContainerIndex,
 }) {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, boxShadow } = styles;
@@ -37,6 +38,7 @@ export const RichTextEditor = function RichTextEditor({
     currentLayout,
     width,
     visibility: isVisible,
+    subContainerIndex,
   });
 
   useEffect(() => {

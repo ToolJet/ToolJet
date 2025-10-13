@@ -4,13 +4,15 @@ import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { ListviewSubcontainer } from './ListviewSubcontainer';
+import cx from 'classnames';
 
 export const Listview = function Listview({
   id,
@@ -25,6 +27,7 @@ export const Listview = function Listview({
   darkMode,
   dataCy,
   currentMode,
+  subContainerIndex,
 }) {
   const { moduleId } = useModuleContext();
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
@@ -86,16 +89,6 @@ export const Listview = function Listview({
 
   const [childrenData, setChildrenData] = useState({});
 
-  useDynamicHeight({
-    isDynamicHeightEnabled,
-    id,
-    height,
-    value: data,
-    adjustComponentPositions,
-    currentLayout,
-    width,
-    visibility,
-  });
   const onOptionChange = useCallback(
     (optionName, value, componentId, index) => {
       setChildrenData((prevData) => {
@@ -266,7 +259,7 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className="flex-column w-100 position-relative"
+      className={cx(`flex-column w-100 position-relative dynamic-${id}`)}
       id={id}
       ref={parentRef}
       style={computedStyles}
@@ -274,36 +267,26 @@ export const Listview = function Listview({
     >
       <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
         {filteredData.map((listItem, index) => (
-          <div
-            className={`list-item ${mode == 'list' && 'w-100'}`}
-            style={{
-              position: 'relative',
-              height: `${rowHeight}px`,
-              width: `${100 / positiveColumns}%`,
-              padding: '0px',
-              ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
-            }}
+          <ListviewSubcontainer
             key={index}
-            // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
-            onClickCapture={(event) => {
-              onRecordOrRowClicked(index);
-            }}
-          >
-            <SubContainer
-              index={index}
-              id={id}
-              key={`${id}-${index}`}
-              canvasHeight={rowHeight}
-              canvasWidth={width}
-              onOptionChange={onOptionChange}
-              onOptionsChange={onOptionsChange}
-              styles={computeCanvasBackgroundColor}
-              columns={positiveColumns}
-              listViewMode={mode}
-              darkMode={darkMode}
-              componentType="Listview"
-            />
-          </div>
+            id={id}
+            index={index}
+            mode={mode}
+            rowHeight={rowHeight}
+            positiveColumns={positiveColumns}
+            showBorder={showBorder}
+            onRecordOrRowClicked={onRecordOrRowClicked}
+            onOptionChange={onOptionChange}
+            onOptionsChange={onOptionsChange}
+            computeCanvasBackgroundColor={computeCanvasBackgroundColor}
+            darkMode={darkMode}
+            width={width}
+            isDynamicHeightEnabled={isDynamicHeightEnabled}
+            adjustComponentPositions={adjustComponentPositions}
+            data={data}
+            currentLayout={currentLayout}
+            visibility={visibility}
+          />
         ))}
       </div>
       {enablePagination && _.isArray(data) && (

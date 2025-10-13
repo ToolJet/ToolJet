@@ -5,6 +5,7 @@ import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
 import { NO_OF_GRIDS } from './appCanvasConstants';
+import { isTruthyOrZero } from '@/_helpers/appUtils';
 
 const WidgetWrapper = memo(
   ({
@@ -27,11 +28,15 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
-    const layoutData = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout],
-      shallow
-    );
-    const temporaryLayouts = useStore((state) => state.temporaryLayouts?.[id], shallow);
+    const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
+    const temporaryLayouts = useStore((state) => {
+      let transformedId = id;
+      if (subContainerIndex || subContainerIndex === 0) {
+        transformedId = `${id}-${subContainerIndex}`;
+      }
+      return state.temporaryLayouts?.[transformedId];
+    }, shallow);
+
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useStore((state) => state.resizingComponentId === id);
@@ -39,6 +44,12 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
     );
+    const hasDynamicHeight = useStore(
+      (state) =>
+        state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight && mode === 'view',
+      shallow
+    );
+
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {
       const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
@@ -70,9 +81,16 @@ const WidgetWrapper = memo(
     const width = gridWidth * newLayoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
 
+    // Calculate the final height based on visibility and temporary layouts
+    const finalHeight = visibility ? temporaryLayouts?.height ?? height : 10;
+
+    // Sets height to auto for subcontainer or listview if dynamic height is enabled
     const styles = {
       width: width + 'px',
-      height: visibility === false ? '10px' : `${height}px`,
+      height:
+        hasDynamicHeight && (isTruthyOrZero(subContainerIndex) || componentType == 'Listview')
+          ? 'auto'
+          : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
@@ -97,6 +115,7 @@ const WidgetWrapper = memo(
           widgetid={id}
           component-type={componentType}
           parent-id={parentId}
+          subcontainer-id={subContainerIndex}
           style={{
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
