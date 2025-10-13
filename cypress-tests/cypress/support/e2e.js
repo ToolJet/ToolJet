@@ -14,6 +14,7 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
+import "cypress-real-events/support";
 import "../commands/commands";
 import "../commands/apiCommands";
 import '../commands/workflowCommands';
