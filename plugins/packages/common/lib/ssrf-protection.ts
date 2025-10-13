@@ -92,25 +92,88 @@ export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
 }
 
 /**
+ * Normalize alternative IP formats to standard decimal notation
+ * Handles: hex (0xA9FEA9FE), decimal (2852039166), octal (0251.0376.0251.0376)
+ */
+function normalizeIPFormat(ip: string): string {
+  if (!ip) return ip;
+
+  // Hex: 0xA9FEA9FE or 0xA9.0xFE.0xA9.0xFE
+  if (ip.startsWith('0x') || ip.includes('.0x')) {
+    try {
+      // Handle single hex value (0xA9FEA9FE)
+      if (!ip.includes('.')) {
+        const num = parseInt(ip, 16);
+        if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
+          return [
+            (num >>> 24) & 0xFF,
+            (num >>> 16) & 0xFF,
+            (num >>> 8) & 0xFF,
+            num & 0xFF
+          ].join('.');
+        }
+      }
+      // Handle dotted hex (0xA9.0xFE.0xA9.0xFE)
+      const parts = ip.split('.').map(p => parseInt(p, 16));
+      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+        return parts.join('.');
+      }
+    } catch (e) {
+      // Fall through to original value
+    }
+  }
+
+  // Decimal: 2852039166
+  if (/^\d+$/.test(ip) && !ip.includes('.')) {
+    const num = parseInt(ip, 10);
+    if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
+      return [
+        (num >>> 24) & 0xFF,
+        (num >>> 16) & 0xFF,
+        (num >>> 8) & 0xFF,
+        num & 0xFF
+      ].join('.');
+    }
+  }
+
+  // Octal: 0251.0376.0251.0376
+  if (ip.split('.').some(part => part.startsWith('0') && part.length > 1 && /^[0-7]+$/.test(part))) {
+    try {
+      const parts = ip.split('.').map(p => parseInt(p, 8));
+      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+        return parts.join('.');
+      }
+    } catch (e) {
+      // Fall through to original value
+    }
+  }
+
+  return ip;
+}
+
+/**
  * Check if an IP address is in a private/internal range
  * Covers RFC1918, link-local, loopback, and cloud metadata endpoints
  */
 export function isPrivateIP(ip: string): boolean {
   if (!ip) return false;
 
+  // Normalize alternative IP formats (hex, decimal, octal)
+  const normalizedIP = normalizeIPFormat(ip);
+
   // First check cloud metadata endpoints
-  if (isCloudMetadataEndpoint(ip)) {
+  if (isCloudMetadataEndpoint(normalizedIP)) {
     return true;
   }
 
   // Parse IPv4 address
   const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const match = ip.match(ipv4Regex);
+  const match = normalizedIP.match(ipv4Regex);
 
   if (!match) {
     // Check for IPv6 addresses
-    if (ip.includes(':')) {
-      return isPrivateIPv6(ip);
+    if (normalizedIP.includes(':')) {
+      return isPrivateIPv6(normalizedIP);
     }
     return false;
   }
@@ -290,6 +353,20 @@ export async function validateUrlForSSRF(
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
 
+  // Check for @ symbol abuse (credentials in URL pointing to private IPs)
+  // e.g., http://169.254.169.254@example.com - should parse as connecting to 169.254.169.254
+  if (url.username || url.password) {
+    // If URL contains credentials, check if they look like an IP
+    const potentialIP = url.username || '';
+    if (isPrivateIP(potentialIP)) {
+      throw new QueryError(
+        'Private IP in URL credentials blocked',
+        'URL contains private IP address in credentials section which could be used for SSRF',
+        { hostname, credentials: potentialIP }
+      );
+    }
+  }
+
   // 1. Check for blocked schemes
   // By default, all schemes are allowed for self-hosted flexibility
   // Users can configure blocked schemes via SSRF_BLOCKED_SCHEMES env variable
@@ -329,7 +406,9 @@ export async function validateUrlForSSRF(
 
 /**
  * Creates a custom DNS lookup function that validates resolved IPs
- * This is the most effective way to prevent SSRF via DNS rebinding
+ * This prevents SSRF via DNS rebinding by:
+ * 1. Validating the resolved IP before connection
+ * 2. Caching the resolution to prevent TOCTOU attacks
  *
  * @param options - SSRF protection configuration
  * @returns Custom lookup function for got/http options
@@ -342,8 +421,22 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
     return undefined;
   }
 
+  // DNS resolution cache to prevent TOCTOU rebinding attacks
+  // Key: hostname, Value: { address, family, timestamp }
+  const dnsCache = new Map<string, { address: string; family: number; timestamp: number }>();
+  const CACHE_TTL = 60000; // 60 seconds
+
   // Return custom lookup function
   return (hostname: string, options: any, callback: Function) => {
+    // Check cache first to prevent DNS rebinding between validation and connection
+    const cached = dnsCache.get(hostname);
+    const now = Date.now();
+
+    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+      // Use cached resolution to prevent TOCTOU
+      return callback(null, cached.address, cached.family);
+    }
+
     // Use Node's callback-based dns.lookup
     dnsLookup(hostname, options, (err, address, family) => {
       if (err) {
@@ -361,6 +454,20 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
         return callback(error);
       }
 
+      // Cache the validated resolution to prevent TOCTOU attacks
+      dnsCache.set(hostname, { address, family, timestamp: now });
+
+      // Clean up old cache entries to prevent memory leak
+      if (dnsCache.size > 1000) {
+        const entriesToDelete: string[] = [];
+        dnsCache.forEach((value, key) => {
+          if ((now - value.timestamp) > CACHE_TTL) {
+            entriesToDelete.push(key);
+          }
+        });
+        entriesToDelete.forEach(key => dnsCache.delete(key));
+      }
+
       // IP is safe, proceed with connection
       callback(null, address, family);
     });
@@ -372,42 +479,55 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
  * This includes custom DNS lookup and redirect handling
  *
  * @param options - SSRF protection configuration
+ * @param existingOptions - Existing got options to merge with
  * @returns Partial got options object with SSRF protection
  */
-export function getSSRFProtectionOptions(options?: SSRFProtectionOptions): any {
+export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existingOptions?: any): any {
   const config = options || getSSRFConfig();
 
-  // If SSRF protection is disabled, return empty options
+  // If SSRF protection is disabled, return existing options unchanged
   if (!config.enabled) {
-    return {};
+    return existingOptions || {};
   }
 
   const ssrfOptions: any = {
+    ...existingOptions,
     // Custom DNS lookup function to validate resolved IPs
     dnsLookup: createSSRFSafeLookup(config),
+  };
 
-    // Hooks to validate before redirects
-    hooks: {
-      beforeRedirect: [
-        async (options: any, response: any) => {
-          // Validate redirect URL
-          const redirectUrl = response.headers.location;
-          if (redirectUrl) {
-            try {
-              // Validate the redirect URL
-              await validateUrlForSSRF(redirectUrl, config);
-            } catch (error) {
-              throw new QueryError(
-                'Redirect blocked by SSRF protection',
-                `Redirect to "${redirectUrl}" was blocked: ${error.message}`,
-                { redirectUrl, originalError: error }
-              );
-            }
-          }
-        }
-      ]
+  // Merge hooks properly to avoid overwriting existing hooks
+  const beforeRedirectHook = async (options: any, response: any) => {
+    // Validate redirect URL
+    const redirectUrl = response.headers.location;
+    if (redirectUrl) {
+      try {
+        // Validate the redirect URL
+        await validateUrlForSSRF(redirectUrl, config);
+      } catch (error) {
+        throw new QueryError(
+          'Redirect blocked by SSRF protection',
+          `Redirect to "${redirectUrl}" was blocked: ${error.message}`,
+          { redirectUrl, originalError: error }
+        );
+      }
     }
   };
+
+  // Properly merge hooks
+  if (existingOptions?.hooks) {
+    ssrfOptions.hooks = {
+      ...existingOptions.hooks,
+      beforeRedirect: [
+        ...(existingOptions.hooks.beforeRedirect || []),
+        beforeRedirectHook
+      ]
+    };
+  } else {
+    ssrfOptions.hooks = {
+      beforeRedirect: [beforeRedirectHook]
+    };
+  }
 
   return ssrfOptions;
 }

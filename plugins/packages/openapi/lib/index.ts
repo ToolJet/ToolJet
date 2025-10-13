@@ -91,8 +91,8 @@ export default class Openapi implements QueryService {
     const requestOptions = data as OptionsOfTextResponseBody;
 
     // Apply SSRF protection options (custom DNS lookup + redirect validation)
-    const ssrfOptions = getSSRFProtectionOptions();
-    const finalOptions = { ...requestOptions, ...ssrfOptions };
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
     let result = {};
     let requestObject = {};

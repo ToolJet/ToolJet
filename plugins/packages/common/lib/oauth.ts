@@ -193,17 +193,17 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
     });
 
     // Apply SSRF protection options (custom DNS lookup + redirect validation)
-    const ssrfOptions = getSSRFProtectionOptions();
-
-    const response = await got.post(sourceOptions.access_token_url, {
-      ...ssrfOptions,
+    const requestOptions = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         ...(Object.keys(headersObject).length > 0 && headersObject),
       },
       body: requestBody.toString(),
       responseType: 'json',
-    });
+    };
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
+    const response = await got.post(sourceOptions.access_token_url, finalOptions);
 
     return response.body;
   } catch (error) {
@@ -302,19 +302,19 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
   let result: any, response: any;
 
   // Apply SSRF protection options (custom DNS lookup + redirect validation)
-  const ssrfOptions = getSSRFProtectionOptions();
+  const requestOptions = {
+    method: 'post',
+    headers: {
+      'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+      ...customAccessTokenHeaders,
+    },
+    form: isUrlEncoded ? data : undefined,
+    json: !isUrlEncoded ? data : undefined,
+  };
+  const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
   try {
-    response = await got(accessTokenUrl, {
-      ...ssrfOptions,
-      method: 'post',
-      headers: {
-        'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-        ...customAccessTokenHeaders,
-      },
-      form: isUrlEncoded ? data : undefined,
-      json: !isUrlEncoded ? data : undefined,
-    });
+    response = await got(accessTokenUrl, finalOptions);
     result = JSON.parse(response.body);
   } catch (error) {
     console.error(

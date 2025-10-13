@@ -71,8 +71,8 @@ export default class RestapiQueryService implements QueryService {
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
     // Apply SSRF protection options (custom DNS lookup + redirect validation)
-    const ssrfOptions = getSSRFProtectionOptions();
-    const finalOptions = { ...requestOptions, ...ssrfOptions };
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
     try {
       const response = await got(url, finalOptions);
