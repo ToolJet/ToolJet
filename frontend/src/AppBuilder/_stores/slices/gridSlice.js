@@ -405,7 +405,7 @@ export const createGridSlice = (set, get) => ({
       }
 
       if (isContainer) {
-        if (componentType !== 'Listview' && doesSubContainerIndexExist) {
+        if (componentType !== 'Listview') {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
