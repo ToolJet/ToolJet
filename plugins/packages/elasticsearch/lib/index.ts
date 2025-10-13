@@ -121,7 +121,10 @@ export default class ElasticsearchService implements QueryService {
       url = `${protocol}://${host}:${port}`;
     }
 
-    const options: ClientOptions = { node: url };
+    const options: ClientOptions = { 
+      node: url,
+      requestTimeout: 10000,
+    };
 
     if (sslEnabled) {
       if (sslCertificate === 'ca_certificate') {
