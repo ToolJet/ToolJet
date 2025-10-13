@@ -1,6 +1,7 @@
 import { URL } from 'url';
 import { QueryError } from './query.error';
 import * as dns from 'dns/promises';
+import { lookup as dnsLookup } from 'dns';
 import * as net from 'net';
 
 const CLOUD_METADATA_ENDPOINTS = [
@@ -343,8 +344,8 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
 
   // Return custom lookup function
   return (hostname: string, options: any, callback: Function) => {
-    // Use Node's default dns.lookup
-    dns.lookup(hostname, options, (err, address, family) => {
+    // Use Node's callback-based dns.lookup
+    dnsLookup(hostname, options, (err, address, family) => {
       if (err) {
         return callback(err);
       }
