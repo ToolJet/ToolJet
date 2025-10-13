@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '@entities/user.entity';
-import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
@@ -34,7 +33,7 @@ export class AuthService implements IAuthService {
     protected instanceSettingsUtilService: InstanceSettingsUtilService,
     protected setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected eventEmitter: EventEmitter2
-  ) { }
+  ) {}
 
   async login(
     response: Response,
@@ -145,7 +144,6 @@ export class AuthService implements IAuthService {
     });
   }
 
-  //TODO:this function is not used now
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (user.defaultOrganizationId !== user.organizationId)
@@ -155,22 +153,25 @@ export class AuthService implements IAuthService {
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
 
-      return decamelizeKeysExcept({
-        currentOrganizationId: user.organizationId,
-        currentOrganizationSlug: organization.slug,
-        currentOrganizationName: organization.name,
-        currentUser: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatarId: user.avatarId,
-          ssoUserInfo: permissionData.ssoUserInfo,
-          metadata: permissionData.metadata,
-          createdAt: user.createdAt,
+      return decamelizeKeysExcept(
+        {
+          currentOrganizationId: user.organizationId,
+          currentOrganizationSlug: organization.slug,
+          currentOrganizationName: organization.name,
+          currentUser: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatarId: user.avatarId,
+            ssoUserInfo: permissionData.ssoUserInfo,
+            metadata: permissionData.metadata,
+            createdAt: user.createdAt,
+          },
+          ...permissionData,
         },
-        ...permissionData,
-      }, ['metadata']);
+        ['metadata']
+      );
     });
   }
 

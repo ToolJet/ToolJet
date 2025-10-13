@@ -38,7 +38,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     protected groupPermissionsUtilService: GroupPermissionsUtilService,
     protected eventEmitter: EventEmitter2,
     protected organizationUsersUtilService: OrganizationUsersUtilService
-  ) { }
+  ) {}
 
   async updateOrgUser(organizationUserId: string, user: User, updateOrgUserDto: UpdateOrgUserDto) {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
@@ -351,7 +351,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           return next(null, isValidName && emailPattern.test(data.email) && !isInvalidRole);
         });
       })
-      .on('data', function () { })
+      .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
         const invalidField = Object.keys(row).filter((key) => {
           if (Array.isArray(row[key])) {
@@ -370,8 +370,9 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
           if (invalidRows.length) {
             const invalidFieldsArray = invalidFields.entries().next().value[1];
-            const errorMsg = `Missing ${[invalidFieldsArray.join(',')]} information in ${invalidRows.length
-              } row(s);. No users were uploaded, please update and try again.`;
+            const errorMsg = `Missing ${[invalidFieldsArray.join(',')]} information in ${
+              invalidRows.length
+            } row(s);. No users were uploaded, please update and try again.`;
             throw new BadRequestException(errorMsg);
           }
 
@@ -477,6 +478,4 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       users: decamelizedUsers,
     };
   }
-
-
 }

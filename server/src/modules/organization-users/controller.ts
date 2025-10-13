@@ -36,7 +36,7 @@ const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @InitModule(MODULES.ORGANIZATION_USER)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class OrganizationUsersController implements IOrganizationUsersController {
-  constructor(protected organizationUsersService: OrganizationUsersService) { }
+  constructor(protected organizationUsersService: OrganizationUsersService) {}
 
   @InitFeature(FEATURE_KEY.SUGGEST_USERS)
   @Get('users/suggest')
