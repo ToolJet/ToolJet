@@ -19,6 +19,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
+  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const isGitSyncEnabled =
