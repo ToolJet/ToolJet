@@ -19,6 +19,7 @@ import {
   sanitizeSearchParams,
   getAuthUrl,
   validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
@@ -69,8 +70,12 @@ export default class RestapiQueryService implements QueryService {
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    const ssrfOptions = getSSRFProtectionOptions();
+    const finalOptions = { ...requestOptions, ...ssrfOptions };
+
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {

@@ -9,6 +9,7 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   getAuthUrl,
   validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -89,13 +90,17 @@ export default class Openapi implements QueryService {
 
     const requestOptions = data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    const ssrfOptions = getSSRFProtectionOptions();
+    const finalOptions = { ...requestOptions, ...ssrfOptions };
+
     let result = {};
     let requestObject = {};
     let responseObject = {};
     let responseHeaders = {};
 
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const contentType = response.headers['content-type'];
 
       result = contentType && contentType.includes('application/json') ? JSON.parse(response.body) : response.body;

@@ -7,7 +7,7 @@ import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
 import { isEmpty } from 'lodash';
-import { validateUrlForSSRF } from './ssrf-protection';
+import { validateUrlForSSRF, getSSRFProtectionOptions } from './ssrf-protection';
 
 export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
   const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
@@ -192,7 +192,11 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
       ...(sourceOptions.scopes ? { scope: sourceOptions.scopes } : {}),
     });
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    const ssrfOptions = getSSRFProtectionOptions();
+
     const response = await got.post(sourceOptions.access_token_url, {
+      ...ssrfOptions,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         ...(Object.keys(headersObject).length > 0 && headersObject),
@@ -297,8 +301,12 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
   const accessTokenDetails = {};
   let result: any, response: any;
 
+  // Apply SSRF protection options (custom DNS lookup + redirect validation)
+  const ssrfOptions = getSSRFProtectionOptions();
+
   try {
     response = await got(accessTokenUrl, {
+      ...ssrfOptions,
       method: 'post',
       headers: {
         'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',

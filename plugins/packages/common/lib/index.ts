@@ -35,6 +35,7 @@ import {
   validateUrlForSSRFSync,
   isPrivateIP,
   getSSRFConfig,
+  getSSRFProtectionOptions,
 } from './ssrf-protection';
 
 export {
@@ -71,4 +72,5 @@ export {
   validateUrlForSSRFSync,
   isPrivateIP,
   getSSRFConfig,
+  getSSRFProtectionOptions,
 };
