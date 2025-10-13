@@ -159,7 +159,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
         </div>
         {data?.current?.name === 'development' && (
           <div className="env-change-info" data-cy="env-change-info-text">
-            You won&apos;t be able to edit this version after promotion. Are you sure you want to continue?
+            {/* You won&apos;t be able to edit this version after promotion. Are you sure you want to continue? */}
+            This version will be pushed to Staging. Are you sure you are done editing the current version?
           </div>
         )}
       </Modal.Body>
