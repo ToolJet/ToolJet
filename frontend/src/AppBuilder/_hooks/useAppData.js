@@ -265,6 +265,7 @@ const useAppData = (
       .then(async (result) => {
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
+        let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -485,6 +486,7 @@ const useAppData = (
         setQueryMapping(moduleId);
 
         setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -686,6 +688,7 @@ const useAppData = (
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

@@ -44,7 +44,7 @@
   },
   "defaults": {
     "connectionLimit": {
-      "value": 5
+      "value": 10
     }
   },
   "properties": {
