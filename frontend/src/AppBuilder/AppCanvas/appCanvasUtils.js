@@ -488,6 +488,9 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
   // Create a virtual component representing the entire group
   const virtualGroupComponent = {
+    component: {
+      parent: targetParentId,
+    },
     layouts: {
       [layout]: {
         top: bounds.minTop,
