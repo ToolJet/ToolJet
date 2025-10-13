@@ -42,6 +42,10 @@ export default class LicenseBase {
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
   private _plan: string;
+  private _isCustomGroups: boolean;
+  private _isModules: boolean;
+  private _isAppPermissions: { component: boolean; query: boolean; pages: boolean };
+  private _isAppPages: { enabled: boolean; features: { appHeaderAndLogo: boolean; addNavGroup: boolean } };
   private BASIC_PLAN_TERMS: Partial<Terms>;
 
   constructor(
@@ -122,6 +126,10 @@ export default class LicenseBase {
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApis');
+    this._isCustomGroups = this.getFeatureValue('customGroups');
+    this._isModules = this.getFeatureValue('modules');
+    this._isAppPermissions = this.getAppPermissions();
+    this._isAppPages = this.getAppPages();
   }
 
   private getFeatureValue(key: string) {
@@ -132,6 +140,49 @@ export default class LicenseBase {
       return false;
     }
     return true;
+  }
+
+  private getAppPermissions() {
+    if (this._features && this._features['app'] && this._features['app']['permissions']) {
+      return this._features['app']['permissions'];
+    }
+    //If doesn't exist return true for older licenses
+    return { component: true, query: true, pages: true };
+  }
+
+  private getAppPages() {
+    if (this._features && this._features['app'] && this._features['app']['pages']) {
+      return this._features['app']['pages'];
+    }
+    return { enabled: true, features: { appHeaderAndLogo: true, addNavGroup: true } };
+  }
+
+  public get customGroups(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.customGroups;
+    }
+    return this._isCustomGroups;
+  }
+
+  public get modules(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.modules;
+    }
+    return this._isModules;
+  }
+
+  public get appPermissions(): { component: boolean; query: boolean; pages: boolean } {
+    if (this.IsBasicPlan) {
+      return { component: false, query: false, pages: false };
+    }
+    return this._isAppPermissions;
+  }
+
+  public get appPages(): { enabled: boolean; features: { appHeaderAndLogo: boolean; addNavGroup: boolean } } {
+    if (this.IsBasicPlan) {
+      return { enabled: false, features: { appHeaderAndLogo: false, addNavGroup: false } };
+    }
+    return this._isAppPages;
   }
 
   public get plan(): string {

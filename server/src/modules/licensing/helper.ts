@@ -118,6 +118,14 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.PLAN:
       return licenseInstance.plan;
+    case LICENSE_FIELD.MODULES:
+      return licenseInstance.modules;
+    case LICENSE_FIELD.CUSTOM_GROUPS:
+      return licenseInstance.customGroups;
+    case LICENSE_FIELD.APP_PAGES:
+      return licenseInstance.appPages;
+    case LICENSE_FIELD.APP_PERMISSIONS:
+      return licenseInstance.appPermissions;
 
     default:
       return licenseInstance.terms;

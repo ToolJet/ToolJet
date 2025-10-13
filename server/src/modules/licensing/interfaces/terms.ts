@@ -31,6 +31,23 @@ export interface Terms {
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
+    app?: {
+      pages: {
+        enabled: boolean;
+        features: {
+          appHeaderAndLogo: boolean;
+          addNavGroup: boolean;
+        };
+      };
+      permissions: {
+        component: boolean;
+        query: boolean;
+        pages: boolean;
+      };
+    };
+    modules?: boolean;
+    customGroups?: boolean;
+
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -47,6 +64,7 @@ export interface Terms {
     createdBy?: string;
   };
   workflows?: {
+    enabled?: boolean; //Wbt existing licenses hm
     execution_timeout?: number;
     workspace?: {
       total?: number | string;
