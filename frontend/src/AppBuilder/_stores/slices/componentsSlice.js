@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
   // extractAndReplaceReferencesFromString,
@@ -767,6 +767,7 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
+    console.log('here--- initDependencyGraph--- ');
     const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
     const components = getCurrentPageComponents(moduleId);
 
@@ -2232,7 +2233,7 @@ export const createComponentsSlice = (set, get) => ({
     }
     return value;
   },
-    performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+  performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
     const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
 
     const currentPageId = getCurrentPageId(moduleId);

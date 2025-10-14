@@ -1,4 +1,4 @@
-import { schemaUnavailableOptions } from '@/Editor/QueryManager/constants';
+import { schemaUnavailableOptions } from '@/AppBuilder/QueryManager/constants';
 import { allOperations } from '@tooljet/plugins/client';
 import { capitalize, cloneDeep } from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';

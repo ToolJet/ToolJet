@@ -13,7 +13,6 @@ import { handleReferenceTransactions } from './handleReferenceTransactions';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { Constants } from '@/_helpers/utils';
 
 const secretValue = '**********';
 const initialState = {

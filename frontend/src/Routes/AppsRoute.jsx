@@ -21,7 +21,10 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
+
+  // Enhanced cloning to handle both lazy and regular components
   const clonedElement = React.cloneElement(children, extraProps);
+
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);
   const { shouldBlockMobile } = useMobileRouteGuard();

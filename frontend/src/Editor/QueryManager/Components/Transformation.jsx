@@ -9,7 +9,7 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 const noop = () => {};
 
 const defaultValue = {

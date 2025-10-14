@@ -5,20 +5,88 @@ import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWo
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
-import { HomePage } from '@/HomePage';
-import { TooljetDatabase } from '@/TooljetDatabase';
+// Lazy load major routes for code splitting
+const HomePage = React.lazy(() =>
+  import(/* webpackChunkName: "dashboard" */ '@/HomePage').then((module) => ({ default: module.HomePage }))
+);
+const TooljetDatabase = React.lazy(() =>
+  import(/* webpackChunkName: "database" */ '@/TooljetDatabase').then((module) => ({ default: module.TooljetDatabase }))
+);
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { MarketplacePage } from '@/MarketplacePage';
+const Viewer = React.lazy(() =>
+  import(/* webpackChunkName: "viewer" */ '@/AppBuilder/Viewer/Viewer.jsx').then((module) => ({
+    default: module.Viewer,
+  }))
+);
+const SettingsPage = React.lazy(() =>
+  import(/* webpackChunkName: "settings" */ '../SettingsPage/SettingsPage').then((module) => ({
+    default: module.SettingsPage,
+  }))
+);
+const MarketplacePage = React.lazy(() =>
+  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage').then((module) => ({
+    default: module.MarketplacePage,
+  }))
+);
 import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
 import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import '@/_styles/theme.scss';
-import AppLoader from '@/AppLoader';
+// import AppLoader from '@/AppLoader';  // Moved to lazy import below
+
+// Lazy load AppLoader for code splitting
+const AppLoader = React.lazy(() => import(/* webpackChunkName: "editor" */ '@/AppLoader'));
+
+// Create a loading component
+const PageLoader = () => (
+  <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+    <div className="spinner-border" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+);
+
+// Higher-order component to handle props forwarding with Suspense
+const SuspendedAppLoader = React.forwardRef((props, ref) => (
+  <Suspense fallback={<PageLoader />}>
+    <AppLoader {...props} ref={ref} />
+  </Suspense>
+));
+
+// Wrapper components for lazy-loaded routes
+const SuspendedHomePage = (props) => (
+  <Suspense fallback={<PageLoader />}>
+    <HomePage {...props} />
+  </Suspense>
+);
+
+const SuspendedTooljetDatabase = (props) => (
+  <Suspense fallback={<PageLoader />}>
+    <TooljetDatabase {...props} />
+  </Suspense>
+);
+
+const SuspendedViewer = (props) => (
+  <Suspense fallback={<PageLoader />}>
+    <Viewer {...props} />
+  </Suspense>
+);
+
+const SuspendedSettingsPage = (props) => (
+  <Suspense fallback={<PageLoader />}>
+    <SettingsPage {...props} />
+  </Suspense>
+);
+
+const SuspendedMarketplacePage = (props) => (
+  <Suspense fallback={<PageLoader />}>
+    <MarketplacePage {...props} />
+  </Suspense>
+);
+
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
@@ -279,7 +347,7 @@ class AppComponent extends React.Component {
                   path="/:workspaceId/apps/:slug/:pageHandle?/*"
                   element={
                     <AppsRoute componentType="editor" darkMode={darkMode}>
-                      <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <SuspendedAppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AppsRoute>
                   }
                 />
@@ -299,7 +367,7 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/:pageHandle?"
                   element={
                     <AppsRoute componentType="viewer">
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                     </AppsRoute>
                   }
                 />
@@ -308,7 +376,7 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
                   element={
                     <AppsRoute componentType="viewer">
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                     </AppsRoute>
                   }
                 />
@@ -370,7 +438,11 @@ class AppComponent extends React.Component {
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
-                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
+                        <SuspendedHomePage
+                          switchDarkMode={this.switchDarkMode}
+                          darkMode={darkMode}
+                          appType={'module'}
+                        />
                       </PrivateRoute>
                     </DesktopOnlyRoute>
                   }
@@ -383,7 +455,7 @@ class AppComponent extends React.Component {
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
-                        <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        <SuspendedSettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
                     </DesktopOnlyRoute>
                   }
@@ -394,7 +466,7 @@ class AppComponent extends React.Component {
                   path="/applications/:id/versions/:versionId/:pageHandle?"
                   element={
                     <PrivateRoute darkMode={darkMode}>
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </PrivateRoute>
                   }
                 />
@@ -403,7 +475,7 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/:pageHandle?"
                   element={
                     <PrivateRoute>
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </PrivateRoute>
                   }
                 />
@@ -429,7 +501,7 @@ class AppComponent extends React.Component {
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
-                        <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        <SuspendedTooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
                     </DesktopOnlyRoute>
                   }
@@ -441,7 +513,7 @@ class AppComponent extends React.Component {
                     path="/integrations"
                     element={
                       <AdminRoute {...this.props} darkMode={darkMode}>
-                        <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        <SuspendedMarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </AdminRoute>
                     }
                   >
@@ -499,7 +571,11 @@ class AppComponent extends React.Component {
                   path="/:workspaceId"
                   element={
                     <PrivateRoute darkMode={darkMode}>
-                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                      <SuspendedHomePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        appType={'front-end'}
+                      />
                     </PrivateRoute>
                   }
                 />

@@ -209,6 +209,7 @@
     "tailwindcss": "^3.4.1",
     "terser-webpack-plugin": "^5.3.6",
     "webpack": "^5.75.0",
+    "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^5.2.2"
   },
@@ -262,6 +263,9 @@
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
+    "analyze": "ANALYZE=true webpack --mode=production",
+    "analyze:dev": "ANALYZE=true webpack --mode=development",
+    "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",

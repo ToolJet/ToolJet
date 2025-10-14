@@ -11,11 +11,11 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
-import { staticDataSources } from '@/Editor/QueryManager/constants';
+import { staticDataSources } from '@/AppBuilder/QueryManager/constants';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 
 export const reservedKeyword = ['app', 'window'];
 

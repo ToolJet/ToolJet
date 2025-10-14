@@ -1,5 +1,5 @@
 import { appsService, appVersionService } from '@/_services';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';

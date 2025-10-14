@@ -4,7 +4,7 @@ import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import Modal from '@/HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';

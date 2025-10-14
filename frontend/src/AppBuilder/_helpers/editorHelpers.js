@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 import { Button } from '@/Editor/Components/Button';
 import { Image } from '@/Editor/Components/Image/Image';
 import { Text } from '@/Editor/Components/Text';
@@ -21,7 +22,7 @@ import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
 // import { Modal } from '@/Editor/Components/Modal';
-import { Chart } from '@/Editor/Components/Chart';
+// import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
 import { QrScanner } from '@/Editor/Components/QrScanner/QrScanner';
 import { ToggleSwitch } from '@/Editor/Components/Toggle';
@@ -76,6 +77,20 @@ import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
 
+const Chart = React.lazy(() =>
+  import(
+    /* webpackChunkName: "plotly-chart" */
+    '@/Editor/Components/Chart'
+  ).then((m) => ({ default: m.Chart }))
+);
+
+const PDF = React.lazy(() =>
+  import(
+    /* webpackChunkName: "pdf" */
+    '@/Editor/Components/PDF'
+  ).then((m) => ({ default: m.PDF }))
+);
+
 // import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
@@ -117,7 +132,6 @@ export const AllComponents = {
   MultiselectV2,
   Modal,
   ModalV2,
-  Chart,
   Map: MapComponent,
   QrScanner,
   ToggleSwitch,
@@ -163,14 +177,56 @@ export const AllComponents = {
   ModuleViewer,
   PopoverMenu,
 };
-if (isPDFSupported()) {
-  AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
-}
+// if (isPDFSupported()) {
+//   AllComponents.PDF = PDF;
+// }
 
 export const getComponentToRender = (componentName) => {
   const shouldHideWidget = componentName === 'PDF' && !isPDFSupported();
   if (shouldHideWidget) return null;
-  return AllComponents[componentName];
+  // return AllComponents[componentName];
+  switch (componentName) {
+    case 'Text':
+      return Text;
+    case 'Image':
+      return Image;
+    case 'TextInput':
+      return TextInput;
+    case 'NumberInput':
+      return NumberInput;
+    case 'PasswordInput':
+      return PasswordInput;
+    case 'Chart':
+      return Chart;
+    case 'PDF':
+      return isPDFSupported() ? PDF : null;
+    case 'FilePicker':
+      return FilePicker;
+    case 'Icon':
+      return Icon;
+    case 'RichTextEditor':
+      return RichTextEditor;
+    case 'QrScanner':
+      return QrScanner;
+    case 'Calendar':
+      return Calendar;
+    case 'DaterangePicker':
+      return DaterangePicker;
+    case 'Datepicker':
+      return Datepicker;
+    case 'RangeSlider':
+      return RangeSlider;
+    case 'ColorPicker':
+      return ColorPicker;
+    case 'TreeSelect':
+      return TreeSelect;
+    case 'BoundedBox':
+      return BoundedBox;
+    case 'Map':
+      return MapComponent;
+    default:
+      return AllComponents[componentName];
+  }
 };
 
 export function isOnlyLayoutUpdate(diffState) {
