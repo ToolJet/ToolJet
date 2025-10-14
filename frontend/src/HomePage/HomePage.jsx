@@ -1241,12 +1241,13 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const moduleEnabled = featureAccess?.modules || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return invalidLicense;
+        return !moduleEnabled;
       } else if (this.props.appType === 'front-end') {
         return appsLimit?.percentage >= 100;
       } else {
@@ -1901,7 +1902,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={invalidLicense}
+                        disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={this.openCreateAppModal}
@@ -1910,8 +1911,8 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={invalidLicense}
-                          message="Modules are available only on paid plans"
+                          show={!moduleEnabled}
+                          message="Modules are not available on your current plan."
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
@@ -1947,6 +1948,7 @@ class HomePageComponent extends React.Component {
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
                     basicPlan={invalidLicense}
+                    moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}

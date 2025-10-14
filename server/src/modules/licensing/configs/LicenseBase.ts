@@ -143,14 +143,25 @@ export default class LicenseBase {
   }
 
   private getAppPermissions() {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.features?.app?.permissions || { component: false, query: false, pages: false };
+    }
     if (this._features && this._features['app'] && this._features['app']['permissions']) {
       return this._features['app']['permissions'];
     }
-    //If doesn't exist return true for older licenses
+    //If doesn't exist return true
     return { component: true, query: true, pages: true };
   }
 
   private getAppPages() {
+    if (this.IsBasicPlan) {
+      return (
+        this.BASIC_PLAN_TERMS.features?.app?.pages || {
+          enabled: false,
+          features: { appHeaderAndLogo: false, addNavGroup: false },
+        }
+      );
+    }
     if (this._features && this._features['app'] && this._features['app']['pages']) {
       return this._features['app']['pages'];
     }
@@ -415,6 +426,8 @@ export default class LicenseBase {
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
+      customGroups: this.customGroups,
+      modules: this.modules,
     };
   }
 

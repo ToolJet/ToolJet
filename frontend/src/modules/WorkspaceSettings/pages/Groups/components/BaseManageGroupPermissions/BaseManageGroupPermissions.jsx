@@ -1,5 +1,5 @@
 import React from 'react';
-import { groupPermissionV2Service } from '@/_services';
+import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -19,7 +19,6 @@ import { SearchBox } from '@/_components/SearchBox';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import _ from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 class BaseManageGroupPermissions extends React.Component {
   constructor(props) {
@@ -569,7 +568,7 @@ class BaseManageGroupPermissions extends React.Component {
                   noTooltipIfValid={true}
                   isAvailable={isFeatureEnabled}
                   placement={'bottom'}
-                  customMessage={'Custom groups are available only in paid plans'}
+                  customMessage={'Custom groups are not available in your plan'}
                 >
                   <ButtonSolid
                     className="btn btn-primary create-new-group-button"
@@ -746,7 +745,7 @@ class BaseManageGroupPermissions extends React.Component {
                             noTooltipIfValid={true}
                             isAvailable={isFeatureEnabled}
                             placement={'right'}
-                            customMessage={'Custom groups are available only in paid plans'}
+                            customMessage={'Custom groups are not available in your plan'}
                           >
                             <ButtonSolid
                               onClick={(e) => {

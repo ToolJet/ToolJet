@@ -47,7 +47,6 @@ export interface Terms {
     };
     modules?: boolean;
     customGroups?: boolean;
-
   };
   type?: LICENSE_TYPE;
   plan?: {
