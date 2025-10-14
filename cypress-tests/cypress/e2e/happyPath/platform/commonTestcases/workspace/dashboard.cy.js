@@ -145,7 +145,7 @@ describe("dashboard", () => {
       "have.text",
       dashboardText.emptyPageDescription
     );
-    cy.get(dashboardSelector.dashboardAppCreateButton).verifyVisibleElement(
+    cy.get(commonSelectors.dashboardAppCreateButton).verifyVisibleElement(
       "have.text",
       dashboardText.createAppButton
     );
