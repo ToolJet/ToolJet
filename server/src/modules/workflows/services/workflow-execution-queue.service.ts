@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
-import { WorkflowTriggerType } from '../constants';
+import { WorkflowTriggerType } from '../types';
 
 @Injectable()
 export class WorkflowExecutionQueueService {

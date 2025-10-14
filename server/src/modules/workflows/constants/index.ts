@@ -20,29 +20,19 @@ export enum FEATURE_KEY {
   CREATE_WORKFLOW = 'create_workflow',
 }
 
-export const WORKFLOW_TRIGGER_TYPE = {
-  MANUAL: 'manual',
-  SCHEDULE: 'schedule',
-  WEBHOOK: 'webhook',
-} as const;
-
-export type WorkflowTriggerType = typeof WORKFLOW_TRIGGER_TYPE[keyof typeof WORKFLOW_TRIGGER_TYPE];
-
-export interface ExecutionMetadata {
-  timeout: number;
-  triggeredBy: WorkflowTriggerType;
-  triggeredAt: Date;
-  scheduleId?: string; // Optional, only present for scheduled workflows
-}
-
+// Queue and job name constants
 export const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 export const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export const SCHEDULE_JOB = 'workflow-scheduler-job';
 export const EXECUTION_JOB = 'workflow-execution-job';
 
+// Workflow execution status constants
 export const WORKFLOW_EXECUTION_STATUS = {
   TRIGGERED: 'workflow_execution_triggered',
   RUNNING: 'workflow_execution_running',
   COMPLETED: 'workflow_execution_completed',
   ERROR: 'workflow_execution_error',
 };
+
+// Re-export types from types module for backward compatibility
+export { WORKFLOW_TRIGGER_TYPE, WorkflowTriggerType, ExecutionMetadata } from '../types';
