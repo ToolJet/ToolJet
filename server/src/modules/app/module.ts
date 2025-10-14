@@ -63,6 +63,7 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 
 export class AppModule implements OnModuleInit {
   constructor(
@@ -131,6 +132,7 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await AppHistoryModule.register(configs, true),
     ];
 
     const conditionalImports = [];

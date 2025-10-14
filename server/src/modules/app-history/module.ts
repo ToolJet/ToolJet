@@ -9,9 +9,7 @@ import { NameResolverRepository } from '@modules/app-history/repositories/name-r
 import { AppHistoryRepository } from '@modules/app-history/repository';
 @Module({})
 export class AppHistoryModule extends SubModule {
-  private static isProcessorRegistered = false;
-
-  static async register(_configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(_configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const importPath = await getImportPath(_configs?.IS_GET_CONTEXT);
 
     const { AppHistoryController } = await import(`${importPath}/app-history/controller`);
@@ -50,11 +48,9 @@ export class AppHistoryModule extends SubModule {
       }),
     ];
 
-    // Only register the processor once to avoid duplicate handlers
-    if (!this.isProcessorRegistered) {
+    if (isMainImport && !_configs?.IS_GET_CONTEXT) {
       const { HistoryQueueProcessor } = await import(`${importPath}/app-history/queue/history-queue.processor`);
       providers.push(HistoryQueueProcessor);
-      this.isProcessorRegistered = true;
     }
 
     return {
