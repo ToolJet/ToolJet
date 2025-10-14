@@ -2,6 +2,24 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
+// Workflow trigger types
+export const WORKFLOW_TRIGGER_TYPE = {
+  MANUAL: 'manual',
+  SCHEDULE: 'schedule',
+  WEBHOOK: 'webhook',
+} as const;
+
+export type WorkflowTriggerType = typeof WORKFLOW_TRIGGER_TYPE[keyof typeof WORKFLOW_TRIGGER_TYPE];
+
+// Execution metadata interface for job data
+export interface ExecutionMetadata {
+  timeout: number;
+  triggeredBy: WorkflowTriggerType;
+  triggeredAt: Date;
+  scheduleId?: string; // Optional, only present for scheduled workflows
+}
+
+// Feature configuration interfaces
 interface Features {
   [FEATURE_KEY.EXECUTE_WORKFLOW]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATUS]: FeatureConfig;
