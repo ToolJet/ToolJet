@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '@entities/user.entity';
-import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
@@ -22,6 +21,7 @@ import { IAuthService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -76,12 +76,14 @@ export class AuthService implements IAuthService {
         );
 
         const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-        if (defaultOrgDetails) {
+        const activeOrgs = organizationList?.filter((org) => org.status !== 'archived') || [];
+        // Filter out archived organizations to get only active organizations available for login ---> Prevents users from being assigned to an archived organizations during login
+        if (defaultOrgDetails && defaultOrgDetails?.status !== 'archived') {
           // default organization form login enabled
           organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
+        } else if (activeOrgs.length > 0) {
           // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+          organization = activeOrgs[0];
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
@@ -142,7 +144,6 @@ export class AuthService implements IAuthService {
     });
   }
 
-  //TODO:this function is not used now
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (user.defaultOrganizationId !== user.organizationId)
@@ -152,22 +153,25 @@ export class AuthService implements IAuthService {
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
 
-      return decamelizeKeys({
-        currentOrganizationId: user.organizationId,
-        currentOrganizationSlug: organization.slug,
-        currentOrganizationName: organization.name,
-        currentUser: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatarId: user.avatarId,
-          ssoUserInfo: permissionData.ssoUserInfo,
-          metadata: permissionData.metadata,
-          createdAt: user.createdAt,
+      return decamelizeKeysExcept(
+        {
+          currentOrganizationId: user.organizationId,
+          currentOrganizationSlug: organization.slug,
+          currentOrganizationName: organization.name,
+          currentUser: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatarId: user.avatarId,
+            ssoUserInfo: permissionData.ssoUserInfo,
+            metadata: permissionData.metadata,
+            createdAt: user.createdAt,
+          },
+          ...permissionData,
         },
-        ...permissionData,
-      });
+        ['metadata']
+      );
     });
   }
 

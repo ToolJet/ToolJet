@@ -176,23 +176,23 @@ describe("App Import Functionality", () => {
     });
 
     cy.ifEnv("Community", () => {
-      cy.apiCreateWsConstant(
+      cy.apiCreateWorkspaceConstant(
         "pageHeader",
         "Import and Export",
         ["Global"],
         ["production"]
       );
-      cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["production"]);
+      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], ["production"]);
     });
 
     cy.ifEnv("Enterprise", () => {
-      cy.apiCreateWsConstant(
+      cy.apiCreateWorkspaceConstant(
         "pageHeader",
         "Import and Export",
         ["Global"],
         ["development"]
       );
-      cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["development"]);
+      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], ["development"]);
     });
 
     // Verify app after setup

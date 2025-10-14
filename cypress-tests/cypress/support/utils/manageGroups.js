@@ -1,14 +1,14 @@
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { commonSelectors } from "Selectors/common";
-import { navigateToManageGroups } from "Support/utils/common";
-import { cyParamName } from "Selectors/common";
-import { fake } from "Fixtures/fake";
-import { onboardingSelectors } from "Selectors/onboarding";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
-import { navigateToManageUsers, logout } from "Support/utils/common";
+import { onboardingSelectors } from "Selectors/onboarding";
+import { navigateToManageGroups } from "Support/utils/common";
+import { getUser } from "Support/utils/externalApi";
+import {
+  fetchAndVisitInviteLink,
+  fillUserInviteForm,
+} from "Support/utils/manageUsers";
+import { groupsText } from "Texts/manageGroups";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {
@@ -619,7 +619,7 @@ export const permissionModal = () => {
 export const addAppToGroup = (appName) => {
   cy.get(groupsSelector.appsLink).click();
   cy.wait(500);
-  cy.get(groupsSelector.appSearchBox).realClick();
+  cy.get(groupsSelector.appSearchBox).click();
   cy.wait(500);
   cy.get(groupsSelector.searchBoxOptions).contains(appName).click();
   cy.get(groupsSelector.selectAddButton).click();
@@ -634,28 +634,45 @@ export const addAppToGroup = (appName) => {
   );
 };
 
-export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-  let groupId;
+export const createGroup = (groupName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+        headers: headers,
+        body: { name: groupName },
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body.id; // Returns the group ID as resolved value
+      });
+  });
+};
 
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    const headers = {
-      "Tj-Workspace-Id": Cypress.env("workspaceId"),
-      Cookie: `tj_auth_token=${cookie.value}`,
-      "Content-Type": "application/json",
-    };
-
+export const apiDeleteGroup = (groupId) => {
+  cy.getAuthHeaders().then((headers) => {
     cy.request({
-      method: "POST",
-      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
       headers: headers,
-      body: {
-        name: groupName,
-      },
     }).then((response) => {
-      expect(response.status).to.equal(201);
-      groupId = response.body.id;
-      cy.wrap(groupId).as("groupId");
+      expect(response.status).to.equal(200);
+    });
+  });
+};
 
+export const deleteGroup = (groupName, workspaceId) => {
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `DELETE FROM permission_groups WHERE name='${groupName}' AND organization_id='${workspaceId}';`,
+  });
+};
+
+export const createGroupAddAppAndUserToGroup = (groupName, email) => {
+  cy.getAuthHeaders().then((headers) => {
+    createGroup(groupName).then((groupId) => {
+      // Add app to group
       cy.request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/app`,
@@ -669,25 +686,19 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
             canEdit: true,
             canView: false,
             hideFromDashboard: false,
-            resourcesToAdd: [
-              {
-                appId: Cypress.env("appId"),
-              },
-            ],
+            resourcesToAdd: [{ appId: Cypress.env("appId") }],
           },
         },
       }).then((response) => {
         expect(response.status).to.equal(201);
       });
-
       cy.wait(2000);
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         const userId = resp.rows[0].id;
-        cy.log(userId);
-
+        // Add user to group
         cy.request({
           method: "POST",
           url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
@@ -854,6 +865,7 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
   );
   addUserInGroup(groupName, email);
 };
+
 export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
@@ -882,12 +894,26 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   cy.wait(500);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.wait(500);
+  cy.get(commonSelectors.dashboardIcon).click();
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(
     canCreate ? "be.enabled" : "be.disabled"
   );
+  cy.get(commonSelectors.createNewFolderButton).should(
+    canCreate ? "exist" : "not.exist"
+  );
+  cy.get('[data-cy="database-icon"]').should(canCreate ? "exist" : "not.exist");
+  cy.get(commonSelectors.workspaceConstantsIcon).should(
+    canCreate ? "exist" : "not.exist"
+  );
+
+  cy.ifEnv("Enterprise", () => {
+    cy.get(commonSelectors.globalDataSourceIcon).should(
+      canCreate ? "exist" : "not.exist"
+    );
+  });
 };
 
 export const setupWorkspaceAndInviteUser = (
@@ -898,10 +924,13 @@ export const setupWorkspaceAndInviteUser = (
   role = "end-user"
 ) => {
   cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+  cy.apiLogout();
+  cy.apiLogin();
+  cy.apiFullUserOnboarding(firstName, email, role, "password", workspaceName);
+  cy.apiLogout();
+
+  cy.apiLogin(email, "password");
   cy.visit(workspaceSlug);
-  cy.wait(1000);
-  navigateToManageUsers();
-  inviteUserBasedOnRole(firstName, email, role);
   cy.wait(2000);
 };
 
@@ -931,4 +960,17 @@ export const setupAndUpdateRole = (currentRole, endRole, email) => {
   updateRole(currentRole, endRole, email);
   cy.wait(1000);
   cy.apiLogout();
+};
+
+export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
+  cy.get(userIdAlias).then((userId) => {
+    getUser(userId).then((response) => {
+      const groupNames = response.body.userGroups.map((g) => g.name);
+      if (expectedGroups) {
+        expectedGroups.forEach((group) => expect(groupNames).to.include(group));
+      }
+      const roleName = response.body.workspaces[0].userPermission.name;
+      expect(roleName).to.equal(expectedRole);
+    });
+  });
 };

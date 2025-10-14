@@ -68,6 +68,7 @@ jobs:
 
       # build artifact
       - name: Build Artifact
+        id: packer-build
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
@@ -78,7 +79,26 @@ jobs:
         env:
           PACKER_LOG: 1
 
+      - name: Cleanup EC2 instances
+        if: always()
+        run: |
+          echo "Listing all EC2 instances..."
+
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --region us-west-2 \
+            --query 'Reservations[*].Instances[*].InstanceId' \
+            --output text)
+
+          if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
+            echo "Found instances: $INSTANCE_IDS"
+            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
+            echo "Terminated instances: $INSTANCE_IDS"
+          else
+            echo "No instances found to cleanup"
+          fi
+
       - name: Send Slack Notification
+        if: success()
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
             message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"

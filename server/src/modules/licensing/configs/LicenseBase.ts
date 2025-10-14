@@ -121,7 +121,7 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
-    this._isExternalApis = this.getFeatureValue('externalApis');
+    this._isExternalApis = this.getFeatureValue('externalApi');
   }
 
   private getFeatureValue(key: string) {
@@ -342,6 +342,9 @@ export default class LicenseBase {
   }
 
   public get licenseType(): string {
+    if (!this.isValid || this.isExpired) {
+      return LICENSE_TYPE.BASIC;
+    }
     return this._type || LICENSE_TYPE.ENTERPRISE;
   }
 

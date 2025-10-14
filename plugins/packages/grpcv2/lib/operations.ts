@@ -1,35 +1,140 @@
-import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, UnaryMethodFunction, GrpcOperationError, toError, isRecord } from './types';
-import { sanitizeHeaders } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
 import got from 'got';
-import { GrpcReflection, serviceHelper } from 'grpc-js-reflection-client';
+import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+import fg from 'fast-glob';
+import { isEmpty } from 'lodash';
 
+const expandPath = (inputPath: string): string => {
+  if (inputPath.startsWith('~/')) {
+    return path.join(os.homedir(), inputPath.slice(2));
+  } else if (inputPath === '~') {
+    return os.homedir();
+  }
+  return path.resolve(inputPath);
+};
+
+export const getDefaultProtoDirectory = (): string => {
+  return path.join(os.homedir(), 'protos');
+};
+
+const validateFilesystemAccess = (directory: string): string => {
+  // Expand ~ to home directory if needed
+  const expandedDir = expandPath(directory);
+
+  if (!fs.existsSync(expandedDir)) {
+    throw new GrpcOperationError(`Directory does not exist: ${expandedDir}`);
+  }
+
+  const stat = fs.statSync(expandedDir);
+  if (!stat.isDirectory()) {
+    throw new GrpcOperationError(`Path is not a directory: ${expandedDir}`);
+  }
+
+  // Basic security check - prevent path traversal
+  const resolvedPath = path.resolve(expandedDir);
+  if (!resolvedPath.startsWith(process.cwd()) && !resolvedPath.startsWith(os.homedir())) {
+    console.warn(`Directory outside project root or home directory: ${resolvedPath}`);
+  }
+
+  return expandedDir;
+};
+
+export const loadProtosFromFilesystem = async (
+  directory: string,
+  pattern: string = '**/*.proto'
+): Promise<protoLoader.PackageDefinition> => {
+  try {
+    const expandedDir = validateFilesystemAccess(directory);
+
+    const protoFiles = await fg(pattern, {
+      cwd: expandedDir,
+      onlyFiles: true,
+      absolute: true
+    });
+
+    if (protoFiles.length === 0) {
+      throw new GrpcOperationError(
+        `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
+      );
+    }
+
+    // Load all proto files at once - proto-loader handles dependencies automatically
+    const packageDefinition = await protoLoader.load(protoFiles, {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      includeDirs: [expandedDir] // Critical for handling proto imports
+    });
+
+    return packageDefinition;
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Failed to load proto files from filesystem: ${err.message}`, error);
+  }
+};
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const credentials = buildChannelCredentials(sourceOptions);
-    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+    const reflectionClient = await createReflectionClient(sourceOptions);
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
 
-    const client = await serviceHelper({
-      host: cleanUrl,
-      servicePath: serviceName,
-      credentials,
-      proto_symbol: serviceName,
-      protoLoaderOptions: {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true
-      }
+    // list all available services to verify the service exists
+    const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
+
+    if (!serviceNames || serviceNames.length === 0) {
+      throw new GrpcOperationError('No services found via reflection');
+    }
+
+    if (!serviceNames.includes(serviceName)) {
+      throw new GrpcOperationError(`Service ${serviceName} not found. Available services: ${serviceNames.join(', ')}`);
+    }
+
+    const methods: ListMethodsType[] = await reflectionClient.listMethods(serviceName, callOptions);
+
+    if (!methods || methods.length === 0) {
+      throw new GrpcOperationError(`Service ${serviceName} has no methods`);
+    }
+
+    const descriptor = await reflectionClient.getDescriptorBySymbol(serviceName, callOptions);
+
+    if (!descriptor) {
+      throw new GrpcOperationError(`Service descriptor not found for ${serviceName}`);
+    }
+
+    const packageObject = descriptor.getPackageObject({
+      keepCase: true,
+      enums: String,
+      longs: String,
+      defaults: true,
+      oneofs: true
     });
 
-    return client;
+    const service = findServiceInPackage(packageObject, serviceName);
+    if (!service) {
+      throw new GrpcOperationError(`Service ${serviceName} not found in proto descriptor`);
+    }
+
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+
+    const credentials = buildChannelCredentials(sourceOptions);
+    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const grpcClient = new ServiceConstructor(cleanUrl, credentials);
+
+    return grpcClient;
   } catch (error: unknown) {
     const err = toError(error);
     throw new GrpcOperationError(`Failed to create reflection client for service ${serviceName}: ${err.message}`, error);
@@ -62,6 +167,48 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
     }
     const err = toError(error);
     throw new GrpcOperationError(`Failed to create proto file client for service ${serviceName}: ${err.message}`, error);
+  }
+};
+
+export const buildFilesystemClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
+  try {
+    const directory =
+      isEmpty(sourceOptions.proto_files_directory) ?
+        getDefaultProtoDirectory() :
+        sourceOptions.proto_files_directory;
+
+    const protoFilePattern =
+      isEmpty(sourceOptions.proto_files_pattern) ?
+        '**/*.proto' :
+        sourceOptions.proto_files_pattern;
+
+    const packageDefinition = await loadProtosFromFilesystem(
+      directory,
+      protoFilePattern
+    );
+    const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+
+    const service = findServiceInPackage(grpcObject, serviceName);
+    if (!service) {
+      throw new GrpcOperationError(`Service ${serviceName} not found in proto files`);
+    }
+
+    const credentials = buildChannelCredentials(sourceOptions);
+    const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+
+    if (typeof service !== 'function') {
+      throw new GrpcOperationError(`Service ${serviceName} is not a valid constructor function`);
+    }
+
+    const ServiceConstructor = service as new (url: string, credentials: any) => GrpcClient;
+    const client = new ServiceConstructor(cleanUrl, credentials);
+    return client;
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Failed to create filesystem client for service ${serviceName}: ${err.message}`, error);
   }
 };
 
@@ -141,7 +288,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
-    const callOptions = prepareGrpcCallOptions(sourceOptions);
+    const callOptions = buildCallOptionsForStreaming(sourceOptions);
     const serviceNames: string[] = await reflectionClient.listServices('*', callOptions);
 
     if (!serviceNames || serviceNames.length === 0) {
@@ -191,7 +338,7 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
   }
 };
 
-export const discoverServicesUsingProtoFile = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
+export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
   try {
     if (!sourceOptions.proto_file_url) {
       throw new GrpcOperationError('Proto file URL is required for service discovery when using proto URL method.');
@@ -199,14 +346,41 @@ export const discoverServicesUsingProtoFile = async (sourceOptions: SourceOption
 
     const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url);
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-
     return extractServicesFromGrpcPackage(grpcObject);
   } catch (error: unknown) {
     if (error instanceof GrpcOperationError) {
       throw error;
     }
     const err = toError(error);
-    throw new GrpcOperationError(`Service discovery via proto file failed: ${err.message}`, error);
+    throw new GrpcOperationError(`Service discovery via proto URL failed: ${err.message}`, error);
+  }
+};
+
+export const discoverServicesUsingFilesystem = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
+  try {
+    const directory =
+      isEmpty(sourceOptions.proto_files_directory) ?
+        getDefaultProtoDirectory() :
+        sourceOptions.proto_files_directory;
+
+    const protoFilePattern =
+      isEmpty(sourceOptions.proto_files_pattern) ?
+        '**/*.proto' :
+        sourceOptions.proto_files_pattern;
+
+    const packageDefinition = await loadProtosFromFilesystem(
+      directory,
+      protoFilePattern
+    );
+
+    const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+    return extractServicesFromGrpcPackage(grpcObject);
+  } catch (error: unknown) {
+    if (error instanceof GrpcOperationError) {
+      throw error;
+    }
+    const err = toError(error);
+    throw new GrpcOperationError(`Service discovery via filesystem failed: ${err.message}`, error);
   }
 };
 
@@ -356,33 +530,29 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 
 
 /**
- * Prepare gRPC call options for NON-TLS connections only
- * Handles ALL metadata (datasource + auth + query) via CallCredentials
- * Note: This function is only called when ssl_enabled = false
+ * Build all metadata (auth, datasource, query) for NON-TLS connections
+ * Returns Metadata object directly for use with unary gRPC method calls
+ * Note: For non-TLS connections, auth must be included as metadata headers
  */
-export const prepareGrpcCallOptions = (
+export const buildMetadataForNonTlsConnection = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
-): grpc.CallOptions => {
-  const allMetadata = new grpc.Metadata();
+): grpc.Metadata => {
+  const metadata = new grpc.Metadata();
 
   // 1. Add datasource metadata (client-id, cp-env, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        allMetadata.set(key, String(value));
-      }
+      metadata.set(key, value);
     });
   }
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        allMetadata.set(key, String(value));
-      }
+      metadata.set(key, value);
     });
   }
 
@@ -390,45 +560,60 @@ export const prepareGrpcCallOptions = (
   switch (sourceOptions.auth_type) {
     case 'api_key':
       if (sourceOptions.grpc_apikey_key && sourceOptions.grpc_apikey_value) {
-        allMetadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
+        metadata.set(sourceOptions.grpc_apikey_key, sourceOptions.grpc_apikey_value);
       }
       break;
 
     case 'bearer':
       if (sourceOptions.bearer_token) {
-        allMetadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
+        metadata.set('authorization', `Bearer ${sourceOptions.bearer_token}`);
       }
       break;
 
     case 'basic':
       if (sourceOptions.username && sourceOptions.password) {
         const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-        allMetadata.set('authorization', `Basic ${credentials}`);
+        metadata.set('authorization', `Basic ${credentials}`);
       }
       break;
 
     case 'oauth2':
       // For OAuth2, access_token is in datasource metadata (already added above)
-      const sanitizedAuth = sanitizeDatasourceMetadata(sourceOptions);
+      const sanitizedAuth = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedAuth?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
-          allMetadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
+          metadata.set('authorization', `${prefix}${sanitizedAuth.access_token}`);
         } else {
-          allMetadata.set('token', sanitizedAuth.access_token);
+          metadata.set('token', sanitizedAuth.access_token);
         }
       }
       break;
   }
 
-  // Return CallCredentials for reliable delivery of ALL metadata (non-TLS connections)
-  const metadataMap = allMetadata.getMap();
+  // Return the metadata directly for use with unary methods
+  return metadata;
+};
+
+/**
+ * Prepare gRPC call options for STREAMING methods (like reflection)
+ * Handles ALL metadata via CallCredentials for non-TLS streaming connections
+ * Note: Streaming methods need CallOptions, not Metadata as first parameter
+ */
+export const buildCallOptionsForStreaming = (
+  sourceOptions: SourceOptions,
+  queryOptions?: QueryOptions
+): grpc.CallOptions => {
+  const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
+
+  // For streaming methods, wrap metadata in CallCredentials
+  const metadataMap = metadata.getMap();
   const hasMetadata = metadataMap && Object.keys(metadataMap).length > 0;
 
   if (hasMetadata) {
     return {
       credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
-        callback(null, allMetadata);
+        callback(null, metadata);
       })
     };
   }
@@ -437,10 +622,11 @@ export const prepareGrpcCallOptions = (
 };
 
 /**
+ * Build metadata for TLS connections (datasource + query metadata only)
  * Combine datasource metadata with query metadata for TLS connections
  * Since auth is handled at channel level, we can combine all non-auth metadata
  */
-export const combineDatasourceAndQueryMetadata = (
+export const buildMetadataForTlsConnection = (
   sourceOptions: SourceOptions,
   queryOptions?: QueryOptions
 ): grpc.Metadata => {
@@ -448,23 +634,19 @@ export const combineDatasourceAndQueryMetadata = (
 
   // 1. Add datasource metadata (client-id, tenant-id, etc.)
   if (sourceOptions.metadata && Array.isArray(sourceOptions.metadata) && sourceOptions.metadata.length > 0) {
-    const sanitizedDatasourceMetadata = sanitizeDatasourceMetadata(sourceOptions);
+    const sanitizedDatasourceMetadata = extractSanitizedMetadata(sourceOptions.metadata);
 
     Object.entries(sanitizedDatasourceMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        combinedMetadata.set(key, String(value));
-      }
+      combinedMetadata.set(key, value);
     });
   }
 
   // 2. Add query metadata
   if (queryOptions?.metadata && Array.isArray(queryOptions.metadata) && queryOptions.metadata.length > 0) {
-    const sanitizedQueryMetadata = sanitizeQueryMetadata(queryOptions);
+    const sanitizedQueryMetadata = extractSanitizedMetadata(queryOptions.metadata);
 
     Object.entries(sanitizedQueryMetadata).forEach(([key, value]) => {
-      if (key && value) {
-        combinedMetadata.set(key, String(value));
-      }
+      combinedMetadata.set(key, value);
     });
   }
 
@@ -472,41 +654,46 @@ export const combineDatasourceAndQueryMetadata = (
 };
 
 /**
- * Sanitize datasource metadata only (client-id, cp-env, etc.)
- * Used for critical metadata that needs reliable delivery
+ * Extract and sanitize metadata from a metadata array
+ * Returns sanitized metadata as key-value pairs
  */
-const sanitizeDatasourceMetadata = (sourceOptions: SourceOptions): { [k: string]: string } => {
-  const ensureArrayFormat = (metadata: any) => {
-    if (!metadata) return [];
-    if (Array.isArray(metadata)) return metadata;
+const extractSanitizedMetadata = (metadata: unknown): { [k: string]: string } => {
+  type MetadataEntry = [string, string];
+
+  const cleanMetadata = (metadata: [string, unknown][]): [string, unknown][] =>
+    metadata.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+
+  const filterValidMetadataEntries = (metadata: [string, unknown][]): MetadataEntry[] => {
+    return metadata.filter((entry): entry is MetadataEntry => {
+      const [_, value] = entry;
+      if (value == null) return false;
+      if (typeof value === 'string') return true;
+      // Convert array to string by joining
+      if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
+        entry[1] = value.join(', ');
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const processMetadata = (rawMetadata: [string, unknown][]): { [k: string]: string } => {
+    const cleaned = cleanMetadata(rawMetadata || []);
+    const validMetadata = filterValidMetadataEntries(cleaned);
+    return Object.fromEntries(validMetadata);
+  };
+
+  const ensureArrayFormat = (data: unknown): [string, unknown][] => {
+    if (!data) return [];
+    if (Array.isArray(data)) {
+      // Ensure each item is a tuple with at least 2 elements
+      return data.filter(item => Array.isArray(item) && item.length >= 2)
+        .map(item => [String(item[0]), item[1]]);
+    }
     return [];
   };
 
-  const sourceOptionsWithHeaders = {
-    ...sourceOptions,
-    headers: ensureArrayFormat(sourceOptions.metadata)
-  };
-
-  return sanitizeHeaders(sourceOptionsWithHeaders, {}, true);
-};
-
-/**
- * Sanitize query metadata only (request-id, trace-id, etc.)
- * Used for query-specific headers that follow gRPC standards
- */
-const sanitizeQueryMetadata = (queryOptions: QueryOptions): { [k: string]: string } => {
-  const ensureArrayFormat = (metadata: any) => {
-    if (!metadata) return [];
-    if (Array.isArray(metadata)) return metadata;
-    return [];
-  };
-
-  const queryOptionsWithHeaders = {
-    ...queryOptions,
-    headers: ensureArrayFormat(queryOptions.metadata)
-  };
-
-  return sanitizeHeaders({}, queryOptionsWithHeaders, false);
+  return processMetadata(ensureArrayFormat(metadata));
 };
 
 
@@ -515,7 +702,7 @@ export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.Chan
 
   // For TLS connections with auth, use secure combineChannelCredentials approach
   if (sourceOptions.ssl_enabled) {
-    const authCallOptions = prepareAuthCallOptions(sourceOptions);
+    const authCallOptions = buildAuthCallCredentials(sourceOptions);
     if (authCallOptions.credentials) {
       return grpc.credentials.combineChannelCredentials(
         channelCredentials,
@@ -533,7 +720,7 @@ export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.Chan
  * Creates CallCredentials for auth only (no datasource or query metadata)
  * Used for secure TLS channel setup
  */
-export const prepareAuthCallOptions = (sourceOptions: SourceOptions): grpc.CallOptions => {
+export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.CallOptions => {
   const authMetadata = new grpc.Metadata();
 
   switch (sourceOptions.auth_type) {
@@ -557,7 +744,7 @@ export const prepareAuthCallOptions = (sourceOptions: SourceOptions): grpc.CallO
       break;
 
     case 'oauth2':
-      const sanitizedMetadata = sanitizeDatasourceMetadata(sourceOptions);
+      const sanitizedMetadata = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
           const prefix = sourceOptions.header_prefix || 'Bearer ';
@@ -595,7 +782,7 @@ export const executeGrpcMethod = async (
   sourceOptions: SourceOptions,
   queryOptions: QueryOptions
 ): Promise<Record<string, unknown>> => {
-  const methodFunction = client[methodName] as UnaryMethodFunction;
+  const methodFunction = client[methodName] as unknown;
 
   if (typeof methodFunction !== 'function') {
     throw new GrpcOperationError(`Method ${methodName} not found on client`);
@@ -620,12 +807,12 @@ export const executeGrpcMethod = async (
 
     if (sourceOptions.ssl_enabled) {
       // TLS connections: Auth at channel level, all other metadata as regular metadata
-      const metadata = combineDatasourceAndQueryMetadata(sourceOptions, queryOptions);
+      const metadata = buildMetadataForTlsConnection(sourceOptions, queryOptions);
       methodFunction.call(client, message, metadata, callback);
     } else {
-      // Non-TLS connections: All metadata (auth + datasource + query) via CallCredentials
-      const allMetadataOptions = prepareGrpcCallOptions(sourceOptions, queryOptions);
-      methodFunction.call(client, message, allMetadataOptions, callback);
+      // Non-TLS connections: All metadata (auth + datasource + query) as direct metadata
+      const metadata = buildMetadataForNonTlsConnection(sourceOptions, queryOptions);
+      methodFunction.call(client, message, metadata, callback);
     }
   });
 };

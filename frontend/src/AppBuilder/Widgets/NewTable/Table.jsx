@@ -55,7 +55,7 @@ export const Table = memo(
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
     const themeChanged = useStore((state) => state.themeChanged);
-
+    const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
@@ -73,7 +73,10 @@ export const Table = memo(
       ...restOfProperties
     } = properties;
 
-    const firstRowOfTable = !isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : undefined;
+    const data =
+      restOfProperties.dataSourceSelector === 'rawJson' ? restOfProperties.data : restOfProperties.dataSourceSelector;
+
+    const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
@@ -88,7 +91,7 @@ export const Table = memo(
 
     useEffect(() => {
       hasDataChanged.current = true;
-    }, [restOfProperties.data]);
+    }, [data]);
 
     // Create ref for height observation
     const tableRef = useRef(null);
@@ -153,9 +156,9 @@ export const Table = memo(
 
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
-      return transformTableData(restOfProperties.data, transformations, getResolvedValue);
+      return transformTableData(data, transformations, getResolvedValue);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getResolvedValue, restOfProperties.data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
     useDynamicHeight({
@@ -163,6 +166,7 @@ export const Table = memo(
       id: id,
       height,
       value: heightChangeValue,
+      skipAdjustment: loadingState || tableData.length === 0,
       adjustComponentPositions,
       currentLayout,
       width,
@@ -176,7 +180,7 @@ export const Table = memo(
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: properties.dynamicHeight ? 'auto' : `${height}px`,
+          height: properties.dynamicHeight ? '100%' : `${height}px`,
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,

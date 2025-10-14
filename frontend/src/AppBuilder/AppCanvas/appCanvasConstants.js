@@ -14,7 +14,10 @@ export const DEFAULT_CANVAS_WIDTH = 1292;
 
 export const APP_HEADER_HEIGHT = 47;
 
-export const LEFT_SIDEBAR_WIDTH = 350;
+export const LEFT_SIDEBAR_WIDTH = {
+  tooljetai: 440,
+  default: 350,
+};
 
 export const RIGHT_SIDEBAR_WIDTH = 300;
 

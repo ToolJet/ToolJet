@@ -242,6 +242,14 @@
     ]
   },
   {
+    "name": "EasyPost",
+    "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
+    "version": "1.0.0",
+    "id": "easypost",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 04:38:28 GMT"
+  },
+  {
     "name": "Prometheus",
     "description": "Plugin to query metrics using PromQL",
     "version": "1.0.0",
@@ -282,6 +290,14 @@
     "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
   },
   {
+    "name": "Gmail",
+    "description": "Integrate with Gmail API to organise and manage emails",
+    "version": "1.0.0",
+    "id": "gmail",
+    "author": "Tooljet",
+    "timestamp": "Mon, 21 Jul 2025 07:17:51 GMT"
+  },
+  {
     "name": "Microsoft Graph",
     "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
     "version": "1.0.0",
@@ -296,5 +312,13 @@
     "id": "hubspot",
     "author": "Tooljet",
     "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
+  },
+  {
+    "name": "FedEx",
+    "description": "Plugin to integrate shipping data from FedEx - pickups, tracking, rates, freight, etc.",
+    "version": "1.0.0",
+    "id": "fedex",
+    "author": "Tooljet",
+    "timestamp": "Fri, 05 Sep 2025 05:46:39 GMT"
   }
 ]

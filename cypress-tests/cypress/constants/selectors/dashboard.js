@@ -30,7 +30,6 @@ export const dashboardSelector = {
   folderLabel: '[data-cy="folder-info"]',
   dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
-  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
 
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
