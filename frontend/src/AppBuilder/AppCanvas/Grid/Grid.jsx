@@ -1132,8 +1132,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
         bounds={canvasBounds}
-        useResizeObserver={true}
-        useMutationObserver={true}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{

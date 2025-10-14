@@ -1,43 +1,34 @@
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
-import { addNewconstants } from "Support/utils/workspaceConstants";
-import { commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
-import {
-    setupWorkspaceAndInviteUser,
-    verifyBasicPermissions,
-    createGroupsAndAddUserInGroup,
-    updateRole,
-    verifySettingsAccess,
-    inviteUserBasedOnRole,
-    verifyUserPrivileges,
-    setupAndUpdateRole,
-} from "Support/utils/manageGroups";
-import {
-    selectAndAddDataSource,
-    fillConnectionForm,
-    addQuery,
-} from "Support/utils/postgreSql";
-import { verifyValueOnInspector } from "Support/utils/dataSource";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
-import {
-    createFolder,
-    deleteFolder,
-    logout,
-    releaseApp,
-    navigateToManageGroups,
-    navigateToManageUsers,
-    selectAppCardOption,
-} from "Support/utils/common";
 import {
     exportAppModalSelectors,
     importSelectors,
 } from "Selectors/exportImport";
+import { groupsSelector } from "Selectors/manageGroups";
+import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import {
+    createFolder,
+    deleteFolder,
+    logout,
+    navigateToManageGroups,
+    navigateToManageUsers,
+    releaseApp,
+    selectAppCardOption,
+} from "Support/utils/common";
+import {
+    createGroupsAndAddUserInGroup,
+    inviteUserBasedOnRole,
+    setupAndUpdateRole,
+    setupWorkspaceAndInviteUser,
+    updateRole,
+    verifyBasicPermissions,
+    verifySettingsAccess,
+    verifyUserPrivileges,
+} from "Support/utils/manageGroups";
+import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
+import { commonText } from "Texts/common";
 import { exportAppModalText, importText } from "Texts/exportImport";
-import { clickOnExportButtonAndVerify } from "Support/utils/exportImport";
+import { groupsText } from "Texts/manageGroups";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -212,7 +203,7 @@ describe("Manage Groups", () => {
 
         // Constants management
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addNewconstants(data.firstName, data.appName);
+        addAndVerifyConstants(data.firstName, data.appName);
         cy.get(
             workspaceConstantsSelectors.constDeleteButton(data.firstName)
         ).click();

@@ -173,7 +173,7 @@ const QueryCardMenu = ({ darkMode }) => {
               return option.value === 'permission' ? (
                 <ToolTip
                   key={option.value}
-                  message={'Component permissions are available only in paid plans'}
+                  message={'Query permissions are available only in paid plans'}
                   placement="left"
                   show={!licenseValid}
                 >

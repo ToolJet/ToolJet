@@ -1,30 +1,24 @@
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
-import { addNewconstants } from "Support/utils/workspaceConstants";
-import { commonText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
+import { groupsSelector } from "Selectors/manageGroups";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
-import {
-    setupWorkspaceAndInviteUser,
-    verifyBasicPermissions,
-    createGroupsAndAddUserInGroup,
-    updateRole,
-    verifySettingsAccess,
-} from "Support/utils/manageGroups";
-
 import {
     createFolder,
     deleteFolder,
-    logout,
     navigateToManageGroups,
     selectAppCardOption,
 } from "Support/utils/common";
 import {
-    exportAppModalSelectors,
-    importSelectors,
-} from "Selectors/exportImport";
-import { dashboardText } from "../../../../../../constants/texts/dashboard";
+    createGroupsAndAddUserInGroup,
+    setupWorkspaceAndInviteUser,
+    updateRole,
+    verifyBasicPermissions,
+    verifySettingsAccess,
+} from "Support/utils/manageGroups";
+import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
+import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
+import { groupsText } from "Texts/manageGroups";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -56,6 +50,7 @@ describe("Manage Groups", () => {
             data.firstName,
             data.email
         );
+
         verifyBasicPermissions(false);
     });
 
@@ -68,35 +63,23 @@ describe("Manage Groups", () => {
             data.workspaceSlug,
             data.firstName,
             data.email,
-            "Builder"
+            "builder"
         );
 
         // Verify builder permissions
         verifyBasicPermissions(true);
 
         // App operations
-        cy.createApp(data.appName);
-        // cy.verifyToastMessage(
-        //     commonSelectors.toastMessage,
-        //     commonText.appCreatedToast,
-        //     false
-        // );
-        cy.backToApps();
-
-        cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast,
-            false
-        );
+        cy.apiCreateApp(data.appName);
+        cy.apiDeleteApp();
 
         // Folder operations
-        createFolder(data.folderName);
-        deleteFolder(data.folderName);
+        cy.apiCreateFolder(data.folderName);
+        cy.apiDeleteFolder();
 
         // Constants management
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addNewconstants(data.firstName, data.appName);
+        addAndVerifyConstants(data.firstName, data.appName);
         cy.get(
             workspaceConstantsSelectors.constDeleteButton(data.firstName)
         ).click();
@@ -104,12 +87,11 @@ describe("Manage Groups", () => {
 
         verifySettingsAccess(false);
 
-        cy.get(commonSelectors.homePageLogo).click();
-        cy.createApp(data.appName);
-        cy.backToApps();
-        cy.wait(1000);
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.apiCreateApp(data.appName);
 
         //verify clone access
+        cy.reload();
         selectAppCardOption(
             data.appName,
             commonSelectors.appCardOptions(commonText.cloneAppOption)
@@ -177,28 +159,16 @@ describe("Manage Groups", () => {
         verifyBasicPermissions(true);
 
         // App operations
-        cy.createApp(data.appName);
-        // cy.verifyToastMessage(
-        //     commonSelectors.toastMessage,
-        //     commonText.appCreatedToast,
-        //     false
-        // );
-        cy.backToApps();
-
-        cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast,
-            false
-        );
+        cy.apiCreateApp(data.appName);
+        cy.apiDeleteApp();
 
         // Folder operations
-        createFolder(data.folderName);
-        deleteFolder(data.folderName);
+        cy.apiCreateFolder(data.folderName);
+        cy.apiDeleteFolder();
 
         // Constants management
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addNewconstants(data.firstName, data.appName);
+        addAndVerifyConstants(data.firstName, data.appName);
         cy.get(
             workspaceConstantsSelectors.constDeleteButton(data.firstName)
         ).click();
@@ -209,4 +179,4 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.workspaceSettings).should("exist");
         cy.wait(1000);
     });
-})
+});
