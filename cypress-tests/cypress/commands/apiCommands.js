@@ -159,6 +159,49 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
   });
 });
 
+Cypress.Commands.add("apiDeleteWorkflow", (workflowName) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
+    
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${workflowName}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: Cypress.env("authToken"),
+      },
+    }, { log: false }).then((response) => {
+      const workflow = response.body.apps?.find(
+        app => app.name === workflowName || app.slug === workflowName
+      );
+
+      if (workflow) {
+        cy.request({
+          method: "DELETE",
+          url: `${Cypress.env("server_host")}/api/apps/${workflow.id}`,
+          headers: {
+            "Tj-Workspace-Id": Cypress.env("workspaceId"),
+            Cookie: Cypress.env("authToken"),
+          },
+        }, { log: false }).then((deleteResponse) => {
+          expect(deleteResponse.status).to.equal(200);
+          Cypress.log({
+            name: "Workflow Delete",
+            displayName: "WORKFLOW DELETED",
+            message: `: ${workflowName}`,
+          });
+        });
+      } else {
+        Cypress.log({
+          name: "Workflow Not Found",
+          displayName: "WORKFLOW NOT FOUND",
+          message: `: ${workflowName}`,
+        });
+      }
+    });
+  });
+});
+
 Cypress.Commands.add(
   "openApp",
   (

@@ -45,7 +45,8 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.longStringJsonText);
-    cy.deleteWorkflow(data.wfName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 
   it("Creating workflow with Node Preview Validation and execution", () => {
@@ -71,7 +72,8 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.jsonValuePlaceholder);
-    cy.deleteWorkflow(data.wfName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 
   // Need to run after bug fixes
@@ -122,8 +124,9 @@ describe("Workflows features", () => {
       workflowsText.workflowResponseNodeQuery
     );
     // cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    cy.deleteWorkflow(data.childWFName);
-    cy.deleteWorkflowfromDashboard(data.parentWFName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.childWFName);
+    cy.apiDeleteWorkflow(data.parentWFName);
   });
 
   it("Creating workflow with large datasets and validating execution", () => {
@@ -153,6 +156,7 @@ describe("Workflows features", () => {
       workflowsText.responseNodeExpectedValueTextForLargeDataset
     );
 
-    cy.deleteWorkflow(data.wfName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 });

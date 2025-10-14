@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { harperDbText } from "Texts/harperDb";
 import { workflowsText } from "Texts/workflows";
@@ -14,6 +14,7 @@ import {
 import {
   enterJsonInputInStartNode,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -50,7 +51,8 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.deleteWorkflow(data.wfName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 
   it("Postgres workflow - execute and validate", () => {
@@ -112,7 +114,10 @@ describe("Workflows with Datasource", () => {
     );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, dsName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
+
+    deleteDatasource(dsName);
   });
 
   it("REST API workflow - execute and validate", () => {
@@ -174,7 +179,10 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, dsName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
+
+    deleteDatasource(dsName);
   });
 
   it("HarperDB workflow - execute and validate", () => {
@@ -257,6 +265,9 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, dsName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
+
+    deleteDatasource(dsName);
   });
 });

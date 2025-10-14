@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS,deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
@@ -11,6 +11,7 @@ import {
   enterJsonInputInStartNode,
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -53,8 +54,8 @@ describe("Workflows Export/Import Sanity", () => {
 
     importWorkflowApp(wfName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-
-    cy.deleteWorkflow(wfName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(wfName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
@@ -124,8 +125,10 @@ describe("Workflows Export/Import Sanity", () => {
 
     importWorkflowApp(wfName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(wfName);
 
-    deleteWorkflowAndDS(wfName, dsName);
+    deleteDatasource(dsName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

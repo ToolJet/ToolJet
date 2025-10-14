@@ -2,15 +2,15 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteDatasource } from "Support/utils/dataSource";
+import { deleteDatasource} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
-
 import {
   enterJsonInputInStartNode,
-  deleteAppandWorkflowAfterExecution,
+  verifyPreviewOutputText,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -61,8 +61,9 @@ describe("Workflows in apps", () => {
     //   commonSelectors.toastMessage,
     //   `Query (${data.dsName}) completed.`
     // );
-
-    deleteAppandWorkflowAfterExecution(data.wfName, data.appName);
+    cy.backToApps();
+    cy.apiDeleteApp();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 
   it("Creating workflows with postgres and validating execution in apps", () => {
@@ -137,7 +138,9 @@ describe("Workflows in apps", () => {
     //   commonSelectors.toastMessage,
     //   `Query (${data.dsName}) completed.`
     // );
-    deleteAppandWorkflowAfterExecution(data.wfName, data.appName);
+    cy.backToApps();
+    cy.apiDeleteApp();
+    cy.apiDeleteWorkflow(data.wfName);
 
     deleteDatasource(`cypress-${data.dataSourceName}-manual-pgsql`);
   });

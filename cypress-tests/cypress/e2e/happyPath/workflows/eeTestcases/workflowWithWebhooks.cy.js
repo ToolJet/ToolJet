@@ -5,6 +5,7 @@ import { workflowSelector } from "Selectors/workflows";
 import {
   enterJsonInputInStartNode,
   revealWorkflowToken,
+  navigateBackToWorkflowsDashboard
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -64,6 +65,7 @@ describe("Workflows with Webhooks", () => {
             });
           });
       });
-    cy.deleteWorkflow(data.wfName);
+      navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.wfName);
   });
 });
