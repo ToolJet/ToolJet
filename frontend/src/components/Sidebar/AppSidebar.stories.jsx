@@ -1,0 +1,60 @@
+import React from 'react';
+import { AppSidebar } from './app-sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from './sidebar';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../ui/breadcrumb';
+import { Separator } from '../ui/separator';
+
+export default {
+  title: 'Components/Sidebar',
+  component: AppSidebar,
+  decorators: [
+    (Story) => (
+      <SidebarProvider defaultOpen={false}>
+        <Story />
+      </SidebarProvider>
+    ),
+  ],
+};
+
+const Template = (args) => (
+  <>
+    <AppSidebar {...args} />
+    <SidebarInset>
+      <header className="tw-flex tw-h-16 tw-shrink-0 tw-items-center tw-gap-2 tw-transition-[width,height] tw-ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:tw-h-12">
+        <div className="tw-flex tw-items-center tw-gap-2 tw-px-4">
+          <SidebarTrigger className="-tw-ml-1" />
+          <Separator orientation="vertical" className="tw-mr-2 data-[orientation=vertical]:tw-h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="tw-hidden md:tw-block">
+                <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="tw-hidden md:tw-block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+      <div className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-p-4 tw-pt-0">
+        <div className="tw-grid tw-auto-rows-min tw-gap-4 md:tw-grid-cols-3">
+          <div className="tw-bg-muted/50 tw-aspect-video tw-rounded-xl" />
+          <div className="tw-bg-muted/50 tw-aspect-video tw-rounded-xl" />
+          <div className="tw-bg-muted/50 tw-aspect-video tw-rounded-xl" />
+        </div>
+        <div className="tw-bg-muted/50 tw-min-h-[100vh] tw-flex-1 tw-rounded-xl md:tw-min-h-min" />
+      </div>
+    </SidebarInset>
+  </>
+);
+
+export const Default = Template.bind({});
+Default.args = {};
