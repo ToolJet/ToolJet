@@ -267,7 +267,7 @@ const FormComponent = (props) => {
     const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
       ...(!advanced && { children: formattedChildDataClone }),
-      data: removeFunctionObjects(formattedChildData),
+      data: removeFunctionObjects(formattedChildDataClone),
       isValid: childValidation,
       formData, // Expose formData
     };
