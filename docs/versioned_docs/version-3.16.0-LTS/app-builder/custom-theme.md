@@ -1,6 +1,6 @@
 ---
 id: custom-theme
-title: Custom Themes
+title: App Themes
 ---
 
 <div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
@@ -15,13 +15,24 @@ title: Custom Themes
 </div>
 </div>
 
-ToolJet supports Custom Themes at the workspace level, giving teams complete control over the look and feel of their applications. With this feature, you can define and manage multiple themes and apply them across your apps in a consistent and reusable way.
+ToolJet supports App Themes giving teams complete control over the look and feel of their applications. With this feature, you can define and manage multiple themes and apply them across your apps in a consistent and reusable way.
 
 Each workspace can have one or more themes configured, and any application within that workspace can use any of the defined themes. This helps in maintaining visual consistency across applications, improves brand alignment, and enhances user experience.
 
-## What is a Custom Theme?
+## Why Use App Themes?
 
-A Custom Theme allows you to customize the UI components of your ToolJet apps by configuring a set of visual styles such as:
+App Themes empower your organization by:
+
+- **Brand consistency**: Align your internal tools with your company’s visual identity.
+- **Reusability**: Define once, use across multiple apps.
+- **Customization**: Update the look of all your apps in one go by editing the theme.
+- **Collaboration**: Teams working on different apps can maintain a unified design system.
+
+This is especially useful for teams with apps across different environments (e.g., internal tools, client-facing apps, admin panels) where each might need a slightly different yet consistent visual identity.
+
+## How to Use App Themes
+
+An App Theme allows you to customize the UI components of your ToolJet apps by configuring a set of visual styles such as:
 - Brand Colors (Primary, Secondary, Tertiary)
 - Text colors
 - Border and surface styling
@@ -33,31 +44,20 @@ You can configure these settings for both light and dark modes, and instantly pr
 
 <img className="screenshot-full img-full" src="/img/app-builder/custom-theme/custom-theme.png" alt="Configure custom theme" />
 
-## Why Use Custom Themes?
+<br/><br/>
 
-Custom Themes empower your organization by:
+Using App Themes in ToolJet involves two simple steps — **creating the theme** and **applying it to your applications**.
 
-- **Brand consistency**: Align your internal tools with your company’s visual identity.
-- **Reusability**: Define once, use across multiple apps.
-- **Customization**: Update the look of all your apps in one go by editing the theme.
-- **Collaboration**: Teams working on different apps can maintain a unified design system.
-
-This is especially useful for teams with apps across different environments (e.g., internal tools, client-facing apps, admin panels) where each might need a slightly different yet consistent visual identity.
-
-## How to Use Custom Themes
-
-Using Custom Themes in ToolJet involves two simple steps — **creating the theme** and **applying it to your applications**.
-
-### 1. Create a Custom Theme
+### 1. Create an App Theme
 
 - Go to your **Workspace Settings**.
-- Click on the **Custom Theme** tab.
+- Click on the **Theme** tab.
 - Click **Create new theme**.
 - Configure your theme styles:
   - Set your **Brand colors**: Primary, Secondary, Tertiary
   - Define **Text**, **Border**, **System status**, and **Surface** colors
   - Choose styles for both **Light** and **Dark** modes
-- Click **Save** once you're done.
+- Click **Save** once you're done.<br/>
 
  You can create multiple themes as per your needs — for different teams, environments, or clients.
 
@@ -67,7 +67,7 @@ Using Custom Themes in ToolJet involves two simple steps — **creating the them
 - Click the **Settings icon** in the **left sidebar** to open **Global Settings**.
 - Scroll down to the **Theme** section.
 - You’ll see a dropdown showing the currently selected theme (usually the default).
-- Click the dropdown to view and select from all your configured themes.
+- Click the dropdown to view and select from all your configured themes. <br/>
   <img  className="screenshot-full img-m" src="/img/app-builder/custom-theme/select-theme.png" alt="Configure custom theme" />
 
 Once selected, your app will now use the chosen theme as the base style for components.
@@ -88,7 +88,7 @@ Once components are styled using theme options, changing the theme from Global S
 
 ## Scenarios
 
-Here are some scenarios where custom themes shine:
+Here are some scenarios where app themes shine:
 
 - **Brand-specific apps**: Create different themes for different brands/clients your company serves.
 - **Dark & light mode toggle**: Provide a seamless visual switch for end-users between light and dark modes.
@@ -96,17 +96,17 @@ Here are some scenarios where custom themes shine:
 
 ## Example
 
-Here’s an example showing how an application interface looks before and after applying a custom theme.
+Here’s an example showing how an application interface looks before and after applying an app theme.
 
 ### Before (Default Theme)
 
-This is the default ToolJet UI without any custom theme applied. It uses the standard branding and neutral colors.
+This is the default ToolJet UI without any app theme applied. It uses the standard branding and neutral colors.
 <img className="screenshot-full img-full" src="/img/app-builder/custom-theme/default-theme-app-v1.png" alt="Configure custom theme" />
 
-### After (Custom Theme Applied)
+### After (App Theme Applied)
 
 <img className="screenshot-full img-full" src="/img/app-builder/custom-theme/custom-theme-app-v1.png" alt="Configure custom theme" />
 
-This is the same application after applying the "Coral" custom theme. Notice the button color, primary accents, and overall visual alignment now reflect the chosen palette.
+This is the same application after applying the "Coral" app theme. Notice the button color, primary accents, and overall visual alignment now reflect the chosen palette.
 
 By simply configuring a theme once at the workspace level, you can instantly apply a fresh look across all apps, improving usability, clarity, and brand identity.
