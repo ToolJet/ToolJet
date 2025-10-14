@@ -50,6 +50,8 @@ Using App Themes in ToolJet involves two simple steps — **creating the theme**
 
 ### 1. Create an App Theme
 
+Role Required: **Admin**
+
 - Go to your **Workspace Settings**.
 - Click on the **Theme** tab.
 - Click **Create new theme**.
@@ -62,6 +64,8 @@ Using App Themes in ToolJet involves two simple steps — **creating the theme**
  You can create multiple themes as per your needs — for different teams, environments, or clients.
 
 ### 2. Apply the Theme to Your Application
+
+Role Required: **Admin/Builder**
 
 - Open the app where you want to use the theme.
 - Click the **Settings icon** in the **left sidebar** to open **Global Settings**.
