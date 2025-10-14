@@ -183,6 +183,7 @@
               ]
             },
             "app-builder/custom-theme",
+            "app-builder/customstyles",
             {
               "type": "category",
               "label": "Modules",
