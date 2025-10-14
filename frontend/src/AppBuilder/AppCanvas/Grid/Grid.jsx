@@ -465,7 +465,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const handleDragGroupEnd = (e) => {
     try {
       hideGridLines();
-      // setIsGroupDragging(false);
+      handleDeactivateTargets();
+      clearActiveTargetClassNamesAfterSnapping(selectedComponents);
       const { events, clientX, clientY } = e;
       const initialParent = events[0].target.closest('.real-canvas');
       // Get potential new parent using same logic as onDragEnd
@@ -1108,8 +1109,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroupEnd={(e) => {
           handleDragGroupEnd(e);
-          handleDeactivateTargets();
-          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
           toggleCanvasUpdater();
         }}
         onClickGroup={(e) => {
