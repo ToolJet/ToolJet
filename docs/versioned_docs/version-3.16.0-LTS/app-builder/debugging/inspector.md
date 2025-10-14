@@ -52,6 +52,7 @@ Refer to the [Accessing Component State](/docs/app-builder/building-ui/component
 ### Globals
 
 By using the Globals properties in the Inspector, you can view various details about your application and its environment, such as:
+- **App Version** - Stores the current app version name.
 - **Current User** - Information about the logged-in user, including email, name, avatar, groups, roles, and SSO details. Useful for building role-based UI or showing personalized content.
 - **Environment** - Indicates the current ToolJet environment — development, staging, or production.
 - **Mode** - Indicates whether the app is opened in the editor or not.
