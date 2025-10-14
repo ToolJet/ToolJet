@@ -27,32 +27,7 @@ ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJe
 
 ## AI Credit System
 
-Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information.
-
-The AI credits are consumed on every AI operation performed in ToolJet. Credits operate at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month, they expire at the end of each billing cycle. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
-
-### Credit Usage
-
-**Standard Operations**
-
-AI-powered assistance for the following actions consumes **3 credits**:
-
-- Generating or editing single UI components
-- Generating or modifying queries
-- Incorporating business logic
-- Debugging assistance
-- Generating database tables
-- Bulk modifying component styles
-- Generating or modifying multi-component layouts
-- Guidance from documentation
-
-**Advanced Builds**
-
-The entire app UI generation consumes **10 credits**.
-
-### Credit Calculation
-
-AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users in the instance across all workspaces.
+Checkout [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-allocation) guide for more information.
 
 ## Updating License Key
 

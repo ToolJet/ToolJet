@@ -14,18 +14,19 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 ::::
 
 ### Provisioning VMs with Terraform (Optional)
 
-If you don’t already have a server, you can use Terraform scripts to quickly spin up a VM on AWS or Azure VM and then deploy ToolJet with Docker.
+If you don’t already have a server, you can use Terraform scripts to quickly spin up a VM on AWS, Azure or GCP and then deploy ToolJet with Docker.
 
-⚙️ Deploy on [AWS EC2](https://github.com/ToolJet/ToolJet/tree/develop/terraform/EC2)
-
-⚙️ Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
+- Deploy on [AWS EC2](https://github.com/ToolJet/ToolJet/tree/develop/terraform/EC2)
+- Deploy on [AWS EC2 Using AMI](https://github.com/ToolJet/ToolJet/tree/develop/terraform/AMI_EC2)
+- Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
+- Deploy on [GCP VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/GCP)
 
 ### Installing Docker and Docker Compose
 

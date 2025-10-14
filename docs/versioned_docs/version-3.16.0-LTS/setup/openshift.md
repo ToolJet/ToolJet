@@ -6,7 +6,7 @@ title: Openshift
 # Deploying ToolJet on Openshift
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info
@@ -18,36 +18,39 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
 Follow the steps below to deploy ToolJet on Openshift.
 
 1. Setup a PostgreSQL database ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
-    ```
-    TOOLJET_HOST=<Endpoint url>
-    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
-    PG_USER=<username>
-    PG_HOST=<postgresql-database-host>
-    PG_PASS=<password>
-    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
-    ```
-    Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+   ```
+   TOOLJET_HOST=<Endpoint url>
+   LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+   SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+
+   PG_USER=<username>
+   PG_HOST=<postgresql-database-host>
+   PG_PASS=<password>
+   PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
+   ```
+
+   Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+
 2. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
-    :::note
-    When entering one or more files and use --- to separate each definition
-    :::
-    Copy paste deployment.yaml to the online editor
-    ```
-    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
-    ```
-    Copy paste the service.yaml to the online editor
-    ```
-    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
-    ```
-    <img className="screenshot-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
-    Once you have added the files click on create.
-    :::info
-    If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
-    :::
-4. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below.
-    <img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="topology" />
+   :::note
+   When entering one or more files and use --- to separate each definition
+   :::
+   Copy paste deployment.yaml to the online editor
+   ```
+   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
+   ```
+   Copy paste the service.yaml to the online editor
+   ```
+   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
+   ```
+   <img className="screenshot-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
+   Once you have added the files click on create.
+   :::info
+   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
+   :::
+3. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below.
+   <img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="topology" />
 
 ## ToolJet Database
 

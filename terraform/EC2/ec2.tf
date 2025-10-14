@@ -79,7 +79,7 @@ resource "aws_instance" "tooljet_instance" {
   depends_on                  = [aws_security_group.tooljet_sg]
   # Root EBS volume configuration
   root_block_device {
-    volume_size = 16
+    volume_size = 20
     volume_type = "gp3"
   }
   # Load the shell script using file() function
