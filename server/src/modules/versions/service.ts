@@ -231,7 +231,9 @@ export class VersionService implements IVersionService {
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
-    // Queue history capture for settings changes
+    await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+
+    // Queue history capture for settings changes AFTER successful update
     try {
       await this.appHistoryUtilService.queueHistoryCapture(appVersion.id, ACTION_TYPE.GLOBAL_SETTINGS_UPDATE, {
         operation: 'update_settings',
@@ -241,8 +243,6 @@ export class VersionService implements IVersionService {
     } catch (error) {
       console.error('Failed to queue history capture for settings update:', error);
     }
-
-    await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
