@@ -18056,7 +18056,7 @@ section.ai-message-prompt-input-wrapper {
   width: 340px;
 
   .create-version-form {
-    .alert-component{
+    .alert-component {
       border-radius: 6px;
       background: #ECF0FE;
       display: flex;
@@ -18064,7 +18064,8 @@ section.ai-message-prompt-input-wrapper {
       align-items: flex-start;
       gap: 6px;
       align-self: stretch;
-      .create-version-helper-text{
+
+      .create-version-helper-text {
         color: var(--text-medium, #2D343B);
         font-family: "IBM Plex Sans";
         font-size: 12px !important;
@@ -18073,6 +18074,7 @@ section.ai-message-prompt-input-wrapper {
         line-height: 18px;
       }
     }
+
     .version-name-helper-text {
       color: var(--Slate-10, #7E868C);
       font-family: "IBM Plex Sans";
@@ -18081,7 +18083,8 @@ section.ai-message-prompt-input-wrapper {
       font-weight: 400;
       line-height: 16px;
     }
-    .version-description-helper-text{
+
+    .version-description-helper-text {
       color: var(--Slate-10, #7E868C);
       font-family: "IBM Plex Sans";
       font-size: 10px;
@@ -18089,7 +18092,8 @@ section.ai-message-prompt-input-wrapper {
       font-weight: 400;
       line-height: 16px;
     }
-    .create-version-alert{
+
+    .create-version-alert {
       border-radius: 6px;
       background: #ECF0FE;
       display: flex;
@@ -18117,5 +18121,59 @@ section.ai-message-prompt-input-wrapper {
 
   .create-version-form {
     height: 320px !important;
+  }
+}
+
+.edit-version-modal {
+  height: 416px;
+  width: 400px;
+
+  .alert-component {
+    border-radius: 6px;
+    background: #ECF0FE;
+    display: flex;
+    padding: 12px;
+    align-items: flex-start;
+    gap: 6px;
+    align-self: stretch;
+
+    .create-version-helper-text {
+      color: var(--text-medium, #2D343B);
+      font-family: "IBM Plex Sans";
+      font-size: 12px !important;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 18px;
+    }
+  }
+
+  .version-name-helper-text {
+    color: var(--Slate-10, #7E868C);
+    font-family: "IBM Plex Sans";
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+  }
+
+  .version-description-helper-text {
+    color: var(--Slate-10, #7E868C);
+    font-family: "IBM Plex Sans";
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+  }
+
+  .create-version-alert {
+    border-radius: 6px;
+    background: #ECF0FE;
+    display: flex;
+    padding: 12px;
+    align-items: flex-start;
+    gap: 6px;
+    align-self: stretch;
+    width: 272px;
+    height: 78px;
   }
 }

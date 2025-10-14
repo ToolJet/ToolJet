@@ -22,17 +22,47 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
     shallow
   );
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
+  const [versionDescription, setVersionDescription] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
   const { t } = useTranslation();
+
+  const validateVersionName = (value) => {
+    if (value.trim() === '') {
+      return t('editor.appVersionManager.emptyNameError', 'Version name should not be empty');
+    } else if (value.length > 25) {
+      return t('editor.appVersionManager.maxLengthError', 'Version name cannot exceed 25 characters');
+    }
+    return '';
+  };
+
+  const validateVersionDescription = (value) => {
+    if (value.length > 500) {
+      return t('editor.appVersionManager.maxDescriptionLengthError', 'Description cannot exceed 500 characters');
+    }
+    return '';
+  };
 
   React.useEffect(() => {
     setVersionName(editingVersion?.name);
+    setNameError('');
+    setDescriptionError('');
   }, [editingVersion?.name]);
 
   const editVersion = () => {
-    if (versionName.trim() === '') {
-      toast.error('Version name should not be empty');
-      return;
+    setNameError('');
+    setDescriptionError('');
+
+    let hasError = false;
+    const error = validateVersionName(versionName);
+
+    if (error) {
+      setNameError(error);
+      toast.error(error);
+      hasError = true;
     }
+
+    if (hasError) return;
 
     setIsEditingVersion(true);
     updateVersionNameAction(
@@ -46,7 +76,9 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
       },
       (error) => {
         setIsEditingVersion(false);
-        toast.error(error?.error);
+        const errorMessage = error?.error || t('editor.appVersionManager.updateFailed', 'Failed to update version');
+        setNameError(errorMessage);
+        toast.error(errorMessage);
       }
     );
   };
@@ -56,10 +88,13 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
       show={showEditAppVersion}
       closeModal={() => {
         setVersionName(editingVersion?.name || '');
+        setNameError('');
+        setDescriptionError('');
         setShowEditAppVersion(false);
       }}
       checkForBackground={true}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      customClassName="edit-version-modal"
     >
       <form
         onSubmit={(e) => {
@@ -68,10 +103,17 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
         }}
       >
         <div className="row mb-3">
-          <div className="col modal-main tj-app-input">
+          <div className="col modal-main tj-app-input version-name">
+            <label className="form-label" data-cy="version-name-label">
+              {t('editor.appVersionManager.versionName', 'Version Name')}
+            </label>
             <input
               type="text"
-              onChange={(e) => setVersionName(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setVersionName(value);
+                setNameError(validateVersionName(value));
+              }}
               className="form-control"
               data-cy="edit-version-name-input-field"
               placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
@@ -79,6 +121,36 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
               value={versionName}
               maxLength={25}
             />
+            <small className={`version-description-helper-text ${nameError ? 'text-danger' : ''}`}>
+              {nameError
+                ? nameError
+                : t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+            </small>
+          </div>
+        </div>
+        <div className="row mb-3">
+          <div className="col modal-main tj-app-input version-description">
+            <label className="form-label" data-cy="version-description-label">
+              {t('editor.appVersionManager.versionDescription', 'Version Description')}
+            </label>
+            <textarea
+              type="text"
+              onChange={(e) => {
+                setVersionDescription(e.target.value);
+                setDescriptionError(validateVersionDescription(e.target.value));
+              }}
+              className="form-control"
+              data-cy="edit-version-description-input-field"
+              placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
+              disabled={isEditingVersion}
+              value={versionDescription}
+              maxLength={500}
+            />
+            <small className={`version-description-helper-text ${descriptionError ? 'text-danger' : ''}`}>
+              {descriptionError
+                ? descriptionError
+                : t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
+            </small>
           </div>
         </div>
         <div className="row">
@@ -88,6 +160,8 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
               data-cy="cancel-button"
               onClick={() => {
                 setVersionName(editingVersion?.name || '');
+                setNameError('');
+                setDescriptionError('');
                 setShowEditAppVersion(false);
               }}
               type="button"

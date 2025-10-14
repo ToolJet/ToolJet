@@ -158,7 +158,7 @@ const CreateVersionModal = ({
                 maxLength="25"
               />
               <small className="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 50 characters')}
+                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
               </small>
             </div>
             <div className="col mt-2">
