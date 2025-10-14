@@ -83,7 +83,7 @@ export const Input = React.forwardRef(
                 type="button"
                 variant="ghost"
                 iconOnly
-                className="tw-absolute tw-right-1 tw-top-1/2 tw-transform tw--translate-y-1/2 tw-bg-none tw-border-none tw-cursor-pointer tw-p-1 tw-text-icon-strong hover:tw-text-icon-default focus:tw-outline-none"
+                className="tw-absolute tw-right-1 tw-top-1/2 tw-transform -tw-translate-y-1/2 tw-bg-none tw-border-none tw-cursor-pointer tw-p-1 tw-text-icon-strong hover:tw-text-icon-default focus:tw-outline-none"
                 onClick={togglePasswordVisibility}
                 disabled={props.disabled}
                 aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
