@@ -132,7 +132,17 @@ let meter: any;
 let apiHitCounter: any;
 let activeUsersGauge: any;
 let apiDurationHistogram: any;
+let concurrentUsersCounter: any;
+let activeSessionsCounter: any;
+let concurrentUsersGauge: any;
 const activeUsers = new Map<string, number>(); // userId -> lastSeenTimestamp
+
+// Track active users per workspace with last activity timestamp
+// Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
+const activeUsersByWorkspace = new Map<string, { lastSeen: number; role?: string; sessionId?: string }>();
+
+// Time window for considering a user as "active" (5 minutes)
+const ACTIVE_USER_WINDOW_MS = 5 * 60 * 1000;
 
 // Initialize custom metrics
 const initializeCustomMetrics = () => {
@@ -144,10 +154,10 @@ const initializeCustomMetrics = () => {
     unit: '1',
   });
 
-  // Gauge for active users
+  // Gauge for active users (backward compatibility with existing implementation)
   activeUsersGauge = meter.createObservableGauge('active.users', {
     description: 'Number of currently active users (active in last 5 minutes)',
-    unit: '1',
+    unit: '{users}',
   });
 
   activeUsersGauge.addCallback((observableResult: any) => {
@@ -163,6 +173,62 @@ const initializeCustomMetrics = () => {
 
     // Report current count of active users
     observableResult.observe(activeUsers.size);
+  });
+
+  // UpDownCounter for concurrent users (login/logout based)
+  concurrentUsersCounter = meter.createUpDownCounter('users.concurrent', {
+    description: 'Number of concurrent users by workspace (login/logout based)',
+    unit: '{users}',
+  });
+
+  // UpDownCounter for active sessions
+  activeSessionsCounter = meter.createUpDownCounter('sessions.active', {
+    description: 'Number of active user sessions',
+    unit: '{sessions}',
+  });
+
+  // ObservableGauge for request-based concurrent users
+  concurrentUsersGauge = meter.createObservableGauge('users.concurrent.active', {
+    description: 'Number of concurrent users by workspace based on request activity in last 5 minutes',
+    unit: '{users}',
+  });
+
+  concurrentUsersGauge.addCallback((observableResult: any) => {
+    const now = Date.now();
+    const cutoffTime = now - ACTIVE_USER_WINDOW_MS;
+
+    // Group active users by workspace
+    const usersByWorkspace = new Map<string, Set<string>>();
+
+    // Clean up inactive users and group by workspace
+    for (const [key, data] of activeUsersByWorkspace.entries()) {
+      if (data.lastSeen < cutoffTime) {
+        activeUsersByWorkspace.delete(key);
+      } else {
+        const [workspaceId, userId] = key.split(':');
+        if (!usersByWorkspace.has(workspaceId)) {
+          usersByWorkspace.set(workspaceId, new Set());
+        }
+        usersByWorkspace.get(workspaceId)!.add(userId);
+      }
+    }
+
+    // Report metrics for each workspace
+    for (const [workspaceId, users] of usersByWorkspace.entries()) {
+      observableResult.observe(users.size, {
+        'workspace.id': workspaceId,
+      });
+    }
+
+    // Also report total active users across all workspaces
+    const totalUniqueUsers = new Set<string>();
+    for (const key of activeUsersByWorkspace.keys()) {
+      const userId = key.split(':')[1];
+      totalUniqueUsers.add(userId);
+    }
+    observableResult.observe(totalUniqueUsers.size, {
+      'workspace.id': 'all',
+    });
   });
 
   // Histogram for API duration
@@ -240,10 +306,93 @@ export const startOpenTelemetry = async (): Promise<void> => {
     await sdk.start();
     initializeCustomMetrics();
     console.log('OpenTelemetry instrumentation initialized');
-    console.log('Custom metrics initialized: api.hits, active.users, api.duration');
+    console.log(
+      'Custom metrics initialized: api.hits, active.users, api.duration, users.concurrent, sessions.active, users.concurrent.active'
+    );
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
+  }
+};
+
+// Helper function to track user activity on each authenticated request
+export const trackUserActivity = (attributes: {
+  workspaceId: string;
+  userId: string;
+  sessionId?: string;
+  userRole?: string;
+}) => {
+  if (!attributes.workspaceId || !attributes.userId) {
+    return;
+  }
+
+  const key = `${attributes.workspaceId}:${attributes.userId}`;
+  const now = Date.now();
+
+  activeUsersByWorkspace.set(key, {
+    lastSeen: now,
+    role: attributes.userRole,
+    sessionId: attributes.sessionId,
+  });
+
+  // Also update the legacy activeUsers map for backward compatibility
+  activeUsers.set(attributes.userId, now);
+};
+
+// Helper functions for user metrics tracking
+export const incrementConcurrentUsers = (attributes: {
+  workspaceId?: string;
+  userId?: string;
+  userRole?: string;
+}) => {
+  if (concurrentUsersCounter) {
+    const metricAttributes: any = {};
+    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
+    if (attributes.userRole) metricAttributes['user.role'] = attributes.userRole;
+
+    concurrentUsersCounter.add(1, metricAttributes);
+  }
+};
+
+export const decrementConcurrentUsers = (attributes: {
+  workspaceId?: string;
+  userId?: string;
+  userRole?: string;
+}) => {
+  if (concurrentUsersCounter) {
+    const metricAttributes: any = {};
+    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
+    if (attributes.userRole) metricAttributes['user.role'] = attributes.userRole;
+
+    concurrentUsersCounter.add(-1, metricAttributes);
+  }
+};
+
+export const incrementActiveSessions = (attributes: {
+  workspaceId?: string;
+  userId?: string;
+  sessionType?: string;
+}) => {
+  if (activeSessionsCounter) {
+    const metricAttributes: any = {};
+    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
+    if (attributes.sessionType) metricAttributes['session.type'] = attributes.sessionType;
+
+    activeSessionsCounter.add(1, metricAttributes);
+  }
+};
+
+export const decrementActiveSessions = (attributes: {
+  workspaceId?: string;
+  userId?: string;
+  sessionType?: string;
+}) => {
+  if (activeSessionsCounter) {
+    const metricAttributes: any = {};
+    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
+    if (attributes.sessionType) metricAttributes['session.type'] = attributes.sessionType;
+
+    activeSessionsCounter.add(-1, metricAttributes);
   }
 };
 

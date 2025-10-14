@@ -29,6 +29,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
+import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '../../otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -47,7 +48,38 @@ export class SessionUtilService {
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Get count of sessions before deleting to decrement metrics appropriately
+      const sessions = await manager.find(UserSessions, {
+        where: { userId },
+      });
+      const sessionCount = sessions.length;
+
       await manager.delete(UserSessions, { userId });
+
+      // Decrement metrics for all terminated sessions
+      if (sessionCount > 0) {
+        try {
+          const user = await manager.findOne(User, {
+            where: { id: userId },
+          });
+
+          for (let i = 0; i < sessionCount; i++) {
+            decrementActiveSessions({
+              userId,
+              sessionType: 'user',
+            });
+
+            if (user?.defaultOrganizationId) {
+              decrementConcurrentUsers({
+                workspaceId: user.defaultOrganizationId,
+                userId,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error decrementing session metrics:', error);
+        }
+      }
     });
   }
 
@@ -124,6 +156,19 @@ export class SessionUtilService {
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
       const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
+
+      // Track concurrent users if a new session was created and organization is available
+      if (loggedInUser?.id !== user.id && !isPatLogin && organization?.id) {
+        try {
+          incrementConcurrentUsers({
+            workspaceId: organization.id as string,
+            userId: user.id,
+            userRole: permissionData.admin ? 'admin' : 'member',
+          });
+        } catch (error) {
+          console.error('Error incrementing concurrent users metric:', error);
+        }
+      }
 
       const responsePayload = {
         organizationId: organization?.id,
@@ -253,7 +298,7 @@ export class SessionUtilService {
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(
+      const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
@@ -262,6 +307,18 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
+
+      // Increment active sessions counter
+      try {
+        incrementActiveSessions({
+          userId,
+          sessionType: 'user',
+        });
+      } catch (error) {
+        console.error('Error incrementing active sessions metric:', error);
+      }
+
+      return session;
     }, manager);
   }
 

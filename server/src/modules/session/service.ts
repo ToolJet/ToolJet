@@ -21,6 +21,7 @@ import { fullName, generateOrgInviteURL, isSuperAdmin } from '@helpers/utils.hel
 import { decamelizeKeys } from 'humps';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { decrementActiveSessions, decrementConcurrentUsers } from '../../otel/tracing';
 
 @Injectable()
 export class SessionService {
@@ -35,10 +36,32 @@ export class SessionService {
   async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
     response.clearCookie('tj_auth_token');
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Find the session before deleting to get workspace info
+      const session = await manager.findOne(UserSessions, {
+        where: { id: sessionId, userId },
+      });
+
       await manager.delete(UserSessions, { id: sessionId, userId });
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
+
+      // Decrement metrics
+      try {
+        decrementActiveSessions({
+          userId,
+          sessionType: 'user',
+        });
+
+        if (user.defaultOrganizationId) {
+          decrementConcurrentUsers({
+            workspaceId: user.defaultOrganizationId,
+            userId,
+          });
+        }
+      } catch (error) {
+        console.error('Error decrementing session metrics:', error);
+      }
 
       const auditLogData = {
         userId: user.id,
