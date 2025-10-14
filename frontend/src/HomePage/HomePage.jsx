@@ -1476,6 +1476,7 @@ class HomePageComponent extends React.Component {
             handleConfirm={this.importGitApp}
             confirmBtnProps={{
               title: 'Import app',
+              tooltipMessage: '',
               isLoading: importingApp,
               disabled: importingApp || !selectedAppRepo || importingGitAppOperations?.message,
             }}
