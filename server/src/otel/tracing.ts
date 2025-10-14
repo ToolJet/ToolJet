@@ -130,12 +130,10 @@ export const sdk = new NodeSDK({
 // Custom metrics
 let meter: any;
 let apiHitCounter: any;
-let activeUsersGauge: any;
 let apiDurationHistogram: any;
 let concurrentUsersCounter: any;
 let activeSessionsCounter: any;
 let concurrentUsersGauge: any;
-const activeUsers = new Map<string, number>(); // userId -> lastSeenTimestamp
 
 // Track active users per workspace with last activity timestamp
 // Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
@@ -152,27 +150,6 @@ const initializeCustomMetrics = () => {
   apiHitCounter = meter.createCounter('api.hits', {
     description: 'Number of times an API endpoint is hit',
     unit: '1',
-  });
-
-  // Gauge for active users (backward compatibility with existing implementation)
-  activeUsersGauge = meter.createObservableGauge('active.users', {
-    description: 'Number of currently active users (active in last 5 minutes)',
-    unit: '{users}',
-  });
-
-  activeUsersGauge.addCallback((observableResult: any) => {
-    // Clean up inactive users (not seen in last 5 minutes)
-    const now = Date.now();
-    const fiveMinutesAgo = now - 5 * 60 * 1000;
-
-    for (const [userId, lastSeen] of activeUsers.entries()) {
-      if (lastSeen < fiveMinutesAgo) {
-        activeUsers.delete(userId);
-      }
-    }
-
-    // Report current count of active users
-    observableResult.observe(activeUsers.size);
   });
 
   // UpDownCounter for concurrent users (login/logout based)
@@ -258,13 +235,6 @@ export const otelMiddleware = (req: any, res: any, next: () => void, ...args: an
       });
     }
 
-    // Track active users (using session or user ID if available)
-    const userId = req.user?.id || req.session?.userId || req.headers['x-user-id'];
-    if (userId) {
-      // Update last seen timestamp for this user
-      activeUsers.set(userId, Date.now());
-    }
-
     const originalJson = res.json;
     res.json = function (body: any) {
       const statusCode = res.statusCode;
@@ -307,7 +277,7 @@ export const startOpenTelemetry = async (): Promise<void> => {
     initializeCustomMetrics();
     console.log('OpenTelemetry instrumentation initialized');
     console.log(
-      'Custom metrics initialized: api.hits, active.users, api.duration, users.concurrent, sessions.active, users.concurrent.active'
+      'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active'
     );
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
@@ -334,9 +304,6 @@ export const trackUserActivity = (attributes: {
     role: attributes.userRole,
     sessionId: attributes.sessionId,
   });
-
-  // Also update the legacy activeUsers map for backward compatibility
-  activeUsers.set(attributes.userId, now);
 };
 
 // Helper functions for user metrics tracking
