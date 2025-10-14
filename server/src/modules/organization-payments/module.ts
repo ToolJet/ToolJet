@@ -1,7 +1,6 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { WhiteLabellingModule } from '../white-labelling/module';
 import { EmailModule } from '@modules/email/module';
-import { CrmModule } from '@modules/CRM/module';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationsAiFeatureRepository } from './organizationAiFeature.repository';
@@ -17,11 +16,7 @@ export class OrganizationPaymentModule extends SubModule {
 
     return {
       module: OrganizationPaymentModule,
-      imports: [
-        await WhiteLabellingModule.register(configs),
-        await EmailModule.register(configs),
-        await CrmModule.register(configs),
-      ],
+      imports: [await WhiteLabellingModule.register(configs), await EmailModule.register(configs)],
       controllers: isMainImport ? [OrganizationPaymentController] : [],
       providers: [OrganizationPaymentService, FeatureAbilityFactory, OrganizationsAiFeatureRepository],
       exports: [],
