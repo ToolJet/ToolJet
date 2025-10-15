@@ -1,29 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import NumberInput from './NumberInput';
 import TextInput from './TextInput';
+import PasswordInput from './PasswordInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
-import { Button } from '@/components/ui/button';
-import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
-  const {
-    propertyKey,
-    type,
-    encrypted,
-    validation,
-    isValidatedMessages,
-    isDisabled,
-    isEditing,
-    handleEncryptedFieldsToggle,
-    labelDisabled,
-    showEncryption = true,
-  } = restProps;
+  const { type, validation, isValidatedMessages, labelDisabled } = restProps;
 
-  const InputComponentType = type === 'number' ? NumberInput : TextInput;
+  const getInputComponent = () => {
+    if (type === 'password') return PasswordInput;
+    if (type === 'number') return NumberInput;
+    return TextInput;
+  };
+
+  const InputComponentType = getInputComponent();
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
 
-  const isEncrypted = showEncryption && (type === 'password' || encrypted);
   const isWorkspaceConstant =
     restProps.placeholder &&
     (restProps.placeholder.includes('{{constants') || restProps.placeholder.includes('{{secrets'));
@@ -54,39 +47,15 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
 
   return (
     <div>
-      <div className="d-flex">
-        {label && (
+      {label && (
+        <div className="d-flex">
           <div className="tw-flex-shrink-0">
             <InputLabel disabled={labelDisabled ?? disabled} label={label} required={required} />
           </div>
-        )}
-        {showEncryption && type === 'password' && (
-          <div className="d-flex justify-content-between w-100">
-            <div className="mx-1 col">
-              <Button
-                type="a"
-                variant="tertiary"
-                target="_blank"
-                rel="noreferrer"
-                disabled={isDisabled}
-                onClick={(e) => handleEncryptedFieldsToggle(e, propertyKey)}
-                data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
-              >
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
-            </div>
-
-            <div className="col-auto mb-2">
-              <small className="text-green" data-cy="encrypted-text">
-                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-                Encrypted
-              </small>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <InputComponentType
-        disabled={disabled || (isEncrypted && !isEditing)}
+        disabled={disabled}
         required={required}
         response={isValid}
         onChange={handleChange}
