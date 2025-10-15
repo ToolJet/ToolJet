@@ -1,9 +1,9 @@
+import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
 import * as groups from "Support/utils/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 
 const verifyModalFields = (isEdit = false, groupName = '') => {
   // Modal header verification

@@ -77,6 +77,14 @@ export function defineAppAbility(
     (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
   ) {
     // add view permissions for all apps or specific app
-    can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
+    can(
+      [
+        FEATURE_KEY.GET_ONE,
+        FEATURE_KEY.GET_BY_SLUG,
+        FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
+        FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
+      ],
+      App
+    );
   }
 }

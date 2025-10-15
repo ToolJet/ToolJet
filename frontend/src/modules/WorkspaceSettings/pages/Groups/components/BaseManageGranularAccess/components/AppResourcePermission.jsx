@@ -117,7 +117,7 @@ function AppResourcePermissions({
                 {'View'}
               </span>
               <span class={`tj-text-xxsm`} data-cy="app-view-helper-text">
-                Only access released version of apps
+                Access preview & released versions of apps
               </span>
             </label>
           </div>
