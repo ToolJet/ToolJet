@@ -111,6 +111,25 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
     });
 });
 
+// Command to get group ID by name
+Cypress.Commands.add("apiGetGroupId", (groupName) => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy.request({
+            method: "GET",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+            headers: headers,
+            log: false,
+        }).then((response) => {
+            expect(response.status).to.equal(200);
+            const group = response.body.groupPermissions.find(
+                (g) => g.name === groupName
+            );
+            if (!group) throw new Error(`Group with name ${groupName} not found`);
+            return group.id;
+        });
+    });
+});
+
 Cypress.Commands.add(
     "apiCreateGranularPermission",
     (
@@ -122,21 +141,7 @@ Cypress.Commands.add(
         resourcesToAdd = []
     ) => {
         cy.getAuthHeaders().then((headers) => {
-            // Fetch group permissions
-            cy.request({
-                method: "GET",
-                url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-                headers: headers,
-                log: false,
-            }).then((response) => {
-                expect(response.status).to.equal(200);
-                const group = response.body.groupPermissions.find(
-                    (g) => g.name === groupName
-                );
-                if (!group) throw new Error(`Group with name ${groupName} not found`);
-
-                const groupId = group.id;
-
+            cy.apiGetGroupId(groupName).then((groupId) => {
                 // Create granular permission
                 cy.request({
                     method: "POST",
@@ -167,20 +172,7 @@ Cypress.Commands.add(
     "apiDeleteGranularPermission",
     (groupName, typesToDelete = []) => {
         cy.getAuthHeaders().then((headers) => {
-            // Step 1: Get the group by name
-            cy.request({
-                method: "GET",
-                url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-                headers,
-                log: false,
-            }).then((response) => {
-                expect(response.status).to.equal(200);
-                const group = response.body.groupPermissions.find(
-                    (g) => g.name === groupName
-                );
-                if (!group) throw new Error(`Group with name ${groupName} not found`);
-
-                const groupId = group.id;
+            cy.apiGetGroupId(groupName).then((groupId) => {
 
                 // Step 2: Get all granular permissions for the group
                 cy.request({
@@ -567,3 +559,21 @@ Cypress.Commands.add(
         });
     }
 );
+
+Cypress.Commands.add("apiUpdateGroupPermission", (groupName, permissionPayload) => {
+    return cy.apiGetGroupId(groupName).then((groupId) => {
+        return cy.getAuthHeaders().then((headers) => {
+            return cy.request({
+                method: "PUT",
+                url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
+                headers: headers,
+                body: permissionPayload,
+                log: false,
+            }).then((response) => {
+                expect(response.status).to.equal(200);
+                return response.body;
+            });
+        });
+    });
+});
+
