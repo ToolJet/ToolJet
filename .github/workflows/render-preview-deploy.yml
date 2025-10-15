@@ -16,7 +16,6 @@ jobs:
 
 # Debug job - TEMPORARY - Remove after testing
   debug-comment-trigger:
-    if: github.event_name == 'issue_comment'
     runs-on: ubuntu-latest
     steps:
       - name: Debug all values
@@ -33,8 +32,14 @@ jobs:
           echo "Contains /deploy-ee: ${{ contains(github.event.comment.body, '/deploy-ee') }}"
           echo "Contains /deploy-ee-lts: ${{ contains(github.event.comment.body, '/deploy-ee-lts') }}"
           
+          echo "=== Context Check ==="
+          echo "github.event_name value: '${{ github.event_name }}'"
+          echo "Is 'issue_comment'?: ${{ github.event_name == 'issue_comment' }}"
+          
           echo "=== Full Event Payload ==="
-          echo '${{ toJson(github.event) }}'
+          cat << 'EOF'
+          ${{ toJson(github.event) }}
+          EOF
 
 # Community Edition CE
   create-ce-review-app:
