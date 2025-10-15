@@ -18053,7 +18053,7 @@ section.ai-message-prompt-input-wrapper {
 //consider movoing it to separate scss file --> need to fix
 .create-version-modal {
   height: 502px;
-  width: 340px;
+  width: 380px;
 
   .create-version-form {
     .alert-component {
@@ -18104,6 +18104,50 @@ section.ai-message-prompt-input-wrapper {
       width: 272px;
       height: 78px;
     }
+    .create-version-footer{
+      position: absolute;
+      bottom: 20px;
+      left: 24px;
+      right: 24px;
+      height: 72px !important;
+      .create-version-button{
+        border-radius: 6px;
+        border: 1px solid var(--Bases-Transparent, rgba(255, 255, 255, 0.00));
+        background: var(--Indigo-09, #3E63DD);
+        display: flex;
+        padding: 6px 16px;
+        align-items: center;
+        gap: 4px;
+        width: 125px;
+        height: 32px;
+        .create-version-button-text{
+          color: var(--Indigo-01, #FDFDFE);
+          font-family: "IBM Plex Sans";
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 20px; /* 142.857% */
+        }
+      }
+      .cancel-button{
+        display: flex;
+        align-items: flex-start;
+        padding: 6px 16px;
+        align-items: center;
+        gap: 8px;
+        border-radius: 6px;
+        border: 1px solid var(--Slate-07, #D7DBDF);
+        background: var(--Slate-01, #FBFCFD);
+        .cancel-button-text{
+          color: var(--Slate-12, #11181C);
+          font-family: "IBM Plex Sans";
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 20px; /* 142.857% */
+        }
+      }
+    }
   }
 
   .loader-container {
@@ -18120,7 +18164,7 @@ section.ai-message-prompt-input-wrapper {
   }
 
   .create-version-form {
-    height: 320px !important;
+    height: calc(336px + 72px) !important;
   }
 }
 
@@ -18163,6 +18207,19 @@ section.ai-message-prompt-input-wrapper {
     font-style: normal;
     font-weight: 400;
     line-height: 16px;
+  }
+
+  .edit-version-description {
+    display: flex;
+    padding: 10px 8px;
+    align-items: flex-start;
+    gap: 12px;
+    align-self: stretch;
+    border-radius: 6px;
+    border: 1px solid var(--border-default, #CCD1D5);
+    background: --bg-surface-layer-01;
+    width: 344px;
+    height: 80px;
   }
 
   .create-version-alert {

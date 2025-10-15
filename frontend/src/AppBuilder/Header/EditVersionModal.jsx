@@ -139,7 +139,7 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
                 setVersionDescription(e.target.value);
                 setDescriptionError(validateVersionDescription(e.target.value));
               }}
-              className="form-control"
+              className="form-control edit-version-description"
               data-cy="edit-version-description-input-field"
               placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
               disabled={isEditingVersion}
@@ -153,6 +153,8 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
             </small>
           </div>
         </div>
+        <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
+
         <div className="row">
           <div className="col d-flex justify-content-end">
             <button

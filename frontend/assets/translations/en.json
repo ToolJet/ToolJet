@@ -138,7 +138,7 @@
         "appVersionManager": {
             "version": "Version",
             "currentlyReleased": "Currently Released",
-            "createVersion": "Create new version",
+            "createVersion": "Create version",
             "versionName": "Version name",
             "versionDescription": "Version Description",
             "createVersionFrom": "Create version from",

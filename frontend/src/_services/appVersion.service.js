@@ -45,9 +45,10 @@ function getAppVersionData(appId, versionId, mode) {
   );
 }
 
-function create(appId, versionName, versionFromId, currentEnvironmentId) {
+function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId) {
   const body = {
     versionName,
+    versionDescription,
     versionFromId,
     environmentId: currentEnvironmentId,
   };
@@ -61,9 +62,10 @@ function create(appId, versionName, versionFromId, currentEnvironmentId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
-function createDraftVersion(appId, versionName, versionFromId, currentEnvironmentId) {
+function createDraftVersion(appId, versionName, versionDescription = '', versionFromId, currentEnvironmentId) {
   const body = {
     versionName,
+    versionDescription,
     versionFromId,
     environmentId: currentEnvironmentId,
   };

@@ -105,10 +105,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }));
   },
 
-  createNewVersionAction: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
+  createNewVersionAction: async (appId, versionName, versionDescription, selectedVersionId, onSuccess, onFailure) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
-      const newVersion = await appVersionService.create(appId, versionName, selectedVersionId, editorEnvironment);
+      const newVersion = await appVersionService.create(
+        appId,
+        versionName,
+        versionDescription,
+        selectedVersionId,
+        editorEnvironment
+      );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
