@@ -219,14 +219,14 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
 
-Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-});
+// Cypress.Commands.add("renameApp", (appName) => {
+//   cy.get(commonSelectors.appNameInput).type(
+//     `{selectAll}{backspace}${appName}`,
+//     { force: true }
+//   );
+//   cy.forceClickOnCanvas();
+//   cy.waitForAutoSave();
+// });
 
 Cypress.Commands.add(
   "clearCodeMirror",
@@ -557,7 +557,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
