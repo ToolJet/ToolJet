@@ -339,7 +339,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList]);
+  }, [temporaryHeight, boxList, selectedComponents]);
 
   useEffect(() => {
     reloadGrid();
