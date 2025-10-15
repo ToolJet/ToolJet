@@ -153,12 +153,13 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
             </small>
           </div>
         </div>
-        <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
 
-        <div className="row">
+        <div className="edit-version-footer">
+          <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
+
           <div className="col d-flex justify-content-end">
             <button
-              className="btn mx-2"
+              className="cancel-button btn mx-2"
               data-cy="cancel-button"
               onClick={() => {
                 setVersionName(editingVersion?.name || '');
@@ -168,14 +169,15 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
               }}
               type="button"
             >
-              {t('globals.cancel', 'Cancel')}
+              <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
             </button>
             <button
-              className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`}
+              className={`btn btn-primary edit-version-button${isEditingVersion ? 'btn-loading' : ''}`}
               data-cy="save-button"
               type="submit"
             >
-              {t('globals.save', 'Save')}
+              {/* {t('globals.save', 'Save')} */}
+              <div className="edit-version-button-text">{t('editor.update', 'Update')}</div>
             </button>
           </div>
         </div>
