@@ -239,6 +239,11 @@ export const startOpenTelemetry = async (): Promise<void> => {
   try {
     await sdk.start();
     initializeCustomMetrics();
+
+    // Initialize audit log metrics
+    const { initializeAuditLogMetrics } = await import('./audit-metrics');
+    initializeAuditLogMetrics();
+
     console.log('OpenTelemetry instrumentation initialized');
     console.log('Custom metrics initialized: api.hits, active.users, api.duration');
   } catch (error) {
@@ -246,5 +251,8 @@ export const startOpenTelemetry = async (): Promise<void> => {
     throw error;
   }
 };
+
+// Export audit metrics function for use in services
+export { recordAuditLogMetric } from './audit-metrics';
 
 export default sdk;

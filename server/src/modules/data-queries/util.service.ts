@@ -73,10 +73,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
 
-    try {
-      const dataSource: DataSource = dataQuery?.dataSource;
+    // Hoist these variables to function scope for access in finally block
+    let dataSource: DataSource;
+    let app: App;
 
-      const app: App = dataQuery?.app;
+    try {
+      dataSource = dataQuery?.dataSource;
+      app = dataQuery?.app;
       if (!(dataSource && app)) {
         throw new UnauthorizedException();
       }
@@ -285,13 +288,22 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       throw queryError;
     } finally {
       if (user) {
-        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        const auditData = {
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: dataQuery?.id,
           resourceName: dataQuery?.name,
           metadata: queryStatus.getMetaData(),
-        });
+          resourceData: {
+            appId: app?.id,
+            appName: app?.name,
+            dataSourceId: dataSource?.id,
+            dataSourceType: dataSource?.kind,
+            dataSourceName: dataSource?.name,
+          },
+        };
+        console.log('[DEBUG] Setting audit context with resourceData:', JSON.stringify(auditData.resourceData));
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
       }
     }
   }
