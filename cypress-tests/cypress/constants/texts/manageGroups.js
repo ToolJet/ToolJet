@@ -85,12 +85,29 @@ export const groupsText = {
   warningText: "Users must be always be part of one default group. This will define the user count in your plan.",
   continueButtonText: "Continue",
   roleUpdateToastMessage: "Role updated successfully",
-  endUserToBuilderMessage: "Changing the user role from end-user to builder will grant access the user access to all resources.Are you sure you want to continue?",
-  endUserToAdminMessage: "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?",
-  builderToEnduserMessage: "Changing the user role from builder to end-user will revoke their access to edit all resources.Are you sure you want to continue?",
-  builderToAdminMessage: "Changing user role from builder to admin will grant access to all resources and settings.Are you sure you want to continue?",
+
+  endUserToBuilderMessage: Cypress.env('environment') === 'Community'
+    ? "Changing the user role from end-user to builder will grant access the user access to all resources.Are you sure you want to continue?"
+    : "Changing user default group from end-user to builder will affect the count of users covered by your plan.Are you sure you want to continue?",
+
+  endUserToAdminMessage: Cypress.env('environment') === 'Community'
+    ? "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?"
+    : "Changing user default group from end-user to admin will affect the count of users covered by your plan.Are you sure you want to continue?",
+
+  builderToEnduserMessage: Cypress.env('environment') === 'Community'
+    ? "Changing the user role from builder to end-user will revoke their access to edit all resources.Are you sure you want to continue?"
+    : "Changing user default group from builder to end-user will affect the count of users covered by your plan.This will also remove the user from any custom groups with builder-like permissions.Are you sure you want to continue?",
+
+  builderToAdminMessage: Cypress.env('environment') === 'Community'
+    ? "Changing user role from builder to admin will grant access to all resources.Are you sure you want to continue?"
+    : "Changing user role from builder to admin will grant access to all resources and settings.Are you sure you want to continue?",
+
   adminToBuilderMessage: "Changing your user default group from admin to builder will revoke your access to settings.Are you sure you want to continue?",
-  adminToEnduserMessage: "Changing the user role from admin to end-user will revoke their access to edit all resources and settings.Are you sure you want to continue?",
+
+  adminToEnduserMessage: Cypress.env('environment') === 'Community'
+    ? "Changing the user role from admin to end-user will revoke their access to edit all resources and settings.Are you sure you want to continue?"
+    : "Changing your user group from admin to end-user will revoke your access to settings. This will also affect the count of users covered by your plan.Are you sure you want to continue?",
+
   modalHeader: "Can not remove last active admin",
   modalMessage: "Cannot change role of last present admin, please add another admin and change the role",
   userAddedToast: "Users added to the group",
