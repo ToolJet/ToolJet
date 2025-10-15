@@ -139,13 +139,14 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       onFailure(error);
     }
   },
-  updateVersionNameAction: async (appId, versionId, versionName, onSuccess, onFailure) => {
+  updateVersionNameAction: async (appId, versionId, versionName, versionDescription, onSuccess, onFailure) => {
     try {
-      await appVersionService.save(appId, versionId, { name: versionName });
+      await appVersionService.save(appId, versionId, { name: versionName, description: versionDescription });
 
       set((state) => {
         if (state.selectedVersion && state.selectedVersion.id === versionId) {
           state.selectedVersion.name = versionName;
+          state.selectedVersion.description = versionDescription;
         }
 
         const versionIndex = state.versionsPromotedToEnvironment.findIndex((v) => v.id === versionId);

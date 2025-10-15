@@ -93,6 +93,7 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
   if (values.diff) body['app_diff'] = values.diff;
+  if (values.description) body['description'] = values.description;
 
   const requestOptions = {
     method: 'PUT',

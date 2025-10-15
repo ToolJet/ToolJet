@@ -22,7 +22,7 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
     shallow
   );
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
-  const [versionDescription, setVersionDescription] = useState('');
+  const [versionDescription, setVersionDescription] = useState(editingVersion?.description || '');
   const [nameError, setNameError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
   const { t } = useTranslation();
@@ -45,20 +45,27 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
 
   React.useEffect(() => {
     setVersionName(editingVersion?.name);
+    setVersionDescription(editingVersion?.description || '');
     setNameError('');
     setDescriptionError('');
-  }, [editingVersion?.name]);
+  }, [editingVersion?.name, editingVersion]);
 
   const editVersion = () => {
     setNameError('');
     setDescriptionError('');
 
     let hasError = false;
-    const error = validateVersionName(versionName);
+    const hasNameError = validateVersionName(versionName);
+    const hasDescriptionError = validateVersionDescription(versionDescription);
 
-    if (error) {
-      setNameError(error);
-      toast.error(error);
+    if (hasDescriptionError) {
+      setDescriptionError(hasDescriptionError);
+      toast.error(hasDescriptionError);
+      hasError = true;
+    }
+    if (hasNameError) {
+      setNameError(hasNameError);
+      toast.error(hasNameError);
       hasError = true;
     }
 
@@ -69,8 +76,9 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
       appId,
       editingVersion?.id,
       versionName,
+      versionDescription,
       () => {
-        toast.success('Version name updated');
+        toast.success('Version details updated successfully!');
         setIsEditingVersion(false);
         setShowEditAppVersion(false);
       },
@@ -88,6 +96,7 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
       show={showEditAppVersion}
       closeModal={() => {
         setVersionName(editingVersion?.name || '');
+        setVersionDescription(editingVersion?.description || '');
         setNameError('');
         setDescriptionError('');
         setShowEditAppVersion(false);
@@ -163,6 +172,7 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
               data-cy="cancel-button"
               onClick={() => {
                 setVersionName(editingVersion?.name || '');
+                setVersionDescription(editingVersion?.description || '');
                 setNameError('');
                 setDescriptionError('');
                 setShowEditAppVersion(false);
