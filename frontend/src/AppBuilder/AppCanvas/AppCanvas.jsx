@@ -118,12 +118,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
 
-  useEffect(() => {
-    if (draggingComponentId) {
-      useStore.getState().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-    }
-  }, [draggingComponentId]);
-
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'

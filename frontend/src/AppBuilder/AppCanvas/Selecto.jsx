@@ -121,8 +121,6 @@ export const EditorSelecto = () => {
         }
       }
 
-      // setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-      // setRightSidebarOpen(true);
       return false;
     },
     [setSelectedComponents, setActiveRightSideBarTab, getSelectedComponents]
