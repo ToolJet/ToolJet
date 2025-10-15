@@ -5,7 +5,7 @@ on:
   issue_comment:
     types: [created, edited, deleted]
 env:
-  PR_NUMBER: ${{ github.event.number }}
+  PR_NUMBER: ${{ github.event.issue.number || github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 permissions:
@@ -13,6 +13,28 @@ permissions:
   issues: write
 
 jobs:
+
+# Debug job - TEMPORARY - Remove after testing
+  debug-comment-trigger:
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug all values
+        run: |
+          echo "=== Event Details ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event action: ${{ github.event.action }}"
+          echo "Comment body: ${{ github.event.comment.body }}"
+          echo "Issue number: ${{ github.event.issue.number }}"
+          echo "Has pull_request: ${{ github.event.issue.pull_request != null }}"
+          echo "Pull request URL: ${{ github.event.issue.pull_request.url }}"
+          
+          echo "=== Checking contains ==="
+          echo "Contains /deploy-ee: ${{ contains(github.event.comment.body, '/deploy-ee') }}"
+          echo "Contains /deploy-ee-lts: ${{ contains(github.event.comment.body, '/deploy-ee-lts') }}"
+          
+          echo "=== Full Event Payload ==="
+          echo '${{ toJson(github.event) }}'
 
 # Community Edition CE
   create-ce-review-app:
@@ -368,6 +390,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug - Print event information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event action: ${{ github.event.action }}"
+          echo "Comment body: ${{ github.event.comment.body }}"
+          echo "PR number: ${{ github.event.issue.number }}"
+          echo "Is PR: ${{ github.event.issue.pull_request }}"
       - name: Sync repo
         uses: actions/checkout@v3
 
