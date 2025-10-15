@@ -101,7 +101,6 @@ module.exports = {
         'slider-handle': 'var(--slider-handle)',
         'slider-track': 'var(--slider-track)',
         'slider-fill': 'var(--slider-fill)',
-
         background: 'var(--background-surface-layer-01)',
         foreground: 'var(--text-default)',
         primary: 'var(--background-accent-strong)',
@@ -115,8 +114,16 @@ module.exports = {
         destructive: 'var(--background-error-strong)',
         'destructive-foreground': 'var(--text-on-solid)',
         ring: 'var(--interactive-focus-outline)',
-
-        sidebar: 'var(--background-surface-layer-01)',
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          ring: 'hsl(var(--sidebar-ring))',
+        },
         'sidebar-foreground': 'var(--text-default)',
         'sidebar-primary': 'var(--background-accent-strong)',
         'sidebar-primary-foreground': 'var(--text-on-solid)',
