@@ -101,7 +101,7 @@ describe("Workflows features", () => {
 
     navigateBackToWorkflowsDashboard();
 
-    cy.apiCreateWorkflow(data.wfName)
+    cy.apiCreateWorkflow(data.parentWFName)
     cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.workflowNodeLabel);
