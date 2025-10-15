@@ -363,8 +363,8 @@ jobs:
 
   create-ee-review-app:
     if: |
-      (github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app' || github.event.label.name == 'create-ee-lts-review-app' || github.event.label.name == 'review-app')) ||
-      (github.event.action == 'created' && (contains(github.event.comment.body, '/deploy-ee') || contains(github.event.comment.body, '/deploy-ee-lts')))
+      (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app' || github.event.label.name == 'create-ee-lts-review-app' || github.event.label.name == 'review-app')) ||
+      (github.event_name == 'issue_comment' && github.event.action == 'created' && (contains(github.event.comment.body, '/deploy-ee') || contains(github.event.comment.body, '/deploy-ee-lts')))
     runs-on: ubuntu-latest
 
     steps:
@@ -560,10 +560,6 @@ jobs:
               {
                 "key": "BRANCH_NAME",
                 "value": "${{ env.BRANCH_NAME }}"
-              },
-              {
-                "key": "REPO_URL",
-                "value": "${{ env.REPO_URL }}"
               },
               {
                 "key": "CUSTOM_GITHUB_TOKEN",
