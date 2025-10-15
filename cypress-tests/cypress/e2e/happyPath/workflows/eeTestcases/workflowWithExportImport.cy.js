@@ -26,7 +26,7 @@ describe("Workflows Export/Import Sanity", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("RunJS workflow - execute, export/import, re-execute", () => {
+  it.only("RunJS workflow - execute, export/import, re-execute", () => {
     const wfName = `${data.wfName}-runjs`;
 
     cy.createWorkflowApp(wfName);
@@ -99,7 +99,8 @@ describe("Workflows Export/Import Sanity", () => {
 
     cy.reload();
 
-    cy.createWorkflowApp(wfName);
+    cy.apiCreateWorkflow(data.wfName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dsName);
 

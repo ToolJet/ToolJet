@@ -104,7 +104,8 @@ describe("Workflows in apps", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.reload();
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.wfName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dsName);
 

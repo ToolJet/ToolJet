@@ -145,10 +145,14 @@ Cypress.Commands.add(
   (wfName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
     navigateBackToWorkflowsDashboard();
 
-    selectAppCardOption(
-      wfName,
-      commonSelectors.appCardOptions(workflowsText.exportWFOption)
-    );
+    cy.get(`[data-cy="${wfName}-card"]`)
+      .trigger('mouseover') 
+      .find('[data-cy="app-card-menu-icon"]')
+      .click({ force: true });
+
+    cy.get(commonSelectors.appCardOptions(workflowsText.exportWFOption))
+      .click();
+
     cy.wait(2000);
 
     cy.exec("ls -t ./cypress/downloads/ | head -1").then((result) => {
@@ -158,6 +162,7 @@ Cypress.Commands.add(
         cy.writeFile(fixtureFile, json);
       });
     });
+    
     cy.deleteWorkflowfromDashboard(wfName);
   }
 );

@@ -93,7 +93,8 @@ describe("Workflows with Datasource", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.reload();
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.wfName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dsName);
 
@@ -157,7 +158,8 @@ describe("Workflows with Datasource", () => {
       ]
     );
     cy.reload();
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.wfName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dsName);
 
@@ -236,7 +238,8 @@ describe("Workflows with Datasource", () => {
       postgreSqlText.toastDSSaved
     );
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.wfName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dsName);
 
