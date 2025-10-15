@@ -20,16 +20,16 @@ describe("Workflows Export/Import Sanity", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it.only("RunJS workflow - execute, export/import, re-execute", () => {
-    const wfName = `${data.wfName}-runjs`;
+    const workflowName = `${data.workflowName}-runjs`;
 
-    cy.createWorkflowApp(wfName);
+    cy.createWorkflowApp(workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -50,23 +50,23 @@ describe("Workflows Export/Import Sanity", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.exportWorkflowApp(wfName);
+    cy.exportWorkflowApp(workflowName);
 
-    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(wfName);
+    cy.apiDeleteWorkflow(workflowName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
   it("Postgres workflow - execute, export/import, re-execute", () => {
-    const wfName = `${data.wfName}-pg`;
-    const dsName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    const workflowName = `${data.workflowName}-pg`;
+    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
+      dataSourceName,
       "postgresql",
       [
         { key: "connection_type", value: "manual", encrypted: false },
@@ -88,7 +88,7 @@ describe("Workflows Export/Import Sanity", () => {
       ]
     );
 
-    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
       .should("be.visible")
       .click();
 
@@ -99,10 +99,10 @@ describe("Workflows Export/Import Sanity", () => {
 
     cy.reload();
 
-    cy.apiCreateWorkflow(data.wfName)
+    cy.apiCreateWorkflow(data.workflowName)
     cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
       force: true,
@@ -122,14 +122,14 @@ describe("Workflows Export/Import Sanity", () => {
     );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    cy.exportWorkflowApp(wfName);
+    cy.exportWorkflowApp(workflowName);
 
-    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(wfName);
+    cy.apiDeleteWorkflow(workflowName);
 
-    deleteDatasource(dsName);
+    deleteDatasource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

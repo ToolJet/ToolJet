@@ -233,7 +233,7 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 
 Cypress.Commands.add(
   "apiAddQueryToApp",
-  ({ queryName, options, dsName, dsKind }) => {
+  ({ queryName, options, dataSourceName, dsKind }) => {
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = cookie?.value;
       const workspaceId = Cypress.env("workspaceId");
@@ -259,10 +259,10 @@ Cypress.Commands.add(
           headers: commonHeaders,
         }).then((dsResponse) => {
           const dataSource = dsResponse.body.data_sources.find(
-            (ds) => ds.name === dsName
+            (ds) => ds.name === dataSourceName
           );
           const dataSourceID = dataSource.id;
-          Cypress.env(`${dsName}`, dataSourceID);
+          Cypress.env(`${dataSourceName}`, dataSourceID);
 
           cy.request({
             method: "POST",
@@ -721,143 +721,3 @@ Cypress.Commands.add(
     });
   }
 );
-
-Cypress.Commands.add("apiCreateWorkflow", (workflowName) => {
-  
-  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
-    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
-
-    cy.request({
-      method: "POST",
-      url: `${Cypress.env("server_host")}/api/apps`,
-      headers: {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: `tj_auth_token=${cookie.value}`,
-      },
-      body: {
-        icon: "sentfast",
-        name: workflowName,
-        type: "workflow", 
-      },
-    }).then((response) => {
-      expect(response.status).to.equal(201);
-
-      const workflowId = response.body?.id || response.allRequestResponses?.[0]?.["Response Body"]?.id;
-      const userId = response.body?.user_id || response.allRequestResponses?.[0]?.["Response Body"]?.user_id;
-
-      Cypress.env("workflowId", workflowId);
-      Cypress.env("user_id", userId);
-
-      Cypress.log({
-        name: "Workflow create",
-        displayName: "WORKFLOW CREATED",
-        message: `: ${response.body.name}`,
-      });
-    });
-  });
-});
-
-Cypress.Commands.add(
-  "openWorkflow",
-  (
-    slug = "",
-    workspaceId = Cypress.env("workspaceId"),
-    workflowId = Cypress.env("workflowId"),
-  ) => {
-    cy.intercept("GET", "/api/apps/*").as("getWorkflowData");
-    cy.window({ log: false }).then((win) => {
-      win.localStorage.setItem("walkthroughCompleted", "true");
-    });
-    cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
-
-    cy.wait("@getWorkflowData").then((interception) => {
-      const responseData = interception.response.body;
-
-      Cypress.env("editingVersionId", responseData.editing_version.id);
-      Cypress.env("environmentId", responseData.editorEnvironment.id);
-      Cypress.env("workflowId", responseData.id);
-    });
-  }
-);
-
-Cypress.Commands.add(
-  "openWorkflowByName",
-  (
-    workflowName,
-    workspaceId = Cypress.env("workspaceId"),
-    componentSelector = "[data-cy='workflow-canvas']"
-  ) => {
-    cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
-      Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
-      
-      cy.request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${workflowName}`,
-        headers: {
-          "Tj-Workspace-Id": workspaceId,
-          Cookie: Cypress.env("authToken"),
-        },
-      }, { log: false }).then((response) => {
-        const workflow = response.body.apps?.find(
-          app => app.name === workflowName || app.slug === workflowName
-        );
-
-        if (workflow) {
-          Cypress.env("workflowId", workflow.id);
-          cy.openWorkflow(workflow.slug, workspaceId, workflow.id, componentSelector);
-          
-          Cypress.log({
-            name: "Workflow Open",
-            displayName: "WORKFLOW OPENED",
-            message: `: ${workflowName}`,
-          });
-        } else {
-          throw new Error(`Workflow "${workflowName}" not found`);
-        }
-      });
-    });
-  }
-);
-
-Cypress.Commands.add("apiDeleteWorkflow", (workflowName) => {
-  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
-    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
-    
-    cy.request({
-      method: "GET",
-      url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow&searchKey=${workflowName}`,
-      headers: {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: Cypress.env("authToken"),
-      },
-    }, { log: false }).then((response) => {
-      const workflow = response.body.apps?.find(
-        app => app.name === workflowName || app.slug === workflowName
-      );
-
-      if (workflow) {
-        cy.request({
-          method: "DELETE",
-          url: `${Cypress.env("server_host")}/api/apps/${workflow.id}`,
-          headers: {
-            "Tj-Workspace-Id": Cypress.env("workspaceId"),
-            Cookie: Cypress.env("authToken"),
-          },
-        }, { log: false }).then((deleteResponse) => {
-          expect(deleteResponse.status).to.equal(200);
-          Cypress.log({
-            name: "Workflow Delete",
-            displayName: "WORKFLOW DELETED",
-            message: `: ${workflowName}`,
-          });
-        });
-      } else {
-        Cypress.log({
-          name: "Workflow Not Found",
-          displayName: "WORKFLOW NOT FOUND",
-          message: `: ${workflowName}`,
-        });
-      }
-    });
-  });
-});

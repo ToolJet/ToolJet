@@ -15,17 +15,17 @@ describe("Workflows features", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.appName = `${data.wfName}-wf-app`;
-    data.childWFName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.parentWFName = `${data.wfName}-wf-app`;
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.appName = `${data.workflowName}-wf-app`;
+    data.childWorkflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.parentWorkflowName = `${data.workflowName}-wf-app`;
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("Creating workflow with long string input and validating execution", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode(workflowsText.longStringJsonText);
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -46,11 +46,11 @@ describe("Workflows features", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.longStringJsonText);
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Creating workflow with Node Preview Validation and execution", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -73,12 +73,12 @@ describe("Workflows features", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.jsonValuePlaceholder);
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   // Need to run after bug fixes
   it("Creating workflow inside Workflow and validating execution", () => {
-    cy.createWorkflowApp(data.childWFName);
+    cy.createWorkflowApp(data.childWorkflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -101,7 +101,7 @@ describe("Workflows features", () => {
 
     navigateBackToWorkflowsDashboard();
 
-    cy.apiCreateWorkflow(data.parentWFName)
+    cy.apiCreateWorkflow(data.parentWorkflowName)
     cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.workflowNodeLabel);
@@ -112,9 +112,9 @@ describe("Workflows features", () => {
 
     cy.get('input[id^="react-select-"]')
       .eq(1)
-      .type(data.childWFName, { force: true });
+      .type(data.childWorkflowName, { force: true });
     cy.get(".react-select__option")
-      .contains(data.childWFName)
+      .contains(data.childWorkflowName)
       .click({ force: true });
 
     cy.get("body").click(50, 50);
@@ -126,12 +126,12 @@ describe("Workflows features", () => {
     );
     // cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(data.childWFName);
-    cy.apiDeleteWorkflow(data.parentWFName);
+    cy.apiDeleteWorkflow(data.childWorkflowName);
+    cy.apiDeleteWorkflow(data.parentWorkflowName);
   });
 
   it("Creating workflow with large datasets and validating execution", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -158,6 +158,6 @@ describe("Workflows features", () => {
     );
 
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 });

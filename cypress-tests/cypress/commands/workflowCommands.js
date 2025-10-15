@@ -6,10 +6,10 @@ import { commonText } from "Texts/common";
 import { selectAppCardOption } from "Support/utils/common";
 import { navigateBackToWorkflowsDashboard } from "Support/utils/workFlows";
 
-Cypress.Commands.add("createWorkflowApp", (wfName) => {
+Cypress.Commands.add("createWorkflowApp", (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
   cy.get(workflowSelector.workflowsCreateButton).click();
-  cy.get(workflowSelector.workFlowNameInputField).type(wfName);
+  cy.get(workflowSelector.workFlowNameInputField).type(workflowName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
 });
 
@@ -115,10 +115,10 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("deleteWorkflow", (wfName) => {
+Cypress.Commands.add("deleteWorkflow", (workflowName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   navigateBackToWorkflowsDashboard();
-  cy.get(commonSelectors.appCard(wfName))
+  cy.get(commonSelectors.appCard(workflowName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
     .realHover()
@@ -128,9 +128,9 @@ Cypress.Commands.add("deleteWorkflow", (wfName) => {
   cy.wait("@appDeleted");
 });
 
-Cypress.Commands.add("deleteWorkflowfromDashboard", (wfName) => {
+Cypress.Commands.add("deleteWorkflowfromDashboard", (workflowName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.get(commonSelectors.appCard(wfName))
+  cy.get(commonSelectors.appCard(workflowName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
     .realHover()
@@ -142,10 +142,10 @@ Cypress.Commands.add("deleteWorkflowfromDashboard", (wfName) => {
 
 Cypress.Commands.add(
   "exportWorkflowApp",
-  (wfName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
+  (workflowName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
     navigateBackToWorkflowsDashboard();
 
-    cy.get(`[data-cy="${wfName}-card"]`)
+    cy.get(`[data-cy="${workflowName}-card"]`)
       .trigger('mouseover') 
       .find('[data-cy="app-card-menu-icon"]')
       .click({ force: true });
@@ -163,20 +163,20 @@ Cypress.Commands.add(
       });
     });
     
-    cy.deleteWorkflowfromDashboard(wfName);
+    cy.deleteWorkflowfromDashboard(workflowName);
   }
 );
 
-Cypress.Commands.add("addWorkflowInApp", (wfName) => {
+Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   cy.get(workflowSelector.showDSPopoverButton).click();
   cy.get(workflowSelector.workflowSearchInput).type(
     workflowsText.workflowLabel
   );
   cy.contains(`[id*="react-select-"]`, workflowsText.workflowLabel).click();
-  cy.get(workflowSelector.queryRenameInput).clear().type(wfName);
+  cy.get(workflowSelector.queryRenameInput).clear().type(workflowName);
   cy.get(workflowSelector.workflowDropdown).parent()
   .find('.react-select__control')
   .click();
-  cy.get(workflowSelector.workflowSelectInput).realType(wfName);
-  cy.get(workflowSelector.workflowSelectOption).contains(wfName).click();
+  cy.get(workflowSelector.workflowSelectInput).realType(workflowName);
+  cy.get(workflowSelector.workflowSelectOption).contains(workflowName).click();
 });

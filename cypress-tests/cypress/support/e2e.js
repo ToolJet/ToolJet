@@ -17,6 +17,7 @@
 import "cypress-real-events/support";
 import "../commands/commands";
 import "../commands/apiCommands";
+import "../commands/workflowsApiCommands";
 import '../commands/workflowCommands';
 import '../commands/platform/platformApiCommands';
 import "@cypress/code-coverage/support";
