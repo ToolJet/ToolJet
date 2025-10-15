@@ -91,7 +91,7 @@ export const BaseInput = ({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow,
-    padding: showLeftIcon ? '8px 10px 8px 29px' : '8px 10px',
+    padding: showLeftIcon ? '8px 10px 8px 30px' : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -200,7 +200,7 @@ export const BaseInput = ({
               color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
-            stroke={1.5}
+            stroke={2}
           />
         )}
         <RenderInput
