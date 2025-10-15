@@ -67,6 +67,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     response: Response,
     envId?: string,
     mode?: string,
+    app?: App,
     opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result;
@@ -75,15 +76,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
-    let app: App;
+    let appToUse: App;
 
     try {
       dataSource = dataQuery?.dataSource;
-      app = dataQuery?.app;
-      if (!(dataSource && app)) {
+      // Use passed app parameter first, fallback to dataQuery.app (which may be undefined)
+      appToUse = app || dataQuery?.app;
+      if (!(dataSource && appToUse)) {
         throw new UnauthorizedException();
       }
-      const organizationId = user ? user.organizationId : app.organizationId;
+      const organizationId = user ? user.organizationId : appToUse.organizationId;
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
       const environmentId = dataSourceOptions.environmentId;
@@ -104,7 +106,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       try {
         // multi-auth will not work with public apps
-        if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
             'Authentication required for all users should be turned off since the app is public',
             '',
@@ -148,9 +150,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           {
             user: { id: user?.id },
             app: {
-              id: app?.id,
-              isPublic: app?.isPublic,
-              ...(dataSource.kind === 'tooljetdb' && { organization_id: app.organizationId }),
+              id: appToUse?.id,
+              isPublic: appToUse?.isPublic,
+              ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
             },
           }
         );
@@ -162,13 +164,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 sourceOptions['multiple_auth_enabled'],
                 sourceOptions['tokenData'],
                 user?.id,
-                app?.isPublic
+                appToUse?.isPublic
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
             try {
-              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, appToUse?.isPublic);
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -237,7 +239,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: app?.id, isPublic: app?.isPublic },
+                app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
               }
             );
           } else if (
@@ -288,21 +290,29 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       throw queryError;
     } finally {
       if (user) {
+        // Get metadata from queryStatus
+        const queryMetadata = queryStatus.getMetaData();
+
+        // Add app and datasource info to metadata for OTEL metrics
+        const enrichedMetadata = {
+          ...queryMetadata,
+          appId: appToUse?.id || 'unknown',
+          appName: appToUse?.name || 'unknown',
+          dataSourceType: dataSource?.kind || 'unknown',
+        };
+
         const auditData = {
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: dataQuery?.id,
           resourceName: dataQuery?.name,
-          metadata: queryStatus.getMetaData(),
+          metadata: enrichedMetadata,
           resourceData: {
-            appId: app?.id,
-            appName: app?.name,
             dataSourceId: dataSource?.id,
-            dataSourceType: dataSource?.kind,
             dataSourceName: dataSource?.name,
           },
         };
-        console.log('[DEBUG] Setting audit context with resourceData:', JSON.stringify(auditData.resourceData));
+        console.log('[DEBUG] Setting audit context. App:', appToUse?.id, appToUse?.name, 'DS:', dataSource?.id, dataSource?.kind);
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
       }
     }
