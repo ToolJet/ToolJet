@@ -76,7 +76,7 @@
           "value": "authorization_code"
       },
       "scopes": {
-          "value": "https://graph.microsoft.com/.default"
+          "value": "https://graph.microsoft.com/.default offline_access"
       },
       "access_token_custom_headers": {
         "value": [
