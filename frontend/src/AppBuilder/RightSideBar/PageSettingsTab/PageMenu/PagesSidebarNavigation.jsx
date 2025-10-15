@@ -471,8 +471,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
+          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+        }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >
@@ -556,7 +556,7 @@ export const PagesSidebarNavigation = ({
                 ? `1px solid ${styles?.borderColor?.value}`
                 : '',
             overflow: 'scroll',
-            boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
+            boxShadow: shouldShowBlueBorder ? '0 0 0 1px #4af ' : 'var(--elevation-100-box-shadow)',
             maxWidth: (() => {
               if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
                 return canvasMaxWidth;

@@ -67,9 +67,11 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         <ButtonComponent
           size="default"
           variant="outline"
-          leadingIcon="play01"
+          leadingIcon="play-lucide"
           data-cy="preview-link-button"
           style={{ padding: "7px 12px" }}
+          fill='var(--icon-default)'
+          leadingIconWidth='16'
 
         >
           <Link

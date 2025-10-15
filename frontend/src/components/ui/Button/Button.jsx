@@ -132,6 +132,8 @@ const Button = forwardRef(
       fill = '',
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       loaderText = null,
+      leadingIconWidth = '24',
+      trailingIconWidth = '24',
       ...props
     },
     ref
@@ -143,7 +145,7 @@ const Button = forwardRef(
         className="tw-flex tw-justify-center tw-items-center"
         style={{ width: getIconSize(size), height: getIconSize(size) }}
       >
-        <SolidIcon name={leadingIcon} fill={iconFillColor} />
+        <SolidIcon name={leadingIcon} fill={iconFillColor} width={leadingIconWidth} />
       </div>
     );
     const trailingIconElement = trailingIcon && (
@@ -151,7 +153,7 @@ const Button = forwardRef(
         className="tw-flex tw-justify-center tw-items-center"
         style={{ width: getIconSize(size), height: getIconSize(size) }}
       >
-        <SolidIcon name={trailingIcon} fill={iconFillColor} />
+        <SolidIcon name={trailingIcon} fill={iconFillColor} width={trailingIconWidth} />
       </div>
     );
 

@@ -287,6 +287,9 @@ import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import PlayLucide from './PlayLucide.jsx';
+import PanelBottomCloseLucide from './PanelBottomCloseLucide.jsx';
+import PanelBottomOpenLucide from './PanelBottomOpenLucide.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -867,6 +870,12 @@ const Icon = (props) => {
       return <AITopupWhite {...props} />;
     case 'ai-topup-grey':
       return <AITopupGrey {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
+    case 'panel-bottom-close-lucide':
+      return <PanelBottomCloseLucide {...props} />;
+    case 'panel-bottom-open-lucide':
+      return <PanelBottomOpenLucide {...props} />;
     default:
       return <Apps {...props} />;
   }

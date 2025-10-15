@@ -12,6 +12,7 @@ import SectionCollapse from '@/_ui/Icon/solidIcons/SectionCollapse';
 import SectionExpand from '@/_ui/Icon/solidIcons/SectionExpand';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -179,7 +180,7 @@ export const QueryPanel = ({ darkMode }) => {
               className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
+              <span>{isQueryPaneExpanded ? <PanelBottomClose size='14' color='var(--icon-strong)' /> : <PanelBottomOpen size='14' color='var(--icon-strong)' />}</span>
               <span>Queries</span>
             </button>
           </div>
