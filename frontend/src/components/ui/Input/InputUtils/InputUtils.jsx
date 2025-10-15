@@ -6,8 +6,8 @@ import HelperIcon from './HelperIcon';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 export const ValidationMessage = ({ response, validationMessage, className }) => (
-  <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px]', className)}>
-    <div className="tw-flex tw-pt-[3.5px]">
+  <div className={cn('tw-flex tw-pl-[2px] tw-items-start tw-my-[2px] tw-gap-1', className)}>
+    <div className="tw-flex tw-h-4 tw-items-center">
       <ValidationIcon result={response} />
     </div>
     <Label
@@ -60,3 +60,17 @@ export const InputLabel = ({ disabled, label, required }) => (
     {required && <RequiredIndicator disabled={disabled} />}
   </Label>
 );
+
+/**
+ * Maps input size to the corresponding button size
+ * Input sizes: small (28px), medium (32px), large (40px)
+ * Button sizes: small (20px), medium (28px), default (32px), large (40px)
+ */
+export const getButtonSizeForInput = (inputSize) => {
+  const sizeMap = {
+    small: 'medium', // Input 28px → Button 28px
+    medium: 'default', // Input 32px → Button 32px
+    large: 'large', // Input 40px → Button 40px
+  };
+  return sizeMap[inputSize] || 'default';
+};
