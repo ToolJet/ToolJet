@@ -19,9 +19,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
-import RunjsIcon from '@/Editor/Icons/runjs.svg';
-import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
-import RunPyIcon from '@/Editor/Icons/runpy.svg';
+import RunjsIcon from '@/AppBuilder/QueryManager/Icons/Icons/runjs.svg';
+import RunTooljetDbIcon from '@/AppBuilder/QueryManager/Icons/Icons/tooljetdb.svg';
+import RunPyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
