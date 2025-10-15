@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -20,7 +19,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
-  const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
   const isDeletingQueryInProcess = useStore((state) => state.dataQuery.isDeletingQueryInProcess);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
@@ -34,12 +32,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const isRenaming = renamingQueryId === dataQuery.id;
   const isDeleting = deletingQueryId === dataQuery.id;
 
-  const hasPermissions =
-    selectedDataSourceScope === 'global'
-      ? canUpdateDataSource(dataQuery?.data_source_id) ||
-      canReadDataSource(dataQuery?.data_source_id) ||
-      canDeleteDataSource()
-      : true;
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -122,11 +115,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         <div className="col query-row-query-name">
           {isRenaming ? (
-            <QueryRenameInput
-              dataQuery={dataQuery}
-              darkMode={darkMode}
-              onUpdate={updateQueryName}
-            />
+            <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
               <span
@@ -163,18 +152,20 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        {!shouldFreeze && <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
-          <ButtonComponent
-            iconOnly
-            leadingIcon="morevertical01"
-            onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
-            size="small"
-            variant="outline"
-            className=""
-            id={`query-handler-menu-${dataQuery?.id}`}
-            data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-          />
-        </div>}
+        {!shouldFreeze && (
+          <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
+            <ButtonComponent
+              iconOnly
+              leadingIcon="morevertical01"
+              onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+              size="small"
+              variant="outline"
+              className=""
+              id={`query-handler-menu-${dataQuery?.id}`}
+              data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
+            />
+          </div>
+        )}
       </div>
       <Confirm
         show={isDeleting}

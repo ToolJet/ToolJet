@@ -9,7 +9,7 @@ import _, { isEmpty, throttle } from 'lodash';
 import { shallow } from 'zustand/shallow';
 import { getCurrentState, useCurrentStateStore } from './currentStateStore';
 import { useResolveStore } from './resolverStore';
-import { handleReferenceTransactions } from './handleReferenceTransactions';
+// import { handleReferenceTransactions } from './handleReferenceTransactions';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
@@ -370,15 +370,15 @@ export const useDataQueriesStore = create(
               const components = appDefinition.pages[currentPageId].components;
               const currentVersionId = useAppDataStore.getState().currentVersionId;
 
-              handleReferenceTransactions(
-                components,
-                dataQueries,
-                currentAppEvents,
-                appDefinition,
-                currentPageId,
-                currentVersionId,
-                updatedNames
-              );
+              // handleReferenceTransactions(
+              //   components,
+              //   dataQueries,
+              //   currentAppEvents,
+              //   appDefinition,
+              //   currentPageId,
+              //   currentVersionId,
+              //   updatedNames
+              // );
             });
         },
         changeDataQuery: (newDataSource) => {

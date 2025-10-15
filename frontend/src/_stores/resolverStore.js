@@ -4,7 +4,7 @@ import { createReferencesLookup, findAllEntityReferences, findEntityId } from '.
 import { createJavaScriptSuggestions } from '../AppBuilder/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
+// import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 import { findComponentsWithReferences } from '@/_helpers/editorHelpers';
@@ -319,7 +319,7 @@ export const useResolveStore = create(
           let diffObj = deepClone(obj);
 
           for (const [key, value] of Object.entries(entityRefs)) {
-            diffObj = dfs(diffObj, key, value);
+            diffObj = {}; // dfs(diffObj, key, value);
           }
 
           return diffObj;
@@ -356,7 +356,7 @@ export const useResolveStore = create(
           lookupHintsMap.set(ref.newRefKey, ref.refId);
         });
 
-        const newAppHints = removeAppSuggestions(currentSuggestions, toDeleteAppHints);
+        const newAppHints = []; // removeAppSuggestions(currentSuggestions, toDeleteAppHints);
 
         set(() => {
           return {

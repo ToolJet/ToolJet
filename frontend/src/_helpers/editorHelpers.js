@@ -55,8 +55,6 @@
 // import { Form } from '@/Editor/Components/Form/Form';
 // import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 // import { isPDFSupported } from '@/_helpers/appUtils';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { useEditorStore } from '@/_stores/editorStore';
 import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
@@ -308,48 +306,6 @@ export function generatePath(obj, targetKey, currentPath = '') {
   }
   return null;
 }
-
-/**
- * Update the canvas background with the given parameters
- * @param {Object} params The parameters to update the canvas background with
- * @param {string} params.canvasBackgroundColor The new background color
- * @param {string} params.backgroundFxQuery The new background color formula
- * @param {boolean} [isUpdate=false] Whether to update the background color without
- *  re-calculating it from the given formula.
- */
-export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuery }, isUpdate = false) => {
-  const { setCanvasBackground } = useEditorStore.getState().actions;
-
-  /**
-   * If the background color should be updated, update it with the given parameters
-   */
-  if (isUpdate) {
-    return setCanvasBackground({
-      backgroundFxQuery,
-      canvasBackgroundColor,
-    });
-  }
-
-  /**
-   * If the background color formula is not empty, calculate the new background color
-   * and update it if it has changed
-   */
-  if (backgroundFxQuery !== '') {
-    const computedBackgroundColor = resolveWidgetFieldValue(
-      useEditorStore.getState().canvasBackground?.backgroundFxQuery
-    );
-
-    /**
-     * If the computed background color is different from the current one, update it
-     */
-    if (computedBackgroundColor !== canvasBackgroundColor) {
-      setCanvasBackground({
-        ...useEditorStore.getState().canvasBackground,
-        canvasBackgroundColor: computedBackgroundColor,
-      });
-    }
-  }
-};
 
 export function checkAndExtractEntityId(errorString) {
   const regex = /"([a-f0-9-]+)"/;
