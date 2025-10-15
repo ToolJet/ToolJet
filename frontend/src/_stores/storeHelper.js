@@ -2,7 +2,6 @@ import { schemaUnavailableOptions } from '@/AppBuilder/QueryManager/constants';
 import { allOperations } from '@tooljet/plugins/client';
 import { capitalize, cloneDeep } from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import useStore from '@/AppBuilder/_stores/store';
 
 export const getDefaultOptions = (source) => {
@@ -43,8 +42,6 @@ export const getDefaultOptions = (source) => {
 
 const computeQueryName = (source) => {
   const { kind, type } = source;
-  // TODO: Might need to move this out
-  // const dataQueries = useDataQueriesStore.getState().dataQueries;
   const dataQueries = useStore.getState().dataQuery.queries.modules.canvas;
   let currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
   if (type == DATA_SOURCE_TYPE.SAMPLE) {

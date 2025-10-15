@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
-import { has, merge, mergeWith } from 'lodash';
+import { merge, mergeWith, camelCase } from 'lodash';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import RunjsIcon from '@/AppBuilder/QueryManager/Icons/Icons/runjs.svg';
@@ -10,7 +10,6 @@ import RunPyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
 import { allSvgs } from '@tooljet/plugins/client';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { deepClone } from './utilities/utils.helpers';
-import useStore from '@/AppBuilder/_stores/store';
 
 export const getDateTimeFormat = (
   dateDisplayFormat,
@@ -92,16 +91,6 @@ export const hexToRgb = (hex) => {
   return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
 };
 
-export const checkIfLicenseNotValid = () => {
-  const licenseStatus = useStore.getState().license.featureAccess?.licenseStatus;
-  // When purchased, then isExpired key is also avialale else its not available
-  if (licenseStatus) {
-    if (has(licenseStatus, 'isExpired')) {
-      return licenseStatus?.isExpired;
-    }
-    return !licenseStatus?.isLicenseValid;
-  }
-};
 export function isPDFSupported() {
   const browser = getBrowserUserAgent();
 
@@ -204,7 +193,7 @@ export const buildComponentMetaDefinition = (components = {}) => {
         componentMeta.definition.properties,
         currentComponentData?.component?.definition?.properties,
         (objValue, srcValue) => {
-          if (currentComponentData?.component?.component === 'Table' && isArray(objValue)) {
+          if (currentComponentData?.component?.component === 'Table' && Array.isArray(objValue)) {
             return srcValue;
           }
         }
@@ -243,7 +232,7 @@ export const deepCamelCase = (obj) => {
     return obj.map((item) => deepCamelCase(item));
   } else if (typeof obj === 'object' && obj !== null) {
     return Object.keys(obj).reduce((acc, key) => {
-      const camelCaseKey = _.camelCase(key);
+      const camelCaseKey = camelCase(key);
       acc[camelCaseKey] = deepCamelCase(obj[key]);
       return acc;
     }, {});

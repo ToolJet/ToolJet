@@ -6,7 +6,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _, { isEmpty } from 'lodash';
+import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
@@ -391,6 +391,18 @@ export const createAppSlice = (set, get) => ({
       get().updateAppData(convertKeysToCamelCase(payload), moduleId);
     } catch (error) {
       console.log(error);
+    }
+  },
+
+  checkIfLicenseNotValid: () => {
+    const { featureAccess } = get().license;
+    const licenseStatus = featureAccess?.licenseStatus;
+    // When purchased, then isExpired key is also avialale else its not available
+    if (licenseStatus) {
+      if (has(licenseStatus, 'isExpired')) {
+        return licenseStatus?.isExpired;
+      }
+      return !licenseStatus?.isLicenseValid;
     }
   },
 });

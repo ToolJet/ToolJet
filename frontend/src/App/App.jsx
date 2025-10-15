@@ -2,9 +2,47 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { authenticationService, tooljetService, licenseService } from '@/_services';
+import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
+import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
+import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
+import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
+import { lt } from 'semver';
+import Toast from '@/_ui/Toast';
+import '@/_styles/theme.scss';
+
+import 'react-tooltip/dist/react-tooltip.css';
+import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import WorkspaceConstants from '@/WorkspaceConstants';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import cx from 'classnames';
+import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import { setFaviconAndTitle } from '@white-label/whiteLabelling';
+import {
+  onboarding,
+  auth,
+  WorkspaceSettings,
+  InstanceSettings,
+  Settings,
+  Workflows,
+  getDataSourcesRoutes,
+  getAuditLogsRoutes,
+} from '@/modules';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
+import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
+import EmbedApp from '@/AppBuilder/EmbedApp';
+import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
+import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+// import AppLoader from '@/AppLoader';  // Moved to lazy import below
+
 // Lazy load major routes for code splitting
 const HomePage = React.lazy(() =>
   import(/* webpackChunkName: "dashboard" */ '@/HomePage').then((module) => ({ default: module.HomePage }))
@@ -29,13 +67,6 @@ const MarketplacePage = React.lazy(() =>
     default: module.MarketplacePage,
   }))
 );
-import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
-import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
-import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
-import { lt } from 'semver';
-import Toast from '@/_ui/Toast';
-import '@/_styles/theme.scss';
-// import AppLoader from '@/AppLoader';  // Moved to lazy import below
 
 // Lazy load AppLoader for code splitting
 const AppLoader = React.lazy(() => import(/* webpackChunkName: "editor" */ '@/AppLoader'));
@@ -88,35 +119,6 @@ const SuspendedMarketplacePage = (props) => (
 );
 
 export const BreadCrumbContext = React.createContext({});
-import 'react-tooltip/dist/react-tooltip.css';
-import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
-import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
-import WorkspaceConstants from '@/WorkspaceConstants';
-import { useAppDataStore } from '@/_stores/appDataStore';
-import cx from 'classnames';
-import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import { setFaviconAndTitle } from '@white-label/whiteLabelling';
-import {
-  onboarding,
-  auth,
-  WorkspaceSettings,
-  InstanceSettings,
-  Settings,
-  Workflows,
-  getDataSourcesRoutes,
-  getAuditLogsRoutes,
-} from '@/modules';
-import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
-import { shallow } from 'zustand/shallow';
-import useStore from '@/AppBuilder/_stores/store';
-import { checkIfToolJetCloud } from '@/_helpers/utils';
-import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
-import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
-import EmbedApp from '@/AppBuilder/EmbedApp';
-import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
-import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
-import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
