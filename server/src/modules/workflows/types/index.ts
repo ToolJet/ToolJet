@@ -22,6 +22,7 @@ export interface ExecutionMetadata {
 // Feature configuration interfaces
 interface Features {
   [FEATURE_KEY.EXECUTE_WORKFLOW]: FeatureConfig;
+  [FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATUS]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_DETAILS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKFLOW_EXECUTIONS]: FeatureConfig;
@@ -37,6 +38,7 @@ interface Features {
   [FEATURE_KEY.WEBHOOK_TRIGGER_WORKFLOW]: FeatureConfig;
   [FEATURE_KEY.UPDATE_WORKFLOW_WEBHOOK_DETAILS]: FeatureConfig;
   [FEATURE_KEY.CREATE_WORKFLOW]: FeatureConfig;
+  [FEATURE_KEY.NPM_PACKAGES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -18,7 +18,6 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
@@ -266,6 +265,7 @@ const useAppData = (
       .then(async (result) => {
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
+        let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -328,7 +328,6 @@ const useAppData = (
           getCreditBalance();
         }
 
-        let showWalkthrough = true;
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
@@ -487,6 +486,7 @@ const useAppData = (
         setQueryMapping(moduleId);
 
         setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -512,7 +512,6 @@ const useAppData = (
           (conversation?.aiConversationMessages || []).length === 0
         ) {
           sendMessage(state.prompt);
-          showWalkthrough = false;
         }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
@@ -531,8 +530,7 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-        // only show if app is not created from prompt
-        if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+
         !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
@@ -690,6 +688,7 @@ const useAppData = (
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

@@ -39,9 +39,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins ci --omit=dev
+RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build && npm --prefix plugins prune --omit=dev
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
 

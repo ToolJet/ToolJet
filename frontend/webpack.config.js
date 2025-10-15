@@ -190,6 +190,11 @@ module.exports = {
           },
           {
             loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                silenceDeprecations: ['global-builtin', 'import', 'color-functions'],
+              },
+            },
           },
         ],
       },
@@ -222,6 +227,9 @@ module.exports = {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
     },
+    client: {
+      overlay: false,
+    },
   },
   output: {
     publicPath: ASSET_PATH,
@@ -243,7 +251,9 @@ module.exports = {
       TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
       WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup',
-      TJ_SELFHOST_CREDITS_APP: process.env.TJ_SELFHOST_CREDITS_APP,
+      TJ_SELFHOST_CREDITS_APP:
+        process.env.TJ_SELFHOST_CREDITS_APP ||
+        'https://app.tooljet.ai/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
     }),
   },
 };

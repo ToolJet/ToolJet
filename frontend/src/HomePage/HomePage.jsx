@@ -231,7 +231,7 @@ class HomePageComponent extends React.Component {
     }
     if (this.state.shouldRedirect && !prevState.shouldRedirect) {
       const workspaceId = getWorkspaceId();
-      this.props.navigate(`/${workspaceId}`);
+      this.props.navigate(`/${workspaceId}/home`);
     }
   }
 
@@ -1475,6 +1475,7 @@ class HomePageComponent extends React.Component {
             handleConfirm={this.importGitApp}
             confirmBtnProps={{
               title: 'Import app',
+              tooltipMessage: '',
               isLoading: importingApp,
               disabled: importingApp || !selectedAppRepo || importingGitAppOperations?.message,
             }}

@@ -31,7 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
-  ) { }
+  ) {}
 
   async getForApp(
     query: GetQueryVariables,
@@ -236,7 +236,11 @@ export class DataSourcesService implements IDataSourcesService {
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId, environmentId);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environmentId,
+      user.organizationId
+    );
 
     if (!dataSource) {
       throw new UnauthorizedException();
@@ -307,11 +311,10 @@ export class DataSourcesService implements IDataSourcesService {
           status: 'failed',
           data: error.data,
           errorMessage: error.message,
-          metadata: error.metadata
+          metadata: error.metadata,
         };
       }
       throw error;
     }
   }
-
 }

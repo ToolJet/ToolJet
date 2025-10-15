@@ -175,7 +175,7 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
-    return newPath ? `/${newPath}` : '/';
+    return newPath ? `/${newPath}` : '/home'; //Redirect to Home Page
   }
   return pathname;
 };
@@ -208,7 +208,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/smtp',
     '/license',
   ];
-  if (isUserLoggingIn) {
+  if (isUserLoggingIn && !path) {
     const role = authenticationService?.currentSessionValue?.role?.name;
     const isEndUser = role === 'end-user';
     const isCommunityEdition = fetchEdition() === 'ce';
@@ -240,6 +240,7 @@ export const getRedirectTo = (paramObj) => {
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');
+  console.log(combined, 'combined');
   return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/home'; //default redirect to
 };
 

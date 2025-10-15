@@ -130,7 +130,7 @@ export class AppModule implements OnModuleInit {
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
       await AppGitModule.register(configs, true),
-      await CrmModule.register(configs),
+      await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
