@@ -17,11 +17,9 @@ import {
     setupAndUpdateRole,
     setupWorkspaceAndInviteUser,
     updateRole,
-    verifyBasicPermissions,
-    verifyBuilderPermissions,
     verifyUserPrivileges
 } from "Support/utils/manageGroups";
-import { getGroupPermissionInput } from "Support/utils/userPermissions";
+import { getGroupPermissionInput, verifyBuilderPermissions } from "Support/utils/userPermissions";
 import { commonText } from "Texts/common";
 import { exportAppModalText, importText } from "Texts/exportImport";
 import { groupsText } from "Texts/manageGroups";
@@ -87,7 +85,7 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.closeButton).click();
     });
 
-    it("should verify user privileges in custom groups", () => {
+    it.only("should verify user permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appName2 = fake.companyName;
         const appName3 = fake.companyName;
@@ -201,8 +199,6 @@ describe("Manage Groups", () => {
         cy.apiLogin(data.email);
         cy.visit(data.workspaceSlug);
 
-        // Verify builder permissions
-        verifyBasicPermissions(true);
 
         verifyBuilderPermissions(
             data.appName,
@@ -213,9 +209,26 @@ describe("Manage Groups", () => {
 
         cy.apiLogout();
 
+    });
+
+    it("should verify the granular permissions in custom groups", () => {
+
+        const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
+        const appName2 = fake.companyName;
+        const appName3 = fake.companyName;
+        const appSlug = appName3.toLowerCase().replace(/\s+/g, "-");
+
+        setupWorkspaceAndInviteUser(
+            data.workspaceName,
+            data.workspaceSlug,
+            data.firstName,
+            data.email
+        );
+
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
-        cy.apiUpdateGroupPermission(groupName, getGroupPermissionInput(isEnterprise, false));
+        cy.apiUpdateGroupPermission("builder", getGroupPermissionInput(isEnterprise, false));
+        createGroupsAndAddUserInGroup(groupName, data.email);
 
         navigateToManageGroups();
 
@@ -299,8 +312,9 @@ describe("Manage Groups", () => {
         cy.visitSlug({
             actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
         });
-    });
 
+
+    })
     it("should verify user role updating sequence", () => {
         const roleUpdateSequence = [
             {

@@ -8,9 +8,7 @@ import {
 import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
-    updateRole,
-    verifyBasicPermissions,
-    verifySettingsAccess
+    updateRole
 } from "Support/utils/manageGroups";
 import {
     uiAppCRUDWorkflow,
@@ -19,11 +17,12 @@ import {
     uiVerifyAdminPrivileges,
     uiVerifyBuilderPrivileges,
     uiWorkflowCRUDWorkflow,
-    uiWorkspaceConstantCRUDWorkflow
+    uiWorkspaceConstantCRUDWorkflow,
 } from "Support/utils/uiPermissions";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { groupsText } from "Texts/manageGroups";
+import { verifyBasicPermissions, verifySettingsAccess } from "Support/utils/userPermissions";
 
 describe("Manage Groups", () => {
     let data = {};

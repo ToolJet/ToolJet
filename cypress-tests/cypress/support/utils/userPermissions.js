@@ -160,7 +160,46 @@ export const verifyBuilderPermissions = (
   cy.get(workspaceConstantsSelectors.constDeleteButton(constName)).click();
   cy.get(commonSelectors.yesButton).click();
 
+  cy.ifEnv("Enterprise", () => {
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/data-sources`,
+      appName,
+      "restapi",
+      [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
+    );
+    cy.apiDeleteGDS(appName);
+
+    cy.apiCreateWorkflow(appName);
+    cy.apiDeleteWorkflow(appName);
+
+  })
+
   verifySettingsAccess(isAdmin);
 };
 
 
+export const verifyBasicPermissions = (canCreate = true) => {
+  cy.get(commonSelectors.dashboardAppCreateButton).should(
+    canCreate ? "be.enabled" : "be.disabled"
+  );
+  cy.get(commonSelectors.createNewFolderButton).should(
+    canCreate ? "exist" : "not.exist"
+  );
+  cy.get('[data-cy="database-icon"]').should(canCreate ? "exist" : "not.exist");
+  cy.get(commonSelectors.workspaceConstantsIcon).should(
+    canCreate ? "exist" : "not.exist"
+  );
+
+  cy.ifEnv("Enterprise", () => {
+    cy.get(commonSelectors.globalDataSourceIcon).should(
+      canCreate ? "exist" : "not.exist"
+    );
+  });
+};
+
+export const verifySettingsAccess = (shouldExist = true) => {
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).should(
+    shouldExist ? "exist" : "not.exist"
+  );
+};
