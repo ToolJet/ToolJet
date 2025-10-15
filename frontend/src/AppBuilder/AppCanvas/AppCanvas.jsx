@@ -71,7 +71,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     }),
     shallow
   );
-
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
@@ -240,9 +239,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
             )}
             <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-            <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+            <HotkeyProvider
+              mode={currentMode}
+              canvasMaxWidth={canvasMaxWidth}
+              currentLayout={currentLayout}
+              isModuleMode={isModuleMode}
+            >
               {environmentLoadingState !== 'loading' && (
-                <div>
+                <div className={cx({ 'h-100': isModuleMode })}>
                   <Container
                     id={moduleId}
                     gridWidth={gridWidth}
