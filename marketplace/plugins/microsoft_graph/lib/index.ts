@@ -5,9 +5,10 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat } from './types';
-import got, { OptionsOfTextResponseBody, Headers } from 'got';
+import got, { OptionsOfTextResponseBody, Headers, HTTPError } from 'got';
 import { getCurrentToken } from '@tooljet-marketplace/common';
 
 export default class Microsoft_graph implements QueryService {
@@ -158,6 +159,9 @@ export default class Microsoft_graph implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
+      if (error instanceof HTTPError && error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, {});
+      }
       if (error.response && error.response.body) {
         try {
           result = JSON.parse(error.response.body);
