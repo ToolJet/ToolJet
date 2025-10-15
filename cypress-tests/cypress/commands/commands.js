@@ -61,13 +61,13 @@ Cypress.Commands.add("waitForAutoSave", () => {
 Cypress.Commands.add("createApp", (appName) => {
   const getAppButtonSelector = ($title) =>
     $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.emptyAppCreateButton
+      ? commonSelectors.dashboardAppCreateButton
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+-create-app"]').click();
+    cy.get('[data-cy="create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -468,12 +468,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.wait("@library_apps");
 });
 
-Cypress.Commands.add("removeAssignedApps", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `DELETE FROM app_group_permissions;`,
-  });
-});
+
 
 Cypress.Commands.add(
   "saveFromIntercept",

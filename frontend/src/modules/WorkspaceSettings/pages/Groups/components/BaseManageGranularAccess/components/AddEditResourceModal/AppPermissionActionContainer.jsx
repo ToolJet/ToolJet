@@ -78,7 +78,7 @@ function AppPermissionsActions({
               style={{ color: disableBuilderLevelUpdate ? 'var(--text-disabled)' : '' }}
               data-cy="view-permission-info-text"
             >
-              Only access released version of apps
+              Access preview & released versions of apps
             </span>
           </div>
         </label>
