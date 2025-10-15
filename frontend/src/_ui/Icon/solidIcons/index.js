@@ -292,6 +292,9 @@ import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
 import PlayLucide from './PlayLucide.jsx';
+import PlayLucide from './PlayLucide.jsx';
+import PanelBottomCloseLucide from './PanelBottomCloseLucide.jsx';
+import PanelBottomOpenLucide from './PanelBottomOpenLucide.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -882,6 +885,12 @@ const Icon = (props) => {
       return <BackWithoutArrow {...props} />;
     case 'play-lucide':
       return <PlayLucide {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
+    case 'panel-bottom-close-lucide':
+      return <PanelBottomCloseLucide {...props} />;
+    case 'panel-bottom-open-lucide':
+      return <PanelBottomOpenLucide {...props} />;
     default:
       return <Apps {...props} />;
   }

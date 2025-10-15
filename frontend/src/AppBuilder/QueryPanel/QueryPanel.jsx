@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import { diff } from 'deep-object-diff';
+import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);

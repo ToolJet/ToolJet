@@ -71,11 +71,13 @@ const EnvironmentSelectBox = React.memo(function EnvironmentSelectBox({ options,
       <div className="d-inline-flex align-items-center env-header" onClick={() => setShowOptions(!showOptions)}>
         <Layers width="16" height="16" />
         <div data-cy="list-current-env-name">{capitalize(currentEnv.name)}</div>
+        Manish
       </div>
       {showOptions && (
         <div className={`env-popover ${darkMode ? 'theme-dark' : ''}`}>
           <div className="selected-env" data-cy="selected-current-env-name">
             {capitalize(currentEnv.name)}
+            Manish
           </div>
           <div className={`popover-options ${darkMode ? 'dark-theme' : ''}`}>
             {options.map((option, index) => renderOption({ option, index }))}
