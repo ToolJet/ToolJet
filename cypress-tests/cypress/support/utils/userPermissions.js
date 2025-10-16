@@ -144,16 +144,6 @@ export const verifyBuilderPermissions = (
   cy.apiCreateFolder(folderName);
   cy.apiDeleteFolder();
 
-  cy.ifEnv("Enterprise", () => {
-    cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      appName,
-      "restapi",
-      [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
-    );
-    cy.apiDeleteGDS(appName);
-  });
-
   // Constants management
   cy.get(commonSelectors.workspaceConstantsIcon).click();
   addAndVerifyConstants(constName, constValue);

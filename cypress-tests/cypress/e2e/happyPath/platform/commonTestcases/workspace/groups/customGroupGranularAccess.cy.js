@@ -1,5 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
     navigateToManageGroups
@@ -12,7 +13,6 @@ import {
     getGroupPermissionInput
 } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
-import { dataSourceSelector } from "Selectors/dataSource";
 
 describe("Manage Groups", () => {
     let data = {};

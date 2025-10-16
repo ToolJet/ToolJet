@@ -170,6 +170,11 @@ export const groupsSelector = {
   groupNameUpdateLink: '[data-cy="group-name-update-link"]',
   addPermissionButton: '[data-cy="add-permission-button"]',
   addAppButton: '[data-cy="add-app-button"]',
-
+  addWorkflowButton: '[data-cy="add-workflow-button"]',
+  addDatasourceButton: '[data-cy="add-data_source-button"]',
+  buildWorkflowradio: '[data-cy="build-permission-radio"]',
+  executeWorkflowradio: '[data-cy="execute-permission-radio"]',
+  configureDatasourceradio: '[data-cy="configure-permission-radio"]',
+  buildWithDatasourceRadio: '[data-cy="build-with-datasource-radio"]',
 
 };
