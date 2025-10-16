@@ -24,7 +24,7 @@ import { Page } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
@@ -1034,7 +1034,7 @@ export class AppImportExportService {
 
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
-          newComponentIdsMap[component.id] = uuid();
+          newComponentIdsMap[component.id] = randomUUID();
         }
 
         for (const component of pageComponents) {
@@ -2648,7 +2648,7 @@ function transformComponentData(
         NewRevampedComponents,
         tooljetVersion
       );
-      transformedComponent.id = uuid();
+      transformedComponent.id = randomUUID();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
       transformedComponent.styles = styles || {};

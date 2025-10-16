@@ -11,7 +11,7 @@ import { UserFilterOptions } from './types';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class OrganizationUsersRepository extends Repository<OrganizationUser> {
@@ -32,7 +32,7 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         manager.create(OrganizationUser, {
           userId: user.id,
           organization,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: isInvite ? randomUUID() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
           role: 'all-users',

@@ -2,7 +2,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import { EntityManager, DataSource } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
@@ -27,7 +27,7 @@ export async function createTooljetDatabaseConnection(
     schema: dbSchema,
     username: dbUser,
     password: password,
-    name: `${dbSchema}_${uuidv4()}`,
+    name: `${dbSchema}_${randomUUID()}`,
     extra: {
       ...tooljetDbOrmconfig.extra,
       idleTimeoutMillis: 10000,

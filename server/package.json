@@ -132,7 +132,6 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.3.24",
     "undici": "^7.11.0",
-    "uuid": "^8.3.2",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.17.1",

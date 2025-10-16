@@ -11,7 +11,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import * as csv from 'fast-csv';
 import { EMAIL_EVENTS } from '@modules/email/constants';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
@@ -200,7 +200,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       throw new BadRequestException('User status must be archived to unarchive');
     }
 
-    const invitationToken = uuid.v4();
+    const invitationToken = randomUUID();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, {

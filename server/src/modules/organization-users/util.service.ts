@@ -33,7 +33,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constants';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
@@ -242,7 +242,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           source,
           status,
           userType,
-          invitationToken: uuid.v4(),
+          invitationToken: randomUUID(),
           defaultOrganizationId: defaultOrganizationId || null,
           createdAt: new Date(),
           updatedAt: new Date(),

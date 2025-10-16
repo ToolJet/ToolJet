@@ -1,6 +1,6 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { MigrationInterface, QueryRunner, EntityManager, DataSource } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 
 export class UpdateInternalTablesConfigurationsColumn1718542399701 implements MigrationInterface {
@@ -50,7 +50,7 @@ export class UpdateInternalTablesConfigurationsColumn1718542399701 implements Mi
             const configurations: Record<string, any> = {};
 
             for (const column of columnsResult) {
-              const columnUuid = uuidv4();
+              const columnUuid = randomUUID();
               columnNames[column.column_name] = columnUuid;
               configurations[columnUuid] = {};
             }

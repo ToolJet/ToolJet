@@ -7,7 +7,7 @@ import { EventHandler, Target } from '@entities/event_handler.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 interface AppResourceMappings {
   pagesMapping: Record<string, string>;
@@ -371,7 +371,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       }
 
       if (!skipComponent) {
-        transformedComponent.id = uuid();
+        transformedComponent.id = randomUUID();
         transformedComponent.name = componentData.name || componentId;
         transformedComponent.type = componentData.component;
         transformedComponent.properties = componentData?.definition?.properties || {};

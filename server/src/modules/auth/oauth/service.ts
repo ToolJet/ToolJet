@@ -37,7 +37,7 @@ import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class OauthService implements IOAuthService {
@@ -275,7 +275,7 @@ export class OauthService implements IOAuthService {
           const updatableUserParams = {
             ...getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso),
             ...{ invitationToken: null },
-            ...(!userDetails?.password && { password: uuid.v4() }), // Default password for sso-signed workspace user
+            ...(!userDetails?.password && { password: randomUUID() }), // Default password for sso-signed workspace user
           };
 
           // Activate the personal workspace if the user is invited to another organization

@@ -40,7 +40,7 @@ import {
   TooljetDbActions,
   TJDB,
 } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { QueryError } from '@tooljet/plugins/packages/common';
 import { ConfigService } from '@nestjs/config';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/licensing/constants';
@@ -347,7 +347,7 @@ export class TooljetDbTableOperationsService {
       const columnNames = {};
       const columnConfigrations = {};
       for (const column of params.columns) {
-        const columnUuid = uuidv4();
+        const columnUuid = randomUUID();
         columnNames[column.column_name] = columnUuid;
         columnConfigrations[columnUuid] = column?.configurations || {};
       }
@@ -629,7 +629,7 @@ export class TooljetDbTableOperationsService {
       });
 
       columnsToBeInserted.forEach((column) => {
-        const columnUuid = uuidv4();
+        const columnUuid = randomUUID();
         columnNames[column.name] = columnUuid;
         columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
       });
@@ -715,7 +715,7 @@ export class TooljetDbTableOperationsService {
       const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const columnNames = internalTable.configurations.columns.column_names;
       const columnConfigurations = internalTable.configurations.columns.configurations;
-      const columnUuid = uuidv4();
+      const columnUuid = randomUUID();
       columnNames[column['column_name']] = columnUuid;
       columnConfigurations[columnUuid] = column?.configurations || {};
       const configurations = {

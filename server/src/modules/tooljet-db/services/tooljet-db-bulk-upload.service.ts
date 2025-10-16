@@ -7,7 +7,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { isEmpty } from 'lodash';
 import { pipeline } from 'stream/promises';
 import { PassThrough } from 'stream';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
 import {
   TJDB,
@@ -102,7 +102,7 @@ export class TooljetDbBulkUploadService {
             const primaryKey = this.findPrimaryKey(columnName, primaryKeyColumnSchema);
 
             if (isEmpty(primaryKey)) return null;
-            if (isEmpty(value) && !isEmpty(primaryKey.column_default)) return uuid();
+            if (isEmpty(value) && !isEmpty(primaryKey.column_default)) return randomUUID();
             return value;
           })
           .filter((value) => value !== null)

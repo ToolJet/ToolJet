@@ -20,7 +20,7 @@ import { App } from '@entities/app.entity';
 import { LicenseService } from '@services/license.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 
 describe('TooljetDbImportExportService', () => {
@@ -166,14 +166,14 @@ describe('TooljetDbImportExportService', () => {
     });
 
     it('should throw NotFoundException for non-existent table', async () => {
-      await expect(service.export(organizationId, { table_id: uuidv4() })).rejects.toThrow(NotFoundException);
+      await expect(service.export(organizationId, { table_id: randomUUID() })).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('.import', () => {
     it('should import a single ToolJet DB table', async () => {
       const importData = {
-        id: uuidv4(),
+        id: randomUUID(),
         table_name: 'imported_users',
         schema: {
           columns: [
@@ -224,7 +224,7 @@ describe('TooljetDbImportExportService', () => {
 
     it('should create table with timestamp attached name when same name exists', async () => {
       const importData = {
-        id: uuidv4(),
+        id: randomUUID(),
         table_name: 'users', // Same name as existing table
         schema: {
           columns: [
@@ -287,7 +287,7 @@ describe('TooljetDbImportExportService', () => {
 
     it('should throw BadRequestException when primary key is missing', async () => {
       const importData = {
-        id: uuidv4(),
+        id: randomUUID(),
         table_name: 'no_primary_key',
         schema: {
           columns: [
@@ -310,7 +310,7 @@ describe('TooljetDbImportExportService', () => {
 
     it('should throw ConflictException when table with same name exists', async () => {
       const importData = {
-        id: uuidv4(),
+        id: randomUUID(),
         table_name: 'users', // Same name as existing table
         schema: {
           columns: [
@@ -441,7 +441,7 @@ describe('TooljetDbImportExportService', () => {
         tooljet_database: [
           // First, create a table with a composite primary key
           {
-            id: uuidv4(),
+            id: randomUUID(),
             table_name: 'composite_key_table',
             schema: {
               columns: [
@@ -478,7 +478,7 @@ describe('TooljetDbImportExportService', () => {
           },
           // Then, create a table with a foreign key referencing part of the composite primary key
           {
-            id: uuidv4(),
+            id: randomUUID(),
             table_name: 'referencing_table',
             schema: {
               columns: [

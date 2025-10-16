@@ -7,7 +7,7 @@ import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
 
@@ -157,7 +157,7 @@ describe('Authentication', () => {
       });
     });
     it('should not allow users to setup account without organization token', async () => {
-      const invitationToken = uuidv4();
+      const invitationToken = randomUUID();
       const userData = await createUser(app, {
         email: 'signup@tooljet.io',
         invitationToken,
@@ -175,7 +175,7 @@ describe('Authentication', () => {
         first_name: 'signupuser',
         last_name: 'user',
         companyName: 'org1',
-        password: uuidv4(),
+        password: randomUUID(),
         token: invitationToken,
         role: 'developer',
       });
@@ -215,7 +215,7 @@ describe('Authentication', () => {
 
       const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send({
         companyName: 'org1',
-        password: uuidv4(),
+        password: randomUUID(),
         token: invitedUserDetails.invitationToken,
         organizationToken: organizationUserBeforeUpdate.invitationToken,
         role: 'developer',

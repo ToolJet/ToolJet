@@ -40,7 +40,7 @@ import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ActivateAccountWithTokenDto } from '@modules/onboarding/dto/activate-account-with-token.dto';
 import { AppSignupDto } from '@modules/auth/dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { ResendInviteDto } from '@modules/onboarding/dto/resend-invite.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -256,7 +256,7 @@ export class OnboardingService implements IOnboardingService {
       if (user?.organizationUsers) {
         if (!password && source === 'sso') {
           /* For SSO we don't need password. let us set uuid as a password. */
-          password = uuid.v4();
+          password = randomUUID();
         }
 
         if (isPasswordMandatory(user.source) && !password) {

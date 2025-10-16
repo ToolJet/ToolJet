@@ -20,7 +20,7 @@ import {
 } from '../test.helper';
 import * as path from 'path';
 import * as fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { AppsService } from '@services/apps.service';
 
 /**
@@ -262,7 +262,7 @@ describe('ImportExportResourcesController', () => {
         ],
         tooljet_database: [
           {
-            id: uuidv4(),
+            id: randomUUID(),
             table_name: 'users',
             schema: {
               columns: [
@@ -519,11 +519,11 @@ describe('ImportExportResourcesController', () => {
 
     it('should validate tooljet database schema', async () => {
       const invalidTooljetDatabaseSchema = {
-        organization_id: uuidv4(),
+        organization_id: randomUUID(),
         tooljet_version: globalThis.TOOLJET_VERSION,
         tooljet_database: [
           {
-            id: uuidv4(),
+            id: randomUUID(),
             table_name: 'invalid_table',
             schema: {
               columns: [
@@ -557,12 +557,12 @@ describe('ImportExportResourcesController', () => {
 
     it('should transform tooljet database schema to latest version', async () => {
       const oldVersionSchema = {
-        organization_id: uuidv4(),
+        organization_id: randomUUID(),
         tooljet_version: '2.29.0', // An older version
         app: [],
         tooljet_database: [
           {
-            id: uuidv4(),
+            id: randomUUID(),
             table_name: 'users',
             schema: {
               columns: [

@@ -8,7 +8,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EmailService } from '@services/email.service';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -539,7 +539,7 @@ describe('Authentication', () => {
       it('should not allow users to accept invitation when user sign up is not completed', async () => {
         const userData = await createUser(app, {
           email: 'organizationUser@tooljet.io',
-          invitationToken: uuidv4(),
+          invitationToken: randomUUID(),
           status: 'invited',
         });
         const { user, orgUser } = userData;
@@ -576,13 +576,13 @@ describe('Authentication', () => {
         });
       });
       it('should return 400 while verifying invalid invitation token', async () => {
-        await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${uuidv4()}`).expect(400);
+        await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${randomUUID()}`).expect(400);
       });
 
       it('should return user info while verifying invitation token', async () => {
         const userData = await createUser(app, {
           email: 'organizationUser@tooljet.io',
-          invitationToken: uuidv4(),
+          invitationToken: randomUUID(),
           status: 'invited',
         });
         const {
@@ -604,13 +604,13 @@ describe('Authentication', () => {
       it('should return redirect url while verifying invitation token, organization token is available and user does not exist', async () => {
         const { orgUser } = await createUser(app, {
           email: 'organizationUser@tooljet.io',
-          invitationToken: uuidv4(),
+          invitationToken: randomUUID(),
           status: 'invited',
         });
 
         const { invitationToken } = orgUser;
         const response = await request(app.getHttpServer())
-          .get(`/api/verify-invite-token?token=${uuidv4()}&organizationToken=${invitationToken}`)
+          .get(`/api/verify-invite-token?token=${randomUUID()}&organizationToken=${invitationToken}`)
           .expect(200);
         const {
           body: { redirect_url },
@@ -625,13 +625,13 @@ describe('Authentication', () => {
       it('should return redirect url while verifying invitation token, organization token is not available and user exist', async () => {
         const { user } = await createUser(app, {
           email: 'organizationUser@tooljet.io',
-          invitationToken: uuidv4(),
+          invitationToken: randomUUID(),
           status: 'invited',
         });
 
         const { invitationToken } = user;
         const response = await request(app.getHttpServer())
-          .get(`/api/verify-invite-token?token=${invitationToken}&organizationToken=${uuidv4()}`)
+          .get(`/api/verify-invite-token?token=${invitationToken}&organizationToken=${randomUUID()}`)
           .expect(200);
         const {
           body: { redirect_url },

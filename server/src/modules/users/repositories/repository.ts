@@ -17,7 +17,7 @@ import * as bcrypt from 'bcrypt';
 import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { isSuperAdmin } from '@helpers/utils.helper';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 
 type UserFilterOptions = { searchText?: string; status?: string; page?: number };
@@ -238,7 +238,7 @@ export class UserRepository extends Repository<User> {
       );
       user.organizationUsers = organizations?.map((organization): OrganizationUser => {
         return {
-          id: uuid.v4(),
+          id: randomUUID(),
           userId: user.id,
           organizationId: organization.id,
           organization: organization,

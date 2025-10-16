@@ -40,7 +40,7 @@ import { UserOnboardingDetails } from './types';
 import { OnboardingStatus } from './constants';
 import { IOnboardingUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class OnboardingUtilService implements IOnboardingUtilService {
@@ -554,7 +554,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           source,
           status,
           userType,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: isInvite ? randomUUID() : null,
           defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),

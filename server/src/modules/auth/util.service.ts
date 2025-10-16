@@ -7,7 +7,7 @@ import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
 import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import {
@@ -157,7 +157,7 @@ export class AuthUtilService implements IAuthUtilService {
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
     /* Default password for sso-signed workspace user */
 
-    const password = uuid.v4();
+    const password = randomUUID();
     user = await this.userRepository.createOrUpdate(
       {
         firstName,

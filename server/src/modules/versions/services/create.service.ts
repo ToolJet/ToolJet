@@ -8,7 +8,7 @@ import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { Credential } from 'src/entities/credential.entity';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 import { Layout } from '@entities/layout.entity';
@@ -139,7 +139,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             dataQueryEvents.forEach(async (event, index) => {
               const newEvent = new EventHandler();
 
-              newEvent.id = uuid.v4();
+              newEvent.id = randomUUID();
               newEvent.name = event.name;
               newEvent.sourceId = newQuery.id;
               newEvent.target = event.target;
@@ -171,7 +171,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           dataQueryEvents.forEach(async (event, index) => {
             const newEvent = new EventHandler();
 
-            newEvent.id = uuid.v4();
+            newEvent.id = randomUUID();
             newEvent.name = event.name;
             newEvent.sourceId = newQuery.id;
             newEvent.target = event.target;
@@ -413,7 +413,7 @@ export class VersionsCreateService implements IVersionsCreateService {
       pageEvents.forEach(async (event, index) => {
         const newEvent = new EventHandler();
 
-        newEvent.id = uuid.v4();
+        newEvent.id = randomUUID();
         newEvent.name = event.name;
         newEvent.sourceId = savedPage.id;
         newEvent.target = event.target;
@@ -427,7 +427,7 @@ export class VersionsCreateService implements IVersionsCreateService {
       const tempNewComponents: Component[] = [];
       for (const component of page.components) {
         const newComponent = new Component();
-        newComponent.id = uuid.v4();
+        newComponent.id = randomUUID();
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
@@ -494,7 +494,7 @@ export class VersionsCreateService implements IVersionsCreateService {
 
         originalComponent.layouts.forEach((layout) => {
           const newLayout = new Layout();
-          newLayout.id = uuid.v4();
+          newLayout.id = randomUUID();
           newLayout.type = layout.type;
           newLayout.top = layout.top;
           newLayout.left = layout.left;
@@ -512,7 +512,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         componentEvents.forEach(async (event, index) => {
           const newEvent = new EventHandler();
 
-          newEvent.id = uuid.v4();
+          newEvent.id = randomUUID();
           newEvent.name = event.name;
           newEvent.sourceId = newComponent.id;
           newEvent.target = event.target;

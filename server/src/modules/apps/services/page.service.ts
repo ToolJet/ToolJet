@@ -12,7 +12,7 @@ import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'class-validator';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { AppVersion } from '@entities/app_version.entity';
 import { IPageService } from '../interfaces/services/IPageService';
 
@@ -150,7 +150,7 @@ export class PageService implements IPageService {
       const newComponentLayouts: Layout[] = [];
 
       for (const component of pageComponents) {
-        const newComponentId = uuid.v4();
+        const newComponentId = randomUUID();
         componentsIdMap[component.id] = newComponentId;
       }
 

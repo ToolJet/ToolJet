@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { AppsRepository } from './repository';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -101,7 +101,7 @@ export class AppsUtilService implements IAppsUtilService {
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
             appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
-            ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
+            ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: randomUUID() }),
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);

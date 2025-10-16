@@ -28,7 +28,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { CreatePluginDto } from '@dto/create-plugin.dto';
 import * as request from 'supertest';
@@ -322,7 +322,7 @@ export async function createUser(
     organizationUsersRepository.create({
       user: user,
       organization,
-      invitationToken: status === 'invited' ? uuidv4() : null,
+      invitationToken: status === 'invited' ? randomUUID() : null,
       status: status || 'active',
       role: 'all_users',
       createdAt: new Date(),
@@ -876,7 +876,7 @@ export const enableWebhookForWorkflows = async (workflowId: string, status = tru
   await getManager()
     .createQueryBuilder()
     .update(App)
-    .set({ workflowEnabled: status, workflowApiToken: uuidv4() })
+    .set({ workflowEnabled: status, workflowApiToken: randomUUID() })
     .where('id = :id', { id: workflowId })
     .execute();
 };

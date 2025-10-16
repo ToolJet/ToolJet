@@ -13,7 +13,7 @@ import {
   enableWorkflowStatus,
   createNestAppInstanceWithServiceMocks,
 } from '../test.helper';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import * as request from 'supertest';
 import { LICENSE_FIELD } from '@modules/licensing/helper';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
@@ -460,10 +460,10 @@ describe('Workflow : Webhook Controller - POST api/v2/webhooks/workflows/<workfl
     });
 
     it('should trigger workflows from webhooks, with Runjs node accessing params passed as input', async () => {
-      const startNodeId = uuidv4();
-      const resultNodeId = uuidv4();
-      const runjsQueryNodeId = uuidv4();
-      const runjsQueryIdOnDefinition = uuidv4();
+      const startNodeId = randomUUID();
+      const resultNodeId = randomUUID();
+      const runjsQueryNodeId = randomUUID();
+      const runjsQueryIdOnDefinition = randomUUID();
       const paramsName = `Admin test`;
 
       let workflowDefinition: any = {

@@ -10,7 +10,7 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
 import { AppAuthenticationDto } from './dto';
-import * as uuid from 'uuid';
+import { randomUUID } from 'crypto';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -203,7 +203,7 @@ export class AuthService implements IAuthService {
       // No need to throw error - To prevent Username Enumeration vulnerability
       return;
     }
-    const forgotPasswordToken = uuid.v4();
+    const forgotPasswordToken = randomUUID();
     await this.userRepository.updateOne(user.id, { forgotPasswordToken });
     const auditLogEntry = {
       userId: user.id,
