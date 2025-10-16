@@ -138,7 +138,17 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSource?.id,
       resourceName: dataSource?.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environment_id,
+        pluginId: pluginId,
+      },
+      metadata: {
+        createdAt: dataSource?.createdAt,
+      },
     });
 
     return dataSource;
@@ -148,6 +158,9 @@ export class DataSourcesService implements IDataSourcesService {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
+    // Fetch datasource details for audit log
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
+
     await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, name, options, environmentId);
 
     // Setting data for audit logs
@@ -156,6 +169,14 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environmentId,
+        updatedFields: Object.keys(updateDataSourceDto),
+      },
       metadata: updateDataSourceDto,
     });
     return;
@@ -187,7 +208,15 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: dataSource.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+      },
+      metadata: {
+        deletedAt: new Date().toISOString(),
+      },
     });
     return;
   }

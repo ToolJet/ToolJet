@@ -27,6 +27,17 @@ let appActiveUsersGauge: any;
 // User session metrics
 let userSessionsCounter: any;
 
+// App lifecycle metrics
+let appCreationsCounter: any;
+let appUpdatesCounter: any;
+let appDeletionsCounter: any;
+let appReleasesCounter: any;
+
+// Data source lifecycle metrics
+let datasourceCreationsCounter: any;
+let datasourceUpdatesCounter: any;
+let datasourceDeletionsCounter: any;
+
 // Store recent activity for gauges (last 15 minutes)
 const ACTIVITY_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const userActivity = new Map<string, { count: number; lastUpdate: number }>();
@@ -174,11 +185,50 @@ export const initializeAuditLogMetrics = () => {
     unit: '1',
   });
 
+  // App Lifecycle Counters
+  appCreationsCounter = auditLogMeter.createCounter('app.creations.total', {
+    description: 'Total number of app creations',
+    unit: '1',
+  });
+
+  appUpdatesCounter = auditLogMeter.createCounter('app.updates.total', {
+    description: 'Total number of app updates',
+    unit: '1',
+  });
+
+  appDeletionsCounter = auditLogMeter.createCounter('app.deletions.total', {
+    description: 'Total number of app deletions',
+    unit: '1',
+  });
+
+  appReleasesCounter = auditLogMeter.createCounter('app.releases.total', {
+    description: 'Total number of app releases',
+    unit: '1',
+  });
+
+  // Data Source Lifecycle Counters
+  datasourceCreationsCounter = auditLogMeter.createCounter('datasource.creations.total', {
+    description: 'Total number of datasource creations',
+    unit: '1',
+  });
+
+  datasourceUpdatesCounter = auditLogMeter.createCounter('datasource.updates.total', {
+    description: 'Total number of datasource updates',
+    unit: '1',
+  });
+
+  datasourceDeletionsCounter = auditLogMeter.createCounter('datasource.deletions.total', {
+    description: 'Total number of datasource deletions',
+    unit: '1',
+  });
+
   console.log('✅ Audit log metrics initialized:');
   console.log('   - audit.logs.total, audit.logs.actions, audit.logs.resources');
   console.log('   - audit.logs.active_users, audit.logs.organization_activity');
   console.log('   - query.executions.total, query.failures.total, query.duration');
   console.log('   - app.usage.total, app.active_users');
+  console.log('   - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
+  console.log('   - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
   console.log('   - user.sessions.total');
 };
 
@@ -263,6 +313,16 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields) => {
     // Record user session metrics
     if (actionType === 'USER_LOGIN' || actionType === 'USER_LOGOUT') {
       recordUserSessionMetrics(auditLogData);
+    }
+
+    // Record app lifecycle metrics
+    if (actionType === 'APP_CREATE' || actionType === 'APP_UPDATE' || actionType === 'APP_DELETE' || actionType === 'APP_RELEASE') {
+      recordAppLifecycleMetrics(auditLogData);
+    }
+
+    // Record datasource lifecycle metrics
+    if (actionType === 'DATA_SOURCE_CREATE' || actionType === 'DATA_SOURCE_UPDATE' || actionType === 'DATA_SOURCE_DELETE') {
+      recordDataSourceLifecycleMetrics(auditLogData);
     }
 
     // Log for debugging (optional, can be removed in production)
@@ -380,6 +440,107 @@ function trackAppActiveUser(appId: string, userId: string) {
     appActiveUsers.set(appId, new Map());
   }
   appActiveUsers.get(appId)!.set(userId, Date.now());
+}
+
+/**
+ * Record app lifecycle metrics (create, update, delete, release)
+ */
+function recordAppLifecycleMetrics(auditLogData: AuditLogFields) {
+  const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+
+  const appType = resourceData['appType'] || 'unknown';
+  const appSlug = resourceData['appSlug'] || resourceId || 'unknown';
+  const isPublic = resourceData['isPublic'] || false;
+
+  const labels = {
+    app_id: resourceId,
+    app_name: resourceName || 'unknown',
+    app_type: appType,
+    app_slug: appSlug,
+    is_public: String(isPublic),
+    organization_id: organizationId,
+  };
+
+  switch (actionType) {
+    case 'APP_CREATE':
+      if (appCreationsCounter) {
+        appCreationsCounter.add(1, labels);
+      }
+      break;
+    case 'APP_UPDATE':
+      if (appUpdatesCounter) {
+        const updatedFields = resourceData['updatedFields'] || [];
+        appUpdatesCounter.add(1, {
+          ...labels,
+          updated_fields: Array.isArray(updatedFields) ? updatedFields.join(',') : String(updatedFields),
+        });
+      }
+      break;
+    case 'APP_DELETE':
+      if (appDeletionsCounter) {
+        appDeletionsCounter.add(1, labels);
+      }
+      break;
+    case 'APP_RELEASE':
+      if (appReleasesCounter) {
+        const environmentName = resourceData['environmentName'] || 'unknown';
+        const releasedVersionName = resourceData['releasedVersionName'] || 'unknown';
+        appReleasesCounter.add(1, {
+          ...labels,
+          environment: environmentName,
+          version: releasedVersionName,
+        });
+      }
+      break;
+  }
+}
+
+/**
+ * Record datasource lifecycle metrics (create, update, delete)
+ */
+function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
+  const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+
+  const dataSourceKind = resourceData['dataSourceKind'] || 'unknown';
+  const dataSourceScope = resourceData['dataSourceScope'] || 'unknown';
+  const appId = resourceData['appId'] || null;
+  const environmentId = resourceData['environmentId'] || 'unknown';
+
+  const labels = {
+    datasource_id: resourceId,
+    datasource_name: resourceName || 'unknown',
+    datasource_kind: dataSourceKind,
+    datasource_scope: dataSourceScope,
+    organization_id: organizationId,
+    environment_id: environmentId,
+  };
+
+  // Add appId only if it's not null (for app-scoped datasources)
+  if (appId) {
+    labels['app_id'] = appId;
+  }
+
+  switch (actionType) {
+    case 'DATA_SOURCE_CREATE':
+      if (datasourceCreationsCounter) {
+        datasourceCreationsCounter.add(1, labels);
+      }
+      break;
+    case 'DATA_SOURCE_UPDATE':
+      if (datasourceUpdatesCounter) {
+        const updatedFields = resourceData['updatedFields'] || [];
+        datasourceUpdatesCounter.add(1, {
+          ...labels,
+          updated_fields: Array.isArray(updatedFields) ? updatedFields.join(',') : String(updatedFields),
+        });
+      }
+      break;
+    case 'DATA_SOURCE_DELETE':
+      if (datasourceDeletionsCounter) {
+        datasourceDeletionsCounter.add(1, labels);
+      }
+      break;
+  }
 }
 
 /**
