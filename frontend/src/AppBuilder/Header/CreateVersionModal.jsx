@@ -100,8 +100,8 @@ const CreateVersionModal = ({
     createNewVersionAction(
       appId,
       versionName,
-      versionDescription,
       selectedVersionForCreation.id,
+      versionDescription,
       (newVersion) => {
         toast.success('Version Created');
         setVersionName('');

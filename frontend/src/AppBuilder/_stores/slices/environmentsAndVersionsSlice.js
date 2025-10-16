@@ -63,7 +63,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
       console.log('development versions', response);
-      const draftVersions = response.appVersions.filter((version) => version.status === 'draft');
+      const draftVersions = response.appVersions.filter((version) => version.status === 'DRAFT');
+      console.log('draft versions', draftVersions);
+      console.log('development versions', response.appVersions);
       set({ draftVersions });
       set({ developmentVersions: response.appVersions });
     } catch (error) {
@@ -112,8 +114,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   createNewVersionAction: async (
     appId,
     versionName,
-    versionDescription = '',
     selectedVersionId,
+    versionDescription = '',
     onSuccess,
     onFailure
   ) => {
