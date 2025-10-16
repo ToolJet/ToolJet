@@ -252,26 +252,6 @@ const CreateVersionModal = ({
           <div className="create-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">
-              {/* <button
-                className="cancel-button btn mx-2"
-                data-cy="cancel-button"
-                onClick={() => {
-                  setVersionName('');
-                  setShowCreateAppVersion(false);
-                }}
-                type="button"
-              >
-                <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
-              </button> */}
-              {/* <button
-                className={`btn btn-primary create-version-button${isCreatingVersion ? 'btn-loading' : ''}`}
-                data-cy="create-new-version-button"
-                type="submit"
-              >
-                <div className="create-version-button-text">
-                  {t('editor.appVersionManager.createVersion', 'Create Version')}
-                </div>
-              </button> */}
               <ButtonSolid
                 size="md"
                 onClick={() => {
