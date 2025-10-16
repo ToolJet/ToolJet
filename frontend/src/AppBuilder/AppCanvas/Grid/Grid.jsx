@@ -24,6 +24,8 @@ import {
   getDraggingWidgetWidth,
   positionGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
+  updateDashedBordersOnHover,
+  updateDashedBordersOnDragResize,
 } from './gridUtils';
 import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
@@ -33,6 +35,7 @@ import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanv
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
+import ConfigHandleButton from '@/_components/ConfigHandleButton';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -74,6 +77,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
+  const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
 
   const isWidgetResizable = useMemo(() => {
@@ -218,7 +222,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
       >
-        <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
+        <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
+        <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+        {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <img
               style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
@@ -236,8 +242,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             />
 
             <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
-          </div>
-        </span>
+          </div> */}
+        {/* </span> */}
       </div>
     );
   };
@@ -267,7 +273,6 @@ export default function Grid({ gridWidth, currentLayout }) {
     mouseLeave(e) {
       e.props.target.classList.remove('hovered');
       e.controlBox.classList.remove('moveable-control-box-d-block');
-      e.controlBox.classList.remove('moveable-horizonta-only');
     },
   };
 
@@ -436,10 +441,13 @@ export default function Grid({ gridWidth, currentLayout }) {
     const showConfigHandle = (e) => {
       const targetId = e.target.offsetParent.getAttribute('target-id');
       const componentType = getComponentTypeFromId(targetId);
+
       if (componentType === 'ModuleContainer') {
         return;
       }
       useStore.getState().setHoveredComponentBoundaryId(targetId);
+
+      updateDashedBordersOnHover(targetId);
     };
     const hideConfigHandle = () => {
       useStore.getState().setHoveredComponentBoundaryId('');
@@ -452,7 +460,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       moveableBox.removeEventListener('mouseover', showConfigHandle);
       moveableBox.removeEventListener('mouseout', hideConfigHandle);
     };
-  }, [moveableRef?.current?._elementTargets?.length]);
+  }, [moveableRef?.current?._elementTargets?.length, checkHoveredComponentDynamicHeight, getComponentTypeFromId]);
 
   const handleDragGroupEnd = (e) => {
     try {
@@ -602,6 +610,8 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
+
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
@@ -832,11 +842,13 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return true;
           }
+
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
+          // Reset per-drag-session flag
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 
           const box = boxList.find((box) => box.id === e.target.id);
@@ -921,6 +933,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragEnd={(e) => {
           handleDeactivateTargets();
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -929,6 +942,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
+            // Reset per-drag-session flag
 
             const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
@@ -987,6 +1001,8 @@ export default function Grid({ gridWidth, currentLayout }) {
           toggleCanvasUpdater();
         }}
         onDrag={(e) => {
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
+
           if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;

@@ -46,6 +46,7 @@ const FormComponent = (props) => {
     componentCount,
     onComponentClick,
     subContainerIndex,
+    currentMode,
   } = props;
 
   const { moduleId } = useModuleContext();
@@ -67,9 +68,9 @@ const FormComponent = (props) => {
     validateOnSubmit = true,
     resetOnSubmit = true,
     newJsonSchema,
-    dynamicHeight,
   } = properties;
 
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const advanced = _deprecatedAdvanced || isJSONSchema;
   const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 
@@ -91,7 +92,7 @@ const FormComponent = (props) => {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height: dynamicHeight ? '100%' : height,
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     position: 'relative',
     boxShadow,
@@ -138,7 +139,7 @@ const FormComponent = (props) => {
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     adjustComponentPositions,
@@ -417,7 +418,7 @@ const FormComponent = (props) => {
       )}
       <div
         className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
-          properties.dynamicHeight && `dynamic-${id}`
+          isDynamicHeightEnabled && `dynamic-${id}`
         }`}
         style={formContent}
       >

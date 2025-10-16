@@ -616,3 +616,22 @@ export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => 
     }
   }
 };
+
+export const updateDashedBordersOnHover = (targetId) => {
+  const dynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  const targetMoveableBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+  if (targetMoveableBox && dynamicHeight && !targetMoveableBox.classList.contains('moveable-dynamic-height')) {
+    targetMoveableBox.classList.add('moveable-dynamic-height');
+  } else if (targetMoveableBox && !dynamicHeight) {
+    targetMoveableBox.classList.remove('moveable-dynamic-height');
+  }
+};
+
+export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClassList) => {
+  const hasDynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  if (hasDynamicHeight && !moveableControlBoxClassList?.contains('moveable-dynamic-height')) {
+    moveableControlBoxClassList?.add('moveable-dynamic-height');
+  } else if (moveableControlBoxClassList?.contains('moveable-dynamic-height') && !hasDynamicHeight) {
+    moveableControlBoxClassList?.remove('moveable-dynamic-height');
+  }
+};

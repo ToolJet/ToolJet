@@ -1,0 +1,24 @@
+.config-handle-button {
+    button {
+        border-radius: 6px !important;
+        font-size: 11px; 
+        font-weight: 500;
+        line-height: 16px;
+        text-transform: none;
+        cursor: move;
+    }
+
+    &:not(.no-hover) {
+        button:hover {
+            background: var(--background-accent-strong) !important;
+        }
+
+        button.badge:active {
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12)),
+             linear-gradient(0deg, var(--background-accent-strong, #4368E3), var(--background-accent-strong, #4368E3)) !important;
+        }
+    }
+
+   
+      
+}

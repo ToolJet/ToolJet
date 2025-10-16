@@ -29,6 +29,8 @@ export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
+export const WIDGET_BORDER_WIDTH = 1;
+
 export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
 export const BOX_PADDING = 2;

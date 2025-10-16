@@ -44,11 +44,11 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
     );
-    const hasDynamicHeight = useStore(
-      (state) =>
-        state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight && mode === 'view',
+    const dynamicHeight = useStore(
+      (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight,
       shallow
     );
+    const hasDynamicHeight = dynamicHeight && mode === 'view';
 
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {
@@ -94,6 +94,7 @@ const WidgetWrapper = memo(
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
+      boxSizing: 'content-box',
     };
 
     const isModuleContainer = componentType === 'ModuleContainer';
@@ -109,6 +110,7 @@ const WidgetWrapper = memo(
             'active-target': isWidgetActive,
             'opacity-0': isDragging || isResizing,
             'module-container': isModuleContainer,
+            'dynamic-height-target': dynamicHeight,
           })}
           data-id={`${id}`}
           id={id}
@@ -140,6 +142,7 @@ const WidgetWrapper = memo(
               customClassName={isModuleContainer ? 'module-container' : ''}
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
+              dynamicHeight={dynamicHeight}
             />
           )}
           <RenderWidget
