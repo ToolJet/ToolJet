@@ -55,4 +55,29 @@ export const dashboardSelector = {
   slugSuccessLabel: '[data-cy="slug-sucess-label"]',
   slugErrorLabel: '[data-cy="slug-error-label"]',
   editWorkspaceTitle: '[data-cy="edit-workspace-title"]',
+
+  homePagePromptHeader: '[data-cy="home-page-prompt-header"]',
+  promptInput: '[data-cy="prompt-input"]',
+  homePageDividerText: '[data-cy="divider-text"]',
+  appCardWidget: '[data-cy="getstarted-app-widget"]',
+  templateCardWidget: '[data-cy="getstarted-templates-widget"]',
+  databaseCardWidget: '[data-cy="getstarted-datasource-widget"]',
+  workflowCardWidget: '[data-cy="getstarted-workflow-widget"]',
+
+  widgetCardName: (cardType) => {
+    return `[data-cy="getstarted-${cardType}-widget"]`;
+  },
+  widgetCardTitle: '[data-cy="widget-card-title"]',
+  widgetCardDescription: '[data-cy="widget-card-description"]',
+  homePagePromptTextArea: '[data-cy="prompt-textarea"]',
+  promptEnterButton: '[data-cy="prompt-enter-button"]',
+  aiIcon: '[data-cy="ai-icon"]',
+  homePageAppIcon: '[data-cy="apps-icon"]',
+  homePageDatasourceIcon: '[data-cy="datasources-icon"]',
+  homePageWorkflowIcon: '[data-cy="workflows-icon"]',
+  homePageTemplateIcon: '[data-cy="templates-icon"]',
+
+  homePageIcon: (iconName) => {
+    return `[data-cy="${iconName}s-icon"]`;
+  }
 };

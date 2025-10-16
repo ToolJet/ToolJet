@@ -105,6 +105,12 @@ describe("dashboard", () => {
 
     cy.wait(500);
     cy.get(commonSelectors.settingsIcon).click();
+
+    cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
+      "have.text",
+      "Version 2.9.2"
+    );
+
     cy.get(commonSelectors.marketplaceOption).verifyVisibleElement(
       "have.text",
       "Marketplace"
@@ -132,10 +138,6 @@ describe("dashboard", () => {
       dashboardText.dashboardAppsHeaderLabel
     );
 
-    cy.get(dashboardSelector.versionLabel).verifyVisibleElement(
-      "have.text",
-      "Version 2.9.2"
-    );
     cy.get(dashboardSelector.emptyPageImage).should("be.visible");
     cy.get(dashboardSelector.emptyPageHeader).verifyVisibleElement(
       "have.text",
@@ -158,7 +160,10 @@ describe("dashboard", () => {
 
     cy.get(dashboardSelector.appTemplateRow).should("be.visible");
     cy.reload();
+
+    verifyTooltip(commonSelectors.homePageIcon, "Home");
     verifyTooltip(commonSelectors.dashboardIcon, "Apps");
+    verifyTooltip(commonSelectors.globalWorkFlowsIcon, "Workflows");
     verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(
@@ -171,7 +176,7 @@ describe("dashboard", () => {
 
   it("Should verify app card elements and app card operations", () => {
     cy.exec("mkdir -p ./cypress/downloads/");
-    cy.exec("cd ./cypress/downloads/ && rm -rf *");
+    cy.exec("cd ./cypress/downloads/ && rm -rf '*'");
 
     const customLayout = {
       desktop: { top: 100, left: 20 },
@@ -180,7 +185,7 @@ describe("dashboard", () => {
 
     cy.apiCreateApp(data.appName);
     cy.visit(`${data.workspaceSlug}`);
-
+    cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
     cy.wait(2000);
     cy.get(commonSelectors.appCreationDetails).should("be.visible");
     cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
@@ -188,6 +193,7 @@ describe("dashboard", () => {
       "have.text",
       data.appName
     );
+
 
     viewAppCardOptions(data.appName);
     cy.get(
@@ -205,7 +211,6 @@ describe("dashboard", () => {
     cy.get(
       commonSelectors.appCardOptions(commonText.deleteAppOption)
     ).verifyVisibleElement("have.text", commonText.deleteAppOption);
-
     modifyAndVerifyAppCardIcon(data.appName);
     createFolder(data.folderName);
 
@@ -261,12 +266,15 @@ describe("dashboard", () => {
       commonText.appRemovedFromFolderTaost,
       false
     );
+
     cy.get(commonSelectors.modalComponent).should("not.exist");
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
+    cy.wait(1000);
     cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
       "have.text",
       commonText.emptyFolderText
     );
+
     cy.get(commonSelectors.allApplicationsLink).click();
     deleteFolder(data.folderName);
 
@@ -277,6 +285,7 @@ describe("dashboard", () => {
     cy.wait(2000);
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
+    cy.wait(2000)
 
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
@@ -292,9 +301,12 @@ describe("dashboard", () => {
       .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
 
+    cy.get(commonSelectors.editorAppNameInput).click();
     cy.renameApp(data.cloneAppName);
     cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
+
     cy.backToApps();
+    cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
     cy.wait("@appLibrary");
     cy.wait(1000);
 
@@ -303,6 +315,7 @@ describe("dashboard", () => {
     cy.wait(1000);
 
     viewAppCardOptions(data.cloneAppName);
+
     cy.get(commonSelectors.deleteAppOption).click();
     cy.get(commonSelectors.modalMessage).verifyVisibleElement(
       "have.text",
