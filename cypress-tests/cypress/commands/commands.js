@@ -61,13 +61,13 @@ Cypress.Commands.add("waitForAutoSave", () => {
 Cypress.Commands.add("createApp", (appName) => {
   const getAppButtonSelector = ($title) =>
     $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.emptyAppCreateButton
+      ? commonSelectors.dashboardAppCreateButton
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+-create-app"]').click();
+    cy.get('[data-cy="create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -219,14 +219,14 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
 
-Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-});
+// Cypress.Commands.add("renameApp", (appName) => {
+//   cy.get(commonSelectors.appNameInput).type(
+//     `{selectAll}{backspace}${appName}`,
+//     { force: true }
+//   );
+//   cy.forceClickOnCanvas();
+//   cy.waitForAutoSave();
+// });
 
 Cypress.Commands.add(
   "clearCodeMirror",
@@ -468,12 +468,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.wait("@library_apps");
 });
 
-Cypress.Commands.add("removeAssignedApps", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `DELETE FROM app_group_permissions;`,
-  });
-});
+
 
 Cypress.Commands.add(
   "saveFromIntercept",
@@ -562,7 +557,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -665,3 +660,26 @@ Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
     sql: query,
   });
 });
+
+Cypress.Commands.add(
+  "openWorkflow",
+  (
+    slug = "",
+    workspaceId = Cypress.env("workspaceId"),
+    workflowId = Cypress.env("workflowId"),
+  ) => {
+    cy.intercept("GET", "/api/apps/*").as("getWorkflowData");
+    cy.window({ log: false }).then((win) => {
+      win.localStorage.setItem("walkthroughCompleted", "true");
+    });
+    cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
+
+    cy.wait("@getWorkflowData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
+      Cypress.env("workflowId", responseData.id);
+    });
+  }
+);

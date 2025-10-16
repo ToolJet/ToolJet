@@ -489,3 +489,6 @@ export const openEditUserDetails = (
     .verifyVisibleElement("have.text", "Edit user details")
     .click();
 };
+
+
+
