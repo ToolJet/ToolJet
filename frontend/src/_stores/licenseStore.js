@@ -24,7 +24,12 @@ export const useLicenseStore = create(
         checkModuleAccess: () => {
           // Check if user is an end-user; if so, do not give module access
           const currentSession = authenticationService.currentSessionValue;
-          if (!currentSession?.user_permissions?.app_create && !currentSession?.super_admin && !currentSession?.admin) {
+          if (
+            !currentSession?.user_permissions?.app_create &&
+            !currentSession?.super_admin &&
+            !currentSession?.admin &&
+            currentSession?.role !== 'builder'
+          ) {
             set({ hasModuleAccess: false, moduleAccessLoading: false });
           } else {
             set({ hasModuleAccess: true, moduleAccessLoading: false });
