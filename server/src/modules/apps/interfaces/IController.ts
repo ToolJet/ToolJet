@@ -9,6 +9,7 @@ export interface IAppsController {
   create(user: UserEntity, appCreateDto: AppCreateDto, response: Response, cookies: Record<string, any>): Promise<any>;
 
   validatePrivateAppAccess(
+    accessType: string,
     versionName: string,
     environmentName: string,
     versionId: string,

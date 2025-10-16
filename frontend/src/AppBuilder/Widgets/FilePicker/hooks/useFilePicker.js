@@ -114,8 +114,8 @@ export const useFilePicker = ({
             readFileAsText: readFileAsText,
             readFileAsDataURL: base64Data,
           };
-          parsedValue = processFileContent(file.type, contentForParsing);
-          parsedData = DEPRECATED_processFileContent(file.type, contentForParsing);
+          parsedValue = await processFileContent(file.type, contentForParsing);
+          parsedData = await DEPRECATED_processFileContent(file.type, contentForParsing);
         }
 
         return {
