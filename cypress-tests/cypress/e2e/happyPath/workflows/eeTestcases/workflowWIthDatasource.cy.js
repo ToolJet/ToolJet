@@ -51,7 +51,6 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
   });
 
@@ -115,10 +114,9 @@ describe("Workflows with Datasource", () => {
     );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
 
-    deleteDatasource(dataSourceName);
+    cy.apiDeleteGDS(dataSourceName);
   });
 
   it("REST API workflow - execute and validate", () => {
@@ -181,10 +179,9 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
 
-    deleteDatasource(dataSourceName);
+    cy.apiDeleteGDS(dataSourceName);
   });
 
   it("HarperDB workflow - execute and validate", () => {
@@ -195,29 +192,28 @@ describe("Workflows with Datasource", () => {
     const Password = Cypress.env("harperdb_password");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.installMarketplacePlugin(workflowsText.harperDbPluginName);
+    cy.installMarketplacePlugin("HarperDB");
 
-    selectAndAddDataSource(
-      "databases",
-      harperDbText.harperDb,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", harperDbText.harperDb, data.dataSourceName);
 
     fillDataSourceTextField(
       harperDbText.hostLabel,
       harperDbText.hostInputPlaceholder,
       Host
     );
+
     fillDataSourceTextField(
       harperDbText.portLabel,
       harperDbText.portPlaceholder,
       Port
     );
+
     fillDataSourceTextField(
       harperDbText.userNameLabel,
       harperDbText.userNamePlaceholder,
       Username
     );
+
     fillDataSourceTextField(
       harperDbText.passwordlabel,
       harperDbText.passwordPlaceholder,
@@ -267,10 +263,8 @@ describe("Workflows with Datasource", () => {
       workflowsText.harperDbResponseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
-
     navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
-
     deleteDatasource(dataSourceName);
   });
 });

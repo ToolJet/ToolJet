@@ -26,7 +26,7 @@ describe("Workflows Export/Import Sanity", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it.only("RunJS workflow - execute, export/import, re-execute", () => {
+  it("RunJS workflow - execute, export/import, re-execute", () => {
     const workflowName = `${data.workflowName}-runjs`;
 
     cy.createWorkflowApp(workflowName);
@@ -51,10 +51,9 @@ describe("Workflows Export/Import Sanity", () => {
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
     cy.exportWorkflowApp(workflowName);
-
+    cy.apiDeleteWorkflow(workflowName);
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(workflowName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
@@ -123,13 +122,13 @@ describe("Workflows Export/Import Sanity", () => {
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     cy.exportWorkflowApp(workflowName);
-
+    cy.apiDeleteWorkflow(workflowName);
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
-    navigateBackToWorkflowsDashboard();
+    
     cy.apiDeleteWorkflow(workflowName);
 
-    deleteDatasource(dataSourceName);
+    cy.apiDeleteGDS(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

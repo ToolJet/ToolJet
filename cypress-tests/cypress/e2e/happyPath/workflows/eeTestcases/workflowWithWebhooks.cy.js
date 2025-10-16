@@ -65,7 +65,6 @@ describe("Workflows with Webhooks", () => {
             });
           });
       });
-      navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
   });
 });

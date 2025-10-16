@@ -45,12 +45,13 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.longStringJsonText);
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Creating workflow with Node Preview Validation and execution", () => {
-    cy.createWorkflowApp(data.workflowName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
+    
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -72,13 +73,14 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.jsonValuePlaceholder);
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
   });
 
   // Need to run after bug fixes
   it("Creating workflow inside Workflow and validating execution", () => {
-    cy.createWorkflowApp(data.childWorkflowName);
+    cy.apiCreateWorkflow(data.childWorkflowName)
+    cy.openWorkflow();
+    
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -98,8 +100,6 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-
-    navigateBackToWorkflowsDashboard();
 
     cy.apiCreateWorkflow(data.parentWorkflowName)
     cy.openWorkflow();
@@ -125,13 +125,13 @@ describe("Workflows features", () => {
       workflowsText.workflowResponseNodeQuery
     );
     // cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.childWorkflowName);
     cy.apiDeleteWorkflow(data.parentWorkflowName);
   });
 
   it("Creating workflow with large datasets and validating execution", () => {
-    cy.createWorkflowApp(data.workflowName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -156,8 +156,6 @@ describe("Workflows features", () => {
     verifyTextInResponseOutputLimited(
       workflowsText.responseNodeExpectedValueTextForLargeDataset
     );
-
-    navigateBackToWorkflowsDashboard();
     cy.apiDeleteWorkflow(data.workflowName);
   });
 });

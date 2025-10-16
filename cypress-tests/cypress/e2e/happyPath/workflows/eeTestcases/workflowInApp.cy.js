@@ -61,7 +61,6 @@ describe("Workflows in apps", () => {
     //   commonSelectors.toastMessage,
     //   `Query (${data.dataSourceName}) completed.`
     // );
-    cy.backToApps();
     cy.apiDeleteApp();
     cy.apiDeleteWorkflow(data.workflowName);
   });
@@ -139,10 +138,8 @@ describe("Workflows in apps", () => {
     //   commonSelectors.toastMessage,
     //   `Query (${data.dataSourceName}) completed.`
     // );
-    cy.backToApps();
     cy.apiDeleteApp();
     cy.apiDeleteWorkflow(data.workflowName);
-
-    deleteDatasource(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
   });
 });
