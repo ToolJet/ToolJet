@@ -1,6 +1,5 @@
 import { merge, set } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 // eslint-disable-next-line import/no-unresolved
@@ -11,7 +10,7 @@ import { COMPONENT_LAYOUT_DETAILS, COMPONENT_WITH_OPTIONS } from '../constants';
 export const createNewComponentFromMeta = (column, parentId, nextTop) => {
   const currentLayout = useStore.getState().currentLayout;
   const componentType = column.componentType || 'TextInput';
-  const fieldId = uuidv4();
+  const fieldId = crypto.randomUUID();
 
   const componentMeta = componentTypes.find((comp) => comp.component === componentType);
 
@@ -137,7 +136,7 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
 };
 
 const handleComponentTypeChange = (componentToUpdate, updatedField) => {
-  const newComponentId = uuidv4();
+  const newComponentId = crypto.randomUUID();
 
   const addOptions =
     COMPONENT_WITH_OPTIONS.includes(updatedField.componentType) &&

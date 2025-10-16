@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
@@ -93,7 +92,7 @@ export const addNewWidgetToTheEditor = (
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: componentName,
     component: {
       ...componentData,
@@ -192,7 +191,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       });
 
       const newChildComponent = {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         name: widgetName,
         component: {
           ...componentData,
@@ -567,7 +566,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
 
   pastedComponents.forEach((component) => {
     component = deepClone(component);
-    const newComponentId = isCut ? component.id : uuidv4();
+    const newComponentId = isCut ? component.id : crypto.randomUUID();
     if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
     if (component.component.component === 'Form') formComponentIds.add(newComponentId);
     const componentName = computeComponentName(component.component.component, {

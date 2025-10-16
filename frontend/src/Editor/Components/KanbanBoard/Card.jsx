@@ -1,7 +1,6 @@
 import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { BoardContext } from './KanbanBoard';
-import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
@@ -38,7 +37,7 @@ export const Card = ({
     fireEvent('onCardRemoved');
   };
 
-  const draggableId = item.id ?? uuidv4();
+  const draggableId = item.id ?? crypto.randomUUID();
 
   const handleEventPopoverOptions = (e) => {
     setEventPopoverOptions({

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -40,7 +39,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
     }
     const existingColumnOption = columnOptions || {};
     const emptyColumnOption = { column: '', value: '' };
-    handleColumnOptionChange({ ...existingColumnOption, ...{ [uuidv4()]: emptyColumnOption } });
+    handleColumnOptionChange({ ...existingColumnOption, ...{ [crypto.randomUUID()]: emptyColumnOption } });
   }
 
   return (

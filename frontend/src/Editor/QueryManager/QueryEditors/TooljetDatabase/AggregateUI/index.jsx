@@ -6,7 +6,6 @@ import { isEmpty } from 'lodash';
 import { SelectBox } from './Select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components';
@@ -50,7 +49,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
 
   const addNewAggregateOption = () => {
     const currentAggregates = { ...(operationDetails?.aggregates || {}) };
-    const uniqueId = uuidv4();
+    const uniqueId = crypto.randomUUID();
     const newAggregate = { aggFx: '', column: '' };
     const updatedAggregates = {
       ...currentAggregates,

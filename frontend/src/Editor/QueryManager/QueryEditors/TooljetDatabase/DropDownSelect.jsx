@@ -6,7 +6,6 @@ import { Badge, OverlayTrigger, Popover } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
-import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { ToolTip } from '@/_components/ToolTip';
 
@@ -67,8 +66,8 @@ const DropDownSelect = ({
   showControlComponent = false,
   placeholder = '',
 }) => {
-  const popoverId = useRef(`dd-select-${uuidv4()}`);
-  const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
+  const popoverId = useRef(`dd-select-${crypto.randomUUID()}`);
+  const popoverBtnId = useRef(`dd-select-btn-${crypto.randomUUID()}`);
   const [showMenu, setShowMenu] = useShowPopover(
     isForeignKeyInEditCell,
     `#${popoverId.current}`,

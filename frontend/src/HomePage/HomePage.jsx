@@ -51,7 +51,6 @@ import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPro
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
-import { v4 as uuidv4 } from 'uuid';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
@@ -169,7 +168,7 @@ class HomePageComponent extends React.Component {
         // });
         // Optional: Clear the cookie after showing toast
         this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.createApp(`Untitled App: ${crypto.randomUUID()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
         break;
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });

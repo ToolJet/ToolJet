@@ -9,7 +9,6 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
-import { v4 as uuidv4 } from 'uuid';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 const noop = () => {};
@@ -105,7 +104,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   const [enableTransformation, setEnableTransformation] = useState(options.enableTransformation);
   const prevQueryId = useRef(queryId);
   const selectedQueryId = useStore((state) => state.selectedQuery?.id);
-  const [codeEditorKey, setCodeEditorKey] = useState(uuidv4());
+  const [codeEditorKey, setCodeEditorKey] = useState(crypto.randomUUID());
   const [state, setState] = useState({
     ...defaultValue,
     ...(options?.transformation ? { [options.transformationLanguage ?? 'javascript']: options?.transformation } : {}),
@@ -163,7 +162,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   }, [options.enableTransformation]);
 
   useEffect(() => {
-    setCodeEditorKey(uuidv4());
+    setCodeEditorKey(crypto.randomUUID());
   }, [lang, queryId]);
 
   return (

@@ -3,7 +3,6 @@ import Select from '@/_ui/Select';
 import { appsService } from '@/_services';
 import CodeHinter from '@/Editor/CodeEditor';
 import './workflows-query.scss';
-import { v4 as uuidv4 } from 'uuid';
 import { useAppDataStore } from '@/_stores/appDataStore';
 
 export function Workflows({ options, optionsChanged, currentState }) {
@@ -104,7 +103,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
         <div className="col-1">
           <span
             className="add-param"
-            onClick={() => setParams((params) => [...params, { key: '', value: '', id: uuidv4() }])}
+            onClick={() => setParams((params) => [...params, { key: '', value: '', id: crypto.randomUUID() }])}
           >
             <svg width="auto" height="auto" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
               <path

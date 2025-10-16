@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-unresolved
 import { produceWithPatches, enablePatches, applyPatches } from 'immer';
 import { isEmpty } from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
 enablePatches();
 
 const MAX_HISTORY_LENGTH = 100;

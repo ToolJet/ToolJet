@@ -11,7 +11,6 @@ import RightArrow from '@/_ui/Icon/solidIcons/RightArrow';
 import DownArrow from '@/_ui/Icon/solidIcons/DownArrow';
 import InfomrationCirlce from '@/_ui/Icon/solidIcons/InformationCircle';
 import { ToolTip } from '@/_components/ToolTip';
-import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import { NoCondition } from './NoConditionUI';
 
@@ -220,7 +219,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
     // Check if selectedJsonbColumns has data and if initialization has not already occurred
     if (!isInitialized.current && selectedJsonbColumns?.length > 0) {
       const jsonPathsToUpdate = selectedJsonbColumns.reduce((acc, col) => {
-        const uuid = uuidv4();
+        const uuid = crypto.randomUUID();
         acc[uuid] = {
           name: col.name,
           jsonpath: col?.jsonpath || '',
@@ -250,7 +249,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
 
   const addNewColumnOptionsPair = () => {
     const jsonpathsToUpdate = { ...jsonPaths };
-    const uuid = uuidv4();
+    const uuid = crypto.randomUUID();
     jsonpathsToUpdate[uuid] = {
       name: '',
       jsonpath: '',

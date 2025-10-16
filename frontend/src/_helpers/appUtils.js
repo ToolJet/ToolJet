@@ -22,7 +22,6 @@ import generateFile from '@/_lib/generate-file';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
 import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
 import RunPyIcon from '@/Editor/Icons/runpy.svg';
-import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
@@ -519,7 +518,7 @@ function debounce(func) {
 
   return (...args) => {
     const event = args[1] || {};
-    const eventId = uuidv4();
+    const eventId = crypto.randomUUID();
 
     if (event.debounce === undefined) {
       return func.apply(this, args);
@@ -1981,7 +1980,7 @@ export const addComponents = _.debounce(
     }
 
     pastedComponents.forEach((component) => {
-      const newComponentId = isCut ? component.componentId : uuidv4();
+      const newComponentId = isCut ? component.componentId : crypto.randomUUID();
       const componentName = computeComponentName(component.component.component, {
         ...appDefinition.pages[pageId].components,
         ...finalComponents,
@@ -2071,7 +2070,7 @@ export const addNewWidgetToTheEditor = (
 
   if (isInSubContainer && addingDefault) {
     const newComponent = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       component: componentData,
       layout: {
         [currentLayout]: {
@@ -2113,7 +2112,7 @@ export const addNewWidgetToTheEditor = (
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     component: componentData,
     layout: {
       [currentLayout]: {

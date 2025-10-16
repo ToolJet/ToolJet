@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { create } from './utils';
-import { v4 as uuid } from 'uuid';
 import { licenseService } from '@/_services';
 import { useResolveStore } from './resolverStore';
 const STORE_NAME = 'Editor';
@@ -37,7 +36,7 @@ const initialState = {
   showLeftSidebar: true,
   queryConfirmationList: [],
   currentPageId: null,
-  currentSessionId: uuid(),
+  currentSessionId: crypto.randomUUID(),
   currentAppEnvironment: null,
   currentAppEnvironmentId: null,
   featureAccess: null,

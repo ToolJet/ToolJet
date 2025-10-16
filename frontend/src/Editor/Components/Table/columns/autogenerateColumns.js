@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
 
 export default function autogenerateColumns(
   tableData,
@@ -14,7 +13,7 @@ export default function autogenerateColumns(
     if (dynamicColumn.length > 0 && dynamicColumn[0].name) {
       const generatedColumns = dynamicColumn.map((item) => {
         return {
-          id: uuidv4(),
+          id: crypto.randomUUID(),
           ...item,
           name: item?.name,
           key: item?.key || item?.name,
@@ -94,7 +93,7 @@ export default function autogenerateColumns(
     .map((column) => column?.key || column?.name);
 
   const generatedColumns = keysAndDataTypesToGenerateNewColumns.map(([key, dataType]) => ({
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: key,
     key: key,
     columnType: convertDataTypeToColumnType(dataType),

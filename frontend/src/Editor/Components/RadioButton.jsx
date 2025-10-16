@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 export const RadioButton = function RadioButton({
   id,
@@ -70,7 +69,7 @@ export const RadioButton = function RadioButton({
               checked={checkedValue === option.value}
               type="radio"
               value={option.value}
-              name={`${id}-${uuidv4()}`}
+              name={`${id}-${crypto.randomUUID()}`}
               onChange={() => onSelect(option.value)}
             />
             <span className="form-check-label" style={{ color: textColor }}>

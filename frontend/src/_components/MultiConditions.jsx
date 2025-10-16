@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import _, { isEmpty } from 'lodash';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { v4 as uuidv4 } from 'uuid';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const ConditionFilter = ({ operators = [], value, onChange, placeholders }) => {
@@ -21,7 +20,7 @@ export const ConditionFilter = ({ operators = [], value, onChange, placeholders 
   function addNewFilterConditionPair() {
     const existingFilters = listRowsOptions?.where_filters ? Object.values(listRowsOptions?.where_filters) : [];
     const emptyFilter = { column: '', operator: '', value: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
+    const newFilter = { ...emptyFilter, ...{ id: crypto.randomUUID() } };
     handleWhereFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
@@ -101,7 +100,7 @@ export const CondtionSort = ({ orders = [], value, onChange, placeholders }) => 
   function addNewSortConditionPair() {
     const existingFilters = listRowsOptions?.order_filters ? Object.values(listRowsOptions?.order_filters) : [];
     const emptyFilter = { column: '', order: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
+    const newFilter = { ...emptyFilter, ...{ id: crypto.randomUUID() } };
     handleOrderFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
@@ -193,7 +192,7 @@ export const MultiColumn = ({ value, onChange, placeholders }) => {
   function addNewColumnOptionsPair() {
     const existingColumnOption = Object.values ? Object.values(updateRowsOptions?.columns) : [];
     const emptyColumnOption = { column: '', value: '' };
-    handleColumnOptionChange({ ...existingColumnOption, ...{ [uuidv4()]: emptyColumnOption } });
+    handleColumnOptionChange({ ...existingColumnOption, ...{ [crypto.randomUUID()]: emptyColumnOption } });
   }
 
   return (

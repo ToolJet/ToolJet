@@ -1,7 +1,6 @@
 import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
@@ -15,7 +14,7 @@ export function debounce(func) {
 
   return (...args) => {
     const event = args[0] || {};
-    const eventId = uuidv4();
+    const eventId = crypto.randomUUID();
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {

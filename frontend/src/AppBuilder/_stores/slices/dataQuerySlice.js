@@ -1,6 +1,5 @@
 import { dataqueryService, appPermissionService } from '@/_services';
 import { getDefaultOptions } from '@/_stores/storeHelper';
-import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty, throttle } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
@@ -66,7 +65,7 @@ export const createDataQuerySlice = (set, get) => ({
       else name = queryName;
       const options = { ...defaultOptions, ...customOptions };
       const kind = selectedDataSource.kind;
-      const tempId = uuidv4();
+      const tempId = crypto.randomUUID();
       set((state) => {
         state.dataQuery.creatingQueryInProcessId = tempId;
       });
@@ -257,7 +256,7 @@ export const createDataQuerySlice = (set, get) => ({
     },
     duplicateQuery: (id, appId, moduleId = 'canvas') => {
       set((state) => {
-        state.dataQuery.creatingQueryInProcessId = uuidv4();
+        state.dataQuery.creatingQueryInProcessId = crypto.randomUUID();
       });
       const { eventsSlice } = get();
       const { getEventsByComponentsId, createAppVersionEventHandlers } = eventsSlice;

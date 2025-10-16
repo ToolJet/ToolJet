@@ -1,7 +1,6 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { decimalToHex } from '@/Editor/editorConstants';
@@ -402,7 +401,7 @@ export const createPageMenuSlice = (set, get) => {
       for (let handleIndex = 1; pageHandles.includes(newHandle); handleIndex++) {
         newHandle = `${handle}-${handleIndex}`;
       }
-      const newPageId = uuid();
+      const newPageId = crypto.randomUUID();
       const pageObject = {
         id: newPageId,
         name,

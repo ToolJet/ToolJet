@@ -6,7 +6,6 @@ import { RespondentLoadingMessage } from './components/RespondentLoadingMessage'
 import { ChatInput } from './components/ChatInput';
 import { useComputedStyles } from './hooks/useComputedStyles';
 import { LoadingMessageSkeleton } from './components/LoadingMessageSkeleton';
-import { v4 as uuidv4 } from 'uuid';
 import { validateMessageHistory, validateSingleMessageObject } from './utils/helpers';
 
 import toast from 'react-hot-toast';
@@ -72,7 +71,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
 
         const newMessage = {
             message,
-            messageId: uuidv4(),
+            messageId: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
             name: name || (type === 'message' ? userName : respondentName),
             avatar: avatar || (type === 'message' ? userAvatar : respondentAvatar),

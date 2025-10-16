@@ -3,7 +3,6 @@ import { getDefaultOptions } from './storeHelper';
 import { dataqueryService, orgEnvironmentConstantService } from '@/_services';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { shallow } from 'zustand/shallow';
@@ -201,7 +200,7 @@ export const useDataQueriesStore = create(
           const { options: defaultOptions, name } = getDefaultOptions(selectedDataSource);
           const options = { ...defaultOptions, ...customOptions };
           const kind = selectedDataSource.kind;
-          const tempId = uuidv4();
+          const tempId = crypto.randomUUID();
           set({ creatingQueryInProcessId: tempId });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
@@ -413,7 +412,7 @@ export const useDataQueriesStore = create(
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         duplicateQuery: (id, appId) => {
-          set({ creatingQueryInProcessId: uuidv4() });
+          set({ creatingQueryInProcessId: crypto.randomUUID() });
           const { actions } = useQueryPanelStore.getState();
           const { dataQueries } = useDataQueriesStore.getState();
           const queryToClone = { ...dataQueries.find((query) => query.id === id) };

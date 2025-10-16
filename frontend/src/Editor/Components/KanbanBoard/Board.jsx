@@ -1,6 +1,5 @@
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { v4 as uuidv4 } from 'uuid';
 import Column from './Column';
 import { reorderCards, moveCards } from './utils';
 
@@ -23,7 +22,7 @@ const getItemStyle = (isDragging, draggableStyle) => {
 function Board({ height, state, colStyles, setState, fireEvent, setExposedVariable }) {
   const addNewItem = (state, keyIndex) => {
     const newItem = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       title: 'New card',
       columnId: state[keyIndex].id,
     };

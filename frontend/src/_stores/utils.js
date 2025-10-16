@@ -6,7 +6,6 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
-import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : false });
@@ -402,7 +401,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = uuid();
+      const uniqueId = crypto.randomUUID();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;

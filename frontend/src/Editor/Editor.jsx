@@ -45,7 +45,6 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import { withTranslation } from 'react-i18next';
-import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
 import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
@@ -1768,7 +1767,7 @@ const EditorComponent = (props) => {
     }
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const newPageId = uuid();
+    const newPageId = crypto.randomUUID();
 
     copyOfAppDefinition.pages[newPageId] = {
       id: newPageId,

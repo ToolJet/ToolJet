@@ -5,7 +5,6 @@ import { shallow } from 'zustand/shallow';
 import Fuse from 'fuse.js';
 import JSONViewer from './JSONViewer';
 import { Node } from './Node';
-import { v4 as uuidv4 } from 'uuid';
 import InputComponent from '@/components/ui/Input/Index';
 import { isEmpty } from 'lodash';
 
@@ -108,7 +107,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
   // }, [data, searchValue]);
 
   const key = useMemo(() => {
-    return uuidv4();
+    return crypto.randomUUID();
   }, [JSON.stringify(data), selectedNodePath]);
 
   const processedData = useMemo(() => ensureUniqueIds(data), [data]);

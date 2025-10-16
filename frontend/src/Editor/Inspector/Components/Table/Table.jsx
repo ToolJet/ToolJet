@@ -8,7 +8,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Color } from '../../Elements/Color';
 import SelectSearch from 'react-select-search';
-import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
 import { withTranslation } from 'react-i18next';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -364,7 +363,7 @@ class TableComponent extends React.Component {
     const newValue = columns.value;
     newValue.push({
       name: this.generateNewColumnName(columns.value),
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       isEditable: this.state?.isAllColumnsEditable,
       fxActiveFields: [],
       columnType: 'string',
@@ -492,7 +491,7 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties?.columns ?? [];
     const newColumns = columns.value;
     let columnToBeDuplicated = newColumns?.[index];
-    columnToBeDuplicated = { ...columnToBeDuplicated, id: uuidv4() };
+    columnToBeDuplicated = { ...columnToBeDuplicated, id: crypto.randomUUID() };
     newColumns.push(columnToBeDuplicated);
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };

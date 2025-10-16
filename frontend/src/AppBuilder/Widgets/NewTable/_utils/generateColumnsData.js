@@ -1,7 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 import {
   StringColumn,
@@ -93,7 +92,7 @@ export default function generateColumnsData({
       if (!isVisible) return null;
 
       const columnDef = {
-        id: column.id || uuidv4(),
+        id: column.id || crypto.randomUUID(),
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
         enableSorting: true,

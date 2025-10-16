@@ -6,7 +6,6 @@ import { RenderSelector } from './RenderSelector';
 import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
-import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
@@ -119,7 +118,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             },
             data: {
               text: item.text,
-              id: uuid(),
+              id: crypto.randomUUID(),
             },
           };
         });

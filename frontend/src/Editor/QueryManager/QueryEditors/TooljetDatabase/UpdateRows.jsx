@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { operators } from '@/TooljetDatabase/constants';
-import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -36,7 +35,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
 
     const existingColumnOption = Object.values ? Object.values(updateRowsOptions?.columns) : [];
     const emptyColumnOption = { column: '', value: '' };
-    handleColumnOptionChange({ ...existingColumnOption, ...{ [uuidv4()]: emptyColumnOption } });
+    handleColumnOptionChange({ ...existingColumnOption, ...{ [crypto.randomUUID()]: emptyColumnOption } });
   }
 
   function handleWhereFiltersChange(filters) {
@@ -46,7 +45,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
   function addNewFilterConditionPair() {
     const existingFilters = updateRowsOptions?.where_filters ? Object.values(updateRowsOptions?.where_filters) : [];
     const emptyFilter = { column: '', operator: '', value: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
+    const newFilter = { ...emptyFilter, ...{ id: crypto.randomUUID() } };
     handleWhereFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 

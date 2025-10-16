@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { createReferencesLookup, findAllEntityReferences, findEntityId } from './utils';
 import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
-import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { dfs, removeAppSuggestions } from './handleReferenceTransactions';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -18,7 +17,7 @@ class ReferencesBiMap {
   }
 
   set(key, value) {
-    const lookupId = uuid();
+    const lookupId = crypto.randomUUID();
 
     this._map.set(key, lookupId);
     this._reverseMap.set(lookupId, value);

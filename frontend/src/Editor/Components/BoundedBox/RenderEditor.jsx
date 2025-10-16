@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
-import { v4 as uuid } from 'uuid';
 
 export const RenderEditor = ({
   annotation,
@@ -42,7 +41,7 @@ export const RenderEditor = ({
               geometry,
               data: {
                 text: value,
-                id: uuid(),
+                id: crypto.randomUUID(),
               },
             });
 
