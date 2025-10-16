@@ -660,3 +660,26 @@ Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
     sql: query,
   });
 });
+
+Cypress.Commands.add(
+  "openWorkflow",
+  (
+    slug = "",
+    workspaceId = Cypress.env("workspaceId"),
+    workflowId = Cypress.env("workflowId"),
+  ) => {
+    cy.intercept("GET", "/api/apps/*").as("getWorkflowData");
+    cy.window({ log: false }).then((win) => {
+      win.localStorage.setItem("walkthroughCompleted", "true");
+    });
+    cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
+
+    cy.wait("@getWorkflowData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
+      Cypress.env("workflowId", responseData.id);
+    });
+  }
+);
