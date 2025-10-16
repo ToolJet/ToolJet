@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) => {
   const { moduleId } = useModuleContext();
@@ -167,9 +168,12 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
           <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
 
           <div className="col d-flex justify-content-end">
-            <button
-              className="cancel-button btn mx-2"
+            <ButtonSolid
+              size="lg"
               data-cy="cancel-button"
+              type="button"
+              variant="tertiary"
+              className="mx-2"
               onClick={() => {
                 setVersionName(editingVersion?.name || '');
                 setVersionDescription(editingVersion?.description || '');
@@ -177,18 +181,13 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
                 setDescriptionError('');
                 setShowEditAppVersion(false);
               }}
-              type="button"
             >
               <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
-            </button>
-            <button
-              className={`btn btn-primary edit-version-button${isEditingVersion ? 'btn-loading' : ''}`}
-              data-cy="save-button"
-              type="submit"
-            >
-              {/* {t('globals.save', 'Save')} */}
+            </ButtonSolid>
+
+            <ButtonSolid size="lg" data-cy="save-button" type="submit" variant="primary">
               <div className="edit-version-button-text">{t('editor.update', 'Update')}</div>
-            </button>
+            </ButtonSolid>
           </div>
         </div>
       </form>

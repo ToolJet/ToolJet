@@ -8,6 +8,7 @@ import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -251,7 +252,7 @@ const CreateVersionModal = ({
           <div className="create-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">
-              <button
+              {/* <button
                 className="cancel-button btn mx-2"
                 data-cy="cancel-button"
                 onClick={() => {
@@ -261,8 +262,8 @@ const CreateVersionModal = ({
                 type="button"
               >
                 <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 className={`btn btn-primary create-version-button${isCreatingVersion ? 'btn-loading' : ''}`}
                 data-cy="create-new-version-button"
                 type="submit"
@@ -270,7 +271,23 @@ const CreateVersionModal = ({
                 <div className="create-version-button-text">
                   {t('editor.appVersionManager.createVersion', 'Create Version')}
                 </div>
-              </button>
+              </button> */}
+              <ButtonSolid
+                size="md"
+                onClick={() => {
+                  setVersionName('');
+                  setShowCreateAppVersion(false);
+                }}
+                variant="tertiary"
+                className="mx-2"
+              >
+                <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
+              </ButtonSolid>
+              <ButtonSolid size="md" variant="primary" className="" type="submit">
+                <div className="create-version-button-text">
+                  {t('editor.appVersionManager.createVersion', 'Create Version')}
+                </div>
+              </ButtonSolid>
             </div>
           </div>
         </form>
