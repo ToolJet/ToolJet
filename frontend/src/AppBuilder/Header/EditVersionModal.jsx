@@ -182,11 +182,11 @@ export const EditVersionModal = ({ setShowEditAppVersion, showEditAppVersion }) 
                 setShowEditAppVersion(false);
               }}
             >
-              <div className="cancel-button-text"> {t('globals.cancel', 'Cancel')}</div>
+              {t('globals.cancel', 'Cancel')}{' '}
             </ButtonSolid>
 
             <ButtonSolid size="lg" data-cy="save-button" type="submit" variant="primary">
-              <div className="edit-version-button-text">{t('editor.update', 'Update')}</div>
+              {t('editor.update', 'Update')}
             </ButtonSolid>
           </div>
         </div>

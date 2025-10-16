@@ -2,24 +2,19 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersionStatus } from 'src/entities/app_version.entity';
 export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const allVersions = await queryRunner.query(`
+        SELECT id FROM app_versions
+    `);
     const allDevelopmentVersionIds = await queryRunner.query(`
             SELECT av.id
             FROM app_versions av
-            JOIN app_environments ae ON av.current_environment_id = ae.id
+            INNER JOIN app_environments ae ON av.current_environment_id = ae.id
             WHERE ae.name = 'development'
         `);
-    const allNonDevelopmentVersionIDs = await queryRunner.query(`
-            SELECT av.id
-            FROM app_versions av
-            LEFT JOIN app_environments ae ON av.current_environment_id = ae.id 
-                AND ae.name = 'development'
-            WHERE ae.id IS NULL
-        `);
-
-    // Convert query results to arrays of IDs
     const developmentVersionIds = allDevelopmentVersionIds.map((row) => row.id);
-    const nonDevelopmentVersionIDs = allNonDevelopmentVersionIDs.map((row) => row.id);
-
+    const nonDevelopmentVersionIDs = allVersions
+      .filter((version) => !developmentVersionIds.includes(version.id))
+      .map((row) => row.id);
     if (nonDevelopmentVersionIDs && nonDevelopmentVersionIDs.length) {
       await queryRunner.query(
         `UPDATE app_versions SET status = '${AppVersionStatus.PUBLISHED}' WHERE id = ANY($1::uuid[])`,
@@ -36,19 +31,6 @@ export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationIn
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
 }
-// Need to review -> If we need to handle it speparately for CE and basic plans or this flow is fine
-
-// CE --> If that version is a released version -> can keep the status to published else keep the status as DRAFT
-// EE -->
-// Basic plan --> If that version is a released version -> can keep the status to published else keep the status as DRAFT
-// Licensed users --> a. For all the versions in development environment -> keep the status to DRAFT
-//                    b. For all the versions in staging/production environment -> keep the status to PUBLISHED
-
-// Cloud -->  : Free/Basic plan --> If that version is a released version -> can keep the status to published else keep the status as DRAFT
-// Licensed users --> a. For all the versions in development environment -> keep the status to DRAFT
-//                    b. For all the versions in staging/production environment -> keep the status to PUBLISHED
-
-// you only have the version id -> using that I have to find the app is currently in which workspace and that workspace is on which plan and then I have to update the status accordingly
-// app_version_id -> get app id from app_versions table -> using that app id get workspace id from apps table -> using that workspace id get plan details
-
-// app_version_id  → Get app id from app_versions → App ID → Get Organization ID from Apps table → Organization ID → Workspace Plan & Type → Environment & Released Status → Determine Status → Update app_versions.status (edited)
+// For older versions: Set status based on environment
+// - Non-development versions → PUBLISHED (they are already in a non-editable state)
+// - Development versions → DRAFT (they are still in development and users may need to edit them)

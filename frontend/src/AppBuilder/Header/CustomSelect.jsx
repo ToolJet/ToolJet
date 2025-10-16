@@ -7,7 +7,8 @@ import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
-import { CreateVersionModal } from '@/modules/Appbuilder/components';
+import { CreateVersionModal, CreateDraftVersionModal } from '@/modules/Appbuilder/components';
+
 import useStore from '@/AppBuilder/_stores/store';
 
 import { Tag } from 'lucide-react';
@@ -134,7 +135,13 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        <CreateVersionModal
+        // <CreateVersionModal
+        //   {...props}
+        //   showCreateAppVersion={showCreateAppVersion}
+        //   setShowCreateAppVersion={setShowCreateAppVersion}
+        //   onSelectVersion={onSelectVersion}
+        // />
+        <CreateDraftVersionModal
           {...props}
           showCreateAppVersion={showCreateAppVersion}
           setShowCreateAppVersion={setShowCreateAppVersion}

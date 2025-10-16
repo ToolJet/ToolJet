@@ -139,6 +139,7 @@
             "version": "Version",
             "currentlyReleased": "Currently Released",
             "createVersion": "Create version",
+            "createDraftVersion": "Create draft version",
             "versionName": "Version name",
             "versionDescription": "Version Description",
             "createVersionFrom": "Create version from",
