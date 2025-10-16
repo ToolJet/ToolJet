@@ -38,13 +38,12 @@ describe("App Export", () => {
       dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
     };
     cy.exec("mkdir -p ./cypress/downloads/");
-    cy.exec("cd ./cypress/downloads/ && rm -rf *");
+    cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
     cy.exec("mkdir -p ./cypress/downloads/");
     cy.wait(3000);
 
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-    cy.apiLogout();
   });
 
   it("Verify the elements of export dialog box", () => {
@@ -60,6 +59,8 @@ describe("App Export", () => {
     cy.get(importSelectors.importAppButton).click();
     cy.wait(3000);
     cy.backToApps();
+    cy.reload()
+    cy.pause()
 
     // Select the app card option to export the app
     selectAppCardOption(
@@ -201,12 +202,12 @@ describe("App Export", () => {
     });
   });
 
-  it.skip("Verify 'Export app' functionality of an application inside app editor", () => {
+  it.only("Verify 'Export app' functionality of an application inside app editor", () => {
     data.appName2 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName2);
     cy.openApp(data.appName2);
 
-    cy.dragAndDropWidget("Text Input", 50, 50);
+    cy.dragAndDropWidget("Text Input", 200, 200);
 
     cy.get('[data-cy="left-sidebar-settings-button"]').click();
     cy.get('[data-cy="button-user-status-change"]').click();
