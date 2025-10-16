@@ -826,7 +826,6 @@ export const createEventsSlice = (set, get) => ({
               // let component = Object.values(getCurrentState()?.components ?? {}).filter(
               //   (component) => component.id === event.componentId
               // )[0];
-              const { event } = eventObj;
               if (!event.componentSpecificActionHandle) {
                 throw new Error('No component-specific action handle provided.');
               }
