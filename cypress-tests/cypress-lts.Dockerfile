@@ -131,7 +131,7 @@ RUN mkdir -p /app
 RUN useradd --create-home --home-dir /home/appuser appuser
 
 # Use the PostgREST binary from the builder stage
-COPY --from=builder /postgrest /usr/local/bin/postgrest
+COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
 
 RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
     echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
