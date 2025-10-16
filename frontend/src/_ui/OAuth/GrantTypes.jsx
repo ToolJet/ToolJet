@@ -5,6 +5,7 @@ import Headers from '@/_ui/HttpHeaders';
 import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
 import { checkIfToolJetCloud, checkIfToolJetEE } from '@/_helpers/utils';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { tooljetService } from '@/_services';
 import { shallow } from 'zustand/shallow';
 
 const CommonOAuthFields = ({
@@ -25,23 +26,44 @@ const CommonOAuthFields = ({
   const { workspaceConstants } = workspaceConfig;
   const { selectedDataSource, options } = opt;
   const { oauthTypes } = oauth_configs || {};
-  const { tooljetVersion } = useAppDataStore(
+  const { tooljetVersion, setMetadata } = useAppDataStore(
     (state) => ({
       tooljetVersion: state?.metadata?.installed_version,
+      setMetadata: state.actions.setMetadata,
     }),
     shallow
   );
   const [isCloud, setIsCloud] = React.useState(false);
+  const [isLoadingVersion, setIsLoadingVersion] = React.useState(false);
+
+  // Fetch metadata if it's not available
+  React.useEffect(() => {
+    if (!tooljetVersion && !isLoadingVersion) {
+      setIsLoadingVersion(true);
+      tooljetService
+        .fetchMetaData()
+        .then((data) => {
+          setMetadata(data);
+          setIsLoadingVersion(false);
+        })
+        .catch((error) => {
+          console.error('Failed to fetch metadata:', error);
+          setIsLoadingVersion(false);
+        });
+    }
+  }, [tooljetVersion, isLoadingVersion, setMetadata]);
 
   React.useEffect(() => {
     if (oauthTypes?.default_value && !options?.oauth_type?.value) {
       optionchanged('oauth_type', oauthTypes.default_value);
     }
-    setIsCloud(checkIfToolJetCloud(tooljetVersion));
-  }, []);
+
+    if (tooljetVersion) {
+      setIsCloud(checkIfToolJetCloud(tooljetVersion));
+    }
+  }, [tooljetVersion]);
 
   const oauthTypeOptions = React.useMemo(() => {
-    const isCloud = checkIfToolJetCloud(tooljetVersion);
 
     const allOptions = [
       {
@@ -53,12 +75,11 @@ const CommonOAuthFields = ({
 
     if (oauthTypes?.editions) {
       const currentEdition = isCloud ? 'cloud' : checkIfToolJetEE(tooljetVersion) ? 'ee' : 'ce';
-
       const allowedValues = oauthTypes.editions[currentEdition] || [];
       return allOptions.filter((option) => allowedValues.includes(option.value));
-    } else {
-      return allOptions;
     }
+
+    return allOptions;
   }, [tooljetVersion, oauthTypes]);
 
   const showClientFields = !oauthTypes || options?.oauth_type?.value === 'custom_app';
