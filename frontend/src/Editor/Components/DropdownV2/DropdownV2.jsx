@@ -471,7 +471,6 @@ export const DropdownV2 = ({
           auto={labelAutoWidth}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
           widthType={widthType}
           id={`${id}-label`}
         />

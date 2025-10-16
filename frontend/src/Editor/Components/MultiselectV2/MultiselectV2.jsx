@@ -496,7 +496,6 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
           widthType={widthType}
           id={`${id}-label`}
         />
