@@ -1,9 +1,7 @@
-import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React from 'react';
 import TrailingBtn from '../InputUtils/TrailingBtn';
 import { Input } from '../Input';
-import { inputPositionVariants, inputPaddingVariants, inputIconSizeVariants } from '../InputUtils/Variants';
 
 const TextInput = ({
   size,
@@ -16,27 +14,24 @@ const TextInput = ({
   readOnly,
   ...restProps
 }) => {
-  // Build className using variants for positioning only (size and validationState are handled in Input.jsx)
-  const leadingIconPaddingResult = leadingIcon ? inputPaddingVariants({ leadingIconPadding: size }) : 'tw-pl-3';
-  const trailingIconPaddingResult = trailingAction ? inputPaddingVariants({ trailingIconPadding: size }) : 'tw-pr-3';
-
-  const inputClassName = cn(
-    // Leading icon padding
-    leadingIconPaddingResult,
-    // Trailing action padding
-    trailingIconPaddingResult
-  );
+  const inputStyle = `placeholder:tw-text-text-placeholder tw-font-normal disabled:tw-bg-[#CCD1D5]/30 ${
+    leadingIcon ? (size === 'small' ? 'tw-pl-[32px]' : 'tw-pl-[34px]') : 'tw-pl-[12px]'
+  } ${trailingAction ? (size === 'small' ? 'tw-pr-[40px]' : 'tw-pr-[44px]') : 'tw-pr-[12px]'} ${
+    response === true
+      ? '!tw-border-border-success-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-success-strong'
+      : response === false
+      ? '!tw-border-border-danger-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-danger-strong'
+      : 'tw-border-border-default'
+  }`;
 
   return (
     <div className="tw-relative">
       {leadingIcon && (
         <SolidIcon
           name={leadingIcon}
-          className={cn(
-            'tw-absolute',
-            inputPositionVariants({ leadingIconPosition: size }),
-            inputIconSizeVariants({ iconSize: size })
-          )}
+          width="16px"
+          height="16px"
+          className={`tw-absolute ${size === 'small' ? 'tw-top-[6px] tw-left-[10px]' : 'tw-top-[7px] tw-left-[12px]'}`}
           fill="var(--icon-default)"
         />
       )}
@@ -46,7 +41,7 @@ const TextInput = ({
         disabled={disabled}
         response={response}
         {...restProps}
-        className={inputClassName}
+        className={inputStyle}
       />
       {trailingAction && (
         <TrailingBtn
@@ -54,7 +49,7 @@ const TextInput = ({
           type={trailingAction}
           {...(trailingAction === 'clear' && { onClick: restProps.onClear })}
           disabled={trailingActionDisabled || disabled}
-          className={cn('tw-absolute', inputPositionVariants({ trailingIconPosition: size }))}
+          className={`tw-absolute tw-right-[5px] ${size === 'small' ? 'tw-top-[5px]' : 'tw-top-[4px]'}`}
         />
       )}
     </div>

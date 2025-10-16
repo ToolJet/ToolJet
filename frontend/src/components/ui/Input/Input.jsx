@@ -1,43 +1,66 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { inputBaseVariants } from './InputUtils/Variants';
+import { inputVariants } from './InputUtils/Variants';
+import SolidIcon from '../../../_ui/Icon/SolidIcons';
+import { useEffect } from 'react';
 
-export const Input = React.forwardRef(({ className, size, type, multiline, response, rows = 3, ...props }, ref) => {
-  const validationClass = response === true ? 'valid-textarea' : response === false ? 'invalid-textarea' : '';
+const Input = React.forwardRef(
+  ({ className, size, type, multiline, response, isWorkspaceConstant, rows = 3, ...props }, ref) => {
+    const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+    const isPasswordField = type === 'password';
 
-  // Apply both size and validationState variants in Input.jsx
-  const baseVariants = inputBaseVariants({
-    size,
-    validationState: response === true ? 'success' : response === false ? 'error' : 'default',
-  });
+    const togglePasswordVisibility = () => {
+      if (!props.disabled) {
+        setIsPasswordVisible((prev) => !prev);
+      }
+    };
 
-  return (
-    <div className="design-component-inputs">
-      {multiline ? (
-        <textarea
-          className={cn(
-            baseVariants,
-            `tw-relative tw-peer tw-flex placeholder:tw-text-text-placeholder tw-font-normal disabled:tw-bg-interactive-default tw-w-full tw-border-[1px] tw-border-solid tw-bg-background-surface-layer-01 tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
-            className,
-            validationClass
-          )}
-          rows={rows}
-          ref={ref}
-          {...props}
-        />
-      ) : (
-        <input
-          type={type}
-          className={cn(
-            baseVariants,
-            `tw-peer tw-flex placeholder:tw-text-text-placeholder tw-font-normal disabled:tw-bg-interactive-default tw-w-full tw-border tw-border-solid tw-bg-background-surface-layer-01 tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
-            className
-          )}
-          ref={ref}
-          {...props}
-        />
-      )}
-    </div>
-  );
-});
+    useEffect(() => {
+      if (isWorkspaceConstant) {
+        setIsPasswordVisible(true);
+      }
+    }, [isWorkspaceConstant]);
+
+    const validationClass = response === true ? 'valid-textarea' : response === false ? 'invalid-textarea' : '';
+
+    return (
+      <div className="design-component-inputs">
+        {multiline ? (
+          <textarea
+            className={cn(
+              `tw-relative tw-peer tw-flex tw-text-[12px]/[18px] tw-w-full tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-bg-background-surface-layer-01 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
+              className,
+              validationClass
+            )}
+            rows={rows}
+            ref={ref}
+            {...props}
+          />
+        ) : (
+          <input
+            type={isPasswordField && isPasswordVisible ? 'text' : type}
+            className={cn(
+              inputVariants({ size }),
+              `tw-peer tw-flex tw-text-[12px]/[18px] tw-w-full tw-rounded-[8px] tw-border-[1px] tw-border-solid tw-bg-background-surface-layer-01 tw-py-[7px] tw-text-text-default focus-visible:tw-ring-[1px] focus-visible:tw-ring-offset-[1px] focus-visible:tw-ring-border-accent-strong focus-visible:tw-ring-offset-border-accent-strong focus-visible:tw-border-transparent disabled:tw-cursor-not-allowed ${props.styles}`,
+              className
+            )}
+            ref={ref}
+            {...props}
+          />
+        )}
+        {isPasswordField && !multiline && (
+          <div onClick={togglePasswordVisibility}>
+            {isPasswordVisible ? (
+              <SolidIcon className="eye-icon" name="eye" />
+            ) : (
+              <SolidIcon className="eye-icon" name="eyedisable" />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 Input.displayName = 'Input';
+
+export { Input };
