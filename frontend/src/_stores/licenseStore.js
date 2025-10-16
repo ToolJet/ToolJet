@@ -28,7 +28,7 @@ export const useLicenseStore = create(
             !currentSession?.user_permissions?.app_create &&
             !currentSession?.super_admin &&
             !currentSession?.admin &&
-            currentSession?.role !== 'builder'
+            currentSession?.role?.name !== 'builder'
           ) {
             set({ hasModuleAccess: false, moduleAccessLoading: false });
           } else {
