@@ -10,7 +10,6 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
@@ -83,19 +82,6 @@ if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
-// Add Bundle Analyzer plugin when ANALYZE environment variable is set
-if (process.env.ANALYZE === 'true') {
-  plugins.push(
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'server',
-      analyzerPort: 8888,
-      openAnalyzer: true,
-      generateStatsFile: true,
-      statsFilename: 'bundle-stats.json',
-    })
-  );
-}
-
 module.exports = {
   mode: environment,
   optimization: {
@@ -116,94 +102,11 @@ module.exports = {
       }),
     ],
     splitChunks: {
-      chunks: 'all',
-      minSize: 20000,
-      maxAsyncRequests: 30,
-      maxInitialRequests: 30,
       cacheGroups: {
-        // React and core libraries
-        react: {
-          test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
-          name: 'react-vendor',
-          priority: 40,
-          reuseExistingChunk: true,
-        },
-        // Dashboard/HomePage specific libraries
-        dashboardCode: {
-          test: /[\\/]src[\\/]HomePage[\\/]/,
-          name: 'dashboard-code',
-          priority: 35,
-          reuseExistingChunk: true,
-          chunks: 'async',
-        },
-        // AppBuilder specific code
-        appBuilderCode: {
-          test: /[\\/]src[\\/](AppBuilder)[\\/]/,
-          name: 'app-builder-code',
-          priority: 35,
-          reuseExistingChunk: true,
-          chunks: 'async',
-        },
-        // Database feature
-        databaseCode: {
-          test: /[\\/]src[\\/]TooljetDatabase[\\/]/,
-          name: 'database-code',
-          priority: 35,
-          reuseExistingChunk: true,
-          chunks: 'async',
-        },
-        // UI libraries
-        ui: {
-          test: /[\\/]node_modules[\\/](bootstrap|@radix-ui|@tabler)[\\/]/,
-          name: 'ui-vendor',
-          priority: 30,
-        },
-        // Heavy libraries - Charts
-        // charts: {
-        //   test: /[\\/]node_modules[\\/](plotly\.js|react-plotly\.js|chart\.js)[\\/]/,
-        //   name: 'charts-vendor',
-        //   chunks: 'async',
-        //   priority: 25,
-        // },
-        // Heavy libraries - Code editors
-        editors: {
-          test: /[\\/]node_modules[\\/](@codemirror|@uiw[\\/]react-codemirror|monaco-editor)[\\/]/,
-          name: 'editors-vendor',
-          chunks: 'async',
-          priority: 25,
-        },
-        plotly: {
-          test: /[\\/]node_modules[\\/]plotly/,
-          name: 'plotly',
-          chunks: 'async',
-          priority: 20,
-        },
-        // Date/time libraries
-        datetime: {
-          test: /[\\/]node_modules[\\/](moment|react-datepicker|react-dates|date-fns)[\\/]/,
-          name: 'datetime-vendor',
-          chunks: 'async',
-          priority: 20,
-        },
-        // Utility libraries
-        utils: {
-          test: /[\\/]node_modules[\\/](lodash|axios|rxjs)[\\/]/,
-          name: 'utils-vendor',
-          priority: 15,
-        },
-        // Default vendor chunk for remaining node_modules
-        vendor: {
+        vendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          priority: 10,
-          reuseExistingChunk: true,
-        },
-        // Common chunks
-        common: {
-          name: 'common',
-          minChunks: 2,
-          priority: 5,
-          reuseExistingChunk: true,
+          chunks: 'all',
         },
       },
     },
@@ -324,9 +227,6 @@ module.exports = {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
     },
-    client: {
-      overlay: false,
-    },
   },
   output: {
     publicPath: ASSET_PATH,
@@ -347,10 +247,6 @@ module.exports = {
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
       TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
-      WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup',
-      TJ_SELFHOST_CREDITS_APP:
-        process.env.TJ_SELFHOST_CREDITS_APP ||
-        'https://app.tooljet.ai/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
     }),
   },
 };

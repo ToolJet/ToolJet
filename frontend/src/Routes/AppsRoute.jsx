@@ -9,11 +9,8 @@ import { handleAppAccess } from '@/_helpers/handleAppAccess';
 import { getQueryParams } from '@/_helpers/routes';
 import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
-import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
-import { MobileEmptyState } from './MobileBlock';
-import { authenticationService } from '@/_services';
 
-export const AppsRoute = ({ children, componentType, darkMode }) => {
+export const AppsRoute = ({ children, componentType }) => {
   const params = useParams();
   const location = useLocation();
   const [extraProps, setExtraProps] = useState({});
@@ -22,13 +19,10 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
-
-  // Enhanced cloning to handle both lazy and regular components
   const clonedElement = React.cloneElement(children, extraProps);
-
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);
-  const { shouldBlockMobile } = useMobileRouteGuard();
+
   /* 
    any extra logic specifc to the route can be done 
    when the session is valid state updates to true.
@@ -65,30 +59,14 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
-        const envFromUrl = restQueryParams.env;
-        // Only coerce env for view-only users
-        const session = authenticationService.currentSessionValue;
-        const perms = session?.app_group_permissions;
-        const hasEditPermission =
-          perms?.is_all_editable ||
-          (slug && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(slug));
-        const isViewOnly = !hasEditPermission;
-        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
-        const effectiveEnv =
-          isViewOnly && requestedEnv === 'production' ? 'development' : environmentName || envFromUrl;
-
         const search = queryString.stringify({
-          // Keep other params but let env/version below override
-          ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
-          env: effectiveEnv,
-          version: versionName || restQueryParams.version,
+          env: environmentName,
+          version: versionName,
+          ...restQueryParams,
         });
         /* means. the User is trying to load old preview URL. Let's change these to query params */
         navigate(
-          {
-            pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
-            search,
-          },
+          { pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`, search },
           { replace: true, state: location?.state }
         );
       }
@@ -101,11 +79,6 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     const { id, handle } = e.state;
     switchPage(id, handle, [], 'canvas', true);
   };
-
-  // Show mobile empty state for protected routes (editor mode)
-  if (shouldBlockMobile && componentType === 'editor') {
-    return <MobileEmptyState darkMode={darkMode} />;
-  }
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;
 };

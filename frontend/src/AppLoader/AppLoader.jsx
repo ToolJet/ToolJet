@@ -1,11 +1,9 @@
-import React, { Suspense, lazy, useLayoutEffect } from 'react';
+import React, { useLayoutEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
 import RenderWorkflow from '@/modules/RenderWorkflow';
-// import RenderAppBuilder from './RenderAppBuilder';
-
-const RenderAppBuilder = lazy(() => import('./RenderAppBuilder'));
+import RenderAppBuilder from './RenderAppBuilder';
 
 const AppLoader = (props) => {
   const { type: appType } = props;
@@ -16,19 +14,11 @@ const AppLoader = (props) => {
 
   switch (appType) {
     case 'front-end':
-      return (
-        <Suspense fallback={<div>Loading...</div>}>
-          <RenderAppBuilder appType="front-end" {...props} />
-        </Suspense>
-      );
+      return <RenderAppBuilder appType="front-end" {...props} />;
     case 'workflow':
       return <RenderWorkflow {...props} />;
     case 'module':
-      return (
-        <Suspense fallback={<div>Loading...</div>}>
-          <RenderAppBuilder appType="module" {...props} />
-        </Suspense>
-      );
+      return <RenderAppBuilder appType="module" {...props} />;
   }
 };
 

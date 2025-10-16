@@ -5,7 +5,7 @@ import { useResolveStore } from './resolverStore';
 import { useEditorStore } from './editorStore';
 import { useDataQueriesStore } from './dataQueriesStore';
 import _ from 'lodash';
-// import { dfs, handleReferenceTransactions } from './handleReferenceTransactions';
+import { dfs, handleReferenceTransactions } from './handleReferenceTransactions';
 import { isValidUUID } from '@/_helpers/utils';
 import toast from 'react-hot-toast';
 
@@ -124,7 +124,7 @@ export const useAppDataStore = create(
 
             if (entityrefExists) {
               const value = manager.get(entity);
-              newEvents = []; // dfs(newEvents, entity, value);
+              newEvents = dfs(newEvents, entity, value);
             }
           });
 
@@ -235,15 +235,15 @@ useAppDataStore.subscribe(
 
       if (updatedNames.length === 0) return;
 
-      // handleReferenceTransactions(
-      //   components,
-      //   _dataQueries,
-      //   currentAppEvents,
-      //   appDefinition,
-      //   currentPageId,
-      //   state.currentVersionId,
-      //   updatedNames
-      // );
+      handleReferenceTransactions(
+        components,
+        _dataQueries,
+        currentAppEvents,
+        appDefinition,
+        currentPageId,
+        state.currentVersionId,
+        updatedNames
+      );
     }
   },
   (state) => [state[itemToObserve]]

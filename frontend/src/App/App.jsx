@@ -2,16 +2,24 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { authenticationService, tooljetService } from '@/_services';
+import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
+import { HomePage } from '@/HomePage';
+import { TooljetDatabase } from '@/TooljetDatabase';
+import { Authorize } from '@/Oauth2';
+import { Authorize as Oauth } from '@/Oauth';
+import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
+import { SettingsPage } from '../SettingsPage/SettingsPage';
+import { MarketplacePage } from '@/MarketplacePage';
 import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
 import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import '@/_styles/theme.scss';
-
+import AppLoader from '@/AppLoader';
+export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
@@ -35,92 +43,8 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
-import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
-import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
-import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
-// import AppLoader from '@/AppLoader';  // Moved to lazy import below
-
-// Lazy load major routes for code splitting
-const HomePage = React.lazy(() =>
-  import(/* webpackChunkName: "dashboard" */ '@/HomePage').then((module) => ({ default: module.HomePage }))
-);
-const TooljetDatabase = React.lazy(() =>
-  import(/* webpackChunkName: "database" */ '@/TooljetDatabase').then((module) => ({ default: module.TooljetDatabase }))
-);
-import { Authorize } from '@/Oauth2';
-import { Authorize as Oauth } from '@/Oauth';
-const Viewer = React.lazy(() =>
-  import(/* webpackChunkName: "viewer" */ '@/AppBuilder/Viewer/Viewer.jsx').then((module) => ({
-    default: module.Viewer,
-  }))
-);
-const SettingsPage = React.lazy(() =>
-  import(/* webpackChunkName: "settings" */ '../SettingsPage/SettingsPage').then((module) => ({
-    default: module.SettingsPage,
-  }))
-);
-const MarketplacePage = React.lazy(() =>
-  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage').then((module) => ({
-    default: module.MarketplacePage,
-  }))
-);
-
-// Lazy load AppLoader for code splitting
-const AppLoader = React.lazy(() => import(/* webpackChunkName: "editor" */ '@/AppLoader'));
-
-// Create a loading component
-const PageLoader = () => (
-  <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-    <div className="spinner-border" role="status">
-      <span className="visually-hidden">Loading...</span>
-    </div>
-  </div>
-);
-
-// Higher-order component to handle props forwarding with Suspense
-const SuspendedAppLoader = React.forwardRef((props, ref) => (
-  <Suspense fallback={<PageLoader />}>
-    <AppLoader {...props} ref={ref} />
-  </Suspense>
-));
-
-// Wrapper components for lazy-loaded routes
-const SuspendedHomePage = (props) => (
-  <Suspense fallback={<PageLoader />}>
-    <HomePage {...props} />
-  </Suspense>
-);
-
-const SuspendedTooljetDatabase = (props) => (
-  <Suspense fallback={<PageLoader />}>
-    <TooljetDatabase {...props} />
-  </Suspense>
-);
-
-const SuspendedViewer = (props) => (
-  <Suspense fallback={<PageLoader />}>
-    <Viewer {...props} />
-  </Suspense>
-);
-
-const SuspendedSettingsPage = (props) => (
-  <Suspense fallback={<PageLoader />}>
-    <SettingsPage {...props} />
-  </Suspense>
-);
-
-const SuspendedMarketplacePage = (props) => (
-  <Suspense fallback={<PageLoader />}>
-    <MarketplacePage {...props} />
-  </Suspense>
-);
-
-export const BreadCrumbContext = React.createContext({});
-
-const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -153,7 +77,7 @@ class AppComponent extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       darkMode: localStorage.getItem('darkMode') === 'true',
-      showBanner: false, //Show banner
+      showBanner: false,
       // isEditorOrViewer: '',
     };
   }
@@ -162,8 +86,10 @@ class AppComponent extends React.Component {
   };
   updateMargin() {
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
-    const showBannerCondition = (isAdmin || isBuilder) && this.state.showBanner;
+    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
+    const showBannerCondition =
+      (isAdmin || isBuilder) && setupDate && this.isExistingPlanUser(setupDate) && this.state.showBanner;
     const marginValue = showBannerCondition ? '25' : '0';
     const marginValueLayout = showBannerCondition ? '35' : '0';
     document.documentElement.style.setProperty('--dynamic-margin', `${marginValue}px`);
@@ -191,17 +117,13 @@ class AppComponent extends React.Component {
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
-    hubspotHelper.loadHubspot();
     this.fetchMetadata();
-    // check if version is cloud or ee
-    const data = localStorage.getItem('currentVersion');
-    if (data && (data.includes('cloud') || data.includes('ee'))) {
-      this.setState({
-        showBanner: true, // show banner if version has "cloud" or "ee"
-      });
-    }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
+    const featureAccess = await licenseService.getFeatureAccess();
+    const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
+    this.setState({ showBanner: isBasicPlan });
+    this.updateColorScheme();
     let counter = 0;
     let interval;
 
@@ -238,11 +160,15 @@ class AppComponent extends React.Component {
     // Update margin when showBanner changes
     this.updateMargin();
     // Update color scheme if darkMode changed
+    if (prevProps.darkMode !== this.props.darkMode) {
+      this.updateColorScheme();
+    }
   }
 
   switchDarkMode = (newMode) => {
     this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
+    this.updateColorScheme(newMode);
   };
 
   isEditorOrViewerFromPath = () => {
@@ -257,6 +183,17 @@ class AppComponent extends React.Component {
   };
   closeBasicPlanMigrationBanner = () => {
     this.setState({ showBanner: false });
+  };
+  isExistingPlanUser = (date) => {
+    return new Date(date) < new Date('2025-04-24'); //show banner if user created before 2 april (24 for testing)
+  };
+  updateColorScheme = (darkModeValue) => {
+    const isDark = darkModeValue !== undefined ? darkModeValue : this.props.darkMode;
+    if (isDark) {
+      document.documentElement.style.setProperty('color-scheme', 'dark');
+    } else {
+      document.documentElement.style.removeProperty('color-scheme');
+    }
   };
   render() {
     const { updateAvailable, isEditorOrViewer, showBanner } = this.state;
@@ -287,13 +224,18 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     const isApplicationsPath = window.location.pathname.includes('/applications/');
     const isAdmin = authenticationService?.currentSessionValue?.admin;
-    const isBuilder = authenticationService?.currentSessionValue?.role?.name === 'builder';
+    const isBuilder = authenticationService?.currentSessionValue?.is_builder;
+    const setupDate = authenticationService?.currentSessionValue?.consultation_banner_date;
     return (
       <>
         <div className={!isApplicationsPath && (isAdmin || isBuilder) ? 'banner-layout-wrapper' : ''}>
-          {!isApplicationsPath && !this.isEditorOrViewerFromPath() && (isAdmin || isBuilder) && showBanner && (
-            <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
-          )}
+          {!isApplicationsPath &&
+            (isAdmin || isBuilder) &&
+            showBanner &&
+            setupDate &&
+            this.isExistingPlanUser(setupDate) && (
+              <BasicPlanMigrationBanner darkMode={darkMode} closeBanner={this.closeBasicPlanMigrationBanner} />
+            )}
           <div
             className={cx('main-wrapper', {
               'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,
@@ -327,16 +269,16 @@ class AppComponent extends React.Component {
             )}
             <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
               <Routes>
-                {onboarding({ ...this.props, darkMode })}
-                {auth({ ...this.props, darkMode })}
+                {onboarding(this.props)}
+                {auth(this.props)}
                 <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
                 <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
                 <Route
                   exact
                   path="/:workspaceId/apps/:slug/:pageHandle?/*"
                   element={
-                    <AppsRoute componentType="editor" darkMode={darkMode}>
-                      <SuspendedAppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppsRoute componentType="editor">
+                      <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AppsRoute>
                   }
                 />
@@ -344,11 +286,9 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/workspace-constants"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <PrivateRoute>
+                      <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
                   }
                 />
                 <Route
@@ -356,7 +296,7 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/:pageHandle?"
                   element={
                     <AppsRoute componentType="viewer">
-                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                     </AppsRoute>
                   }
                 />
@@ -365,7 +305,7 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
                   element={
                     <AppsRoute componentType="viewer">
-                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                     </AppsRoute>
                   }
                 />
@@ -373,7 +313,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/oauth2/authorize"
                   element={
-                    <PrivateRoute darkMode={darkMode}>
+                    <PrivateRoute>
                       <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </PrivateRoute>
                   }
@@ -383,79 +323,52 @@ class AppComponent extends React.Component {
                     exact
                     path="/:workspaceId/workflows/*"
                     element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
+                      <PrivateRoute>
+                        <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </PrivateRoute>
                     }
                   />
                 )}
-                <Route
-                  path="/:workspaceId/workspace-settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceSettings {...mergedProps} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
+                <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />} />
                 <Route
                   path="settings/*"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
                   }
                 />
                 <Route
                   path="/:workspaceId/settings/*"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
                   }
                 />
                 <Route
                   exact
                   path="/:workspaceId/modules"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SuspendedHomePage
-                          switchDarkMode={this.switchDarkMode}
-                          darkMode={darkMode}
-                          appType={'module'}
-                        />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <PrivateRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
+                    </PrivateRoute>
                   }
                 />
 
-                {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                {getAuditLogsRoutes(mergedProps)}
                 <Route
                   exact
                   path="/:workspaceId/profile-settings"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SuspendedSettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <PrivateRoute>
+                      <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
                   }
                 />
-                {getDataSourcesRoutes({ ...mergedProps, darkMode })}
+                {getDataSourcesRoutes(mergedProps)}
                 <Route
                   exact
                   path="/applications/:id/versions/:versionId/:pageHandle?"
                   element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <PrivateRoute>
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </PrivateRoute>
                   }
                 />
@@ -464,23 +377,8 @@ class AppComponent extends React.Component {
                   path="/applications/:slug/:pageHandle?"
                   element={
                     <PrivateRoute>
-                      <SuspendedViewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </PrivateRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId/home"
-                  element={
-                    <DesktopOnlyRoute>
-                      <PrivateRoute>
-                        <GuardedHomePage
-                          switchDarkMode={this.switchDarkMode}
-                          darkMode={darkMode}
-                          version={this.state.tooljetVersion}
-                        />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
                   }
                 />
 
@@ -488,11 +386,9 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId/database"
                   element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SuspendedTooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
+                    <PrivateRoute>
+                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
                   }
                 />
 
@@ -501,25 +397,17 @@ class AppComponent extends React.Component {
                     exact
                     path="/integrations"
                     element={
-                      <AdminRoute {...this.props} darkMode={darkMode}>
-                        <SuspendedMarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <AdminRoute {...this.props}>
+                        <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </AdminRoute>
                     }
                   >
                     <Route path="installed" element={<InstalledPlugins />} />
-                    <Route path="marketplace" element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>} />
+                    <Route path="marketplace" element={<MarketplacePlugins />} />/
                   </Route>
                 )}
 
-                <Route
-                  exact
-                  path="/"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Navigate to="/:workspaceId" />
-                    </PrivateRoute>
-                  }
-                />
+                <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
                 <Route
                   exact
                   path="/error/:errorType"
@@ -541,7 +429,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/switch-workspace"
                   element={
-                    <SwitchWorkspaceRoute darkMode={darkMode}>
+                    <SwitchWorkspaceRoute>
                       <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </SwitchWorkspaceRoute>
                   }
@@ -550,7 +438,7 @@ class AppComponent extends React.Component {
                   exact
                   path="/switch-workspace-archived"
                   element={
-                    <SwitchWorkspaceRoute darkMode={darkMode}>
+                    <SwitchWorkspaceRoute>
                       <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
                     </SwitchWorkspaceRoute>
                   }
@@ -559,28 +447,9 @@ class AppComponent extends React.Component {
                   exact
                   path="/:workspaceId"
                   element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <SuspendedHomePage
-                        switchDarkMode={this.switchDarkMode}
-                        darkMode={darkMode}
-                        appType={'front-end'}
-                      />
+                    <PrivateRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
                     </PrivateRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId/home"
-                  element={
-                    <DesktopOnlyRoute>
-                      <PrivateRoute>
-                        <GuardedHomePage
-                          switchDarkMode={this.switchDarkMode}
-                          darkMode={darkMode}
-                          version={this.state.tooljetVersion}
-                        />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
                   }
                 />
                 <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
