@@ -6,16 +6,25 @@ import { AuditLogFields } from '@modules/audit-logs/types';
  *
  * This module provides OpenTelemetry metrics instrumentation for audit logs.
  * It tracks various app-based metrics by streaming audit log events to the OTEL collector.
+ *
+ * Metrics are separated into two categories:
+ * - Platform metrics: Platform-level operations (user management, org settings, etc.)
+ * - App metrics: App-specific operations (query execution, app usage, etc.)
  */
 
-let auditLogMeter: any;
+// Meters for different metric categories
+let platformMeter: any;
+let appMeter: any;
+
+// Platform-level metrics
 let auditLogCounter: any;
 let auditLogActionCounter: any;
 let auditLogResourceCounter: any;
 let auditLogUserActivityGauge: any;
 let auditLogOrganizationActivityGauge: any;
+let userSessionsCounter: any;
 
-// Query-level metrics
+// App-level query metrics (with mode and environment tracking)
 let queryExecutionsCounter: any;
 let queryFailuresCounter: any;
 let queryDurationHistogram: any;
@@ -23,9 +32,8 @@ let queryDurationHistogram: any;
 // App-level metrics
 let appUsageCounter: any;
 let appActiveUsersGauge: any;
-
-// User session metrics
-let userSessionsCounter: any;
+let appSuccessRateGauge: any;
+let appErrorsCounter: any;
 
 // App lifecycle metrics
 let appCreationsCounter: any;
@@ -44,33 +52,41 @@ const userActivity = new Map<string, { count: number; lastUpdate: number }>();
 const organizationActivity = new Map<string, { count: number; lastUpdate: number }>();
 const appActiveUsers = new Map<string, Map<string, number>>(); // appId -> Map<userId, lastSeen>
 
+// Store app success/failure counts for success rate calculation
+// Key format: "appId:mode:environment" -> { success: number, failure: number, lastUpdate: number }
+const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number }>();
+
 /**
  * Initialize audit log metrics
  * Should be called after OTEL SDK is started
  */
 export const initializeAuditLogMetrics = () => {
-  auditLogMeter = metrics.getMeter('tooljet-audit-logs');
+  // Create separate meters for platform and app metrics
+  platformMeter = metrics.getMeter('tooljet-platform');
+  appMeter = metrics.getMeter('tooljet-app');
+
+  // ============ Platform-level metrics ============
 
   // Counter: Total audit log events
-  auditLogCounter = auditLogMeter.createCounter('audit.logs.total', {
+  auditLogCounter = platformMeter.createCounter('audit.logs.total', {
     description: 'Total number of audit log events',
     unit: '1',
   });
 
   // Counter: Audit log events by action type
-  auditLogActionCounter = auditLogMeter.createCounter('audit.logs.actions', {
+  auditLogActionCounter = platformMeter.createCounter('audit.logs.actions', {
     description: 'Number of audit log events by action type',
     unit: '1',
   });
 
   // Counter: Audit log events by resource type
-  auditLogResourceCounter = auditLogMeter.createCounter('audit.logs.resources', {
+  auditLogResourceCounter = platformMeter.createCounter('audit.logs.resources', {
     description: 'Number of audit log events by resource type',
     unit: '1',
   });
 
   // Gauge: Active users by organization (based on recent audit logs)
-  auditLogUserActivityGauge = auditLogMeter.createObservableGauge('audit.logs.active_users', {
+  auditLogUserActivityGauge = platformMeter.createObservableGauge('audit.logs.active_users', {
     description: 'Number of active users by organization (based on audit log activity in last 15 minutes)',
     unit: '1',
   });
@@ -104,7 +120,7 @@ export const initializeAuditLogMetrics = () => {
   });
 
   // Gauge: Activity count by organization
-  auditLogOrganizationActivityGauge = auditLogMeter.createObservableGauge('audit.logs.organization_activity', {
+  auditLogOrganizationActivityGauge = platformMeter.createObservableGauge('audit.logs.organization_activity', {
     description: 'Number of audit log events by organization in last 15 minutes',
     unit: '1',
   });
@@ -125,32 +141,40 @@ export const initializeAuditLogMetrics = () => {
     }
   });
 
-  // Query Execution Counter
-  queryExecutionsCounter = auditLogMeter.createCounter('query.executions.total', {
-    description: 'Total number of query executions',
+  // User Sessions Counter (platform-level)
+  userSessionsCounter = platformMeter.createCounter('user.sessions.total', {
+    description: 'Total user login/logout events',
     unit: '1',
   });
 
-  // Query Failures Counter
-  queryFailuresCounter = auditLogMeter.createCounter('query.failures.total', {
-    description: 'Total number of failed queries',
+  // ============ App-level metrics ============
+
+  // Query Execution Counter (with mode and environment labels)
+  queryExecutionsCounter = appMeter.createCounter('query.executions.total', {
+    description: 'Total number of query executions (labeled by mode and environment)',
     unit: '1',
   });
 
-  // Query Duration Histogram
-  queryDurationHistogram = auditLogMeter.createHistogram('query.duration', {
-    description: 'Query execution duration in milliseconds',
+  // Query Failures Counter (with mode and environment labels)
+  queryFailuresCounter = appMeter.createCounter('query.failures.total', {
+    description: 'Total number of failed queries (labeled by mode and environment)',
+    unit: '1',
+  });
+
+  // Query Duration Histogram (with mode and environment labels)
+  queryDurationHistogram = appMeter.createHistogram('query.duration', {
+    description: 'Query execution duration in milliseconds (labeled by mode and environment)',
     unit: 'ms',
   });
 
   // App Usage Counter
-  appUsageCounter = auditLogMeter.createCounter('app.usage.total', {
+  appUsageCounter = appMeter.createCounter('app.usage.total', {
     description: 'Total app interactions',
     unit: '1',
   });
 
   // App Active Users Gauge
-  appActiveUsersGauge = auditLogMeter.createObservableGauge('app.active_users', {
+  appActiveUsersGauge = appMeter.createObservableGauge('app.active_users', {
     description: 'Number of active users per app (last 15 minutes)',
     unit: '1',
   });
@@ -179,57 +203,86 @@ export const initializeAuditLogMetrics = () => {
     }
   });
 
-  // User Sessions Counter
-  userSessionsCounter = auditLogMeter.createCounter('user.sessions.total', {
-    description: 'Total user login/logout events',
+  // App Success Rate Gauge (by mode and environment)
+  appSuccessRateGauge = appMeter.createObservableGauge('app.success_rate', {
+    description: 'Success rate of app queries (0-100%) by mode and environment in last 15 minutes',
+    unit: '%',
+  });
+
+  appSuccessRateGauge.addCallback((observableResult: any) => {
+    const now = Date.now();
+    const cutoffTime = now - ACTIVITY_WINDOW_MS;
+
+    for (const [key, stats] of appSuccessTracking.entries()) {
+      if (stats.lastUpdate < cutoffTime) {
+        appSuccessTracking.delete(key);
+      } else {
+        const [appId, mode, environment] = key.split(':');
+        const total = stats.success + stats.failure;
+        const successRate = total > 0 ? (stats.success / total) * 100 : 100;
+
+        observableResult.observe(successRate, {
+          app_id: appId,
+          mode: mode,
+          environment: environment,
+        });
+      }
+    }
+  });
+
+  // App Errors Counter (for released apps)
+  appErrorsCounter = appMeter.createCounter('app.errors.total', {
+    description: 'Total errors in apps by mode and environment',
     unit: '1',
   });
 
   // App Lifecycle Counters
-  appCreationsCounter = auditLogMeter.createCounter('app.creations.total', {
+  appCreationsCounter = appMeter.createCounter('app.creations.total', {
     description: 'Total number of app creations',
     unit: '1',
   });
 
-  appUpdatesCounter = auditLogMeter.createCounter('app.updates.total', {
+  appUpdatesCounter = appMeter.createCounter('app.updates.total', {
     description: 'Total number of app updates',
     unit: '1',
   });
 
-  appDeletionsCounter = auditLogMeter.createCounter('app.deletions.total', {
+  appDeletionsCounter = appMeter.createCounter('app.deletions.total', {
     description: 'Total number of app deletions',
     unit: '1',
   });
 
-  appReleasesCounter = auditLogMeter.createCounter('app.releases.total', {
+  appReleasesCounter = appMeter.createCounter('app.releases.total', {
     description: 'Total number of app releases',
     unit: '1',
   });
 
   // Data Source Lifecycle Counters
-  datasourceCreationsCounter = auditLogMeter.createCounter('datasource.creations.total', {
+  datasourceCreationsCounter = appMeter.createCounter('datasource.creations.total', {
     description: 'Total number of datasource creations',
     unit: '1',
   });
 
-  datasourceUpdatesCounter = auditLogMeter.createCounter('datasource.updates.total', {
+  datasourceUpdatesCounter = appMeter.createCounter('datasource.updates.total', {
     description: 'Total number of datasource updates',
     unit: '1',
   });
 
-  datasourceDeletionsCounter = auditLogMeter.createCounter('datasource.deletions.total', {
+  datasourceDeletionsCounter = appMeter.createCounter('datasource.deletions.total', {
     description: 'Total number of datasource deletions',
     unit: '1',
   });
 
-  console.log('✅ Audit log metrics initialized:');
-  console.log('   - audit.logs.total, audit.logs.actions, audit.logs.resources');
-  console.log('   - audit.logs.active_users, audit.logs.organization_activity');
-  console.log('   - query.executions.total, query.failures.total, query.duration');
-  console.log('   - app.usage.total, app.active_users');
-  console.log('   - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
-  console.log('   - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
-  console.log('   - user.sessions.total');
+  console.log('✅ Audit log metrics initialized with separate meters:');
+  console.log('   Platform metrics (tooljet-platform):');
+  console.log('     - audit.logs.total, audit.logs.actions, audit.logs.resources');
+  console.log('     - audit.logs.active_users, audit.logs.organization_activity');
+  console.log('     - user.sessions.total');
+  console.log('   App metrics (tooljet-app):');
+  console.log('     - query.executions.total (with mode/environment), query.failures.total, query.duration');
+  console.log('     - app.usage.total, app.active_users, app.success_rate, app.errors.total');
+  console.log('     - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
+  console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
 };
 
 /**
@@ -350,6 +403,11 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const error = metadata['error'];
   const errorType = metadata['errorType'] || categorizeError(error);
 
+  // New labels for mode and environment tracking
+  const mode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit' or 'view'
+  const environment = metadata['environment'] || resourceData['environment'] || 'unknown'; // environment name
+  const isReleased = mode === 'view' ? 'true' : 'false';
+
   const labels = {
     app_id: appId,
     app_name: appName,
@@ -358,6 +416,9 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     data_source_type: dataSourceType,
     organization_id: organizationId,
     status: status,
+    mode: mode, // NEW: edit or view
+    environment: environment, // NEW: environment name
+    is_released: isReleased, // NEW: boolean string
   };
 
   // Count query execution
@@ -377,12 +438,32 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       error_type: errorType,
       data_source_type: dataSourceType,
       organization_id: organizationId,
+      mode: mode,
+      environment: environment,
+      is_released: isReleased,
     });
+
+    // Record app-level error
+    if (appErrorsCounter) {
+      appErrorsCounter.add(1, {
+        app_id: appId,
+        app_name: appName,
+        error_type: errorType,
+        mode: mode,
+        environment: environment,
+        organization_id: organizationId,
+      });
+    }
   }
 
   // Track active users per app
   if (appId !== 'unknown') {
     trackAppActiveUser(appId, userId);
+  }
+
+  // Track app success rate
+  if (appId !== 'unknown' && mode !== 'unknown' && environment !== 'unknown') {
+    trackAppSuccess(appId, mode, environment, status === 'success');
   }
 }
 
@@ -440,6 +521,26 @@ function trackAppActiveUser(appId: string, userId: string) {
     appActiveUsers.set(appId, new Map());
   }
   appActiveUsers.get(appId)!.set(userId, Date.now());
+}
+
+/**
+ * Track app success/failure for success rate calculation
+ */
+function trackAppSuccess(appId: string, mode: string, environment: string, isSuccess: boolean) {
+  const key = `${appId}:${mode}:${environment}`;
+  const now = Date.now();
+
+  if (!appSuccessTracking.has(key)) {
+    appSuccessTracking.set(key, { success: 0, failure: 0, lastUpdate: now });
+  }
+
+  const stats = appSuccessTracking.get(key)!;
+  if (isSuccess) {
+    stats.success += 1;
+  } else {
+    stats.failure += 1;
+  }
+  stats.lastUpdate = now;
 }
 
 /**
@@ -568,4 +669,5 @@ export const clearActivityData = () => {
   userActivity.clear();
   organizationActivity.clear();
   appActiveUsers.clear();
+  appSuccessTracking.clear();
 };
