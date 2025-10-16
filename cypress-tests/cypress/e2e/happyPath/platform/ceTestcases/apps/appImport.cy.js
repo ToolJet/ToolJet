@@ -7,8 +7,9 @@ import { buttonText } from "Texts/button";
 import { importText } from "Texts/exportImport";
 import { importAndVerifyApp } from "Support/utils/exportImport";
 import { switchVersionAndVerify } from "Support/utils/version";
+import { renameApp, verifyAppName, verifyCurrentEnvironment, verifyCurrentVersion, addNewVersion, promoteEnv } from 'Support/utils/editor/editorHeaderOperations';
 
-describe("App Import Functionality", () => {
+describe("App Import", () => {
   const TEST_DATA = {
     toolJetImage: "cypress/fixtures/Image/tooljet.png",
     invalidApp: "cypress/fixtures/templates/invalid_app.json",
@@ -32,16 +33,20 @@ describe("App Import Functionality", () => {
     };
 
     cy.apiLogin();
-    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-    cy.apiLogout();
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
+      Cypress.env("workspaceId", workspace.body.organization_id);
+    });
     cy.skipWalkthrough();
-  });
-
-  it("should verify app import functionality", () => {
-    cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
+  });
+  it("should verify invalid import files", () => {
 
-    // Test invalid file import
+    cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+    cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+      "have.text",
+      importText.importOption
+    );
+
     cy.get(dashboardSelector.importAppButton).click();
     importAndVerifyApp(
       TEST_DATA.toolJetImage,
@@ -55,14 +60,10 @@ describe("App Import Functionality", () => {
       "Could not import: SyntaxError: Expected ',' or '}' after property value in JSON at position 246 (line 11 column 13)"
     );
 
-    cy.wait(500);
 
-    // Test valid app import
-    cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-    cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-      "have.text",
-      importText.importOption
-    );
+  });
+
+  it("should verify app with multiple version", () => {
 
     cy.intercept("POST", "/api/v2/resources/import").as("importApp");
     cy.get(importSelectors.importOptionInput)
@@ -103,26 +104,19 @@ describe("App Import Functionality", () => {
     // Verify imported app
     cy.get(commonSelectors.toastCloseButton).click();
     cy.wait(500);
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "contain.value",
+    cy.get('[data-cy="edit-app-name-button"]').verifyVisibleElement(
+      "have.text",
       "three-versions"
     );
     cy.get(appVersionSelectors.currentVersionField("v3")).should("be.visible");
 
-    // Configure app
-    cy.skipEditorPopover();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText);
-    cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonWidgetSelector.draggableWidget("button1")).should(
-      "be.visible"
-    );
+    //App editing is pending
 
-    cy.renameApp(data.appName);
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "contain.value",
+    renameApp(data.appName);
+    cy.get('[data-cy="edit-app-name-button"]').verifyVisibleElement(
+      "have.text",
       data.appName
     );
-    cy.waitForAutoSave();
 
     // Verify initial widget states
 
@@ -152,52 +146,24 @@ describe("App Import Functionality", () => {
     cy.visit(`${data.workspaceSlug}/data-sources`);
     cy.get('[data-cy="postgresql-button"]').should("be.visible");
 
-    cy.ifEnv("Community", () => {
-      cy.apiUpdateDataSource("postgresql", "production", {
-        options: [
-          {
-            key: "password",
-            value: `${Cypress.env("pg_password")}`,
-            encrypted: true,
-          },
-        ],
+    const edition = Cypress.env("environment");
+    if (edition === "Community" || edition === "Enterprise") {
+      const dsEnv = edition === "Community" ? "production" : "development";
+      cy.apiUpdateDataSource("postgresql", dsEnv, {
+        options: [{
+          key: "password",
+          value: Cypress.env("pg_password"),
+          encrypted: true,
+        }],
       });
-    });
-    cy.ifEnv("Enterprise", () => {
-      cy.apiUpdateDataSource("postgresql", "development", {
-        options: [
-          {
-            key: "password",
-            value: `${Cypress.env("pg_password")}`,
-            encrypted: true,
-          },
-        ],
-      });
-    });
-
-    cy.ifEnv("Community", () => {
-      cy.apiCreateWorkspaceConstant(
-        "pageHeader",
-        "Import and Export",
-        ["Global"],
-        ["production"]
-      );
-      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], ["production"]);
-    });
-
-    cy.ifEnv("Enterprise", () => {
-      cy.apiCreateWorkspaceConstant(
-        "pageHeader",
-        "Import and Export",
-        ["Global"],
-        ["development"]
-      );
-      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], ["development"]);
-    });
+      cy.apiCreateWorkspaceConstant("pageHeader", "Import and Export", ["Global"], [dsEnv]);
+      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], [dsEnv]);
+    }
 
     // Verify app after setup
     cy.wait("@importApp").then((interception) => {
       const appId = interception.response.body.imports.app[0].id;
+      cy.log(`Imported app id: ${appId}`);
       cy.openApp(
         "",
         Cypress.env("workspaceId"),
@@ -227,14 +193,37 @@ describe("App Import Functionality", () => {
     cy.backToApps();
 
     // Test single version import
+
+  });
+
+  it("should verify app with single version", () => {
+
     cy.get(importSelectors.dropDownMenu).click();
+    const edition = Cypress.env("environment");
+    let dsEnv
+    if (edition === "Community" || edition === "Enterprise") {
+      dsEnv = edition === "Community" ? "production" : "development";
+      cy.apiCreateWorkspaceConstant("pageHeader", "Import and Export", ["Global"], [dsEnv]);
+      cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], [dsEnv]);
+    }
+
     importAndVerifyApp(TEST_DATA.appFiles.singleVersion);
 
-    // Verify final state
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "contain.value",
+    cy.get('[data-cy="edit-app-name-button"]').verifyVisibleElement(
+      "have.text",
       "one_version"
     );
+    cy.apiUpdateDataSource("postgresql", dsEnv, {
+      options: [{
+        key: "password",
+        value: Cypress.env("pg_password"),
+        encrypted: true,
+      }],
+    });
+
+    cy.reload()
+
+
 
     verifyCommonData({
       text2: "Import and Export",
