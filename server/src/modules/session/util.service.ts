@@ -29,6 +29,8 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
+import { TransactionLogger } from '@modules/logging/service';
+import { OidcSessionUtilService } from './oidc-session-util.service';
 
 @Injectable()
 export class SessionUtilService {
@@ -42,7 +44,9 @@ export class SessionUtilService {
     protected readonly metadataUtilService: MetadataUtilService,
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
-    protected readonly jwtService: JwtService
+    protected readonly jwtService: JwtService,
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly oidcSessionUtilService: OidcSessionUtilService
   ) {}
 
   async terminateAllSessions(userId: string): Promise<void> {
@@ -81,7 +85,16 @@ export class SessionUtilService {
           `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
             request?.headers['user-agent'] || 'unknown'
           }`,
-          manager
+          manager,
+          // Pass token data if available
+          extraData?.accessToken
+            ? {
+                accessToken: extraData.accessToken,
+                refreshToken: extraData.refreshToken,
+                tokenExpiresAt: extraData.tokenExpiresAt,
+                ssoConfigId: extraData.ssoConfigId,
+              }
+            : undefined
         );
         sessionId = session.id;
       }
@@ -251,7 +264,17 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
+  async createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    tokenData?: {
+      accessToken?: string;
+      refreshToken?: string;
+      tokenExpiresAt?: Date;
+      ssoConfigId?: string;
+    }
+  ): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(UserSessions, {
@@ -260,6 +283,14 @@ export class SessionUtilService {
           createdAt: new Date(),
           expiry: this.getSessionExpiry(),
           lastLoggedIn: new Date(),
+          sessionType: SessionType.USER,
+          // Add token data if provided
+          ...(tokenData?.accessToken && {
+            accessToken: tokenData.accessToken,
+            refreshToken: tokenData.refreshToken,
+            tokenExpiresAt: tokenData.tokenExpiresAt,
+            ssoConfigId: tokenData.ssoConfigId,
+          }),
         })
       );
     }, manager);
@@ -494,6 +525,34 @@ export class SessionUtilService {
         // Regular session extension
         if (session.expiry < now) {
           throw new UnauthorizedException('User session expired');
+        }
+
+        if (
+          this.oidcSessionUtilService !== null &&
+          this.oidcSessionUtilService !== undefined &&
+          session.accessToken &&
+          session.tokenExpiresAt &&
+          session.refreshToken &&
+          session.ssoConfigId
+        ) {
+          const bufferTime = 5 * 60 * 1000; // 5 min of buffer time
+          const shouldRefresh = new Date(session.tokenExpiresAt.getTime() - bufferTime) <= now;
+
+          if (shouldRefresh) {
+            try {
+              this.transactionLogger.log('Attempting to refresh OIDC access token');
+              const { accessToken, refreshToken, tokenExpiresAt } =
+                await this.oidcSessionUtilService.refreshAccessToken(session.refreshToken, session.ssoConfigId);
+
+              session.accessToken = accessToken;
+              session.refreshToken = refreshToken || session.refreshToken;
+              session.tokenExpiresAt = tokenExpiresAt;
+              this.transactionLogger.log('Successfully refreshed OIDC access token');
+            } catch (error) {
+              this.transactionLogger.error('Failed to refresh OIDC token', error);
+              throw new UnauthorizedException('OIDC token refresh failed. Please log in again.');
+            }
+          }
         }
 
         session.expiry = this.getSessionExpiry();
