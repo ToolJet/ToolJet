@@ -16,11 +16,14 @@ import { UserSessionRepository } from './repository';
 
 export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
-    const { SessionService, SessionController, SessionUtilService, JwtStrategy } = await this.getProviders(
-      config,
-      'session',
-      ['service', 'controller', 'util.service', 'jwt/jwt.strategy']
-    );
+    const { SessionService, SessionController, SessionUtilService, JwtStrategy, OidcSessionUtilService } =
+      await this.getProviders(config, 'session', [
+        'service',
+        'controller',
+        'util.service',
+        'jwt/jwt.strategy',
+        'oidc-session-util.service.ts',
+      ]);
 
     const providerImports = [
       RolesRepository,
@@ -34,6 +37,7 @@ export class SessionModule extends SubModule {
       JwtStrategy,
       FeatureAbilityFactory,
       UserSessionRepository,
+      OidcSessionUtilService,
     ];
 
     return {
