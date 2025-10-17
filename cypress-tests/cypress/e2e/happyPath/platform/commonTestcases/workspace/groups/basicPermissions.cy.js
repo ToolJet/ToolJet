@@ -95,6 +95,8 @@ describe("Manage Groups", () => {
 
         cy.get(commonSelectors.dashboardIcon).click();
         cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.releaseApp();
 
         //verify clone access
         cy.visit(data.workspaceSlug);
