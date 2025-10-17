@@ -8,7 +8,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
-  devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
+  devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : false });
 
 const resetters = [];
 
