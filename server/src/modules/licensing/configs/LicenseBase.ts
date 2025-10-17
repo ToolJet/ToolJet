@@ -172,7 +172,7 @@ export default class LicenseBase {
         enabled: true,
       }; //Not passed set to true for older licenses and trial
     }
-    return this._modules['enabled'];
+    return this._modules;
   }
 
   public get appPermissionComponent(): boolean {
@@ -182,7 +182,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['permissions']?.component;
+    return !!this._app['permissions']?.component;
   }
 
   public get appPermissionQuery(): boolean {
@@ -192,7 +192,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['permissions']?.query;
+    return !!this._app['permissions']?.query;
   }
 
   public get appPermissionPages(): boolean {
@@ -202,7 +202,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['permissions']?.pages;
+    return !!this._app['permissions']?.pages;
   }
 
   public get appPagesEnabled(): boolean {
@@ -212,7 +212,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['pages']?.enabled;
+    return !!this._app['pages']?.enabled;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -222,7 +222,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['pages']?.features?.appHeaderAndLogo;
+    return !!this._app['pages']?.features?.appHeaderAndLogo;
   }
 
   public get appPagesAddNavGroupEnabled(): boolean {
@@ -232,7 +232,7 @@ export default class LicenseBase {
     if (!this._app) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._app['pages']?.features?.addNavGroup;
+    return !!this._app['pages']?.features?.addNavGroup;
   }
 
   public get moduleEnabled(): boolean {
@@ -242,29 +242,8 @@ export default class LicenseBase {
     if (!this._modules) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._isModulesEnabled;
+    return !!this._isModulesEnabled;
   }
-
-  public get appPermissions(): { component: boolean; query: boolean; pages: boolean } {
-    if (this.IsBasicPlan) {
-      return { component: false, query: false, pages: false };
-    }
-    if (!this._app) {
-      return { component: true, query: true, pages: true }; //Not passed set to true for older licenses and trial
-    }
-    return this._app['permissions'];
-  }
-
-  public get appPages(): { enabled: boolean; features: { appHeaderAndLogo: boolean; addNavGroup: boolean } } {
-    if (this.IsBasicPlan) {
-      return { enabled: false, features: { appHeaderAndLogo: false, addNavGroup: false } };
-    }
-    if (!this._app) {
-      return { enabled: true, features: { appHeaderAndLogo: true, addNavGroup: true } };
-    }
-    return this._app['pages'];
-  }
-
   public get plan(): string {
     if (this.IsBasicPlan) {
       return;
@@ -480,7 +459,6 @@ export default class LicenseBase {
   }
 
   public get features(): object {
-    console.log(this.customGroups, 'customGroups');
     return {
       openid: this.oidc,
       auditLogs: this.auditLogs,
