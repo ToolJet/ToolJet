@@ -31,6 +31,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 import { TransactionLogger } from '@modules/logging/service';
 import { OidcSessionUtilService } from '@modules/oidc-session/oidc-session-util.service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class SessionUtilService {
@@ -549,6 +550,7 @@ export class SessionUtilService {
               session.tokenExpiresAt = tokenExpiresAt;
               this.transactionLogger.log('Successfully refreshed OIDC access token');
             } catch (error) {
+              // await this.terminateSession(userId, sessionId, {} as Response);
               this.transactionLogger.error('Failed to refresh OIDC token', error);
               throw new UnauthorizedException('OIDC token refresh failed. Please log in again.');
             }
@@ -607,5 +609,22 @@ export class SessionUtilService {
         }),
       })
     );
+  }
+  async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
+    response.clearCookie('tj_auth_token');
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(UserSessions, { id: sessionId, userId });
+      const user = await manager.findOneOrFail(User, {
+        where: { id: userId },
+      });
+
+      const auditLogData = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
+    });
   }
 }

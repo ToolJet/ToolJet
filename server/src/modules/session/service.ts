@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
 import {
   SOURCE,
   USER_STATUS,
@@ -8,7 +6,6 @@ import {
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
-import { UserSessions } from 'src/entities/user_sessions.entity';
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -19,8 +16,6 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { fullName, generateOrgInviteURL, isSuperAdmin } from '@helpers/utils.helper';
 import { decamelizeKeys } from 'humps';
-import { RequestContext } from '@modules/request-context/service';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 
 @Injectable()
 export class SessionService {
@@ -33,21 +28,7 @@ export class SessionService {
   ) {}
 
   async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
-    response.clearCookie('tj_auth_token');
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(UserSessions, { id: sessionId, userId });
-      const user = await manager.findOneOrFail(User, {
-        where: { id: userId },
-      });
-
-      const auditLogData = {
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        resourceId: user.id,
-        resourceName: user.email,
-      };
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
-    });
+    await this.sessionUtilService.terminateSession(userId, sessionId, response);
   }
 
   async getSessionDetails(user: User, workspaceSlug: string, appId: string, aiCookies: any): Promise<any> {
