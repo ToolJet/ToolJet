@@ -12,6 +12,8 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 
+import './styles.scss';
+
 export const DatePickerV2 = ({
   height,
   properties,

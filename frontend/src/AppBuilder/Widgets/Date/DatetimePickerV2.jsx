@@ -350,7 +350,7 @@ export const DatetimePickerV2 = ({
   const isTwentyFourHourMode = is24HourFormat(displayFormat);
 
   const componentProps = {
-    popperClassName: cx('tj-table-datepicker tj-datepicker-widget !tw-mt-0', {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datetimepicker-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
