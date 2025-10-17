@@ -306,8 +306,6 @@ export default class Microsoft_graph implements QueryService {
     return { clientId, clientSecret, tenantId, accessTokenUrl, scopes, redirectUri };
   }
 
-  // check where Access token is saved
-  // sourceOptions, dataSource.id, user?.id, app?.isPublic
   async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
     let refreshToken: string;
     // If multi user authentication is enabled, we would need specific users refresh token.
