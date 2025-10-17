@@ -9,6 +9,13 @@ export class OidcOAuthService implements IOidcService {
     throw new Error('Method not implemented');
   }
 
+  async refreshAccessToken(
+    refreshToken: string,
+    configId: string
+  ): Promise<{ accessToken: string; refreshToken: string | null; tokenExpiresAt: Date | null }> {
+    throw new Error('Method not implemented');
+  }
+
   async getConfigs(
     configId: string,
     codeChallenge?: string
