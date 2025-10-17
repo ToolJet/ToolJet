@@ -11,4 +11,7 @@ export default interface UserResponse {
   enableGroupSync?: boolean;
   userinfoResponse?: UserinfoResponse;
   instanceLevelGroupSyncs?: any[];
+  accessToken?: string;
+  refreshToken?: string;
+  tokenExpiresAt?: Date | null;
 }
