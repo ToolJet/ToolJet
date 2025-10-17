@@ -26,22 +26,6 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
     customThemes: false,
     serverSideGlobalResolve: false,
-    modules: false,
-    customGroups: false,
-    app: {
-      pages: {
-        enabled: false,
-        features: {
-          appHeaderAndLogo: false,
-          addNavGroup: false,
-        },
-      },
-      permissions: {
-        component: false,
-        query: false,
-        pages: false,
-      },
-    },
   },
   domains: [],
   workflows: {
@@ -59,6 +43,26 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   },
   auditLogs: {
     maximumDays: 0,
+  },
+  app: {
+    pages: {
+      enabled: false,
+      features: {
+        appHeaderAndLogo: false,
+        addNavGroup: false,
+      },
+    },
+    permissions: {
+      component: false,
+      query: false,
+      pages: false,
+    },
+  },
+  modules: {
+    enabled: false,
+  },
+  permissions: {
+    customGroups: false,
   },
 };
 

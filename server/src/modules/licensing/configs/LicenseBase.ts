@@ -43,9 +43,9 @@ export default class LicenseBase {
   private _isAppWhiteLabelling: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
-  private _isModules: boolean;
-  private _isAppPermissions: { component: boolean; query: boolean; pages: boolean };
-  private _isAppPages: { enabled: boolean; features: { appHeaderAndLogo: boolean; addNavGroup: boolean } };
+  private _modules: object;
+  private _permissions: object;
+  private _app: object;
   private BASIC_PLAN_TERMS: Partial<Terms>;
 
   constructor(
@@ -108,6 +108,10 @@ export default class LicenseBase {
     this._workspaceId = licenseData?.workspaceId;
     this._features = licenseData?.features;
     this._ai = licenseData?.ai;
+    this._modules = licenseData?.modules;
+    this._permissions = licenseData?.permissions;
+    this._app = licenseData?.app;
+    this._isCustomGroups = this.getPermissionValue('customGroups');
 
     // Features
     this._isAuditLogs = this.getFeatureValue('auditLogs');
@@ -126,10 +130,6 @@ export default class LicenseBase {
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApis');
-    this._isCustomGroups = this.getFeatureValue('customGroups');
-    this._isModules = this.getFeatureValue('modules');
-    this._isAppPermissions = this.getAppPermissions();
-    this._isAppPages = this.getAppPages();
   }
 
   private getFeatureValue(key: string) {
@@ -141,59 +141,54 @@ export default class LicenseBase {
     }
     return true;
   }
-
-  private getAppPermissions() {
-    if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.features?.app?.permissions || { component: false, query: false, pages: false };
+  private getPermissionValue(key: string) {
+    if (!this._permissions) {
+      return true;
     }
-    if (this._features && this._features['app'] && this._features['app']['permissions']) {
-      return this._features['app']['permissions'];
+    if (this._permissions[key] === false) {
+      return false;
     }
-    //If doesn't exist return true
-    return { component: true, query: true, pages: true };
-  }
-
-  private getAppPages() {
-    if (this.IsBasicPlan) {
-      return (
-        this.BASIC_PLAN_TERMS.features?.app?.pages || {
-          enabled: false,
-          features: { appHeaderAndLogo: false, addNavGroup: false },
-        }
-      );
+    if (this._isFlexiblePlan && !this._permissions[key]) {
+      return false;
     }
-    if (this._features && this._features['app'] && this._features['app']['pages']) {
-      return this._features['app']['pages'];
-    }
-    return { enabled: true, features: { appHeaderAndLogo: true, addNavGroup: true } };
+    return true;
   }
 
   public get customGroups(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.customGroups;
+      return !!this.BASIC_PLAN_TERMS.permissions?.customGroups;
     }
     return this._isCustomGroups;
   }
 
   public get modules(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.modules;
+      return !!this.BASIC_PLAN_TERMS.modules?.enabled;
     }
-    return this._isModules;
+    if (!this._modules) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._modules['enabled'];
   }
 
   public get appPermissions(): { component: boolean; query: boolean; pages: boolean } {
     if (this.IsBasicPlan) {
       return { component: false, query: false, pages: false };
     }
-    return this._isAppPermissions;
+    if (!this._app) {
+      return { component: true, query: true, pages: true }; //Not passed set to true for older licenses and trial
+    }
+    return this._app['permissions'];
   }
 
   public get appPages(): { enabled: boolean; features: { appHeaderAndLogo: boolean; addNavGroup: boolean } } {
     if (this.IsBasicPlan) {
       return { enabled: false, features: { appHeaderAndLogo: false, addNavGroup: false } };
     }
-    return this._isAppPages;
+    if (!this._app) {
+      return { enabled: true, features: { appHeaderAndLogo: true, addNavGroup: true } };
+    }
+    return this._app['pages'];
   }
 
   public get plan(): string {
@@ -411,6 +406,7 @@ export default class LicenseBase {
   }
 
   public get features(): object {
+    console.log(this.customGroups, 'customGroups');
     return {
       openid: this.oidc,
       auditLogs: this.auditLogs,
@@ -426,8 +422,10 @@ export default class LicenseBase {
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
-      customGroups: this.customGroups,
       modules: this.modules,
+      appPermissions: this.appPermissions,
+      appPages: this.appPages,
+      customGroups: this.customGroups,
     };
   }
 
