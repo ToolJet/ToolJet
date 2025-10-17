@@ -1,8 +1,8 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
 
 export const generalSettings = () => {
   cy.get(ssoSelector.enableSignUpToggle).check();
@@ -320,7 +320,7 @@ export const invitePageElements = () => {
 export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id='${workspaceId}';`,
+    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id=${workspaceId};`,
   });
 };
 
@@ -519,6 +519,49 @@ export const OidcConfig = (groupMapping, level = "workspace", extra = {}) => {
   return cy.apiUpdateSSOConfig(config, level);
 };
 
-export const samlConfig = () => {
-  cy.apiUpdateSSOConfig(config);
+export const uiOktaLogin = (email, password) => {
+  cy.get('input[name="identifier"]').type(email);
+  cy.get(".button-primary").click();
+  cy.get('input[name="credentials.passcode"]').type(password);
+  cy.get(".button-primary").click();
+};
+
+
+
+export const toggleSsoViaUI = (provider, settingsUrl = 'settings/instance-login') => {
+  cy.wait(1000)
+  const isInstance = settingsUrl === 'settings/instance-login';
+  cy.intercept(
+    'PATCH',
+    `/api/login-configs/${isInstance ? 'instance' : 'organization'}-sso`
+  ).as('patchInstanceSSO');
+
+  cy.visit(settingsUrl);
+  cy.wait(1000);
+  cy.get(`[data-cy="${cyParamName(provider)}-label"]`).click();
+  cy.get(`[data-cy="${cyParamName(provider)}-toggle-input"]`).click();
+  cy.get(`[data-cy="save-button"]`).eq(1).click();
+
+  cy.wait('@patchInstanceSSO').its('response.statusCode').should('eq', 200);
+  cy.wait(1000);
+
+
+};
+
+
+export const gitHubSignInWithAssertion = (assertion = null, githubUsername = Cypress.env('GITHUB_USERNAME'), githubPassword = Cypress.env('GITHUB_PASSWORD')) => {
+  cy.origin('https://github.com', { args: { githubUsername, githubPassword, assertion } }, ({ githubUsername, githubPassword, assertion }) => {
+    cy.get('input[name="login"]', { timeout: 15000 }).type(githubUsername);
+    cy.log('GitHub username entered', githubUsername);
+    cy.log('GitHub password entered', githubPassword);
+    cy.get('input[name="password"]').type(githubPassword);
+    cy.get('input[name="commit"]').click();
+    cy.log('GitHub login submitted');
+
+    if (assertion && assertion.type === 'failure') {
+      cy.get('[alt="404 “This is not the web page you are looking for”"]').should('be.visible');
+    } else if (assertion && assertion.type === 'selector') {
+      cy.get(assertion.selector).should(assertion.condition, assertion.value);
+    }
+  });
 };

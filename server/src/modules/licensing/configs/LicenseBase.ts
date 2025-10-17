@@ -121,7 +121,7 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
-    this._isExternalApis = this.getFeatureValue('externalApis');
+    this._isExternalApis = this.getFeatureValue('externalApi');
   }
 
   private getFeatureValue(key: string) {
