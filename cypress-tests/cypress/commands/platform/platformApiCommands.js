@@ -1,5 +1,66 @@
 const envVar = Cypress.env("environment");
 
+Cypress.Commands.add(
+    "apiLogin",
+    (
+        userEmail = "dev@tooljet.io",
+        userPassword = "password",
+        workspaceId = "",
+        redirection = "/"
+    ) => {
+        cy.request({
+            url: `${Cypress.env("server_host")}/api/authenticate/${workspaceId}`,
+            method: "POST",
+            body: {
+                email: userEmail,
+                password: userPassword,
+                redirectTo: redirection,
+            },
+        })
+            .its("body")
+            .then((res) => {
+                Cypress.env("workspaceId", res.current_organization_id);
+
+                Cypress.log({
+                    name: "Api login",
+                    displayName: "LOGIN: ",
+                    message: `: Success`,
+                });
+            });
+    }
+);
+
+Cypress.Commands.add("apiLogout", () => {
+    cy.getCookie("tj_auth_token").then((cookie) => {
+        cy.request(
+            {
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/session/logout`,
+                headers: {
+                    "Tj-Workspace-Id": Cypress.env("workspaceId"),
+                    Cookie: `tj_auth_token=${cookie.value}`,
+                },
+            },
+            { log: false }
+        ).then((response) => {
+            expect(response.status).to.equal(200);
+        });
+    });
+});
+
+Cypress.Commands.add("apiGetEnvironments", () => {
+    cy.getAuthHeaders().then((headers) => {
+        cy.request({
+            method: "GET",
+            url: `${Cypress.env("server_host")}/api/app-environments`,
+            headers: headers,
+        }).then((response) => {
+            expect(response.status).to.equal(200);
+            return response.body.environments;
+        });
+    });
+});
+
 Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
         cy.request(
@@ -567,3 +628,20 @@ Cypress.Commands.add(
         });
     }
 );
+
+Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
+    let headers = {};
+    if (returnCached) {
+        return returnCached;
+    } else {
+        cy.getCookie("tj_auth_token").then((cookie) => {
+            headers = {
+                "Tj-Workspace-Id": Cypress.env("workspaceId"),
+                Cookie: `tj_auth_token=${cookie.value}`,
+            };
+            Cypress.env("authHeaders", headers);
+            Cypress.log({ name: "getAuthHeaders", message: `Auth headers: ${JSON.stringify(headers)}` });
+            return headers;
+        });
+    }
+});
