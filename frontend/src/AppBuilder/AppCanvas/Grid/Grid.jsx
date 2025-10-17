@@ -339,7 +339,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList]);
+  }, [temporaryHeight, boxList, selectedComponents]);
 
   useEffect(() => {
     reloadGrid();
@@ -465,7 +465,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const handleDragGroupEnd = (e) => {
     try {
       hideGridLines();
-      // setIsGroupDragging(false);
+      handleDeactivateTargets();
+      clearActiveTargetClassNamesAfterSnapping(selectedComponents);
       const { events, clientX, clientY } = e;
       const initialParent = events[0].target.closest('.real-canvas');
       // Get potential new parent using same logic as onDragEnd
@@ -775,7 +776,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeGroup={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
           const parentWidth = parentElm?.clientWidth;
-          const parentHeight = parentElm?.clientHeight;
+          const parentHeight = parentElm?.scrollHeight;
           handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
           const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
           events.forEach((ev) => {
@@ -783,7 +784,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             ev.target.style.height = `${ev.height}px`;
             ev.target.style.transform = ev.drag.transform;
           });
-
           if (!(posLeft < 0 || posTop < 0 || posRight < 0 || posBottom < 0)) {
             groupResizeDataRef.current = events;
           }
@@ -1088,9 +1088,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDragGroup={(ev) => {
           const { events } = ev;
           const parentElm = events[0]?.target?.closest('.real-canvas');
-          if (parentElm && !parentElm.classList.contains('show-grid')) {
-            parentElm?.classList?.add('show-grid');
-          }
 
           events.forEach((ev) => {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
@@ -1112,8 +1109,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroupEnd={(e) => {
           handleDragGroupEnd(e);
-          handleDeactivateTargets();
-          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
           toggleCanvasUpdater();
         }}
         onClickGroup={(e) => {
