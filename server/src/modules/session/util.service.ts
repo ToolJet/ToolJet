@@ -30,7 +30,7 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 import { TransactionLogger } from '@modules/logging/service';
-import { OidcSessionUtilService } from './oidc-session-util.service';
+import { OidcSessionUtilService } from '@modules/oidc-session/oidc-session-util.service';
 
 @Injectable()
 export class SessionUtilService {

@@ -13,17 +13,15 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { FeatureAbilityFactory } from './ability';
 import { UserSessionRepository } from './repository';
+import { OidcSessionModule } from '@modules/oidc-session/module';
 
 export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
-    const { SessionService, SessionController, SessionUtilService, JwtStrategy, OidcSessionUtilService } =
-      await this.getProviders(config, 'session', [
-        'service',
-        'controller',
-        'util.service',
-        'jwt/jwt.strategy',
-        'oidc-session-util.service.ts',
-      ]);
+    const { SessionService, SessionController, SessionUtilService, JwtStrategy } = await this.getProviders(
+      config,
+      'session',
+      ['service', 'controller', 'util.service', 'jwt/jwt.strategy']
+    );
 
     const providerImports = [
       RolesRepository,
@@ -37,7 +35,6 @@ export class SessionModule extends SubModule {
       JwtStrategy,
       FeatureAbilityFactory,
       UserSessionRepository,
-      OidcSessionUtilService,
     ];
 
     return {
@@ -45,6 +42,7 @@ export class SessionModule extends SubModule {
       imports: [
         await EncryptionModule.register(config),
         await MetaModule.register(config),
+        await OidcSessionModule.register(config),
         PassportModule,
         JwtModule.registerAsync({
           useFactory: (config: ConfigService) => ({

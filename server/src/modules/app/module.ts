@@ -63,6 +63,7 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { OidcSessionModule } from '@modules/oidc-session/module';
 
 export class AppModule implements OnModuleInit {
   constructor(
@@ -108,6 +109,7 @@ export class AppModule implements OnModuleInit {
       await DataSourcesModule.register(configs, true),
       await LoginConfigsModule.register(configs, true),
       await AuthModule.register(configs, true),
+      await OidcSessionModule.register(configs),
       await ThemesModule.register(configs, true),
       await SetupOrganizationsModule.register(configs, true),
       await WhiteLabellingModule.register(configs, true),
