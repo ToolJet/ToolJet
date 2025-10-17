@@ -1254,6 +1254,14 @@ class HomePageComponent extends React.Component {
         return this.hasWorkflowLimitReached();
       }
     };
+
+    const showCreateAppButtonTooltip = () => {
+      if (this.props.appType === 'module') {
+        return !!moduleEnabled;
+      } else {
+        return this.canCreateApp();
+      }
+    };
     const modalConfigs = {
       create: {
         modalType: 'create',
@@ -1680,7 +1688,7 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
               <div className="create-new-app-license-wrapper">
-                {this.canCreateApp() && (
+                {showCreateAppButtonTooltip() && (
                   <LicenseTooltip
                     limits={appsLimit}
                     feature={
