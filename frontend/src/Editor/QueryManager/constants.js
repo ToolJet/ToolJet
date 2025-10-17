@@ -115,13 +115,12 @@ const allDefaultSources = {
 
 export const defaultSources = isWorkflowsFeatureEnabled()
   ? allDefaultSources
-  : Object.fromEntries(
-      Object.entries(allDefaultSources).filter(([key]) => key !== 'workflows')
-    );
+  : Object.fromEntries(Object.entries(allDefaultSources).filter(([key]) => key !== 'workflows'));
 
 export const workflowDefaultSources = {
   ...defaultSources,
   'If condition': { kind: 'if', id: 'if', name: 'If condition' },
   Response: { kind: 'response', id: 'response', name: 'Response' },
   Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
+  Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
 };

@@ -46,6 +46,8 @@
     "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/openai": "^1.3.24",
     "@casl/ability": "^6.7.3",
     "@css-inline/css-inline": "^0.14.3",
     "@dagrejs/graphlib": "^2.2.4",
@@ -90,6 +92,7 @@
     "@tooljet/plugins": "../plugins",
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
+    "ai": "^4.3.19",
     "ajv": "^8.14.0",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
@@ -151,7 +154,8 @@
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.17.1",
-    "y-websocket": "^1.4.0"
+    "y-websocket": "^1.4.0",
+    "zod": "^3.25.76"
   },
   "peerDependencies": {
     "@nestjs/cli": "^11.0.7"
