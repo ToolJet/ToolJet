@@ -1241,7 +1241,7 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
-    const moduleEnabled = featureAccess?.modules || false;
+    const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 

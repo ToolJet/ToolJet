@@ -47,6 +47,7 @@ export default class LicenseBase {
   private _permissions: object;
   private _app: object;
   private BASIC_PLAN_TERMS: Partial<Terms>;
+  private _isModulesEnabled: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -109,6 +110,7 @@ export default class LicenseBase {
     this._features = licenseData?.features;
     this._ai = licenseData?.ai;
     this._modules = licenseData?.modules;
+    this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
     this._isCustomGroups = this.getPermissionValue('customGroups');
@@ -129,7 +131,7 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
-    this._isExternalApis = this.getFeatureValue('externalApis');
+    this._isExternalApis = this.getFeatureValue('externalApi');
   }
 
   private getFeatureValue(key: string) {
@@ -161,14 +163,86 @@ export default class LicenseBase {
     return this._isCustomGroups;
   }
 
-  public get modules(): boolean {
+  public get modules(): object {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.modules;
+    }
+    if (!this._modules) {
+      return {
+        enabled: true,
+      }; //Not passed set to true for older licenses and trial
+    }
+    return this._modules['enabled'];
+  }
+
+  public get appPermissionComponent(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.component;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['permissions']?.component;
+  }
+
+  public get appPermissionQuery(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.query;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['permissions']?.query;
+  }
+
+  public get appPermissionPages(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.pages;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['permissions']?.pages;
+  }
+
+  public get appPagesEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.enabled;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['pages']?.enabled;
+  }
+
+  public get appPagesHeaderAndLogoEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.appHeaderAndLogo;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['pages']?.features?.appHeaderAndLogo;
+  }
+
+  public get appPagesAddNavGroupEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.addNavGroup;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return this._app['pages']?.features?.addNavGroup;
+  }
+
+  public get moduleEnabled(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.modules?.enabled;
     }
     if (!this._modules) {
       return true; //Not passed set to true for older licenses and trial
     }
-    return this._modules['enabled'];
+    return this._isModulesEnabled;
   }
 
   public get appPermissions(): { component: boolean; query: boolean; pages: boolean } {
@@ -422,10 +496,14 @@ export default class LicenseBase {
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
-      modules: this.modules,
-      appPermissions: this.appPermissions,
-      appPages: this.appPages,
+      modulesEnabled: this.moduleEnabled,
       customGroups: this.customGroups,
+      appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
+      appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      appPagesEnabled: this.appPagesEnabled,
+      appPermissionComponent: this.appPermissionComponent,
+      appPermissionQuery: this.appPermissionQuery,
+      appPermissionPages: this.appPermissionPages,
     };
   }
 
