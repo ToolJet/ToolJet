@@ -109,7 +109,6 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
