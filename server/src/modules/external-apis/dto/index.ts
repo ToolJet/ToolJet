@@ -138,6 +138,14 @@ export class UpdateUserWorkspaceDto {
   groups?: GroupDto[];
 }
 
+export class AddUserToGroupsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GroupDto)
+  @IsNotEmpty()
+  groups: GroupDto[];
+}
+
 export class OrganizationGitCreateDto {
   @IsString()
   organizationId: string;

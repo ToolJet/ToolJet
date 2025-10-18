@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
+import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto, AddUserToGroupsDto } from '../dto';
 import { EntityManager } from 'typeorm';
 
 export interface IExternalApisService {
@@ -23,4 +23,7 @@ export interface IExternalApisService {
 
   // Retrieves all workspaces
   getAllWorkspaces(): Promise<any>;
+
+  // Adds user to groups
+  addUserToGroups(userId: string, addUserToGroupsDto: AddUserToGroupsDto): Promise<void>;
 }
