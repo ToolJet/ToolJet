@@ -1,4 +1,6 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
+
 function Label({
   label,
   width,
@@ -13,6 +15,7 @@ function Label({
   widthType,
   inputId,
   id,
+  classes = null,
 }) {
   return (
     <>
@@ -29,6 +32,7 @@ function Label({
             height: defaultAlignment === 'top' && '20px',
           }}
           htmlFor={inputId}
+          className={cn(classes?.labelContainer)}
           id={id}
         >
           <p
