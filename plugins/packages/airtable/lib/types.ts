@@ -18,4 +18,9 @@ export type QueryOptions = {
   cell_format: string;
   view: string;
   sort: [string, string][];
+  typecast?: boolean;
+  return_fields_by_field_id?: boolean;
+  perform_upsert?: {
+    fieldsToMergeOn: string[];
+  };
 };
