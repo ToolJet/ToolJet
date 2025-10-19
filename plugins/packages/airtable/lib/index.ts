@@ -1,16 +1,27 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-import { sanitizeSortPairs } from '@tooljet-plugins/common';
-import got, { Headers } from 'got';
+import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  ConnectionTestResult,
+} from "@tooljet-plugins/common";
+import { SourceOptions, QueryOptions } from "./types";
+import { sanitizeSortPairs } from "@tooljet-plugins/common";
+import got, { Headers } from "got";
 
 export default class AirtableQueryService implements QueryService {
   authHeader(token: string): Headers {
-    return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions
+  ): Promise<QueryResult> {
     let result = {};
-    let apiToken = '';
+    let apiToken = "";
     let response = null;
     const operation = queryOptions.operation;
     const baseId = queryOptions.base_id;
@@ -18,11 +29,12 @@ export default class AirtableQueryService implements QueryService {
 
     // Below condition for API Key is kept for Backward compatibility and needs migration to be removed later on.
     if (sourceOptions.api_key) apiToken = sourceOptions.api_key;
-    if (sourceOptions.personal_access_token) apiToken = sourceOptions.personal_access_token;
+    if (sourceOptions.personal_access_token)
+      apiToken = sourceOptions.personal_access_token;
 
     try {
       switch (operation) {
-        case 'list_records': {
+        case "list_records": {
           const pageSize = queryOptions.page_size || null;
           const offset = queryOptions.offset || null;
           const fields = queryOptions.fields || null;
@@ -40,7 +52,7 @@ export default class AirtableQueryService implements QueryService {
               const parsedFields = JSON.parse(fields);
               requestBody.fields = parsedFields;
             } catch (error) {
-              throw new Error('Invalid JSON format for fields');
+              throw new Error("Invalid JSON format for fields");
             }
           }
           if (filterFormula) {
@@ -73,89 +85,150 @@ export default class AirtableQueryService implements QueryService {
             }));
             requestBody.sort = formattedSort;
           }
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/listRecords`, {
-            method: 'post',
-            headers: this.authHeader(apiToken),
-            json: requestBody,
-          });
+          response = await got(
+            `https://api.airtable.com/v0/${baseId}/${tableName}/listRecords`,
+            {
+              method: "post",
+              headers: this.authHeader(apiToken),
+              json: requestBody,
+            }
+          );
 
           result = JSON.parse(response.body);
           break;
         }
 
-        case 'retrieve_record': {
+        case "retrieve_record": {
           const recordId = queryOptions.record_id;
 
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${recordId}`, {
-            headers: this.authHeader(apiToken),
-          });
+          response = await got(
+            `https://api.airtable.com/v0/${baseId}/${tableName}/${recordId}`,
+            {
+              headers: this.authHeader(apiToken),
+            }
+          );
 
           result = JSON.parse(response.body);
           break;
         }
 
-        case 'create_record': {
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
-            method: 'post',
-            headers: this.authHeader(apiToken),
-            json: {
-              records: JSON.parse(queryOptions.body),
-            },
-          });
-
-          result = JSON.parse(response.body);
-
-          break;
-        }
-
-        case 'update_record': {
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
-            method: 'patch',
-            headers: this.authHeader(apiToken),
-            json: {
-              records: [
-                {
-                  id: queryOptions.record_id,
-                  fields: JSON.parse(queryOptions.body),
-                },
-              ],
-            },
-          });
+        case "create_record": {
+          response = await got(
+            `https://api.airtable.com/v0/${baseId}/${tableName}`,
+            {
+              method: "post",
+              headers: this.authHeader(apiToken),
+              json: {
+                records: JSON.parse(queryOptions.body),
+              },
+            }
+          );
 
           result = JSON.parse(response.body);
 
           break;
         }
 
-        case 'delete_record': {
+        case "update_record": {
+          response = await got(
+            `https://api.airtable.com/v0/${baseId}/${tableName}`,
+            {
+              method: "patch",
+              headers: this.authHeader(apiToken),
+              json: {
+                records: [
+                  {
+                    id: queryOptions.record_id,
+                    fields: JSON.parse(queryOptions.body),
+                  },
+                ],
+              },
+            }
+          );
+
+          result = JSON.parse(response.body);
+
+          break;
+        }
+
+        case "delete_record": {
           const _recordId = queryOptions.record_id;
 
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${_recordId}`, {
-            method: 'delete',
-            headers: this.authHeader(apiToken),
-          });
+          response = await got(
+            `https://api.airtable.com/v0/${baseId}/${tableName}/${_recordId}`,
+            {
+              method: "delete",
+              headers: this.authHeader(apiToken),
+            }
+          );
           result = JSON.parse(response.body);
 
+          break;
+        }
+        case "upsert_record": {
+          const typecast = queryOptions.typecast || false;
+          const returnFieldsByFieldId =
+            queryOptions.return_fields_by_field_id || false;
+          const performUpsert = queryOptions.perform_upsert;
+
+          if (
+            !performUpsert ||
+            !performUpsert.fieldsToMergeOn ||
+            performUpsert.fieldsToMergeOn.length === 0
+          ) {
+            throw new Error(
+              "Upsert requires fieldsToMergeOn to be specified in perform_upsert configuration"
+            );
+          }
+
+          if (performUpsert.fieldsToMergeOn.length > 3) {
+            throw new Error("fieldsToMergeOn can contain at most 3 fields");
+          }
+
+          const url = new URL(
+            `https://api.airtable.com/v0/${baseId}/${tableName}`
+          );
+          if (typecast) url.searchParams.append("typecast", "true");
+          if (returnFieldsByFieldId)
+            url.searchParams.append("returnFieldsByFieldId", "true");
+
+          const records = JSON.parse(queryOptions.body);
+
+          response = await got(url.toString(), {
+            method: "patch",
+            headers: this.authHeader(apiToken),
+            json: {
+              records: records.map((record: any) => ({
+                ...record,
+                externalIdFieldName: performUpsert.fieldsToMergeOn,
+              })),
+            },
+          });
+
+          result = JSON.parse(response.body);
           break;
         }
       }
     } catch (error) {
-      let errorMessage = 'Query could not be completed';
+      let errorMessage = "Query could not be completed";
       let errorDetails: any = {};
 
       if (error.response) {
         try {
           const errorResponse =
-            typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
+            typeof error.response.body === "string"
+              ? JSON.parse(error.response.body)
+              : error.response.body;
 
-          errorMessage = errorResponse.message || errorResponse.error || errorMessage;
-          if (typeof errorResponse.error === 'string') {
+          errorMessage =
+            errorResponse.message || errorResponse.error || errorMessage;
+          if (typeof errorResponse.error === "string") {
             errorDetails.type = errorResponse.error;
           } else {
             errorDetails = errorResponse.error;
           }
         } catch (parseError) {
-          console.error('Failed to parse Airtable error response:', parseError);
+          console.error("Failed to parse Airtable error response:", parseError);
         }
       }
 
@@ -163,27 +236,29 @@ export default class AirtableQueryService implements QueryService {
     }
 
     return {
-      status: 'ok',
+      status: "ok",
       data: result,
     };
   }
 
-  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+  async testConnection(
+    sourceOptions: SourceOptions
+  ): Promise<ConnectionTestResult> {
     try {
       const apiToken = sourceOptions.personal_access_token;
-      const response = await got('https://api.airtable.com/v0/meta/whoami', {
+      const response = await got("https://api.airtable.com/v0/meta/whoami", {
         headers: this.authHeader(apiToken),
       });
       const responseBody = JSON.parse(response.body);
 
       if (responseBody && responseBody.id) {
-        return { status: 'ok' };
+        return { status: "ok" };
       }
 
-      throw new Error('Invalid response from Airtable');
+      throw new Error("Invalid response from Airtable");
     } catch (error) {
       if (error.response?.statusCode === 401) {
-        throw new Error('Authentication failed: Invalid personal access token');
+        throw new Error("Authentication failed: Invalid personal access token");
       }
 
       throw error;
