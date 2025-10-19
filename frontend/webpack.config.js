@@ -10,6 +10,9 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
+const { SondaWebpackPlugin } = require('sonda');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
@@ -30,6 +33,7 @@ function stripTrailingSlash(str) {
 }
 
 const plugins = [
+  new SondaWebpackPlugin(),
   new webpack.ProvidePlugin({
     process: 'process/browser.js',
     Buffer: ['buffer', 'Buffer'],
@@ -82,6 +86,38 @@ if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
+// Add Bundle Analyzer plugin when ANALYZE environment variable is set
+if (process.env.ANALYZE === 'true') {
+  plugins.push(
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'server',
+      analyzerPort: 8889,
+      openAnalyzer: true,
+      generateStatsFile: true,
+      statsFilename: 'bundle-stats.json',
+    })
+  );
+}
+
+// Add Statoscope plugin when STATOSCOPE environment variable is set
+if (process.env.STATOSCOPE === 'true') {
+  plugins.push(
+    new StatoscopeWebpackPlugin({
+      saveReportTo: path.resolve(__dirname, 'build/statoscope-report.html'),
+      saveStatsTo: path.resolve(__dirname, 'build/stats.json'),
+      open: 'file',
+      watchMode: false,
+      compressor: false, // Disable compression for faster report generation
+    })
+  );
+}
+
+// Generate stats.json for Sonda when SONDA environment variable is set
+if (process.env.SONDA === 'true') {
+  // Sonda uses the stats.json file, so we just need to ensure it's generated
+  // The stats are generated via webpack CLI: webpack --json > stats.json
+}
+
 module.exports = {
   mode: environment,
   optimization: {
@@ -102,11 +138,57 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 25,
+      minSize: 20000,
       cacheGroups: {
-        vendors: {
+        // Default vendor chunk for all node_modules
+        defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
+          priority: -10,
+          reuseExistingChunk: true,
+        },
+
+        // Extract React and related libraries
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+          name: 'react-vendor',
+          priority: 10,
           chunks: 'all',
+        },
+
+        // Extract lodash separately (it's huge)
+        lodash: {
+          test: /[\\/]node_modules[\\/]lodash[\\/]/,
+          name: 'lodash-vendor',
+          priority: 10,
+          chunks: 'all',
+        },
+
+        // Extract shared internal code between chunks
+        common: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+
+        // Extract _components separately (shared UI components)
+        components: {
+          test: /[\\/]src[\\/]_components[\\/]/,
+          name: 'components-common',
+          priority: 5,
+          minChunks: 2,
+          reuseExistingChunk: true,
+        },
+
+        // Extract _ui separately (shared UI primitives)
+        ui: {
+          test: /[\\/]src[\\/]_ui[\\/]/,
+          name: 'ui-common',
+          priority: 5,
+          minChunks: 2,
+          reuseExistingChunk: true,
         },
       },
     },
@@ -128,7 +210,8 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
+  devtool: 'source-map',
+  // devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
