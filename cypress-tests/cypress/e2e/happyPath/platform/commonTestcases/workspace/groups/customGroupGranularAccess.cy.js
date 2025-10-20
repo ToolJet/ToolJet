@@ -14,7 +14,7 @@ import {
 } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
 
-describe("Manage Groups", () => {
+describe("Custom Group Granular Access", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
 
@@ -42,7 +42,7 @@ describe("Manage Groups", () => {
     });
 
 
-    it.only("should verify the granular permissions in custom groups", () => {
+    it("should verify the granular permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appName2 = fake.companyName;
         const appName3 = fake.companyName;
@@ -189,6 +189,8 @@ describe("Manage Groups", () => {
         cy.apiLogin(data.email);
         cy.visit(data.workspaceSlug);
 
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.get(commonSelectors.appCreateButton).should("not.exist");
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
             "have.lengthOf",
             1
@@ -215,6 +217,7 @@ describe("Manage Groups", () => {
             cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
             cy.get(dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())).click();
             cy.get(dataSourceSelector.dsNameInputField).should('be.disabled')
+
             cy.get(dataSourceSelector.commonDsLabelAndCount).click();
             cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
         });

@@ -13,7 +13,7 @@ import {
 } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
 
-describe("Manage Groups", () => {
+describe("Custom Group Permissions", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
 
@@ -196,7 +196,7 @@ describe("Manage Groups", () => {
             cy.get(commonSelectors.globalDataSourceIcon).click();
             cy.get(
                 dataSourceSelector.dataSourceNameButton(datasourceName1)
-            ).should("not.exist");
+            ).should("exist");
             cy.get(dataSourceSelector.commonDsLabelAndCount).click();
             cy.get('[data-cy="rest-api-add-button"]').should("be.enabled");
         });

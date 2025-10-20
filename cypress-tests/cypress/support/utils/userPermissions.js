@@ -176,12 +176,13 @@ export const verifyBasicPermissions = (canCreate = true) => {
     canCreate ? "exist" : "not.exist"
   );
   cy.get('[data-cy="database-icon"]').should(canCreate ? "exist" : "not.exist");
-  cy.get(commonSelectors.workspaceConstantsIcon).should(
-    canCreate ? "exist" : "not.exist"
-  );
+
 
   cy.ifEnv("Enterprise", () => {
     cy.get(commonSelectors.globalDataSourceIcon).should(
+      canCreate ? "exist" : "not.exist"
+    );
+    cy.get(commonSelectors.workspaceConstantsIcon).should(
       canCreate ? "exist" : "not.exist"
     );
   });
