@@ -13,7 +13,7 @@ export const InstalledPlugins = () => {
   const [allPlugins, setAllPlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
-  const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
+  const ENABLE_MARKETPLACE_DEV_MODE = window.public_config?.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   React.useEffect(() => {
     marketplaceService
