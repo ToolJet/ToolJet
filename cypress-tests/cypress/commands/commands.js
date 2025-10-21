@@ -53,9 +53,10 @@ Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave,
+    '',
     { timeout: 20000 }
-  );
+  ).find('svg')
+    .should('be.visible', { timeout: 20000 });
 });
 
 Cypress.Commands.add("createApp", (appName) => {
@@ -77,37 +78,47 @@ Cypress.Commands.add(
   "dragAndDropWidget",
   (
     widgetName,
-    positionX = 80,
-    positionY = 80,
+    positionX = 100,
+    positionY = 100,
     widgetName2 = widgetName,
     canvas = commonSelectors.canvas
   ) => {
     const dataTransfer = new DataTransfer();
-    cy.forceClickOnCanvas();
 
-    cy.get("body")
-      .then(($body) => {
-        const isSearchVisible = $body
-          .find(commonSelectors.searchField)
-          .is(":visible");
+    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get(commonSelectors.searchField).should('be.visible');
 
-        if (!isSearchVisible) {
-          cy.get('[data-cy="right-sidebar-plus-button"]').click();
-        }
+    cy.get(commonSelectors.searchField).first().clear().type(widgetName);
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should('be.visible');
+
+    cy.get(commonWidgetSelector.widgetBox(widgetName2))
+      .trigger('mousedown', { which: 1, button: 0, force: true })
+      .trigger('dragstart', { dataTransfer, force: true });
+
+    cy.get(canvas)
+      .trigger('dragenter', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       })
-      .then(() => {
-        cy.clearAndType(commonSelectors.searchField, widgetName);
+      .trigger('dragover', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       });
 
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
-      "dragstart",
-      { dataTransfer },
-      { force: true }
-    );
-    cy.get(canvas).trigger("drop", positionX, positionY, {
-      dataTransfer,
-      force: true,
-    });
+
+    cy.get(canvas)
+      .trigger('drop', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
+      })
+      .trigger('mouseup', { force: true });
+
     cy.waitForAutoSave();
   }
 );
