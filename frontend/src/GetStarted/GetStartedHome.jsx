@@ -81,10 +81,10 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
   );
 }
 
-function GetStartedWidget({ type, to, onClick, ...props }) {
+function GetStartedWidget({ type, to, onClick}) {
   const { title, description } = WIDGET_TYPES[type];
   return (
-    <GetStartedCard to={to} onClick={onClick} {...props}>
+    <GetStartedCard to={to} onClick={onClick} data-cy={`getstarted-${type.toLowerCase()}-widget`}>
       <WidgetIcon type={type} />
       <ContentBlock
         title={title}
@@ -127,17 +127,14 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
         <GetStartedWidget
           type="APP"
           to={getPrivateRoute('dashboard')}
-          data-cy="getstarted-app-widget"
         />
         <GetStartedWidget
           type="DATASOURCE"
           to={getPrivateRoute('data_sources')}
-          data-cy="getstarted-datasource-widget"
         />
         <GetStartedWidget
           type="EXPLORE_TEMPLATES"
           to={`${getPrivateRoute('dashboard')}?fromtemplate=true`}
-          data-cy="getstarted-templates-widget"
         />
       </div>
     );
@@ -148,18 +145,15 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
       <GetStartedWidget
         type="APP"
         to={getPrivateRoute('dashboard')}
-        data-cy="getstarted-app-widget"
       />
       <GetStartedWidget
         type="DATASOURCE"
         to={getPrivateRoute('data_sources')}
-        data-cy="getstarted-datasource-widget"
       />
       <GetStartedWidget
         type="WORKFLOW"
         to={getPrivateRoute('workflows')}
         onClick={handleWorkflowClick}
-        data-cy="getstarted-workflow-widget"
       />
     </div>
   );
