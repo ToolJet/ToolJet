@@ -1,5 +1,11 @@
 /* eslint-disable import/no-unresolved */
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import { getActionFunction, formatSignature } from './actionFunctionRegistry.js';
+import {
+  getComponentAction,
+  getComponentActionsByHandle,
+  formatComponentActionSignature,
+} from './componentActionRegistry.js';
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 import { syntaxTree } from '@codemirror/language';
 
@@ -72,7 +78,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     return false;
   });
 
-  jsHints.sort((a, b) => {
+  jsHints.sort((a, _b) => {
     return a.hint.startsWith(lastCharsAfterDot) ? -1 : 1;
   });
 
@@ -87,15 +93,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
   return suggestions;
 };
 
-function orderSuggestions(suggestions, validationType) {
-  if (!validationType) return suggestions;
-
-  const matchingSuggestions = suggestions.filter((s) => s.detail === validationType);
-
-  const otherSuggestions = suggestions.filter((s) => s.detail !== validationType);
-
-  return [...matchingSuggestions, ...otherSuggestions];
-}
+// removed unused orderSuggestions
 
 export const generateHints = (hints, totalReferences = 1, input, searchText) => {
   if (!hints) return [];
@@ -202,11 +200,9 @@ function filterHintsByDepth(input, hints) {
 export function findNearestSubstring(inputStr, currentCurosorPos) {
   let end = currentCurosorPos - 1; // Adjust for zero-based indexing
   let substring = '';
-  const inputSubstring = inputStr.substring(0, end + 1);
+  // substring previously used only for debug; removed.
 
-  console.log(`Initial cursor position: ${currentCurosorPos}`);
-  console.log(`Character at cursor: '${inputStr[end]}'`);
-  console.log(`Input substring: '${inputSubstring}'`);
+  // Debug logs removed (production)
 
   // Iterate backwards from the character before the cursor
   for (let i = end; i >= 0; i--) {
@@ -285,7 +281,7 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
       // Sort by depth first (shallow suggestions first)
       return aDepth - bDepth;
     })
-    .map((hint) => {
+  .map((hint) => {
       if (hint.label.startsWith('client') || hint.label.startsWith('server')) return;
 
       delete hint['apply'];
@@ -338,6 +334,59 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
 
         view.dispatch(dispacthConfig);
       };
+      // Enrich actions.* suggestions with metadata tooltip
+      if (hint.label.startsWith('actions.')) {
+        const clean = hint.label.replace(/\(\)$/, '');
+        const def = getActionFunction(clean);
+        if (def) {
+          hint.detail = 'action';
+          hint.type = 'function';
+          const sig = formatSignature(def);
+          const deprecated = /deprecated/i.test(def.description || '') || def.deprecated;
+          hint.info = () => {
+            const dom = document.createElement('div');
+            dom.style.fontSize = '12px';
+            dom.innerHTML = `
+              <code style="${deprecated ? 'text-decoration:line-through;opacity:0.7;' : ''}">${sig}</code><br/>
+              <div>${def.description || ''}${deprecated ? ' (deprecated)' : ''}</div>
+              ${def.examples?.length ? `<div style="margin-top:4px;color:#888">${def.examples[0]}</div>` : ''}
+            `;
+            return dom;
+          };
+        }
+      }
+      // component instance action: components.NAME.actionHandle()
+      if (hint.label.startsWith('components.') && hint.label.endsWith('()')) {
+        const clean = hint.label.replace(/\(\)$/, '');
+        const parts = clean.split('.');
+        if (parts.length === 3) {
+          const comp = parts[1];
+          const handle = parts[2];
+          let meta = getComponentAction(`${comp}.${handle}`);
+          if (!meta) {
+            const generic = getComponentActionsByHandle(handle)[0];
+            if (generic) {
+              meta = { ...generic, instance: comp };
+            }
+          }
+          if (meta) {
+            hint.detail = 'component action';
+            hint.type = 'function';
+            const sig = formatComponentActionSignature({ ...meta, instance: comp });
+            const deprecated = meta.deprecated;
+            hint.info = () => {
+              const dom = document.createElement('div');
+              dom.style.fontSize = '12px';
+              dom.innerHTML = `
+                <code style="${deprecated ? 'text-decoration:line-through;opacity:0.7;' : ''}">${sig}</code><br/>
+                <div>${meta.displayName || ''}${deprecated ? ' (deprecated)' : ''}</div>
+                ${meta.description ? `<div style="margin-top:4px;color:#666;">${meta.description}</div>` : ''}
+              `;
+              return dom;
+            };
+          }
+        }
+      }
       return hint;
     });
 

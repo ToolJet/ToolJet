@@ -25,6 +25,7 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { actionsIntelliSense } from './actionsIntelliSenseExtensions';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -67,10 +68,7 @@ const MultiLineCodeEditor = (props) => {
   );
 
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
-  const isInsideQueryManager = useMemo(
-    () => isInsideParent(wrapperRef?.current, 'query-manager'),
-    [wrapperRef.current]
-  );
+  const isInsideQueryManager = useMemo(() => isInsideParent(wrapperRef?.current, 'query-manager'), []);
 
   const context = useContext(CodeHinterContext);
 
@@ -86,7 +84,7 @@ const MultiLineCodeEditor = (props) => {
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onChange, currentValueRef, 'multiline');
 
   // Add state for tracking autocomplete visibility
-  const [showSuggestions, setShowSuggestions] = React.useState(true);
+  const [showSuggestions, setShowSuggestions] = React.useState(true); // eslint-disable-line no-unused-vars
   const currentLineObserverRef = useRef(null);
   const isObserverTriggeredRef = useRef(false);
 
@@ -286,6 +284,8 @@ const MultiLineCodeEditor = (props) => {
                   search({
                     createPanel: handleSearchPanel,
                   }),
+                  // Actions IntelliSense (hover, signature, keymaps)
+                  ...actionsIntelliSense,
                   javascriptLanguage.data.of({
                     autocomplete: overRideFunction,
                   }),
