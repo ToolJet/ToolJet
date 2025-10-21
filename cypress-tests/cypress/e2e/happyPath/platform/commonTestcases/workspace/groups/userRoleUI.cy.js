@@ -14,6 +14,7 @@ import {
     verifyGranularAddModal,
     verifyGranularEditModal,
     verifyPermissionCheckBoxLabelsAndHelperTexts,
+    verifyUserRow
 } from "Support/utils/platform/groupsUI";
 import { groupsText } from "Texts/manageGroups";
 
@@ -61,7 +62,7 @@ describe("User Role UI and Functionality verification", () => {
             "USER ROLE"
         );
         cy.verifyElement('[data-cy="custom-groups-title"]', "CUSTOM GROUPS");
-        cy.get('[data-cy="create-group-button"]').should("be.visible");
+        cy.get('[data-cy="create-group-button-icon"]').should("be.visible");
         cy.get('[data-cy="search-icon"]').should("be.visible");
 
         // Admin List Item Verification
@@ -91,23 +92,11 @@ describe("User Role UI and Functionality verification", () => {
             groupsText.emailTableHeader
         );
 
-        // Verify user data row is present (Admin group should have at least one user)
+        verifyUserRow("The Developer", "dev@tooljet.io");
 
-        // Verify user name column with avatar and name text
-        cy.get('[data-cy="avatar-image"]').should("be.visible");
-        cy.get('[data-cy="user-name"]')
-            .should("be.visible")
-            .and("contain.text", "The Developer");
-        cy.get('[data-cy="user-email"]')
-            .should("be.visible")
-            .and("have.text", " dev@tooljet.io");
-
-        // Verify edit role button
         cy.get('[data-cy="edit-role-button"]')
             .should("be.visible")
             .and("be.enabled");
-
-        // Verify Edit User Role Modal
         cy.get('[data-cy="edit-role-button"]').click();
         verifyEditUserRoleModal("dev@tooljet.io");
         cy.get(groupsSelector.cancelButton).click();

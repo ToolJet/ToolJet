@@ -1,204 +1,58 @@
 import { fake } from "Fixtures/fake";
+
 import { commonSelectors } from "Selectors/common";
+import { commonEeSelectors } from "Selectors/eeCommon";
 import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
-import { OpenGroupCardOption } from "Support/utils/manageGroups";
-import { groupsText } from "Texts/manageGroups";
+import {
+  apiAddUserToGroup,
+  apiCreateGroup,
+  apiDeleteGroup,
+} from "Support/utils/manageGroups";
+import {
+  addGranularPermissionViaUI,
+  createGroupViaUI,
+  deleteGroupViaUI,
+  openGroupThreeDotMenu,
+  renameGroupViaUI,
+  switchBetweenAllAndCustom,
+  verifyDuplicateModal,
+  verifyGroupCreatedInSidebar,
+  verifyGroupRemovedFromSidebar,
+} from "Support/utils/platform/customGroups";
 
-const verifyModalFields = (isEdit = false, groupName = "") => {
-  // Modal header verification
-  cy.get(groupsSelector.permissionNameLabel).verifyVisibleElement(
-    "have.text",
-    groupsText.permissionNameLabel
-  );
-  cy.get(groupsSelector.permissionNameInput)
-    .should("be.visible")
-    .and(
-      isEdit ? "have.value" : "have.attr",
-      isEdit ? groupName : "placeholder",
-      isEdit ? groupName : "Eg. Product analytics apps"
-    );
-  cy.get(groupsSelector.permissionNameHelperText).verifyVisibleElement(
-    "have.text",
-    groupsText.permissionNameHelperText
-  );
+import {
+  verifyCheckPermissionStates,
+  verifyEmptyStates,
+  verifyGranularAccessByRole,
+  verifyGranularEditModal,
+  verifyGranularPermissionModalStates,
+  verifyGroupLinks,
+  verifyPermissionCheckBoxLabelsAndHelperTexts,
+  verifyUserRow,
+} from "Support/utils/platform/groupsUI";
 
-  // Permission section verification
-  const permissionChecks = [
-    {
-      selector: groupsSelector.permissionLabel,
-      text: groupsText.permissionLabel,
-    },
-    {
-      selector: groupsSelector.editPermissionLabel,
-      text: groupsText.editPermissionLabel,
-    },
-    {
-      selector: groupsSelector.editPermissionHelperText,
-      text: groupsText.appEditHelperText,
-    },
-    {
-      selector: groupsSelector.viewPermissionLabel,
-      text: groupsText.viewPermissionLabel,
-    },
-    {
-      selector: groupsSelector.viewPermissionHelperText,
-      text: groupsText.appViewHelperText,
-    },
-  ];
-
-  permissionChecks.forEach(({ selector, text }) => {
-    cy.get(selector).verifyVisibleElement("have.text", text);
-  });
-
-  // Hide permission verification
-  cy.get(groupsSelector.hidePermissionInput).should("be.visible");
-  cy.get(groupsSelector.appHidePermissionModalLabel).verifyVisibleElement(
-    "have.text",
-    groupsText.appHideLabel
-  );
-  cy.get(groupsSelector.appHidePermissionModalHelperText).verifyVisibleElement(
-    "have.text",
-    groupsText.appHideHelperText
-  );
-
-  // Resource section verification
-  const resourceChecks = [
-    {
-      selector: groupsSelector.resourceLabel,
-      text: groupsText.resourcesheader,
-    },
-    {
-      selector: groupsSelector.allAppsLabel,
-      text: isEdit ? groupsText.allAppsLabel : groupsText.groupChipText,
-    },
-    {
-      selector: groupsSelector.allAppsHelperText,
-      text: groupsText.allAppsHelperText,
-    },
-  ];
-
-  resourceChecks.forEach(({ selector, text }) => {
-    cy.get(selector).verifyVisibleElement("have.text", text);
-  });
-
-  // Button states
-  cy.get(groupsSelector.confimButton).verifyVisibleElement(
-    "have.text",
-    isEdit ? groupsText.updateButtonText : groupsText.addButtonText
-  );
-  cy.get(groupsSelector.confimButton).should(
-    isEdit ? "be.enabled" : "be.disabled"
-  );
-  cy.get(groupsSelector.cancelButton).verifyVisibleElement(
-    "have.text",
-    groupsText.cancelButton
-  );
-
-  if (isEdit) {
-    cy.get(groupsSelector.deletePermissionIcon).should("be.visible");
-  }
-};
-
-const verifyPermissionSection = () => {
-  const permissionElements = [
-    {
-      resource: groupsSelector.resourcesApps,
-      resourceText: groupsText.resourcesApps,
-      check: groupsSelector.appsCreateCheck,
-      label: groupsSelector.appsCreateLabel,
-      labelText: groupsText.createLabel,
-      helperText: groupsSelector.appCreateHelperText,
-      helperContent: groupsText.appCreateHelperText,
-    },
-    {
-      resource: groupsSelector.resourcesFolders,
-      resourceText: groupsText.resourcesFolders,
-      check: groupsSelector.foldersCreateCheck,
-      label: groupsSelector.foldersCreateLabel,
-      labelText: groupsText.folderCreateLabel,
-      helperText: groupsSelector.foldersHelperText,
-      helperContent: groupsText.folderHelperText,
-    },
-  ];
-
-  permissionElements.forEach(
-    ({
-      resource,
-      resourceText,
-      check,
-      label,
-      labelText,
-      helperText,
-      helperContent,
-    }) => {
-      cy.get(resource).verifyVisibleElement("have.text", resourceText);
-      cy.get(check).should("be.visible");
-      cy.get(check).check();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.permissionUpdatedToast
-      );
-      cy.get(check).uncheck();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.permissionUpdatedToast
-      );
-      cy.get(label).verifyVisibleElement("have.text", labelText);
-      cy.get(helperText).verifyVisibleElement("have.text", helperContent);
-    }
-  );
-};
-
-const verifyEmptyStates = () => {
-  // Users empty state
-  cy.get(groupsSelector.userEmptyPageIcon).should("be.visible");
-  cy.get(groupsSelector.userEmptyPageTitle).verifyVisibleElement(
-    "have.text",
-    groupsText.userEmptyPageTitle
-  );
-  cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement(
-    "have.text",
-    groupsText.userEmptyPageHelperText
-  );
-
-  // Granular permissions empty state
-  cy.get(groupsSelector.granularLink).click();
-  cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
-  cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
-    "have.text",
-    groupsText.emptyPagePermissionTitle
-  );
-  cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement(
-    "have.text",
-    groupsText.emptyPagePermissionHelperText
-  );
-};
-
-const verifyGroupLinks = () => {
-  const links = [
-    { selector: groupsSelector.usersLink, text: groupsText.usersLink },
-    {
-      selector: groupsSelector.permissionsLink,
-      text: groupsText.permissionsLink,
-    },
-    { selector: groupsSelector.granularLink, text: "Granular access" },
-  ];
-
-  links.forEach(({ selector, text }) => {
-    cy.get(selector).verifyVisibleElement("have.text", text);
-  });
-};
+import { getGroupPermissionInput } from "Support/utils/userPermissions";
 
 describe("Custom groups UI and Functionality verification", () => {
+  const isEnterprise = Cypress.env("environment") === "Enterprise";
+
   const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
   const newGroupname = `New ${groupName}`;
+  const groupName2 = `${fake.firstName.replaceAll("[^A-Za-z]", "")}2`;
+  const groupName3 = `${fake.firstName.replaceAll("[^A-Za-z]", "")}3`;
+  const duplicatedGroupName = `${groupName3}_copy`;
+  const appPermissionName = "Apps";
+  const workflowPermissionName = "Workflows";
+  const datasourcePermissionName = "  Data sources";
+  const permissionName2 = "Permission2";
   const data = {
     firstName: fake.firstName,
     email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
     workspaceName: fake.firstName,
     workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
   };
+  let groupId3;
 
   before(() => {
     cy.apiLogin();
@@ -208,187 +62,212 @@ describe("Custom groups UI and Functionality verification", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
-    navigateToManageGroups();
+    cy.viewport(2000, 1900);
   });
 
-  const commonGroupVerification = () => {
-    // Resource Verification
-    cy.verifyElement(
-      groupsSelector.textDefaultGroup,
-      groupsText.textDefaultGroup
-    );
-    cy.get(groupsSelector.usersLink).click();
-    cy.verifyElement(
-      groupsSelector.nameTableHeader,
-      groupsText.userNameTableHeader
-    );
-    cy.verifyElement(
-      groupsSelector.emailTableHeader,
-      groupsText.emailTableHeader
-    );
-  };
+  it("should create, rename, and delete a custom group", () => {
+    navigateToManageGroups();
+    createGroupViaUI(groupName);
 
-  it("Should verify the elements and functionalities on manage groups page", () => {
-    // Verify base group elements
-    manageGroupsElements();
+    verifyGroupCreatedInSidebar(groupName);
 
-    // Test group creation flow
-    const verifyGroupCreation = () => {
-      cy.get(groupsSelector.createNewGroupButton).should("be.visible").click();
-      cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
-        "have.text",
-        groupsText.cardTitle
-      );
-      cy.get(groupsSelector.groupNameInput).should("be.visible");
-      cy.get(groupsSelector.cancelButton).verifyVisibleElement(
-        "have.text",
-        groupsText.cancelButton
-      );
-      cy.get(groupsSelector.createGroupButton).verifyVisibleElement(
-        "have.text",
-        groupsText.createGroupButton
-      );
-      cy.get(groupsSelector.cancelButton).click();
-    };
+    renameGroupViaUI(groupName, newGroupname);
 
-    // Test duplicate group name
-    const testDuplicateGroup = () => {
-      cy.get(groupsSelector.createNewGroupButton).click();
-      cy.clearAndType(groupsSelector.groupNameInput, groupsText.admin);
-      cy.get(groupsSelector.createGroupButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.groupNameExistToast
-      );
-      cy.get(groupsSelector.cancelButton).click();
-      cy.get(groupsSelector.groupNameInput).should("not.exist");
-    };
+    verifyGroupCreatedInSidebar(newGroupname);
 
-    // Create and verify new group
-    const createNewGroup = () => {
-      cy.get(groupsSelector.createNewGroupButton).click();
-      cy.clearAndType(groupsSelector.groupNameInput, groupName);
-      cy.get(groupsSelector.createGroupButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.groupCreatedToast
-      );
+    deleteGroupViaUI(newGroupname);
 
-      // Verify group creation
-      cy.get(groupsSelector.groupLink(groupName)).verifyVisibleElement(
-        "have.text",
-        groupName
-      );
-      cy.get(groupsSelector.groupLink(groupName)).click();
-      cy.get(groupsSelector.groupPageTitle(groupName)).verifyVisibleElement(
-        "have.text",
-        `${groupName} (0)`
-      );
-      cy.get(groupsSelector.groupNameUpdateLink).should("be.visible");
+    verifyGroupRemovedFromSidebar(newGroupname);
+  });
 
-      // Verify group links and tables
-      verifyGroupLinks();
-      cy.get(groupsSelector.usersLink).click();
-      cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
-        "have.text",
-        groupsText.userNameTableHeader
-      );
-      cy.get(groupsSelector.emailTableHeader).verifyVisibleElement(
-        "have.text",
-        groupsText.emailTableHeader
-      );
-      verifyEmptyStates();
-    };
+  it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
+    apiCreateGroup(groupName2);
 
-    verifyGroupCreation();
-    testDuplicateGroup();
-    createNewGroup();
+    cy.apiCreateApp(groupName);
+    cy.ifEnv("Enterprise", () => {
+      cy.apiCreateWorkflow(groupName);
+      cy.apiCreateGDS(
+        `${Cypress.env("server_host")}/api/data-sources`,
+        groupName,
+        "restapi",
+        [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
+      );
+    });
+
+    navigateToManageGroups();
+    cy.get(groupsSelector.groupLink(groupName2)).click();
+
+    verifyGroupLinks();
+    verifyEmptyStates(true);
 
     cy.get(groupsSelector.permissionsLink).click();
-    verifyPermissionSection();
+    verifyCheckPermissionStates("custom");
+    verifyPermissionCheckBoxLabelsAndHelperTexts();
 
-    // Test granular access section
-    const verifyGranularAccess = () => {
-      cy.get(groupsSelector.granularLink).click();
-      cy.ifEnv("Community", () => {
-        cy.get(groupsSelector.addAppsButton).click();
+    cy.get(groupsSelector.granularLink).click();
+    addGranularPermissionViaUI(appPermissionName, {
+      resourceType: "app",
+      permission: "edit",
+      scope: "all",
+    });
+
+    cy.ifEnv("Enterprise", () => {
+      addGranularPermissionViaUI(workflowPermissionName, {
+        resourceType: "workflow",
+        permission: "build",
+        scope: "all",
       });
-      cy.ifEnv("Enterprise", () => {
-        cy.get(groupsSelector.addPermissionButton).click();
-        cy.get(groupsSelector.addAppButton).click();
+
+      addGranularPermissionViaUI(datasourcePermissionName, {
+        resourceType: "datasource",
+        permission: "configure",
+        scope: "all",
       });
+    });
+    verifyGranularAccessByRole("builder");
+    verifyGranularEditModal("custom");
 
-      verifyModalFields();
+    cy.get('[data-cy="apps-granular-access"]').realHover();
+    cy.get('[data-cy="edit-apps-granular-access"]').click();
 
-      // Add permission
-      cy.clearAndType(groupsSelector.permissionNameInput, groupName);
-      cy.get(groupsSelector.confimButton).click();
+    verifyGranularPermissionModalStates("app", "custom");
 
-      // Verify edit mode
-      cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
-      cy.get(
-        `${groupsSelector.addEditPermissionModalTitle}:eq(2)`
-      ).verifyVisibleElement("have.text", groupsText.editPermissionModalTitle);
-      cy.get(groupsSelector.editPermissionRadio).check();
-      verifyModalFields(true, groupName);
-      cy.get(groupsSelector.confimButton).click();
-    };
+    cy.get(groupsSelector.viewPermissionRadio).check();
+    switchBetweenAllAndCustom("custom");
 
-    verifyGranularAccess();
+    verifyGranularPermissionModalStates("app", "custom", {
+      editRadio: { checked: false, enabled: true },
+      viewRadio: { checked: true, enabled: true },
+      hideCheckbox: { enabled: true },
+      allAppsRadio: { checked: false, enabled: true },
+      customRadio: { checked: true, enabled: true },
+    });
 
-    // Test group rename and delete
-    const verifyGroupRename = () => {
-      cy.get(groupsSelector.groupNameUpdateLink).click();
-      cy.get(groupsSelector.updateGroupNameModalTitle).verifyVisibleElement(
-        "have.text",
-        groupsText.updateGroupNameModalTitle
-      );
-      cy.clearAndType(groupsSelector.groupNameInput, newGroupname);
-      cy.get(groupsSelector.createGroupButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.groupNameUpdateSucessToast
-      );
-      cy.get(groupsSelector.groupLink(newGroupname)).verifyVisibleElement(
-        "have.text",
-        newGroupname
-      );
-    };
+    switchBetweenAllAndCustom("all");
+    verifyGranularPermissionModalStates("app", "custom", {
+      editRadio: { checked: false, enabled: true },
+      viewRadio: { checked: true, enabled: true },
+      hideCheckbox: { enabled: true },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
 
-    const verifyGroupDelete = () => {
-      cy.get(groupsSelector.groupLink(newGroupname)).click();
-      OpenGroupCardOption(newGroupname);
-      cy.get(groupsSelector.deleteGroupOption).click();
+    cy.get(groupsSelector.editPermissionRadio).check();
+    verifyGranularPermissionModalStates("app", "custom", {
+      editRadio: { checked: true, enabled: true },
+      viewRadio: { checked: false, enabled: true },
+      hideCheckbox: { enabled: false },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
 
-      // Verify delete confirmation
-      cy.get(groupsSelector.confirmText).verifyVisibleElement(
-        "have.text",
-        groupsText.confirmText
-      );
-      cy.get(commonSelectors.buttonSelector("Cancel")).verifyVisibleElement(
-        "have.text",
-        groupsText.confirmCancelButton
-      );
-      cy.get(commonSelectors.buttonSelector("Yes")).verifyVisibleElement(
-        "have.text",
-        groupsText.confirmYesButton
-      );
-      cy.get(commonSelectors.buttonSelector("Cancel")).click();
+    cy.get(groupsSelector.cancelButton).click();
 
-      // Actual delete
-      OpenGroupCardOption(newGroupname);
-      cy.get(groupsSelector.deleteGroupOption).click();
-      cy.get(commonSelectors.buttonSelector("Yes")).click();
-    };
+    cy.ifEnv("Enterprise", () => {
+      cy.get('[data-cy="workflow-granular-access"]').realHover();
+      cy.get('[data-cy="edit-workflow-granular-access"]').click();
 
-    verifyGroupRename();
-    verifyGroupDelete();
+      verifyGranularPermissionModalStates("workflow", "custom");
+
+      cy.get(groupsSelector.executeWorkflowradio).check();
+      verifyGranularPermissionModalStates("workflow", "custom", {
+        buildRadio: { checked: false, enabled: true },
+        executeRadio: { checked: true, enabled: true },
+      });
+      cy.get(groupsSelector.cancelButton).click();
+
+      cy.get('[data-cy="datasource-granular-access"]').realHover();
+      cy.get('[data-cy="edit-datasource-granular-access"]').click();
+      verifyGranularPermissionModalStates("datasource", "custom");
+
+      cy.get(groupsSelector.buildWithDatasourceRadio).check();
+      verifyGranularPermissionModalStates("datasource", "custom", {
+        configureRadio: { checked: false, enabled: true },
+        buildWithRadio: { checked: true, enabled: true },
+      });
+      cy.get(groupsSelector.cancelButton).click();
+    });
+
+    apiDeleteGroup(groupName2);
   });
 
-  const toggleCheckbox = (selector, toastSelector, toastMessage) => {
-    cy.get(selector).should("be.visible").uncheck();
-    cy.verifyToastMessage(toastSelector, toastMessage);
-    cy.get(selector).check();
-    cy.verifyToastMessage(toastSelector, toastMessage);
-  };
+  it("should create group via API, add permissions, duplicate group and verify all permissions are copied", () => {
+    cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+    cy.apiLogout();
+
+    cy.apiLogin();
+    cy.apiCreateApp(groupName3);
+
+    cy.ifEnv("Enterprise", () => {
+      cy.apiCreateWorkflow(groupName3);
+      cy.apiCreateGDS(
+        `${Cypress.env("server_host")}/api/data-sources`,
+        groupName3,
+        "restapi",
+        [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
+      );
+    });
+
+    apiCreateGroup(groupName3).then((groupId) => {
+      groupId3 = groupId;
+      apiAddUserToGroup(groupId3, data.email);
+      cy.apiCreateGranularPermission(
+        groupName3,
+        "Apps",
+        "app",
+        { canEdit: true, canView: false, hideFromDashboard: false },
+        []
+      );
+
+      cy.ifEnv("Enterprise", () => {
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "Workflows",
+          "workflow",
+          { canEdit: true, canView: false, hideFromDashboard: false },
+          []
+        );
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "Data sources",
+          "datasource",
+          { canUse: false, canConfigure: true },
+          []
+        );
+      });
+    });
+
+    cy.apiUpdateGroupPermission(
+      groupName3,
+      getGroupPermissionInput(isEnterprise, true)
+    );
+
+    navigateToManageGroups();
+    cy.wait(2000);
+    openGroupThreeDotMenu(groupName3);
+    cy.get(groupsSelector.duplicateOption).click();
+    verifyDuplicateModal(groupName3);
+
+    cy.get(groupsSelector.cancelButton).click();
+
+    openGroupThreeDotMenu(groupName3);
+    cy.get(groupsSelector.duplicateOption).click();
+    cy.get(commonEeSelectors.confirmButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Group duplicated successfully"
+    );
+
+    cy.wait(1000);
+    verifyUserRow(data.firstName, ` ${data.email}`);
+    cy.get(groupsSelector.groupLink(duplicatedGroupName)).click();
+    cy.get(groupsSelector.permissionsLink).click();
+    verifyCheckPermissionStates("builder");
+
+    cy.get(groupsSelector.granularLink).click();
+    verifyGranularAccessByRole("builder");
+
+    apiDeleteGroup(duplicatedGroupName);
+    apiDeleteGroup(groupName3);
+  });
 });

@@ -4,6 +4,7 @@ export const cyParamName = (paramName = "") => {
 export const groupsSelector = {
   pageTitle: "[data-cy=user-groups-title]",
   createNewGroupButton: "[data-cy=create-new-group-button]",
+  createGroupButton: "[data-cy=create-group-button]",
   tableHeader: "[data-cy=table-header]",
   groupName: "[data-cy=group-name]",
   addNewGroupModalTitle: '[data-cy="add-new-group-title"]',
@@ -41,7 +42,7 @@ export const groupsSelector = {
   allAppsRadio: '[data-cy="all-apps-radio"]',
   allAppsLabel: '[data-cy="all-apps-label"]',
   allAppsHelperText: '[data-cy="this-will-select-all-apps-in-the-workspace-including-any-new-apps-created-info-text"]',
-  customradio: '[data-cy="custom-radio"]',
+  customRadio: '[data-cy="custom-radio"]',
   customLabel: '[data-cy="custom-label"]',
   customHelperText: '[data-cy="custom-info-text"]',
   resourcesFolders: "[data-cy=resource-folders]",
@@ -139,7 +140,7 @@ export const groupsSelector = {
   helperTextAdminPermissions: '[data-cy="helper-text-admin-permissions"]',
   updateGroupNameModalTitle: '[data-cy="update-group-title"]',
   editGranularPermissionIcon: '[data-cy="edit-permission-button"]',
-  granularAccessPermission: '[data-cy="granular-access-permission"]',
+  granularAccessPermission: '[data-cy="apps-granular-access"]',
   groupChip: (accessType) => `[data-cy="${cyParamName(accessType)}-group-chip"]`,
   resourceContainer: '[data-cy="resources-container"]',
   groupLink: (groupname) => {

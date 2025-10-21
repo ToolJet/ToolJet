@@ -28,7 +28,7 @@ export const addAppToGroup = (appName) => {
   );
 };
 
-export const createGroup = (groupName) => {
+export const apiCreateGroup = (groupName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
@@ -44,14 +44,16 @@ export const createGroup = (groupName) => {
   });
 };
 
-export const apiDeleteGroup = (groupId) => {
-  cy.getAuthHeaders().then((headers) => {
-    cy.request({
-      method: "DELETE",
-      url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
-      headers: headers,
-    }).then((response) => {
-      expect(response.status).to.equal(200);
+export const apiDeleteGroup = (groupName) => {
+  cy.apiGetGroupId(groupName).then((groupId) => {
+    cy.getAuthHeaders().then((headers) => {
+      cy.request({
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
+        headers: headers,
+      }).then((response) => {
+        expect(response.status).to.equal(200);
+      });
     });
   });
 };
@@ -340,5 +342,37 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
       const roleName = response.body.workspaces[0].userPermission.name;
       expect(roleName).to.equal(expectedRole);
     });
+  });
+};
+
+export const apiAddUserToGroup = (groupId, email) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/organization-users`,
+        headers: headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const user = response.body.users.find((u) => u.email === email);
+        const userId = user.user_id;
+        return cy
+          .request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
+            headers: headers,
+            body: {
+              userIds: [userId],
+              groupId: groupId,
+            },
+            log: false,
+          })
+          .then((addResponse) => {
+            expect(addResponse.status).to.equal(201);
+            return userId;
+          });
+      });
   });
 };

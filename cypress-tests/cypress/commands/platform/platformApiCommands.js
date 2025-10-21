@@ -174,19 +174,21 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
 
 Cypress.Commands.add("apiGetGroupId", (groupName) => {
     return cy.getAuthHeaders().then((headers) => {
-        return cy.request({
-            method: "GET",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-            headers: headers,
-            log: false,
-        }).then((response) => {
-            expect(response.status).to.equal(200);
-            const group = response.body.groupPermissions.find(
-                (g) => g.name === groupName
-            );
-            if (!group) throw new Error(`Group with name ${groupName} not found`);
-            return group.id;
-        });
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                const group = response.body.groupPermissions.find(
+                    (g) => g.name === groupName
+                );
+                if (!group) throw new Error(`Group with name ${groupName} not found`);
+                return group.id;
+            });
     });
 });
 
@@ -195,33 +197,71 @@ Cypress.Commands.add(
     (
         groupName,
         name,
-        canEdit = false,
-        canView = true,
-        hideFromDashboard = false,
+        resourceType = "app",
+        permissions = {},
         resourcesToAdd = []
     ) => {
         cy.getAuthHeaders().then((headers) => {
             cy.apiGetGroupId(groupName).then((groupId) => {
-                // Create granular permission
-                cy.request({
-                    method: "POST",
-                    url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions`,
-                    headers: headers,
-                    body: {
+                const environment = Cypress.env("environment");
+                const isEnterprise = environment === "Enterprise";
+
+                const resourceTypeMap = {
+                    app: { type: "app", endpoint: "app" },
+                    workflow: { type: "workflow", endpoint: "data-source" },
+                    datasource: { type: "data_source", endpoint: "data-source" },
+                };
+
+                const { type, endpoint } =
+                    resourceTypeMap[resourceType] || resourceTypeMap.app;
+
+                const url = isEnterprise
+                    ? `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/${endpoint}`
+                    : `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions`;
+                let permissionObject;
+
+                if (resourceType === "datasource") {
+                    permissionObject = {
+                        action: {
+                            canUse: permissions.canUse ?? true,
+                            canConfigure: permissions.canConfigure ?? false,
+                        },
+                        resourcesToAdd,
+                    };
+                } else {
+                    permissionObject = {
+                        canEdit: permissions.canEdit ?? false,
+                        canView: permissions.canView ?? true,
+                        hideFromDashboard: permissions.hideFromDashboard ?? false,
+                        resourcesToAdd,
+                    };
+                }
+
+                const body = isEnterprise
+                    ? {
+                        name,
+                        type,
+                        groupId,
+                        isAll: true,
+                        createResourcePermissionObject: permissionObject,
+                    }
+                    : {
                         name,
                         type: "app",
                         groupId,
                         isAll: true,
-                        createAppsPermissionsObject: {
-                            canEdit,
-                            canView,
-                            hideFromDashboard,
-                            resourcesToAdd,
-                        },
-                    },
+                        createAppsPermissionsObject: permissionObject,
+                    };
+
+                cy.request({
+                    method: "POST",
+                    url: url,
+                    headers: headers,
+                    body: body,
                     log: false,
                 }).then((res) => {
                     expect(res.status).to.equal(201);
+                    cy.log(`Created ${resourceType} granular permission: ${name}`);
                 });
             });
         });
@@ -233,8 +273,6 @@ Cypress.Commands.add(
     (groupName, typesToDelete = []) => {
         cy.getAuthHeaders().then((headers) => {
             cy.apiGetGroupId(groupName).then((groupId) => {
-
-                // Step 2: Get all granular permissions for the group
                 cy.request({
                     method: "GET",
                     url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
@@ -244,23 +282,32 @@ Cypress.Commands.add(
                     expect(granularResponse.status).to.equal(200);
                     const granularPermissions = granularResponse.body;
 
-                    // Step 3: Filter if typesToDelete is specified
                     const permissionsToDelete = typesToDelete.length
                         ? granularPermissions.filter((perm) =>
                             typesToDelete.includes(perm.type)
                         )
                         : granularPermissions;
 
-                    // Step 4: Delete each granular permission
                     permissionsToDelete.forEach((permission) => {
+                        // Map resource types to delete endpoints
+                        // Note: Workflows use the 'app' endpoint (no separate workflow endpoint in backend)
+                        const typeEndpointMap = {
+                            app: "app",
+                            workflow: "app",          // ⬅️ Workflows use app endpoint
+                            data_source: "data-source",
+                        };
+                        const endpoint = typeEndpointMap[permission.type] || "app";
+
                         cy.request({
                             method: "DELETE",
-                            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permission.id}`,
+                            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/${endpoint}/${permission.id}`,
                             headers,
                             log: false,
                         }).then((deleteResponse) => {
                             expect(deleteResponse.status).to.equal(200);
-                            cy.log(`Deleted granular permission: ${permission.name}`);
+                            cy.log(
+                                `Deleted ${permission.type} granular permission: ${permission.name}`
+                            );
                         });
                     });
                 });
@@ -496,7 +543,7 @@ Cypress.Commands.add(
         userRole = "end-user",
         userPassword = "password",
         workspaceName = "My workspace",
-        metaData = {}
+        metaData = {},
     ) => {
         let invitationToken, organizationToken;
 
@@ -620,22 +667,27 @@ Cypress.Commands.add(
     }
 );
 
-Cypress.Commands.add("apiUpdateGroupPermission", (groupName, permissionPayload) => {
-    return cy.apiGetGroupId(groupName).then((groupId) => {
-        return cy.getAuthHeaders().then((headers) => {
-            return cy.request({
-                method: "PUT",
-                url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
-                headers: headers,
-                body: permissionPayload,
-                log: false,
-            }).then((response) => {
-                expect(response.status).to.equal(200);
-                return response.body;
+Cypress.Commands.add(
+    "apiUpdateGroupPermission",
+    (groupName, permissionPayload) => {
+        return cy.apiGetGroupId(groupName).then((groupId) => {
+            return cy.getAuthHeaders().then((headers) => {
+                return cy
+                    .request({
+                        method: "PUT",
+                        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
+                        headers: headers,
+                        body: permissionPayload,
+                        log: false,
+                    })
+                    .then((response) => {
+                        expect(response.status).to.equal(200);
+                        return response.body;
+                    });
             });
         });
-    });
-});
+    }
+);
 
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
     let headers = {};
@@ -648,8 +700,12 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
                 Cookie: `tj_auth_token=${cookie.value}`,
             };
             Cypress.env("authHeaders", headers);
-            Cypress.log({ name: "getAuthHeaders", message: `Auth headers: ${JSON.stringify(headers)}` });
+            Cypress.log({
+                name: "getAuthHeaders",
+                message: `Auth headers: ${JSON.stringify(headers)}`,
+            });
             return headers;
         });
     }
 });
+

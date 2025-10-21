@@ -103,7 +103,7 @@ describe("Custom Group Granular Access", () => {
             });
 
             cy.clearAndType(groupsSelector.permissionNameInput, app);
-            cy.get(groupsSelector.customradio).check();
+            cy.get(groupsSelector.customRadio).check();
             cy.get(".css-1gfides").click({ force: true }).type(`${app}{enter}`);
             cy.get(groupsSelector.confimButton).click({ force: true });
             cy.verifyToastMessage(
@@ -149,7 +149,7 @@ describe("Custom Group Granular Access", () => {
                 cy.get(groupsSelector.addWorkflowButton).click();
 
                 cy.clearAndType(groupsSelector.permissionNameInput, workflow);
-                cy.get(groupsSelector.customradio).check();
+                cy.get(groupsSelector.customRadio).check();
                 cy.get(".css-1gfides")
                     .click({ force: true })
                     .type(`${workflow}{enter}`);
@@ -168,7 +168,7 @@ describe("Custom Group Granular Access", () => {
                 cy.get(groupsSelector.addDatasourceButton).click();
 
                 cy.clearAndType(groupsSelector.permissionNameInput, datasource);
-                cy.get(groupsSelector.customradio).check();
+                cy.get(groupsSelector.customRadio).check();
                 cy.get(".css-1gfides")
                     .click({ force: true })
                     .type(`${datasource}{enter}`);
