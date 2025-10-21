@@ -53,7 +53,7 @@ describe("dashboard", () => {
       },
     }).as("version");
 
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
+
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       data.workspaceName
@@ -160,10 +160,13 @@ describe("dashboard", () => {
 
     cy.get(dashboardSelector.appTemplateRow).should("be.visible");
     cy.reload();
-
-    verifyTooltip(commonSelectors.homePageIcon, "Home");
+    const env = Cypress.env("environment");
+    if (env === "Enterprise" || env === "Cloud") {
+      cy.get(commonSelectors.homePageLogo).should("be.visible");
+      verifyTooltip(commonSelectors.homePageIcon, "Home");
+      verifyTooltip(commonSelectors.globalWorkFlowsIcon, "Workflows");
+    };
     verifyTooltip(commonSelectors.dashboardIcon, "Apps");
-    verifyTooltip(commonSelectors.globalWorkFlowsIcon, "Workflows");
     verifyTooltip(commonSelectors.databaseIcon, "ToolJet Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(
@@ -185,7 +188,8 @@ describe("dashboard", () => {
 
     cy.apiCreateApp(data.appName);
     cy.visit(`${data.workspaceSlug}`);
-    cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
+
+    cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     cy.wait(2000);
     cy.get(commonSelectors.appCreationDetails).should("be.visible");
     cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
@@ -306,7 +310,7 @@ describe("dashboard", () => {
     cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
 
     cy.backToApps();
-    cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
+    cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     cy.wait("@appLibrary");
     cy.wait(1000);
 

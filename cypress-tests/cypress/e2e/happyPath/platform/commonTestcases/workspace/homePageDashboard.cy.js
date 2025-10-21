@@ -9,6 +9,11 @@ import { setupAndUpdateRole } from "Support/utils/manageGroups";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
+    before(function () {
+        if (Cypress.env("environment") === "Community") {
+            this.skip();
+        }
+    });
     beforeEach(() => {
 
         data = {
@@ -29,6 +34,7 @@ describe("Home Page Dashboard Testcases", () => {
     });
 
     it("Should verify elements on home page dashboard", () => {
+
         cy.get(commonSelectors.homePageIcon).click();
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
@@ -70,7 +76,7 @@ describe("Home Page Dashboard Testcases", () => {
         // Filter cards based on environment
         const cardsToTest = cardTypes.filter(cardType => {
             if (env === 'Enterprise') return ['app', 'datasource', 'workflow'].includes(cardType.type);
-            if (env === 'cloud') return ['add', 'datasource', 'template'].includes(cardType.type);
+            if (env === 'Cloud') return ['add', 'datasource', 'template'].includes(cardType.type);
             return false;
         });
 
