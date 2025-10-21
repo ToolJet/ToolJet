@@ -761,7 +761,7 @@ class BaseManageGroupPermissions extends React.Component {
                               iconWidth="20"
                               className="create-group-custom"
                               disabled={!isFeatureEnabled}
-                              data-cy="create-group-button"
+                              data-cy="create-new-group-button-icon"
                             />
                           </LicenseTooltip>
                         </div>
