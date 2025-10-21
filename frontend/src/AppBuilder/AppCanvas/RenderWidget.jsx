@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
@@ -217,25 +217,27 @@ const RenderWidget = ({
               : ''
           }`} //required for custom CSS
         >
-          <ComponentToRender
-            id={id}
-            key={key}
-            {...obj}
-            setExposedVariable={setExposedVariable}
-            setExposedVariables={setExposedVariables}
-            height={widgetHeight - 4}
-            width={widgetWidth}
-            parentId={parentId}
-            fireEvent={fireEventWrapper}
-            validate={validate}
-            resetComponent={resetComponent}
-            onComponentClick={onComponentClick}
-            darkMode={darkMode}
-            componentName={componentName}
-            adjustComponentPositions={adjustComponentPositions}
-            componentCount={componentCount}
-            dataCy={`draggable-widget-${componentName}`}
-          />
+          <Suspense fallback={<div className="tw-flex tw-items-center tw-justify-center tw-h-full">Loading...</div>}>
+            <ComponentToRender
+              id={id}
+              key={key}
+              {...obj}
+              setExposedVariable={setExposedVariable}
+              setExposedVariables={setExposedVariables}
+              height={widgetHeight - 4}
+              width={widgetWidth}
+              parentId={parentId}
+              fireEvent={fireEventWrapper}
+              validate={validate}
+              resetComponent={resetComponent}
+              onComponentClick={onComponentClick}
+              darkMode={darkMode}
+              componentName={componentName}
+              adjustComponentPositions={adjustComponentPositions}
+              componentCount={componentCount}
+              dataCy={`draggable-widget-${componentName}`}
+            />
+          </Suspense>
         </div>
       </OverlayTrigger>
     </ErrorBoundary>

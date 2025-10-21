@@ -83,20 +83,6 @@ export const createEventsSlice = (set, get) => ({
   eventsSlice: {
     ...initialState,
     setEvents: (events, moduleId = 'canvas') => {
-      const entityReferencesInEvents = findAllEntityReferences(events, [])?.filter(
-        (entity) => entity && isValidUUID(entity)
-      );
-      // let newEvents = events;
-      // console.log(get().modules['canvas']);
-      // if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
-      //   entityReferencesInEvents.forEach((entity) => {
-      //     const entityId = entity;
-      //     const entityName = get().getComponentNameFromId(entityId);
-      //     if (entityName) {
-      //       newEvents = dfs(events, entity, entityName);
-      //     }
-      //   });
-      // }
       set(
         (state) => {
           state.eventsSlice.module[moduleId].events = events;
