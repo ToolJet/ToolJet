@@ -295,14 +295,16 @@ export class VersionService implements IVersionService {
     draftVersionDto: DraftVersionDto,
     manager?: EntityManager
   ): Promise<void> {
-    const { versionName, versionFromId } = draftVersionDto;
-
-    if (!versionName || versionName.trim().length === 0) {
-      const parentVersion = await this.versionRepository.findVersion(versionFromId);
-      const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
-      const childVersionAppsCount = childVersionApps.length;
-      draftVersionDto.versionName = `${parentVersion?.name}_${childVersionAppsCount + 1}`;
-    }
-    return await this.createVersion(app, user, draftVersionDto);
+    const { versionFromId } = draftVersionDto;
+    const parentVersion = await this.versionRepository.findVersion(versionFromId);
+    const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
+    const childVersionAppsCount = childVersionApps.length;
+    const createVersionDto: VersionCreateDto = {
+      ...draftVersionDto,
+      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionDescription: '',
+    };
+    const draftVersion = await this.createVersion(app, user, createVersionDto);
+    return draftVersion;
   }
 }

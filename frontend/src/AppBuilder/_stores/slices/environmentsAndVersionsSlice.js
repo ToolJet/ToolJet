@@ -59,13 +59,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   fetchDevelopmentVersions: async (appId) => {
     const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'development').id;
-
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
-      console.log('development versions', response);
       const draftVersions = response.appVersions.filter((version) => version.status === 'DRAFT');
-      console.log('draft versions', draftVersions);
-      console.log('development versions', response.appVersions);
       set({ draftVersions });
       set({ developmentVersions: response.appVersions });
     } catch (error) {
@@ -347,11 +343,38 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       isReleaseVersionEnabled: hasReleasePermission,
     };
   },
+  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
+    try {
+      const editorEnvironment = get().selectedEnvironment.id;
+      const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      const editorVersion = {
+        id: newVersion.id,
+        name: newVersion.name,
+        current_environment_id: newVersion.current_environment_id,
+      };
+      set((state) => ({
+        ...state,
+        selectedVersion: editorVersion,
+        currentVersionId: editorVersion.id,
+        selectedEnvironment: get().environments.find(
+          (environment) => environment.id === editorVersion.current_environment_id
+        ),
+        versionsPromotedToEnvironment: [editorVersion],
+        appVersionsLazyLoaded: false,
+        appVersionEnvironment: get().environments.find(
+          (environment) => environment.id === editorVersion.current_environment_id
+        ),
+        ...calculatePromoteAndReleaseButtonVisibilityForCreateNewVersion(useStore.getState().featureAccess),
+      }));
+      onSuccess(newVersion);
+    } catch (error) {
+      onFailure(error);
+    }
+  },
 
   setIsPublicAccess: (isPublicAccess) => set({ isPublicAccess }),
   getIsPublicAccess: () => get().isPublicAccess,
 });
-
 // Helper functions
 const calculatePromoteAndReleaseButtonVisibility = (
   selectedVersionId,
