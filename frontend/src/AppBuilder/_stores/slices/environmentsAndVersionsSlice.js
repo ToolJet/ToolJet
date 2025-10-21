@@ -16,6 +16,7 @@ const initialState = {
   previewInitialEnvironmentId: null,
   developmentVersions: [],
   draftVersions: [],
+  publishedVersions: [],
   environmentLoadingState: 'completed',
   isPublicAccess: false,
 };
@@ -62,7 +63,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
       const draftVersions = response.appVersions.filter((version) => version.status === 'DRAFT');
+      const publishedVersions = response.appVersions.filter((version) => version.status === 'PUBLISHED');
       set({ draftVersions });
+      set({ publishedVersions });
       set({ developmentVersions: response.appVersions });
     } catch (error) {
       console.error('Error while getting the versions', error);

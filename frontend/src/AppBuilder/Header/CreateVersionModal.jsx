@@ -192,7 +192,6 @@ const CreateVersionModal = ({
               </small>
             </div>
           </div>
-          {/* // 320 , 502 */}
 
           {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">

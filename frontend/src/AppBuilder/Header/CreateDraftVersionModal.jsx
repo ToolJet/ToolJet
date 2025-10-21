@@ -9,6 +9,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { publish } from 'rxjs';
 
 const CreateDraftVersionModal = ({
   showCreateAppVersion,
@@ -26,12 +27,12 @@ const CreateDraftVersionModal = ({
     orgGit?.org_git?.git_ssh?.is_enabled ||
     orgGit?.org_git?.git_https?.is_enabled ||
     orgGit?.org_git?.git_lab?.is_enabled;
-
   const {
     createNewVersionAction,
     fetchDevelopmentVersions,
     developmentVersions,
     draftVersions,
+    publishedVersions,
     appId,
     setCurrentVersionId,
     selectedVersion,
@@ -43,6 +44,7 @@ const CreateDraftVersionModal = ({
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
       draftVersions: state.draftVersions,
+      publishedVersions: state.publishedVersions,
       featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
@@ -67,7 +69,7 @@ const CreateDraftVersionModal = ({
   }, [developmentVersions, selectedVersion]);
 
   const { t } = useTranslation();
-  const options = draftVersions.map((version) => {
+  const options = publishedVersions.map((version) => {
     return { label: version.name, value: version };
   });
 

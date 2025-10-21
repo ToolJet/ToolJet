@@ -18054,36 +18054,55 @@ section.ai-message-prompt-input-wrapper {
 .create-version-modal {
   height: 502px;
   width: 380px;
-   .modal-body {
+
+  .modal-body {
     height: 446px !important;
     padding: 24px !important;
-     .create-version-footer{
+
+    .create-version-footer {
       position: absolute;
       bottom: 20px;
       left: 24px;
       right: 24px;
       height: 72px !important;
     }
+
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%; // take up full height of parent
+    }
   }
 
 }
+
 .create-draft-version-modal {
   height: 446px;
   width: 380px;
-   .modal-body {
+
+  .modal-body {
     height: 390px !important;
     padding: 24px !important;
-     .create-version-footer{
+
+    .create-version-footer {
       position: absolute;
       bottom: 20px;
       left: 24px;
       right: 24px;
       height: 72px !important;
     }
+
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%; // take up full height of parent
+    }
   }
 }
 
-.create-version-modal .create-draft-version-modal{
+.create-version-modal .create-draft-version-modal {
 
   .create-version-form {
     .alert-component {
@@ -18134,15 +18153,7 @@ section.ai-message-prompt-input-wrapper {
       width: 272px;
       height: 78px;
     }
-    
-  }
 
-  .loader-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%; // take up full height of parent
-    transform: translateY(-10%);
   }
 
   .create-version-form {
@@ -18215,11 +18226,12 @@ section.ai-message-prompt-input-wrapper {
     width: 272px;
     height: 78px;
   }
-  .edit-version-footer{
-      position: absolute;
-      bottom: 20px;
-      left: 24px;
-      right: 24px;
-      height: 72px !important;
-    }
+
+  .edit-version-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    right: 24px;
+    height: 72px !important;
+  }
 }
