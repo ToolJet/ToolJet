@@ -10,6 +10,7 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
@@ -78,6 +79,19 @@ if (process.env.APM_VENDOR === 'sentry') {
   );
 }
 
+// Add Bundle Analyzer plugin when ANALYZE environment variable is set
+if (process.env.ANALYZE === 'true') {
+  plugins.push(
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'server',
+      analyzerPort: 8889,
+      openAnalyzer: true,
+      generateStatsFile: true,
+      statsFilename: 'bundle-stats.json',
+    })
+  );
+}
+
 if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
@@ -102,11 +116,55 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      chunks: 'all',
       cacheGroups: {
-        vendors: {
+        // Default vendor chunk for common dependencies
+        defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          priority: -10,
+          reuseExistingChunk: true,
+          name(module, chunks, cacheGroupKey) {
+            // Check if this module is being used by a widget chunk
+            const isWidgetChunk = chunks.some((chunk) => chunk.name && chunk.name.startsWith('widget-'));
+
+            if (isWidgetChunk && chunks.length === 1) {
+              // If only used by a single widget, bundle it with that widget
+              return false;
+            }
+
+            // Otherwise, put it in the main vendor bundle
+            return 'vendor';
+          },
+        },
+        // Large libraries that should be in their own chunks when lazy loaded
+        plotly: {
+          test: /[\\/]node_modules[\\/](plotly\.js|react-plotly\.js)[\\/]/,
+          name: 'vendor-plotly',
+          priority: 10,
+          chunks: 'async', // Only split when lazy loaded
+        },
+        reactDnd: {
+          test: /[\\/]node_modules[\\/](react-dnd|react-dnd-html5-backend|dnd-core)[\\/]/,
+          name: 'vendor-react-dnd',
+          priority: 10,
+          chunks: 'async',
+        },
+        ace: {
+          test: /[\\/]node_modules[\\/](ace-builds|react-ace)[\\/]/,
+          name: 'vendor-ace',
+          priority: 10,
+          chunks: 'async',
+        },
+        moment: {
+          test: /[\\/]node_modules[\\/](moment|react-datetime)[\\/]/,
+          name: 'vendor-moment',
+          priority: 10,
+          chunks: 'async',
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
         },
       },
     },

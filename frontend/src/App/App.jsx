@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -18,7 +18,7 @@ import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import '@/_styles/theme.scss';
-import AppLoader from '@/AppLoader';
+// import AppLoader from '@/AppLoader';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
@@ -51,6 +51,8 @@ import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
+
+const AppLoader = lazy(() => import('@/AppLoader'));
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
