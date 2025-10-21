@@ -52,14 +52,14 @@ export const verifyEditUserRoleModal = (userEmail) => {
     cy.get('[data-cy="modal-close-button"]').should("be.visible");
 };
 
-export const toggleAllPermissions = () => {
+export const toggleAllPermissions = (status = ["uncheck", "check"]) => {
     permissions.forEach((permissionSelector) => {
-        cy.get(permissionSelector).should("be.visible").uncheck();
+        cy.get(permissionSelector).should("be.visible")[status[0]]();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             groupsText.permissionUpdatedToast
         );
-        cy.get(permissionSelector).check();
+        cy.get(permissionSelector).should("be.visible")[status[1]]();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             groupsText.permissionUpdatedToast
@@ -75,9 +75,9 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 export const verifyGranularEditModal = (role) => {
-    cy.get(groupsSelector.granularAccessPermission)
-        .trigger("mouseenter")
-        .click({ force: true });
+    cy.get(groupsSelector.granularAccessPermission).realHover()
+    cy.get('[data-cy="edit-apps-granular-access"]').click();
+
     cy.get(".modal-base").should("be.visible");
 
     cy.get(groupsSelector.deletePermissionIcon)
@@ -89,7 +89,7 @@ export const verifyGranularEditModal = (role) => {
     cy.contains("Cancel").click();
 
     cy.get(groupsSelector.granularAccessPermission)
-        .trigger("mouseenter")
+        .realHover()
         .click({ force: true });
     cy.verifyElement(
         `${groupsSelector.addEditPermissionModalTitle}:eq(2)`,
@@ -98,9 +98,9 @@ export const verifyGranularEditModal = (role) => {
     permissionModal();
 
     if (role === "builder" || role === "enduser") {
-        cy.get(groupsSelector.customradio).should("be.disabled");
+        cy.get(groupsSelector.customRadio).should("be.disabled");
     } else {
-        cy.get(groupsSelector.customradio).should("be.enabled");
+        cy.get(groupsSelector.customRadio).should("be.enabled");
     }
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
@@ -137,9 +137,9 @@ export const verifyGranularAddModal = (role) => {
     permissionModal();
 
     if (role === "builder" || role === "enduser") {
-        cy.get(groupsSelector.customradio).should("be.disabled");
+        cy.get(groupsSelector.customRadio).should("be.disabled");
     } else {
-        cy.get(groupsSelector.customradio).should("be.enabled");
+        cy.get(groupsSelector.customRadio).should("be.enabled");
     }
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
@@ -275,7 +275,7 @@ export const verifyGranularPermissionModalUI = (
         groupsSelector.allAppsHelperText,
         groupsText.allAppsHelperText
     );
-    cy.get(groupsSelector.customradio).should("be.visible");
+    cy.get(groupsSelector.customRadio).should("be.visible");
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
         groupsSelector.customHelperText,
@@ -293,7 +293,8 @@ export const verifyGranularPermissionModalUI = (
     }
 };
 
-export const verifyGranularPermissionModalStates = (resourceType, role) => {
+
+export const verifyGranularPermissionModalStates = (resourceType, role, customStateOverride = null) => {
     const stateConfig = {
         app: {
             builder: {
@@ -313,7 +314,7 @@ export const verifyGranularPermissionModalStates = (resourceType, role) => {
             custom: {
                 editRadio: { checked: true, enabled: true },
                 viewRadio: { checked: false, enabled: true },
-                hideCheckbox: { enabled: true },
+                hideCheckbox: { enabled: false },
                 allAppsRadio: { checked: true, enabled: true },
                 customRadio: { checked: false, enabled: true },
             },
@@ -354,7 +355,13 @@ export const verifyGranularPermissionModalStates = (resourceType, role) => {
         },
     };
 
-    const config = stateConfig[resourceType][role];
+    // Get the base config
+    let config = stateConfig[resourceType][role];
+
+    // If customStateOverride is provided and role is 'custom', merge it with the default
+    if (customStateOverride && role === 'custom') {
+        config = { ...config, ...customStateOverride };
+    }
 
     if (resourceType === "app") {
         cy.get(groupsSelector.editPermissionRadio)
@@ -401,7 +408,7 @@ export const verifyGranularPermissionModalStates = (resourceType, role) => {
         .and(config.allAppsRadio.checked ? "be.checked" : "not.be.checked")
         .and(config.allAppsRadio.enabled ? "be.enabled" : "be.disabled");
 
-    cy.get(groupsSelector.customradio)
+    cy.get(groupsSelector.customRadio)
         .should("be.visible")
         .and(config.customRadio.checked ? "be.checked" : "not.be.checked")
         .and(config.customRadio.enabled ? "be.enabled" : "be.disabled");
@@ -672,11 +679,6 @@ export const verifyCheckPermissionStates = (roleType, action = null) => {
     };
 
     const config = roleConfig[roleType];
-    if (!config) {
-        throw new Error(
-            `Invalid role type: ${roleType}. Must be one of: admin, enduser, builder, custom`
-        );
-    }
 
     permissions.forEach((permissionSelector) => {
         cy.get(permissionSelector)
@@ -1001,4 +1003,10 @@ export const permissionModal = () => {
         groupsSelector.allAppsHelperText,
         groupsText.allAppsHelperText
     );
+};
+
+export const verifyUserRow = (name, email) => {
+    cy.get('[data-cy="avatar-image"]').should("be.visible");
+    cy.get('[data-cy="user-name"]').should("be.visible").and("contain.text", name);
+    cy.get('[data-cy="user-email"]').should("be.visible").and("have.text", email);
 };
