@@ -2,16 +2,12 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { groupsSelector } from "Selectors/manageGroups";
-import {
-    navigateToManageGroups
-} from "Support/utils/common";
+import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
-    setupWorkspaceAndInviteUser
+    setupWorkspaceAndInviteUser,
 } from "Support/utils/manageGroups";
-import {
-    getGroupPermissionInput
-} from "Support/utils/userPermissions";
+import { getGroupPermissionInput } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
 
 describe("Custom Group Granular Access", () => {
@@ -38,9 +34,7 @@ describe("Custom Group Granular Access", () => {
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
-
     });
-
 
     it("should verify the granular permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
@@ -57,7 +51,7 @@ describe("Custom Group Granular Access", () => {
             data.workspaceSlug,
             data.firstName,
             data.email,
-            'builder'
+            "builder"
         );
 
         cy.apiLogin();
@@ -122,7 +116,6 @@ describe("Custom Group Granular Access", () => {
         cy.get(groupsSelector.confimButton).click();
 
         cy.ifEnv("Enterprise", () => {
-
             cy.apiCreateWorkflow(workflowName1);
             cy.apiCreateWorkflow(workflowName2);
 
@@ -140,7 +133,7 @@ describe("Custom Group Granular Access", () => {
                 [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
             );
 
-            cy.get(groupsSelector.groupLink('Builder')).click();
+            cy.get(groupsSelector.groupLink("Builder")).click();
             cy.get(groupsSelector.groupLink(groupName)).click();
             cy.get(groupsSelector.granularLink).click();
 
@@ -213,22 +206,22 @@ describe("Custom Group Granular Access", () => {
             );
 
             cy.get(commonSelectors.globalDataSourceIcon).click();
-            cy.get(dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase())).click();
-            cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
-            cy.get(dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())).click();
-            cy.get(dataSourceSelector.dsNameInputField).should('be.disabled')
+            cy.get(
+                dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase())
+            ).click();
+            cy.get(dataSourceSelector.dsNameInputField).should("be.enabled");
+            cy.get(
+                dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())
+            ).click();
+            cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
             cy.get(dataSourceSelector.commonDsLabelAndCount).click();
             cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
         });
 
-
         //Visit hidden app url
         cy.visitSlug({
             actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
         });
-
-
     });
-
 });

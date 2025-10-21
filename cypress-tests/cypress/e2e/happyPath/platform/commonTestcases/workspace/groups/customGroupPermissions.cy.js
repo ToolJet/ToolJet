@@ -42,7 +42,9 @@ describe("Custom Group Permissions", () => {
     it("should verify user permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const workflowName1 = fake.companyName;
-        const datasourceName1 = fake.companyName.toLowerCase().replace(/[^A-Za-z]/g, "");
+        const datasourceName1 = fake.companyName
+            .toLowerCase()
+            .replace(/[^A-Za-z]/g, "");
 
         setupWorkspaceAndInviteUser(
             data.workspaceName,
@@ -194,9 +196,9 @@ describe("Custom Group Permissions", () => {
             cy.get(commonSelectors.appCard(workflowName1)).should("not.exist");
 
             cy.get(commonSelectors.globalDataSourceIcon).click();
-            cy.get(
-                dataSourceSelector.dataSourceNameButton(datasourceName1)
-            ).should("exist");
+            cy.get(dataSourceSelector.dataSourceNameButton(datasourceName1)).should(
+                "exist"
+            );
             cy.get(dataSourceSelector.commonDsLabelAndCount).click();
             cy.get('[data-cy="rest-api-add-button"]').should("be.enabled");
         });

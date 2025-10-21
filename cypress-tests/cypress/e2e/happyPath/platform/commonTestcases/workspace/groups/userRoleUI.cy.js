@@ -14,7 +14,7 @@ import {
     verifyGranularAddModal,
     verifyGranularEditModal,
     verifyPermissionCheckBoxLabelsAndHelperTexts,
-    verifyUserRow
+    verifyUserRow,
 } from "Support/utils/platform/groupsUI";
 import { groupsText } from "Texts/manageGroups";
 

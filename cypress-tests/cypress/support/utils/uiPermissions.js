@@ -54,16 +54,12 @@ export const uiVerifyFolderCreatePrivilege = (hasPrivilege = true) => {
   cy.get(commonSelectors.createNewFolderButton).should(assertion);
 };
 
-// WORKSPACE CONSTANTS UI OPERATIONS
-
 export const uiVerifyWorkspaceConstantCreatePrivilege = (
   hasPrivilege = true
 ) => {
   const assertion = hasPrivilege ? "exist" : "not.exist";
   cy.get(commonSelectors.workspaceConstantsIcon).should(assertion);
 };
-
-// DATASOURCE UI OPERATIONS (Enterprise)
 
 export const uiCreateDataSource = (
   datasourceName,
@@ -93,8 +89,6 @@ export const uiVerifyDataSourceCreatePrivilege = (hasPrivilege = true) => {
   const assertion = hasPrivilege ? "exist" : "not.exist";
   cy.get(commonSelectors.globalDataSourceIcon).should(assertion);
 };
-
-// WORKFLOW UI OPERATIONS (Enterprise)
 
 export const uiCreateWorkflow = (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
@@ -132,8 +126,6 @@ export const uiVerifyWorkflowCreatePrivilege = (hasPrivilege = true) => {
   cy.get(commonSelectors.globalWorkFlowsIcon).should(assertion);
 };
 
-// COMPREHENSIVE PERMISSION VERIFICATIONS
-
 export const uiVerifyAllCreatePrivileges = (
   hasAppCreate = true,
   hasFolderCreate = true,
@@ -157,39 +149,23 @@ export const uiVerifyBuilderPrivileges = () => {
 
 export const uiVerifyAdminPrivileges = () => {
   uiVerifyAllCreatePrivileges(true, true, true, true, true);
-
-  // Verify settings access
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).should("exist");
   cy.get(commonSelectors.dashboardIcon).click();
 };
 
-export const uiVerifyEndUserPrivileges = () => {
-  uiVerifyAllCreatePrivileges(false, false, false, false, false);
-
-  // Verify no settings access
-  cy.get(commonSelectors.settingsIcon).click();
-  cy.get(commonSelectors.workspaceSettings).should("not.exist");
-};
-
-// COMPREHENSIVE CRUD WORKFLOWS
-
 export const uiAppCRUDWorkflow = (appName) => {
-  // Create
   uiCreateApp(appName);
   uiVerifyAppCreated(appName, true);
 
-  // Delete
   uiDeleteApp(appName);
   uiVerifyAppDeleted(appName);
 };
 
 export const uiFolderCRUDWorkflow = (folderName) => {
-  // Create
   uiCreateFolder(folderName);
   uiVerifyFolderCreated(folderName);
 
-  // Delete
   deleteFolder(folderName);
   uiVerifyFolderDeleted(folderName);
 };
@@ -198,15 +174,10 @@ export const uiWorkspaceConstantCRUDWorkflow = (
   constantName,
   constantValue
 ) => {
-  // Create
   cy.get(commonSelectors.workspaceConstantsIcon).click();
 
   addAndVerifyConstants(constantName, constantValue);
-
-  // Delete
   deleteConstant(constantName);
-
-  // Close workspace constants panel
   cy.get(commonSelectors.dashboardIcon).click();
 };
 
@@ -215,56 +186,21 @@ export const uiDataSourceCRUDWorkflow = (
   datasourceType = "restapi"
 ) => {
   cy.ifEnv("Enterprise", () => {
-    // Create
     uiCreateDataSource(datasourceName, datasourceType);
     uiVerifyDataSourceCreated(datasourceName);
 
-    // Delete
     uiDeleteDataSource(datasourceName);
     uiVerifyDataSourceDeleted(datasourceName);
-
-    // Go back to dashboard
     cy.get(commonSelectors.dashboardIcon).click();
   });
 };
 
 export const uiWorkflowCRUDWorkflow = (workflowName) => {
   cy.ifEnv("Enterprise", () => {
-    // Create
     uiCreateWorkflow(workflowName);
     uiVerifyWorkflowCreated(workflowName);
 
-    // Delete
     uiDeleteWorkflow();
     uiVerifyWorkflowDeleted(workflowName);
-  });
-};
-
-export const uiPerformAllCRUDOperations = (
-  appName,
-  folderName,
-  constantName,
-  constantValue,
-  datasourceName = null,
-  workflowName = null
-) => {
-  // App CRUD
-  uiAppCRUDWorkflow(appName);
-
-  // Folder CRUD
-  uiFolderCRUDWorkflow(folderName);
-
-  // Workspace Constant CRUD
-  uiWorkspaceConstantCRUDWorkflow(constantName, constantValue);
-
-  // Enterprise features
-  cy.ifEnv("Enterprise", () => {
-    if (datasourceName) {
-      uiDataSourceCRUDWorkflow(datasourceName);
-    }
-
-    if (workflowName) {
-      uiWorkflowCRUDWorkflow(workflowName);
-    }
   });
 };

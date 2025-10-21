@@ -75,7 +75,7 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 export const verifyGranularEditModal = (role) => {
-    cy.get(groupsSelector.granularAccessPermission).realHover()
+    cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 
     cy.get(".modal-base").should("be.visible");
@@ -293,8 +293,11 @@ export const verifyGranularPermissionModalUI = (
     }
 };
 
-
-export const verifyGranularPermissionModalStates = (resourceType, role, customStateOverride = null) => {
+export const verifyGranularPermissionModalStates = (
+    resourceType,
+    role,
+    customStateOverride = null
+) => {
     const stateConfig = {
         app: {
             builder: {
@@ -359,7 +362,7 @@ export const verifyGranularPermissionModalStates = (resourceType, role, customSt
     let config = stateConfig[resourceType][role];
 
     // If customStateOverride is provided and role is 'custom', merge it with the default
-    if (customStateOverride && role === 'custom') {
+    if (customStateOverride && role === "custom") {
         config = { ...config, ...customStateOverride };
     }
 
@@ -412,151 +415,6 @@ export const verifyGranularPermissionModalStates = (resourceType, role, customSt
         .should("be.visible")
         .and(config.customRadio.checked ? "be.checked" : "not.be.checked")
         .and(config.customRadio.enabled ? "be.enabled" : "be.disabled");
-};
-
-export const verifyModalFields = (isEdit = false, groupName = "") => {
-    // Modal header verification
-    cy.get(groupsSelector.permissionNameLabel).verifyVisibleElement(
-        "have.text",
-        groupsText.permissionNameLabel
-    );
-    cy.get(groupsSelector.permissionNameInput)
-        .should("be.visible")
-        .and(
-            isEdit ? "have.value" : "have.attr",
-            isEdit ? groupName : "placeholder",
-            isEdit ? groupName : "Eg. Product analytics apps"
-        );
-    cy.get(groupsSelector.permissionNameHelperText).verifyVisibleElement(
-        "have.text",
-        groupsText.permissionNameHelperText
-    );
-
-    // Permission section verification
-    const permissionChecks = [
-        {
-            selector: groupsSelector.permissionLabel,
-            text: groupsText.permissionLabel,
-        },
-        {
-            selector: groupsSelector.editPermissionLabel,
-            text: groupsText.editPermissionLabel,
-        },
-        {
-            selector: groupsSelector.editPermissionHelperText,
-            text: groupsText.appEditHelperText,
-        },
-        {
-            selector: groupsSelector.viewPermissionLabel,
-            text: groupsText.viewPermissionLabel,
-        },
-        {
-            selector: groupsSelector.viewPermissionHelperText,
-            text: groupsText.appViewHelperText,
-        },
-    ];
-
-    permissionChecks.forEach(({ selector, text }) => {
-        cy.get(selector).verifyVisibleElement("have.text", text);
-    });
-
-    // Hide permission verification
-    cy.get(groupsSelector.hidePermissionInput).should("be.visible");
-    cy.get(groupsSelector.appHidePermissionModalLabel).verifyVisibleElement(
-        "have.text",
-        groupsText.appHideLabel
-    );
-    cy.get(groupsSelector.appHidePermissionModalHelperText).verifyVisibleElement(
-        "have.text",
-        groupsText.appHideHelperText
-    );
-
-    // Resource section verification
-    const resourceChecks = [
-        {
-            selector: groupsSelector.resourceLabel,
-            text: groupsText.resourcesheader,
-        },
-        {
-            selector: groupsSelector.allAppsLabel,
-            text: isEdit ? groupsText.allAppsLabel : groupsText.groupChipText,
-        },
-        {
-            selector: groupsSelector.allAppsHelperText,
-            text: groupsText.allAppsHelperText,
-        },
-    ];
-
-    resourceChecks.forEach(({ selector, text }) => {
-        cy.get(selector).verifyVisibleElement("have.text", text);
-    });
-
-    // Button states
-    cy.get(groupsSelector.confimButton).verifyVisibleElement(
-        "have.text",
-        isEdit ? groupsText.updateButtonText : groupsText.addButtonText
-    );
-    cy.get(groupsSelector.confimButton).should(
-        isEdit ? "be.enabled" : "be.disabled"
-    );
-    cy.get(groupsSelector.cancelButton).verifyVisibleElement(
-        "have.text",
-        groupsText.cancelButton
-    );
-
-    if (isEdit) {
-        cy.get(groupsSelector.deletePermissionIcon).should("be.visible");
-    }
-};
-
-export const verifyPermissionSection = () => {
-    const permissionElements = [
-        {
-            resource: groupsSelector.resourcesApps,
-            resourceText: groupsText.resourcesApps,
-            check: groupsSelector.appsCreateCheck,
-            label: groupsSelector.appsCreateLabel,
-            labelText: groupsText.createLabel,
-            helperText: groupsSelector.appCreateHelperText,
-            helperContent: groupsText.appCreateHelperText,
-        },
-        {
-            resource: groupsSelector.resourcesFolders,
-            resourceText: groupsText.resourcesFolders,
-            check: groupsSelector.foldersCreateCheck,
-            label: groupsSelector.foldersCreateLabel,
-            labelText: groupsText.folderCreateLabel,
-            helperText: groupsSelector.foldersHelperText,
-            helperContent: groupsText.folderHelperText,
-        },
-    ];
-
-    permissionElements.forEach(
-        ({
-            resource,
-            resourceText,
-            check,
-            label,
-            labelText,
-            helperText,
-            helperContent,
-        }) => {
-            cy.get(resource).verifyVisibleElement("have.text", resourceText);
-            cy.get(check).should("be.visible");
-            cy.get(check).check();
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                groupsText.permissionUpdatedToast
-            );
-            cy.get(check).uncheck();
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                groupsText.permissionUpdatedToast
-            );
-            cy.get(label).verifyVisibleElement("have.text", labelText);
-            cy.get(helperText).verifyVisibleElement("have.text", helperContent);
-        }
-    );
 };
 
 export const verifyEmptyStates = (customGroup = false) => {
@@ -652,23 +510,6 @@ export const permissions =
             groupsSelector.foldersCreateCheck,
             groupsSelector.workspaceVarCheckbox,
         ];
-
-export const updatePermissionCheckbox = (permissionSelector, action) => {
-    if (action === "check") {
-        cy.get(permissionSelector).check();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            groupsText.permissionUpdatedToast
-        );
-    }
-    if (action === "uncheck") {
-        cy.get(permissionSelector).uncheck();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            groupsText.permissionUpdatedToast
-        );
-    }
-};
 
 export const verifyCheckPermissionStates = (roleType, action = null) => {
     const roleConfig = {
@@ -1007,6 +848,8 @@ export const permissionModal = () => {
 
 export const verifyUserRow = (name, email) => {
     cy.get('[data-cy="avatar-image"]').should("be.visible");
-    cy.get('[data-cy="user-name"]').should("be.visible").and("contain.text", name);
+    cy.get('[data-cy="user-name"]')
+        .should("be.visible")
+        .and("contain.text", name);
     cy.get('[data-cy="user-email"]').should("be.visible").and("have.text", email);
 };

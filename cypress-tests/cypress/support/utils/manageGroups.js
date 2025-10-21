@@ -10,24 +10,6 @@ import {
 } from "Support/utils/manageUsers";
 import { groupsText } from "Texts/manageGroups";
 
-export const addAppToGroup = (appName) => {
-  cy.get(groupsSelector.appsLink).click();
-  cy.wait(500);
-  cy.get(groupsSelector.appSearchBox).click();
-  cy.wait(500);
-  cy.get(groupsSelector.searchBoxOptions).contains(appName).click();
-  cy.get(groupsSelector.selectAddButton).click();
-  cy.contains("tr", appName)
-    .parent()
-    .within(() => {
-      cy.get("td input").eq(1).check();
-    });
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "App permissions updated"
-  );
-};
-
 export const apiCreateGroup = (groupName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -62,52 +44,6 @@ export const deleteGroup = (groupName, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `DELETE FROM permission_groups WHERE name='${groupName}' AND organization_id='${workspaceId}';`,
-  });
-};
-
-export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-  cy.getAuthHeaders().then((headers) => {
-    createGroup(groupName).then((groupId) => {
-      // Add app to group
-      cy.request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/app`,
-        headers: headers,
-        body: {
-          name: "Apps",
-          type: "app",
-          groupId: groupId,
-          isAll: false,
-          createResourcePermissionObject: {
-            canEdit: true,
-            canView: false,
-            hideFromDashboard: false,
-            resourcesToAdd: [{ appId: Cypress.env("appId") }],
-          },
-        },
-      }).then((response) => {
-        expect(response.status).to.equal(201);
-      });
-      cy.wait(2000);
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      }).then((resp) => {
-        const userId = resp.rows[0].id;
-        // Add user to group
-        cy.request({
-          method: "POST",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
-          headers: headers,
-          body: {
-            userIds: [userId],
-            groupId: groupId,
-          },
-        }).then((response) => {
-          expect(response.status).to.equal(201);
-        });
-      });
-    });
   });
 };
 
@@ -169,61 +105,6 @@ export const groupPermission = (
       }
     });
   });
-};
-
-export const duplicateGroup = () => {
-  OpenGroupCardOption(groupName);
-  cy.get(groupsSelector.duplicateOption).click();
-};
-
-export const updateRoleUI = (user, role, email, message) => {
-  cy.get(groupsSelector.groupLink(user)).click();
-  cy.get(groupsSelector.usersLink).click();
-  cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
-  cy.get('[data-cy="modal-title"] > .tj-text-md').should(
-    "have.text",
-    "Edit user role"
-  );
-  cy.get('[data-cy="user-email"]').should("have.text", email);
-  cy.get(groupsSelector.userRoleLabel).should("have.text", groupsText.userRole);
-  cy.get(groupsSelector.warningText).should(
-    "have.text",
-    groupsText.warningText
-  );
-  cy.get(groupsSelector.cancelButton)
-    .should("have.text", groupsText.cancelButton)
-    .and("be.enabled");
-  cy.get(groupsSelector.confimButton).should("be.disabled");
-  cy.get(
-    ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-  )
-    .click()
-    .type(`${role}{enter}`);
-  cy.get(groupsSelector.confimButton)
-    .should("be.enabled")
-    .and("have.text", groupsText.continueButtonText)
-    .click();
-  cy.get('[data-cy="modal-body"]').should("have.text", message);
-  cy.get(groupsSelector.cancelButton).click();
-  cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
-  cy.get(
-    ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-  )
-    .click()
-    .type(`${role}{enter}`);
-  cy.get(groupsSelector.confimButton)
-    .should("be.enabled")
-    .and("have.text", groupsText.continueButtonText)
-    .click();
-  cy.get(groupsSelector.confimButton).click();
-  if (user != "Admin") {
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      groupsText.roleUpdateToastMessage
-    );
-  }
-  cy.get(groupsSelector.groupLink(role)).click();
-  cy.get(`[data-cy="${email}-user-row"]`).should("exist");
 };
 
 export const updateRole = (user, role, email, message = null) => {
