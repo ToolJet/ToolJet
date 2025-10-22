@@ -1,6 +1,6 @@
 ---
 id: importing-exporting-applications
-title: Import and Export Applications
+title: Applications
 ---
 
 This documentation explains the process of exporting and importing applications in ToolJet.

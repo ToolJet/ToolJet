@@ -18,7 +18,7 @@ When embedding applications, ToolJet ensures that only the right users can acces
 
 | **Feature** | **Public Applications** | **Private & Data-Sensitive Applications** |
 | ------------| ----------------------- | ------------------------------------------|
-| **Access Control** | None – anyone with the embed link or iframe can view | Requires a valid Personal Access Token (PAT) to load the app. |
+| **Access Control** | None – anyone with the embed link or iframe can view | Embed Application will follow the SSO of host application |
 | **Granularity** | Not applicable | Tokens can be scoped to individual user and application |
 | **Best For** | Public dashboards, demos, or open-data applications | Authenticated portals, customer-specific views, internal tools |
 | **Example** | Live product status page displaying uptime and incident history | Embedded customer billing dashboard showing only that customer’s invoices |

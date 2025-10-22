@@ -183,18 +183,7 @@
               ]
             },
             "app-builder/custom-theme",
-            "app-builder/customstyles",
-            {
-              "type": "category",
-              "label": "Modules",
-              "items": [
-                "app-builder/modules/overview",
-                "app-builder/modules/create-module",
-                "app-builder/modules/input-output",
-                "app-builder/modules/data-flow",
-                "app-builder/modules/import-export-modules"
-              ]
-            }
+            "app-builder/customstyles"
           ]
         },
         {
@@ -243,7 +232,7 @@
             },
             {
               "type": "category",
-              "label": "Role Based Applications",
+              "label": "Dynamic Access Rules",
               "items": [
                 "app-builder/walkthrough/row-level-security",
                 "app-builder/walkthrough/permissions"
@@ -262,12 +251,15 @@
         },
         {
           "type": "category",
-          "label": "Share Application",
+          "label": "Modules",
           "items": [
-            "app-builder/importing-exporting-applications",
-            "app-builder/embed-application"
+            "app-builder/modules/overview",
+            "app-builder/modules/create-module",
+            "app-builder/modules/input-output",
+            "app-builder/modules/data-flow"
           ]
         },
+        "app-builder/embed-application",
         {
           "type": "category",
           "label": "References",
@@ -579,8 +571,7 @@
           "items": [
             "workflows/how-to/trigger-using-webhook",
             "workflows/how-to/trigger-workflow-from-app",
-            "workflows/how-to/trigger-workflow-using-scheduler",
-            "workflows/how-to/import-export"
+            "workflows/how-to/trigger-workflow-using-scheduler"
           ]
         }
       ]
@@ -657,8 +648,7 @@
               "items": [
                 "user-management/authentication/self-hosted/overview",
                 "user-management/authentication/self-hosted/instance-login",
-                "user-management/authentication/self-hosted/workspace-login",
-                "user-management/authentication/self-hosted/pat"
+                "user-management/authentication/self-hosted/workspace-login"
               ]
             },
             "user-management/authentication/cloud-login"
@@ -836,6 +826,15 @@
           "items": [
             "development-lifecycle/backup/gitsync-backup"
           ]
+        },
+        {
+          "type": "category",
+          "label": "Import Export",
+          "items": [
+            "development-lifecycle/import-export/importing-exporting-applications",
+            "development-lifecycle/import-export/import-export-workflows",
+            "development-lifecycle/import-export/import-export-modules"
+          ]
         }
       ]
     },
@@ -865,7 +864,8 @@
       "collapsible": false,
       "collapsed": true,
       "items": [
-        "tooljet-api"
+        "tooljet-api",
+        "user-management/authentication/self-hosted/pat"
       ]
     },
     {

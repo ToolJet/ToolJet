@@ -1,6 +1,6 @@
 ---
-id: import-export
-title: Import or Export Workflows
+id: import-export-workflows
+title: Workflows
 ---
 
 <div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
