@@ -2,19 +2,15 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { groupsSelector } from "Selectors/manageGroups";
-import {
-    navigateToManageGroups
-} from "Support/utils/common";
+import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
-    setupWorkspaceAndInviteUser
+    setupWorkspaceAndInviteUser,
 } from "Support/utils/manageGroups";
-import {
-    getGroupPermissionInput
-} from "Support/utils/userPermissions";
+import { getGroupPermissionInput } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
 
-describe("Manage Groups", () => {
+describe("Custom Group Granular Access", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
 
@@ -38,11 +34,9 @@ describe("Manage Groups", () => {
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
-
     });
 
-
-    it.only("should verify the granular permissions in custom groups", () => {
+    it("should verify the granular permissions in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appName2 = fake.companyName;
         const appName3 = fake.companyName;
@@ -57,7 +51,7 @@ describe("Manage Groups", () => {
             data.workspaceSlug,
             data.firstName,
             data.email,
-            'builder'
+            "builder"
         );
 
         cy.apiLogin();
@@ -103,7 +97,7 @@ describe("Manage Groups", () => {
             });
 
             cy.clearAndType(groupsSelector.permissionNameInput, app);
-            cy.get(groupsSelector.customradio).check();
+            cy.get(groupsSelector.customRadio).check();
             cy.get(".css-1gfides").click({ force: true }).type(`${app}{enter}`);
             cy.get(groupsSelector.confimButton).click({ force: true });
             cy.verifyToastMessage(
@@ -122,7 +116,6 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.confimButton).click();
 
         cy.ifEnv("Enterprise", () => {
-
             cy.apiCreateWorkflow(workflowName1);
             cy.apiCreateWorkflow(workflowName2);
 
@@ -140,7 +133,7 @@ describe("Manage Groups", () => {
                 [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
             );
 
-            cy.get(groupsSelector.groupLink('Builder')).click();
+            cy.get(groupsSelector.groupLink("Builder")).click();
             cy.get(groupsSelector.groupLink(groupName)).click();
             cy.get(groupsSelector.granularLink).click();
 
@@ -149,7 +142,7 @@ describe("Manage Groups", () => {
                 cy.get(groupsSelector.addWorkflowButton).click();
 
                 cy.clearAndType(groupsSelector.permissionNameInput, workflow);
-                cy.get(groupsSelector.customradio).check();
+                cy.get(groupsSelector.customRadio).check();
                 cy.get(".css-1gfides")
                     .click({ force: true })
                     .type(`${workflow}{enter}`);
@@ -168,7 +161,7 @@ describe("Manage Groups", () => {
                 cy.get(groupsSelector.addDatasourceButton).click();
 
                 cy.clearAndType(groupsSelector.permissionNameInput, datasource);
-                cy.get(groupsSelector.customradio).check();
+                cy.get(groupsSelector.customRadio).check();
                 cy.get(".css-1gfides")
                     .click({ force: true })
                     .type(`${datasource}{enter}`);
@@ -189,6 +182,8 @@ describe("Manage Groups", () => {
         cy.apiLogin(data.email);
         cy.visit(data.workspaceSlug);
 
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.get(commonSelectors.appCreateButton).should("not.exist");
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
             "have.lengthOf",
             1
@@ -211,21 +206,22 @@ describe("Manage Groups", () => {
             );
 
             cy.get(commonSelectors.globalDataSourceIcon).click();
-            cy.get(dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase())).click();
-            cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
-            cy.get(dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())).click();
-            cy.get(dataSourceSelector.dsNameInputField).should('be.disabled')
+            cy.get(
+                dataSourceSelector.dataSourceNameButton(datasourceName1.toLowerCase())
+            ).click();
+            cy.get(dataSourceSelector.dsNameInputField).should("be.enabled");
+            cy.get(
+                dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase())
+            ).click();
+            cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
+
             cy.get(dataSourceSelector.commonDsLabelAndCount).click();
             cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
         });
-
 
         //Visit hidden app url
         cy.visitSlug({
             actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
         });
-
-
     });
-
 });
