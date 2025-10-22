@@ -408,6 +408,11 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const environment = metadata['environment'] || resourceData['environment'] || 'unknown'; // environment name
   const isReleased = mode === 'view' ? 'true' : 'false';
 
+  // Extract query from parsedQueryOptions (camelCase from queryStatus.getMetaData())
+  const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
+  const queryText = parsedQueryOptions['query'] || '';
+  const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
+
   const labels = {
     app_id: appId,
     app_name: appName,
@@ -419,6 +424,8 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     mode: mode, // NEW: edit or view
     environment: environment, // NEW: environment name
     is_released: isReleased, // NEW: boolean string
+    query_text: queryText, // NEW: actual SQL/query text
+    query_mode: queryMode, // NEW: sql or gui
   };
 
   // Count query execution
@@ -441,6 +448,8 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       mode: mode,
       environment: environment,
       is_released: isReleased,
+      query_text: queryText,
+      query_mode: queryMode,
     });
 
     // Record app-level error
