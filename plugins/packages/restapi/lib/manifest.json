@@ -120,7 +120,7 @@
       "value": ""
     },
     "client_auth": {
-      "value": "header"
+      "value": "body"
     },
     "headers": {
       "value": [
