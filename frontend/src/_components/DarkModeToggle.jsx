@@ -18,6 +18,7 @@ export const DarkModeToggle = function DarkModeToggle({
   showText = false,
   toggleForCanvas = false,
   toggleSize = 'default',
+  btnClassName = '',
 }) {
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const setGlobalSettings = useStore((state) => state.setGlobalSettings, shallow);
@@ -57,7 +58,7 @@ export const DarkModeToggle = function DarkModeToggle({
       }
     >
       <Button
-        className={classnames('left-sidebar-item')}
+        className={classnames('left-sidebar-item', btnClassName)}
         onClick={toggleDarkMode}
         variant="ghost"
         size={toggleSize}

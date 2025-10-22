@@ -54,6 +54,7 @@ export const RenderPage = ({
           }
         }
       }}
+      className="tj-list-item-wrapper"
     >
       <FolderList
         key={page.handle}
@@ -68,14 +69,8 @@ export const RenderPage = ({
         ariaLabel={page?.name}
       >
         {!labelStyle?.label?.hidden && (
-          <div
-            style={{ position: 'relative', overflow: 'hidden' }}
-            // className={isSelected && 'tj-list-item-selected'}
-            data-cy={`pages-name-${String(page?.name).toLowerCase()}`}
-          >
-            <OverflowTooltip style={{ width: '110px', position: 'relative' }} childrenClassName={'page-name'}>
-              {page.name}
-            </OverflowTooltip>
+          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+            <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
           </div>
         )}
       </FolderList>
@@ -102,7 +97,6 @@ const RenderPageGroup = ({
   currentMode,
 }) => {
   const [hovered, setHovered] = useState(false);
-  const [accordionPosition, setAccordionPosition] = useState({ top: 0, left: 0, width: 0 });
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
   const computedStyles = computeStyles('', hovered);
@@ -125,42 +119,6 @@ const RenderPageGroup = ({
   const handleToggle = () => {
     onToggle(pageGroup.id);
   };
-
-  useEffect(() => {
-    const updatePosition = () => {
-      if (isExpanded && groupItemRootRef.current) {
-        const rect = groupItemRootRef.current.getBoundingClientRect();
-        setAccordionPosition({
-          top: rect.bottom,
-          left: rect.left,
-          width: rect.width,
-        });
-      }
-    };
-
-    if (isExpanded) {
-      updatePosition();
-
-      let ticking = false;
-      const handleScroll = () => {
-        if (!ticking) {
-          requestAnimationFrame(() => {
-            updatePosition();
-            ticking = false;
-          });
-          ticking = true;
-        }
-      };
-
-      window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
-      window.addEventListener('resize', handleScroll, { passive: true });
-
-      return () => {
-        window.removeEventListener('scroll', handleScroll, { passive: true, capture: true });
-        window.removeEventListener('resize', handleScroll, { passive: true });
-      };
-    }
-  }, [isExpanded]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -221,15 +179,10 @@ const RenderPageGroup = ({
         groupItemRootRef.current = el;
       }}
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
-      style={{
-        position: 'relative',
-        zIndex: isExpanded ? 1000 : 'auto',
-      }}
     >
       <div
         className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
         style={{
-          position: 'relative',
           ...{ ...computedStyles.pill },
         }}
         onClick={handleToggle}
@@ -244,7 +197,7 @@ const RenderPageGroup = ({
         >
           {!labelStyle?.label?.hidden && (
             <div
-              style={{ position: 'relative', overflow: 'hidden' }}
+              style={{ width: '100%', overflow: 'hidden' }}
               data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
             >
               <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
@@ -260,14 +213,7 @@ const RenderPageGroup = ({
         </div>
       </div>
 
-      <div
-        style={{
-          top: accordionPosition.top,
-          left: accordionPosition.left,
-          zIndex: 1060,
-        }}
-        className={`accordion-body ${isExpanded ? 'show' : 'hide'}`}
-      >
+      <div className={`accordion-body ${isExpanded ? 'expanded' : 'collapsed'}`}>
         <div ref={contentRef} className="accordion-content">
           {pages.map((page) => (
             <RenderPage

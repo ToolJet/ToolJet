@@ -37,6 +37,7 @@ export const PagesSidebarNavigation = ({
   canvasMaxWidth,
   switchDarkMode,
 }) => {
+  console.log('pages sidebar rerendered');
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
@@ -464,7 +465,7 @@ export const PagesSidebarNavigation = ({
   const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
 
   const Header = () => {
-    if (!collapsable && headerHidden && logoHidden) {
+    if (headerHidden && logoHidden) {
       return null;
     }
 
@@ -549,9 +550,16 @@ export const PagesSidebarNavigation = ({
             switchDarkMode={switchDarkMode}
             darkMode={darkMode}
             tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
+            btnClassName="!tw-w-[36px] !tw-h-[36px]"
           />
-          {collapsable && !isTopPositioned && position === 'side' && !isPagesSidebarHidden && (
-            <ButtonComponent className="left-sidebar-item" onClick={handleToggle} variant="ghost" size="large" iconOnly>
+          {collapsable && !isTopPositioned && position === 'side' && style !== 'text' && !isPagesSidebarHidden && (
+            <ButtonComponent
+              className="left-sidebar-item !tw-w-[36px] !tw-h-[36px]"
+              onClick={handleToggle}
+              variant="ghost"
+              size="large"
+              iconOnly
+            >
               {isSidebarPinned ? (
                 <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
               ) : (
@@ -581,7 +589,7 @@ export const PagesSidebarNavigation = ({
         }}
         className={cx('navigation-area', {
           'navigation-hover-trigger': currentMode === 'edit',
-          // close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
+          close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
           'icon-only':
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' &&
@@ -590,12 +598,11 @@ export const PagesSidebarNavigation = ({
               !isPagesSidebarHidden),
           'position-top': position === 'top' || isPagesSidebarHidden,
           'text-only': style === 'text',
-          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
           'no-preview-settings': isReleasedVersionId,
+          'not-collapsable': !collapsable,
+          'no-header': headerHidden && logoHidden,
         })}
         style={{
-          // width: 226,
           position: 'sticky',
           height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
           top: '0px',
@@ -610,7 +617,6 @@ export const PagesSidebarNavigation = ({
             !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
               ? `1px solid ${styles?.borderColor?.value}`
               : '',
-          overflow: 'scroll',
           boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
           maxWidth: (() => {
             if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
@@ -709,8 +715,8 @@ export const PagesSidebarNavigation = ({
           <SidebarProvider
             open={isSidebarPinned}
             onOpenChange={setIsSidebarPinned}
-            sidebarWidth="226px"
-            sidebarWidthIcon="44px"
+            sidebarWidth="256px"
+            sidebarWidthIcon="54px"
           >
             <SidebarWrapper>
               <Sidebar />
