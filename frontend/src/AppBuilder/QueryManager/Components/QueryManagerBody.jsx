@@ -193,7 +193,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
               <>
-                <div>
+                <div style={{ marginBottom: '2px' }}>
                   {`To know more about querying ${selectedDataSource?.kind} data,`}
                   &nbsp;
                   <a
@@ -344,7 +344,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 changeDataQuery(newDataSource);
               }}
             />
-            <div>
+            <div style={{ marginBottom: '2px' }}>
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
               <a

@@ -53,7 +53,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   return (
     <>
-      <div>
+      <div style={{ marginBottom: '2px' }}>
         {`To know more about querying workflows data,`}
         &nbsp;
         <a
