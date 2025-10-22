@@ -146,7 +146,7 @@ const CreateDraftVersionModal = ({
         >
           <div className="mb-3">
             <div className="col">
-              <label className="form-label" data-cy="version-name-label">
+              <label className="form-label mb-1 ml-1" style={{ marginBottom: '6px' }} data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
               </label>
               <input
@@ -186,6 +186,7 @@ const CreateDraftVersionModal = ({
               </div>
             </div>
           </div>
+
           <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
             <div
               className="d-flex align-items-center"
@@ -202,7 +203,7 @@ const CreateDraftVersionModal = ({
           </Alert>
 
           {isGitSyncEnabled && (
-            <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
+            <div className="commit-changes" style={{ marginBottom: '1rem' }}>
               <div>
                 <input
                   className="form-check-input"

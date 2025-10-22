@@ -63,11 +63,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { globalSettings, pageSettings, switchPage } = useStore(
+  const { globalSettings, pageSettings, switchPage, currentVersionId, publishedVersions } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
       pageSettings: state.pageSettings,
       switchPage: state.switchPage,
+      publishedVersions: state.publishedVersions,
+      currentVersionId: state.currentVersionId,
     }),
     shallow
   );
@@ -76,6 +78,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const isPublishedVersion = publishedVersions.some((version) => version.id === currentVersionId);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -141,6 +144,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
+      paddingTop: currentMode === 'edit' && isPublishedVersion && '24px',
       paddingBottom: currentMode === 'edit' && '2px',
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
@@ -194,86 +198,90 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }
 
   return (
-    <div
-      className={cx(`main main-editor-canvas position-relative`, {})}
-      id="main-editor-canvas"
-      onMouseUp={handleCanvasContainerMouseUp}
-    >
-      <AppCanvasBanner appId={appId} />
-      <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
-        <div
-          ref={canvasContainerRef}
-          className={cx(
-            'canvas-container d-flex page-container',
-            { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-            { 'overflow-x-auto': currentMode === 'edit' },
-            { 'position-top': position === 'top' || isPagesSidebarHidden },
-            { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
-          )}
-          style={canvasContainerStyles}
-        >
-          {appType !== 'module' && (
-            <PagesSidebarNavigation
-              showHeader={showHeader}
-              isMobileDevice={currentLayout === 'mobile'}
-              currentPageId={currentPageId ?? homePageId}
-              switchPage={switchPage}
-              height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
-              switchDarkMode={switchDarkMode}
-              isSidebarPinned={isViewerSidebarPinned}
-              toggleSidebarPinned={toggleSidebarPinned}
-              darkMode={darkMode}
-              canvasMaxWidth={canvasMaxWidth}
-            />
-          )}
+    <div>
+      <div
+        className={cx(`main main-editor-canvas position-relative`, {})}
+        id="main-editor-canvas"
+        onMouseUp={handleCanvasContainerMouseUp}
+      >
+        <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
-            style={{
-              minWidth: getMinWidth(),
-              scrollbarWidth: 'none',
-              overflow: 'auto',
-              width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
-              ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
-            }}
-            className={`app-${appId} _tooljet-page-${getPageId()} canvas-content`}
-          >
-            {currentMode === 'edit' && (
-              <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
+            ref={canvasContainerRef}
+            className={cx(
+              'canvas-container d-flex page-container',
+              { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
+              { 'overflow-x-auto': currentMode === 'edit' },
+              { 'position-top': position === 'top' || isPagesSidebarHidden },
+              { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
             )}
-            <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-            <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
-              {environmentLoadingState !== 'loading' && (
-                <div>
-                  <Container
-                    id={moduleId}
-                    gridWidth={gridWidth}
-                    canvasWidth={canvasWidth}
-                    canvasHeight={canvasHeight}
-                    darkMode={isAppDarkMode}
-                    canvasMaxWidth={canvasMaxWidth}
-                    isViewerSidebarPinned={isViewerSidebarPinned}
-                    pageSidebarStyle={pageSidebarStyle}
-                    pagePositionType={position}
-                    appType={appType}
-                  />
-                  {currentMode === 'edit' && (
-                    <>
-                      <DragGhostWidget />
-                      <ResizeGhostWidget />
-                    </>
+            style={canvasContainerStyles}
+          >
+            <AppCanvasBanner appId={appId} />
+            <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+              {appType !== 'module' && (
+                <PagesSidebarNavigation
+                  showHeader={showHeader}
+                  isMobileDevice={currentLayout === 'mobile'}
+                  currentPageId={currentPageId ?? homePageId}
+                  switchPage={switchPage}
+                  height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
+                  switchDarkMode={switchDarkMode}
+                  isSidebarPinned={isViewerSidebarPinned}
+                  toggleSidebarPinned={toggleSidebarPinned}
+                  darkMode={darkMode}
+                  canvasMaxWidth={canvasMaxWidth}
+                />
+              )}
+              <div
+                style={{
+                  minWidth: getMinWidth(),
+                  scrollbarWidth: 'none',
+                  overflow: 'auto',
+                  width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
+                  ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
+                }}
+                className={`app-${appId} _tooljet-page-${getPageId()} canvas-content`}
+              >
+                {currentMode === 'edit' && (
+                  <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
+                )}
+                <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+                  {environmentLoadingState !== 'loading' && (
+                    <div>
+                      <Container
+                        id={moduleId}
+                        gridWidth={gridWidth}
+                        canvasWidth={canvasWidth}
+                        canvasHeight={canvasHeight}
+                        darkMode={isAppDarkMode}
+                        canvasMaxWidth={canvasMaxWidth}
+                        isViewerSidebarPinned={isViewerSidebarPinned}
+                        pageSidebarStyle={pageSidebarStyle}
+                        pagePositionType={position}
+                        appType={appType}
+                      />
+                      {currentMode === 'edit' && (
+                        <>
+                          <DragGhostWidget />
+                          <ResizeGhostWidget />
+                        </>
+                      )}
+                      <div id="component-portal" />
+                      {appType !== 'module' && <div id="component-portal" />}
+                    </div>
                   )}
-                  <div id="component-portal" />
-                  {appType !== 'module' && <div id="component-portal" />}
-                </div>
-              )}
 
-              {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
-              )}
-            </HotkeyProvider>
+                  {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                    <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+                  )}
+                </HotkeyProvider>
+              </div>
+            </div>
           </div>
         </div>
+        {currentMode === 'edit' && <EditorSelecto />}
       </div>
-      {currentMode === 'edit' && <EditorSelecto />}
     </div>
   );
 };
