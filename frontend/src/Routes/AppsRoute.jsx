@@ -11,6 +11,7 @@ import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
+import { authenticationService } from '@/_services';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
   const params = useParams();
@@ -61,10 +62,23 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
+        const envFromUrl = restQueryParams.env;
+        // Only coerce env for view-only users
+        const session = authenticationService.currentSessionValue;
+        const perms = session?.app_group_permissions;
+        const hasEditPermission =
+          perms?.is_all_editable ||
+          (slug && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(slug));
+        const isViewOnly = !hasEditPermission;
+        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
+        const effectiveEnv =
+          isViewOnly && requestedEnv === 'production' ? 'development' : environmentName || envFromUrl;
+
         const search = queryString.stringify({
-          env: environmentName,
-          version: versionName,
-          ...restQueryParams,
+          // Keep other params but let env/version below override
+          ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
+          env: effectiveEnv,
+          version: versionName || restQueryParams.version,
         });
         /* means. the User is trying to load old preview URL. Let's change these to query params */
         navigate(

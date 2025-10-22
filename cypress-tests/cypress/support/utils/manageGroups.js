@@ -1,15 +1,14 @@
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { commonSelectors } from "Selectors/common";
-import { navigateToManageGroups } from "Support/utils/common";
-import { cyParamName } from "Selectors/common";
-import { fake } from "Fixtures/fake";
-import { onboardingSelectors } from "Selectors/onboarding";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
-import { navigateToManageUsers, logout } from "Support/utils/common";
+import { onboardingSelectors } from "Selectors/onboarding";
+import { navigateToManageGroups } from "Support/utils/common";
 import { getUser } from "Support/utils/externalApi";
+import {
+  fetchAndVisitInviteLink,
+  fillUserInviteForm,
+} from "Support/utils/manageUsers";
+import { groupsText } from "Texts/manageGroups";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {
@@ -620,7 +619,7 @@ export const permissionModal = () => {
 export const addAppToGroup = (appName) => {
   cy.get(groupsSelector.appsLink).click();
   cy.wait(500);
-  cy.get(groupsSelector.appSearchBox).realClick();
+  cy.get(groupsSelector.appSearchBox).click();
   cy.wait(500);
   cy.get(groupsSelector.searchBoxOptions).contains(appName).click();
   cy.get(groupsSelector.selectAddButton).click();
@@ -895,13 +894,10 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   cy.wait(500);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.wait(500);
+  cy.get(commonSelectors.dashboardIcon).click();
 };
 
-export const verifyBasicPermissions = (canCreate = true) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(
-    canCreate ? "be.enabled" : "be.disabled"
-  );
-};
+
 
 export const setupWorkspaceAndInviteUser = (
   workspaceName,
@@ -911,19 +907,17 @@ export const setupWorkspaceAndInviteUser = (
   role = "end-user"
 ) => {
   cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+  cy.apiLogout();
+  cy.apiLogin();
+  cy.apiFullUserOnboarding(firstName, email, role, "password", workspaceName);
+  cy.apiLogout();
+
+  cy.apiLogin(email, "password");
   cy.visit(workspaceSlug);
-  cy.wait(1000);
-  navigateToManageUsers();
-  inviteUserBasedOnRole(firstName, email, role);
   cy.wait(2000);
 };
 
-export const verifySettingsAccess = (shouldExist = true) => {
-  cy.get(commonSelectors.settingsIcon).click();
-  cy.get(commonSelectors.workspaceSettings).should(
-    shouldExist ? "exist" : "not.exist"
-  );
-};
+
 
 export const verifyUserPrivileges = (
   expectedButtonState,
@@ -958,3 +952,4 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
     });
   });
 };
+

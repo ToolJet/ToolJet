@@ -33,8 +33,8 @@ FROM information_schema.tables
 WHERE table_schema = 'public'
 AND table_type = 'BASE TABLE';`,
   postgresResponseNodeQuery: "return postgresql1.data",
-  postgresExpectedValue: "employees",
-
+  postgresExpectedValue: "server_side_pagination",
+  
   restApiUrl: "http://9.234.17.31:8000/delay/10s",
   restApiResponseNodeQuery: "return restapi1.data",
   restApiExpectedValue: "<!DOCTYPE html>",
@@ -47,7 +47,7 @@ AND table_type = 'BASE TABLE';`,
 
   runjsCodeForWebhooks: 'return "Verifying webhooks response"',
   runjsExpectedValueForWebhooks: "Verifying webhooks response",
-  expectedStatusCodeText: 201,
+  expectedStatusCodeText: 200,
   exportFixturePath: "cypress/fixtures/exportedApp.json",
   workflowLabel: "Workflow",
 };

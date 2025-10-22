@@ -1,14 +1,13 @@
-import { appVersionText } from "Texts/exportImport";
-import { appVersionSelectors } from "Selectors/exportImport";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { verifyModal, closeModal } from "Support/utils/common";
+import { appVersionSelectors } from "Selectors/exportImport";
 import {
   confirmVersionModalSelectors,
   editVersionSelectors,
 } from "Selectors/version";
+import { closeModal } from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { appVersionText } from "Texts/exportImport";
 import { deleteVersionText, releasedVersionText } from "Texts/version";
-import { verifyComponent } from "Support/utils/basicComponents";
 import { appPromote } from "./platform/multiEnv";
 
 export const navigateToCreateNewVersionModal = (value) => {

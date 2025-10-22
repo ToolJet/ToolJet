@@ -14,7 +14,7 @@ describe("Chaining of queries", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-chaining-App`);
     cy.openApp();
-    cy.apiFetchDataSourcesId();
+    cy.apiFetchDataSourcesIdFromApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
