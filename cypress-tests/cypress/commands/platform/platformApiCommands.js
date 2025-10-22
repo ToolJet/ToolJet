@@ -161,12 +161,12 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
                 url: `${Cypress.env("server_host")}/api/organization-constants/${id}`,
                 headers: headers,
                 body: {
-                    value: String(updateValue), // ensure it's a string
+                    value: String(updateValue),
                     environment_id: envId,
                 },
             }).then((response) => {
                 expect(response.status).to.equal(200);
-                response.body; // returns the PATCH response body
+                response.body;
             });
         });
     });
@@ -289,11 +289,9 @@ Cypress.Commands.add(
                         : granularPermissions;
 
                     permissionsToDelete.forEach((permission) => {
-                        // Map resource types to delete endpoints
-                        // Note: Workflows use the 'app' endpoint (no separate workflow endpoint in backend)
                         const typeEndpointMap = {
                             app: "app",
-                            workflow: "app",          // ⬅️ Workflows use app endpoint
+                            workflow: "app",
                             data_source: "data-source",
                         };
                         const endpoint = typeEndpointMap[permission.type] || "app";
@@ -409,14 +407,13 @@ Cypress.Commands.add(
         redirectTo = "/",
     }) => {
         cy.intercept("POST", "/api/oauth/sign-in/*", (req) => {
-            // Inject missing params if not present
             if (!req.body.organizationId) {
                 req.body.organizationId = organizationId;
             }
             if (!req.body.redirectTo) {
                 req.body.redirectTo = redirectTo;
             }
-            req.continue(); // Send the modified request
+            req.continue();
         }).as("oidcSignIn");
         cy.getSsoConfigId("openid").then((ssoConfigId) => {
             const configIdToUse = ssoConfigId;
@@ -474,7 +471,6 @@ Cypress.Commands.add(
                         const redirectUrl = authResp.headers["location"];
                         const params = new URL(redirectUrl).searchParams;
                         const code = params.get("code");
-                        // 6. Exchange code for tokens
                         cy.request({
                             method: "POST",
                             url: `https://${oktaDomain}/oauth2/v1/token`,
@@ -543,7 +539,7 @@ Cypress.Commands.add(
         userRole = "end-user",
         userPassword = "password",
         workspaceName = "My workspace",
-        metaData = {},
+        metaData = {}
     ) => {
         let invitationToken, organizationToken;
 
@@ -708,4 +704,3 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
         });
     }
 });
-
