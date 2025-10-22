@@ -1,6 +1,6 @@
 ---
 id: import-export-modules
-title: Import and Export Modules
+title: Modules
 ---
 
 ToolJet allows you to export and import modules, making it easy to share, reuse, or migrate modules across different workspaces. 

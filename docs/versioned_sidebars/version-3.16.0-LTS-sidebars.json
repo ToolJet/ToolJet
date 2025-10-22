@@ -256,8 +256,7 @@
             "app-builder/modules/overview",
             "app-builder/modules/create-module",
             "app-builder/modules/input-output",
-            "app-builder/modules/data-flow",
-            "app-builder/modules/import-export-modules"
+            "app-builder/modules/data-flow"
           ]
         },
         "app-builder/embed-application",
@@ -572,8 +571,7 @@
           "items": [
             "workflows/how-to/trigger-using-webhook",
             "workflows/how-to/trigger-workflow-from-app",
-            "workflows/how-to/trigger-workflow-using-scheduler",
-            "workflows/how-to/import-export"
+            "workflows/how-to/trigger-workflow-using-scheduler"
           ]
         }
       ]
@@ -827,6 +825,15 @@
           "label": "Backup",
           "items": [
             "development-lifecycle/backup/gitsync-backup"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Import Export",
+          "items": [
+            "development-lifecycle/import-export/importing-exporting-applications",
+            "development-lifecycle/import-export/import-export-workflows",
+            "development-lifecycle/import-export/import-export-modules"
           ]
         }
       ]
