@@ -30,6 +30,9 @@ import { debounce } from 'lodash';
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
+  const scrollTimeoutRef = useRef(null);
+  const canvasContentRef = useRef(null);
+  const [isScrolling, setIsScrolling] = useState(false);
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const resolveReferences = useStore((state) => state.resolveReferences);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
@@ -53,6 +56,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
@@ -70,7 +74,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     }),
     shallow
   );
-
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
@@ -120,8 +123,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -150,6 +153,34 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isViewerSidebarPinned]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 600);
+    };
+
+    const canvasContent = canvasContentRef.current;
+    if (canvasContent) {
+      canvasContent.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (canvasContent) {
+        canvasContent.removeEventListener('scroll', handleScroll);
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   function getMinWidth() {
     if (isModuleMode) return '100%';
 
@@ -159,19 +190,21 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     if (!shouldAdjust) return '';
     let offset;
+    const currentSideBarWidth = LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default;
+
     if (isViewerSidebarPinned && !isPagesSidebarHidden) {
       if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
       }
     } else {
       if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
-        offset = `${LEFT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
         offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
       }
@@ -179,9 +212,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     if (currentMode === 'edit') {
       if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && isRightSidebarOpen) {
-        offset = `${LEFT_SIDEBAR_WIDTH + RIGHT_SIDEBAR_WIDTH}px`;
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH}px`;
       } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && !isRightSidebarOpen) {
-        offset = `${LEFT_SIDEBAR_WIDTH}px`;
+        offset = `${currentSideBarWidth}px`;
       } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpenInEditor) {
         offset = `${RIGHT_SIDEBAR_WIDTH}px`;
       }
@@ -224,22 +257,29 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             />
           )}
           <div
+            ref={canvasContentRef}
             style={{
               minWidth: getMinWidth(),
-              scrollbarWidth: 'none',
               overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
               ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
-            className={`app-${appId} _tooljet-page-${getPageId()} canvas-content`}
+            className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content scrollbar`, {
+              'scrollbar-hidden': !isScrolling,
+            })}
           >
             {currentMode === 'edit' && (
               <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
             )}
             <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-            <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
+            <HotkeyProvider
+              mode={currentMode}
+              canvasMaxWidth={canvasMaxWidth}
+              currentLayout={currentLayout}
+              isModuleMode={isModuleMode}
+            >
               {environmentLoadingState !== 'loading' && (
-                <div>
+                <div className={cx({ 'h-100': isModuleMode })}>
                   <Container
                     id={moduleId}
                     gridWidth={gridWidth}

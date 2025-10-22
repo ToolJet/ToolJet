@@ -26,7 +26,7 @@ const QueryManager = ({ mode, darkMode }) => {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);
-  
+
   useEffect(() => {
     if (queryToBeRun !== null) {
       runQuery(queryToBeRun.id, queryToBeRun.name);

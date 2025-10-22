@@ -214,7 +214,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         );
         const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
         // if datasource is restapi then reset the token data
-        if (dataSource.kind === 'restapi')
+        if (['restapi', 'microsoft_graph'].includes(dataSource.kind))
           options.push({
             key: 'tokenData',
             value: undefined,
@@ -604,7 +604,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     environmentId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId);
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge, manager);
       const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
@@ -686,7 +686,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     dataSource: DataSource
   ): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
       const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
@@ -704,27 +703,42 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
-    const bodyData = {
+    const baseBodyData = {
       code,
-      client_id: sourceOptions['client_id'],
-      client_secret: sourceOptions['client_secret'],
       grant_type: sourceOptions['grant_type'],
       redirect_uri: `${tooljetHost}/oauth2/authorize`,
       ...customParams,
     };
 
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...customAccessTokenHeaders,
+    };
+
+    let bodyData;
+    if (sourceOptions.client_auth.toLowerCase() === 'header') {
+      const credentials = Buffer.from(`${sourceOptions['client_id']}:${sourceOptions['client_secret']}`).toString(
+        'base64'
+      );
+      headers['Authorization'] = `Basic ${credentials}`;
+      bodyData = baseBodyData;
+    } else {
+      bodyData = {
+        ...baseBodyData,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+      };
+    }
+
     try {
       const response = await got(accessTokenUrl, {
         method: 'post',
-        headers: {
-          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-          ...customAccessTokenHeaders,
-        },
-        form: isUrlEncoded ? bodyData : undefined,
-        json: !isUrlEncoded ? bodyData : undefined,
+        headers,
+        form: bodyData,
       });
 
       const result = JSON.parse(response.body);
+
       return {
         ...(isMultiAuthEnabled ? { user_id: userId } : {}),
         access_token: result['access_token'],
@@ -791,7 +805,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (Array.isArray(currentOption)) {
         for (let i = 0; i < currentOption.length; i++) {
           const curr = currentOption[i];
-
+          // Handle nested arrays (like [['', '']])
           if (Array.isArray(curr)) {
             for (let j = 0; j < curr.length; j++) {
               const inner = curr[j];
@@ -800,6 +814,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               if (constantMatcher.test(inner)) {
                 const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
                 curr[j] = resolved;
+              }
+            }
+          } else if (typeof curr === 'object' && curr !== null) {
+            // Handle nested objects in arrays (specifically for Openapi)
+            for (const objKey of Object.keys(curr)) {
+              const objValue = curr[objKey];
+              constantMatcher.lastIndex = 0;
+
+              if (constantMatcher.test(objValue)) {
+                const resolved = await this.resolveConstants(objValue, organizationId, environmentId, user);
+                curr[objKey] = resolved;
               }
             }
           }

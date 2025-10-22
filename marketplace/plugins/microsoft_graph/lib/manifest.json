@@ -54,16 +54,13 @@
     "grant_type": {
       "value": "authorization_code"
     },
-    "scopes": {
-      "value": "https://graph.microsoft.com/.default"
-    },
     "access_token_custom_headers": {
       "value": [
-        [
-          "Content-Type",
-          "application/x-www-form-urlencoded"
-        ]
+        ["Content-Type","application/x-www-form-urlencoded"]
       ]
+    },
+    "scopes": {
+        "value": "https://graph.microsoft.com/.default offline_access"
     },
     "oauth_type": {
       "value": "custom_app"

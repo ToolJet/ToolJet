@@ -236,7 +236,11 @@ export class DataSourcesService implements IDataSourcesService {
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId, environmentId);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environmentId,
+      user.organizationId
+    );
 
     if (!dataSource) {
       throw new UnauthorizedException();

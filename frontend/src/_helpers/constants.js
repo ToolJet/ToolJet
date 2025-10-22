@@ -37,6 +37,7 @@ export const ERROR_TYPES = {
   WORKSPACE_ARCHIVED: 'Organization is Archived',
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
+  RESTRICTED_PREVIEW: 'restricted-preview',
 };
 
 export const ERROR_MESSAGES = {
@@ -51,6 +52,12 @@ export const ERROR_MESSAGES = {
     title: 'Restricted access',
     message: 'You don’t have access to this app. Kindly contact admin to know more.',
     cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'restricted-preview': {
+    title: 'Restricted access',
+    message: 'Access to production environment preview is restricted for end users.',
     retry: false,
     queryParams: [],
   },
@@ -148,4 +155,5 @@ export const PLANS = {
   BUSINESS: 'business',
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
+  STARTER: 'starter',
 };

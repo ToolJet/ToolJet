@@ -1,12 +1,9 @@
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
-import { cyParamName } from "Selectors/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
+import { postgreSqlSelector } from "Selectors/postgreSql";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
+import { postgreSqlText } from "Texts/postgreSql";
 
 export const verifyCouldnotConnectWithAlert = (alertText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
