@@ -3,12 +3,11 @@ import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
-import { inviteUserToWorkspace } from "Support/utils/manageUsers";
-import { logout } from "Support/utils/common";
-import { setupAndUpdateRole } from "Support/utils/manageGroups";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
+    const isEnterprise = Cypress.env("environment") === "Enterprise";
+
     before(function () {
         if (Cypress.env("environment") === "Community") {
             this.skip();
@@ -17,20 +16,12 @@ describe("Home Page Dashboard Testcases", () => {
     beforeEach(() => {
 
         data = {
-            workspaceName: fake.firstName,
-            workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
             firstName: fake.firstName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
-        cy.skipWalkthrough();
-
         cy.apiLogin();
-        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-        cy.apiLogout();
-        cy.apiLogin();
-        cy.visit(`${data.workspaceSlug}`);
-
+        cy.visit("/");
     });
 
     it("Should verify elements on home page dashboard", () => {
@@ -64,7 +55,7 @@ describe("Home Page Dashboard Testcases", () => {
 
         // Define card types
         const cardTypes = [
-            { type: 'app', title: dashboardText.appCardTitle, description: dashboardText.appCardDescription, url: `${data.workspaceSlug}` },
+            { type: 'app', title: dashboardText.appCardTitle, description: dashboardText.appCardDescription, url: "my-workspace" },
             { type: 'datasource', title: dashboardText.datasourceCardTitle, description: dashboardText.datasourceCardDescription, url: 'data-sources' },
             { type: 'workflow', title: dashboardText.workflowCardTitle, description: dashboardText.workflowCardDescription, url: 'workflows' },
             { type: 'template', title: dashboardText.templateCardTitle, description: dashboardText.templateCardDescription, url: '#' }
@@ -100,15 +91,22 @@ describe("Home Page Dashboard Testcases", () => {
 
     it("Should verify Home page accessibility for the specific role", () => {
         //Invite End-user
-        inviteUserToWorkspace(data.firstName, data.email);
+        cy.apiFullUserOnboarding(data.firstName, data.email);
+        cy.apiLogout();
+
+        cy.apiLogin(data.email);
+        cy.visit("/");
         cy.get(commonSelectors.homePageIcon).should("not.exist");
-        logout();
+        cy.apiLogout();
+
         cy.apiLogin();
-        cy.visit(`${data.workspaceSlug}`);
+        cy.visit("/");
 
         //Update role to Builder
-        setupAndUpdateRole("end-user", "builder", data.email);
-        logout();
+        cy.apiUpdateUserRole(data.email, "builder");
+        cy.apiLogout();
+
+        cy.visit("/");
         cy.appUILogin(data.email);
         cy.get(commonSelectors.homePageIcon).should("be.visible");
     });

@@ -72,11 +72,6 @@ export const dashboardSelector = {
   homePagePromptTextArea: '[data-cy="prompt-textarea"]',
   promptEnterButton: '[data-cy="prompt-enter-button"]',
   aiIcon: '[data-cy="ai-icon"]',
-  homePageAppIcon: '[data-cy="apps-icon"]',
-  homePageDatasourceIcon: '[data-cy="datasources-icon"]',
-  homePageWorkflowIcon: '[data-cy="workflows-icon"]',
-  homePageTemplateIcon: '[data-cy="templates-icon"]',
-
   homePageIcon: (iconName) => {
     return `[data-cy="${iconName}s-icon"]`;
   }
