@@ -2619,15 +2619,6 @@ hr {
     position: relative !important;
   }
 }
-
-.multiple-components-config-handle {
-  position: absolute;
-  left: 54px;
-  top: -22px;
-  transform: translate(-50%, 0px);
-  width: 110px;
-}
-
 .config-handle {
   top: -22px;
   position: fixed;
@@ -2640,36 +2631,6 @@ hr {
       cursor: move;
       color: #fff;
       background: #c6cad0 !important;
-    }
-  }
-}
-
-.config-handle,
-.multiple-components-config-handle {
-  .handle-content {
-    cursor: move;
-    color: #ffffff;
-    background: $primary;
-  }
-
-  .badge {
-    font-size: 9px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-
-    .delete-part {
-      margin-left: 10px;
-      float: right;
-    }
-
-    .delete-part::before {
-      height: 12px;
-      display: inline-block;
-      width: 2px;
-      background-color: rgba(255, 255, 255, 0.8);
-      opacity: 0.5;
-      content: "";
-      vertical-align: middle;
     }
   }
 }
