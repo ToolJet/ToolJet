@@ -9,7 +9,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { publish } from 'rxjs';
+import '../../_styles/version-modal.scss';
 
 const CreateDraftVersionModal = ({
   showCreateAppVersion,
