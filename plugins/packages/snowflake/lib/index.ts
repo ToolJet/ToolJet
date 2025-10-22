@@ -239,7 +239,13 @@ export default class Snowflake implements QueryService {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
       const userId = context?.user?.id;
-      const enhancedCacheKey = `${dataSourceId}_${userId}_${optionsHash}`;
+      let enhancedCacheKey = '';
+      if (sourceOptions.multiple_auth_enabled) {
+        enhancedCacheKey = `${dataSourceId}_${userId}_${optionsHash}`;
+      } else {
+        enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      }
+
       let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection && (await connection.isValidAsync())) {
