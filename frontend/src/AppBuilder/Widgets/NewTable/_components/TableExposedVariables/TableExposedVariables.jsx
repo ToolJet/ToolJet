@@ -147,8 +147,9 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
+    fireEvent('onPageChanged');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIndex, setExposedVariables]); // Didn't add mounted as it's not a dependency
+  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
