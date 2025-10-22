@@ -549,14 +549,12 @@ function trackAppSuccess(appId: string, mode: string, environment: string, isSuc
 function recordAppLifecycleMetrics(auditLogData: AuditLogFields) {
   const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
 
-  const appType = resourceData['appType'] || 'unknown';
   const appSlug = resourceData['appSlug'] || resourceId || 'unknown';
   const isPublic = resourceData['isPublic'] || false;
 
   const labels = {
     app_id: resourceId,
     app_name: resourceName || 'unknown',
-    app_type: appType,
     app_slug: appSlug,
     is_public: String(isPublic),
     organization_id: organizationId,

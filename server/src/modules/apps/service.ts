@@ -80,7 +80,6 @@ export class AppsService implements IAppsService {
         resourceId: app.id,
         resourceName: app.name,
         resourceData: {
-          appType: app.type,
           appSlug: app.slug,
           isPublic: app.isPublic,
         },
@@ -204,7 +203,6 @@ export class AppsService implements IAppsService {
       resourceId: app.id,
       resourceName: app.name,
       resourceData: {
-        appType: app.type,
         appSlug: app.slug,
         isPublic: app.isPublic,
         updatedFields: Object.keys(appUpdateDto),
@@ -246,7 +244,6 @@ export class AppsService implements IAppsService {
       resourceId: app.id,
       resourceName: app.name,
       resourceData: {
-        appType: app.type,
         appSlug: app.slug,
         isPublic: app.isPublic,
       },
@@ -475,7 +472,6 @@ export class AppsService implements IAppsService {
         resourceId: app.id,
         resourceName: app.name,
         resourceData: {
-          appType: app.type,
           appSlug: app.slug,
           isPublic: app.isPublic,
           releasedVersionId: versionToBeReleased,
