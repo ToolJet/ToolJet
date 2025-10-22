@@ -185,6 +185,10 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         oldName = state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name;
         state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name = newName;
+
+        if (state.modules[moduleId].pages[currentPageIndex].components[componentId].name) {
+          state.modules[moduleId].pages[currentPageIndex].components[componentId].name = newName;
+        }
       },
       false,
       'setComponentName'
@@ -2155,8 +2159,17 @@ export const createComponentsSlice = (set, get) => ({
         ...Object.fromEntries(acc.map((component) => [component.id, component])),
       };
 
-      const componentName =
-        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      const componentNameInDefinition = componentDefinition.component.name;
+
+      // Check if there is any existing component with the same name
+      const isNameValid = !Object.values(currentComponents).some(
+        (component) => component.component.name === componentNameInDefinition
+      );
+
+      // If name is valid then use the same name but if not then fallback to old flow and compute component name
+      const componentName = isNameValid
+        ? componentNameInDefinition
+        : computeComponentName(componentDefinition.component.component, currentComponents);
 
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
