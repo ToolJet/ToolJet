@@ -8,7 +8,7 @@ import {
 import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
-    updateRole
+    updateRole,
 } from "Support/utils/manageGroups";
 import {
     uiAppCRUDWorkflow,
@@ -19,12 +19,15 @@ import {
     uiWorkflowCRUDWorkflow,
     uiWorkspaceConstantCRUDWorkflow,
 } from "Support/utils/uiPermissions";
+import {
+    verifyBasicPermissions,
+    verifySettingsAccess,
+} from "Support/utils/userPermissions";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { groupsText } from "Texts/manageGroups";
-import { verifyBasicPermissions, verifySettingsAccess } from "Support/utils/userPermissions";
 
-describe("Manage Groups", () => {
+describe("Basic Permissions", () => {
     let data = {};
 
     before(() => {
@@ -57,7 +60,6 @@ describe("Manage Groups", () => {
 
         verifyBasicPermissions(false);
         verifySettingsAccess(false);
-
     });
 
     it("should verify builder privileges", () => {
@@ -70,7 +72,7 @@ describe("Manage Groups", () => {
         );
 
         // UI-based privilege verification for Builder
-        cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
+        cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
         uiVerifyBuilderPrivileges();
 
         // UI CRUD workflows validation
@@ -110,7 +112,6 @@ describe("Manage Groups", () => {
             dashboardText.appClonedToast,
             false
         );
-
     });
 
     it("should verify admin privileges", () => {
@@ -203,7 +204,5 @@ describe("Manage Groups", () => {
             .trigger("mouseenter")
             .find(commonSelectors.editButton)
             .should("not.exist");
-
-
-    })
+    });
 });
