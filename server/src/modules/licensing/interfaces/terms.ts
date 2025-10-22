@@ -67,7 +67,7 @@ export interface Terms {
     createdBy?: string;
   };
   workflows?: {
-    enabled?: boolean; //Wbt existing licenses hm
+    enabled?: boolean;
     execution_timeout?: number;
     workspace?: {
       total?: number | string;

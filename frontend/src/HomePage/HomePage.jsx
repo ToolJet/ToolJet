@@ -1257,7 +1257,7 @@ class HomePageComponent extends React.Component {
 
     const showCreateAppButtonTooltip = () => {
       if (this.props.appType === 'module') {
-        return !!moduleEnabled;
+        return true;
       } else {
         return this.canCreateApp();
       }
