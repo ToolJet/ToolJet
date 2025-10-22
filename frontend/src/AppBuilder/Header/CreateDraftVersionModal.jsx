@@ -142,87 +142,99 @@ const CreateDraftVersionModal = ({
             createVersion();
           }}
         >
-          <div className="mb-3">
-            <div className="col">
-              <label className="form-label mb-1 ml-1" style={{ marginBottom: '6px' }} data-cy="version-name-label">
-                {t('editor.appVersionManager.versionName', 'Version Name')}
-              </label>
-              <input
-                type="text"
-                onChange={(e) => setVersionName(e.target.value)}
-                className="form-control"
-                data-cy="version-name-input-field"
-                placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
-                disabled={isCreatingVersion}
-                value={versionName}
-                autoFocus={true}
-                minLength="1"
-                maxLength="25"
-              />
-              <small className="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
-              </small>
-            </div>
-          </div>
-
-          <div className="mb-3 pb-2 version-select">
-            <div className="col">
-              <label className="form-label" data-cy="create-version-from-label">
-                {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
-              </label>
-              <div className="ts-control" data-cy="create-version-from-input-field">
-                <Select
-                  options={options}
-                  value={selectedVersionForCreation}
-                  onChange={(version) => {
-                    setSelectedVersionForCreation(version);
-                  }}
-                  useMenuPortal={false}
-                  width="100%"
-                  maxMenuHeight={100}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
-            <div
-              className="d-flex align-items-center"
-              style={{
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                width: '100%',
-              }}
-            >
-              <div className="create-version-helper-text" data-cy="create-version-helper-text">
-                Draft version can only be created from saved versions.{' '}
-              </div>
-            </div>
-          </Alert>
-
-          {isGitSyncEnabled && (
-            <div className="commit-changes" style={{ marginBottom: '1rem' }}>
-              <div>
+          <div className="create-draft-version-body">
+            <div className="mb-3">
+              <div className="col">
+                <label className="form-label mb-1 ms-1" data-cy="version-name-label">
+                  {t('editor.appVersionManager.versionName', 'Version Name')}
+                </label>
                 <input
-                  className="form-check-input"
-                  checked={canCommit}
-                  type="checkbox"
-                  onChange={handleCommitEnableChange}
-                  data-cy="git-commit-input"
+                  type="text"
+                  onChange={(e) => setVersionName(e.target.value)}
+                  className="form-control"
+                  data-cy="version-name-input-field"
+                  placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
+                  disabled={isCreatingVersion}
+                  value={versionName}
+                  autoFocus={true}
+                  minLength="1"
+                  maxLength="25"
+                  style={{ height: '32px' }}
                 />
+                <small className="version-name-helper-text">
+                  {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+                </small>
               </div>
-              <div>
-                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                  Commit changes
-                </div>
-                <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                  This will commit the creation of the new version to the git repo
+            </div>
+
+            <div className="mt-3 mb-3 version-select">
+              <div className="col">
+                <label className="form-label mb-1 ms-1" data-cy="create-draft-version-from-label">
+                  {t('editor.appVersionManager.createVersionFrom', 'Create from version')}
+                </label>
+                <div className="ts-control" data-cy="create-draft-version-from-input-field">
+                  <Select
+                    options={options}
+                    value={selectedVersionForCreation}
+                    onChange={(version) => {
+                      setSelectedVersionForCreation(version);
+                    }}
+                    useMenuPortal={false}
+                    width="100%"
+                    maxMenuHeight={100}
+                  />
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="create-version-footer">
+            <Alert
+              placeSvgTop={true}
+              svg="warning-icon"
+              cls={`create-draft-version-alert ${isGitSyncEnabled ? 'git-sync-enabled' : 'git-sync-disabled'}`}
+            >
+              <div
+                className="d-flex align-items-center"
+                style={{
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  width: '100%',
+                  marginRight: '6px',
+                }}
+              >
+                <div
+                  className="create-draft-version-helper-text"
+                  style={{ marginBottom: '12px' }}
+                  data-cy="create-draft-version-helper-text"
+                >
+                  Draft version can only be created from saved versions.{' '}
+                </div>
+              </div>
+            </Alert>
+
+            {isGitSyncEnabled && (
+              <div className="commit-changes mb-3">
+                <div>
+                  <input
+                    className="form-check-input"
+                    checked={canCommit}
+                    type="checkbox"
+                    onChange={handleCommitEnableChange}
+                    data-cy="git-commit-input"
+                  />
+                </div>
+                <div>
+                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                    Commit changes
+                  </div>
+                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                    This will commit the creation of the new version to the git repo
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="create-draft-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="mb-3">
               <div className="col d-flex justify-content-end">

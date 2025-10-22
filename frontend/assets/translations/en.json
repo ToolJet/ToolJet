@@ -142,7 +142,7 @@
             "createDraftVersion": "Create draft version",
             "versionName": "Version name",
             "versionDescription": "Version Description",
-            "createVersionFrom": "Create version from",
+            "createVersionFrom": "Create from version",
             "save": "Save",
             "create": "Create Version",
             "editVersion": "Edit Version",
