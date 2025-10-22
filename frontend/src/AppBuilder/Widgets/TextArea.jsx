@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useLayoutEffect, useCallback } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
@@ -10,25 +11,27 @@ export const TextArea = (props) => {
   const { inputRef, value } = inputLogic;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
-  const resizeTextArea = () => {
-    if (!inputRef.current || !isDynamicHeightEnabled) {
+  const heightChangeValue = useHeightObserver(inputRef, isDynamicHeightEnabled);
+  const resizeTextArea = useCallback(() => {
+    if (!inputRef.current) return;
+    if (!isDynamicHeightEnabled) {
       inputRef.current.style.height = `${height}px`;
       return;
     }
     inputRef.current.style.height = 'auto';
-    inputRef.current.style.height = `${inputRef.current.scrollHeight + 20}px`;
-  };
+    inputRef.current.style.height =
+      height >= inputRef.current.scrollHeight ? `${height}px` : `${inputRef.current.scrollHeight + 20}px`;
+  }, [inputRef?.current, height, isDynamicHeightEnabled]);
 
-  useEffect(() => {
-    if (!isDynamicHeightEnabled) return;
+  useLayoutEffect(() => {
     resizeTextArea();
-  }, [width, height, isDynamicHeightEnabled, properties.placeholder, value]);
+  }, [width, height, isDynamicHeightEnabled, properties.placeholder, value, heightChangeValue]);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    value: JSON.stringify({ value, placeholder: properties.placeholder }),
+    value: heightChangeValue,
     adjustComponentPositions,
     currentLayout,
     width,

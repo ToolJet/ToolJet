@@ -84,6 +84,7 @@ export const CodeEditor = ({
       if (typeof value === 'string') {
         codeChanged(value);
         setValue(value);
+        setForceDynamicHeightUpdate((prev) => !prev);
       }
     };
     setExposedVariable('setValue', _setValue);
@@ -101,6 +102,7 @@ export const CodeEditor = ({
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
+          '--cc-code-editor-min-height': `${height - 1}px`,
         }}
       >
         <CodeMirror
@@ -114,8 +116,8 @@ export const CodeEditor = ({
           extensions={[langExtention ?? javascript()]}
           onChange={(value) => {
             setValue(value);
+            setForceDynamicHeightUpdate((prev) => !prev);
             codeChanged(value);
-            setForceDynamicHeightUpdate(!forceDynamicHeightUpdate);
           }}
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}

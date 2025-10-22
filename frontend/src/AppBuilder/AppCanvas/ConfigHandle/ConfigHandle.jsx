@@ -31,7 +31,7 @@ export const ConfigHandle = ({
   visibility,
   isModuleContainer,
   subContainerIndex,
-  dynamicHeight,
+  isDynamicHeightEnabled,
 }) => {
   const { moduleId } = useModuleContext();
   const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
@@ -151,7 +151,7 @@ export const ConfigHandle = ({
         </p>
       </div>
       <div className="dynamic-height-info-button">
-        <ButtonComponent onClick={function noRefCheck() {}} size="medium" variant="secondary">
+        <ButtonComponent size="medium" variant="secondary">
           Learn more
         </ButtonComponent>
       </div>
@@ -190,7 +190,7 @@ export const ConfigHandle = ({
       data-tooltip-place="right"
     >
       <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover">
-        {dynamicHeight && (
+        {isDynamicHeightEnabled && (
           <Popover
             open={isPopoverOpen}
             handleToggle={setIsPopoverOpen}

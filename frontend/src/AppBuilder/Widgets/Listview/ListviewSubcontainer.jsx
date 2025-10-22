@@ -22,9 +22,10 @@ export const ListviewSubcontainer = ({
   width,
   currentLayout,
   visibility,
+  parentHeight,
 }) => {
   const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
-  const transformedRowHeight = temporaryLayout?.height ?? rowHeight;
+  const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -35,6 +36,7 @@ export const ListviewSubcontainer = ({
     visibility,
     isContainer: true,
     subContainerIndex: index,
+    height: parentHeight,
   });
 
   return (

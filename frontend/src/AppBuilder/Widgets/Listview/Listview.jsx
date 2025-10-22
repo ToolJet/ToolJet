@@ -4,12 +4,11 @@ import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-
+import './listview.scss';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
@@ -265,7 +264,11 @@ export const Listview = function Listview({
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+      <div
+        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
+          isDynamicHeightEnabled ? 'flex-grow-1' : ''
+        }`}
+      >
         {filteredData.map((listItem, index) => (
           <ListviewSubcontainer
             key={index}
@@ -286,13 +289,20 @@ export const Listview = function Listview({
             data={data}
             currentLayout={currentLayout}
             visibility={visibility}
+            parentHeight={height}
           />
         ))}
       </div>
       {enablePagination && _.isArray(data) && (
         <div
-          className="fixed-bottom position-fixed"
-          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0, left: '1px', right: '1px' }}
+          className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
+          style={{
+            border: '1px solid',
+            borderColor,
+            margin: '1px',
+            borderTop: 0,
+            ...(isDynamicHeightEnabled ? {} : { left: '1px', right: '1px' }),
+          }}
         >
           <div style={{ backgroundColor }}>
             {data?.length > 0 ? (

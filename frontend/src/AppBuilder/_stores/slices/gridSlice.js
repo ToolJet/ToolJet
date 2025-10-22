@@ -1,4 +1,4 @@
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
@@ -141,8 +141,6 @@ export const createGridSlice = (set, get) => ({
       const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
       const componentDisplay = component?.others?.[displayProperty];
 
-      if (!component?.properties?.dynamicHeight) return;
-
       if (componentType === 'Listview' && doesSubContainerIndexExist) {
         const rowHeight = component?.properties.rowHeight;
         containerHeight = rowHeight;
@@ -163,11 +161,13 @@ export const createGridSlice = (set, get) => ({
         const element = document.querySelector(`.dynamic-${componentId}`);
         // If the component is not a dynamic component, we use the height of the component from the layouts
         if (!element) {
-          contentHeight = visibility ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height : 10;
+          contentHeight = visibility
+            ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
+            : HIDDEN_COMPONENT_HEIGHT;
         } else {
-          // If component is not visible, we set the height to 10
+          // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
           if (!visibility) {
-            contentHeight = 10;
+            contentHeight = HIDDEN_COMPONENT_HEIGHT;
           } else {
             // If the component is a tabs, we need to get the active tab
             let modifiedComponentId = componentId;
@@ -215,7 +215,7 @@ export const createGridSlice = (set, get) => ({
               const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
               const { showHeader, headerHeight } = properties;
               if (showHeader && isProperNumber(headerHeight)) {
-                extraHeight += headerHeight - 10;
+                extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
               }
 
               // If the component is a form, we need to get the header and footer height
@@ -232,7 +232,7 @@ export const createGridSlice = (set, get) => ({
                   currentMax = lastElement.offsetHeight;
                 }
               } else {
-                if (showHeader && isProperNumber(headerHeight)) {
+                if (isProperNumber(headerHeight)) {
                   extraHeight += headerHeight;
                 }
                 if (showFooter && isProperNumber(footerHeight)) {
@@ -243,7 +243,7 @@ export const createGridSlice = (set, get) => ({
 
               // If the component is a tabs, we add 20px for the bottom
             } else if (componentType === 'Tabs') {
-              extraHeight = 20;
+              extraHeight = 40;
             } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
               extraHeight -= 40;
             }
@@ -253,7 +253,7 @@ export const createGridSlice = (set, get) => ({
         if (visibility) {
           containerHeight = Math.max(contentHeight, containerHeight);
         } else {
-          containerHeight = 10;
+          containerHeight = HIDDEN_COMPONENT_HEIGHT;
         }
       }
 
@@ -291,7 +291,7 @@ export const createGridSlice = (set, get) => ({
           ? containerHeight
           : visibility
             ? componentElement.offsetHeight
-            : 10;
+            : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
@@ -376,6 +376,7 @@ export const createGridSlice = (set, get) => ({
         temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const oldChangedCompHeight =
         temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
+
       const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
 
       for (let index = 0; index < targetComponents.length; index++) {

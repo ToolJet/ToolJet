@@ -42,6 +42,8 @@ export const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+    const tableBodyRef = useRef(null);
+
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -99,7 +101,7 @@ export const Table = memo(
 
     // Create ref for height observation
     const tableRef = useRef(null);
-    const heightChangeValue = useHeightObserver(tableRef, isDynamicHeightEnabled);
+    const heightChangeValue = useHeightObserver(tableBodyRef, isDynamicHeightEnabled);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -169,12 +171,12 @@ export const Table = memo(
       isDynamicHeightEnabled,
       id: id,
       height,
-      value: heightChangeValue,
+      value: JSON.stringify({ heightChangeValue, tableData }),
       skipAdjustment: loadingState || tableData.length === 0,
       adjustComponentPositions,
       currentLayout,
       width,
-      visibility,
+      visibility: visibility === 'none' ? false : true,
       subContainerIndex,
     });
 
@@ -211,6 +213,7 @@ export const Table = memo(
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
+          tableBodyRef={tableBodyRef}
         />
       </div>
     );

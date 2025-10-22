@@ -19,6 +19,7 @@ export const TableContainer = ({
   fireEvent,
   setExposedVariables,
   hasDataChanged,
+  tableBodyRef,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -42,7 +43,6 @@ export const TableContainer = ({
 
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
-  const tableBodyRef = useRef(null);
 
   const handleCellValueChange = useCallback(
     (index, name, value, row) => {

@@ -7,6 +7,8 @@ import RenderWidget from './RenderWidget';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 
+const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea'];
+
 const WidgetWrapper = memo(
   ({
     id,
@@ -44,11 +46,11 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
     );
-    const dynamicHeight = useStore(
+    const isDynamicHeightEnabled = useStore(
       (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight,
       shallow
     );
-    const hasDynamicHeight = dynamicHeight && mode === 'view';
+    const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
 
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {
@@ -88,7 +90,8 @@ const WidgetWrapper = memo(
     const styles = {
       width: width + 'px',
       height:
-        hasDynamicHeight && (isTruthyOrZero(subContainerIndex) || componentType == 'Listview')
+        isDynamicHeightEnabledInModeView &&
+        (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
           ? 'auto'
           : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
@@ -110,7 +113,7 @@ const WidgetWrapper = memo(
             'active-target': isWidgetActive,
             'opacity-0': isDragging || isResizing,
             'module-container': isModuleContainer,
-            'dynamic-height-target': dynamicHeight,
+            'dynamic-height-target': isDynamicHeightEnabled,
           })}
           data-id={`${id}`}
           id={id}
@@ -142,7 +145,7 @@ const WidgetWrapper = memo(
               customClassName={isModuleContainer ? 'module-container' : ''}
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
-              dynamicHeight={dynamicHeight}
+              isDynamicHeightEnabled={isDynamicHeightEnabled}
             />
           )}
           <RenderWidget
