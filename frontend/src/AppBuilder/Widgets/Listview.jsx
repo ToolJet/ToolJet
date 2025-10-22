@@ -37,8 +37,8 @@ export const Listview = function Listview({
   );
   const prevFilteredDataRef = useRef([]);
   const prevChildComponents = useRef({});
+  const combinedProperties = { ...fallbackProperties, ...properties };
   const {
-    data,
     rowHeight,
     showBorder,
     rowsPerPage = 10,
@@ -46,7 +46,11 @@ export const Listview = function Listview({
     mode = 'list',
     columns = 1,
     dynamicHeight,
-  } = { ...fallbackProperties, ...properties };
+    dataSourceSelector,
+  } = combinedProperties;
+
+  const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
+
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
@@ -295,6 +299,7 @@ export const Listview = function Listview({
               listViewMode={mode}
               darkMode={darkMode}
               componentType="Listview"
+              hasNoScroll={true}
             />
           </div>
         ))}

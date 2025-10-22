@@ -7,8 +7,11 @@ import {
   BaseEntity,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Metadata } from './metadata.entity';
+import { SelfhostCustomersAiFeature } from './selfhost_customers_ai_feature.entity';
+import { SelfhostCustomersAiCreditHistory } from './selfhost_ai_credit_history.entity';
 
 @Entity('selfhost_customers')
 export class SelfhostCustomers extends BaseEntity {
@@ -23,6 +26,9 @@ export class SelfhostCustomers extends BaseEntity {
 
   @Column({ name: 'license_key', type: 'varchar', length: 10000 })
   licenseKey: string;
+
+  @Column({ name: 'ai_api_key', type: 'varchar', length: 255, nullable: true })
+  aiApiKey: string | null;
 
   @Column({ name: 'host_name', type: 'varchar', length: 255 })
   hostname: string;
@@ -63,4 +69,10 @@ export class SelfhostCustomers extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => SelfhostCustomersAiFeature, (feature) => feature.selfhostCustomer)
+  aiFeatures: SelfhostCustomersAiFeature[];
+
+  @OneToMany(() => SelfhostCustomersAiCreditHistory, (history) => history.selfhostCustomer)
+  aiCreditHistory: SelfhostCustomersAiCreditHistory[];
 }

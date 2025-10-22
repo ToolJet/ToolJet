@@ -22,7 +22,7 @@ export class TooljetDbModule extends SubModule {
     super();
   }
 
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       TooljetDbController,
       TooljetDbTableOperationsService,
@@ -42,7 +42,7 @@ export class TooljetDbModule extends SubModule {
     return {
       module: TooljetDbModule,
       imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser, RolesRepository])],
-      controllers: [TooljetDbController],
+      controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
         AbilityUtilService,
         TooljetDbTableOperationsService,

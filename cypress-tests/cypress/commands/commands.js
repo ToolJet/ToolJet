@@ -7,6 +7,8 @@ import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
+import 'cypress-mailhog';
+
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
@@ -25,8 +27,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector, { timeout: 20000 }).clear();
-  cy.get(selector).type(text, { log: false });
+  cy.get(selector).type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -52,21 +53,22 @@ Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave,
+    '',
     { timeout: 20000 }
-  );
+  ).find('svg')
+    .should('be.visible', { timeout: 20000 });
 });
 
 Cypress.Commands.add("createApp", (appName) => {
   const getAppButtonSelector = ($title) =>
     $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.emptyAppCreateButton
+      ? commonSelectors.dashboardAppCreateButton
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+-create-app"]').click();
+    cy.get('[data-cy="create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -76,37 +78,47 @@ Cypress.Commands.add(
   "dragAndDropWidget",
   (
     widgetName,
-    positionX = 80,
-    positionY = 80,
+    positionX = 100,
+    positionY = 100,
     widgetName2 = widgetName,
     canvas = commonSelectors.canvas
   ) => {
     const dataTransfer = new DataTransfer();
-    cy.forceClickOnCanvas();
 
-    cy.get("body")
-      .then(($body) => {
-        const isSearchVisible = $body
-          .find(commonSelectors.searchField)
-          .is(":visible");
+    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get(commonSelectors.searchField).should('be.visible');
 
-        if (!isSearchVisible) {
-          cy.get('[data-cy="right-sidebar-plus-button"]').click();
-        }
+    cy.get(commonSelectors.searchField).first().clear().type(widgetName);
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should('be.visible');
+
+    cy.get(commonWidgetSelector.widgetBox(widgetName2))
+      .trigger('mousedown', { which: 1, button: 0, force: true })
+      .trigger('dragstart', { dataTransfer, force: true });
+
+    cy.get(canvas)
+      .trigger('dragenter', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       })
-      .then(() => {
-        cy.clearAndType(commonSelectors.searchField, widgetName);
+      .trigger('dragover', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       });
 
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
-      "dragstart",
-      { dataTransfer },
-      { force: true }
-    );
-    cy.get(canvas).trigger("drop", positionX, positionY, {
-      dataTransfer,
-      force: true,
-    });
+
+    cy.get(canvas)
+      .trigger('drop', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
+      })
+      .trigger('mouseup', { force: true });
+
     cy.waitForAutoSave();
   }
 );
@@ -201,7 +213,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).invoke("removeAttr", "target").click();
+  cy.get(selector).last().invoke("removeAttr", "target").click();
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -218,14 +230,14 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
 
-Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-});
+// Cypress.Commands.add("renameApp", (appName) => {
+//   cy.get(commonSelectors.appNameInput).type(
+//     `{selectAll}{backspace}${appName}`,
+//     { force: true }
+//   );
+//   cy.forceClickOnCanvas();
+//   cy.waitForAutoSave();
+// });
 
 Cypress.Commands.add(
   "clearCodeMirror",
@@ -410,25 +422,25 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
-      SELECT id FROM organizations WHERE name = 'My workspace';`,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
+  // cy.task("dbConnection", {
+  //   dbconfig: Cypress.env("app_db"),
+  //   sql: `
+  //     SELECT id FROM organizations WHERE name = 'My workspace';`,
+  // }).then((resp) => {
+  //   const workspaceId = resp.rows[0].id;
 
-    cy.apiLogin(
-      "dev@tooljet.io",
-      "password",
-      workspaceId,
-      "/my-workspace"
-    ).then(() => {
-      cy.visit("/");
-      cy.wait(2000);
-      cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    });
+  cy.apiLogin(
+    "dev@tooljet.io",
+    "password",
+    // workspaceId,
+    // "/my-workspace"
+  ).then(() => {
+    cy.visit("/");
+    cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   });
 });
+// });
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
@@ -467,12 +479,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.wait("@library_apps");
 });
 
-Cypress.Commands.add("removeAssignedApps", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `DELETE FROM app_group_permissions;`,
-  });
-});
+
 
 Cypress.Commands.add(
   "saveFromIntercept",
@@ -561,7 +568,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -657,3 +664,33 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
       }
     })
 });
+
+Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
+  cy.task("dbConnection", {
+    dbconfig: db,
+    sql: query,
+  });
+});
+
+Cypress.Commands.add(
+  "openWorkflow",
+  (
+    slug = "",
+    workspaceId = Cypress.env("workspaceId"),
+    workflowId = Cypress.env("workflowId"),
+  ) => {
+    cy.intercept("GET", "/api/apps/*").as("getWorkflowData");
+    cy.window({ log: false }).then((win) => {
+      win.localStorage.setItem("walkthroughCompleted", "true");
+    });
+    cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
+
+    cy.wait("@getWorkflowData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
+      Cypress.env("workflowId", responseData.id);
+    });
+  }
+);
