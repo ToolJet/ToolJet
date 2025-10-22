@@ -686,7 +686,7 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
+    } else if (this.props.appType === 'front-end') {
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -707,6 +707,9 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
+    } else {
+      // Module permissions return true if builder
+      return currentSession?.role?.name === 'builder';
     }
   }
 
