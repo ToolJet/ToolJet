@@ -10,7 +10,7 @@ export const TextArea = (props) => {
 
   const resizeTextArea = () => {
     if (!inputRef.current || !properties.dynamicHeight) {
-      inputRef.current.style.height = `${height}px`;
+      inputRef.current.style.height = '100%';
       return;
     }
     inputRef.current.style.height = 'auto';
@@ -32,5 +32,12 @@ export const TextArea = (props) => {
     visibility: properties.visibility,
   });
 
-  return <BaseInput {...props} {...inputLogic} inputType="textarea" />;
+  return (
+    <BaseInput
+      {...props}
+      {...inputLogic}
+      classes={{ leftIcon: 'tw-mt-0.5', loaderContainer: 'tw-mt-0.5' }}
+      inputType="textarea"
+    />
+  );
 };
