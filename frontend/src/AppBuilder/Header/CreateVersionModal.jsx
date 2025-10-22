@@ -151,9 +151,9 @@ const CreateVersionModal = ({
             createVersion();
           }}
         >
-          <div className="mb-3 pb-2">
+          <div className="create-version-body mb-3 pb-2">
             <div className="col">
-              <label className="form-label" data-cy="version-name-label">
+              <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
               </label>
               <input
@@ -173,7 +173,7 @@ const CreateVersionModal = ({
               </small>
             </div>
             <div className="col mt-2">
-              <label className="form-label" data-cy="version-description-label">
+              <label className="form-label mb-1 ms-1" data-cy="version-description-label">
                 {t('editor.appVersionManager.versionDescription', 'Version Description')}
               </label>
               <textarea
@@ -192,9 +192,8 @@ const CreateVersionModal = ({
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
               </small>
             </div>
-          </div>
 
-          {/* <div className="mb-4 pb-2 version-select">
+            {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
               {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
             </label>
@@ -212,42 +211,48 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-          {isGitSyncEnabled && (
-            <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
-              <div>
-                <input
-                  className="form-check-input"
-                  checked={canCommit}
-                  type="checkbox"
-                  onChange={handleCommitEnableChange}
-                  data-cy="git-commit-input"
-                />
-              </div>
-              <div>
-                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                  Commit changes
+            {isGitSyncEnabled && (
+              <div className="commit-changes mt-3">
+                <div>
+                  <input
+                    className="form-check-input"
+                    checked={canCommit}
+                    type="checkbox"
+                    onChange={handleCommitEnableChange}
+                    data-cy="git-commit-input"
+                  />
                 </div>
-                <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                  This will commit the creation of the new version to the git repo
+                <div>
+                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                    Commit changes
+                  </div>
+                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                    This will commit the creation of the new version to the git repo
+                  </div>
                 </div>
               </div>
+            )}
+            <div className="mt-3">
+              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+                <div
+                  className="d-flex align-items-center"
+                  style={{
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    className="create-version-helper-text"
+                    style={{ marginBottom: '12px' }}
+                    data-cy="create-version-helper-text"
+                  >
+                    Creating this version will lock it. Any edits afterwards will automatically start a new draft.
+                  </div>
+                </div>
+              </Alert>
             </div>
-          )}
-
-          <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
-            <div
-              className="d-flex align-items-center"
-              style={{
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                width: '100%',
-              }}
-            >
-              <div className="create-version-helper-text" data-cy="create-version-helper-text">
-                Creating this version will lock it. Any edits afterwards will automatically start a new draft.
-              </div>
-            </div>
-          </Alert>
+          </div>
 
           <div className="create-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
