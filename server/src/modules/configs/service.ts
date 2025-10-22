@@ -21,6 +21,13 @@ export class ConfigService implements IConfigService {
     if (publicConfigVars?.ENABLE_WORKFLOWS_FEATURE === undefined) {
       publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'true';
     }
+
+    if (process.env.TOOLJET_EDITION === 'cloud') {
+      publicConfigVars.ENABLE_MARKETPLACE_DEV_MODE = 'false';
+    } else {
+      publicConfigVars.ENABLE_MARKETPLACE_DEV_MODE = process.env.ENABLE_MARKETPLACE_DEV_MODE || 'false';
+    }
+
     return publicConfigVars;
   }
 

@@ -1,14 +1,16 @@
 import { fake } from "Fixtures/fake";
+
 import { commonSelectors } from "Selectors/common";
 import { importSelectors } from "Selectors/exportImport";
 import { commonText } from "Texts/common";
-
 import { exportAppModalText } from "Texts/exportImport";
+
 import {
   clickOnExportButtonAndVerify,
   exportAllVersionsAndVerify,
   verifyElementsOfExportModal,
 } from "Support/utils/exportImport";
+
 import { selectAppCardOption, closeModal } from "Support/utils/common";
 
 describe("App Export", () => {
@@ -216,4 +218,9 @@ describe("App Export", () => {
 
     exportAllVersionsAndVerify(data.appName1, "v1");
   });
+});
+
+it('.', function() {
+  cy.visit('localhost:8082')
+  
 });
