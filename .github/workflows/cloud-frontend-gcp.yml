@@ -140,3 +140,29 @@ jobs:
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
           TOOLJET_EDITION: cloud
+  Purge_Cloudflare_Cache:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧹 Purge Cloudflare Cache
+        continue-on-error: true
+        run: |
+          echo "🔄 Purging Cloudflare cache..."
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID_GCP_STAGE }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN_GCP_STAGE }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}')
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Cloudflare cache purged successfully"
+            echo "$body"
+          else
+            echo "⚠️ Cloudflare cache purge failed with status code: $http_code"
+            echo "$body"
+            exit 1
+          fi
