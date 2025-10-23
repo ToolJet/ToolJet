@@ -106,10 +106,8 @@ export const TableRow = ({
               if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
                 e.stopPropagation();
                 fireEvent('onRowClicked');
-                return;
-              }
-              // if the cell is editable and the row is selected, don't unselect the row
-              if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
+              } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
+                // if the cell is editable and the row is selected, don't unselect the row
                 e.stopPropagation();
                 fireEvent('onRowClicked');
               }
