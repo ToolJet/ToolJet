@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { appVersionService } from '@/_services';
+import { appVersionService, authenticationService, gitSyncService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -19,6 +19,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
+  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const isGitSyncEnabled =
@@ -40,6 +41,7 @@ const CreateVersionModal = ({
       selectedEnvironment: state.selectedEnvironment,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
+      featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,

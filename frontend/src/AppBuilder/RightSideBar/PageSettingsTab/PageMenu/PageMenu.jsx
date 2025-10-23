@@ -4,8 +4,8 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLicenseStore } from '@/_stores/licenseStore';
 import { AddingPageHandler, PageMenuItem } from './PageMenuItem';
 import './style.scss';
 
@@ -39,10 +39,10 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
     };
   }, []);
 
-  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  const license = useStore((state) => state.license);
   const isLicensed =
-    !_.get(featureAccess, 'licenseStatus.isExpired', true) &&
-    _.get(featureAccess, 'licenseStatus.isLicenseValid', false);
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const {
     definition: { styles },

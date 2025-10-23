@@ -35,16 +35,6 @@ export const useLicenseStore = create(
             set({ hasModuleAccess: true, moduleAccessLoading: false });
           }
         },
-
-        isLicenseValid: () => {
-          const featureAccess = get().featureAccess;
-          const licenseStatus = featureAccess?.licenseStatus;
-          if (licenseStatus) {
-            if (licenseStatus?.isExpired) return false;
-            return licenseStatus?.isLicenseValid && !licenseStatus?.isExpired;
-          }
-          return false;
-        },
       },
     }),
     { name: 'License Store' }

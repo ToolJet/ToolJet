@@ -3,24 +3,32 @@ import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLicenseStore } from '@/_stores/licenseStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export function useAppPreviewLink() {
   const { moduleId } = useModuleContext();
-  const { currentPageHandle, selectedEnvironment, editingVersion, appId, slug, selectedVersion } = useStore(
+  const {
+    featureAccess,
+    currentPageHandle,
+    selectedEnvironment,
+    editingVersion,
+    appId,
+    slug,
+    currentVersionId,
+    selectedVersion,
+  } = useStore(
     (state) => ({
+      featureAccess: state.license?.featureAccess,
       currentPageHandle: state?.modules[moduleId].currentPageHandle,
       selectedEnvironment: state.selectedEnvironment,
       editingVersion: state.editingVersion,
       appId: state.appStore.modules[moduleId].app.appId,
       slug: state.appStore.modules[moduleId].app.slug,
+      currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
     }),
     shallow
   );
-
-  const featureAccess = useLicenseStore((state) => state?.featureAccess);
 
   const [appPreviewLink, setAppPreviewLink] = useState('');
 

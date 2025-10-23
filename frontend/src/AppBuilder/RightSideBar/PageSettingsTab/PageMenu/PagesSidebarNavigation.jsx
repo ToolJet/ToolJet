@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import _ from 'lodash';
+import _, { set } from 'lodash';
 import cx from 'classnames';
+import * as Icons from '@tabler/icons-react';
+// eslint-disable-next-line import/no-unresolved
+import FolderList from '@/_ui/FolderList/FolderList';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLicenseStore } from '@/_stores/licenseStore';
-import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
+import { APP_HEADER_HEIGHT, LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPage, RenderPageAndPageGroup } from './PageGroup';
@@ -34,6 +38,7 @@ export const PagesSidebarNavigation = ({
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const license = useStore((state) => state.license);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
@@ -53,7 +58,6 @@ export const PagesSidebarNavigation = ({
     shallow
   );
   const { appMode } = useStore((state) => state.globalSettings, shallow);
-  const featureAccess = useLicenseStore((state) => state.featureAccess);
 
   const navRef = useRef(null);
   const moreRef = useRef(null);
@@ -76,8 +80,8 @@ export const PagesSidebarNavigation = ({
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
   const isLicensed =
-    !_.get(featureAccess, 'licenseStatus.isExpired', true) &&
-    _.get(featureAccess, 'licenseStatus.isLicenseValid', false);
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const labelStyle = useMemo(
     () => ({

@@ -1,26 +1,32 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLicenseStore } from '@/_stores/licenseStore';
+import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import CollapsableToggle from './CollapsableToggle';
 import { pageConfig } from './pageConfig';
 import Accordion from '@/_ui/Accordion';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { NumberInput } from '@/Editor/CodeBuilder/Elements/NumberInput';
+import LabelStyleToggle from './LabelStyleToggle';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // import { resolveReferences } from '@/_helpers/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { RIGHT_SIDE_BAR_TAB } from '../rightSidebarConstants';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
 import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
-import { get, startCase, toLower, upperFirst } from 'lodash';
+import { camelCase, get, startCase, toLower, upperFirst } from 'lodash';
+import { Button } from '@/components/ui/Button/Button';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
+import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
+import EditAppName from '@/AppBuilder/Header/EditAppName';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -47,7 +53,6 @@ export const PageSettings = () => {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
-  const featureAccess = useLicenseStore((state) => state.featureAccess);
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
@@ -55,8 +60,10 @@ export const PageSettings = () => {
   };
   const treeRef = useRef(null);
 
+  const license = useStore((state) => state.license);
   const isLicensed =
-    !get(featureAccess, 'licenseStatus.isExpired', true) && get(featureAccess, 'licenseStatus.isLicenseValid', false);
+    !get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const pagesMeta = useMemo(() => JSON.parse(JSON.stringify(pageConfig)), []);
 

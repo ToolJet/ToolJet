@@ -4,8 +4,8 @@ import _ from 'lodash';
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
+import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
-import { useLicenseStore } from '@/_stores/licenseStore';
 import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
 import * as Icons from '@tabler/icons-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -175,7 +175,7 @@ const MobileNavigationMenu = ({
   const { moduleId } = useModuleContext();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
-  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  const license = useStore((state) => state.license);
   const [isViewportNarrow, setIsViewportNarrow] = useState(false);
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
 
@@ -243,8 +243,8 @@ const MobileNavigationMenu = ({
   const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
   const isLicensed =
-    !_.get(featureAccess, 'licenseStatus.isExpired', true) &&
-    _.get(featureAccess, 'licenseStatus.isLicenseValid', false);
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
