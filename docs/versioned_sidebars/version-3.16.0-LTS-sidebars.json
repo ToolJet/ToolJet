@@ -855,6 +855,7 @@
           ]
         },
         "security/audit-logs",
+        "security/stream-rsyslog-to-datadog",
         "security/compliance"
       ]
     },

@@ -2,30 +2,27 @@
 id: stream-rsyslog-to-datadog
 title: Stream Rsyslog Audit Logs to Datadog
 ---
-<div style={{paddingBottom:'24px'}}>
 
-This guide demonstrates how to configure ToolJet to stream audit logs from rsyslog to Datadog for centralized log management, monitoring, and analysis. This integration enables real-time visibility into user activities, resource changes, and system events.
+<br/>
 
-</div>
+This guide demonstrates how to configure ToolJet to stream audit logs from Rsyslog to Datadog for **centralized log management**, **monitoring**, and **analysis**. This integration enables real-time visibility into user activities, resource changes, and system events, helping you maintain security, compliance, and operational awareness across your infrastructure.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+When to stream ToolJet audit logs to Datadog:
+- **Multi-server deployments**: Centralize logs from production, staging, and development environments
+- **Security monitoring**: Correlate user actions with infrastructure metrics to detect anomalies
+- **Compliance requirements**: Maintain tamper-proof audit trails with long-term retention
+- **Incident response**: Quickly search and analyze logs during security or operational incidents
 
 ## Prerequisites
 
 Before setting up the Datadog integration, ensure you have:
 
-1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](./setup-syslog.md)** to enable log file generation
+1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](/docs/how-to/setup-rsyslog)** to enable log file generation
 2. **Datadog account** - Sign up at [https://www.datadoghq.com/](https://www.datadoghq.com/)
 3. **Datadog API key** - Obtain from [Datadog Organization Settings](https://app.datadoghq.com/organization-settings/api-keys)
 4. **Docker Compose setup** - This guide uses Docker Compose for deployment
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Architecture Overview
-
-The integration works by:
 
 1. **ToolJet** writes audit logs to `/home/appuser/rsyslog/` inside the container
 2. **Docker volume** shares the rsyslog directory between ToolJet and Datadog Agent containers
@@ -45,11 +42,9 @@ The integration works by:
                                             └─────────────┘
 ```
 
-</div>
+## Configuration Steps
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 1: Configure Environment Variables
+### Step 1: Configure Environment Variables
 
 Add the following environment variables to your `.env` file:
 
@@ -75,11 +70,7 @@ The `DD_SITE` value depends on your Datadog region:
 - AP1: `ap1.datadoghq.com`
 :::
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 2: Create Datadog Agent Configuration
+### Step 2: Create Datadog Agent Configuration
 
 Create a file named `datadog-agent-config.yml` in your ToolJet deployment directory:
 
@@ -100,11 +91,7 @@ This configuration:
 - Disables automatic collection from all containers (we'll target specific logs)
 - Sets up multiline processing for JSON-formatted logs
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 3: Create ToolJet Log Collection Configuration
+### Step 3: Create ToolJet Log Collection Configuration
 
 Create a file named `datadog-tooljet-logs.yaml` in your ToolJet deployment directory:
 
@@ -144,15 +131,11 @@ tags:
   - region:us-east-1
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 4: Update Docker Compose Configuration
+### Step 4: Update Docker Compose Configuration
 
 Update your `docker-compose.yml` file to include the Datadog Agent and shared volume:
 
-### Add Shared Volume to ToolJet Service
+#### Add Shared Volume to ToolJet Service
 
 ```yaml
 services:
@@ -162,7 +145,7 @@ services:
       - tooljet-logs:/home/appuser/rsyslog
 ```
 
-### Add Datadog Agent Service
+#### Add Datadog Agent Service
 
 ```yaml
   datadog-agent:
@@ -186,7 +169,7 @@ services:
       - ./datadog-tooljet-logs.yaml:/etc/datadog-agent/conf.d/tooljet.d/conf.yaml:ro
 ```
 
-### Define the Shared Volume
+#### Define the Shared Volume
 
 ```yaml
 volumes:
@@ -249,36 +232,25 @@ volumes:
   tooljet-logs:
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 5: Deploy the Configuration
+### Step 5: Deploy the Configuration
 
 1. **Stop existing containers**:
    ```bash
    docker-compose down
    ```
-
 2. **Start the updated stack**:
    ```bash
    docker-compose up -d
    ```
-
 3. **Verify containers are running**:
    ```bash
    docker ps
    ```
-
    You should see both `Tooljet-app` and `datadog-agent` containers running.
 
-</div>
+### Step 6: Verify the Integration
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 6: Verify the Integration
-
-### Check Datadog Agent Status
+#### Check Datadog Agent Status
 
 Run the following command to verify the agent is collecting logs:
 
@@ -309,7 +281,7 @@ Logs Agent
 If the status shows "OK" and files are being tailed, the integration is working correctly.
 :::
 
-### Check Datadog Agent Logs
+#### Check Datadog Agent Logs
 
 View the Datadog Agent logs to troubleshoot any issues:
 
@@ -317,7 +289,7 @@ View the Datadog Agent logs to troubleshoot any issues:
 docker logs datadog-agent --tail 50
 ```
 
-### Generate Test Audit Logs
+#### Generate Test Audit Logs
 
 Perform actions in ToolJet to generate audit logs:
 - Create or delete an application
@@ -325,11 +297,7 @@ Perform actions in ToolJet to generate audit logs:
 - Update user permissions
 - Change organization settings
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Step 7: View Logs in Datadog
+### Step 7: View Logs in Datadog
 
 1. Navigate to the **[Datadog Logs Explorer](https://app.datadoghq.com/logs)**
 
@@ -337,10 +305,6 @@ Perform actions in ToolJet to generate audit logs:
    - `service:tooljet`
    - `source:tooljet-audit`
    - `env:production`
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Log Structure and Fields
 
@@ -393,15 +357,9 @@ ToolJet audit logs contain the following structured fields:
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Related Resources
 
-- **[Setup Rsyslog](./setup-syslog.md)** - Configure audit log generation
+- **[Setup Rsyslog](/docs/how-to/setup-rsyslog)** - Configure audit log generation
 - **[Datadog Documentation](https://docs.datadoghq.com/)** - Official Datadog guides
 - **[Datadog Agent Configuration](https://docs.datadoghq.com/agent/guide/agent-configuration-files/)** - Detailed Agent setup
 - **[Log Collection](https://docs.datadoghq.com/logs/log_collection/)** - Datadog log collection guide
-
-</div>
