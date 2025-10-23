@@ -716,7 +716,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     };
 
     let bodyData;
-    if (sourceOptions.client_auth.toLowerCase() === 'header') {
+    if (sourceOptions.client_auth?.toLowerCase() === 'header') {
       const credentials = Buffer.from(`${sourceOptions['client_id']}:${sourceOptions['client_secret']}`).toString(
         'base64'
       );
