@@ -44,11 +44,13 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
-    addInstanceLevelSSO?: boolean
+    addInstanceLevelSSO?: boolean,
+    allowArchivedWorkspace: boolean = false
   ): Promise<DeepPartial<Organization>> {
     const result: Organization = await this.organizationRepository.fetchOrganizationWithSSOConfigs(
       organizationIdOrSlug,
-      statusList
+      statusList,
+      allowArchivedWorkspace
     );
     if (!result) return;
 
