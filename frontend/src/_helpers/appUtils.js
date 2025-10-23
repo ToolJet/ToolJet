@@ -1108,42 +1108,42 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-            let errorData = {};
-            switch (query.kind) {
-              case 'runpy':
-                errorData = data.data;
-                break;
-              case 'tooljetdb':
-                if (data?.error) {
-                  errorData = {
-                    message: data?.error?.message || 'Something went wrong',
-                    description: data?.error?.message || 'Something went wrong',
-                    status: data?.statusText || 'Failed',
-                    data: data?.error || {},
-                  };
-                } else {
+              let errorData = {};
+              switch (query.kind) {
+                case 'runpy':
+                  errorData = data.data;
+                  break;
+                case 'tooljetdb':
+                  if (data?.error) {
+                    errorData = {
+                      message: data?.error?.message || 'Something went wrong',
+                      description: data?.error?.message || 'Something went wrong',
+                      status: data?.statusText || 'Failed',
+                      data: data?.error || {},
+                    };
+                  } else {
+                    errorData = data;
+                    errorData.description = data.errorMessage || 'Something went wrong';
+                  }
+                  break;
+                default:
                   errorData = data;
-                  errorData.description = data.errorMessage || 'Something went wrong';
-                }
-                break;
-              default:
-                errorData = data;
-                break;
+                  break;
+              }
+
+              onEvent(_ref, 'onDataQueryFailure', queryEvents);
+              useCurrentStateStore.getState().actions.setErrors({
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                  data: errorData,
+                  options: options,
+                },
+              });
+              if (!calledFromQuery) setPreviewData(errorData);
+
+              break;
             }
-
-            onEvent(_ref, 'onDataQueryFailure', queryEvents);
-            useCurrentStateStore.getState().actions.setErrors({
-              [query.name]: {
-                type: 'query',
-                kind: query.kind,
-                data: errorData,
-                options: options,
-              },
-            });
-            if (!calledFromQuery) setPreviewData(errorData);
-
-            break;
-          }
           case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             const kind = data.data?.kind;
@@ -1160,44 +1160,44 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-            if (query.options.enableTransformation) {
-              finalData = await runTransformation(
-                _ref,
-                finalData,
-                query.options.transformation,
-                query.options.transformationLanguage,
-                query,
-                'edit'
-              );
-              if (finalData?.status === 'failed') {
-                useCurrentStateStore.getState().actions.setErrors({
-                  [query.name]: {
-                    type: 'transformations',
-                    data: finalData,
-                    options: options,
-                  },
-                });
-                onEvent(_ref, 'onDataQueryFailure', queryEvents);
-                setPreviewLoading(false);
-                resolve({ status: data.status, data: finalData });
-                // console.log('Test', finalData);
-                if (!calledFromQuery) setPreviewData(finalData);
-                return;
+              if (query.options.enableTransformation) {
+                finalData = await runTransformation(
+                  _ref,
+                  finalData,
+                  query.options.transformation,
+                  query.options.transformationLanguage,
+                  query,
+                  'edit'
+                );
+                if (finalData?.status === 'failed') {
+                  useCurrentStateStore.getState().actions.setErrors({
+                    [query.name]: {
+                      type: 'transformations',
+                      data: finalData,
+                      options: options,
+                    },
+                  });
+                  onEvent(_ref, 'onDataQueryFailure', queryEvents);
+                  setPreviewLoading(false);
+                  resolve({ status: data.status, data: finalData });
+                  // console.log('Test', finalData);
+                  if (!calledFromQuery) setPreviewData(finalData);
+                  return;
+                }
               }
-            }
 
-            useCurrentStateStore.getState().actions.setCurrentState({
-              succededQuery: {
-                [query.name]: {
-                  type: 'query',
-                  kind: query.kind,
+              useCurrentStateStore.getState().actions.setCurrentState({
+                succededQuery: {
+                  [query.name]: {
+                    type: 'query',
+                    kind: query.kind,
+                  },
                 },
-              },
-            });
-            if (!calledFromQuery) setPreviewData(finalData);
-            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
-            break;
-          }
+              });
+              if (!calledFromQuery) setPreviewData(finalData);
+              onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
+              break;
+            }
         }
         setPreviewLoading(false);
 
@@ -1413,10 +1413,10 @@ export function runQuery(
                   },
                   query.kind === 'restapi'
                     ? {
-                        request: data.data.requestObject,
-                        response: data.data.responseObject,
-                        responseHeaders: data.data.responseHeaders,
-                      }
+                      request: data.data.requestObject,
+                      response: data.data.responseObject,
+                      responseHeaders: data.data.responseHeaders,
+                    }
                     : {}
                 ),
               },
@@ -2406,6 +2406,16 @@ export const removeFunctionObjects = (obj) => {
   return obj;
 };
 
+export const checkIfLicenseNotValid = () => {
+  const licenseStatus = useStore.getState().license.featureAccess?.licenseStatus;
+  // When purchased, then isExpired key is also avialale else its not available
+  if (licenseStatus) {
+    if (_.has(licenseStatus, 'isExpired')) {
+      return licenseStatus?.isExpired;
+    }
+    return !licenseStatus?.isLicenseValid;
+  }
+};
 export function isPDFSupported() {
   const browser = getBrowserUserAgent();
 
@@ -2423,12 +2433,12 @@ export function isPDFSupported() {
 
 function getBrowserUserAgent(userAgent) {
   var regexps = {
-      Chrome: [/Chrome\/(\S+)/],
-      Firefox: [/Firefox\/(\S+)/],
-      MSIE: [/MSIE (\S+);/],
-      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-      Safari: [/Version\/(\S+).*?Safari\//],
-    },
+    Chrome: [/Chrome\/(\S+)/],
+    Firefox: [/Firefox\/(\S+)/],
+    MSIE: [/MSIE (\S+);/],
+    Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
+    Safari: [/Version\/(\S+).*?Safari\//],
+  },
     re,
     m,
     browser,
@@ -2551,6 +2561,7 @@ export const isMobileDevice = () => {
   const userAgent = window.navigator.userAgent;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
 };
+
 
 // Color picker utils
 
