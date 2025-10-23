@@ -63,13 +63,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { globalSettings, pageSettings, switchPage, currentVersionId, publishedVersions } = useStore(
+  const { globalSettings, pageSettings, switchPage } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
       pageSettings: state.pageSettings,
       switchPage: state.switchPage,
-      publishedVersions: state.publishedVersions,
-      currentVersionId: state.currentVersionId,
     }),
     shallow
   );
@@ -78,14 +76,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position, disableMenu, showOnDesktop } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
-  const isPublishedVersion = publishedVersions.some((version) => version.id === currentVersionId);
+  const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
     setIsComponentLayoutReady(true, moduleId);
     return () => setIsComponentLayoutReady(false, moduleId);
-  }, []);
+  }, [moduleId, setIsComponentLayoutReady]);
 
   useEffect(() => {
     function handleResizeImmediate() {
@@ -144,10 +142,18 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
-      paddingTop: currentMode === 'edit' && isPublishedVersion && '32px',
+      paddingTop: currentMode === 'edit' && (isCurrentVersionLocked ? '32px' : '8px'),
       paddingBottom: currentMode === 'edit' && '2px',
     };
-  }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
+  }, [
+    currentMode,
+    isAppDarkMode,
+    isModuleMode,
+    editorMarginLeft,
+    canvasContainerHeight,
+    isRightSidebarOpen,
+    isCurrentVersionLocked,
+  ]);
 
   const toggleSidebarPinned = useCallback(() => {
     const newValue = !isViewerSidebarPinned;
@@ -216,8 +222,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             )}
             style={canvasContainerStyles}
           >
-            <AppCanvasBanner appId={appId} />
-            <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+            <AppCanvasBanner
+              appId={appId}
+              onVersionLockStatusChange={(isLocked) => {
+                setIsCurrentVersionLocked(isLocked);
+              }}
+            />
+            <div>
               {appType !== 'module' && (
                 <PagesSidebarNavigation
                   showHeader={showHeader}
