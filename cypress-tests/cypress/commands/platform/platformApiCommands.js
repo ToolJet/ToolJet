@@ -191,6 +191,35 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
             });
     });
 });
+Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
+    return cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `
+      SELECT id 
+      FROM users
+      WHERE email='${email}'
+      LIMIT 1;
+    `,
+    }).then((resp) => {
+        const userId = resp.rows[0]?.id;
+        if (!userId) throw new Error(`User with email ${email} not found`);
+        return userId;
+    }).then((userId) => {
+        return cy.getAuthHeaders().then((headers) => {
+            return cy.request({
+                method: "PUT",
+                url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
+                headers: headers,
+                body: {
+                    newRole: role,
+                    userId: userId,
+                },
+            }).then((response) => {
+                expect(response.status).to.equal(200);
+            });
+        });
+    });
+});
 
 Cypress.Commands.add(
     "apiCreateGranularPermission",
