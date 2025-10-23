@@ -15,10 +15,8 @@ import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
-import { createEditorLicenseSlice } from './slices/editorLicenseSlice';
 import { createAppVersionSlice } from './slices/appVersionSlice';
 import { createPageMenuSlice } from './slices/pageMenuSlice';
-import { createLicenseSlice } from './slices/licenseSlice';
 import { createDependencySlice } from './slices/dependencySlice';
 import { createGridSlice } from './slices/gridSlice';
 import { createEventsSlice } from './slices/eventsSlice';
@@ -51,10 +49,8 @@ export default create(
       ...createResolvedSlice(...state),
       ...createLayoutSlice(...state),
       ...createEnvironmentsAndVersionsSlice(...state),
-      // ...createEditorLicenseSlice(...state),
       ...createAppVersionSlice(...state),
       ...createPageMenuSlice(...state),
-      ...createLicenseSlice(...state),
       ...createDependencySlice(...state),
       ...createGridSlice(...state),
       ...createEventsSlice(...state),

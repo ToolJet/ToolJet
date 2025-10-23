@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ReleaseVersionButton } from './ReleaseVersionButton';
-import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import GitSyncManager from '../GitSyncManager';
 import useStore from '@/AppBuilder/_stores/store';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
@@ -26,7 +25,6 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
 const PreviewAndShareIcons = () => {
   const { moduleId } = useModuleContext();
   const {
-    featureAccess,
     currentPageHandle,
     selectedEnvironment,
     isVersionReleased,
@@ -39,7 +37,6 @@ const PreviewAndShareIcons = () => {
     selectedVersion,
   } = useStore(
     (state) => ({
-      featureAccess: state.license?.featureAccess,
       currentPageHandle: state?.modules[moduleId].currentPageHandle,
       selectedEnvironment: state.selectedEnvironment,
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
@@ -53,6 +50,8 @@ const PreviewAndShareIcons = () => {
     }),
     shallow
   );
+
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const setCurrentMode = useStore((state) => state.setCurrentMode);

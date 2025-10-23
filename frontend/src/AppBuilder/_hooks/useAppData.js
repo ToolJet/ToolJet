@@ -10,6 +10,7 @@ import {
   customStylesService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
@@ -90,7 +91,6 @@ const useAppData = (
   const setQueryMapping = useStore((state) => state.setQueryMapping);
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
   const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
-  const updateFeatureAccess = useStore((state) => state.updateFeatureAccess);
   const computePageSettings = useStore((state) => state.computePageSettings);
   const setGlobalSettings = useStore((state) => state.setGlobalSettings);
   const runOnLoadQueries = useStore((state) => state.dataQuery.runOnLoadQueries);
@@ -114,7 +114,6 @@ const useAppData = (
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
-  const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
   const themeAccess = useThemeAccess();
   const detectThemeChange = useStore((state) => state.detectThemeChange);
@@ -136,12 +135,14 @@ const useAppData = (
   const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
   const isComponentLayoutReady = useStore((state) => state.appStore.modules[moduleId].isComponentLayoutReady);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
-  const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
     (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
   );
+
+  const licenseStatus = useLicenseStore((state) => state.actions.isLicenseValid());
+  const updateFeatureAccess = useLicenseStore((state) => state.actions.fetchFeatureAccess);
 
   const location = useRouter().location;
 

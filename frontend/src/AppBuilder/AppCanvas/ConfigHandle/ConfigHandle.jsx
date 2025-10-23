@@ -10,6 +10,7 @@ import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import MentionComponentInChat from './MentionComponentInChat';
+import { useLicenseStore } from '@/_stores/licenseStore';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -28,7 +29,7 @@ export const ConfigHandle = ({
   subContainerIndex,
 }) => {
   const { moduleId } = useModuleContext();
-  const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
+  const isModulesEnabled = useLicenseStore((state) => state.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
