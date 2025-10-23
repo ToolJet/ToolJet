@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 
 export const workflowExecutionsService = {
   create,
+  triggerEditor,
   getStatus,
   getWorkflowExecution,
   execute,
@@ -14,6 +15,7 @@ export const workflowExecutionsService = {
   getPaginatedNodes,
   trigger,
   streamSSE,
+  cancel,
 };
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
@@ -110,8 +112,39 @@ function trigger(workflowAppId, params, environmentId, queryId) {
   return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);
 }
 
+function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
+  const { injectedState = {}, startNodeId } = extraProps;
+  const currentSession = authenticationService.currentSessionValue;
+
+  const body = {
+    appVersionId: appVersionId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'version',
+    params: testJson || {},
+    environmentId,
+    injectedState,
+    startNodeId,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include'
+  };
+
+  // Use appVersionId in URL path for trigger endpoint
+  return fetch(`${config.apiUrl}/workflow_executions/${appVersionId}/trigger`, requestOptions)
+    .then(handleResponse);
+}
+
 function streamSSE(workflowExecutionId) {
   return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
     withCredentials: true,
   });
+}
+
+function cancel(executionId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${executionId}/cancel`, requestOptions).then(handleResponse);
 }

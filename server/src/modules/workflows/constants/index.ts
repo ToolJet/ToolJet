@@ -20,6 +20,7 @@ export enum FEATURE_KEY {
 
   CREATE_WORKFLOW = 'create_workflow',
   NPM_PACKAGES = 'npm_packages',
+  CANCEL_WORKFLOW_EXECUTION = 'cancel_workflow_execution',
 }
 
 // Queue and job name constants
@@ -34,6 +35,7 @@ export const WORKFLOW_EXECUTION_STATUS = {
   RUNNING: 'workflow_execution_running',
   COMPLETED: 'workflow_execution_completed',
   ERROR: 'workflow_execution_error',
+  CANCELLED: 'workflow_execution_cancelled',
 };
 
 // Re-export types from types module for backward compatibility

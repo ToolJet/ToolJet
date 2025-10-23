@@ -76,3 +76,15 @@ export const WORKFLOW_TIMEOUT = {
   getTimeoutMs: () => parseInt(process.env.WORKFLOW_TIMEOUT_SECONDS || '60') * 1000,
   getTimeoutSeconds: () => parseInt(process.env.WORKFLOW_TIMEOUT_SECONDS || '60'),
 };
+
+/**
+ * Workflow processor concurrency configuration
+ *
+ * Controls the maximum number of workflow jobs that can be processed concurrently
+ * by each worker instance. Higher values allow more parallel processing but consume
+ * more resources (CPU, memory, database connections).
+ *
+ * DEFAULT: 5 concurrent jobs per worker
+ * Configurable via TOOLJET_WORKFLOW_CONCURRENCY environment variable
+ */
+export const WORKFLOW_CONCURRENCY = parseInt(process.env.TOOLJET_WORKFLOW_CONCURRENCY || '5');

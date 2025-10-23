@@ -17,25 +17,10 @@ export class WorkflowExecutionQueueService {
         throw new Error('Method not implemented.');
     }
 
-    async getQueueStats(): Promise<{
-        waiting: number;
-        active: number;
-        completed: number;
-        failed: number;
-        delayed: number;
+    async cancel(executionId: string): Promise<{
+        success: boolean;
+        previousState: string;
     }> {
-        throw new Error('Method not implemented.');
-    }
-
-    async pauseQueue(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-    async resumeQueue(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-    async clearQueue(): Promise<void> {
         throw new Error('Method not implemented.');
     }
 }
