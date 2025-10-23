@@ -16,7 +16,7 @@ import {
     setupAndUpdateRole,
     setupWorkspaceAndInviteUser,
     updateRole,
-    verifyUserPrivileges
+    verifyUserPrivileges,
 } from "Support/utils/manageGroups";
 import { commonText } from "Texts/common";
 import { exportAppModalText, importText } from "Texts/exportImport";
@@ -46,7 +46,6 @@ describe("Manage Groups", () => {
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
-
     });
 
     it("should verify the last active admin role update protection", () => {
@@ -265,21 +264,21 @@ describe("Manage Groups", () => {
         //Create and run postgres query in the app
         // Need to enable once bug is fixed
         /*
-                        
-                
-                        addQuery(
-                            "table_preview",
-                            `SELECT * FROM persons;`,
-                            `cypress-${data.dsName1}-postgresql`
-                        );
-                
-                        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
-                            "have.text",
-                            "table_preview "
-                        );
-                        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-                        verifyValueOnInspector("table_preview", "7 items ");
-                        */
+                            
+                    
+                            addQuery(
+                                "table_preview",
+                                `SELECT * FROM persons;`,
+                                `cypress-${data.dsName1}-postgresql`
+                            );
+                    
+                            cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
+                                "have.text",
+                                "table_preview "
+                            );
+                            cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+                            verifyValueOnInspector("table_preview", "7 items ");
+                            */
 
         cy.backToApps();
 
