@@ -548,9 +548,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     let tokenOptions: any;
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     if (
-      ['googlesheets', 'slack', 'zendesk', 'salesforce', 'googlecalendar', 'snowflake', 'microsoft_graph'].includes(
-        dataSource.kind
-      )
+      [
+        'googlesheets',
+        'slack',
+        'zendesk',
+        'salesforce',
+        'googlecalendar',
+        'snowflake',
+        'microsoft_graph',
+        'hubspot',
+      ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(
         dataSource,

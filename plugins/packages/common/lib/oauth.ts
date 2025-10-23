@@ -181,11 +181,11 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
   const clientAuth = sourceOptions.client_auth?.toLowerCase();
 
   try {
-    const baseRequestBody = new URLSearchParams({
+    const baseRequestBody = {
       grant_type: sourceOptions.grant_type || 'client_credentials',
       ...(sourceOptions.audience ? { audience: sourceOptions.audience } : {}),
       ...(sourceOptions.scopes ? { scope: sourceOptions.scopes } : {}),
-    });
+    };
 
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -196,7 +196,7 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
     if (clientAuth === 'header') {
       const credentials = Buffer.from(`${sourceOptions.client_id}:${sourceOptions.client_secret}`).toString('base64');
       headers['Authorization'] = `Basic ${credentials}`;
-      bodyData = baseRequestBody;
+      bodyData = new URLSearchParams(baseRequestBody);
     } else {
       bodyData = {
         ...baseRequestBody,
