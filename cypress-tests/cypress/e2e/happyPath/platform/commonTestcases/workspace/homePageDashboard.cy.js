@@ -27,7 +27,7 @@ describe("Home Page Dashboard Testcases", () => {
     it("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon).click();
-        cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+        cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome
             );
@@ -106,8 +106,8 @@ describe("Home Page Dashboard Testcases", () => {
         cy.apiUpdateUserRole(data.email, "builder");
         cy.apiLogout();
 
+        cy.apiLogin(data.email);
         cy.visit("/");
-        cy.appUILogin(data.email);
         cy.get(commonSelectors.homePageIcon).should("be.visible");
     });
 });
