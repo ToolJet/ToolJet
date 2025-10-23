@@ -482,6 +482,7 @@ export default class LicenseBase {
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
+      workflowsEnabled: this.getWorkflowsEnabled(),
     };
   }
 
@@ -533,5 +534,16 @@ export default class LicenseBase {
       return this.BASIC_PLAN_TERMS.workflows;
     }
     return this._workflows ?? WORKFLOW_TEAM_PLAN_TERMS.workflows;
+  }
+
+  public getWorkflowsEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.workflows?.enabled;
+    }
+    // If "enabled" is undefined or missing, return true
+    if (this._workflows?.['enabled'] === undefined) {
+      return true;
+    }
+    return !!this._workflows?.['enabled'];
   }
 }
