@@ -98,35 +98,35 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     //TODO: pass environmentId to the func
-    createNewVersionAction(
-      appId,
-      versionName,
-      selectedVersionForCreation.id,
-      versionDescription,
-      (newVersion) => {
-        toast.success('Version Created');
-        setVersionName('');
-        setIsCreatingVersion(false);
-        setShowCreateAppVersion(false);
-        appVersionService
-          .getAppVersionData(appId, newVersion.id, currentMode)
-          .then((data) => {
-            setCurrentVersionId(newVersion.id);
-            handleCommitOnVersionCreation(data);
-          })
-          .catch((error) => {
-            toast.error(error);
-          });
-      },
-      (error) => {
-        if (error?.data?.code === '23505') {
-          toast.error('Version name already exists.');
-        } else {
-          toast.error(error?.error);
-        }
-        setIsCreatingVersion(false);
-      }
-    );
+    // createNewVersionAction(
+    //   appId,
+    //   versionName,
+    //   selectedVersionForCreation.id,
+    //   versionDescription,
+    //   (newVersion) => {
+    //     toast.success('Version Created');
+    //     setVersionName('');
+    //     setIsCreatingVersion(false);
+    //     setShowCreateAppVersion(false);
+    //     appVersionService
+    //       .getAppVersionData(appId, newVersion.id, currentMode)
+    //       .then((data) => {
+    //         setCurrentVersionId(newVersion.id);
+    //         handleCommitOnVersionCreation(data);
+    //       })
+    //       .catch((error) => {
+    //         toast.error(error);
+    //       });
+    //   },
+    //   (error) => {
+    //     if (error?.data?.code === '23505') {
+    //       toast.error('Version name already exists.');
+    //     } else {
+    //       toast.error(error?.error);
+    //     }
+    //     setIsCreatingVersion(false);
+    //   }
+    // );
   };
 
   return (
