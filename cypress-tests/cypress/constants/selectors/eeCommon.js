@@ -1,3 +1,4 @@
+import { archiveUserFromInstancesettings } from "../../support/utils/platform/eeCommon";
 import { cyParamName } from "./common";
 
 export const commonEeSelectors = {
@@ -20,6 +21,13 @@ export const commonEeSelectors = {
     nameHeader: '[data-cy="name-header"]',
     modalMessage: '[data-cy="modal-message"]',
     paginationSection: '[data-cy="pagination-section"]',
+    userActionButton: '[data-cy="user-actions-button"]',
+    archiveButton: '[data-cy="archive-button"]',
+    userSearchBar: '[data-cy="input-field-user-filter-search"]',
+    passwordResetButton: '[data-cy="reset-password-button"]',
+    createNewPasswordButton: '[data-cy="create-password-input"]',
+    passwordInputField: '[data-cy="password-input"]',
+    resetButton: '[data-cy="reset-button"]',
 
 };
 
@@ -118,6 +126,8 @@ export const instanceSettingsSelector = {
         return `[data-cy="${cyParamName(userName)}-user-edit-button"]`;
     },
     viewModalNoColumnHeader: '[data-cy="number-column-header"]',
+    viewTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
+    viewTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
     viewModalNameColumnHeader: '[data-cy="name-column-header"]',
     viewModalStatusColumnHeader: '[data-cy="status-column-header"]',
     archiveAllButton: '[data-cy="archive-all-button"]',

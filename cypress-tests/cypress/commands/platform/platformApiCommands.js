@@ -500,17 +500,55 @@ Cypress.Commands.add(
     ) => {
         let invitationToken, organizationToken;
 
-        cy.apiUserInvite(userName, userEmail, userRole, metaData);
+        // Auto-detect currently visited workspace slug and switch context for the invite.
+        // If no slug is present or lookup fails, fall back to default org: 'My workspace'.
+        cy.location("pathname", { log: false })
+            .then((pathname) => {
+                const slug = (pathname || "").split("/")[1] || "";
 
-        cy.task("dbConnection", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `
-      SELECT ou.invitation_token 
-      FROM organization_users ou
-      JOIN users u ON u.id = ou.user_id
-      WHERE u.email='${userEmail}'
-      LIMIT 1;`,
-        })
+                const findBySlug = slug
+                    ? cy.task("dbConnection", {
+                          dbconfig: Cypress.env("app_db"),
+                          sql: `select id from organizations where lower(slug)=lower('${slug}') limit 1;`,
+                      })
+                    : cy.wrap({ rows: [] });
+
+                return findBySlug.then((resp) => {
+                    const detectedOrgId = resp.rows?.[0]?.id;
+                    if (detectedOrgId) {
+                        Cypress.env("workspaceId", detectedOrgId);
+                        return;
+                    }
+
+                    // Fallback to default workspace by name
+                    return cy
+                        .task("dbConnection", {
+                            dbconfig: Cypress.env("app_db"),
+                            sql: `select id from organizations where lower(name)=lower('My workspace') order by created_at asc limit 1;`,
+                        })
+                        .then((defResp) => {
+                            const defaultOrgId = defResp.rows?.[0]?.id;
+                            if (defaultOrgId) {
+                                Cypress.env("workspaceId", defaultOrgId);
+                            }
+                        });
+                });
+            })
+            .then(() => {
+                // Proceed with invite in the active workspace context
+                cy.apiUserInvite(userName, userEmail, userRole, metaData);
+
+                return cy.task("dbConnection", {
+                    dbconfig: Cypress.env("app_db"),
+                    sql: `
+                      SELECT ou.invitation_token 
+                      FROM organization_users ou
+                      JOIN users u ON u.id = ou.user_id
+                      WHERE u.email='${userEmail}'
+                      ORDER BY ou.created_at DESC
+                      LIMIT 1;`,
+                });
+            })
             .then((resp) => {
                 organizationToken = resp.rows[0]?.invitation_token;
                 invitationToken = organizationToken;

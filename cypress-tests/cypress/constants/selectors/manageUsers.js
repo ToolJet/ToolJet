@@ -11,6 +11,12 @@ export const usersSelector = {
       '[data-cy="users-table-status-column-header"]',
     usersFilterLabel: '[data-cy="users-filter-label"]',
   },
+  usersTableElementsInInstance: {
+    usersTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
+    usersTableStatusColumnHeader:
+      '[data-cy="users-table-status-column-header"]',
+    usersFilterLabel: '[data-cy="users-filter-label"]',
+  },
   usersPageTitle: '[data-cy="title-users-page"]',
   userFilterInput: '[data-cy="users-filter-input"]',
   adminUserName: "[data-cy=user-name]",

@@ -23,6 +23,7 @@ import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { onboardingSelectors } from "Selectors/onboarding";
 // import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {
@@ -519,6 +520,37 @@ export const archiveWorkspace = (workspaceName) => {
     cy.clearAndType(commonEeSelectors.searchBar, workspaceName);
     cy.get(workspaceSelector.workspaceStatusChange).eq(0).click();
     cy.get(commonEeSelectors.confirmButton).click();
+};
+
+export const archiveUserFromInstancesettings = (userName) => {
+    openInstanceSettings();
+    cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.get(commonEeSelectors.userActionButton).click();
+    cy.get(commonEeSelectors.archiveButton).click();
+    cy.get(commonEeSelectors.confirmButton).click();
+};
+
+export const unarchiveUserFromInstancesettings = (userName) => {
+    openInstanceSettings();
+    cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.get(commonEeSelectors.userActionButton).click();
+    cy.get(commonEeSelectors.archiveButton).click();
+    cy.get(commonEeSelectors.confirmButton).click();
+    cy.get(`[data-cy="${userName.toLowerCase()}-user-view-button"]`).click();
+    cy.wait(500);
+    cy.get('[data-cy="user-state-change-button"]').click();
+    cy.wait(500);
+    cy.get(commonEeSelectors.modalCloseButton).click();
+};
+
+export const resetUserpasswordFromInstanceSettings = (userName, password) => {
+    openInstanceSettings();
+    cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.get(commonEeSelectors.userActionButton).click();
+    cy.get(commonEeSelectors.passwordResetButton).click();
+    cy.get(commonEeSelectors.createNewPasswordButton).click();
+    cy.get(commonEeSelectors.passwordInputField).click().type(password);
+    cy.get(commonEeSelectors.resetButton).click();
 };
 
 export const passwordToggle = (enable) => {

@@ -2,7 +2,7 @@ import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout, navigateToManageUsers } from "Support/utils/common";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { fetchAndVisitInviteLink, fetchAndVisitInviteLinkViaMH } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 import { onboardingText } from "Texts/onboarding";
@@ -128,28 +128,41 @@ export const roleBasedOnboarding = (firstName, email, userRole) => {
 };
 
 export const visitWorkspaceInvitation = (email, workspaceName) => {
-  let workspaceId, userId, url, organizationToken;
+  cy.wait(2000);
 
-  cy.task("dbConnection", {
+  return cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from organizations where name='${workspaceName}';`,
+    sql: `select id, name from organizations where lower(name)=lower('${workspaceName}');`,
   }).then((resp) => {
-    workspaceId = resp.rows[0].id;
+    const workspaceId = resp.rows?.[0]?.id;
 
-    cy.task("dbConnection", {
+    if (!workspaceId) {
+      return fetchAndVisitInviteLinkViaMH(email);
+    }
+
+    return cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
-      sql: `select id from users where email='${email}';`,
-    }).then((resp) => {
-      userId = resp.rows[0].id;
+      sql: `select id, email from users where lower(email)=lower('${email}');`,
+    }).then((userResp) => {
+      const userId = userResp.rows?.[0]?.id;
 
-      cy.task("dbConnection", {
+      if (!userId) {
+        return fetchAndVisitInviteLinkViaMH(email);
+      }
+
+      return cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
-        sql: `select invitation_token from organization_users where organization_id= '${workspaceId}' AND user_id='${userId}';`,
-      }).then((resp) => {
-        organizationToken = resp.rows[0].invitation_token;
-        url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
+        sql: `select invitation_token, status from organization_users where organization_id='${workspaceId}' AND user_id='${userId}' ORDER BY created_at DESC LIMIT 1;`,
+      }).then((tokenResp) => {
+        const organizationToken = tokenResp.rows?.[0]?.invitation_token;
+
+        if (!organizationToken) {
+          return fetchAndVisitInviteLinkViaMH(email);
+        }
+
+        const url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
         logout();
-        cy.visit(url);
+        return cy.visit(url);
       });
     });
   });

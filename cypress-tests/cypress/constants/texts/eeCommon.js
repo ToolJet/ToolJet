@@ -3,6 +3,7 @@ export const commonEeText = {
     saveButton: "Save changes",
     closeButton: "Close",
     defaultWorkspace: "My workspace",
+    userArchivedToast: "You have been archived from this instance. Contact super admin to know more.",
 };
 
 export const ssoEeText = {
@@ -58,6 +59,7 @@ export const eeGroupsText = {
 export const instanceSettingsText = {
     pageTitle: "Settings",
     allUsersTab: "All users",
+    allUsersTabInInstance: "All Users",
     manageInstanceSettings: "Manage instance settings",
     typeColumnHeader: "Type",
     workspaceColumnHeader: "Workspaces",

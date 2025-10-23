@@ -6,6 +6,11 @@ export const usersText = {
     usersTableStatusColumnHeader: "STATUS",
     usersFilterLabel: "Showing",
   },
+  usersTableElementsInInstance: {
+    usersTableNameColumnHeader: "NAME",
+    usersTableStatusColumnHeader: "STATUS",
+    usersFilterLabel: "Showing",
+  },
   usersPageTitle: "users",
   breadcrumbUsersPageTitle: "Users",
   adminUserName: "The Developer",
