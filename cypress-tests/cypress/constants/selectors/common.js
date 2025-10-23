@@ -179,6 +179,7 @@ export const commonSelectors = {
   backToLoginButton: '[data-cy="back-to-login"]',
   // breadcrumbTitle: '[data-cy="app-header-label"]>>',
   breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
