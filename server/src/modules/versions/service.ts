@@ -166,6 +166,9 @@ export class VersionService implements IVersionService {
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
+      if (appVersion?.status === AppVersionStatus.PUBLISHED) {
+        shouldFreezeEditor = true;
+      }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {
         ...appData,
@@ -181,6 +184,7 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
+    // need to add freeze version logic here
     return response;
   }
 

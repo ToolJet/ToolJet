@@ -38,6 +38,7 @@ const CreateVersionModal = ({
     setCurrentVersionId,
     selectedVersion,
     currentMode,
+    isEditorFreezed,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -51,6 +52,7 @@ const CreateVersionModal = ({
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
       currentMode: state.currentMode,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -72,7 +74,7 @@ const CreateVersionModal = ({
     return { label: version.name, value: version };
   });
 
-  const createVersion = () => {
+  const createVersion = async () => {
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
       return;
@@ -97,6 +99,39 @@ const CreateVersionModal = ({
 
     setIsCreatingVersion(true);
 
+    try {
+      await appVersionService.save(appId, selectedVersionForCreation.id, {
+        name: versionName,
+        description: versionDescription,
+        // need to add commit changes logic here
+        status: 'PUBLISHED',
+      });
+      toast.success('Version Created successfully');
+      setVersionName('');
+      setIsCreatingVersion(false);
+      setShowCreateAppVersion(false);
+
+      // Get version data without reloading the page
+      await appVersionService
+        .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
+        .then((data) => {
+          window.location.reload();
+          handleCommitOnVersionCreation(data);
+        })
+        .catch((error) => {
+          toast.error(error);
+        });
+    } catch (error) {
+      if (error?.data?.code === '23505') {
+        toast.error('Version name already exists.');
+      } else {
+        //       toast.error('Error while creating version. Please try again.');
+        toast.error(error?.error);
+      }
+      toast.error('Error while creating version. Please try again.');
+    } finally {
+      setIsCreatingVersion(false);
+    }
     //TODO: pass environmentId to the func
     // createNewVersionAction(
     //   appId,
@@ -108,16 +143,16 @@ const CreateVersionModal = ({
     //     setVersionName('');
     //     setIsCreatingVersion(false);
     //     setShowCreateAppVersion(false);
-    //     appVersionService
-    //       .getAppVersionData(appId, newVersion.id, currentMode)
-    //       .then((data) => {
-    //         setCurrentVersionId(newVersion.id);
-    //         handleCommitOnVersionCreation(data);
-    //       })
-    //       .catch((error) => {
-    //         toast.error(error);
-    //       });
-    //   },
+    //   appVersionService
+    //     .getAppVersionData(appId, newVersion.id, currentMode)
+    //     .then((data) => {
+    //       setCurrentVersionId(newVersion.id);
+    //       handleCommitOnVersionCreation(data);
+    //     })
+    //     .catch((error) => {
+    //       toast.error(error);
+    //     });
+    // },
     //   (error) => {
     //     if (error?.data?.code === '23505') {
     //       toast.error('Version name already exists.');
