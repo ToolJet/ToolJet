@@ -228,7 +228,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 setIsCurrentVersionLocked(isLocked);
               }}
             />
-            <div>
+            <div style={{ display: 'flex', height: '100%', width: '100%' }}>
               {appType !== 'module' && (
                 <PagesSidebarNavigation
                   showHeader={showHeader}
