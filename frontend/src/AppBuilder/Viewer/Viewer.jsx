@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '@/AppBuilder/_stores/store';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import useAppData from '@/AppBuilder/_hooks/useAppData';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import './viewer.scss';
@@ -16,7 +17,6 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
-import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
@@ -74,6 +74,8 @@ export const Viewer = ({
     shallow
   );
 
+  const isLicenseValid = useLicenseStore((state) => state.actions.isLicenseValid(), shallow);
+
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
@@ -111,7 +113,6 @@ export const Viewer = ({
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  const isLicenseNotValid = checkIfLicenseNotValid();
   const pages = useStore((state) => state.modules[moduleId].pages);
 
   // ---remove
@@ -278,7 +279,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
-                            {isLicenseNotValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
+                            {!isLicenseValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>
