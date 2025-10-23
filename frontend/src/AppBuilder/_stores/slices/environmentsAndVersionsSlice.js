@@ -59,7 +59,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   setEnvironmentDropdownStatus: (status) => set({ initializedEnvironmentDropdown: status }),
 
   fetchDevelopmentVersions: async (appId) => {
-    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'development').id;
+    const developmentEnvironment = get().environments.find((environment) => environment.name === 'development');
+
+    if (!developmentEnvironment) {
+      console.warn('Development environment not found');
+      return;
+    }
+
+    const developmentEnvironmentId = developmentEnvironment.id;
+
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
       const draftVersions = response.appVersions.filter((version) => version.status === 'DRAFT');

@@ -62,11 +62,14 @@ function create(appId, versionName, versionDescription, versionFromId, currentEn
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
-function createDraftVersion(appId, versionFromId, currentEnvironmentId) {
+function createDraftVersion(appId, { versionFromId, environmentId, versionDescription }) {
   const body = {
     versionFromId,
-    environmentId: currentEnvironmentId,
+    environmentId,
   };
+  if (versionDescription) {
+    body.versionDescription = versionDescription;
+  }
 
   const requestOptions = {
     method: 'POST',
