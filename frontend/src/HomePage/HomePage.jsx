@@ -709,7 +709,7 @@ class HomePageComponent extends React.Component {
       }
     } else {
       // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder';
+      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
     }
   }
 
