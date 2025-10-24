@@ -8,7 +8,7 @@ import { ArrowBigUpDash } from 'lucide-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
 
-const PromoteVersionButton = ({ version = null, variant = 'default', isDraft = false }) => {
+const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
@@ -49,9 +49,6 @@ const PromoteVersionButton = ({ version = null, variant = 'default', isDraft = f
       return "You don't have access to promote application. Contact admin to know more.";
     }
     if (!shouldDisablePromote) {
-      if (variant === 'inline' && isDraft) {
-        return 'Promote draft to version';
-      }
       return 'Promote this version to the next environment';
     }
     return '';
@@ -77,7 +74,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', isDraft = f
             disabled={shouldDisablePromote || !isPromoteVersionEnabled}
             onClick={handlePromote}
           >
-            {isDraft ? 'Create version' : 'Promote'}
+            Promote
           </button>
         </ToolTip>
         <PromoteConfirmationModal

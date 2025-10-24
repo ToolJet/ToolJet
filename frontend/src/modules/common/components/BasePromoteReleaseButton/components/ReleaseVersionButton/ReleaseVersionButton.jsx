@@ -93,7 +93,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
             disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
             onClick={onReleaseButtonClick}
           >
-            {isReleasing ? 'Releasing...' : isVersionReleased ? 'Released' : 'Release'}
+            {isReleasing ? 'Releasing...' : 'Release'}
           </button>
         </ToolTip>
       </>

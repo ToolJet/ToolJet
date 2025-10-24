@@ -6,6 +6,7 @@ import {
   PromoteVersionButton,
   ReleaseVersionButton,
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
+import useStore from '@/AppBuilder/_stores/store';
 
 const VersionDropdownItem = ({
   version,
@@ -14,12 +15,15 @@ const VersionDropdownItem = ({
   onRelease,
   onEdit,
   onDelete,
+  onCreateVersion,
   currentEnvironment,
   environments = [],
   showActions = true,
 }) => {
+  const releasedVersionId = useStore((state) => state.releasedVersionId);
+
   const isDraft = version.status === 'DRAFT';
-  const isReleased = version.status === 'RELEASED';
+  const isReleased = version.id === releasedVersionId;
 
   // Determine if we should show promote button based on environment logic
   const currentEnvData = environments.find((env) => env.id === currentEnvironment?.id);
@@ -29,8 +33,9 @@ const VersionDropdownItem = ({
   // Only show promote button if version is in the current environment
   const isVersionInCurrentEnv = version.currentEnvironmentId === currentEnvironment?.id;
 
-  const canPromote = isVersionInCurrentEnv && ((!isReleased && !isInProduction) || isDraft);
+  const canPromote = isVersionInCurrentEnv && !isDraft && !isReleased && !isInProduction;
   const canRelease = isVersionInCurrentEnv && !isDraft && !isReleased && isInProduction;
+  const canCreateVersion = isDraft; // Show create version button for drafts
 
   const renderMenu = (
     <Popover id={`popover-positioned-bottom-end`} style={{ minWidth: '160px' }}>
@@ -147,10 +152,32 @@ const VersionDropdownItem = ({
             {showActions && (
               <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
                 {/* Promote button - shown for versions that can be promoted */}
-                {canPromote && <PromoteVersionButton version={version} variant="inline" isDraft={isDraft} />}
+                {canPromote && <PromoteVersionButton version={version} variant="inline" />}
 
                 {/* Release button - shown in production environment */}
                 {canRelease && <ReleaseVersionButton version={version} variant="inline" />}
+
+                {/* Create version button - shown for drafts */}
+                {canCreateVersion && (
+                  <button
+                    className="btn btn-sm"
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      border: '1px solid var(--border-weak)',
+                      backgroundColor: 'white',
+                      color: 'var(--text-default)',
+                      borderRadius: '4px',
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCreateVersion?.(version);
+                    }}
+                  >
+                    Create version
+                  </button>
+                )}
 
                 {/* More menu */}
                 <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>

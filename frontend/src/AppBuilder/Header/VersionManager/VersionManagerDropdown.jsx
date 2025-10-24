@@ -128,6 +128,11 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
     setDropdownOpen(false);
   };
 
+  const handleCreateVersion = () => {
+    setShowPromoteModal(true);
+    setDropdownOpen(false);
+  };
+
   return (
     <>
       <div ref={buttonRef}>
@@ -213,6 +218,7 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
                     environments={environments}
                     onSelect={() => handleVersionSelect(version)}
                     onPromote={handlePromoteDraft}
+                    onCreateVersion={handleCreateVersion}
                     appId={appId}
                   />
                 ))
