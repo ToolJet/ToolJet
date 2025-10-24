@@ -19,6 +19,17 @@ export interface ExecutionMetadata {
   scheduleId?: string; // Optional, only present for scheduled workflows
 }
 
+export interface ExecuteWorkflowOptions {
+  params?: Record<string, any>;
+  environmentId?: string;
+  response?: any; // Response object from Express
+  throwOnError?: boolean;
+  executeUsing?: string;
+  executionStartTime?: Date;
+  startNodeId?: string; // Start execution from a specific node (for preview)
+  injectedState?: object; // Inject state when starting from a specific node (for preview)
+}
+
 // Feature configuration interfaces
 interface Features {
   [FEATURE_KEY.EXECUTE_WORKFLOW]: FeatureConfig;
@@ -43,4 +54,33 @@ interface Features {
 
 export interface FeaturesConfig {
   [MODULES.WORKFLOWS]: Features;
+}
+
+/**
+ * WorkflowCancellationError
+ *
+ * Custom error thrown when a workflow execution is cancelled by user request.
+ * This error is handled specially by the processor to ensure:
+ * 1. Job is not moved to "completed" state (it's already in "failed" state)
+ * 2. Resources are cleaned up properly (isolate disposal, logs saved)
+ * 3. No "Missing lock" error occurs
+ *
+ * This error distinguishes user-initiated cancellation from execution failures,
+ * allowing different handling logic in the processor.
+ */
+export class WorkflowCancellationError extends Error {
+  public readonly executionId: string;
+  public readonly cancelledAt: Date;
+
+  constructor(executionId: string, message?: string) {
+    super(message || 'Workflow execution was cancelled by user');
+    this.name = 'WorkflowCancellationError';
+    this.executionId = executionId;
+    this.cancelledAt = new Date();
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, WorkflowCancellationError);
+    }
+  }
 }
