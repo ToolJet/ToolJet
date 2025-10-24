@@ -128,41 +128,28 @@ export const roleBasedOnboarding = (firstName, email, userRole) => {
 };
 
 export const visitWorkspaceInvitation = (email, workspaceName) => {
-  cy.wait(2000);
+  let workspaceId, userId, url, organizationToken;
 
-  return cy.task("dbConnection", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id, name from organizations where lower(name)=lower('${workspaceName}');`,
+    sql: `select id from organizations where name='${workspaceName}';`,
   }).then((resp) => {
-    const workspaceId = resp.rows?.[0]?.id;
+    workspaceId = resp.rows[0].id;
 
-    if (!workspaceId) {
-      return fetchAndVisitInviteLinkViaMH(email);
-    }
-
-    return cy.task("dbConnection", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
-      sql: `select id, email from users where lower(email)=lower('${email}');`,
-    }).then((userResp) => {
-      const userId = userResp.rows?.[0]?.id;
+      sql: `select id from users where email='${email}';`,
+    }).then((resp) => {
+      userId = resp.rows[0].id;
 
-      if (!userId) {
-        return fetchAndVisitInviteLinkViaMH(email);
-      }
-
-      return cy.task("dbConnection", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
-        sql: `select invitation_token, status from organization_users where organization_id='${workspaceId}' AND user_id='${userId}' ORDER BY created_at DESC LIMIT 1;`,
-      }).then((tokenResp) => {
-        const organizationToken = tokenResp.rows?.[0]?.invitation_token;
-
-        if (!organizationToken) {
-          return fetchAndVisitInviteLinkViaMH(email);
-        }
-
-        const url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
+        sql: `select invitation_token from organization_users where organization_id= '${workspaceId}' AND user_id='${userId}';`,
+      }).then((resp) => {
+        organizationToken = resp.rows[0].invitation_token;
+        url = `/organization-invitations/${organizationToken}?oid=${workspaceId}`;
         logout();
-        return cy.visit(url);
+        cy.visit(url);
       });
     });
   });

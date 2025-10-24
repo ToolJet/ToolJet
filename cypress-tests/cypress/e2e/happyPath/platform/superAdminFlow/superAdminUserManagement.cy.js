@@ -1,12 +1,9 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
-import { visitWorkspaceInvitation } from "Support/utils/onboarding";
-import { onboardingSelectors } from "Selectors/onboarding";
-import { archiveUserFromInstancesettings, unarchiveUserFromInstancesettings, resetUserpasswordFromInstanceSettings, openInstanceSettings, openUserActionMenu } from "Support/utils/platform/eeCommon";
+import { resetUserpasswordFromInstanceSettings, openInstanceSettings, openUserActionMenu } from "Support/utils/platform/eeCommon";
 import { commonEeText, instanceSettingsText } from "Texts/eeCommon";
 import { commonEeSelectors, instanceSettingsSelector } from "Selectors/eeCommon";
+import { assertAllUsersHeader, assertTableControls, assertUserRow, testArchiveUnarchiveFlow, toggleSuperAdminRole } from "Support/utils/platform/superAdmin";
 
 describe("Instance settings - User management by super admin", () => {
     let defaultUser, newWorkspaceUser, resetPasswordUser, uiVerificationUser, promoteUser;
@@ -47,82 +44,19 @@ describe("Instance settings - User management by super admin", () => {
         });
     });
 
-    const assertAllUsersHeader = () => {
-        cy.get(commonEeSelectors.pageTitle).verifyVisibleElement("have.text", instanceSettingsText.pageTitle);
-        cy.get(instanceSettingsSelector.allUsersTab).verifyVisibleElement("have.text", instanceSettingsText.allUsersTabInInstance);
-        cy.get(instanceSettingsSelector.manageInstanceSettings).verifyVisibleElement("have.text", instanceSettingsText.manageInstanceSettings);
-        cy.get('[data-cy="breadcrumb-header-settings"]').verifyVisibleElement("have.text", "SettingsAll Users");
-        cy.get('[data-cy="title-users-page"]').should(($el) => {
-            expect($el.contents().last().text().trim()).to.eq("Manage all users");
-        });
-    };
-
-    const assertTableControls = () => {
-        for (const element in usersSelector.usersTableElementsInInstance) {
-            cy.get(usersSelector.usersTableElementsInInstance[element]).verifyVisibleElement("have.text", usersText.usersTableElementsInInstance[element]);
-        }
-        cy.get(usersSelector.userFilterInput).should("be.visible");
-        cy.get(instanceSettingsSelector.typeColumnHeader).verifyVisibleElement("have.text", instanceSettingsText.typeColumnHeader);
-        cy.get(instanceSettingsSelector.workspaceColumnHeader).verifyVisibleElement("have.text", instanceSettingsText.workspaceColumnHeader);
-    };
-
-    const assertUserRow = (userName, userEmail, userType = "workspace", userStatus = "active") => {
-        cy.get(instanceSettingsSelector.userName(userName)).verifyVisibleElement("have.text", userName);
-        cy.get(instanceSettingsSelector.userEmail(userName)).verifyVisibleElement("have.text", userEmail);
-        cy.get(instanceSettingsSelector.userType(userName)).verifyVisibleElement("have.text", userType);
-        cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement("have.text", userStatus);
-    };
-
-    const testArchiveUnarchiveFlow = (userName, userEmail, workspaceName) => {
-        // Archive user
-        cy.apiLogin();
-        archiveUserFromInstancesettings(userName);
-        cy.apiLogout();
-        cy.reload();
-
-        // Verify archived user cannot login
-        cy.clearAndType(onboardingSelectors.loginEmailInput, userEmail);
-        cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-        cy.get(onboardingSelectors.signInButton).click();
-        cy.get(commonSelectors.toastMessage).should("contain.text", commonEeText.userArchivedToast);
-
-        // Unarchive user
-        cy.appUILogin();
-        unarchiveUserFromInstancesettings(userName);
-        cy.wait(3000);
-
-        // Accept invitation after unarchive
-        visitWorkspaceInvitation(userEmail, workspaceName);
-        cy.clearAndType(onboardingSelectors.signupEmailInput, userEmail);
-        cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-        cy.get(onboardingSelectors.signInButton).click();
-        cy.get(usersSelector.acceptInvite).click();
-    };
-
-    const toggleSuperAdminRole = (userEmail) => {
-        cy.apiLogin();
-        cy.reload();
-        openInstanceSettings();
-        cy.clearAndType(commonEeSelectors.userSearchBar, userEmail);
-        openUserActionMenu(userEmail);
-        cy.get('[data-cy="edit-user-details-button"]').click();
-        cy.get(instanceSettingsSelector.superAdminToggle).click();
-        cy.get('[data-cy="update-button"]').click();
-        cy.wait(1000);
-        cy.apiLogout();
-        cy.reload();
-    };
-
     it("should allow admin to archive and unarchive user in default workspace", () => {
         cy.visitTheWorkspace(defaultUser.workspace);
+        cy.apiLogin();
+        cy.reload();
         cy.apiFullUserOnboarding(defaultUser.name, defaultUser.email, "end-user", "password", defaultUser.workspace, {});
         testArchiveUnarchiveFlow(defaultUser.name, defaultUser.email, defaultUser.workspace);
     });
 
     it("should allow admin to archive and unarchive user in non-default workspace", () => {
         cy.apiCreateWorkspace(newWorkspaceUser.workspace, newWorkspaceUser.workspace);
-        cy.visit(newWorkspaceUser.workspace);
-        cy.wait(2000);
+        cy.visitTheWorkspace(newWorkspaceUser.workspace);
+        cy.apiLogin();
+        cy.reload();
         cy.apiFullUserOnboarding(newWorkspaceUser.name, newWorkspaceUser.email, "end-user", "password", newWorkspaceUser.workspace, {});
         testArchiveUnarchiveFlow(newWorkspaceUser.name, newWorkspaceUser.email, newWorkspaceUser.workspace);
     });
