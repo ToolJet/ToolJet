@@ -17,8 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@grpc/grpc-js": "^1.14.0",
-    "@grpc/proto-loader": "^0.7.6",
+ develop
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2"
   }
