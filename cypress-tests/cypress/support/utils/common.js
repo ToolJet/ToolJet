@@ -7,6 +7,7 @@ import {
 import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
+import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -251,4 +252,10 @@ export const fillInputField = (data) => {
     cy.get(labelSelector).should("contain", key);
     cy.get(inputSelector).type(`{selectall}{backspace}${value}`);
   });
+};
+
+export const navigateToSettingPage = () => {
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonEeSelectors.instanceSettingIcon).click();
+  cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
