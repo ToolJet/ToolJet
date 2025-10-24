@@ -194,7 +194,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         );
         const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
         // if datasource is restapi then reset the token data
-        if (dataSource.kind === 'restapi')
+        if (['restapi', 'microsoft_graph'].includes(dataSource.kind))
           options.push({
             key: 'tokenData',
             value: undefined,

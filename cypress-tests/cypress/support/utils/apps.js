@@ -1,4 +1,4 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonWidgetSelector } from "Selectors/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
 const slugValidations = [

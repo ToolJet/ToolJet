@@ -45,6 +45,7 @@ function EditAppName() {
           <button
             className="edit-app-name-button tw-h-8 tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-cursor-pointer tw-outline-none tw-bg-transparent tw-border tw-border-transparent hover:tw-border-border-strong tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative"
             type="button"
+            data-cy="edit-app-name-button"
             onClick={() => setShowRenameModal(true)}
           >
             <span className="tw-font-title-large tw-truncate tw-w-full tw-block group-hover:tw-w-[calc(100%-24px)]">
