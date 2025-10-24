@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class WorkflowCancellationRegistry {
     constructor() { }
 
-    async requestCancellation(executionId: string): Promise<void> {
+    async requestCancellation(executionId: string, timeoutSeconds?: number): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
