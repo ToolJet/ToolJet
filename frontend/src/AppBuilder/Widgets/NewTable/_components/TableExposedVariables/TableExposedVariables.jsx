@@ -69,6 +69,7 @@ export const TableExposedVariables = ({
   };
 
   const prevSortingLength = useRef(null);
+  const skipPageEvent = useRef(false);
 
   const getColumnName = useCallback(
     (columnId) => {
@@ -147,7 +148,10 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
-    fireEvent('onPageChanged');
+
+    // Don't fire onPageChanged event incase the page was changed using setPage CSA to maintain backward compatibility
+    if (!skipPageEvent.current) mounted && fireEvent('onPageChanged');
+    else skipPageEvent.current = false; // reset the flag
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
@@ -218,9 +222,10 @@ export const TableExposedVariables = ({
     function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
       setPageIndex(targetPageIndex - 1);
+      skipPageEvent.current = true;
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables]);
+  }, [setPageIndex, setExposedVariables, skipPageEvent]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
