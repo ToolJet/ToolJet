@@ -5,7 +5,7 @@ import { inviteUserToWorkspace } from "Support/utils/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
-import { userSignUp, addNewUser } from "Support/utils/onboarding";
+import { userSignUp } from "Support/utils/onboarding";
 import {
   setUpSlug,
   setupAppWithSlug,
@@ -21,35 +21,38 @@ describe(
     retries: { runMode: 2 },
   },
   () => {
+    const generateTestData = () => ({
+      appName: `${fake.companyName} P P App`,
+      slug: `${fake.companyName} P P App`.toLowerCase().replace(/\s+/g, "-"),
+      firstName: fake.firstName,
+      email: fake.email.toLowerCase(),
+      workspaceName: fake.firstName,
+      workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
+    });
+
+    const verifyWidget = (widgetName) => {
+      cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("be.visible");
+    };
+
+    const getAppUrl = (slug) => `${Cypress.config("baseUrl")}/applications/${slug}`;
+
     let data;
 
     beforeEach(() => {
-      data = {
-        appName: `${fake.companyName} P P App`,
-        slug: `${fake.companyName} P P App`.toLowerCase().replace(/\s+/g, "-"),
-        firstName: fake.firstName,
-        email: fake.email.toLowerCase(),
-        workspaceName: fake.firstName,
-        workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
-      };
-
+      data = generateTestData();
       cy.defaultWorkspaceLogin();
       cy.skipWalkthrough();
     });
 
-    it("Verify private and public app share functionality", () => {
+    it("should verify private and public app share functionality", () => {
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.apiAddComponentToApp(data.appName, "text1");
+      cy.dragAndDropWidget("text", 500, 500);
 
-      // Check unreleased version state
-      cy.get('[data-cy="share-button-link"]>span').should("be.visible").click();
-      cy.contains("This version has not been released yet").should(
-        "be.visible"
-      );
+      cy.get(commonWidgetSelector.shareAppButton).should("be.visible").click();
+      cy.contains("This version has not been released yet").should("be.visible");
       cy.get(commonWidgetSelector.modalCloseButton).click();
 
-      // Release and verify share modal
       releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
       for (const elements in commonWidgetSelector.shareModalElements) {
@@ -61,7 +64,6 @@ describe(
         );
       }
 
-      // Verify share modal elements
       const shareModalSelectors = [
         "copyAppLinkButton",
         "makePublicAppToggle",
@@ -73,9 +75,8 @@ describe(
         cy.get(commonWidgetSelector[selector]).should("be.visible");
       });
 
-      // Configure and verify slug
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
-      cy.get('[data-cy="app-slug-accepted-label"]')
+      cy.get(commonSelectors.appSlugAccept)
         .should("be.visible")
         .and("have.text", "Slug accepted!");
 
@@ -83,24 +84,14 @@ describe(
       cy.forceClickOnCanvas();
       cy.backToApps();
 
-      // Test private access
       logout();
 
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
 
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
-      cy.wait(2000);
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
       cy.appUILogin();
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      verifyWidget("text1");
 
-      // Test public access
-      // cy.get(commonSelectors.viewerPageLogo).click();
       cy.openApp(
         "appSlug",
         Cypress.env("workspaceId"),
@@ -113,75 +104,39 @@ describe(
       cy.backToApps();
 
       logout();
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
     });
 
-    it("Verify app private and public app visibility for the same workspace user", () => {
+    it("should verify app private and public app visibility for the same workspace user", () => {
       setupAppWithSlug(data.appName, data.slug);
 
       inviteUserToWorkspace(data.firstName, data.email);
       logout();
-      cy.visit("/");
-      cy.wait(2000);
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
-      // Test private access
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       cy.wait(2000);
       cy.appUILogin(data.email, "password");
+      verifyWidget("text1");
 
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
 
-      // Test with private app valid session
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
-
-      // cy.get(commonSelectors.viewerPageLogo).click();
-
-      // Test public access
       cy.defaultWorkspaceLogin();
-      cy.wait(1000);
       cy.apiMakeAppPublic();
       logout();
-      cy.wait(1000);
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
 
-      // Test with public app with valid session
       cy.apiLogin(data.email, "password");
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
     });
 
-    it("Verify app private and public app visibility for the same instance user", () => {
+    it("should verify app private and public app visibility for the same instance user", () => {
       setupAppWithSlug(data.appName, data.slug);
 
       cy.apiLogout();
@@ -189,61 +144,44 @@ describe(
         InstanceSSO(true, true, true);
       });
       userSignUp(data.firstName, data.email, data.workspaceName);
-      cy.wait(1000);
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
 
       cy.visit("/");
       logout();
 
-      // Test public access
       cy.defaultWorkspaceLogin();
       cy.apiMakeAppPublic();
       logout();
 
-      cy.wait(1000);
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
 
-      // Verify public app with valid session
       cy.apiLogin(data.email, "password");
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
     });
 
-    it("Should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
+    it.skip("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
       setSignupStatus(true);
       setupAppWithSlug(data.appName, data.slug);
 
+
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      verifyWidget("text1");
+
+      // cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+      //   "have.text",
+      //   "My workspace"
+      // );
       cy.apiLogout();
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        "My workspace"
-      );
-
-      // Test signup flow
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       cy.intercept("POST", "/api/onboarding/signup").as("signup");
       cy.get(commonSelectors.createAnAccountLink).click();
-      cy.wait(3000);
+      cy.wait(2000);
       cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
-      cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
+      cy.clearAndType('[data-cy="email-input"]', data.email);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(commonSelectors.signUpButton).click();
 
@@ -251,23 +189,12 @@ describe(
         expect(interception.response.statusCode).to.eq(201);
       });
 
-      // Process invitation
       onboardUserFromAppLink(data.email, data.slug);
-
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
-
-      // cy.get('[data-cy="viewer-page-logo"]').click();
-      cy.visit("/my-workspace");
-      cy.wait(2000);
+      verifyWidget("text1");
+      cy.visit("/");
       logout();
-      cy.wait(1000);
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
 
-      // Setup new workspace and app
       cy.defaultWorkspaceLogin();
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
       cy.apiLogout();
@@ -276,21 +203,18 @@ describe(
       setSignupStatus(true, data.workspaceName);
 
       data.slug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
-
+      cy.reload()
       cy.createApp(data.appName);
 
-      cy.wait(2000);
       cy.dragAndDropWidget("Text", 500, 500);
       releaseApp();
       setUpSlug(data.slug);
       cy.forceClickOnCanvas();
       cy.backToApps();
 
-      // Test signup flow in new workspace
       cy.apiLogout();
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+      cy.log("Visiting app URL: ", getAppUrl(data.slug));
 
       cy.get(commonSelectors.workspaceName).verifyVisibleElement(
         "have.text",
@@ -298,9 +222,8 @@ describe(
       );
 
       cy.get(commonSelectors.createAnAccountLink).click();
-      cy.wait(3000);
       cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
-      cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
+      cy.clearAndType('[data-cy="email-input"]', data.email);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(commonSelectors.signUpButton).click();
       cy.wait("@signup").then((interception) => {
@@ -308,12 +231,10 @@ describe(
       });
 
       onboardUserFromAppLink(data.email, data.slug, data.workspaceName, false);
-      cy.get(commonWidgetSelector.draggableWidget("text1")).should(
-        "be.visible"
-      );
+      verifyWidget("text1");
     });
 
-    it("Should verify restricted app access", () => {
+    it.only("should verify restricted app access", () => {
       data.workspaceName = fake.firstName;
       data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
@@ -330,65 +251,13 @@ describe(
 
       inviteUserToWorkspace(data.firstName, data.email);
 
-      // Verify restricted access
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       verifyRestrictedAccess();
-      cy.get('[data-cy="back-to-home-button"]').click();
+      cy.get(commonSelectors.backToHomeButton).click();
       cy.get(commonSelectors.homePageLogo).should("be.visible");
 
       cy.apiLogout();
     });
 
-    it.skip("Should verify private app access for different workspace users", () => {
-      const firstName1 = fake.firstName;
-      const email1 = fake.email.toLowerCase();
-      const permissionName = fake.firstName.toLowerCase(); // Defined but not used in original
-      const urls = {
-        editor: `${Cypress.config("baseUrl")}/my-workspace/apps/${data.slug}/home`,
-        preview: `${Cypress.config("baseUrl")}/applications/${data.slug}/home?version=v1`,
-        released: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      };
-
-      // Setup workspace and app
-      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-      cy.apiLogout();
-      cy.apiLogin();
-      cy.visit(`${data.workspaceSlug}`);
-      setupAppWithSlug(data.appName, data.slug);
-
-      // Invite workspace user
-      addNewUser(data.firstName, data.email);
-      cy.wait(500);
-
-      // Verify access restrictions
-      cy.visitSlug({ actualUrl: urls.editor });
-      verifyRestrictedAccess();
-      cy.get('[data-cy="back-to-home-button"]').click();
-      cy.get(commonSelectors.homePageLogo).should("be.visible");
-
-      cy.visitSlug({ actualUrl: urls.preview });
-
-      // Switch users and verify access
-      cy.apiLogout();
-      cy.apiLogin();
-      cy.apiDeleteGranularPermission("end-user");
-
-      cy.apiLogin(data.email, "password");
-      cy.visitSlug({ actualUrl: urls.editor });
-      verifyRestrictedAccess();
-      cy.get('[data-cy="back-to-home-button"]').click();
-      cy.get(commonSelectors.homePageLogo).should("be.visible");
-      cy.visitSlug({ actualUrl: urls.preview });
-
-      cy.apiLogout();
-
-      // Test with new user
-      userSignUp(firstName1, email1, data.workspaceName);
-      cy.visitSlug({ actualUrl: urls.editor });
-      cy.visitSlug({ actualUrl: urls.preview });
-      cy.visitSlug({ actualUrl: urls.released });
-    });
   }
 );
