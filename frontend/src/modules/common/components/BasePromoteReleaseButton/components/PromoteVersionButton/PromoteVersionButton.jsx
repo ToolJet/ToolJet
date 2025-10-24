@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { PromoteConfirmationModal } from './components';
@@ -9,7 +8,7 @@ import { ArrowBigUpDash } from 'lucide-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
 
-const PromoteVersionButton = () => {
+const PromoteVersionButton = ({ version = null, variant = 'default', isDraft = false }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
@@ -18,11 +17,15 @@ const PromoteVersionButton = () => {
     useStore(
       (state) => ({
         isSaving: state.appStore.modules[moduleId].app.isSaving,
-        editingVersion: state.currentVersionId,
+        editingVersion: version?.id || state.currentVersionId,
         selectedEnvironment: state.selectedEnvironment,
         environments: state.environments,
-        appVersionEnvironment: state.appVersionEnvironment,
-        currentEnvIndex: state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
+        appVersionEnvironment: version?.currentEnvironmentId
+          ? state.environments?.find((env) => env.id === version.currentEnvironmentId)
+          : state.appVersionEnvironment,
+        currentEnvIndex: version?.currentEnvironmentId
+          ? state.environments?.findIndex((env) => env?.id === version.currentEnvironmentId)
+          : state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
       }),
       shallow
     );
@@ -34,7 +37,8 @@ const PromoteVersionButton = () => {
     !appVersionEnvironment ||
     !environments?.[currentEnvIndex + 1];
 
-  const handlePromote = () => {
+  const handlePromote = (e) => {
+    if (e) e.stopPropagation();
     setPromoteModalData({
       current: appVersionEnvironment,
       target: environments[currentEnvIndex + 1],
@@ -45,12 +49,48 @@ const PromoteVersionButton = () => {
       return "You don't have access to promote application. Contact admin to know more.";
     }
     if (!shouldDisablePromote) {
+      if (variant === 'inline' && isDraft) {
+        return 'Promote draft to version';
+      }
       return 'Promote this version to the next environment';
     }
     return '';
   };
   const { t } = useTranslation();
 
+  // Inline variant for dropdown
+  if (variant === 'inline') {
+    return (
+      <>
+        <ToolTip message={renderTooltipMessage()} placement="top" show={true}>
+          <button
+            className="btn btn-sm"
+            style={{
+              padding: '2px 8px',
+              fontSize: '11px',
+              fontWeight: 500,
+              border: '1px solid var(--border-weak)',
+              backgroundColor: 'white',
+              color: 'var(--text-default)',
+              borderRadius: '4px',
+            }}
+            disabled={shouldDisablePromote || !isPromoteVersionEnabled}
+            onClick={handlePromote}
+          >
+            {isDraft ? 'Create version' : 'Promote'}
+          </button>
+        </ToolTip>
+        <PromoteConfirmationModal
+          data={promoteModalData}
+          editingVersion={editingVersion}
+          onClose={() => setPromoteModalData(null)}
+          fetchEnvironments={() => {}}
+        />
+      </>
+    );
+  }
+
+  // Default variant (header button)
   return (
     <>
       <ToolTip

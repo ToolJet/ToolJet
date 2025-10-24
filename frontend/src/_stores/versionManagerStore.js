@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 
 const initialState = {
   versions: [],
+  environments: [],
   draftVersion: null,
   searchQuery: '',
   selectedEnvironment: null,
@@ -24,18 +25,48 @@ export const useVersionManagerStore = create(
       // Actions
       setSearchQuery: (query) => {
         set({ searchQuery: query });
-        const versions = get().versions;
-        const filtered = versions.filter((v) => v.name?.toLowerCase().includes(query.toLowerCase()));
-        set({ filteredVersions: filtered });
+        get()._filterVersionsByEnvironmentAndSearch();
       },
 
-      setSelectedEnvironment: (env) => set({ selectedEnvironment: env }),
+      setSelectedEnvironment: (env) => {
+        set({ selectedEnvironment: env });
+        get()._filterVersionsByEnvironmentAndSearch();
+      },
+
+      // Filter versions based on environment and search query
+      _filterVersionsByEnvironmentAndSearch: () => {
+        const { versions, selectedEnvironment, searchQuery } = get();
+
+        let filtered = versions;
+
+        // Filter by environment
+        if (selectedEnvironment) {
+          const envPriority = selectedEnvironment.priority;
+
+          filtered = versions.filter((version) => {
+            // Find the environment this version belongs to
+            const versionEnvPriority = version.currentEnvironmentId
+              ? get().environments?.find((e) => e.id === version.currentEnvironmentId)?.priority || 1
+              : 1;
+
+            // Show version if its environment priority is >= selected environment priority
+            // e.g., if we're in staging (priority 2), show staging and production versions
+            // if we're in production (priority 3), show only production versions
+            return versionEnvPriority >= envPriority;
+          });
+        }
+
+        // Filter by search query
+        if (searchQuery) {
+          filtered = filtered.filter((v) => v.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+
+        set({ filteredVersions: filtered });
+      },
       setDropdownOpen: (open) => set({ isDropdownOpen: open }),
 
       // Retry mechanism with exponential backoff
       _retryWithBackoff: async (fn, maxRetries = 3) => {
-        const { retryCount } = get();
-
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
           try {
             const result = await fn();
@@ -56,6 +87,12 @@ export const useVersionManagerStore = create(
         }
       },
 
+      // Set environments (should be called from parent component)
+      setEnvironments: (environments) => {
+        set({ environments });
+        get()._filterVersionsByEnvironmentAndSearch();
+      },
+
       // Fetch all versions for an app with retry
       fetchVersions: async (appId) => {
         set({ loading: true, error: null });
@@ -71,9 +108,11 @@ export const useVersionManagerStore = create(
             set({
               versions,
               draftVersion: draft,
-              filteredVersions: versions,
               loading: false,
             });
+
+            // Apply filtering after setting versions
+            get()._filterVersionsByEnvironmentAndSearch();
           });
         } catch (error) {
           console.error('Failed to fetch versions after retries:', error);

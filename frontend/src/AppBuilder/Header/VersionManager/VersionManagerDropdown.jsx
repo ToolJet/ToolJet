@@ -40,6 +40,7 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
     setDropdownOpen,
     setSearchQuery,
     setSelectedEnvironment,
+    setEnvironments,
     fetchVersions,
   } = useVersionManagerStore();
 
@@ -54,6 +55,13 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
       fetchVersions(appId);
     }
   }, [appId, fetchVersions]);
+
+  // Set environments in store
+  useEffect(() => {
+    if (environments && environments.length > 0) {
+      setEnvironments(environments);
+    }
+  }, [environments, setEnvironments]);
 
   // Set initial environment
   useEffect(() => {

@@ -1,14 +1,16 @@
 import React from 'react';
 import cx from 'classnames';
-import { ToolTip } from '@/_components/ToolTip';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import {
+  PromoteVersionButton,
+  ReleaseVersionButton,
+} from '@/modules/common/components/BasePromoteReleaseButton/components';
 
 const VersionDropdownItem = ({
   version,
   isSelected,
   onSelect,
-  onPromote,
   onRelease,
   onEdit,
   onDelete,
@@ -23,29 +25,16 @@ const VersionDropdownItem = ({
   const currentEnvData = environments.find((env) => env.id === currentEnvironment?.id);
   const currentPriority = currentEnvData?.priority || 1;
   const isInProduction = currentPriority === 3; // Production has priority 3
-  const canPromote = !isDraft && !isReleased && !isInProduction;
-  const canRelease = !isDraft && !isReleased && isInProduction;
 
-  const handlePromoteClick = (e) => {
-    e.stopPropagation();
-    onPromote?.(version);
-  };
+  // Only show promote button if version is in the current environment
+  const isVersionInCurrentEnv = version.currentEnvironmentId === currentEnvironment?.id;
+
+  const canPromote = isVersionInCurrentEnv && ((!isReleased && !isInProduction) || isDraft);
+  const canRelease = isVersionInCurrentEnv && !isDraft && !isReleased && isInProduction;
 
   const renderMenu = (
     <Popover id={`popover-positioned-bottom-end`} style={{ minWidth: '160px' }}>
       <Popover.Body className="d-flex flex-column p-0">
-        {canPromote && (
-          <div
-            className="dropdown-item cursor-pointer tj-text-xsm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPromote?.(version);
-              document.body.click(); // Close popover
-            }}
-          >
-            Promote to next environment
-          </div>
-        )}
         {canRelease && (
           <div
             className="dropdown-item cursor-pointer tj-text-xsm"
@@ -140,7 +129,7 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: '#E6F4EA',
+                    backgroundColor: '#E8F3EB',
                     color: '#1E823B',
                     padding: '0 8px',
                     borderRadius: '4px',
@@ -157,26 +146,11 @@ const VersionDropdownItem = ({
             {/* Action buttons */}
             {showActions && (
               <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
-                {/* Create version button (only for drafts) */}
-                {isDraft && (
-                  <ToolTip message="Promote draft to version" placement="top">
-                    <button
-                      className="btn btn-sm"
-                      style={{
-                        padding: '2px 8px',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        border: '1px solid var(--border-weak)',
-                        backgroundColor: 'white',
-                        color: 'var(--text-default)',
-                        borderRadius: '4px',
-                      }}
-                      onClick={handlePromoteClick}
-                    >
-                      Create version
-                    </button>
-                  </ToolTip>
-                )}
+                {/* Promote button - shown for versions that can be promoted */}
+                {canPromote && <PromoteVersionButton version={version} variant="inline" isDraft={isDraft} />}
+
+                {/* Release button - shown in production environment */}
+                {canRelease && <ReleaseVersionButton version={version} variant="inline" />}
 
                 {/* More menu */}
                 <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
