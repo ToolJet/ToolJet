@@ -37,6 +37,7 @@ const CreateDraftButton = ({ onClick, disabled = false }) => {
           Only one draft allowed per app
         </div>
       )}
+      {/* need to add a tooltip here -> pending to confirm the copy-writing from product team */}
     </div>
   );
 };

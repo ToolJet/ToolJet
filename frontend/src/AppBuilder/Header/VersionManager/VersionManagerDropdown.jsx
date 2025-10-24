@@ -74,7 +74,8 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
   const currentVersion = versions.find((v) => v.id === currentVersionId);
 
   // Check if app already has a draft
-  const hasDraft = versions.some((v) => v.status === 'DRAFT');
+  // const hasDraft = versions.some((v) => v.status === 'DRAFT');
+  const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
   const handleToggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
@@ -229,7 +230,7 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
             <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
             {/* Create Draft Button */}
-            <CreateDraftButton onClick={handleCreateDraft} disabled={hasDraft} />
+            <CreateDraftButton onClick={handleCreateDraft} disabled={!hasPublished} />
           </Popover.Body>
         </Popover>
       </Overlay>
