@@ -81,7 +81,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
-
+  const moveableUpdater = useStore((state) => state.moveableUpdater, shallow);
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
@@ -341,7 +341,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList, selectedComponents]);
+  }, [temporaryHeight, boxList, selectedComponents, moveableUpdater]);
 
   useEffect(() => {
     reloadGrid();

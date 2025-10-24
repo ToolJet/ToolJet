@@ -15,6 +15,7 @@ const initialState = {
     containerId: null,
     triggerUpdate: 0,
   },
+  moveableUpdater: false,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -472,9 +473,16 @@ export const createGridSlice = (set, get) => ({
   },
 
   setReorderContainerChildren: (containerId) => {
+    const { triggerMoveableUpdater } = get();
     // Function to trigger reordering of specific container for tab navigation
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+    }));
+    triggerMoveableUpdater();
+  },
+  triggerMoveableUpdater: () => {
+    set((state) => ({
+      moveableUpdater: !state.moveableUpdater,
     }));
   },
 });
