@@ -248,6 +248,11 @@ export class VersionService implements IVersionService {
         if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
         }
+        if (version?.status === AppVersionStatus.DRAFT) {
+          throw new BadRequestException(
+            'You cannot promote a draft version. \nPlease save the version before promoting.'
+          );
+        }
 
         if (version.currentEnvironmentId !== currentEnvironmentId) {
           throw new NotAcceptableException();

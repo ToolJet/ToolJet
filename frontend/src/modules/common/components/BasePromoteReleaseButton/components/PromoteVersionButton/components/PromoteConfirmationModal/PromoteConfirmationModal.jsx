@@ -87,8 +87,12 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
         onClose();
       },
       (error) => {
-        console.error(error);
-        toast.error(`${selectedVersion.name} could not be promoted to ${data.target.name}. Please try again!`);
+        console.log(error);
+        if (error?.error.includes('cannot promote a draft version')) {
+          toast.error(error?.error);
+        } else {
+          toast.error(`${selectedVersion.name} could not be promoted to ${data.target.name}. Please try again!`);
+        }
         setPromotingEnvironment(false);
       }
     );

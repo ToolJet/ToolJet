@@ -14,7 +14,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './style.scss';
 
-const VersionManagerDropdown = ({ darkMode = false }) => {
+const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const { moduleId } = useModuleContext();
 
   const { appId, currentVersionId, currentEnvironment, environments, changeEditorVersionAction, setCurrentVersionId } =
@@ -239,22 +239,14 @@ const VersionManagerDropdown = ({ darkMode = false }) => {
       <CreateDraftVersionModal
         showCreateAppVersion={showCreateDraftModal}
         setShowCreateAppVersion={setShowCreateDraftModal}
-        handleCommitEnableChange={() => {}}
-        canCommit={false}
-        orgGit={{}}
-        fetchingOrgGit={false}
-        handleCommitOnVersionCreation={() => {}}
+        {...props}
       />
 
       {/* Promote Version Modal */}
       <CreateVersionModal
         showCreateAppVersion={showPromoteModal}
         setShowCreateAppVersion={setShowPromoteModal}
-        handleCommitEnableChange={() => {}}
-        canCommit={false}
-        orgGit={{}}
-        fetchingOrgGit={false}
-        handleCommitOnVersionCreation={() => {}}
+        {...props}
       />
     </>
   );

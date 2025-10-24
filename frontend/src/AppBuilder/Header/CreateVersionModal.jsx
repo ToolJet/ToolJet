@@ -115,7 +115,6 @@ const CreateVersionModal = ({
       await appVersionService
         .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
         .then((data) => {
-          window.location.reload();
           handleCommitOnVersionCreation(data);
         })
         .catch((error) => {
@@ -132,36 +131,6 @@ const CreateVersionModal = ({
     } finally {
       setIsCreatingVersion(false);
     }
-    //TODO: pass environmentId to the func
-    // createNewVersionAction(
-    //   appId,
-    //   versionName,
-    //   selectedVersionForCreation.id,
-    //   versionDescription,
-    //   (newVersion) => {
-    //     toast.success('Version Created');
-    //     setVersionName('');
-    //     setIsCreatingVersion(false);
-    //     setShowCreateAppVersion(false);
-    //   appVersionService
-    //     .getAppVersionData(appId, newVersion.id, currentMode)
-    //     .then((data) => {
-    //       setCurrentVersionId(newVersion.id);
-    //       handleCommitOnVersionCreation(data);
-    //     })
-    //     .catch((error) => {
-    //       toast.error(error);
-    //     });
-    // },
-    //   (error) => {
-    //     if (error?.data?.code === '23505') {
-    //       toast.error('Version name already exists.');
-    //     } else {
-    //       toast.error(error?.error);
-    //     }
-    //     setIsCreatingVersion(false);
-    //   }
-    // );
   };
 
   return (
