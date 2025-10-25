@@ -189,7 +189,7 @@ const CreateVersionModal = ({
                 disabled={isCreatingVersion}
                 value={versionDescription}
                 autoFocus={true}
-                minLength="1"
+                minLength="0"
                 maxLength="500"
               />
               <small className="version-description-helper-text">

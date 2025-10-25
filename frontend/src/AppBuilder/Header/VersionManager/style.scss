@@ -319,3 +319,9 @@
     pointer-events: none;
   }
 }
+.create-draft-button-tooltip{
+display: flex;
+.tooltip-inner{
+  width: 323px !important;
+  }
+}

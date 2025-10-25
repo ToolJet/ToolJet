@@ -23,10 +23,7 @@ const CreateDraftVersionModal = ({
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const isGitSyncEnabled =
-    orgGit?.org_git?.git_ssh?.is_enabled ||
-    orgGit?.org_git?.git_https?.is_enabled ||
-    orgGit?.org_git?.git_lab?.is_enabled;
+  const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
   const {
     createNewVersionAction,
     fetchDevelopmentVersions,
@@ -53,6 +50,13 @@ const CreateDraftVersionModal = ({
     }),
     shallow
   );
+  useEffect(() => {
+    const gitSyncEnabled =
+      orgGit?.org_git?.git_ssh?.is_enabled ||
+      orgGit?.org_git?.git_https?.is_enabled ||
+      orgGit?.org_git?.git_lab?.is_enabled;
+    setIsGitSyncEnabled(gitSyncEnabled);
+  }, [orgGit]);
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   useEffect(() => {
@@ -110,7 +114,6 @@ const CreateDraftVersionModal = ({
           });
       },
       (error) => {
-        console.log('testing error', error);
         if (error?.data?.code === '23505') {
           toast.error('Version name already exists.');
         } else {
