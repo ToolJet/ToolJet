@@ -8,7 +8,7 @@ import VersionSearchField from './VersionSearchField';
 import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
-import { CreateVersionModal, CreateDraftVersionModal } from '@/modules/Appbuilder/components';
+import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -46,6 +46,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [showEditVersionModal, setShowEditVersionModal] = useState(false);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
@@ -131,6 +132,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const handleCreateVersion = () => {
     setShowPromoteModal(true);
+    setDropdownOpen(false);
+  };
+  const handleEditVersion = () => {
+    setShowEditVersionModal(true);
     setDropdownOpen(false);
   };
 
@@ -220,6 +225,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                     onSelect={() => handleVersionSelect(version)}
                     onPromote={handlePromoteDraft}
                     onCreateVersion={handleCreateVersion}
+                    onEdit={handleEditVersion}
                     appId={appId}
                   />
                 ))
@@ -246,6 +252,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       <CreateVersionModal
         showCreateAppVersion={showPromoteModal}
         setShowCreateAppVersion={setShowPromoteModal}
+        {...props}
+      />
+
+      {/* Edit Version Modal */}
+      <EditVersionModal
+        showEditAppVersion={showEditVersionModal}
+        setShowEditAppVersion={setShowEditVersionModal}
         {...props}
       />
     </>
