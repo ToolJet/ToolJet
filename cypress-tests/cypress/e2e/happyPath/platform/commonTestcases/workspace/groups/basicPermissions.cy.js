@@ -30,11 +30,6 @@ import { groupsText } from "Texts/manageGroups";
 describe("Basic Permissions", () => {
     let data = {};
 
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
-
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
@@ -71,23 +66,19 @@ describe("Basic Permissions", () => {
             "builder"
         );
 
-        // UI-based privilege verification for Builder
         cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
         uiVerifyBuilderPrivileges();
 
-        // UI CRUD workflows validation
         cy.get(commonSelectors.dashboardIcon).click();
         const uiTestAppName = `${data.appName}_ui`;
         const uiTestFolderName = `${data.folderName}-ui`;
         const uiTestConstName = `${data.firstName}_const`;
         const uiTestConstValue = "test_value";
 
-        // Perform UI-based CRUD operations
         uiAppCRUDWorkflow(uiTestAppName);
         uiFolderCRUDWorkflow(uiTestFolderName);
         uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
 
-        // Enterprise-specific UI workflows
         cy.ifEnv("Enterprise", () => {
             const uiTestDsName = `${data.appName}_ds`;
             const uiTestWorkflowName = `${data.appName}_wf`;
@@ -100,7 +91,6 @@ describe("Basic Permissions", () => {
         cy.openApp();
         cy.releaseApp();
 
-        //verify clone access
         cy.visit(data.workspaceSlug);
         selectAppCardOption(
             data.appName,
@@ -123,25 +113,18 @@ describe("Basic Permissions", () => {
             "admin"
         );
 
-        // API-based verification
         verifyBasicPermissions(true);
 
-        // UI-based privilege verification for Admin (includes settings access)
         uiVerifyAdminPrivileges();
-
-        // UI CRUD workflows for validation
         cy.get(commonSelectors.dashboardIcon).click();
         const uiTestAppName = `${data.appName}_admin_ui`;
         const uiTestFolderName = `${data.folderName}-admin-ui`;
         const uiTestConstName = `${data.firstName}_admin_const`;
         const uiTestConstValue = "admin_test_value";
 
-        // Perform UI-based CRUD operations
         uiAppCRUDWorkflow(uiTestAppName);
         uiFolderCRUDWorkflow(uiTestFolderName);
         uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
-
-        // Enterprise-specific UI workflows
         cy.ifEnv("Enterprise", () => {
             const uiTestDsName = `${data.appName}_admin_ds`;
             const uiTestWorkflowName = `${data.appName}_admin_wf`;
@@ -180,10 +163,8 @@ describe("Basic Permissions", () => {
             groupsText.permissionUpdatedToast
         );
 
-        // Role update and verification
         updateRole("Builder", "End-user", data.email);
 
-        // Verify group memberships
         cy.get(groupsSelector.groupLink("builder")).click();
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should("not.exist");

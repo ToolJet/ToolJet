@@ -20,12 +20,6 @@ import { setUpSlug } from "Support/utils/apps";
 const data = {};
 
 describe("Workspace constants", () => {
-    const envVar = Cypress.env("environment");
-    data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.newConstvalue = `New ${data.constName}`;
-    data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.constantsValue = "dJ_8Q~BcaMPd";
-
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         cy.skipWalkthrough();
@@ -33,7 +27,6 @@ describe("Workspace constants", () => {
     });
 
     it("Verify global and secret constants in all areas", () => {
-        data.workspaceName = fake.firstName;
         data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
         data.appName = `${fake.companyName}-App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");

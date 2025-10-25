@@ -17,11 +17,6 @@ describe("Custom Group Permissions", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
 
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
-
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
@@ -69,10 +64,8 @@ describe("Custom Group Permissions", () => {
 
         createGroupsAndAddUserInGroup(groupName, data.email);
 
-        // Permission configuration and verification
         cy.get(groupsSelector.permissionsLink).click();
 
-        // App creation permission
         cy.get(groupsSelector.appsCreateCheck).check();
         cy.get(commonSelectors.defaultModalTitle).contains(
             groupsText.changeUserRoleHeader
@@ -87,7 +80,6 @@ describe("Custom Group Permissions", () => {
         );
         cy.get(commonSelectors.cancelButton).click();
 
-        // Other permissions
         const permissions =
             Cypress.env("environment") === "Community"
                 ? [
@@ -113,7 +105,6 @@ describe("Custom Group Permissions", () => {
             cy.get(commonSelectors.cancelButton).click();
         });
 
-        // Granular permissions
         cy.get(groupsSelector.granularLink).click();
 
         cy.ifEnv("Community", () => {
@@ -128,7 +119,6 @@ describe("Custom Group Permissions", () => {
         cy.get(groupsSelector.editPermissionRadio).click();
         cy.get(groupsSelector.confimButton).click();
 
-        // Verify modal
         cy.get(".modal-content").should("be.visible");
         cy.get(groupsSelector.modalHeader).should(
             "have.text",
@@ -142,7 +132,6 @@ describe("Custom Group Permissions", () => {
         cy.get(".item-list").contains(data.email);
         cy.get(commonSelectors.closeButton).click();
 
-        // Role transition
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).check();
         cy.get(groupsSelector.confimButton).click();
@@ -168,7 +157,6 @@ describe("Custom Group Permissions", () => {
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
 
-        // Reset permissions
         cy.apiDeleteGranularPermission("builder", []);
         cy.apiDeleteGranularPermission(groupName, []);
         cy.apiCreateApp(data.appName);

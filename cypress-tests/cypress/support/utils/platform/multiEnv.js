@@ -1,5 +1,5 @@
-import { multiEnvSelector, commonEeSelectors } from "Selectors/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { appVersionSelectors } from "Selectors/exportImport";
 import { appVersionText } from "Texts/exportImport";
 

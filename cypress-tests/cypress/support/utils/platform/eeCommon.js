@@ -1,29 +1,21 @@
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
     commonEeSelectors,
-    ssoEeSelector,
+    eeGroupsSelector,
     instanceSettingsSelector,
     multiEnvSelector,
+    ssoEeSelector,
     workspaceSelector,
 } from "Selectors/eeCommon";
-import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { eeGroupsSelector } from "Selectors/eeCommon";
-import { eeGroupsText } from "Texts/eeCommon";
-import {
-    // verifyOnboardingQuestions,
-    // verifyCloudOnboardingQuestions,
-    fetchAndVisitInviteLink,
-} from "Support/utils/manageUsers";
-import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
+import { usersSelector } from "Selectors/manageUsers";
+import * as common from "Support/utils/common";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { commonText } from "Texts/common";
+import { ssoEeText } from "Texts/eeCommon";
 import { ssoText } from "Texts/manageSSO";
-// import { appPromote } from "Support/utils/multiEnv";
+import { usersText } from "Texts/manageUsers";
 
 export const oidcSSOPageElements = () => {
     cy.get(ssoEeSelector.oidcToggle).click();
@@ -78,7 +70,6 @@ export const oidcSSOPageElements = () => {
 
     cy.get(ssoEeSelector.oidcToggle).click();
     cy.get(ssoSelector.saveButton).eq(1).click();
-    // cy.get('[data-cy="enable-button"]').click();
     cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.toggleUpdateToast("OpenID")

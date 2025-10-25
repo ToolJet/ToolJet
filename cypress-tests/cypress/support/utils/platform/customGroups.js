@@ -5,10 +5,7 @@ import { groupsText } from "Texts/manageGroups";
 
 export const createGroupViaUI = (groupName) => {
     cy.get(groupsSelector.createNewGroupButton).click();
-    cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
-        "have.text",
-        groupsText.cardTitle
-    );
+    cy.verifyElement(groupsSelector.addNewGroupModalTitle, groupsText.cardTitle);
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
     cy.get(groupsSelector.createGroupButton).should("be.enabled").click();
     cy.verifyToastMessage(

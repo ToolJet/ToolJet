@@ -5,7 +5,6 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { importSelectors } from "Selectors/exportImport";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
-    logout,
     navigateToAppEditor,
     navigateToManageGroups,
     navigateToManageUsers,
@@ -25,11 +24,6 @@ import { groupsText } from "Texts/manageGroups";
 describe("Manage Groups", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
-
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
 
     beforeEach(() => {
         data = {
@@ -190,7 +184,7 @@ describe("Manage Groups", () => {
         });
     });
 
-    it.only("should verify datasource granular access in app builder", () => {
+    it("should verify datasource granular access in app builder", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appImportFile = "cypress/fixtures/templates/permission-export.json";
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);

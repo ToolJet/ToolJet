@@ -1,13 +1,11 @@
+import 'cypress-mailhog';
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { ssoSelector } from "Selectors/manageSSO";
-import { commonText, createBackspaceText } from "Texts/common";
-import { passwordInputText } from "Texts/passwordInput";
+import { commonEeSelectors } from "Selectors/eeCommon";
 import { importSelectors } from "Selectors/exportImport";
-import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
-import "cypress-mailhog";
+import { commonText, createBackspaceText } from "Texts/common";
+import { importText } from "Texts/exportImport";
 
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"

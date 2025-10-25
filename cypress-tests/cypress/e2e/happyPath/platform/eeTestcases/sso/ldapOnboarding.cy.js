@@ -1,21 +1,21 @@
+import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
-import { ssoEeText } from "Texts/eeCommon";
-import { setSSOStatus, setSignupStatus } from "Support/utils/manageSSO";
-import { usersText } from "Texts/manageUsers";
-import { fake } from "Fixtures/fake";
 import {
     logout,
-    navigateToManageSSO,
-    navigateToManageUsers,
-    searchUser,
-    pinInspector,
     navigateToAppEditor,
     navigateToManageGroups,
+    navigateToManageSSO,
+    navigateToManageUsers,
+    pinInspector,
+    searchUser,
 } from "Support/utils/common";
-import { ssoText } from "Texts/manageSSO";
-import { enableToggle, disableToggle } from "Support/utils/platform/eeCommon";
 import { setupAndUpdateRole } from "Support/utils/manageGroups";
+import { setSSOStatus, setSignupStatus } from "Support/utils/manageSSO";
+import { disableToggle, enableToggle } from "Support/utils/platform/eeCommon";
+import { ssoEeText } from "Texts/eeCommon";
+import { ssoText } from "Texts/manageSSO";
+import { usersText } from "Texts/manageUsers";
 
 describe("LDAP flow", () => {
     const TEST_DATA = {

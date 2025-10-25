@@ -1,22 +1,19 @@
-import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers";
+import { commonSelectors } from "Selectors/common";
 import { usersSelector } from "Selectors/manageUsers";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
-import { commonText } from "Texts/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
+import { fillUserInviteForm } from "Support/utils/manageUsers";
 import {
     SignUpPageElements,
-    signUpLink,
-    verifyOnboardingQuestions,
-    visitWorkspaceInvitation,
     addNewUser,
-    enableInstanceSignUp,
+    visitWorkspaceInvitation
 } from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
+import { usersText } from "Texts/manageUsers";
 
 import {
-    navigateToManageUsers,
     logout,
+    navigateToManageUsers,
     searchUser,
 } from "Support/utils/common";
 
@@ -121,7 +118,7 @@ describe("inviteflow edge cases", () => {
         cy.get(commonSelectors.signUpButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            "User already exists in the workspace."
+            "User with this email already exists in one or more workspaces."
         );
         cy.apiLogin();
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceName);
@@ -130,6 +127,7 @@ describe("inviteflow edge cases", () => {
         setSignupStatus(true, data.workspaceName);
         logout();
 
+        cy.visit('/');
         cy.get(commonSelectors.createAnAccountLink).click();
         cy.wait(3000);
         cy.clearAndType(onboardingSelectors.nameInput, data.firstName);

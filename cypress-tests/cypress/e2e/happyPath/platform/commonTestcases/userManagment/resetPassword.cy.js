@@ -1,9 +1,9 @@
-import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
-import { inviteUser } from "Support/utils/onboarding";
-import { logout } from "Support/utils/common";
+import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { logout } from "Support/utils/common";
+import { inviteUser } from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
 
 describe("Password reset functionality", () => {
   const data = {
@@ -22,7 +22,6 @@ describe("Password reset functionality", () => {
     inviteUser(data.firstName, data.email);
     logout();
 
-    // Invalid login attempts
     Cypress._.times(5, () => {
       cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "passw");
@@ -39,7 +38,6 @@ describe("Password reset functionality", () => {
       "Maximum password retry limit reached, please reset your password using forgot password option"
     );
 
-    // Forgot password page verification
     cy.get(commonSelectors.forgotPasswordLink).click();
 
     [
@@ -57,7 +55,6 @@ describe("Password reset functionality", () => {
       cy.get(selector).verifyVisibleElement("have.text", text);
     });
 
-    // Submit email for password reset
     cy.clearAndType('[data-cy="email-input-field-input"]', data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();
     cy.verifyToastMessage(
@@ -65,7 +62,6 @@ describe("Password reset functionality", () => {
       commonText.passwordResetEmailToast
     );
 
-    // Check email confirmation page
     [
       [
         commonSelectors.onboardingPageDescription,
@@ -80,15 +76,6 @@ describe("Password reset functionality", () => {
     ].forEach(([selector, text]) => {
       cy.get(selector).verifyVisibleElement("have.text", text);
     });
-
-    // Get and visit reset password link
-    // cy.task("dbConnection", {
-    //   dbconfig: Cypress.env("app_db"),
-    //   sql: `select forgot_password_token from users where email='${data.email}';`,
-    // }).then((resp) => {
-    //   passwordResetLink = `/reset-password/${resp.rows[0].forgot_password_token}`;
-    //   cy.visit(passwordResetLink);
-    // });
 
     // Use the correct API for cypress-mh if you have customized endpoints
     cy.wait(5000);
@@ -107,33 +94,27 @@ describe("Password reset functionality", () => {
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>')
           .replace(/&amp;/g, '&');
-        cy.log('Cleaned Email body:', cleanedBody); // Log cleaned body for debugging
-        // Extract reset password URL from href attribute or plain text
         let resetPasswordUrl = '';
 
-        // Try to find URL in href attribute with quoted-printable encoding
         const hrefMatch = cleanedBody.match(/href=3D(http[^"\s>]*reset-password[^"\s>]*)/i);
         if (hrefMatch) {
           resetPasswordUrl = hrefMatch[1];
         } else {
-          // Try standard href format
           const standardHrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*reset-password[^"'\s>]*)/i);
           if (standardHrefMatch) {
             resetPasswordUrl = standardHrefMatch[1];
           } else {
-            // Fallback: look for URL in plain text
             const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*reset-password[^\s"'<>]*/i);
             resetPasswordUrl = urlMatch ? urlMatch[0] : '';
           }
         }
 
-        // expect(resetPasswordUrl).to.not.be.empty;
+        expect(resetPasswordUrl).to.not.be.empty;
         cy.log('Found reset password URL: ' + resetPasswordUrl);
         cy.visit(resetPasswordUrl);
       });
 
 
-    // Reset password page verification
     [
       [
         commonSelectors.passwordResetPageHeader,
@@ -149,7 +130,6 @@ describe("Password reset functionality", () => {
       cy.get(selector).verifyVisibleElement("have.text", text);
     });
 
-    // Password validation cases
     cy.wait(2000); // Wait for fields to be interactable  will remove after fixing the flakiness
 
     [
@@ -174,14 +154,12 @@ describe("Password reset functionality", () => {
       );
     });
 
-    // Submit new password
     cy.get(commonSelectors.resetPasswordButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       commonText.passwordResetSuccessToast
     );
 
-    // Success page verification
     [
       [
         '[data-cy="password-has-been-reset-header"]',
@@ -196,7 +174,6 @@ describe("Password reset functionality", () => {
       cy.get(selector).verifyVisibleElement("have.text", assertion);
     });
 
-    // Login with new password
     cy.get(commonSelectors.backToLoginButton).click();
     cy.get(onboardingSelectors.signupEmailInput).click().type(`{selectAll}{backspace}${data.email}`);
     cy.get(onboardingSelectors.loginPasswordInput).click().type(`{selectAll}{backspace}${data.password}`);

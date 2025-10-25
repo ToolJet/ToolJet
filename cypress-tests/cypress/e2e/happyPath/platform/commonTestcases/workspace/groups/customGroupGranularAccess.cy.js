@@ -14,11 +14,6 @@ describe("Custom Group Granular Access", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
 
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
-
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
@@ -69,7 +64,6 @@ describe("Custom Group Granular Access", () => {
         cy.apiCreateApp(data.appName);
         cy.apiCreateApp(appName2);
 
-        // App Hide from dashboard
         cy.apiCreateApp(appName3);
         cy.openApp();
         cy.apiAddComponentToApp(appName3, "text1");
@@ -81,12 +75,9 @@ describe("Custom Group Granular Access", () => {
         cy.apiAddAppSlug(appName3, appSlug);
         cy.go("back");
 
-        // Configure app permissions
         navigateToManageGroups();
         cy.get(groupsSelector.groupLink(groupName)).click();
         cy.get(groupsSelector.granularLink).click();
-
-        // Setup permissions for both apps
         [data.appName, appName2, appName3].forEach((app) => {
             cy.ifEnv("Community", () => {
                 cy.get(groupsSelector.addAppsButton).click();
@@ -110,7 +101,6 @@ describe("Custom Group Granular Access", () => {
         cy.get(groupsSelector.editPermissionRadio).click();
         cy.get(groupsSelector.confimButton).click();
 
-        //To hide app
         cy.get(groupsSelector.groupChip).contains(appName3).click();
         cy.get(groupsSelector.hidePermissionInput).check();
         cy.get(groupsSelector.confimButton).click();
@@ -219,7 +209,6 @@ describe("Custom Group Granular Access", () => {
             cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
         });
 
-        //Visit hidden app url
         cy.visitSlug({
             actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
         });

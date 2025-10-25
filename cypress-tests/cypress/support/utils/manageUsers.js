@@ -2,14 +2,13 @@ import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
-import * as common from "Support/utils/common";
-import { fillInputField } from "Support/utils/common";
+import { fillInputField, logout, navigateToManageUsers, searchUser } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
 const envVar = Cypress.env("environment");
 
-export const manageUsersElements = () => {
+export const verifyManageUsersPageElements = () => {
   cy.get(
     `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
   ).should(($el) => {
@@ -32,7 +31,7 @@ export const manageUsersElements = () => {
     expect($el.contents().last().text().trim()).to.eq(usersText.usersPageTitle);
   });
   cy.get(commonSelectors.inputUserSearch).should("be.visible");
-  common.searchUser(usersText.adminUserEmail);
+  searchUser(usersText.adminUserEmail);
   cy.contains("td", usersText.adminUserEmail)
     .parent()
     .within(() => {
@@ -215,8 +214,8 @@ export const confirmInviteElements = (email) => {
 };
 
 export const userStatus = (email) => {
-  common.navigateToManageUsers();
-  common.searchUser(email);
+  navigateToManageUsers();
+  searchUser(email);
   cy.contains("td", email)
     .parent()
     .within(() => {
@@ -241,10 +240,7 @@ export const bulkUserUpload = (
       .and("have.text", toastMessage);
     cy.get(usersSelector.modalClose).click();
   } else {
-    cy.get(commonSelectors.newToastMessage)
-      .should("be.visible")
-      .and("have.text", toastMessage);
-    cy.get(usersSelector.toastCloseButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, toastMessage);
   }
   cy.wait(1500);
 };
@@ -253,7 +249,7 @@ export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
   });
-  common.searchUser(email);
+  searchUser(email);
   cy.contains("td", email)
     .parent()
     .within(() => {
@@ -264,7 +260,7 @@ export const copyInvitationLink = (firstName, email) => {
     usersText.inviteCopiedToast
   );
   cy.get("@copyToClipboardPrompt").then((prompt) => {
-    common.logout();
+    logout();
     cy.visit(prompt.args[0][1]);
   });
 };
@@ -460,7 +456,7 @@ export const verifyUserStatusAndMetadata = (
   expectedStatus = usersText.activeStatus,
   expectedMetadata = "{..}"
 ) => {
-  common.searchUser(email);
+  searchUser(email);
   cy.contains("td", email)
     .parent()
     .within(() => {
@@ -476,7 +472,7 @@ export const openEditUserDetails = (
   activeStatusText = usersText.activeStatus,
   expectedMetadata = "{..}"
 ) => {
-  common.navigateToManageUsers();
+  navigateToManageUsers();
 
   verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
 

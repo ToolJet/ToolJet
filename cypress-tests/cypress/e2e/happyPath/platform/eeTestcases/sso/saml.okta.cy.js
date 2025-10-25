@@ -6,7 +6,7 @@ import { commonSelectors } from "Selectors/common";
 import { deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { navigateToManageSSO } from "Support/utils/common";
 import {
-    createGroup,
+    apiCreateGroup,
     deleteGroup,
     verifyUserRole,
 } from "Support/utils/manageGroups";
@@ -121,7 +121,7 @@ describe("SAML SSO", () => {
 
         cy.apiUpdateSSOConfig(config);
 
-        createGroup("SAML");
+        apiCreateGroup("SAML");
 
         updateSsoId(ssoConfigId, "saml", orgId);
 

@@ -14,7 +14,7 @@ import {
     deleteOrganisationSSO,
 } from "Support/utils/manageSSO";
 import {
-    createGroup,
+    apiCreateGroup,
     verifyUserRole,
     deleteGroup,
 } from "Support/utils/manageGroups";
@@ -50,7 +50,7 @@ describe("Okta OIDC", () => {
     });
 
     it("Instance level signup and group sync cases", () => {
-        createGroup(data.groupName);
+        apiCreateGroup(data.groupName);
 
         const orgId = Cypress.env("workspaceId");
         OidcConfig({ Everyone: data.groupName }, "instance", {
@@ -75,7 +75,7 @@ describe("Okta OIDC", () => {
         deleteGroup(data.groupName, Cypress.env("workspaceId"));
 
         cy.apiLogin();
-        createGroup(data.groupName);
+        apiCreateGroup(data.groupName);
         OidcConfig({ Everyone: "Admin", OIDC: data.groupName }, "instance", {
             organizationId: orgId,
             id: "1",
@@ -164,7 +164,7 @@ describe("Okta OIDC", () => {
         const orgId = Cypress.env("workspaceId");
         const invitedUserEmail = Cypress.env("okta_invite_user");
         const firstName = fake.firstName;
-        createGroup(data.groupName);
+        apiCreateGroup(data.groupName);
 
         cy.intercept("GET", "/api/authorize").as("openidResponse");
 

@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import {
-    createUser, getAllUsers, getUser, updateUser, createGroup, verifyUserInGroups, updateUserRole,
+    createUser, getAllUsers, getUser, updateUser, apiCreateGroup, verifyUserInGroups, updateUserRole,
     getAllWorkspaces, replaceUserWorkspace, replaceUserWorkspacesRelations
 } from 'Support/utils/externalApi';
 import { groupsSelector } from "Selectors/manageGroups";
@@ -70,7 +70,7 @@ describe("API Test", () => {
     it("Create user with valid details", () => {
         // create multiple groups in different workspaces
         navigateToManageGroups();
-        [data.group1, data.group2, data.group5].forEach(createGroup);
+        [data.group1, data.group2, data.group5].forEach(apiCreateGroup);
 
         //builder group
         cy.get(groupsSelector.groupLink(data.group5)).click();
@@ -84,7 +84,7 @@ describe("API Test", () => {
             cy.apiCreateWorkspace(name, slug);
             cy.visit(slug);
             navigateToManageGroups();
-            createGroup(group);
+            apiCreateGroup(group);
         });
 
         // Added valid user and logged-in in the workpsace

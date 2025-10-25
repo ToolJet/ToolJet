@@ -1,16 +1,18 @@
-import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
-import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
-import * as common from "Support/utils/common";
+import { commonSelectors } from "Selectors/common";
+import { groupsSelector } from "Selectors/manageGroups";
+import { usersSelector } from "Selectors/manageUsers";
+import {
+  navigateToManageGroups,
+  navigateToManageUsers,
+  searchUser,
+} from "Support/utils/common";
 import { bulkUserUpload } from "Support/utils/manageUsers";
 
-// Helper to resolve correct test data based on env
 const getFile = (fileGroup) => {
   const env = Cypress.env("environment");
   return env === "Community" ? fileGroup.default : fileGroup.alt;
 };
-
 
 describe("Bulk User Upload", () => {
   const TEST_FILES = {
@@ -131,7 +133,7 @@ describe("Bulk User Upload", () => {
     cy.apiLogin();
     cy.apiCreateWorkspace(firstName, workspaceName);
     cy.visit(`${workspaceName}`);
-    common.navigateToManageUsers();
+    navigateToManageUsers();
   });
 
   it("Should validate error cases for invalid bulk user uploads", () => {
@@ -172,15 +174,15 @@ describe("Bulk User Upload", () => {
       .should("be.visible")
       .and("have.text", file.successMessage);
 
-    common.searchUser(file.email);
+    searchUser(file.email);
     cy.contains("td", file.email)
       .parent()
       .within(() => {
         cy.get("td small").should("have.text", "invited");
       });
-    cy.mhGetAllMails().should('have.length', 3);
+    cy.mhGetAllMails().should("have.length", 3);
 
-    common.navigateToManageGroups();
+    navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
     cy.get(groupsSelector.usersLink).click();
     cy.contains(file.email).should("be.visible");

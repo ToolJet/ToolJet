@@ -174,8 +174,8 @@ export const verifyGranularPermissionModalUI = (
     permissionName = ""
 ) => {
     // Permission name section
-    cy.get(groupsSelector.permissionNameLabel).verifyVisibleElement(
-        "have.text",
+    cy.verifyElement(
+        groupsSelector.permissionNameLabel,
         groupsText.permissionNameLabel
     );
     cy.get(groupsSelector.permissionNameInput).should("be.visible");
@@ -192,16 +192,13 @@ export const verifyGranularPermissionModalUI = (
         );
     }
 
-    cy.get(groupsSelector.permissionNameHelperText).verifyVisibleElement(
-        "have.text",
+    cy.verifyElement(
+        groupsSelector.permissionNameHelperText,
         groupsText.permissionNameHelperText
     );
 
     // Permission section
-    cy.get(groupsSelector.permissionLabel).verifyVisibleElement(
-        "have.text",
-        groupsText.permissionLabel
-    );
+    cy.verifyElement(groupsSelector.permissionLabel, groupsText.permissionLabel);
 
     if (resourceType === "app") {
         cy.verifyElement(
@@ -259,10 +256,7 @@ export const verifyGranularPermissionModalUI = (
     }
 
     // Resources section
-    cy.get(groupsSelector.resourceLabel).verifyVisibleElement(
-        "have.text",
-        groupsText.resourcesheader
-    );
+    cy.verifyElement(groupsSelector.resourceLabel, groupsText.resourcesheader);
     cy.get(groupsSelector.allAppsRadio).should("be.visible");
 
     if (isEdit) {
@@ -431,12 +425,12 @@ export const verifyEmptyStates = (customGroup = false) => {
     );
 
     cy.get(groupsSelector.userEmptyPageIcon).should("be.visible");
-    cy.get(groupsSelector.userEmptyPageTitle).verifyVisibleElement(
-        "have.text",
+    cy.verifyElement(
+        groupsSelector.userEmptyPageTitle,
         groupsText.userEmptyPageTitle
     );
-    cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement(
-        "have.text",
+    cy.verifyElement(
+        groupsSelector.userEmptyPageHelperText,
         groupsText.userEmptyPageHelperText
     );
 
@@ -444,12 +438,12 @@ export const verifyEmptyStates = (customGroup = false) => {
         // Granular permissions empty state
         cy.get(groupsSelector.granularLink).click();
         cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
-        cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
-            "have.text",
+        cy.verifyElement(
+            groupsSelector.emptyPagePermissionTitle,
             groupsText.emptyPagePermissionTitle
         );
-        cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement(
-            "have.text",
+        cy.verifyElement(
+            groupsSelector.emptyPagePermissionHelperText,
             groupsText.emptyPagePermissionHelperText
         );
     }
@@ -466,7 +460,7 @@ export const verifyGroupLinks = () => {
     ];
 
     links.forEach(({ selector, text }) => {
-        cy.get(selector).verifyVisibleElement("have.text", text);
+        cy.verifyElement(selector, text);
     });
 };
 

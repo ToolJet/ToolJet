@@ -3,7 +3,11 @@ import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
-import { SignUpPageElements, verifyConfirmEmailPage, verifyInvalidInvitationLink } from "Support/utils/onboarding";
+import {
+  SignUpPageElements,
+  verifyConfirmEmailPage,
+  verifyInvalidInvitationLink,
+} from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 
 describe("User signup", () => {
@@ -12,9 +16,10 @@ describe("User signup", () => {
 
   before(() => {
     cy.ifEnv("Enterprise", () => {
-      enableInstanceSignup()
+      cy.apiLogin();
+      enableInstanceSignup();
+      cy.apiLogout();
     });
-
   });
 
   it("Verify the signup flow and UI elements", () => {
@@ -45,7 +50,7 @@ describe("User signup", () => {
       invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
       cy.visit(invitationLink);
     });
-
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
     logout();
   });
 
@@ -76,7 +81,7 @@ describe("User signup", () => {
     cy.intercept("POST", "/api/onboarding/signup").as("signup");
     cy.get(commonSelectors.signUpButton).click();
 
-    cy.wait("@signup")
+    cy.wait("@signup");
     cy.get('[data-cy="check-your-mail-header"]').should("be.visible");
     cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
@@ -85,5 +90,6 @@ describe("User signup", () => {
       invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
       cy.visit(invitationLink);
     });
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
   });
 });

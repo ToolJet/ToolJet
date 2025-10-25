@@ -10,12 +10,6 @@ import {
 const data = {};
 
 describe("Workspace constants", () => {
-  const envVar = Cypress.env("environment");
-  data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-  data.newConstvalue = `New ${data.constName}`;
-  data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-  data.constantsValue = "dJ_8Q~BcaMPd";
-
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
