@@ -192,33 +192,38 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
     });
 });
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
-    return cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `
+    return cy
+        .task("dbConnection", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `
       SELECT id 
       FROM users
       WHERE email='${email}'
       LIMIT 1;
     `,
-    }).then((resp) => {
-        const userId = resp.rows[0]?.id;
-        if (!userId) throw new Error(`User with email ${email} not found`);
-        return userId;
-    }).then((userId) => {
-        return cy.getAuthHeaders().then((headers) => {
-            return cy.request({
-                method: "PUT",
-                url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
-                headers: headers,
-                body: {
-                    newRole: role,
-                    userId: userId,
-                },
-            }).then((response) => {
-                expect(response.status).to.equal(200);
+        })
+        .then((resp) => {
+            const userId = resp.rows[0]?.id;
+            if (!userId) throw new Error(`User with email ${email} not found`);
+            return userId;
+        })
+        .then((userId) => {
+            return cy.getAuthHeaders().then((headers) => {
+                return cy
+                    .request({
+                        method: "PUT",
+                        url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
+                        headers: headers,
+                        body: {
+                            newRole: role,
+                            userId: userId,
+                        },
+                    })
+                    .then((response) => {
+                        expect(response.status).to.equal(200);
+                    });
             });
         });
-    });
 });
 
 Cypress.Commands.add(
@@ -725,11 +730,51 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
                 Cookie: `tj_auth_token=${cookie.value}`,
             };
             Cypress.env("authHeaders", headers);
-            Cypress.log({
-                name: "getAuthHeaders",
-                message: `Auth headers: ${JSON.stringify(headers)}`,
-            });
             return headers;
         });
     }
 });
+
+Cypress.Commands.add("getUserIdByEmail", (email, idType = "organization") => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/organization-users`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                const user = response.body.users.find((u) => u.email === email);
+
+                if (!user) {
+                    throw new Error(`User with email ${email} not found`);
+                }
+                return idType === "user" ? user.user_id : user.id;
+            });
+    });
+});
+
+Cypress.Commands.add(
+    "apiBulkUploadUsers",
+    (csvContent, fileName = "users_upload.csv") => {
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const formData = new FormData();
+        formData.append("file", blob, fileName);
+
+        return cy.getAuthHeaders().then((headers) => {
+            return cy
+                .request({
+                    method: "POST",
+                    url: `${Cypress.env("server_host")}/api/organization-users/upload-csv`,
+                    headers: headers,
+                    body: formData,
+                    failOnStatusCode: false,
+                })
+                .then((response) => {
+                    return response;
+                });
+        });
+    }
+);
