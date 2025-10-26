@@ -232,7 +232,7 @@ export const createGridSlice = (set, get) => ({
                   currentMax = lastElement.offsetHeight;
                 }
               } else {
-                if (isProperNumber(headerHeight)) {
+                if (showHeader && isProperNumber(headerHeight)) {
                   extraHeight += headerHeight;
                 }
                 if (showFooter && isProperNumber(footerHeight)) {
@@ -317,7 +317,11 @@ export const createGridSlice = (set, get) => ({
       const changedCompTop =
         temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const changedCompBottom = changedCompTop + newHeight;
-      const changedCompInitialTop = changedComponent.layouts[currentLayout].top;
+      const oldChangedCompTop =
+        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const oldChangedCompHeight =
+        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
 
       //Fetch all the components that are below the changed component
       const componentsToAdjust = boxList.filter((box) => {
@@ -327,10 +331,8 @@ export const createGridSlice = (set, get) => ({
         const sameParent = box.component?.parent === changedComponent.component?.parent;
 
         // Checking if changed component initial bottom is below the initial box top
-        const boxInitialTop = box.layouts[currentLayout].top;
-
-        const changedCompInitialBottom = changedCompInitialTop + changedComponent.layouts[currentLayout].height;
-        const isBelow = changedCompInitialBottom <= boxInitialTop;
+        const boxTop = temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top;
+        const isBelow = oldChangedCompBottom <= boxTop;
         return sameParent && isBelow;
       });
 
@@ -372,12 +374,7 @@ export const createGridSlice = (set, get) => ({
         return hasHorizontalOverlap;
       });
 
-      const oldChangedCompTop =
-        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
-      const oldChangedCompHeight =
-        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
 
-      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
 
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
