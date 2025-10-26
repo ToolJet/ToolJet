@@ -1,12 +1,11 @@
+import { commonSelectors } from "Selectors/common";
 import {
   appVersionSelectors,
   exportAppModalSelectors,
   importSelectors,
 } from "Selectors/exportImport";
-import { exportAppModalText, appVersionText } from "Texts/exportImport";
-import { commonSelectors } from "Selectors/common";
-import { verifyModal, commonWidgetSelector } from "Support/utils/common";
-import { importText } from "Texts/exportImport";
+import { verifyModal } from "Support/utils/common";
+import { appVersionText, exportAppModalText, importText } from "Texts/exportImport";
 
 export const verifyElementsOfExportModal = (
   currentVersionName,

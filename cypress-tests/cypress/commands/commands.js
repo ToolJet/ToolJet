@@ -53,21 +53,22 @@ Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave,
+    '',
     { timeout: 20000 }
-  );
+  ).find('svg')
+    .should('be.visible', { timeout: 20000 });
 });
 
 Cypress.Commands.add("createApp", (appName) => {
   const getAppButtonSelector = ($title) =>
     $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.emptyAppCreateButton
+      ? commonSelectors.dashboardAppCreateButton
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+-create-app"]').click();
+    cy.get('[data-cy="create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -77,37 +78,47 @@ Cypress.Commands.add(
   "dragAndDropWidget",
   (
     widgetName,
-    positionX = 80,
-    positionY = 80,
+    positionX = 100,
+    positionY = 100,
     widgetName2 = widgetName,
     canvas = commonSelectors.canvas
   ) => {
     const dataTransfer = new DataTransfer();
-    cy.forceClickOnCanvas();
 
-    cy.get("body")
-      .then(($body) => {
-        const isSearchVisible = $body
-          .find(commonSelectors.searchField)
-          .is(":visible");
+    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get(commonSelectors.searchField).should('be.visible');
 
-        if (!isSearchVisible) {
-          cy.get('[data-cy="right-sidebar-plus-button"]').click();
-        }
+    cy.get(commonSelectors.searchField).first().clear().type(widgetName);
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should('be.visible');
+
+    cy.get(commonWidgetSelector.widgetBox(widgetName2))
+      .trigger('mousedown', { which: 1, button: 0, force: true })
+      .trigger('dragstart', { dataTransfer, force: true });
+
+    cy.get(canvas)
+      .trigger('dragenter', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       })
-      .then(() => {
-        cy.clearAndType(commonSelectors.searchField, widgetName);
+      .trigger('dragover', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
       });
 
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
-      "dragstart",
-      { dataTransfer },
-      { force: true }
-    );
-    cy.get(canvas).trigger("drop", positionX, positionY, {
-      dataTransfer,
-      force: true,
-    });
+
+    cy.get(canvas)
+      .trigger('drop', {
+        dataTransfer,
+        clientX: positionX,
+        clientY: positionY,
+        force: true
+      })
+      .trigger('mouseup', { force: true });
+
     cy.waitForAutoSave();
   }
 );
@@ -224,8 +235,11 @@ Cypress.Commands.add("renameApp", (appName) => {
     `{selectAll}{backspace}${appName}`,
     { force: true }
   );
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
+  cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    commonText.appRenamedToast
+  );
 });
 
 Cypress.Commands.add(
@@ -468,12 +482,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.wait("@library_apps");
 });
 
-Cypress.Commands.add("removeAssignedApps", () => {
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `DELETE FROM app_group_permissions;`,
-  });
-});
+
 
 Cypress.Commands.add(
   "saveFromIntercept",
@@ -562,7 +571,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -665,3 +674,26 @@ Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
     sql: query,
   });
 });
+
+Cypress.Commands.add(
+  "openWorkflow",
+  (
+    slug = "",
+    workspaceId = Cypress.env("workspaceId"),
+    workflowId = Cypress.env("workflowId"),
+  ) => {
+    cy.intercept("GET", "/api/apps/*").as("getWorkflowData");
+    cy.window({ log: false }).then((win) => {
+      win.localStorage.setItem("walkthroughCompleted", "true");
+    });
+    cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
+
+    cy.wait("@getWorkflowData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("environmentId", responseData.editorEnvironment.id);
+      Cypress.env("workflowId", responseData.id);
+    });
+  }
+);

@@ -6,9 +6,22 @@ import JSON5 from 'json5'; // Import JSON5 for more lenient parsing
 // (Consider moving these to a shared constants file if used elsewhere)
 export const PARSE_FILE_TYPES = {
   CSV: 'text/csv',
+  TSV: 'text/tab-separated-values',
+  TXT: 'text/plain',
   XLS: 'application/vnd.ms-excel',
   XLSX: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   JSON: 'application/json', // Added JSON MIME type
+};
+
+const lineParser = (line, delimiter) => {
+  let lineToFormat = line;
+
+  // if delimiter is tab & if line contains '\\t' instead '\t' then just replace it with '\t'
+  if (delimiter === '\t' && line.includes('\\t')) {
+    lineToFormat = line.replaceAll('\\t', '\t');
+  }
+
+  return lineToFormat.split(delimiter).map((h) => h.trim());
 };
 
 // Helper functions for processing file content
@@ -17,11 +30,11 @@ export const processCSV = (str, delimiter = ',') => {
     const lines = str.split(/\r?\n/);
     const [headerLine, ...rows] = lines;
     if (!headerLine) return [];
-    const headers = headerLine.split(delimiter).map((h) => h.trim());
+    const headers = lineParser(headerLine, delimiter);
     return rows
       .filter((r) => r.trim().length > 0)
       .map((row) => {
-        const cols = row.split(delimiter);
+        const cols = lineParser(row, delimiter);
         const obj = {};
         headers.forEach((h, i) => {
           obj[h] = cols[i] ?? '';
@@ -72,10 +85,18 @@ export const processJson = (str) => {
   }
 };
 
-export const processFileContent = async (fileType, fileContent) => {
+export const processFileContent = async (fileType, fileContent, options = {}) => {
+  const { fileParsingDelimiter = ',', fileTypeFromExtension = 'auto-detect' } = options;
+
   switch (fileType) {
     case PARSE_FILE_TYPES.CSV:
-      return processCSV(fileContent.readFileAsText);
+    case PARSE_FILE_TYPES.TXT:
+      return processCSV(
+        fileContent.readFileAsText,
+        fileTypeFromExtension === 'auto-detect' ? ',' : fileParsingDelimiter
+      );
+    case PARSE_FILE_TYPES.TSV:
+      return processCSV(fileContent.readFileAsText, '\t');
     case PARSE_FILE_TYPES.XLS:
     case PARSE_FILE_TYPES.XLSX:
       return await processXls(fileContent.readFileAsDataURL); // Await async function
@@ -91,10 +112,18 @@ export const processFileContent = async (fileType, fileContent) => {
 
 const DEPRECATED_processCSV = (str, delimiter = ',') => processCSV(str, delimiter);
 
-export const DEPRECATED_processFileContent = async (fileType, fileContent) => {
+export const DEPRECATED_processFileContent = async (fileType, fileContent, options = {}) => {
+  const { fileParsingDelimiter = ',', fileTypeFromExtension = 'auto-detect' } = options;
+
   switch (fileType) {
     case 'text/csv':
-      return DEPRECATED_processCSV(fileContent.readFileAsText);
+    case PARSE_FILE_TYPES.TXT:
+      return DEPRECATED_processCSV(
+        fileContent.readFileAsText,
+        fileTypeFromExtension === 'auto-detect' ? ',' : fileParsingDelimiter
+      );
+    case PARSE_FILE_TYPES.TSV:
+      return DEPRECATED_processCSV(fileContent.readFileAsText, '\t');
     case 'application/vnd.ms-excel':
     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
       return await processXls(fileContent.readFileAsDataURL); // Use the actual processXls function
@@ -113,16 +142,17 @@ export const parseFileContentEnabled = (file, autoDetect = false, parseFileType)
   if (autoDetect) {
     return detectParserFile(file);
   } else {
-
     let targetMimeType = PARSE_FILE_TYPES[parseFileType?.toUpperCase()];
 
     if (!targetMimeType && parseFileType) {
-      const matchingType = Object.values(PARSE_FILE_TYPES).find(mimeType =>
-        mimeType.includes(parseFileType) || parseFileType.includes(mimeType.split('/')[1])
+      const matchingType = Object.values(PARSE_FILE_TYPES).find(
+        (mimeType) => mimeType.includes(parseFileType) || parseFileType.includes(mimeType.split('/')[1])
       );
       targetMimeType = matchingType;
     }
 
-    return targetMimeType ? file.type === targetMimeType : false;
+    return targetMimeType
+      ? file.type === targetMimeType || (parseFileType === 'csv' && file.type === PARSE_FILE_TYPES.TXT)
+      : false;
   }
 };
