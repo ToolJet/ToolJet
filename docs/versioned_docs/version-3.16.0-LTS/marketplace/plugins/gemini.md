@@ -72,9 +72,6 @@ Use this operation for a chat-like conversation, where the model responds based 
 **Required Parameters**
 
 - **Model**: Specifies the Gemini model to use for generating responses in the chat.
-    - Gemini 1.5 Flash
-    - Gemini 1.5 Flash-8B
-    - Gemini 1.5 Pro
     - Gemini 2.0 Flash
 
 - **User Prompt**: The user's question or request that the model will respond to.

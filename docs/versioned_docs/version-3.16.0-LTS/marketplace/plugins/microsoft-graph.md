@@ -20,7 +20,7 @@ You can enable the **Authentication required for all users** toggle in the confi
 
 **Note**: After completing the OAuth flow, the query must be triggered again to fetch data from Microsoft Graph.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/connection.png" alt="Microsoft Graph Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/connection-v2.png" alt="Microsoft Graph Configuration" />
 
 ## Supported Operations
 

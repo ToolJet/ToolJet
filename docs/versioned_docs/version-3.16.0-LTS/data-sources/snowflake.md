@@ -31,7 +31,7 @@ You can toggle on **Authentication required for all users** in the configuration
 
 Note: After completing the OAuth flow, the query must be triggered again to load the data.
 
-<img className="screenshot-full img-m" src="/img/datasource-reference/snowflake/snowflake-connect-v3.png" alt="ToolJet - Snowflake connection" />
+<img className="screenshot-full img-m" src="/img/datasource-reference/snowflake/snowflake-connect-v4.png" alt="ToolJet - Snowflake connection" />
 
 </div>
 
@@ -44,7 +44,7 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 3. Select the **SQL Mode** form the dropdown and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-query-v2.png" alt="ToolJet - Snowflake query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/snowflake-query-v2.png" alt="ToolJet - Snowflake query" />
 
 ```sql
 select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;

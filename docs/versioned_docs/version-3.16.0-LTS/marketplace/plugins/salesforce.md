@@ -25,7 +25,7 @@ You can toggle on **Authentication required for all users** in the configuration
 
 Note: After completing the OAuth flow, the query must be triggered again to load the data.
 
-<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/setup-v2.png" alt="Salesforece Install" />
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/setup-v3.png" alt="Salesforece Install" />
 
 ## Querying Salesforce
 
