@@ -787,6 +787,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeGroup={({ events }) => {
           if (!isGroupResizingRef.current) {
             useStore.getState().setIsGroupResizing(true);
+            isGroupResizingRef.current = true;
           }
           const parentElm = events[0].target.closest('.real-canvas');
           const parentWidth = parentElm?.clientWidth;
@@ -809,7 +810,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             const newBoxs = [];
 
             hideGridLines();
-            useStore.getState().setIsGroupResizing(false);
+            if (isGroupResizingRef.current) {
+              useStore.getState().setIsGroupResizing(false);
+              isGroupResizingRef.current = false;
+            }
             events.forEach((ev) => {
               ev.target.classList.remove('show-ghost-group-dragging-resizing');
               const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
@@ -1133,6 +1137,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           const parentElm = events[0]?.target?.closest('.real-canvas');
           if (!isGroupDraggingRef.current) {
             useStore.getState().setIsGroupDragging(true);
+            isGroupDraggingRef.current = true;
           }
           // Position single ghost for entire group
           positionGroupGhostElement(events, 'moveable-ghost-widget');
@@ -1163,7 +1168,10 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroupEnd={(e) => {
           handleDragGroupEnd(e);
-          useStore.getState().setIsGroupDragging(false);
+          if (isGroupDraggingRef.current) {
+            useStore.getState().setIsGroupDragging(false);
+            isGroupDraggingRef.current = false;
+          }
           e.targets.forEach((targetWidget) => {
             targetWidget.classList.remove('show-ghost-group-dragging-resizing');
             const moveableControlBox = document.getElementsByClassName(`sc-${targetWidget.id}`)[0];
