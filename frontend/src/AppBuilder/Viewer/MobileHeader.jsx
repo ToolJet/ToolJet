@@ -36,7 +36,7 @@ const MobileHeader = ({
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const { showOnMobile } = properties ?? {};
+  const { showOnMobile, hideLogo, hideHeader } = properties ?? {};
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -128,17 +128,19 @@ const MobileHeader = ({
           {_renderPreviewSettings()}
         </Header>
       )}
-      <Header
-        styles={{
-          height: '46px',
-        }}
-        className={'mobile-nav-container'}
-      >
-        <div className="d-flex w-100">
-          {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
-          <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
-        </div>
-      </Header>
+      {(!isPagesSidebarHidden || !hideLogo || !hideHeader) && (
+        <Header
+          styles={{
+            height: '46px',
+          }}
+          className={'mobile-nav-container'}
+        >
+          <div className="d-flex w-100">
+            {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
+            {!hideLogo && <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>}
+          </div>
+        </Header>
+      )}
     </div>
   );
 };
