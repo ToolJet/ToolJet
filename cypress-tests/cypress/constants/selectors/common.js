@@ -177,10 +177,10 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
-  // breadcrumbTitle: '[data-cy="app-header-label"]>>',
-  breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbHeaderTitle: (headerTitle) => {
+    return `[data-cy="breadcrumb-header-${cyParamName(headerTitle)}"]>>`
+  },
   breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
-  // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',

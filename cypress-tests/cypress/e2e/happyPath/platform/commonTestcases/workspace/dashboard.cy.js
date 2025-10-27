@@ -124,7 +124,7 @@ describe("dashboard", () => {
       commonText.logoutLink
     );
 
-    cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
+    cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
         commonText.breadcrumbApplications
       );

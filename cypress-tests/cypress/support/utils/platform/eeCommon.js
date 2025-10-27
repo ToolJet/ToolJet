@@ -526,7 +526,7 @@ export const passwordToggle = (enable) => {
         cy.request(
             {
                 method: "PATCH",
-                url: "http://localhost:3000/api/organizations/configs",
+                url: "http://localhost:3000/api/login-configs/instance-sso",
                 headers: {
                     "Tj-Workspace-Id": Cypress.env("workspaceId"),
                     Cookie: `tj_auth_token=${cookie.value}`,
@@ -554,7 +554,7 @@ export const resetInstanceDomain = () => {
         cy.request(
             {
                 method: "PATCH",
-                url: "http://localhost:3000/api/instance-login-configs",
+                url: "http://localhost:3000/api/login-configs/instance-general",
                 headers: {
                     "Tj-Workspace-Id": Cypress.env("workspaceId"),
                     Cookie: `tj_auth_token=${cookie.value}`,
@@ -578,9 +578,9 @@ export const instanceSSOConfig = (allow = true) => {
 };
 
 export const updateInstanceSettings = (key, value) => {
-    cy.task("updateSetting", {
+    cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
-        sql: `UPDATE instance_settings SET value = ${value} WHERE key = ${key};`,
+        sql: `UPDATE instance_settings SET value = '${value}' WHERE key = '${key}';`,
     });
 };
 

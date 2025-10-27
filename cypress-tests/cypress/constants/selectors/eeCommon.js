@@ -20,6 +20,7 @@ export const commonEeSelectors = {
     nameHeader: '[data-cy="name-header"]',
     modalMessage: '[data-cy="modal-message"]',
     paginationSection: '[data-cy="pagination-section"]',
+    instanceLoginListItem: '[data-cy="instance-login-list-item"]',
 
 };
 
