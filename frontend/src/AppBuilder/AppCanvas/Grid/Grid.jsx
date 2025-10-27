@@ -23,6 +23,7 @@ import {
   computeScrollDeltaOnDrag,
   getDraggingWidgetWidth,
   positionGhostElement,
+  positionGroupGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
   getInitialPosition,
 } from './gridUtils';
@@ -81,6 +82,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const isGroupResizingRef = useRef(false);
+  const isGroupDraggingRef = useRef(false);
 
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
@@ -618,7 +621,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
             useStore.getState().setResizingComponentId(e.target.id);
-            showGridLines();
           }
 
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
@@ -668,7 +670,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
           if (e.width > 0) e.target.style.width = `${e.width}px`;
           if (e.height > 0) e.target.style.height = `${e.height}px`;
-          positionGhostElement(e.target, 'resize-ghost-widget');
+          positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onResizeStart={(e) => {
           if (
@@ -774,8 +776,18 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeGroupStart={({ events }) => {
           showGridLines();
           handleActivateNonDraggingComponents();
+          events.forEach((ev) => {
+            ev.target.classList.add('show-ghost-group-dragging-resizing');
+            const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
+            if (moveableControlBox) {
+              moveableControlBox.style.setProperty('visibility', 'hidden', 'important');
+            }
+          });
         }}
         onResizeGroup={({ events }) => {
+          if (!isGroupResizingRef.current) {
+            useStore.getState().setIsGroupResizing(true);
+          }
           const parentElm = events[0].target.closest('.real-canvas');
           const parentWidth = parentElm?.clientWidth;
           const parentHeight = parentElm?.scrollHeight;
@@ -789,6 +801,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (!(posLeft < 0 || posTop < 0 || posRight < 0 || posBottom < 0)) {
             groupResizeDataRef.current = events;
           }
+          positionGroupGhostElement(events, 'moveable-ghost-widget');
         }}
         onResizeGroupEnd={(e) => {
           try {
@@ -796,7 +809,14 @@ export default function Grid({ gridWidth, currentLayout }) {
             const newBoxs = [];
 
             hideGridLines();
-
+            useStore.getState().setIsGroupResizing(false);
+            events.forEach((ev) => {
+              ev.target.classList.remove('show-ghost-group-dragging-resizing');
+              const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
+              if (moveableControlBox) {
+                moveableControlBox.style.setProperty('visibility', 'visible', 'important');
+              }
+            });
             // TODO: Logic needs to be relooked post go live P2
             groupResizeDataRef.current.forEach((ev) => {
               const currentWidget = boxList.find(({ id }) => {
@@ -957,10 +977,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           try {
             if (isDraggingRef.current) {
-              // setTimeout(() => {
-              //   useStore.getState().setRightSidebarOpen(true);
-              // }, 100);
-
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
@@ -1110,11 +1126,16 @@ export default function Grid({ gridWidth, currentLayout }) {
             `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
           );
 
-          positionGhostElement(e.target, 'moveable-drag-ghost');
+          positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
           const parentElm = events[0]?.target?.closest('.real-canvas');
+          if (!isGroupDraggingRef.current) {
+            useStore.getState().setIsGroupDragging(true);
+          }
+          // Position single ghost for entire group
+          positionGroupGhostElement(events, 'moveable-ghost-widget');
 
           events.forEach((ev) => {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
@@ -1131,11 +1152,25 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroupStart={({ events }) => {
           showGridLines();
-          // setIsGroupDragging(true);
           handleActivateNonDraggingComponents();
+          events.forEach((ev) => {
+            ev.target.classList.add('show-ghost-group-dragging-resizing');
+            const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
+            if (moveableControlBox) {
+              moveableControlBox.style.setProperty('visibility', 'hidden', 'important');
+            }
+          });
         }}
         onDragGroupEnd={(e) => {
           handleDragGroupEnd(e);
+          useStore.getState().setIsGroupDragging(false);
+          e.targets.forEach((targetWidget) => {
+            targetWidget.classList.remove('show-ghost-group-dragging-resizing');
+            const moveableControlBox = document.getElementsByClassName(`sc-${targetWidget.id}`)[0];
+            if (moveableControlBox) {
+              moveableControlBox.style.setProperty('visibility', 'visible', 'important');
+            }
+          });
           toggleCanvasUpdater();
         }}
         onClickGroup={(e) => {
