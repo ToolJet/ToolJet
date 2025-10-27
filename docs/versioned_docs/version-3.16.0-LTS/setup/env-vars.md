@@ -252,3 +252,15 @@ Set the default language using the `LANGUAGE` variable. Supported options:
 Example: `LANGUAGE=fr` (for French).
 
 **Note:** This setting is not available in ToolJet Cloud.
+
+#### Observability
+
+ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monitoring. Enable metrics collection to monitor application performance, query executions, and system health.
+
+- `ENABLE_OTEL`: Set to `true` to enable OpenTelemetry metrics collection (default: `false`)
+- `OTEL_EXPORTER_OTLP_TRACES`: OTLP traces endpoint URL (default: `http://localhost:4318/v1/traces`)
+- `OTEL_EXPORTER_OTLP_METRICS`: OTLP metrics endpoint URL (default: `http://localhost:4318/v1/metrics`)
+- `OTEL_SERVICE_NAME`: Service identifier for metrics (default: `tooljet`)
+- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers for OTLP endpoint (optional, format: `key1=value1,key2=value2`)
+
+For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.
