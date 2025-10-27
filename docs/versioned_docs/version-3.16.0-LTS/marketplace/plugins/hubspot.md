@@ -14,7 +14,7 @@ To connect HubSpot with ToolJet, you need the following credentials:
 
 You also need to define the scope(s) for the operations you plan to perform. You can refer to the [HubSpot guide](https://developers.hubspot.com/docs/guides/apps/private-apps/overview) for detailed steps to generate these credentials.
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/hubspot/config.png" alt="HubSpot Configuration" />
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/hubspot/config-v2.png" alt="HubSpot Configuration" />
 
 You can toggle on Authentication required for all users in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own HubSpot account securely.
 
