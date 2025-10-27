@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { harperDbText } from "Texts/harperDb";
 import { workflowsText } from "Texts/workflows";
@@ -14,6 +14,7 @@ import {
 import {
   enterJsonInputInStartNode,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -22,14 +23,14 @@ describe("Workflows with Datasource", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("RunJS workflow - execute and validate", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -50,16 +51,16 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.deleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Postgres workflow - execute and validate", () => {
-    const dsName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
+      dataSourceName,
       "postgresql",
       [
         { key: "connection_type", value: "manual", encrypted: false },
@@ -82,7 +83,7 @@ describe("Workflows with Datasource", () => {
       ]
     );
 
-    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
       .should("be.visible")
       .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -91,9 +92,10 @@ describe("Workflows with Datasource", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.reload();
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
       force: true,
@@ -112,15 +114,17 @@ describe("Workflows with Datasource", () => {
     );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, dsName);
+    cy.apiDeleteWorkflow(data.workflowName);
+
+    cy.apiDeleteGDS(dataSourceName);
   });
 
   it("REST API workflow - execute and validate", () => {
-    const dsName = `cypress-${data.dataSourceName}-restapi`;
+    const dataSourceName = `cypress-${data.dataSourceName}-restapi`;
 
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
+      dataSourceName,
       "restapi",
       [
         { key: "url", value: "https://jsonplaceholder.typicode.com" },
@@ -152,9 +156,10 @@ describe("Workflows with Datasource", () => {
       ]
     );
     cy.reload();
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.restapiNodeName)).click({
       force: true,
@@ -174,40 +179,41 @@ describe("Workflows with Datasource", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
-    deleteWorkflowAndDS(data.wfName, dsName);
+    cy.apiDeleteWorkflow(data.workflowName);
+
+    cy.apiDeleteGDS(dataSourceName);
   });
 
   it("HarperDB workflow - execute and validate", () => {
-    const dsName = `cypress-${data.dataSourceName}-harperdb`;
+    const dataSourceName = `cypress-${data.dataSourceName}-harperdb`;
     const Host = Cypress.env("harperdb_host");
     const Port = Cypress.env("harperdb_port");
     const Username = Cypress.env("harperdb_username");
     const Password = Cypress.env("harperdb_password");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.installMarketplacePlugin(workflowsText.harperDbPluginName);
+    cy.installMarketplacePlugin("HarperDB");
 
-    selectAndAddDataSource(
-      "databases",
-      harperDbText.harperDb,
-      data.dataSourceName
-    );
+    selectAndAddDataSource("databases", harperDbText.harperDb, data.dataSourceName);
 
     fillDataSourceTextField(
       harperDbText.hostLabel,
       harperDbText.hostInputPlaceholder,
       Host
     );
+
     fillDataSourceTextField(
       harperDbText.portLabel,
       harperDbText.portPlaceholder,
       Port
     );
+
     fillDataSourceTextField(
       harperDbText.userNameLabel,
       harperDbText.userNamePlaceholder,
       Username
     );
+
     fillDataSourceTextField(
       harperDbText.passwordlabel,
       harperDbText.passwordPlaceholder,
@@ -228,9 +234,10 @@ describe("Workflows with Datasource", () => {
       postgreSqlText.toastDSSaved
     );
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.harperdbNodeName)).click({
       force: true,
@@ -256,7 +263,8 @@ describe("Workflows with Datasource", () => {
       workflowsText.harperDbResponseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
-
-    deleteWorkflowAndDS(data.wfName, dsName);
+    navigateBackToWorkflowsDashboard();
+    cy.apiDeleteWorkflow(data.workflowName);
+    deleteDatasource(dataSourceName);
   });
 });

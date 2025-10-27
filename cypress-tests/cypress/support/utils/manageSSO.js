@@ -1,8 +1,8 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
 
 export const generalSettings = () => {
   cy.get(ssoSelector.enableSignUpToggle).check();

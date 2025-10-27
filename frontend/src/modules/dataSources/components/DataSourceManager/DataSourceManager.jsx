@@ -1108,9 +1108,7 @@ class DataSourceManagerComponent extends React.Component {
                   shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1241,9 +1239,7 @@ class DataSourceManagerComponent extends React.Component {
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
                     )) && (
                     <Modal.Footer>
                       <div className="col">
