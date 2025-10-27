@@ -263,3 +263,16 @@ export const widgetValue = (widgetName) => {
 export const customValidation = (name, message) => {
   return ["{{", `components.${name}.value ? true : '${message}'}}`];
 };
+
+export const whitelabelText = {
+  settingsPageTitle: "Settings",
+  breadcrumbTitle: "White labelling",
+  appLogoLabel: "App Logo",
+  pageTitleLabel: "Page Title",
+  faviconLabel: "Favicon",
+  appLogoHelp: "This will be used for branding across the app",
+  pageTitleHelp: "This will be used on the browser page title",
+  faviconHelp: "This will be displayed in the address bar of the browser",
+  saveButton: "Save changes",
+  cancelButton: "Cancel",
+};

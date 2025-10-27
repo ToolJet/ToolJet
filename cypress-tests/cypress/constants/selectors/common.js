@@ -298,6 +298,24 @@ export const commonSelectors = {
   pageLogo: '[data-cy="page-logo"]',
 };
 
+export const whiteLabelSelectors = {
+  navWhiteLabellingListItem: '[data-cy="white-labelling-list-item"]',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
+  appLogoInput: '[data-cy="input-field-app-logo"]',
+  pageTitleInput: '[data-cy="input-field-page-title"]',
+  favIconInput: '[data-cy="input-field-fav-icon"]',
+  appLogoHelpText: '[data-cy="app-logo-help-text"]',
+  favIconHelpText: '[data-cy="fav-icon-help-text"]',
+  cancelButton: '[data-cy="cancel-button"]',
+  saveButton: '[data-cy="save-button"]',
+
+  smtpListItem: '[data-cy="email-protocol-(smtp)-list-item"]',
+  smtpHostInput: '[data-cy="input-field-host"]',
+  smtpPortInput: '[data-cy="input-field-port"]',
+  smtpUserInput: '[data-cy="input-field-user"]',
+  smtpPasswordInput: '[data-cy="input-field-password"]',
+};
+
 export const commonWidgetSelector = {
   widgetBox: (widgetName) => {
     return `[data-cy=widget-list-box-${cyParamName(widgetName)}]:eq(0)`;
