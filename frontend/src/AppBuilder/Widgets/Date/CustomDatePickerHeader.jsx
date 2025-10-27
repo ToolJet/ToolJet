@@ -5,7 +5,7 @@ import { components } from 'react-select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import moment from 'moment';
 import { range } from 'lodash';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
 
 const CustomDatePickerHeader = (props) => {
   const {

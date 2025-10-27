@@ -16,7 +16,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {

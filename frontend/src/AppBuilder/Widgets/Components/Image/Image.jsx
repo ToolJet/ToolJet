@@ -3,10 +3,10 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import BrokenImage from '@/Editor/Components/Image/icons/broken-image.svg';
-import ZoomInImage from '@/Editor/Components/Image/icons/zoomin-image.svg';
-import ZoomOutImage from '@/Editor/Components/Image/icons/zoomout-image.svg';
-import RotateImage from '@/Editor/Components/Image/icons/rotate-image.svg';
+import BrokenImage from '@/AppBuilder/Widgets/Components/Image/icons/broken-image.svg';
+import ZoomInImage from '@/AppBuilder/Widgets/Components/Image/icons/zoomin-image.svg';
+import ZoomOutImage from '@/AppBuilder/Widgets/Components/Image/icons/zoomout-image.svg';
+import RotateImage from '@/AppBuilder/Widgets/Components/Image/icons/rotate-image.svg';
 import './image.scss';
 
 export const Image = function Image({

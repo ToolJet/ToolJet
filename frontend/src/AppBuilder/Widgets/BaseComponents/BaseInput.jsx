@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 const RenderInput = forwardRef((props, ref) => {

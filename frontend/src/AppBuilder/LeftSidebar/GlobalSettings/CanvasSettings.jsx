@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { getCssVarValue } from '@/Editor/Components/utils';
+import { getCssVarValue } from '@/AppBuilder/Widgets/Components/utils';
 
 const CanvasSettings = ({ darkMode }) => {
   const { moduleId } = useModuleContext();

@@ -7,7 +7,7 @@ import Label from '@/_ui/Label';
 import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from '../BaseComponents/hooks/useInput';
 
 const tinycolor = require('tinycolor2');

@@ -14,8 +14,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
-import { sortArray } from '@/Editor/Components/DropdownV2/utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { sortArray } from '@/AppBuilder/Widgets/Components/DropdownV2/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {

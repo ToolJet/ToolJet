@@ -14,7 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
-import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
   getLabelWidthOfInput,

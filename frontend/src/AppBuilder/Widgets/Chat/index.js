@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { validateMessageHistory, validateSingleMessageObject } from './utils/helpers';
 
 import toast from 'react-hot-toast';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
 
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
     const darkTheme = localStorage.getItem('darkMode') === 'true';

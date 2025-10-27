@@ -13,7 +13,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';;
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';;
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 

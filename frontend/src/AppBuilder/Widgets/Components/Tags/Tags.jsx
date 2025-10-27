@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
 import * as Icons from '@tabler/icons-react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
