@@ -6,7 +6,14 @@ import { shallow } from 'zustand/shallow';
 
 // TODO: Need to replace all the default data
 
-export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, table, pageCount }) {
+export const Pagination = function Pagination({
+  id,
+  pageIndex = 1,
+  tableWidth,
+  table,
+  pageCount,
+  paginationBtnClicked,
+}) {
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
   const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
@@ -17,10 +24,12 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
   const showGoToFirstAndLast = !serverSidePagination && tableWidth > 460;
 
   function goToNextPage() {
+    paginationBtnClicked.current = true;
     table.nextPage();
   }
 
   function goToPreviousPage() {
+    paginationBtnClicked.current = true;
     table.previousPage();
   }
 
@@ -31,6 +40,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           {showGoToFirstAndLast && (
             <PaginationButton
               onClick={() => {
+                paginationBtnClicked.current = true;
                 table.firstPage();
               }}
               disabled={!canGoToPreviousPage}
@@ -54,6 +64,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           serverSidePagination={serverSidePagination}
           table={table}
           pageCount={pageCount}
+          paginationBtnClicked={paginationBtnClicked}
         />
 
         <div className="d-flex">
@@ -68,6 +79,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           {showGoToFirstAndLast && (
             <PaginationButton
               onClick={() => {
+                paginationBtnClicked.current = true;
                 table.lastPage();
               }}
               disabled={!canGoToNextPage}
