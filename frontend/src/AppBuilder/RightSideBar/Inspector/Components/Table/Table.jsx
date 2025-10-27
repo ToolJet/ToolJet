@@ -39,7 +39,7 @@ import {
   RadioTypeIcon,
 } from './_assets';
 import { getColumnIcon } from './utils';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {

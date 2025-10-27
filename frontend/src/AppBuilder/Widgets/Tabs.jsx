@@ -13,7 +13,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { shallow } from 'zustand/shallow';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useTransition, animated } from 'react-spring';
 import './styles/tabs.scss';
 const tinycolor = require('tinycolor2');

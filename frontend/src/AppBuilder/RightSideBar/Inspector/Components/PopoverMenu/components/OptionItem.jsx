@@ -5,7 +5,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import SortableList from '@/_components/SortableList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OptionDetailsPopover from './OptionDetailsPopover';
 
 const OptionItem = ({

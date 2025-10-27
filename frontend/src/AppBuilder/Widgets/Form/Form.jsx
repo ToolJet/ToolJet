@@ -24,7 +24,7 @@ import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import './form.scss';
-import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const FormComponent = (props) => {
   const {

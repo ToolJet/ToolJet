@@ -12,7 +12,7 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
-import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,

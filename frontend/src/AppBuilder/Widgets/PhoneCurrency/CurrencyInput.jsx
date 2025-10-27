@@ -5,7 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
-import { getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const CurrencyInput = (props) => {

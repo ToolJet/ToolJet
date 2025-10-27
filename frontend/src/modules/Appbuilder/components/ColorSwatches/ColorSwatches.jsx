@@ -1,7 +1,7 @@
 import React from 'react';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 import BaseColorSwatches from '@/modules/common/components/BaseColorSwatches';
-import { getCssVarValue } from '@/AppBuilder/Widgets/Components/utils';
+import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 
 const ColorSwatches = (props) => {
   const { value } = props;

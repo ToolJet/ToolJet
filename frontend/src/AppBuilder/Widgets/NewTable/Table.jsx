@@ -9,7 +9,7 @@ import useTableStore from './_stores/tableStore';
 import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
 import { usePrevious } from '@dnd-kit/utilities';
-import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/AppBuilder/Widgets/Components/utils';
+import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
