@@ -11,7 +11,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
+const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -20,14 +20,21 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
   const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
 
-  const { promoteAppVersionAction, selectedVersion, creationMode } = useStore(
+  const { promoteAppVersionAction, selectedVersion, creationMode, versions } = useStore(
     (state) => ({
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
       creationMode: state.appStore.modules[moduleId].app.creationMode,
+      versions: state.developmentVersions || [],
     }),
     shallow
   );
+
+  // Use editingVersion if provided, otherwise fall back to currentVersionId
+  const versionIdToPromote = editingVersion || currentVersionId;
+
+  // Find the version object to display the correct name
+  const versionToPromote = versions.find((v) => v.id === versionIdToPromote) || selectedVersion;
 
   useEffect(() => {
     setShow(data);
@@ -44,24 +51,24 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     setPromotingEnvironment(true);
 
     promoteAppVersionAction(
-      currentVersionId,
-      async (response) => {
-        toast.success(`${selectedVersion.name} has been promoted to ${data.target.name}!`);
+      versionIdToPromote,
+      async (_response) => {
+        toast.success(`${versionToPromote.name} has been promoted to ${data.target.name}!`);
         if (
           data?.current?.name == 'development' &&
           (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
         ) {
           try {
-            const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersion?.id);
+            const gitData = await gitSyncService.getAppConfig(current_organization_id, versionToPromote?.id);
             const appGit = gitData?.app_git;
             if (appGit && appGit?.org_git?.auto_commit) {
               const body = {
                 gitAppName: appGit?.git_app_name,
-                versionId: selectedVersion?.id,
-                lastCommitMessage: ` ${selectedVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-                gitVersionName: selectedVersion?.name,
+                versionId: versionToPromote?.id,
+                lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+                gitVersionName: versionToPromote?.name,
               };
-              await gitSyncService.gitPush(body, appGit?.id, selectedVersion?.id);
+              await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
               toast.success('Changes committed successfully');
             }
           } catch (err) {
@@ -91,14 +98,14 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
         if (error?.error.includes('cannot promote a draft version')) {
           toast.error(error?.error);
         } else {
-          toast.error(`${selectedVersion.name} could not be promoted to ${data.target.name}. Please try again!`);
+          toast.error(`${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`);
         }
         setPromotingEnvironment(false);
       }
     );
   };
 
-  if (!selectedVersion) return null;
+  if (!versionToPromote) return null;
 
   return (
     <Modal
@@ -111,7 +118,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     >
       <Modal.Header>
         <Modal.Title className={`confirmation-header ${darkMode ? 'dark-theme' : ''}`} data-cy="modal-title">
-          Promote {selectedVersion.name}
+          Promote {versionToPromote.name}
         </Modal.Title>
         <svg
           onClick={handleClose}

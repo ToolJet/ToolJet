@@ -19,6 +19,8 @@ const CreateVersionModal = ({
   orgGit,
   fetchingOrgGit,
   handleCommitOnVersionCreation = () => {},
+  versionId,
+  onVersionCreated,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -60,14 +62,24 @@ const CreateVersionModal = ({
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   useEffect(() => {
     fetchDevelopmentVersions(appId);
-  }, []);
+  }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
+    // If versionId prop is provided, use that version
+    if (versionId && developmentVersions?.length) {
+      const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
+      if (versionToPromote) {
+        setSelectedVersionForCreation(versionToPromote);
+        return;
+      }
+    }
+
+    // Otherwise, use selectedVersion from store
     if (developmentVersions?.length && selectedVersion?.id) {
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id) || null;
       setSelectedVersionForCreation(selected);
     }
-  }, [developmentVersions, selectedVersion]);
+  }, [developmentVersions, selectedVersion, versionId]);
 
   const { t } = useTranslation();
   const options = developmentVersions.map((version) => {
@@ -111,11 +123,20 @@ const CreateVersionModal = ({
       setIsCreatingVersion(false);
       setShowCreateAppVersion(false);
 
+      // Fetch versions after creation
+      if (onVersionCreated) {
+        onVersionCreated();
+      }
+
       // Get version data without reloading the page
       await appVersionService
         .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
         .then((data) => {
           handleCommitOnVersionCreation(data);
+          // Switch to the newly created version
+          if (setCurrentVersionId && data?.id) {
+            setCurrentVersionId(data.id);
+          }
         })
         .catch((error) => {
           toast.error(error);

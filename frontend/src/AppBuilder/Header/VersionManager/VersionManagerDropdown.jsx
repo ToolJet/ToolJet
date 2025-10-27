@@ -58,14 +58,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
+  const [versionToPromote, setVersionToPromote] = useState(null);
 
-  // The ref is used by OverlayTrigger to position the popover.
-  // We will pass this ref directly to the VersionSwitcherButton.
+  // The ref is used by Overlay to position the popover.
   const buttonRef = useRef(null);
 
   // The popoverRef is less critical for positioning but kept for reference.
   const popoverRef = useRef(null);
-  const containerRef = useRef(null);
 
   // Fetch versions on mount or when appId changes
   useEffect(() => {
@@ -147,12 +146,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     );
   };
 
-  const handlePromoteDraft = () => {
+  const handlePromoteDraft = (version) => {
+    setVersionToPromote(version);
     setShowPromoteModal(true);
     setDropdownOpen(false);
   };
 
-  const handleCreateVersion = () => {
+  const handleCreateVersion = (version) => {
     setShowPromoteModal(true);
     setDropdownOpen(false);
   };
@@ -258,8 +258,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                 currentEnvironment={selectedEnvironment}
                 environments={environments}
                 onSelect={() => handleVersionSelect(version)}
-                onPromote={handlePromoteDraft}
-                onCreateVersion={handleCreateVersion}
+                onPromote={() => handlePromoteDraft(version)}
+                onCreateVersion={() => handleCreateVersion(version)}
                 onEdit={() => {
                   setShowEditVersionModal(true);
                   setDropdownOpen(false);
@@ -299,7 +299,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         rootClose
         onHide={() => setDropdownOpen(false)}
       >
-        {({ placement, arrowProps, show: _show, popper, ...props }) => (
+        {({ placement: _placement, arrowProps: _arrowProps, show: _show, popper: _popper, ...props }) => (
           <div
             {...props}
             style={{
@@ -324,6 +324,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       <CreateVersionModal
         showCreateAppVersion={showPromoteModal}
         setShowCreateAppVersion={setShowPromoteModal}
+        versionId={versionToPromote?.id}
+        onVersionCreated={() => {
+          fetchVersions(appId);
+          setVersionToPromote(null);
+        }}
         {...props}
       />
 
