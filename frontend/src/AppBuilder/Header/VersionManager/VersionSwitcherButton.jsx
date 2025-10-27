@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 
-const VersionSwitcherButton = ({ version, environment, onClick }) => {
+const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge = false }) => {
   const isDraft = version?.status === 'DRAFT';
 
   return (
@@ -40,7 +40,7 @@ const VersionSwitcherButton = ({ version, environment, onClick }) => {
             whiteSpace: 'nowrap',
           }}
         >
-          {isDraft ? 'Draft' : version?.name || 'v1'}
+          {isDraft && showDraftBadge ? 'Draft' : version?.name || 'v1'}
         </span>
 
         {/* Divider */}

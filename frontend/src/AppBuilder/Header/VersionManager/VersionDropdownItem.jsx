@@ -7,6 +7,7 @@ import {
   ReleaseVersionButton,
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
 import useStore from '@/AppBuilder/_stores/store';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const VersionDropdownItem = ({
   version,
@@ -21,9 +22,14 @@ const VersionDropdownItem = ({
   showActions = true,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
+  const versions = useVersionManagerStore((state) => state.versions);
 
   const isDraft = version.status === 'DRAFT';
   const isReleased = version.id === releasedVersionId;
+
+  // Get parent version name if this is a draft
+  const parentVersion = version.parentVersionId ? versions.find((v) => v.id === version.parentVersionId) : null;
+  const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
   // Determine if we should show promote button based on environment logic
   const currentEnvData = environments.find((env) => env.id === currentEnvironment?.id);
@@ -210,25 +216,24 @@ const VersionDropdownItem = ({
             </div>
           )}
 
-          {/* Version metadata (from version, environment) */}
-          <div
-            className="d-flex align-items-center tj-text-xsm"
-            style={{
-              color: 'var(--text-placeholder)',
-              marginTop: '2px',
-              gap: '4px',
-            }}
-          >
-            {version.createdFromVersion && (
-              <>
-                <span className="text-truncate" style={{ maxWidth: '80px' }}>
-                  from version {version.createdFromVersion}
-                </span>
-                <span>|</span>
-              </>
-            )}
-            {version.currentEnvironmentName && <span className="text-truncate">{version.currentEnvironmentName}</span>}
-          </div>
+          {/* Version metadata (created from text) */}
+          {createdFromVersionName && (
+            <div
+              className="tj-text-xsm"
+              style={{
+                color: 'var(--text-placeholder)',
+                marginTop: '2px',
+                fontSize: '11px',
+                lineHeight: '16px',
+                maxWidth: '80px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Created from {createdFromVersionName}
+            </div>
+          )}
         </div>
       </div>
     </div>

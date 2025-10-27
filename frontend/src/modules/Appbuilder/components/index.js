@@ -2,6 +2,7 @@ import CreateVersionModal from './CreateVersionModal';
 import PromoteReleaseButton from './PromoteReleaseButton';
 import LogoNavDropdown from './LogoNavDropdown';
 import AppEnvironments from './AppEnvironments';
+import EnvironmentSwitcher from './EnvironmentSwitcher';
 import ThemeSelect from './ThemeSelect';
 import ColorSwatches from './ColorSwatches';
 import AppPermissionsModal from './AppPermissionsModal';
@@ -13,6 +14,7 @@ export {
   PromoteReleaseButton,
   LogoNavDropdown,
   AppEnvironments,
+  EnvironmentSwitcher,
   ThemeSelect,
   ColorSwatches,
   AppPermissionsModal,
