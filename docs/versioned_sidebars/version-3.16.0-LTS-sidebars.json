@@ -854,8 +854,14 @@
             "security/constants/variables"
           ]
         },
-        "security/audit-logs",
-        "security/stream-rsyslog-to-datadog",
+        {
+          "type": "category",
+          "label": "Audit Logs",
+          "items": [
+            "security/audit-logs/audit-logs",
+            "security/audit-logs/stream-audit-to-datadog"
+          ]
+        },
         "security/compliance"
       ]
     },

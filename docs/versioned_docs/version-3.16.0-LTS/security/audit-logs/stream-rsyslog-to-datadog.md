@@ -1,6 +1,6 @@
 ---
-id: stream-rsyslog-to-datadog
-title: Stream Rsyslog Audit Logs to Datadog
+id: stream-audit-to-datadog
+title: Stream Audit Logs to Datadog
 ---
 
 <br/>
