@@ -1,16 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CommonInput from './CommonInput/Index';
-import EditableTitleInput from './EditableTitleInput/Index';
+import EncryptedField from '../EncryptedField/Index';
 
 const InputComponent = (props) => {
-  return props.type === 'editable title' ? <EditableTitleInput {...props} /> : <CommonInput {...props} />;
+  const { encrypted, showEncryption, type, isEditing, propertyKey, handleEncryptedFieldsToggle, isDisabled } = props;
+
+  // Check if we need encryption wrapper
+  const shouldWrapWithEncryption = showEncryption && encrypted && type === 'password';
+
+  if (shouldWrapWithEncryption) {
+    return (
+      <EncryptedField
+        propertyKey={propertyKey}
+        isEditing={isEditing}
+        handleEncryptedFieldsToggle={handleEncryptedFieldsToggle}
+        isDisabled={isDisabled}
+      >
+        <CommonInput {...props} />
+      </EncryptedField>
+    );
+  }
+
+  return <CommonInput {...props} />;
 };
 
 export default InputComponent;
 
 InputComponent.propTypes = {
-  type: PropTypes.oneOf(['text', 'number', 'editable title', 'password', 'email']),
+  type: PropTypes.oneOf(['text', 'number', 'password', 'email']),
   value: PropTypes.string,
   onChange: PropTypes.func,
   onClear: PropTypes.func,
@@ -32,7 +50,7 @@ InputComponent.propTypes = {
 
 InputComponent.defaultProps = {
   type: 'text',
-  onChange: (e, validateObj) => {},
+  onChange: (_e, _validateObj) => {},
   onClear: () => {},
   placeholder: '',
   name: '',

@@ -279,6 +279,8 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
 import DataDatabase from './DataDatabase.jsx';
 import Flash from './Flash.jsx';
 import Json from './Json.jsx';
@@ -855,6 +857,10 @@ const Icon = (props) => {
       return <Pull {...props} />;
     case 'support':
       return <Support {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
     case 'data-database':
       return <DataDatabase {...props} />;
     case 'flash':
