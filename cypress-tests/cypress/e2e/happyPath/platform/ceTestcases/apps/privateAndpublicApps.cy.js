@@ -1,7 +1,7 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout, releaseApp } from "Support/utils/common";
-import { inviteUserToWorkspace } from "Support/utils/manageUsers";
+import { inviteUserToWorkspace, fetchAndVisitInviteLinkViaMH } from "Support/utils/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
@@ -28,6 +28,14 @@ describe(
       email: fake.email.toLowerCase(),
       workspaceName: fake.firstName,
       workspaceSlug: fake.firstName.toLowerCase().replace(/\s+/g, "-"),
+      appPublicSlug: `${fake.companyName} Public App`
+        .toLowerCase()
+        .replace(/\s+/g, "-"),
+      appPublicName: `${fake.companyName} Public App`,
+      appPrivateSlug: `${fake.companyName} Private App`
+        .toLowerCase()
+        .replace(/\s+/g, "-"),
+      appPrivateName: `${fake.companyName} Private App`,
     });
 
     const verifyWidget = (widgetName) => {
@@ -163,78 +171,58 @@ describe(
       verifyWidget("text1");
     });
 
-    it.skip("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
-      setSignupStatus(true);
-      setupAppWithSlug(data.appName, data.slug);
-
-
-      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
-
-      // cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-      //   "have.text",
-      //   "My workspace"
-      // );
-      cy.apiLogout();
-      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
+    it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
       cy.intercept("POST", "/api/onboarding/signup").as("signup");
-      cy.get(commonSelectors.createAnAccountLink).click();
-      cy.wait(2000);
+      cy.intercept('GET', '**/api/white-labelling').as('whiteLabelling');
+
+      cy.apiUserInvite(`${data.firstName}_invited`, `invited_${data.email}`);
+
+      setSignupStatus(true);
+      setupAppWithSlug(data.appPublicName, data.appPublicSlug, 'public');
+      const publicAppId = Cypress.env("appId");
+      cy.apiMakeAppPublic(publicAppId);
+      setupAppWithSlug(data.appPrivateName, data.appPrivateSlug);
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) })
+
+      cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
+      verifyWidget('public')
+
+      cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
+      verifyWidget('private')
+
+      cy.apiLogout();
+
+      cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
+      verifyWidget('public')
+
+      cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
+      cy.wait('@whiteLabelling');
+
+      cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
+
+      cy.get(onboardingSelectors.loginPasswordInput).should("be.visible").click({ force: true });
       cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
       cy.clearAndType('[data-cy="email-input"]', data.email);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(commonSelectors.signUpButton).click();
+      cy.wait('@signup');
+      cy.get(`[data-cy="resend-verification-email-button"]`).should("be.visible");
 
-      cy.wait("@signup").then((interception) => {
-        expect(interception.response.statusCode).to.eq(201);
-      });
+      fetchAndVisitInviteLinkViaMH(data.email);
+      verifyWidget('private')
 
-      onboardUserFromAppLink(data.email, data.slug);
-      verifyWidget("text1");
-      cy.visit("/");
-      logout();
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+      // cy.apiLogout();
 
-      cy.defaultWorkspaceLogin();
-      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-      cy.apiLogout();
-      cy.apiLogin();
-      cy.visit(`${data.workspaceSlug}`);
-      setSignupStatus(true, data.workspaceName);
+      // cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) })
+      // cy.get(onboardingSelectors.loginPasswordInput).should("be.visible").click({ force: true });
+      // cy.clearAndType('[data-cy="email-input"]', `invited_${data.email}`);
+      // cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
 
-      data.slug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
-      cy.reload()
-      cy.createApp(data.appName);
 
-      cy.dragAndDropWidget("Text", 500, 500);
-      releaseApp();
-      setUpSlug(data.slug);
-      cy.forceClickOnCanvas();
-      cy.backToApps();
 
-      cy.apiLogout();
-      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      cy.log("Visiting app URL: ", getAppUrl(data.slug));
-
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        data.workspaceName
-      );
-
-      cy.get(commonSelectors.createAnAccountLink).click();
-      cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
-      cy.clearAndType('[data-cy="email-input"]', data.email);
-      cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-      cy.get(commonSelectors.signUpButton).click();
-      cy.wait("@signup").then((interception) => {
-        expect(interception.response.statusCode).to.eq(201);
-      });
-
-      onboardUserFromAppLink(data.email, data.slug, data.workspaceName, false);
-      verifyWidget("text1");
     });
 
-    it.only("should verify restricted app access", () => {
+    it("should verify restricted app access", () => {
       data.workspaceName = fake.firstName;
       data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
@@ -251,7 +239,6 @@ describe(
 
       inviteUserToWorkspace(data.firstName, data.email);
 
-      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       verifyRestrictedAccess();
       cy.get(commonSelectors.backToHomeButton).click();
       cy.get(commonSelectors.homePageLogo).should("be.visible");
