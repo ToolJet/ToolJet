@@ -479,13 +479,7 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const {
-      selectedComponents,
-      clearSelectedComponents,
-      setActiveRightSideBarTab,
-      isRightSidebarOpen,
-      activeRightSideBarTab,
-    } = get();
+    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -499,7 +493,6 @@ export const createGridSlice = (set, get) => ({
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      selectedComponents.length &&
       !selectedText &&
       !isCodehinterPreviewOpen()
     ) {
@@ -507,17 +500,6 @@ export const createGridSlice = (set, get) => ({
       if (isRightSidebarOpen) {
         setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       }
-    }
-
-    // If page settings tab is active and user clicks on canvas, switch to components tab
-    if (
-      !isClickedOnSubcontainer &&
-      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      !selectedText &&
-      isRightSidebarOpen &&
-      activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-    ) {
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     }
   },
 });
