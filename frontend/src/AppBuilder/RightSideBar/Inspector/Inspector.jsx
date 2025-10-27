@@ -144,8 +144,7 @@ export const Inspector = ({
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -410,7 +409,7 @@ export const Inspector = ({
       setWidgetDeleteConfirmation(true);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -458,8 +457,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -556,9 +555,8 @@ export const Inspector = ({
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
-            shouldFreeze && 'disabled'
-          }`}
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${shouldFreeze && 'disabled'
+            }`}
         >
           <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
@@ -587,13 +585,13 @@ export const Inspector = ({
                               <div
                                 className={classNames('list-item-option-menu-label', {
                                   'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                 })}
                               >
                                 {option?.label}
                               </div>
                               {option.value === 'permission' &&
-                                !licenseValid &&
+                                !hasAppPermissionComponent &&
                                 option.trailingIcon &&
                                 option.trailingIcon}
                             </div>
@@ -604,7 +602,7 @@ export const Inspector = ({
                               key={option.value}
                               message={'Component permissions are available only in paid plans'}
                               placement="left"
-                              show={!licenseValid}
+                              show={!hasAppPermissionComponent}
                             >
                               {optionBody}
                             </ToolTip>
