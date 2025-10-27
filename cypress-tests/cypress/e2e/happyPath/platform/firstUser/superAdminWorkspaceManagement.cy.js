@@ -1,5 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
+import { releaseApp } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { visitWorkspaceInvitation, inviteUser } from "Support/utils/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
@@ -75,6 +76,11 @@ describe("Instance settings - All workspaces management", () => {
         cy.wait(1000);
         cy.get('[data-cy="button-ws-status-change"]')
             .click({ force: true });
+
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspaceName} \n was successfully unarchived`
+        );
     };
 
     const verifyDefaultWorkspaceTooltip = () => {
@@ -186,6 +192,11 @@ describe("Instance settings - All workspaces management", () => {
         openAllWorkspaces();
         findAndArchiveWorkspace(workspaceName);
 
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspaceName} \n was successfully archived`
+        );
+
         // Try to login as invited user
         cy.apiLogout();
         cy.clearCookies();
@@ -201,7 +212,7 @@ describe("Instance settings - All workspaces management", () => {
         // Verify toast message
         cy.get(commonSelectors.toastMessage).should(
             "contain.text",
-            "Workspace is archived"
+            "This workspace has been archived. Contact superadmin to know more."
         );
     });
 
@@ -243,6 +254,10 @@ describe("Instance settings - All workspaces management", () => {
         cy.reload()
         openAllWorkspaces();
         findAndArchiveWorkspace(workspace1);
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspace1} \n was successfully archived`
+        );
 
         cy.apiLogout();
         cy.clearCookies();
@@ -274,7 +289,10 @@ describe("Instance settings - All workspaces management", () => {
         cy.reload();
         openAllWorkspaces();
         findAndArchiveWorkspace(workspaceName);
-
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspaceName} \n was successfully archived`
+        );
         cy.get('[data-cy="archived-link"]').click();
         cy.wait(500);
         cy.get('tr.workspace-table-row').should("contain.text", workspaceName);
@@ -289,6 +307,82 @@ describe("Instance settings - All workspaces management", () => {
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
         cy.get(onboardingSelectors.signInButton).click();
         cy.get(commonSelectors.mainWrapper, { timeout: 10000 }).should("be.visible");
+    });
+
+    it("should verify user with no active workspaces shows correct modal in instance settings", () => {
+        const userName = fake.firstName;
+        const userEmail = fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "");
+        const workspaceName = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
+
+        cy.apiCreateWorkspace(workspaceName, workspaceName);
+        cy.visit(`/${workspaceName}`);
+        cy.wait(2000);
+        cy.apiLogin();
+        cy.reload();
+        cy.apiFullUserOnboarding(userName, userEmail, "end-user", "password", workspaceName, {});
+        cy.apiLogout();
+        cy.reload();
+        cy.visitTheWorkspace(DEFAULT_WORKSPACE);
+        cy.apiLogin();
+        cy.reload();
+        openAllWorkspaces();
+        findAndArchiveWorkspace(workspaceName);
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspaceName} \n was successfully archived`
+        );
+        openInstanceSettings();
+        cy.clearAndType(commonSelectors.inputUserSearch, userEmail);
+        cy.get('[data-cy="text-no-result-found"]').should("have.text", "No result found");
+    });
+
+    it("should prevent access to public app from archived workspace", () => {
+        const workspace1 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
+        const workspace2 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
+        const userName = fake.firstName;
+        const userEmail = fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "");
+
+        cy.apiCreateWorkspace(workspace1, workspace1);
+        cy.visit(`/${workspace1}`);
+        cy.wait(2000);
+        cy.apiLogin();
+        cy.reload();
+        cy.apiFullUserOnboarding(userName, userEmail, "end-user", "password", workspace1, {});
+        cy.apiLogout();
+        cy.reload();
+        cy.apiLogin();
+        cy.reload();
+        cy.createApp(userName)
+        cy.dragAndDropWidget("Table", 250, 250);
+        releaseApp();
+        cy.get('[data-cy="share-button-link"]').click();
+        cy.clearAndType('[data-cy="app-name-slug-input"]', workspace1);
+        cy.get('[data-cy="make-public-app-toggle"]').check();
+        cy.wait(2000);
+        cy.get('[data-cy="modal-close-button"]').click();
+        cy.visitTheWorkspace(DEFAULT_WORKSPACE);
+        cy.apiLogin();
+        cy.reload();
+        openAllWorkspaces();
+        findAndArchiveWorkspace(workspace1);
+        cy.get(commonSelectors.toastMessage).should(
+            "contain.text",
+            `${workspace1} \n was successfully archived`
+        );
+
+        cy.apiLogout();
+        cy.clearCookies();
+        cy.clearLocalStorage();
+        cy.visit(`/applications/${workspace1}`);
+
+        cy.get(workspaceSelector.switchWsModalTitle).verifyVisibleElement(
+            "have.text",
+            "Archived workspace"
+        );
+        cy.get(workspaceSelector.switchWsModalMessage).verifyVisibleElement(
+            "have.text",
+            "Your workspace and all app in it have been archived. Contact super admin to know more"
+        );
     });
 });
 
