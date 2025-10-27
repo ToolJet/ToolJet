@@ -37,6 +37,29 @@ jobs:
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
 
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -119,7 +142,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -181,7 +207,7 @@ jobs:
           fi
 
           echo "✅ Server is ready!"
-          
+
       - name: Test database connection
         run: |
           # Wait for database to be ready
@@ -421,7 +447,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -607,7 +636,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -805,7 +837,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
