@@ -44,6 +44,8 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -361,10 +363,94 @@ export class AppImportExportService {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
 
+      const files = {
+        'app.json': {
+          id: appToExport.id,
+          name: appToExport.name,
+          type: appToExport.type,
+          // other app metadata
+        },
+        'components.json': componentsWithPermissionGroups,
+        'pages.json': pagesWithPermissionGroups,
+        'events.json': events,
+        'queries.json': queriesWithPermissionGroups,
+        'dataSources.json': dataSources,
+        'versions.json': appVersions,
+        'environments.json': appEnvironments,
+        'dataSourceOptions.json': dataSourceOptions,
+        'schema.json': {
+          multiPages: true,
+          multiEnv: true,
+          globalDataSources: true,
+        },
+        ...(appToExport?.type === APP_TYPES.FRONT_END && {
+          'modules.json': moduleApps,
+        }),
+      };
+      this.writeFilesToLocalFolder(files, appToExport.id);
+
+      console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
 
+  async writeFilesToLocalFolder(files: Record<string, any>, appId: string): Promise<void> {
+    try {
+      const timestamp = Date.now();
+      const basePath = `/Users/rohanlahori/Desktop/git-sync-poc/app-${appId}-${timestamp}`;
+
+      // Create base folder
+      if (!fs.existsSync(basePath)) {
+        fs.mkdirSync(basePath, { recursive: true });
+      }
+
+      // Helper function to write array items
+      const writeArrayItems = async (folderName: string, items: any[]) => {
+        const folderPath = path.join(basePath, folderName);
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          // Use id, name, or index for filename
+          const fileName = item.id || item.name || `${folderName}-${i}`;
+          const filePath = path.join(folderPath, `${fileName}.json`);
+
+          await fs.promises.writeFile(filePath, JSON.stringify(item, null, 2), 'utf8');
+          console.log(`✓ Written: ${folderName}/${fileName}.json`);
+        }
+      };
+
+      // Helper function to write single object
+      const writeSingleObject = async (folderName: string, content: any) => {
+        const folderPath = path.join(basePath, folderName);
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        const filePath = path.join(folderPath, `${folderName}.json`);
+        await fs.promises.writeFile(filePath, JSON.stringify(content, null, 2), 'utf8');
+        console.log(`✓ Written: ${folderName}/${folderName}.json`);
+      };
+
+      // Process each file type
+      for (const [fileName, content] of Object.entries(files)) {
+        const folderName = fileName.replace('.json', '');
+
+        if (Array.isArray(content)) {
+          await writeArrayItems(folderName, content);
+        } else {
+          await writeSingleObject(folderName, content);
+        }
+      }
+
+      console.log(`\n✓ All files written to: ${basePath}`);
+    } catch (error) {
+      console.error('Error writing files:', error);
+      throw error;
+    }
+  }
   async mapModulesForAppImport(
     appParams: any,
     user: User,
