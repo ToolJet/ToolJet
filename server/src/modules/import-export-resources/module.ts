@@ -14,10 +14,10 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class ImportExportResourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
-    const { ImportExportResourcesService, ImportExportResourcesController } = await this.getProviders(
+    const { ImportExportResourcesService, ImportExportResourcesController, GitSyncAdapter } = await this.getProviders(
       configs,
       'import-export-resources',
-      ['service', 'controller']
+      ['service', 'controller', 'import-export-adapter']
     );
 
     const { AppImportExportService, ComponentsService, EventsService } = await this.getProviders(configs, 'apps', [
@@ -47,8 +47,9 @@ export class ImportExportResourcesModule extends SubModule {
         DataSourceFeatureAbility,
         ComponentsService,
         EventsService,
+        GitSyncAdapter,
       ],
-      exports: [ImportExportResourcesService, AppImportExportService],
+      exports: [ImportExportResourcesService, AppImportExportService, GitSyncAdapter],
     };
   }
 }
