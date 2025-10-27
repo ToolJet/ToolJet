@@ -2,6 +2,16 @@ export const cyParamName = (paramName = "") => {
   return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
+export const instanceAllUsersSelectors = {
+  editUserDetailsButton: '[data-cy="edit-user-details-button"]',
+  resetPasswordButton: '[data-cy="reset-password-button"]',
+  archiveUserButton: '[data-cy="archive-button"]',
+  inputFieldFullName: '[data-cy="input-field-full-name"]',
+  inputFieldEmail: '[data-cy="input-field-email"]',
+  updateButton: '[data-cy="update-button"]',
+  userStatusCell: (userName) => `[data-cy="${String(userName).toLowerCase()}-user-status"]`,
+};
+
 export const commonSelectors = {
   deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',

@@ -6,6 +6,16 @@ export const commonEeText = {
     userArchivedToast: "You have been archived from this instance. Contact super admin to know more.",
 };
 
+export const instanceAllUsersText = {
+    editUserDetails: "Edit user details",
+    archiveUser: "Archive user",
+    updateButton: "Update",
+    workspacesModalTitle: (name) => `Workspaces of ${name}`,
+    viewTableNameHeader: "NAME",
+    viewTableStatusHeader: "STATUS",
+    onlyAdminErrorToast: "Atleast one active admin is required",
+};
+
 export const ssoEeText = {
     statusLabel: "Disabled",
     enabledLabel: "Enabled",
