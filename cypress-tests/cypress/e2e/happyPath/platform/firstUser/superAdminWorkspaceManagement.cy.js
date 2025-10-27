@@ -1,10 +1,10 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, instanceWorkspaceSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { releaseApp } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { visitWorkspaceInvitation, inviteUser } from "Support/utils/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
-import { commonEeText, instanceSettingsText } from "Texts/eeCommon";
+import { commonEeText, instanceSettingsText, instanceWorksapceText } from "Texts/eeCommon";
 import { commonEeSelectors, instanceSettingsSelector, workspaceSelector } from "Selectors/eeCommon";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
@@ -20,61 +20,61 @@ describe("Instance settings - All workspaces management", () => {
             "have.text",
             instanceSettingsText.pageTitle
         );
-        cy.get('[data-cy="breadcrumb-page-title"]').verifyVisibleElement(
+        cy.get(instanceWorkspaceSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            "All workspaces"
+            instanceWorksapceText.breadcrumbTitle
         );
     };
 
     const assertWorkspaceTableControls = () => {
-        cy.get('[data-cy="active-link"]').should("be.visible");
-        cy.get('[data-cy="archived-link"]').should("be.visible");
-        cy.get('[data-cy="query-manager-search-bar"]').should("be.visible");
-        cy.get('[data-cy="name-header"]').verifyVisibleElement(
+        cy.get(instanceWorkspaceSelectors.tabActive).should("be.visible");
+        cy.get(instanceWorkspaceSelectors.tabArchived).should("be.visible");
+        cy.get(instanceWorkspaceSelectors.searchBar).should("be.visible");
+        cy.get(instanceWorkspaceSelectors.nameHeader).verifyVisibleElement(
             "have.text",
-            "Workspace name"
+            instanceWorksapceText.nameHeader
         );
     };
 
     const assertWorkspaceRow = (workspaceName, isDefault = false) => {
-        cy.get('.mx-3.tj-text-sm.d-flex.align-items-center')
+        cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
             .contains(workspaceName)
             .should('be.visible')
             .within(() => {
                 cy.contains(workspaceName).should('be.visible');
                 if (isDefault) {
-                    cy.get('.default-workspace-tag').should('be.visible');
+                    cy.get(instanceWorkspaceSelectors.defaultWorkspaceTag).should('be.visible');
                 }
             });
     };
 
     const openAllWorkspaces = () => {
         openInstanceSettings();
-        cy.get('[data-cy="all-workspaces-list-item"]').click();
+        cy.get(instanceWorkspaceSelectors.navAllWorkspaces).click();
     };
 
     const findAndArchiveWorkspace = (workspaceName) => {
-        cy.get('[data-cy="query-manager-search-bar"]')
+        cy.get(instanceWorkspaceSelectors.searchBar)
             .should('be.visible')
             .clear()
             .type(workspaceName);
         cy.wait(1000);
-        cy.get('[data-cy="button-ws-status-change"]')
+        cy.get(instanceWorkspaceSelectors.statusChangeButton)
             .click({ force: true });
-        cy.get('[data-cy="confirm-button"]', { timeout: 10000 })
+        cy.get(instanceWorkspaceSelectors.confirmButton, { timeout: 10000 })
             .should('be.visible')
             .click();
     };
 
     const findAndUnarchiveWorkspace = (workspaceName) => {
-        cy.get('[data-cy="archived-link"]').click();
+        cy.get(instanceWorkspaceSelectors.tabArchived).click();
         cy.wait(500);
-        cy.get('[data-cy="query-manager-search-bar"]')
+        cy.get(instanceWorkspaceSelectors.searchBar)
             .should('be.visible')
             .clear()
             .type(workspaceName);
         cy.wait(1000);
-        cy.get('[data-cy="button-ws-status-change"]')
+        cy.get(instanceWorkspaceSelectors.statusChangeButton)
             .click({ force: true });
 
         cy.get(commonSelectors.toastMessage).should(
@@ -84,17 +84,17 @@ describe("Instance settings - All workspaces management", () => {
     };
 
     const verifyDefaultWorkspaceTooltip = () => {
-        cy.get('tr.workspace-table-row').each(($row) => {
+        cy.get(instanceWorkspaceSelectors.workspaceTableRow).each(($row) => {
             cy.wrap($row)
-                .find('[data-cy$="-workspace"]')
+                .find(instanceWorkspaceSelectors.workspaceNameCellSuffix)
                 .invoke('text')
                 .then((name) => {
                     if (name.trim() === DEFAULT_WORKSPACE) {
                         cy.wrap($row)
-                            .find('[data-cy="button-ws-status-change"]')
+                            .find(instanceWorkspaceSelectors.statusChangeButton)
                             .trigger('mouseover');
 
-                        cy.get('[data-tooltip-id="default-workspace-tooltip"]')
+                        cy.get(instanceWorkspaceSelectors.tooltipDefaultWorkspace)
                             .should('be.visible')
                             .and(
                                 'have.attr',
@@ -108,15 +108,15 @@ describe("Instance settings - All workspaces management", () => {
 
     const handleArchiveWorkspaceModal = () => {
         cy.get(workspaceSelector.switchWsModalTitle)
-            .verifyVisibleElement("have.text", "Archive current workspace");
+            .verifyVisibleElement("have.text", instanceWorksapceText.archiveCurrentWorkspaceTitle);
 
         cy.get(workspaceSelector.switchWsModalMessage)
             .should(
                 "contain.text",
-                "The current workspace will be archived. Select an active workspace to continue this session."
+                instanceWorksapceText.archiveCurrentWorkspaceMessage
             );
         cy.get(`[data-cy="${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}-workspace-input"]`).check();
-        cy.get('[data-cy="continue-button"]').click();
+        cy.get(instanceWorkspaceSelectors.continueButton).click();
 
         cy.url().should("include", `/${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}`);
     };
@@ -130,22 +130,22 @@ describe("Instance settings - All workspaces management", () => {
         assertAllWorkspacesHeader();
         assertWorkspaceTableControls();
 
-        cy.get('.tj-select .react-select__control').should('be.visible');
-        cy.get('.tj-select .react-select__control').click();
-        cy.get('.react-select__menu').within(() => {
-            cy.contains('.react-select__option', 'My workspace')
+        cy.get(instanceWorkspaceSelectors.selectControl).should('be.visible');
+        cy.get(instanceWorkspaceSelectors.selectControl).click();
+        cy.get(instanceWorkspaceSelectors.selectMenu).within(() => {
+            cy.contains(instanceWorkspaceSelectors.selectOption, 'My workspace')
                 .scrollIntoView()
                 .should('be.visible');
-            cy.contains('.react-select__option', testWorkspace)
+            cy.contains(instanceWorkspaceSelectors.selectOption, testWorkspace)
                 .scrollIntoView()
                 .should('be.visible');
         });
-        cy.get('.tj-select .react-select__control').click();
+        cy.get(instanceWorkspaceSelectors.selectControl).click();
 
         assertWorkspaceRow(DEFAULT_WORKSPACE, true);
         assertWorkspaceRow(testWorkspace, false);
-        cy.get('[data-cy="active-link"]').should('be.visible').and('contain', 'Active');
-        cy.get('[data-cy="archived-link"]').should('be.visible').and('contain', 'Archived');
+        cy.get(instanceWorkspaceSelectors.tabActive).should('be.visible').and('contain', instanceWorksapceText.activeTab);
+        cy.get(instanceWorkspaceSelectors.tabArchived).should('be.visible').and('contain', instanceWorksapceText.archivedTab);
     });
 
     it("should archive non-default workspace and show workspace switcher modal when archiving current workspace", () => {
@@ -158,9 +158,9 @@ describe("Instance settings - All workspaces management", () => {
         findAndArchiveWorkspace(workspace1);
         handleArchiveWorkspaceModal();
         openAllWorkspaces();
-        cy.get('[data-cy="archived-link"]').click();
+        cy.get(instanceWorkspaceSelectors.tabArchived).click();
         cy.wait(500);
-        cy.get('tr.workspace-table-row').should("contain.text", workspace1);
+        cy.get(instanceWorkspaceSelectors.workspaceTableRow).should("contain.text", workspace1);
     });
 
     it("should not allow archiving default workspace", () => {
@@ -245,7 +245,7 @@ describe("Instance settings - All workspaces management", () => {
         cy.clearAndType(onboardingSelectors.signupEmailInput, userEmail);
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
         cy.get(onboardingSelectors.signInButton).click();
-        cy.get('[data-cy="accept-invite-button"]').click();
+        cy.get(instanceWorkspaceSelectors.acceptInviteButton).click();
         cy.apiLogout();
         cy.reload();
 
@@ -293,9 +293,9 @@ describe("Instance settings - All workspaces management", () => {
             "contain.text",
             `${workspaceName} \n was successfully archived`
         );
-        cy.get('[data-cy="archived-link"]').click();
+        cy.get(instanceWorkspaceSelectors.tabArchived).click();
         cy.wait(500);
-        cy.get('tr.workspace-table-row').should("contain.text", workspaceName);
+        cy.get(instanceWorkspaceSelectors.workspaceTableRow).should("contain.text", workspaceName);
         findAndUnarchiveWorkspace(workspaceName);
 
         cy.apiLogout();
@@ -333,7 +333,7 @@ describe("Instance settings - All workspaces management", () => {
         );
         openInstanceSettings();
         cy.clearAndType(commonSelectors.inputUserSearch, userEmail);
-        cy.get('[data-cy="text-no-result-found"]').should("have.text", "No result found");
+        cy.get(instanceWorkspaceSelectors.noResultFoundText).should("have.text", instanceWorksapceText.noResultFound);
     });
 
     it("should prevent access to public app from archived workspace", () => {
@@ -355,11 +355,11 @@ describe("Instance settings - All workspaces management", () => {
         cy.createApp(userName)
         cy.dragAndDropWidget("Table", 250, 250);
         releaseApp();
-        cy.get('[data-cy="share-button-link"]').click();
-        cy.clearAndType('[data-cy="app-name-slug-input"]', workspace1);
-        cy.get('[data-cy="make-public-app-toggle"]').check();
+        cy.get(instanceWorkspaceSelectors.shareButtonLink).click();
+        cy.clearAndType(instanceWorkspaceSelectors.appSlugInput, workspace1);
+        cy.get(instanceWorkspaceSelectors.makePublicToggle).check();
         cy.wait(2000);
-        cy.get('[data-cy="modal-close-button"]').click();
+        cy.get(instanceWorkspaceSelectors.modalCloseButton).click();
         cy.visitTheWorkspace(DEFAULT_WORKSPACE);
         cy.apiLogin();
         cy.reload();
@@ -377,11 +377,11 @@ describe("Instance settings - All workspaces management", () => {
 
         cy.get(workspaceSelector.switchWsModalTitle).verifyVisibleElement(
             "have.text",
-            "Archived workspace"
+            instanceWorksapceText.archivedWorkspaceTitle
         );
         cy.get(workspaceSelector.switchWsModalMessage).verifyVisibleElement(
             "have.text",
-            "Your workspace and all app in it have been archived. Contact super admin to know more"
+            instanceWorksapceText.archivedWorkspaceMessage
         );
     });
 });
