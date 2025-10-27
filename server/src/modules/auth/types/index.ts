@@ -27,7 +27,7 @@ export interface FeaturesConfig {
   [MODULES.AUTH]: Features;
 }
 
-export interface MyClientConfig extends Partial<ClientMetadata> {
+export interface OidcClientConfig extends Partial<ClientMetadata> {
   client_id: string;
   client_secret?: string;
   redirect_uris: string[];
