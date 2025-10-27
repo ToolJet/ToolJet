@@ -12,7 +12,7 @@ ToolJet can establish connections with any available REST API endpoint, allowing
 
 To establish a connection with the REST API data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
 
 ToolJet requires the following to connect to a REST API data source:
 
@@ -30,7 +30,7 @@ ToolJet requires the following to connect to a REST API data source:
 - **Body**: Key-value pairs to include as the body of the request.
 - **Cookies**: Key-value pairs to include as cookies with REST API requests. These cookies will be sent with every query created using this data source instance.
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/credentials.png" alt="REST API - Credentials" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/credentials.png" alt="REST API - Credentials" />
 
 </div>
 
@@ -58,7 +58,7 @@ ToolJet supports the following authentication types for REST API data sources:
     - Custom authentication parameters
     - Client authentication method
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/authentication.png" alt="REST API - Authentication" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/authentication.png" alt="REST API - Authentication" />
 
 </div>
 
@@ -71,7 +71,7 @@ ToolJet supports the following authentication types for REST API data sources:
   - **CA Certificate**: Requires a CA certificate to verify the server certificate.
   - **Client Certificate**: Requires a client certificate, client key, and CA certificate to authenticate with the server.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/rest-api/ssl.png" alt="REST API - SSL Certificate" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/rest-api/ssl.png" alt="REST API - SSL Certificate" />
 
 </div>
 

@@ -8,18 +8,18 @@ ToolJet enables you to manage access control by configuring permissions like cre
 ## Permissions
 
 The following permissions can be configured for the given resources:
-| Resource                    | Permission            | Description                                                                                 |
-|:----------------------------|:----------------------|:--------------------------------------------------------------------------------------------|
-| **Apps**                    | Create                | Allows users of the group to create new applications within the workspace.                  |
-|                             | Delete                | Allows users of the group to delete applications from the workspace.                        |
-|                             | Promote               | Allows users of the group to promote the applications from one environment to the other.    |
-|                             | Release               | Allows users of the group to release the applications from the production environment.      |
-| **Data sources**            | Create                | Allows users of the group to add new data sources in the workspace.                         |
-|                             | Delete                | Allows users of the group to remove data sources from the workspace.                        |
-| **Folder**                  | Create/Update/Delete  | Allows users of the group to create, update, or delete folders to organize resources.       |
+| Resource | Permission | Description |
+|:---------|:-----------|:------------|
+| **Apps** | Create | Allows users of the group to create new applications within the workspace. |
+| | Delete | Allows users of the group to delete applications from the workspace. |
+| | Promote | Allows users of the group to promote the applications from one environment to the other. |
+| | Release | Allows users of the group to release the applications from the production environment. |
+| **Data sources** | Create | Allows users of the group to add new data sources in the workspace. |
+| | Delete | Allows users of the group to remove data sources from the workspace. |
+| **Folder** | Create/Update/Delete | Allows users of the group to create, update, or delete folders to organize resources. |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
-| **Workflows**              | Create                | Allows users of the group to create new workflows within the workspace.                     |
-|                             | Delete                | Allows users of the group to delete workflows from the workspace.                           |
+| **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
+| | Delete | Allows users of the group to delete workflows from the workspace. |
 
 To configure view or edit access, please refer to **[Granular Access Control](#granular-access-control)**.
 
@@ -52,7 +52,7 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
 - **Edit**: Grants edit access to the selected apps. With this access, users can build or edit the apps they are granted access to. This permission should be assigned to builders or developers.
 
-- **View**: With view access, users can view the released version of the selected apps and use them to perform tasks. This access does not allow users to edit or make changes to the apps. This permission should be assigned to end users or the consumers.
+- **View**: With View access, users can preview the application in the development and staging environments, and access the released version in the production environment. This access level does not allow users to edit or modify the application. It is best suited for end users, testers, or consumers who only need to review or use the app.
 
 - **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL for users with view access. While the users with edit access can always see the app on the dashboard.
 

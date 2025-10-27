@@ -2,8 +2,8 @@ name: Update LTS Table
 
 on:
   workflow_dispatch:  # manually triggered
-  schedule:
-    - cron: '30 5 * * 1,4'
+  # schedule:
+  #   - cron: '30 5 * * 1,4'
 
 jobs:
   update-lts:
