@@ -186,7 +186,7 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 
 Cypress.Commands.add(
   "apiAddQueryToApp",
-  ({ queryName, options, dsName, dsKind }) => {
+  ({ queryName, options, dataSourceName, dsKind }) => {
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = cookie?.value;
       const workspaceId = Cypress.env("workspaceId");
@@ -212,10 +212,10 @@ Cypress.Commands.add(
           headers: commonHeaders,
         }).then((dsResponse) => {
           const dataSource = dsResponse.body.data_sources.find(
-            (ds) => ds.name === dsName
+            (ds) => ds.name === dataSourceName
           );
           const dataSourceID = dataSource.id;
-          Cypress.env(`${dsName}`, dataSourceID);
+          Cypress.env(`${dataSourceName}`, dataSourceID);
 
           cy.request({
             method: "POST",

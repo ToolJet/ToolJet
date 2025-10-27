@@ -450,8 +450,9 @@ export const PageMenuItem = withRouter(
                               text={
                                 <ToolTip
                                   message={'Page permissions are available only in paid plans'}
-                                  placement="right"
+                                  placement="auto"
                                   show={!licenseValid}
+                                  tooltipClassName="!tw-z-[100000]"
                                 >
                                   <div className="d-flex align-items-center enterprise-feature">
                                     <div>Page permission</div>

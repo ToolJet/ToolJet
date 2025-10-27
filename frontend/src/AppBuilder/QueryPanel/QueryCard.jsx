@@ -162,7 +162,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
               variant="outline"
               className=""
               id={`query-handler-menu-${dataQuery?.id}`}
-              data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
+              data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
             />
           </div>
         )}

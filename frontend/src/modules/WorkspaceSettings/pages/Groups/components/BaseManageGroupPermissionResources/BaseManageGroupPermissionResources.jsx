@@ -26,7 +26,7 @@ import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissionResources extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
 
     this.state = {
@@ -65,11 +65,11 @@ class BaseManageGroupPermissionResources extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount () {
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate (prevProps) {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
       this.setState({
@@ -426,7 +426,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ updateParam });
   };
 
-  render() {
+  render () {
     if (!this.props.groupPermissionId) return null;
 
     const {
@@ -742,6 +742,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                             iconWidth="15"
                             fill="#889096"
                             className="search-user-group-btn"
+                            data-cy="user-group-search-btn"
                           />
                           <p className="tj-text-xsm" data-cy="name-header" style={{ padding: '10px' }}>
                             User name
@@ -783,14 +784,13 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   <Avatar
                                     className="name-avatar"
                                     avatarId={user?.avatarId}
-                                    text={`${user.firstName ? user.firstName[0] : ''}${
-                                      user.lastName ? user.lastName[0] : ''
-                                    }`}
+                                    text={`${user.firstName ? user.firstName[0] : ''}${user.lastName ? user.lastName[0] : ''
+                                      }`}
                                   />
-                                  <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
+                                  <span data-cy="user-name">{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
                                 </p>
                                 <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
-                                  <span> {user.email}</span>
+                                  <span data-cy="user-email"> {user.email}</span>
                                 </p>
                                 <p className="tj-text-sm d-flex align-items-center">
                                   <div className="d-flex align-items-center edit-role-btn">

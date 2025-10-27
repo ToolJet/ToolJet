@@ -101,15 +101,17 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(".homepage-app-card .home-app-card-header .menu-ico").then(($el) => {
-    $el[0].style.setProperty("visibility", "visible", "important");
-  });
+  cy.contains('.homepage-app-card', appName).within(() => {
+    cy.get('.home-app-card-header .menu-ico')
+      .then(($el) => {
+        $el[0].style.setProperty('visibility', 'visible', 'important');
+      });
 
-  cy.get('[data-cy="app-card-menu-icon"]').click();
+    cy.get('[data-cy="app-card-menu-icon"]').click();
+  });
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
@@ -184,7 +186,6 @@ export const searchUser = (email) => {
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {
-  cy.wait(1000);
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
 };
