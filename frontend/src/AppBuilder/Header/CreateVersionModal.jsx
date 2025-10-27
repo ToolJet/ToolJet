@@ -132,10 +132,11 @@ const CreateVersionModal = ({
       await appVersionService
         .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
         .then((data) => {
-          handleCommitOnVersionCreation(data);
+          console.log({ data });
+          // handleCommitOnVersionCreation(data);
           // Switch to the newly created version
-          if (setCurrentVersionId && data?.id) {
-            setCurrentVersionId(data.id);
+          if (setCurrentVersionId && data.editing_version?.id) {
+            setCurrentVersionId(data.editing_version?.id);
           }
         })
         .catch((error) => {
