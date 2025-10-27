@@ -10,6 +10,8 @@ const ConfigHandleButton = ({
   children = null,
   onClick = () => {},
   dataCy = '',
+  onMouseEnter = () => {},
+  onMouseLeave = () => {},
 }) => {
   return (
     <span className={`config-handle-button ${className}`}>
@@ -23,6 +25,8 @@ const ConfigHandleButton = ({
           className="badge text-truncate"
           onClick={onClick}
           data-cy={dataCy}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
         >
           {children}
         </button>

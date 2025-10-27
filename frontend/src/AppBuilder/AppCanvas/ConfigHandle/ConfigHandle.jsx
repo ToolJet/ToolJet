@@ -11,7 +11,7 @@ import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import MentionComponentInChat from './MentionComponentInChat';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
-import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed } from 'lucide-react';
+import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
 import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -41,7 +41,8 @@ export const ConfigHandle = ({
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow
   );
-  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
+  const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
   const currentTab = useStore(
     (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
@@ -74,6 +75,13 @@ export const ConfigHandle = ({
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
   let height = visibility === false ? 10 : widgetHeight;
+
+  const deleteComponents = () => {
+    const selectedComponents = getSelectedComponents();
+    if (selectedComponents.length > 0) {
+      setWidgetDeleteConfirmation(true);
+    }
+  };
 
   const getTooltip = () => {
     const permission = component.permissions?.[0];
@@ -118,6 +126,10 @@ export const ConfigHandle = ({
         alignItems: 'center',
         gap: '6px',
       };
+  if (isDynamicHeightEnabled) {
+    getConfigHandleButtonStyle.background = '#9747FF';
+    getConfigHandleButtonStyle.color = 'var(--text-inverse)';
+  }
 
   const iconOnlyButtonStyle = {
     height: '20px',
@@ -189,7 +201,12 @@ export const ConfigHandle = ({
       data-tooltip-html="Your plan is expired. <br/> Renew to use the modules."
       data-tooltip-place="right"
     >
-      <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover">
+      <ConfigHandleButton
+        customStyles={getConfigHandleButtonStyle}
+        className="no-hover"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         {isDynamicHeightEnabled && (
           <Popover
             open={isPopoverOpen}
@@ -198,15 +215,19 @@ export const ConfigHandle = ({
             popoverContent={popoverContent}
             popoverContentClassName="dynamic-height-info-popover"
           >
-            <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer' }}>
-              <VectorSquare size={12} color="var(--icon-default)" />
+            <div style={{ cursor: 'pointer' }}>
+              <VectorSquare size={12} color={isDynamicHeightEnabled ? 'var(--icon-inverse)' : 'var(--icon-default)'} />
             </div>
           </Popover>
         )}
-        {!visibility && <EyeClosed size={12} color="var(--icon-default)" />}
+        {!visibility && (
+          <div>
+            <EyeClosed size={12} color={isDynamicHeightEnabled ? 'var(--icon-inverse)' : 'var(--icon-default)'} />
+          </div>
+        )}
         <span>{componentName}</span>
       </ConfigHandleButton>
-
+      {!isMultipleComponentsSelected && !shouldFreeze && <MentionComponentInChat componentName={componentName} />}
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => setComponentToInspect(componentName)}
@@ -240,9 +261,17 @@ export const ConfigHandle = ({
           <Lock size={12} color="var(--icon-inverse)" />
         </ConfigHandleButton>
       )}
-
-      {!isMultipleComponentsSelected && !shouldFreeze && <MentionComponentInChat componentName={componentName} />}
-
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => {
+          deleteComponents();
+        }}
+        message="Delete component"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+      >
+        <Trash size={12} color="var(--icon-inverse)" />
+      </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
       {!isLicenseValid && componentType === 'ModuleViewer' && (
         <Tooltip

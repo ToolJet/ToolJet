@@ -49,11 +49,17 @@
 
 .active-target {
     outline: 1px solid #4af !important;
+    &.dynamic-height-target {
+        outline: 1px solid #9747FF !important;
+    }
 }
 
 .main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {
     outline: 1px solid #4af;
     z-index: 4 !important;
+    &.dynamic-height-target {
+        outline: 1px solid #9747FF !important;
+    }
 }
 
 .main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {
