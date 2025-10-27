@@ -2159,16 +2159,20 @@ export const createComponentsSlice = (set, get) => ({
         ...Object.fromEntries(acc.map((component) => [component.id, component])),
       };
 
-      const componentNameInDefinition = componentDefinition.component.name;
+      // When component is dropped on canvas for the first time
+      // In default component definition, .name holds the correct computed name for eg. button1
+      // Whereas .component.name holds the default component name without any computation for eg. Button
+      // Also .name is undefined when we reload app and fetch components from the backend. Hence below mentioned OR condition
+      const initialComponentName = componentDefinition.name || componentDefinition.component.name;
 
       // Check if there is any existing component with the same name
-      const isNameValid = !Object.values(currentComponents).some(
-        (component) => component.component.name === componentNameInDefinition
+      const isExistingName = Object.values(currentComponents).some(
+        (component) => component.component.name === initialComponentName
       );
 
       // If name is valid then use the same name but if not then fallback to old flow and compute component name
-      const componentName = isNameValid
-        ? componentNameInDefinition
+      const componentName = !isExistingName
+        ? initialComponentName
         : computeComponentName(componentDefinition.component.component, currentComponents);
 
       const getComponentProperties = (componentDefinition) => {
