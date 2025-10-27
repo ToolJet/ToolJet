@@ -6,75 +6,59 @@ import { FeaturesConfig } from '../types';
 export const FEATURES: FeaturesConfig = {
   [MODULES.SCIM]: {
     [FEATURE_KEY.GET_ALL_USERS]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
     [FEATURE_KEY.GET_USER]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
     [FEATURE_KEY.CREATE_USER]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
     [FEATURE_KEY.UPDATE_USER]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.REPLACE_USER_WORKSPACES]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.PATCH_USER]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.UPDATE_USER_WORKSPACE]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_ALL_GROUPS]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.GET_ALL_WORKSPACES]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_GROUP]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.UPDATE_USER_ROLE]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.CREATE_GROUP]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.UPDATE_GROUP]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.IMPORT_APP]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.PATCH_GROUP]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.EXPORT_APP]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_SP_CONFIG]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.PULL_NEW_APP]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_RESOURCE_TYPES]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.PULL_EXISTING_APP]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_SCHEMAS]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
-    [FEATURE_KEY.PUSH_APP_VERSION]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.CREATE_ORG_GIT]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.AUTO_RELEASE_APP]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.GENERATE_PAT]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
-      isPublic: true,
-    },
-    [FEATURE_KEY.VALIDATE_PAT_SESSION]: {
-      license: LICENSE_FIELD.EXTERNAL_API,
+    [FEATURE_KEY.GET_SCHEMA]: {
+      license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
   },

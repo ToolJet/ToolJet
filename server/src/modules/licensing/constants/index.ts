@@ -122,6 +122,7 @@ export enum LICENSE_FIELD {
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',
+  SCIM = 'scimEnabled',
   PLAN = 'plan',
 }
 
