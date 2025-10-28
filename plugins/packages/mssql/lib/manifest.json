@@ -44,7 +44,7 @@
     },
     "connection_options": {
       "type": "array",
-      "title": "Connection Options",
+      "title": "Connection options",
       "description": "Connection options"
     },
     "azure": {
@@ -115,7 +115,7 @@
     "connection_options": {
       "$ref": "#/properties/connection_options",
       "key": "connection_options",
-      "label": "Connection Options",
+      "label": "Connection options",
       "widget": "react-component-headers"
     },
     "azure": {

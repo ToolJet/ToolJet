@@ -101,10 +101,12 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  // cy.get(".homepage-app-card .home-app-card-header .menu-ico").then(($el) => {
-  //   $el[0].style.setProperty("visibility", "visible", "important");
-  // });
-  cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().trigger("hover").realHover().within(() => {
+  cy.contains('.homepage-app-card', appName).within(() => {
+    cy.get('.home-app-card-header .menu-ico')
+      .then(($el) => {
+        $el[0].style.setProperty('visibility', 'visible', 'important');
+      });
+
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };

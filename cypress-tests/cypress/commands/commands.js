@@ -230,14 +230,17 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
 
-// Cypress.Commands.add("renameApp", (appName) => {
-//   cy.get(commonSelectors.appNameInput).type(
-//     `{selectAll}{backspace}${appName}`,
-//     { force: true }
-//   );
-//   cy.forceClickOnCanvas();
-//   cy.waitForAutoSave();
-// });
+Cypress.Commands.add("renameApp", (appName) => {
+  cy.get(commonSelectors.appNameInput).type(
+    `{selectAll}{backspace}${appName}`,
+    { force: true }
+  );
+  cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    commonText.appRenamedToast
+  );
+});
 
 Cypress.Commands.add(
   "clearCodeMirror",
