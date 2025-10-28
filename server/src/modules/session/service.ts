@@ -33,30 +33,22 @@ export class SessionService {
     protected readonly organizationUserRepository: OrganizationUsersRepository
   ) {}
 
-  async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
+  async terminateSession(user: User, sessionId: string, response: Response): Promise<void> {
     response.clearCookie('tj_auth_token');
     await dbTransactionWrap(async (manager: EntityManager) => {
-      // Find the session before deleting to get workspace info
-      const session = await manager.findOne(UserSessions, {
-        where: { id: sessionId, userId },
-      });
-
-      await manager.delete(UserSessions, { id: sessionId, userId });
-      const user = await manager.findOneOrFail(User, {
-        where: { id: userId },
-      });
+      await manager.delete(UserSessions, { id: sessionId, userId: user.id });
 
       // Decrement metrics
       try {
         decrementActiveSessions({
-          userId,
+          userId: user.id,
           sessionType: 'user',
         });
 
-        if (session?.organizationId) {
+        if (user?.organizationId) {
           decrementConcurrentUsers({
-            workspaceId: session.organizationId,
-            userId,
+            workspaceId: user.organizationId,
+            userId: user.id,
           });
         }
       } catch (error) {
@@ -65,7 +57,7 @@ export class SessionService {
 
       const auditLogData = {
         userId: user.id,
-        organizationId: user.defaultOrganizationId,
+        organizationId: user.organizationId,
         resourceId: user.id,
         resourceName: user.email,
       };
