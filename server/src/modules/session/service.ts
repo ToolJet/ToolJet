@@ -21,7 +21,7 @@ import { fullName, generateOrgInviteURL, isSuperAdmin } from '@helpers/utils.hel
 import { decamelizeKeys } from 'humps';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { decrementActiveSessions, decrementConcurrentUsers } from '../../otel/tracing';
+import { decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionService {
@@ -53,9 +53,9 @@ export class SessionService {
           sessionType: 'user',
         });
 
-        if (user.defaultOrganizationId) {
+        if (session?.organizationId) {
           decrementConcurrentUsers({
-            workspaceId: user.defaultOrganizationId,
+            workspaceId: session.organizationId,
             userId,
           });
         }

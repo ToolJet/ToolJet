@@ -29,7 +29,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '../../otel/tracing';
+import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {

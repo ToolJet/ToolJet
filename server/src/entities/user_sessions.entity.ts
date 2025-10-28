@@ -27,6 +27,9 @@ export class UserSessions extends BaseEntity {
   @Column({ name: 'last_logged_in' })
   lastLoggedIn: Date;
 
+  @Column({ name: 'organization_id', nullable: true })
+  organizationId: string;
+
   @Column({ name: 'session_type', type: 'enum', enum: SessionType, default: 'user' })
   sessionType: SessionType.USER | SessionType.PAT;
 
