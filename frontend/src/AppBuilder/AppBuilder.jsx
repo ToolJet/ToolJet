@@ -47,8 +47,6 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   };
 
   useEffect(() => {
-    console.log("hasModuleAccess", { hasModuleAccess, isModuleEditor });
-    debugger;
     if (hasModuleAccess === false && isModuleEditor) {
       navigate('/error/restricted');
     }
