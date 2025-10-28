@@ -37,6 +37,29 @@ jobs:
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
 
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -56,32 +79,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -119,7 +157,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -181,7 +222,7 @@ jobs:
           fi
 
           echo "✅ Server is ready!"
-          
+
       - name: Test database connection
         run: |
           # Wait for database to be ready
@@ -356,32 +397,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -421,7 +477,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -542,32 +601,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -607,7 +681,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -741,32 +818,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -805,7 +897,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
