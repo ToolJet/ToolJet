@@ -1,6 +1,6 @@
 import { commonSelectors, instanceAllUsersSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { resetUserpasswordFromInstanceSettings, openInstanceSettings, openUserActionMenu } from "Support/utils/platform/eeCommon";
+import { resetUserpasswordFromInstanceSettings, openInstanceSettings, openUserActionMenu, resetUserpasswordAutomaticallyFromInstanceSettings } from "Support/utils/platform/eeCommon";
 import { commonEeText, instanceSettingsText, instanceAllUsersText } from "Texts/eeCommon";
 import { commonEeSelectors, instanceSettingsSelector } from "Selectors/eeCommon";
 import { assertAllUsersHeader, assertTableControls, assertUserRow, testArchiveUnarchiveFlow, toggleSuperAdminRole } from "Support/utils/platform/superAdmin";
@@ -37,7 +37,6 @@ describe("Instance settings - User management by super admin", () => {
             name: fake.firstName,
             email: fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "")
         };
-
         cy.defaultWorkspaceLogin();
         cy.ifEnv("Enterprise", () => {
             // enableInstanceSignup()
@@ -61,13 +60,24 @@ describe("Instance settings - User management by super admin", () => {
         testArchiveUnarchiveFlow(newWorkspaceUser.name, newWorkspaceUser.email, newWorkspaceUser.workspace);
     });
 
-    it("should allow admin to reset invited user password and login with new password", () => {
+    it.only("should allow admin to reset invited user password and login with new password", () => {
+        let generatedPassword;
         cy.apiFullUserOnboarding(resetPasswordUser.name, resetPasswordUser.email);
         cy.apiLogin();
         resetUserpasswordFromInstanceSettings(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
         cy.reload();
         cy.appUILogin(resetPasswordUser.email, resetPasswordUser.newPassword);
+        cy.apiLogout();
+
+        cy.apiLogin();
+        cy.reload();
+        resetUserpasswordAutomaticallyFromInstanceSettings(resetPasswordUser.name);
+        cy.get('@generatedPassword').then((generatedPassword) => {
+            cy.apiLogout();
+            cy.reload();
+            cy.appUILogin(resetPasswordUser.email, generatedPassword);
+        })
     });
 
     it("should verify all users page UI elements including header, table, action menu, edit modal and workspaces view", () => {

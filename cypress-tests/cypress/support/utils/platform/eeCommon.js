@@ -553,6 +553,22 @@ export const resetUserpasswordFromInstanceSettings = (userName, password) => {
     cy.get(commonEeSelectors.resetButton).click();
 };
 
+export const resetUserpasswordAutomaticallyFromInstanceSettings = (userName) => {
+    openInstanceSettings();
+    cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.get(commonEeSelectors.userActionButton).click();
+    cy.get(commonEeSelectors.passwordResetButton).click();
+    cy.get(commonEeSelectors.resetButton).click();
+    cy.get('[data-cy="password-input"]', { timeout: 10000 })
+        .invoke('val')
+        .should('not.be.empty')
+        .then((generatedPassword) => {
+            cy.get('[data-cy="done-button"]').click();
+            cy.wrap(generatedPassword).as('generatedPassword');
+        });
+};
+
+
 export const passwordToggle = (enable) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
         cy.request(
