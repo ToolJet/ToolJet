@@ -48,12 +48,6 @@ export class SessionUtilService {
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      // Get count of sessions before deleting to decrement metrics appropriately
-      const sessions = await manager.find(UserSessions, {
-        where: { userId },
-      });
-      const sessionCount = sessions.length;
-
       await manager.delete(UserSessions, { userId });
     });
   }
