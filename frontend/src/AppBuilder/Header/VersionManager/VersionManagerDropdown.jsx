@@ -27,6 +27,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setCurrentVersionId,
     deleteVersionAction,
     environmentChangedAction,
+    releasedVersionId,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -37,6 +38,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       setCurrentVersionId: state.setCurrentVersionId,
       deleteVersionAction: state.deleteVersionAction,
       environmentChangedAction: state.environmentChangedAction,
+      releasedVersionId: state.releasedVersionId,
     }),
     shallow
   );
@@ -153,6 +155,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleCreateVersion = (version) => {
+    setVersionToPromote(version);
     setShowPromoteModal(true);
     setDropdownOpen(false);
   };
@@ -190,12 +193,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     );
   };
 
-  const renderPopover = (
+  const renderPopover = (overlayProps) => (
     <Popover
       id="version-manager-popover"
       className="version-manager-popover"
       ref={popoverRef}
+      {...overlayProps}
       style={{
+        ...overlayProps?.style,
         minWidth: '320px',
         maxWidth: '400px',
         borderRadius: '8px',
@@ -215,10 +220,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           />
         </div>
 
-        {/* Search Field */}
-        <div>
-          <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
-        </div>
+        {/* Search Field - Only show if more than 5 versions */}
+        {versions.length > 5 && (
+          <div>
+            <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
+          </div>
+        )}
 
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
@@ -289,26 +296,48 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           onClick={handleToggleDropdown}
           darkMode={darkMode}
           showDraftBadge={isDropdownOpen}
+          releasedVersionId={releasedVersionId}
         />
       </div>
 
       <Overlay
         show={isDropdownOpen}
         target={buttonRef.current}
-        placement="bottom-start"
+        placement="bottom-end"
         rootClose
         onHide={() => setDropdownOpen(false)}
+        popperConfig={{
+          modifiers: [
+            {
+              name: 'preventOverflow',
+              options: {
+                boundary: 'viewport',
+                padding: 8,
+              },
+            },
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['bottom-start', 'top-end', 'top-start'],
+              },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 4],
+              },
+            },
+          ],
+        }}
       >
         {({ placement: _placement, arrowProps: _arrowProps, show: _show, popper: _popper, ...props }) => (
           <div
-            {...props}
             style={{
-              ...props.style,
               position: 'absolute',
               zIndex: 1050, // Ensure it's above other content
             }}
           >
-            {renderPopover}
+            {renderPopover(props)}
           </div>
         )}
       </Overlay>

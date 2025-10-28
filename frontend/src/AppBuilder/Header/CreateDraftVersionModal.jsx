@@ -28,7 +28,6 @@ const CreateDraftVersionModal = ({
     createNewVersionAction,
     fetchDevelopmentVersions,
     developmentVersions,
-    publishedVersions,
     appId,
     setCurrentVersionId,
     selectedVersion,
@@ -39,7 +38,6 @@ const CreateDraftVersionModal = ({
       selectedEnvironment: state.selectedEnvironment,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
-      publishedVersions: state.publishedVersions,
       featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
@@ -50,6 +48,9 @@ const CreateDraftVersionModal = ({
     }),
     shallow
   );
+
+  // Filter out draft versions - show all saved versions (PUBLISHED + any released)
+  const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
     const gitSyncEnabled =
       orgGit?.org_git?.git_ssh?.is_enabled ||
@@ -59,21 +60,46 @@ const CreateDraftVersionModal = ({
   }, [orgGit]);
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
-  useEffect(() => {
-    fetchDevelopmentVersions(appId);
-  }, []);
 
   useEffect(() => {
-    if (developmentVersions?.length && selectedVersion?.id) {
-      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id) || null;
-      setSelectedVersionForCreation(selected);
+    if (appId) {
+      fetchDevelopmentVersions(appId);
     }
-  }, [developmentVersions, selectedVersion]);
+  }, [appId, fetchDevelopmentVersions]);
+
+  useEffect(() => {
+    // If savedVersions is empty but we have a selectedVersion that is not DRAFT, use it
+    if (!savedVersions?.length) {
+      if (selectedVersion && selectedVersion.status !== 'DRAFT') {
+        setSelectedVersionForCreation(selectedVersion);
+      }
+      return;
+    }
+
+    // If selectedVersion exists in savedVersions, use it
+    if (selectedVersion?.id) {
+      const selected = savedVersions.find((version) => version?.id === selectedVersion?.id);
+      if (selected) {
+        setSelectedVersionForCreation(selected);
+        return;
+      }
+    }
+
+    // Otherwise, default to the first saved version
+    if (savedVersions.length > 0) {
+      setSelectedVersionForCreation(savedVersions[0]);
+    }
+  }, [savedVersions, selectedVersion]);
 
   const { t } = useTranslation();
-  const options = publishedVersions.map((version) => {
-    return { label: version.name, value: version };
-  });
+
+  // Create options from savedVersions (all non-draft versions)
+  const options =
+    savedVersions.length > 0
+      ? savedVersions.map((version) => ({ label: version.name, value: version }))
+      : selectedVersion && selectedVersion.status !== 'DRAFT'
+      ? [{ label: selectedVersion.name, value: selectedVersion }]
+      : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -85,7 +111,7 @@ const CreateDraftVersionModal = ({
       return;
     }
 
-    if (selectedVersionForCreation === undefined) {
+    if (!selectedVersionForCreation || selectedVersionForCreation === undefined) {
       toast.error('Please select a version from.');
       return;
     }
@@ -252,7 +278,13 @@ const CreateDraftVersionModal = ({
                 >
                   {t('globals.cancel', 'Cancel')}
                 </ButtonSolid>
-                <ButtonSolid size="lg" variant="primary" className="" type="submit">
+                <ButtonSolid
+                  size="lg"
+                  variant="primary"
+                  className=""
+                  type="submit"
+                  disabled={!selectedVersionForCreation}
+                >
                   {t('editor.appVersionManager.createVersion', 'Create Version')}
                 </ButtonSolid>
               </div>

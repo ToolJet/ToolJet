@@ -23,8 +23,11 @@ const VersionDropdownItem = ({
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
+  const featureAccess = useStore((state) => state.license.featureAccess);
 
   const isDraft = version.status === 'DRAFT';
+  const isPublished = version.status === 'PUBLISHED';
+  // A version is released when it matches the releasedVersionId
   const isReleased = version.id === releasedVersionId;
 
   // Get parent version name if this is a draft
@@ -39,8 +42,11 @@ const VersionDropdownItem = ({
   // Only show promote button if version is in the current environment
   const isVersionInCurrentEnv = version.currentEnvironmentId === currentEnvironment?.id;
 
-  const canPromote = isVersionInCurrentEnv && !isDraft && !isReleased && !isInProduction;
-  const canRelease = isVersionInCurrentEnv && !isDraft && !isReleased && isInProduction;
+  // In CE edition: show Release button for PUBLISHED versions that are not yet released
+  // In EE edition: show Promote button for non-released versions in non-production environments
+  const canPromote =
+    featureAccess?.multiEnvironment && isVersionInCurrentEnv && !isDraft && !isReleased && !isInProduction;
+  const canRelease = !isDraft && !isReleased && (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
 
   const renderMenu = (
@@ -203,21 +209,8 @@ const VersionDropdownItem = ({
             )}
           </div>
 
-          {/* Version description */}
-          {version.description && (
-            <div
-              className="tj-text-xsm text-truncate"
-              style={{
-                color: 'var(--text-placeholder)',
-                marginTop: '2px',
-              }}
-            >
-              {version.description}
-            </div>
-          )}
-
-          {/* Version metadata (created from text) */}
-          {createdFromVersionName && (
+          {/* Version metadata (created from and description combined) */}
+          {(createdFromVersionName || version.description) && (
             <div
               className="tj-text-xsm"
               style={{
@@ -225,13 +218,15 @@ const VersionDropdownItem = ({
                 marginTop: '2px',
                 fontSize: '11px',
                 lineHeight: '16px',
-                maxWidth: '80px',
+                maxWidth: '91%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
             >
-              Created from {createdFromVersionName}
+              {createdFromVersionName && `created from ${createdFromVersionName}`}
+              {createdFromVersionName && version.description && ' | '}
+              {version.description}
             </div>
           )}
         </div>

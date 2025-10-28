@@ -14,7 +14,7 @@ const VersionSearchField = ({ value, onChange, placeholder = 'Search versions by
           gap: '6px',
         }}
       >
-        <SolidIcon name="search" />
+        <SolidIcon width="16" name="search" />
         <input
           type="text"
           className="flex-grow-1 tj-text-sm"

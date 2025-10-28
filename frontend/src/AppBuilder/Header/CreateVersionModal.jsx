@@ -60,13 +60,32 @@ const CreateVersionModal = ({
   );
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
+
   useEffect(() => {
-    fetchDevelopmentVersions(appId);
+    if (appId) {
+      fetchDevelopmentVersions(appId);
+    }
   }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
-    // If versionId prop is provided, use that version
-    if (versionId && developmentVersions?.length) {
+    // If versionId prop is provided, use that version directly
+    if (versionId && selectedVersion?.id === versionId) {
+      setSelectedVersionForCreation(selectedVersion);
+      return;
+    }
+
+    // Wait for developmentVersions to be loaded
+    if (!developmentVersions?.length) {
+      // If we have a versionId but developmentVersions is empty,
+      // and we have selectedVersion, use it
+      if (versionId && selectedVersion) {
+        setSelectedVersionForCreation(selectedVersion);
+      }
+      return;
+    }
+
+    // If versionId prop is provided, find it in developmentVersions
+    if (versionId) {
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
         setSelectedVersionForCreation(versionToPromote);
@@ -75,16 +94,22 @@ const CreateVersionModal = ({
     }
 
     // Otherwise, use selectedVersion from store
-    if (developmentVersions?.length && selectedVersion?.id) {
-      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id) || null;
-      setSelectedVersionForCreation(selected);
+    if (selectedVersion?.id) {
+      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
+      if (selected) {
+        setSelectedVersionForCreation(selected);
+        return;
+      }
     }
+
+    // Fallback: if no version is selected or found, use the first development version
+    if (developmentVersions.length > 0) {
+      setSelectedVersionForCreation(developmentVersions[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, selectedVersion, versionId]);
 
   const { t } = useTranslation();
-  const options = developmentVersions.map((version) => {
-    return { label: version.name, value: version };
-  });
 
   const createVersion = async () => {
     if (versionName.trim().length > 25) {
@@ -104,8 +129,8 @@ const CreateVersionModal = ({
       return;
     }
 
-    if (selectedVersionForCreation === undefined) {
-      toast.error('Please select a version from.');
+    if (!selectedVersionForCreation) {
+      toast.error('Please wait while versions are loading...');
       return;
     }
 
@@ -132,7 +157,6 @@ const CreateVersionModal = ({
       await appVersionService
         .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
         .then((data) => {
-          console.log({ data });
           // handleCommitOnVersionCreation(data);
           // Switch to the newly created version
           if (setCurrentVersionId && data.editing_version?.id) {
@@ -294,7 +318,13 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ButtonSolid size="lg" variant="primary" className="" type="submit">
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
+                type="submit"
+                disabled={!selectedVersionForCreation || isCreatingVersion}
+              >
                 {t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>
             </div>

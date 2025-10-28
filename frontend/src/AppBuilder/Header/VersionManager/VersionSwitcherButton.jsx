@@ -1,7 +1,19 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 
-const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge = false }) => {
+const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge = false, releasedVersionId }) => {
   const isDraft = version?.status === 'DRAFT';
+  const isReleased = version?.id === releasedVersionId;
+
+  // Determine dot color based on version status
+  const getDotColor = () => {
+    if (isDraft) {
+      return '#BF4F03'; // Orange for draft
+    }
+    if (isReleased) {
+      return '#1E823B'; // Green for released
+    }
+    return '#4368E3'; // Blue for published (not released)
+  };
 
   return (
     <button
@@ -25,7 +37,7 @@ const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge =
             width: '10px',
             height: '10px',
             borderRadius: '50%',
-            backgroundColor: isDraft ? '#BF4F03' : '#1E823B',
+            backgroundColor: getDotColor(),
           }}
         />
 

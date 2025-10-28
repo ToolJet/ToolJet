@@ -8,6 +8,7 @@ import ColorSwatches from './ColorSwatches';
 import AppPermissionsModal from './AppPermissionsModal';
 import ComponentModuleTab from './ComponentModuleTab';
 import CreateDraftVersionModal from './CreateDraftVersionModal';
+import VersionActionButtons from './VersionActionButtons';
 
 export {
   CreateVersionModal,
@@ -20,4 +21,5 @@ export {
   AppPermissionsModal,
   ComponentModuleTab,
   CreateDraftVersionModal,
+  VersionActionButtons,
 };
