@@ -181,4 +181,16 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
   async validateAndUpdateSystemParams(params: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
+  // Loop through all SSO config entries and remove any that are disabled
+  removeDisabledSsoConfigs(result) {
+    const ssoConfigs = result?.ssoConfigs;
+    if (!ssoConfigs) return result;
+    // Remove disabled SSO configs
+    for (const key in ssoConfigs) {
+      if (ssoConfigs[key]?.enabled === false) {
+        delete ssoConfigs[key];
+      }
+    }
+    return result;
+  }
 }
