@@ -3,52 +3,37 @@ id: observability-otel
 title: Observability
 ---
 
-# Observability
-
 ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze system health through metrics.
 
-## Overview
+**Categories of Metrics**
 
-ToolJet's OpenTelemetry integration provides two categories of metrics:
-
-### App-Based Metrics
-
-Monitor the performance and reliability of individual ToolJet applications:
-
-- **Query Executions:** Track total query executions per application
-- **Query Duration:** Measure query execution times with histogram buckets
-- **Query Failures:** Monitor failed queries with error categorization
-- **Success Rates:** Application-level success rate percentages
-- **App Usage:** Track application access and interaction events
-
-These metrics include detailed labels such as `app_name`, `query_name`, `environment`, `query_text`, and `query_mode` (SQL/GUI) for fine-grained analysis.
-
-### Platform-Based Metrics
-
-Monitor the overall health and performance of your ToolJet instance:
-
-- **HTTP Server Metrics:** Request rates, response times, status codes
-- **API Performance:** Endpoint-specific latency and throughput
-- **Database Operations:** Query execution times and connection health
-- **Node.js Runtime:** Event loop delays, garbage collection, memory usage
-- **V8 Memory:** Heap usage and external memory tracking
+1. **App-Based Metrics** - Monitor the performance and reliability of individual ToolJet applications. These metrics include detailed labels such as `app_name`, `query_name`, `environment`, `query_text`, and `query_mode` (SQL/GUI) for fine-grained analysis.
+      - **Query Executions:** Track total query executions per application
+      - **Query Duration:** Measure query execution times with histogram buckets
+      - **Query Failures:** Monitor failed queries with error categorization
+      - **Success Rates:** Application-level success rate percentages
+      - **App Usage:** Track application access and interaction events <br/> <br/>
+2. **Platform-Based Metrics** - Monitor the overall health and performance of your ToolJet instance:
+      - **HTTP Server Metrics:** Request rates, response times, status codes
+      - **API Performance:** Endpoint-specific latency and throughput
+      - **Database Operations:** Query execution times and connection health
+      - **Node.js Runtime:** Event loop delays, garbage collection, memory usage
+      - **V8 Memory:** Heap usage and external memory tracking
 
 ## Configuration
-
-### Environment Variables
 
 Enable OpenTelemetry by setting the following environment variables in your ToolJet deployment:
 
 #### Required Variables
 
-```bash
+```js
 # Enable OpenTelemetry metrics collection
 ENABLE_OTEL=true
 ```
 
 #### Optional Variables
 
-```bash
+```js
 # OTLP Endpoint Configuration
 OTEL_EXPORTER_OTLP_TRACES=http://localhost:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=http://localhost:4318/v1/metrics
@@ -165,7 +150,6 @@ To import the Grafana dashboards:
    # Download Platform-Based Metrics Dashboard
    curl -O https://tooljet-deployments.s3.us-west-1.amazonaws.com/tooljet-platform-dashboard.json
    ```
-
 2. Open Grafana and navigate to **Dashboards** → **Import**
 3. Click **Upload JSON file** and select the downloaded dashboard JSON file
 4. Select your Prometheus data source
