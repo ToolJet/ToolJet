@@ -183,14 +183,16 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
   }
   // Loop through all SSO config entries and remove any that are disabled
   removeDisabledSsoConfigs(result) {
-    const ssoConfigs = result;
-    if (!ssoConfigs) return result;
-    // Remove disabled SSO configs
-    for (const key in ssoConfigs) {
-      if (ssoConfigs[key]?.enabled === false) {
-        delete ssoConfigs[key];
+    if (!result || Object.keys(result).length === 0) {
+      return result;
+    }
+
+    for (const key in result) {
+      if (result[key]?.enabled === false) {
+        delete result[key];
       }
     }
+
     return result;
   }
 }
