@@ -203,8 +203,7 @@ export default function generateColumnsData({
             case 'select':
             case 'newMultiSelect': {
               // Handle select and multiselect options
-              let useDynamicOptions = false;
-              useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
               if (useDynamicOptions) {
                 const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
                 columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
