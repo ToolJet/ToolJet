@@ -55,31 +55,6 @@ export class SessionUtilService {
       const sessionCount = sessions.length;
 
       await manager.delete(UserSessions, { userId });
-
-      // Decrement metrics for all terminated sessions
-      if (sessionCount > 0) {
-        try {
-          const user = await manager.findOne(User, {
-            where: { id: userId },
-          });
-
-          for (let i = 0; i < sessionCount; i++) {
-            decrementActiveSessions({
-              userId,
-              sessionType: 'user',
-            });
-
-            if (user?.defaultOrganizationId) {
-              decrementConcurrentUsers({
-                workspaceId: user.defaultOrganizationId,
-                userId,
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error decrementing session metrics:', error);
-        }
-      }
     });
   }
 
