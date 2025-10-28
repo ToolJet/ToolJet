@@ -1,4 +1,9 @@
-ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for building and deploying internal tools, workflows and AI agents. The community edition provides a powerful visual builder, drag-and-drop UI, and integrations with databases, APIs, SaaS apps, and object storage. For AI-powered UI generation, query building, debugging, and enterprise features, see ToolJet AI.
+ToolJet is the open-source foundation of ToolJet AI: the AI-native platform for building and deploying internal tools, workflows and AI agents. The community edition provides:
+- A powerful visual builder
+- Drag-and-drop UI
+- Integrations with databases, APIs, SaaS apps, and object storage.
+
+For AI-powered UI generation, query building, debugging, and enterprise features, see [ToolJet AI](https://www.tooljet.ai/).
 
  :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
@@ -18,7 +23,7 @@ ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for
 </p>
 
 <p align="center">
-    <img src="docs/static/img/readme/flowchart.png"/>
+    <img src="docs/static/img/readme/flowchart.png" alt="Tooljet architecture showing APIs, Agent builder, plugin marketplace, AI, Databases, LLM Integrations, Tooljet database, Application builder, Cloud storage services, Security and Access control, and SaaS tools."/>
 </p>
 
 ## Features  
@@ -39,7 +44,7 @@ Everything in CE, plus:
 - **AI App Generation:** Create apps instantly from natural language prompts.  
 - **AI Query Builder:** Generate and transform queries with AI assistance.  
 - **AI Debugging:** Identify and fix issues with one click.  
-- **Agent Builder:** Create intelligent agents to automate workflows and orchestrate processes.  
+- **Agent Builder:** Create intelligent Agents to automate workflows and orchestrate processes.  
 - **Enterprise-grade Security & Compliance:** SOC 2 and GDPR readiness, audit logs, and advanced access control.
 - **User Management:** Role-based access (RBAC), custom groups, and granular app/data permissions.  
 - **Multi-environment Management:** Seamless dev/stage/prod environments.  
@@ -52,11 +57,12 @@ Everything in CE, plus:
 <hr>
 
 ## Quickstart
+
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.ai) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.ai/docs/setup/).
 
 ### Try using Docker
-Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
+Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
 ```bash
 docker run \
@@ -72,18 +78,20 @@ docker run \
 
 ## Tutorials and examples
 
-[Time Tracker Application](https://docs.tooljet.ai/docs/#quickstart-guide)<br>
-[Build your own CMS using low-code](https://blog.tooljet.ai/build-cms-using-lowcode-and-mongodb/)<br>
-[AWS S3 Browser](https://blog.tooljet.ai/build-an-aws-s3-broswer-with-tooljet/)<br>
+- [Time Tracker Application](https://docs.tooljet.ai/docs/#quickstart-guide)
+- [Build your own CMS using low-code](https://blog.tooljet.ai/build-cms-using-lowcode-and-mongodb/)
+- [AWS S3 Browser](https://blog.tooljet.ai/build-an-aws-s3-broswer-with-tooljet/)
 
 ## Documentation
-Documentation is available at https://docs.tooljet.ai.
 
-- [Getting Started](https://docs.tooljet.ai)<br>
-- [Data source Reference](https://docs.tooljet.ai/docs/data-sources/airtable/)<br>
+Documentation is available on the [ToolJet Docs](https://docs.tooljet.ai).
+
+- [Getting Started](https://docs.tooljet.ai)
+- [Data source Reference](https://docs.tooljet.ai/docs/data-sources/airtable/)
 - [Component Reference](https://docs.tooljet.ai/docs/widgets/button)
 
 ## Self-hosted
+
 You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
 
 | Provider  | Documentation |
@@ -103,25 +111,28 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | Deploying ToolJet on a Subpath  | [Link](https://docs.tooljet.ai/docs/setup/tooljet-subpath/)   |
 
 ## Marketplace 
-ToolJet can now be found on both AWS and Azure Marketplaces, making it simpler than ever to access and deploy our app-building platform.
 
-Find ToolJet on AWS Marketplace [here](https://aws.amazon.com/marketplace/pp/prodview-fxjto27jkpqfg?sr=0-1&ref_=beagle&applicationId=AWSMPContessa) and explore seamless integration on Azure Marketplace [here](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/tooljetsolutioninc1679496832216.tooljet?tab=Overview).
+ToolJet can now be found on both the [AWS, Amazon Marketplace](https://aws.amazon.com/marketplace/pp/prodview-fxjto27jkpqfg?sr=0-1&ref_=beagle&applicationId=AWSMPContessa) and [Azure Marketplace](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/tooljetsolutioninc1679496832216.tooljet?tab=Overview), making it simpler than ever to access and deploy our app-building platform.
 
 ## Community support
-For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.ai/docs/). For additional help, you can use one of these channels to ask a question:
 
-- [Slack](https://tooljet.ai/slack) - Discussions with the community and the team.
-- [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
-- [𝕏 (Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
+For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.ai/docs/). For additional help, use one of these channels to ask a question:
+
+- [Slack](https://tooljet.ai/slack): Discussions with the community and the team.
+- [GitHub](https://github.com/ToolJet/ToolJet/issues): For bug reports and feature requests.
+- [𝕏 (Twitter)](https://twitter.com/ToolJet): Get the product updates quickly.
 
 ## Roadmap
+
 Check out our [roadmap](https://github.com/orgs/ToolJet/projects/15) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
+
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
-Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
+
+Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes.
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
