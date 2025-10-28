@@ -122,13 +122,13 @@ export function defineAppVersionAbility(
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.GET_EVENTS], App);
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   } else if (
     userAppPermissions?.viewableAppsId?.length &&
     resourceId &&
     userAppPermissions.viewableAppsId.includes(resourceId)
   ) {
-    can([FEATURE_KEY.GET_EVENTS], App);
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
 
   if (isBuilder && resourceType === MODULES.MODULES) {

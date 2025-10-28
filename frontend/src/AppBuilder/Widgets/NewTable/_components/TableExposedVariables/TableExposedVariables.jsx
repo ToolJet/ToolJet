@@ -78,6 +78,14 @@ export const TableExposedVariables = ({
     [table]
   );
 
+  const getColumnKey = useCallback(
+    (columnId) => {
+      const column = table.getColumn(columnId);
+      return column.columnDef.accessorKey;
+    },
+    [table]
+  );
+
   useEffect(() => {
     setExposedVariables({
       currentData: data,
@@ -145,7 +153,13 @@ export const TableExposedVariables = ({
   // Expose sort applied
   useEffect(() => {
     if (sorting.length > 0) {
-      const sortApplied = [{ column: getColumnName(sorting[0].id), direction: sorting[0].desc ? 'desc' : 'asc' }];
+      const sortApplied = [
+        {
+          column: getColumnName(sorting[0].id),
+          columnKey: getColumnKey(sorting[0].id),
+          direction: sorting[0].desc ? 'desc' : 'asc',
+        },
+      ];
       setExposedVariables({ sortApplied });
       fireEvent('onSort');
       prevSortingLength.current = sorting.length;
@@ -154,7 +168,7 @@ export const TableExposedVariables = ({
       prevSortingLength.current && fireEvent('onSort');
       prevSortingLength.current = null;
     }
-  }, [sorting, getColumnName, setExposedVariables, fireEvent]);
+  }, [sorting, getColumnName, getColumnKey, setExposedVariables, fireEvent]);
 
   //   // Expose current page data
   useEffect(() => {

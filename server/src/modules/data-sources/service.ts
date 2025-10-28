@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { User } from '@entities/user.entity';
@@ -148,7 +148,7 @@ export class DataSourcesService implements IDataSourcesService {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
-    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, name, options, environmentId);
+    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {

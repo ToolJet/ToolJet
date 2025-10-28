@@ -37,6 +37,29 @@ jobs:
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
 
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -119,7 +142,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -181,6 +207,112 @@ jobs:
           fi
 
           echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_user stored procedure..."
+          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_user(p_email TEXT)
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+              v_user_id UUID;
+              v_organization_ids UUID[];
+              v_organizations_to_delete UUID[];
+              v_log_message TEXT;
+          BEGIN
+              -- Log start of procedure
+              RAISE NOTICE 'Starting delete_user procedure for email: %', p_email;
+
+              -- Get user_id from email
+              SELECT id INTO v_user_id
+              FROM users
+              WHERE email = p_email;
+
+              IF v_user_id IS NULL THEN
+                  RAISE EXCEPTION 'User with email % not found', p_email;
+              END IF;
+
+              RAISE NOTICE 'User found with id: %', v_user_id;
+
+              -- Get organization_ids for the user
+              SELECT ARRAY_AGG(organization_id) INTO v_organization_ids
+              FROM organization_users
+              WHERE user_id = v_user_id;
+
+              RAISE NOTICE 'Found % organizations for user', COALESCE(ARRAY_LENGTH(v_organization_ids, 1), 0);
+
+              -- Get organizations with exactly one user (to be deleted)
+              SELECT ARRAY_AGG(organization_id) INTO v_organizations_to_delete
+              FROM (
+                  SELECT organization_id
+                  FROM organization_users
+                  WHERE organization_id = ANY(v_organization_ids)
+                  GROUP BY organization_id
+                  HAVING COUNT(*) = 1
+              ) subquery;
+
+              -- Add organizations where the user is the owner
+              v_organizations_to_delete := v_organizations_to_delete;
+
+              RAISE NOTICE 'Found % organizations to delete', COALESCE(ARRAY_LENGTH(v_organizations_to_delete, 1), 0);
+
+              -- Delete apps in organizations to be deleted
+              WITH deleted_apps AS (
+                  DELETE FROM apps
+                  WHERE organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+              )
+              SELECT 'Deleted ' || COUNT(*) || ' apps' INTO v_log_message FROM deleted_apps;
+
+              RAISE NOTICE '%', v_log_message;
+
+              -- Delete data_sources in organizations to be deleted
+              WITH deleted_data_sources AS (
+                  DELETE FROM data_sources
+                  WHERE organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+              )
+              SELECT 'Deleted ' || COUNT(*) || ' data sources' INTO v_log_message FROM deleted_data_sources;
+
+              RAISE NOTICE '%', v_log_message;
+
+              -- Delete audit_logs for organizations to be deleted and for the user
+              WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE organization_id = ANY(v_organization_ids)
+                  OR user_id = v_user_id
+                  RETURNING id
+              )
+              SELECT 'Deleted ' || COUNT(*) || ' audit logs' INTO v_log_message FROM deleted_audit_logs;
+
+              RAISE NOTICE '%', v_log_message;
+
+              -- Delete organizations
+              WITH deleted_organizations AS (
+                  DELETE FROM organizations
+                  WHERE id = ANY(v_organizations_to_delete)
+                  RETURNING id
+              )
+              SELECT 'Deleted ' || COUNT(*) || ' organizations' INTO v_log_message FROM deleted_organizations;
+
+              RAISE NOTICE '%', v_log_message;
+
+              -- Finally, delete the user
+              DELETE FROM users
+              WHERE id = v_user_id;
+
+              RAISE NOTICE 'Deleted user with id: %', v_user_id;
+              RAISE NOTICE 'User deletion procedure completed successfully for email: %', p_email;
+          END;
+          \$\$;"
+          echo "✅ delete_user procedure created successfully"
 
       - name: Create Cypress environment file
         id: create-json-tj
@@ -315,7 +447,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -501,7 +636,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -699,7 +837,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
