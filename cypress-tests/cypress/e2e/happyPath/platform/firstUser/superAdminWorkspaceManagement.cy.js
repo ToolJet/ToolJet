@@ -58,8 +58,7 @@ describe("Instance settings - All workspaces management", () => {
             .should('be.visible')
             .clear()
             .type(workspaceName);
-        cy.wait(1000);
-        cy.get(instanceWorkspaceSelectors.statusChangeButton)
+        cy.get(instanceWorkspaceSelectors.statusChangeButton, { timeout: 10000 })
             .click({ force: true });
         cy.get(instanceWorkspaceSelectors.confirmButton, { timeout: 10000 })
             .should('be.visible')
@@ -68,13 +67,11 @@ describe("Instance settings - All workspaces management", () => {
 
     const findAndUnarchiveWorkspace = (workspaceName) => {
         cy.get(instanceWorkspaceSelectors.tabArchived).click();
-        cy.wait(500);
-        cy.get(instanceWorkspaceSelectors.searchBar)
+        cy.get(instanceWorkspaceSelectors.searchBar, { timeout: 10000 })
             .should('be.visible')
             .clear()
             .type(workspaceName);
-        cy.wait(1000);
-        cy.get(instanceWorkspaceSelectors.statusChangeButton)
+        cy.get(instanceWorkspaceSelectors.statusChangeButton, { timeout: 10000 })
             .click({ force: true });
 
         cy.get(commonSelectors.toastMessage).should(
@@ -159,8 +156,7 @@ describe("Instance settings - All workspaces management", () => {
         handleArchiveWorkspaceModal();
         openAllWorkspaces();
         cy.get(instanceWorkspaceSelectors.tabArchived).click();
-        cy.wait(500);
-        cy.get(instanceWorkspaceSelectors.workspaceTableRow).should("contain.text", workspace1);
+        cy.get(instanceWorkspaceSelectors.workspaceTableRow, { timeout: 10000 }).should("contain.text", workspace1);
     });
 
     it("should not allow archiving default workspace", () => {
@@ -201,7 +197,6 @@ describe("Instance settings - All workspaces management", () => {
         cy.apiLogout();
         cy.clearCookies();
         cy.clearLocalStorage();
-        cy.wait(1000);
 
         // Try to access workspace
         cy.visit(`/${workspaceName}`);
@@ -262,7 +257,7 @@ describe("Instance settings - All workspaces management", () => {
         cy.apiLogout();
         cy.clearCookies();
         cy.clearLocalStorage();
-        cy.wait(1000);
+
         cy.visit(`/${workspace2}`);
         cy.clearAndType(onboardingSelectors.loginEmailInput, userEmail);
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
@@ -294,14 +289,12 @@ describe("Instance settings - All workspaces management", () => {
             `${workspaceName} \n was successfully archived`
         );
         cy.get(instanceWorkspaceSelectors.tabArchived).click();
-        cy.wait(500);
-        cy.get(instanceWorkspaceSelectors.workspaceTableRow).should("contain.text", workspaceName);
+        cy.get(instanceWorkspaceSelectors.workspaceTableRow, { timeout: 10000 }).should("contain.text", workspaceName);
         findAndUnarchiveWorkspace(workspaceName);
 
         cy.apiLogout();
         cy.clearCookies();
         cy.clearLocalStorage();
-        cy.wait(1000);
         cy.visitTheWorkspace(workspaceName);
         cy.clearAndType(onboardingSelectors.loginEmailInput, userEmail);
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
@@ -383,6 +376,64 @@ describe("Instance settings - All workspaces management", () => {
             "have.text",
             instanceWorksapceText.archivedWorkspaceMessage
         );
+    });
+
+    it("should change default workspace to a new one, archive previous default, then restore and set it back as default", () => {
+        const newDefault = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
+
+        cy.apiCreateWorkspace(newDefault, newDefault);
+        cy.apiLogin();
+
+        openAllWorkspaces();
+        cy.reload()
+
+        cy.get(instanceWorkspaceSelectors.selectControl).should('be.visible').click();
+        cy.get(instanceWorkspaceSelectors.selectMenu)
+            .contains(instanceWorkspaceSelectors.selectOption, newDefault)
+            .scrollIntoView()
+            .click();
+
+        cy.get('[data-cy="confirm-button"]').should('be.visible').click();
+        cy.pause();
+        cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
+            .contains(newDefault)
+            .should('be.visible')
+            .parent()
+            .within(() => {
+                cy.get(instanceWorkspaceSelectors.defaultWorkspaceTag).should('be.visible');
+            });
+
+        cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
+            .contains(DEFAULT_WORKSPACE)
+            .should('be.visible')
+            .parent()
+            .within(() => {
+                cy.get(instanceWorkspaceSelectors.defaultWorkspaceTag).should('not.exist');
+            });
+
+        cy.get(instanceWorkspaceSelectors.searchBar)
+            .clear()
+            .type(DEFAULT_WORKSPACE);
+        cy.get(instanceWorkspaceSelectors.statusChangeButton).click({ force: true });
+        cy.get('[data-cy="confirm-button"]').should('be.visible').click();
+
+        findAndUnarchiveWorkspace(DEFAULT_WORKSPACE);
+
+        cy.get(instanceWorkspaceSelectors.tabActive).click();
+        cy.get(instanceWorkspaceSelectors.searchBar).clear();
+        cy.get(instanceWorkspaceSelectors.selectControl).should('be.visible').click();
+        cy.get(instanceWorkspaceSelectors.selectMenu)
+            .contains(instanceWorkspaceSelectors.selectOption, DEFAULT_WORKSPACE)
+            .scrollIntoView()
+            .click();
+        cy.get('[data-cy="confirm-button"]').should('be.visible').click();
+        cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
+            .contains(DEFAULT_WORKSPACE)
+            .should('be.visible')
+            .parent()
+            .within(() => {
+                cy.get(instanceWorkspaceSelectors.defaultWorkspaceTag).should('be.visible');
+            });
     });
 });
 
