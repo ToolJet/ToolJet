@@ -70,26 +70,27 @@ export const Color = ({
   };
 
   const ColorPicker = () => {
-    return (
-      <>
-        {SwatchesToggle()}
-        {showPicker && componentType === 'swatches' && CustomOptionList()}
-        {showPicker && componentType === 'color' && (
-          <div>
-            {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
-            <div style={pickerStyle}>
-              <SketchPicker
-                onFocus={() => setShowPicker(true)}
-                color={value}
-                onChangeComplete={handleColorChange}
-                style={{ bottom: 0 }}
-              />
-            </div>
+  return (
+    <>
+      {SwatchesToggle()}
+      {showPicker && componentType === 'swatches' && CustomOptionList()}
+      {showPicker && componentType === 'color' && (
+        <div>
+          {/* Overlay to handle clicks outside the color picker */}
+          <div style={coverStyles} onClick={() => setShowPicker(false)} />
+          <div style={pickerStyle}>
+            <SketchPicker
+              onFocus={() => setShowPicker(true)}
+              color={value}
+              onChangeComplete={handleColorChange}
+              style={{ bottom: 0 }}
+            />
           </div>
-        )}
-      </>
-    );
-  };
+        </div>
+      )}
+    </>
+  );
+};
   const ColorPickerInputBox = () => {
     return (
       <div
