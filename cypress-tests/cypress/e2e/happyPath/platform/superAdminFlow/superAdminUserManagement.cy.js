@@ -60,7 +60,7 @@ describe("Instance settings - User management by super admin", () => {
         testArchiveUnarchiveFlow(newWorkspaceUser.name, newWorkspaceUser.email, newWorkspaceUser.workspace);
     });
 
-    it.only("should allow admin to reset invited user password and login with new password", () => {
+    it("should allow admin to reset invited user password and login with new password", () => {
         let generatedPassword;
         cy.apiFullUserOnboarding(resetPasswordUser.name, resetPasswordUser.email);
         cy.apiLogin();
