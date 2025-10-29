@@ -10,6 +10,13 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
 describe("Instance settings - All workspaces management", () => {
     const DEFAULT_WORKSPACE = "My workspace";
+    const DEFAULT_WS_ARCHIVE_TOOLTIP =
+        'Default workspace cannot be archived. Set another workspace as default to proceed with archiving.';
+    const confirmButton = commonEeSelectors.confirmButton;
+
+    const slugify = (name) => name.toLowerCase().replace(/\s+/g, '-');
+    const toastArchived = (name) => `${name} \n was successfully archived`;
+    const toastUnarchived = (name) => `${name} \n was successfully unarchived`;
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
@@ -58,11 +65,8 @@ describe("Instance settings - All workspaces management", () => {
             .should('be.visible')
             .clear()
             .type(workspaceName);
-        cy.get(instanceWorkspaceSelectors.statusChangeButton, { timeout: 10000 })
-            .click({ force: true });
-        cy.get(instanceWorkspaceSelectors.confirmButton, { timeout: 10000 })
-            .should('be.visible')
-            .click();
+        cy.get(instanceWorkspaceSelectors.statusChangeButton, { timeout: 10000 }).click({ force: true });
+        cy.get(confirmButton, { timeout: 10000 }).should('be.visible').click();
     };
 
     const findAndUnarchiveWorkspace = (workspaceName) => {
@@ -74,10 +78,7 @@ describe("Instance settings - All workspaces management", () => {
         cy.get(instanceWorkspaceSelectors.statusChangeButton, { timeout: 10000 })
             .click({ force: true });
 
-        cy.get(commonSelectors.toastMessage).should(
-            "contain.text",
-            `${workspaceName} \n was successfully unarchived`
-        );
+        cy.get(commonSelectors.toastMessage).should("contain.text", toastUnarchived(workspaceName));
     };
 
     const verifyDefaultWorkspaceTooltip = () => {
@@ -93,11 +94,7 @@ describe("Instance settings - All workspaces management", () => {
 
                         cy.get(instanceWorkspaceSelectors.tooltipDefaultWorkspace)
                             .should('be.visible')
-                            .and(
-                                'have.attr',
-                                'data-tooltip-content',
-                                'Default workspace cannot be archived. Set another workspace as default to proceed with archiving.'
-                            );
+                            .and('have.attr', 'data-tooltip-content', DEFAULT_WS_ARCHIVE_TOOLTIP);
                     }
                 });
         });
@@ -112,10 +109,10 @@ describe("Instance settings - All workspaces management", () => {
                 "contain.text",
                 instanceWorksapceText.archiveCurrentWorkspaceMessage
             );
-        cy.get(`[data-cy="${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}-workspace-input"]`).check();
+        cy.get(`[data-cy="${slugify(DEFAULT_WORKSPACE)}-workspace-input"]`).check();
         cy.get(instanceWorkspaceSelectors.continueButton).click();
 
-        cy.url().should("include", `/${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}`);
+        cy.url().should("include", `/${slugify(DEFAULT_WORKSPACE)}`);
     };
 
     it("should verify all workspaces page UI elements including header, table, tabs and workspace rows", () => {
@@ -393,8 +390,7 @@ describe("Instance settings - All workspaces management", () => {
             .scrollIntoView()
             .click();
 
-        cy.get('[data-cy="confirm-button"]').should('be.visible').click();
-        cy.pause();
+        cy.get(confirmButton).should('be.visible').click();
         cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
             .contains(newDefault)
             .should('be.visible')
@@ -415,7 +411,7 @@ describe("Instance settings - All workspaces management", () => {
             .clear()
             .type(DEFAULT_WORKSPACE);
         cy.get(instanceWorkspaceSelectors.statusChangeButton).click({ force: true });
-        cy.get('[data-cy="confirm-button"]').should('be.visible').click();
+        cy.get(confirmButton).should('be.visible').click();
 
         findAndUnarchiveWorkspace(DEFAULT_WORKSPACE);
 
