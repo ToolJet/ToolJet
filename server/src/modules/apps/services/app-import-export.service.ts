@@ -387,17 +387,18 @@ export class AppImportExportService {
           'modules.json': moduleApps,
         }),
       };
-      this.writeFilesToLocalFolder(files, appToExport.id);
+      // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
 
       console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
 
-  async writeFilesToLocalFolder(files: Record<string, any>, appId: string): Promise<void> {
+  // Note -> this is done for testing : need to refactor/ remove this
+  async writeFilesToLocalFolder(files: Record<string, any>, appName: string, appId: string): Promise<void> {
     try {
       const timestamp = Date.now();
-      const basePath = `/Users/rohanlahori/Desktop/git-sync-poc/app-${appId}-${timestamp}`;
+      const basePath = `/Users/rohanlahori/Desktop/git-sync-poc/${appName || appId}-${timestamp}`;
 
       // Create base folder
       if (!fs.existsSync(basePath)) {
@@ -414,7 +415,7 @@ export class AppImportExportService {
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           // Use id, name, or index for filename
-          const fileName = item.id || item.name || `${folderName}-${i}`;
+          const fileName = item.name || item.id || `${folderName}-${i}`;
           const filePath = path.join(folderPath, `${fileName}.json`);
 
           await fs.promises.writeFile(filePath, JSON.stringify(item, null, 2), 'utf8');
