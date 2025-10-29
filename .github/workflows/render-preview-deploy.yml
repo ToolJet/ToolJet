@@ -820,7 +820,7 @@ jobs:
         id: redeploy_ce
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          PR_NUMBER: ${{ env.PR_NUMBER }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           SERVICE_ID=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -842,7 +842,7 @@ jobs:
         id: redeploy_ee
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          PR_NUMBER: ${{ env.PR_NUMBER }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           SERVICE_ID=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
