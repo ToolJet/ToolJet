@@ -1,7 +1,7 @@
 export const ssoText = {
   pagetitle: " Workspace login",
 
-  workspaceLoginPage: {
+  instanceLoginPage: {
     cardTitle: "Instance login",
     allowedDomainLabel: "Allowed domains",
     allowedDomainInput: "",

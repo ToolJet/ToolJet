@@ -35,10 +35,10 @@ describe("Instance login", () => {
             "Instance login"
         );
 
-        for (const elements in ssoSelector.workspaceLoginPage) {
-            cy.get(ssoSelector.workspaceLoginPage[elements]).verifyVisibleElement(
+        for (const elements in ssoSelector.instanceLoginPage) {
+            cy.get(ssoSelector.instanceLoginPage[elements]).verifyVisibleElement(
                 "have.text",
-                ssoText.workspaceLoginPage[elements]
+                ssoText.instanceLoginPage[elements]
             );
         }
         cy.get(ssoSelector.enableSignUpToggle).should("be.visible");

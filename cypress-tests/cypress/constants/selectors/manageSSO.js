@@ -1,6 +1,6 @@
 export const ssoSelector = {
   pagetitle: "[data-cy=manage-sso-page-title]",
-  workspaceLoginPage: {
+  instanceLoginPage: {
     cardTitle: "[data-cy=card-title]",
     allowedDomainLabel: "[data-cy=allowed-domain-label]",
     allowedDomainInput: "[data-cy=allowed-domains]",
