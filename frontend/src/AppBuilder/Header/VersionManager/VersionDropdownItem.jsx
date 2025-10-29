@@ -23,6 +23,7 @@ const VersionDropdownItem = ({
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
+  const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
 
   const isDraft = version.status === 'DRAFT';
@@ -30,8 +31,12 @@ const VersionDropdownItem = ({
   // A version is released when it matches the releasedVersionId
   const isReleased = version.id === releasedVersionId;
 
-  // Get parent version name if this is a draft
-  const parentVersion = version.parentVersionId ? versions.find((v) => v.id === version.parentVersionId) : null;
+  // Get parent version name - search in both current environment versions and development versions
+  // This ensures we can find the parent even if it's in a different environment
+  const parentVersion = version.parentVersionId
+    ? versions.find((v) => v.id === version.parentVersionId) ||
+      developmentVersions.find((v) => v.id === version.parentVersionId)
+    : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
   // Determine if we should show promote button based on environment logic

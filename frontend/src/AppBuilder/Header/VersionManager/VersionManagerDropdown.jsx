@@ -68,6 +68,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
   const [versionToPromote, setVersionToPromote] = useState(null);
+  const [versionToEdit, setVersionToEdit] = useState(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
@@ -301,7 +302,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                 onSelect={() => handleVersionSelect(version)}
                 onPromote={() => handlePromoteDraft(version)}
                 onCreateVersion={() => handleCreateVersion(version)}
-                onEdit={() => {
+                onEdit={(v) => {
+                  setVersionToEdit(v);
                   setShowEditVersionModal(true);
                   closeDropdown();
                 }}
@@ -406,7 +408,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       {/* Edit Version Modal */}
       <EditVersionModal
         showEditAppVersion={showEditVersionModal}
-        setShowEditAppVersion={setShowEditVersionModal}
+        setShowEditAppVersion={(show) => {
+          setShowEditVersionModal(show);
+          if (!show) {
+            setVersionToEdit(null);
+          }
+        }}
+        versionToEdit={versionToEdit}
         {...props}
       />
 

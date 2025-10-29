@@ -83,15 +83,13 @@ const CreateVersionModal = ({
     }
   }, [appId, fetchDevelopmentVersions]);
 
-  // Pre-fill version name when selectedVersionForCreation changes
+  // Set the version to promote when modal opens or when developmentVersions/versionId changes
   useEffect(() => {
-    if (selectedVersionForCreation?.name) {
-      setVersionName(selectedVersionForCreation.name);
+    // Only run when modal is open
+    if (!showCreateAppVersion) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedVersionForCreation]);
 
-  useEffect(() => {
     // Wait for developmentVersions to be loaded
     if (!developmentVersions?.length) {
       return;
@@ -102,6 +100,7 @@ const CreateVersionModal = ({
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
         setSelectedVersionForCreation(versionToPromote);
+        setVersionName(versionToPromote.name);
       }
       return;
     }
@@ -111,6 +110,7 @@ const CreateVersionModal = ({
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
         setSelectedVersionForCreation(selected);
+        setVersionName(selected.name);
         return;
       }
     }
@@ -118,9 +118,10 @@ const CreateVersionModal = ({
     // Fallback: if no version is selected or found, use the first development version
     if (developmentVersions.length > 0) {
       setSelectedVersionForCreation(developmentVersions[0]);
+      setVersionName(developmentVersions[0].name);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [developmentVersions, versionId]);
+  }, [developmentVersions, versionId, showCreateAppVersion]);
 
   const { t } = useTranslation();
 
