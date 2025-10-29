@@ -274,6 +274,9 @@ export const BaseLeftSidebar = ({
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
+        contentProps={{
+          onOpenAutoFocus: (e) => e.preventDefault(),
+        }}
       />
       <div className="left-sidebar-stack-bottom">
         <div className="tw-flex tw-flex-col tw-gap-2">
