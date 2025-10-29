@@ -6,7 +6,7 @@ on:
     types: [created, edited, deleted]
 env:
   PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}
 
 permissions:
   pull-requests: write
@@ -20,6 +20,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get PR details for issue_comment events
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.exportVariable('PR_NUMBER', pr.data.number);
+            core.exportVariable('BRANCH_NAME', pr.data.head.ref);
+            console.log(`✅ PR Number: ${pr.data.number}`);
+            console.log(`✅ Branch Name: ${pr.data.head.ref}`);
+
       - name: Sync repo
         uses: actions/checkout@v3
 
@@ -368,6 +383,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get PR details for issue_comment events
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.exportVariable('PR_NUMBER', pr.data.number);
+            core.exportVariable('BRANCH_NAME', pr.data.head.ref);
+            console.log(`✅ PR Number: ${pr.data.number}`);
+            console.log(`✅ Branch Name: ${pr.data.head.ref}`);
+
       - name: Sync repo
         uses: actions/checkout@v3
 
@@ -999,3 +1029,4 @@ jobs:
             } catch (e) {
               console.log(e)
             }
+            
