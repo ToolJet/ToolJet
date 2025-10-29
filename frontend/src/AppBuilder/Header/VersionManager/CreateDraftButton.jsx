@@ -23,7 +23,6 @@ const CreateDraftButton = ({ onClick, disabled = false }) => {
               backgroundColor: 'white',
               color: disabled ? 'var(--text-disabled)' : 'var(--text-default)',
               fontWeight: 500,
-              boxShadow: '0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1)',
               cursor: disabled ? 'not-allowed' : 'pointer',
               opacity: disabled ? 0.6 : 1,
             }}

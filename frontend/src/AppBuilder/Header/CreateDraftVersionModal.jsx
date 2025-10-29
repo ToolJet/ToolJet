@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { appVersionService, authenticationService, gitSyncService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -26,15 +25,15 @@ const CreateDraftVersionModal = ({
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
   const {
     createNewVersionAction,
+    changeEditorVersionAction,
     fetchDevelopmentVersions,
     developmentVersions,
     appId,
-    setCurrentVersionId,
     selectedVersion,
-    currentMode,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
+      changeEditorVersionAction: state.changeEditorVersionAction,
       selectedEnvironment: state.selectedEnvironment,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
@@ -42,9 +41,7 @@ const CreateDraftVersionModal = ({
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
-      setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
-      currentMode: state.currentMode,
     }),
     shallow
   );
@@ -91,6 +88,13 @@ const CreateDraftVersionModal = ({
     }
   }, [savedVersions, selectedVersion]);
 
+  // Update version name when selectedVersionForCreation changes or when modal opens
+  useEffect(() => {
+    if (showCreateAppVersion && selectedVersionForCreation?.name) {
+      setVersionName(selectedVersionForCreation.name);
+    }
+  }, [selectedVersionForCreation, showCreateAppVersion]);
+
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
@@ -129,15 +133,21 @@ const CreateDraftVersionModal = ({
         setVersionName('');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
-        appVersionService
-          .getAppVersionData(appId, newVersion.id, currentMode)
-          .then((data) => {
-            setCurrentVersionId(newVersion.id);
+        // Refresh development versions to update the list with the new draft
+        fetchDevelopmentVersions(appId);
+        // Use changeEditorVersionAction to properly switch to the new draft version
+        // This will update selectedVersion with all fields including status
+        changeEditorVersionAction(
+          appId,
+          newVersion.id,
+          (data) => {
             handleCommitOnVersionCreation(data);
-          })
-          .catch((error) => {
-            toast.error(error);
-          });
+          },
+          (error) => {
+            console.error('Error switching to new draft version:', error);
+            toast.error('Draft created but failed to switch to it');
+          }
+        );
       },
       (error) => {
         if (error?.data?.code === '23505') {
@@ -265,29 +275,27 @@ const CreateDraftVersionModal = ({
 
           <div className="create-draft-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
-            <div className="mb-3">
-              <div className="col d-flex justify-content-end">
-                <ButtonSolid
-                  size="lg"
-                  onClick={() => {
-                    setVersionName('');
-                    setShowCreateAppVersion(false);
-                  }}
-                  variant="tertiary"
-                  className="mx-2"
-                >
-                  {t('globals.cancel', 'Cancel')}
-                </ButtonSolid>
-                <ButtonSolid
-                  size="lg"
-                  variant="primary"
-                  className=""
-                  type="submit"
-                  disabled={!selectedVersionForCreation}
-                >
-                  {t('editor.appVersionManager.createVersion', 'Create Version')}
-                </ButtonSolid>
-              </div>
+            <div className="col d-flex justify-content-end">
+              <ButtonSolid
+                size="lg"
+                onClick={() => {
+                  setVersionName('');
+                  setShowCreateAppVersion(false);
+                }}
+                variant="tertiary"
+                className="mx-2"
+              >
+                {t('globals.cancel', 'Cancel')}
+              </ButtonSolid>
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
+                type="submit"
+                disabled={!selectedVersionForCreation}
+              >
+                {t('editor.appVersionManager.createVersion', 'Create Version')}
+              </ButtonSolid>
             </div>
           </div>
         </form>

@@ -9,14 +9,11 @@
 }
 
 .create-draft-version-modal {
-  height: 446px;
   width: 380px;
 
   .modal-body {
-    height: 390px !important;
     padding: 24px !important;
     .create-draft-version-body{
-      height: 278px !important;
       
       .version-name-helper-text{
         color: var(--Slate-10, #7E868C);
@@ -34,7 +31,7 @@
           align-self: stretch;
           height: 60px;
           border-radius: 6px;
-          background: --bg-accent-weak;
+          background: var(--background-accent-weak) !important;
           width: 332px;
           margin-top: 16px;
           padding: 12px !important;
@@ -61,7 +58,6 @@
       bottom: 20px;
       left: 24px;
       right: 24px;
-      height: 72px !important;
     }
 
     .loader-container {
@@ -74,14 +70,11 @@
 }
 
 .create-version-modal {
-  height: 505px;
   width: 380px;
   .modal-body{
-    height: 430px !important;
     padding: 24px !important;
     
     .create-version-body {
-      height: 336px !important;
       
       .alert-component {
         border-radius: 6px;
@@ -131,7 +124,7 @@
         width: 272px;
         height: 78px;
         border-radius: 6px;
-        background: --bg-accent-weak;
+        background: var(--background-accent-weak) !important;
         width: 332px;
         height: 60px;
       }
@@ -199,6 +192,5 @@
     bottom: 20px;
     left: 24px;
     right: 24px;
-    height: 72px !important;
   }
 }

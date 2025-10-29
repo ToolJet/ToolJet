@@ -141,7 +141,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion }) => {
         <div className="row mb-3">
           <div className="col modal-main tj-app-input version-description">
             <label className="form-label" data-cy="version-description-label">
-              {t('editor.appVersionManager.versionDescription', 'Version Description')}
+              {t('editor.appVersionManager.versionDescription', 'Version description')}
             </label>
             <textarea
               type="text"

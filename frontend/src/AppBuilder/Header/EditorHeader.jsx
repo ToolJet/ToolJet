@@ -102,7 +102,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>
-                        <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}

@@ -2,9 +2,19 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
-  const { promoteVersion } = useVersionManagerStore();
+  const { refreshVersions } = useVersionManagerStore();
+
+  const { promoteVersionAction, currentEnvironment } = useStore(
+    (state) => ({
+      promoteVersionAction: state.promoteVersionAction,
+      currentEnvironment: state.selectedEnvironment,
+    }),
+    shallow
+  );
 
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState(draftVersion?.description || '');
@@ -29,25 +39,28 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
 
     setIsPromoting(true);
 
-    try {
-      await promoteVersion(appId, draftVersion.id, {
-        versionName: versionName.trim(),
-        versionDescription: versionDescription.trim(),
-        environmentId: draftVersion.currentEnvironmentId || 'development',
-      });
+    // Use global action from environmentsAndVersionsSlice
+    promoteVersionAction(
+      appId,
+      draftVersion.id,
+      versionName.trim(),
+      versionDescription.trim(),
+      () => {
+        toast.success('Draft promoted to version successfully');
+        setVersionName('');
+        setVersionDescription('');
+        // Refresh versions in dropdown
+        refreshVersions(appId, currentEnvironment?.id);
 
-      toast.success('Draft promoted to version successfully');
-      setVersionName('');
-      setVersionDescription('');
-      onClose();
-
-      // Reload page to reflect changes
-      window.location.reload();
-    } catch (error) {
-      toast.error(error?.data?.message || 'Failed to promote draft version');
-    } finally {
-      setIsPromoting(false);
-    }
+        onClose();
+        // Reload page to reflect changes
+        window.location.reload();
+      },
+      (error) => {
+        setIsPromoting(false);
+        toast.error(error?.data?.message || error?.message || 'Failed to promote draft version');
+      }
+    );
   };
 
   const handleClose = () => {
@@ -105,8 +118,8 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
 
           {/* Version Description */}
           <div className="mb-3">
-            <label className="form-label tj-text-xsm" data-cy="version-description-label">
-              Version Description
+            <label htmlFor="versionDescription" className="form-label tj-text-sm" style={{ fontWeight: 500 }}>
+              Version description
             </label>
             <textarea
               className="form-control tj-text-xsm"

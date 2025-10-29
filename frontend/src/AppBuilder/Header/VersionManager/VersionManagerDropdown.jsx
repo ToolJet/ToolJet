@@ -28,6 +28,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     deleteVersionAction,
     environmentChangedAction,
     releasedVersionId,
+    selectedVersion,
+    developmentVersions,
+    fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -39,6 +42,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       deleteVersionAction: state.deleteVersionAction,
       environmentChangedAction: state.environmentChangedAction,
       releasedVersionId: state.releasedVersionId,
+      selectedVersion: state.selectedVersion,
+      developmentVersions: state.developmentVersions,
+      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     }),
     shallow
   );
@@ -48,69 +54,80 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     filteredVersions,
     isDropdownOpen,
     searchQuery,
-    selectedEnvironment,
+    selectedEnvironmentFilter,
     loading,
+    draftVersion,
     setDropdownOpen,
     setSearchQuery,
-    setSelectedEnvironment,
-    setEnvironments,
-    fetchVersions,
+    setSelectedEnvironmentFilter,
+    fetchVersionsForEnvironment,
+    refreshVersions,
   } = useVersionManagerStore();
 
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
   const [versionToPromote, setVersionToPromote] = useState(null);
-
-  // The ref is used by Overlay to position the popover.
   const buttonRef = useRef(null);
-
-  // The popoverRef is less critical for positioning but kept for reference.
   const popoverRef = useRef(null);
 
-  // Fetch versions on mount or when appId changes
-  useEffect(() => {
-    if (appId) {
-      fetchVersions(appId);
-    }
-  }, [appId, fetchVersions]);
-
-  // Set environments in store
-  useEffect(() => {
-    if (environments && environments.length > 0) {
-      setEnvironments(environments);
-    }
-  }, [environments, setEnvironments]);
-
-  // Sync environment selection with global store
+  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes
+  // This ensures the filter is correct after page reloads from environment switches
   useEffect(() => {
     if (currentEnvironment) {
-      if (!selectedEnvironment || selectedEnvironment.id !== currentEnvironment.id) {
-        setSelectedEnvironment(currentEnvironment);
+      setSelectedEnvironmentFilter(currentEnvironment);
+    }
+  }, [currentEnvironment, setSelectedEnvironmentFilter]);
+
+  // Fetch development versions on mount to check for draft status
+  useEffect(() => {
+    if (appId) {
+      fetchDevelopmentVersions(appId);
+    }
+  }, [appId, fetchDevelopmentVersions]);
+
+  // Lazy load versions when dropdown opens
+  useEffect(() => {
+    if (currentEnvironment && isDropdownOpen) {
+      if (appId && currentEnvironment.id) {
+        fetchVersionsForEnvironment(appId, currentEnvironment.id);
       }
     }
-  }, [currentEnvironment, selectedEnvironment, setSelectedEnvironment]);
+  }, [isDropdownOpen, currentEnvironment, appId, fetchVersionsForEnvironment]);
 
-  // Current version data
-  const currentVersion = versions.find((v) => v.id === currentVersionId);
-
-  // Check if app already has a draft
-  // const hasDraft = versions.some((v) => v.status === 'DRAFT');
+  // Current version data - use selectedVersion from global store as source of truth
+  const currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+  // Check if there's a draft in development environment (global check across all environments)
+  // Drafts only exist in Development environment
+  const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
+
+  // Helper to close dropdown and reset UI state
+  const closeDropdown = () => {
+    setDropdownOpen(false);
+    // Reset environment filter to global environment when dropdown closes
+    // selectedEnvironmentFilter is just a UI state for browsing, not the actual global environment
+    setSelectedEnvironmentFilter(currentEnvironment);
+  };
 
   const handleToggleDropdown = () => {
     if (!isDropdownOpen) {
-      setSearchQuery(''); // Clear search when opening
-      // Delaying the state update allows the button ref to be stable before the overlay is shown
+      setSearchQuery('');
+      // Reset environment filter to global currentEnvironment when opening
+      // This ensures the dropdown always starts at the current global environment
+      setSelectedEnvironmentFilter(currentEnvironment);
       setTimeout(() => setDropdownOpen(true), 0);
     } else {
-      setDropdownOpen(false);
+      closeDropdown();
     }
   };
 
   const handleEnvironmentChange = (env) => {
-    setSelectedEnvironment(env);
-    environmentChangedAction?.(env);
+    // Update local filter and lazy load versions for the selected environment
+    setSelectedEnvironmentFilter(env);
+    if (appId && env.id) {
+      fetchVersionsForEnvironment(appId, env.id);
+    }
   };
 
   const handleSearchChange = (query) => {
@@ -125,39 +142,55 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     const isSameVersionSelected = currentVersionId === version.id;
 
     if (isSameVersionSelected) {
-      toast('You are already viewing this version', {
-        icon: '⚠️',
-      });
-      setDropdownOpen(false);
+      closeDropdown();
       return;
     }
+    closeDropdown();
 
-    // Close dropdown
-    setDropdownOpen(false);
+    // Check if the selected environment filter is different from current global environment
+    const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
 
-    // Use the same action as the original AppVersionsManager
-    changeEditorVersionAction(
-      appId,
-      version.id,
-      () => {
-        setCurrentVersionId(version.id);
-      },
-      (error) => {
-        toast.error(error.message || 'Failed to switch version');
-      }
-    );
+    if (isDifferentEnvironment) {
+      // First switch environment, then switch version
+      // This updates the global selectedEnvironment
+      environmentChangedAction(selectedEnvironmentFilter, () => {
+        // After environment switch, change the version
+        changeEditorVersionAction(
+          appId,
+          version.id,
+          () => {
+            setCurrentVersionId(version.id);
+          },
+          (error) => {
+            toast.error(error.message || 'Failed to switch version');
+          }
+        );
+      });
+    } else {
+      // Same environment, just switch version
+      changeEditorVersionAction(
+        appId,
+        version.id,
+        () => {
+          setCurrentVersionId(version.id);
+        },
+        (error) => {
+          toast.error(error.message || 'Failed to switch version');
+        }
+      );
+    }
   };
 
   const handlePromoteDraft = (version) => {
     setVersionToPromote(version);
     setShowPromoteModal(true);
-    setDropdownOpen(false);
+    closeDropdown();
   };
 
   const handleCreateVersion = (version) => {
     setVersionToPromote(version);
     setShowPromoteModal(true);
-    setDropdownOpen(false);
+    closeDropdown();
   };
 
   // Delete version modal state
@@ -181,9 +214,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         toast.dismiss(deletingToast);
         toast.success(`Version - ${deleteVersion.versionName} Deleted`);
         resetDeleteModal();
-        setDropdownOpen(false);
-        // Refresh versions
-        fetchVersions(appId);
+        closeDropdown();
+        // Refresh versions for the currently filtered environment, not the global currentEnvironment
+        const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
+        refreshVersions(appId, environmentToRefresh?.id);
       },
       (error) => {
         toast.dismiss(deletingToast);
@@ -214,7 +248,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         <div>
           <EnvironmentSwitcher
             environments={environments}
-            selectedEnvironment={selectedEnvironment}
+            selectedEnvironment={selectedEnvironmentFilter || currentEnvironment}
             onEnvironmentChange={handleEnvironmentChange}
             darkMode={darkMode}
           />
@@ -262,14 +296,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                 key={version.id}
                 version={version}
                 isSelected={version.id === currentVersionId}
-                currentEnvironment={selectedEnvironment}
+                currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
                 environments={environments}
                 onSelect={() => handleVersionSelect(version)}
                 onPromote={() => handlePromoteDraft(version)}
                 onCreateVersion={() => handleCreateVersion(version)}
                 onEdit={() => {
                   setShowEditVersionModal(true);
-                  setDropdownOpen(false);
+                  closeDropdown();
                 }}
                 onDelete={(v) => openDeleteModal(v)}
                 appId={appId}
@@ -281,8 +315,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        {/* Create Draft Button */}
-        <CreateDraftButton onClick={handleCreateDraft} disabled={!hasPublished} />
+        {/* Create Draft Button - disabled if draft already exists or no published versions */}
+        <CreateDraftButton onClick={handleCreateDraft} disabled={hasDraft || !hasPublished} />
       </Popover.Body>
     </Popover>
   );
@@ -292,7 +326,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       <div ref={buttonRef}>
         <VersionSwitcherButton
           version={currentVersion || { name: 'v1' }}
-          environment={selectedEnvironment || currentEnvironment}
+          environment={currentEnvironment}
           onClick={handleToggleDropdown}
           darkMode={darkMode}
           showDraftBadge={isDropdownOpen}
@@ -305,7 +339,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         target={buttonRef.current}
         placement="bottom-end"
         rootClose
-        onHide={() => setDropdownOpen(false)}
+        onHide={closeDropdown}
         popperConfig={{
           modifiers: [
             {
@@ -352,10 +386,18 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       {/* Promote Version Modal */}
       <CreateVersionModal
         showCreateAppVersion={showPromoteModal}
-        setShowCreateAppVersion={setShowPromoteModal}
+        setShowCreateAppVersion={(show) => {
+          setShowPromoteModal(show);
+          if (!show) {
+            setVersionToPromote(null);
+          }
+        }}
         versionId={versionToPromote?.id}
         onVersionCreated={() => {
-          fetchVersions(appId);
+          // Refresh versions for the currently filtered environment, not the global currentEnvironment
+          // This ensures the dropdown shows the correct versions after creating a version
+          const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
+          refreshVersions(appId, environmentToRefresh?.id);
           setVersionToPromote(null);
         }}
         {...props}

@@ -216,7 +216,20 @@ export class AppEnvironmentService implements IAppEnvironmentService {
         order: {
           createdAt: 'DESC',
         },
-        select: ['id', 'name', 'description', 'status', 'appId'],
+        select: [
+          'id',
+          'name',
+          'description',
+          'status',
+          'appId',
+          'currentEnvironmentId',
+          'parentVersionId',
+          'promotedFrom',
+          'createdAt',
+          'updatedAt',
+          'publishedAt',
+          'releasedAt',
+        ],
       });
     });
   }

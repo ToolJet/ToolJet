@@ -33,17 +33,20 @@ const CreateVersionModal = ({
     orgGit?.org_git?.git_lab?.is_enabled;
 
   const {
-    createNewVersionAction,
+    changeEditorVersionAction,
+    environmentChangedAction,
     fetchDevelopmentVersions,
     developmentVersions,
     appId,
-    setCurrentVersionId,
     selectedVersion,
     currentMode,
-    isEditorFreezed,
+    currentEnvironment,
+    environments,
+    setIsEditorFreezed,
   } = useStore(
     (state) => ({
-      createNewVersionAction: state.createNewVersionAction,
+      changeEditorVersionAction: state.changeEditorVersionAction,
+      environmentChangedAction: state.environmentChangedAction,
       selectedEnvironment: state.selectedEnvironment,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
@@ -51,15 +54,28 @@ const CreateVersionModal = ({
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
-      setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
       currentMode: state.currentMode,
-      isEditorFreezed: state.isEditorFreezed,
+      currentEnvironment: state.selectedEnvironment,
+      environments: state.environments,
+      setIsEditorFreezed: state.setIsEditorFreezed,
     }),
     shallow
   );
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
+  const textareaRef = React.useRef(null);
+
+  const handleDescriptionInput = (e) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    const lineHeight = 24;
+    const maxLines = 4;
+    const maxHeight = lineHeight * maxLines;
+    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  };
 
   useEffect(() => {
     if (appId) {
@@ -67,33 +83,30 @@ const CreateVersionModal = ({
     }
   }, [appId, fetchDevelopmentVersions]);
 
+  // Pre-fill version name when selectedVersionForCreation changes
   useEffect(() => {
-    // If versionId prop is provided, use that version directly
-    if (versionId && selectedVersion?.id === versionId) {
-      setSelectedVersionForCreation(selectedVersion);
-      return;
+    if (selectedVersionForCreation?.name) {
+      setVersionName(selectedVersionForCreation.name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVersionForCreation]);
 
+  useEffect(() => {
     // Wait for developmentVersions to be loaded
     if (!developmentVersions?.length) {
-      // If we have a versionId but developmentVersions is empty,
-      // and we have selectedVersion, use it
-      if (versionId && selectedVersion) {
-        setSelectedVersionForCreation(selectedVersion);
-      }
       return;
     }
 
-    // If versionId prop is provided, find it in developmentVersions
+    // If versionId prop is provided, ONLY use that specific version
     if (versionId) {
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
         setSelectedVersionForCreation(versionToPromote);
-        return;
       }
+      return;
     }
 
-    // Otherwise, use selectedVersion from store
+    // If no versionId prop, use selectedVersion from store
     if (selectedVersion?.id) {
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
@@ -107,7 +120,7 @@ const CreateVersionModal = ({
       setSelectedVersionForCreation(developmentVersions[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [developmentVersions, selectedVersion, versionId]);
+  }, [developmentVersions, versionId]);
 
   const { t } = useTranslation();
 
@@ -145,6 +158,8 @@ const CreateVersionModal = ({
       });
       toast.success('Version Created successfully');
       setVersionName('');
+      setVersionDescription('');
+      setSelectedVersionForCreation(null);
       setIsCreatingVersion(false);
       setShowCreateAppVersion(false);
 
@@ -152,25 +167,68 @@ const CreateVersionModal = ({
       if (onVersionCreated) {
         onVersionCreated();
       }
+      // Refresh development versions to update the lock status
+      fetchDevelopmentVersions(appId);
+      // Switch to the newly created published version properly
+      // The newly created version will be in the draft's environment (development)
+      // but with PUBLISHED status. We may need to switch environment first.
+      try {
+        const newVersionData = await appVersionService.getAppVersionData(
+          appId,
+          selectedVersionForCreation.id,
+          currentMode
+        );
 
-      // Get version data without reloading the page
-      await appVersionService
-        .getAppVersionData(appId, selectedVersionForCreation.id, currentMode)
-        .then((data) => {
-          // handleCommitOnVersionCreation(data);
-          // Switch to the newly created version
-          if (setCurrentVersionId && data.editing_version?.id) {
-            setCurrentVersionId(data.editing_version?.id);
+        // Set editor freeze state based on should_freeze_editor
+        if (newVersionData.should_freeze_editor !== undefined) {
+          setIsEditorFreezed(newVersionData.should_freeze_editor);
+        }
+
+        if (newVersionData.editing_version?.id) {
+          const newVersionEnvironmentId = newVersionData.editing_version.currentEnvironmentId;
+          const isDifferentEnvironment = newVersionEnvironmentId !== currentEnvironment?.id;
+
+          if (isDifferentEnvironment) {
+            // Need to switch environment first, then switch to the version
+            const targetEnvironment = environments.find((env) => env.id === newVersionEnvironmentId);
+            if (targetEnvironment) {
+              // First switch environment
+              await environmentChangedAction(targetEnvironment, () => {
+                // Then switch to the new version
+                changeEditorVersionAction(
+                  appId,
+                  newVersionData.editing_version.id,
+                  () => {
+                    console.log('Successfully switched environment and version');
+                  },
+                  (error) => {
+                    console.error('Error switching to newly created version:', error);
+                    toast.error('Version created but failed to switch to it');
+                  }
+                );
+              });
+            }
+          } else {
+            // Same environment, just switch version
+            await changeEditorVersionAction(
+              appId,
+              newVersionData.editing_version.id,
+              () => {},
+              (error) => {
+                console.error('Error switching to newly created version:', error);
+                toast.error('Version created but failed to switch to it');
+              }
+            );
           }
-        })
-        .catch((error) => {
-          toast.error(error);
-        });
+        }
+      } catch (error) {
+        console.error('Error getting new version data:', error);
+        toast.error('Version created but failed to switch to it');
+      }
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
       } else {
-        //       toast.error('Error while creating version. Please try again.');
         toast.error(error?.error);
       }
       toast.error('Error while creating version. Please try again.');
@@ -184,6 +242,8 @@ const CreateVersionModal = ({
       show={showCreateAppVersion}
       closeModal={() => {
         setVersionName('');
+        setVersionDescription('');
+        setSelectedVersionForCreation(null);
         setShowCreateAppVersion(false);
       }}
       title={'Create new version'}
@@ -201,7 +261,7 @@ const CreateVersionModal = ({
             createVersion();
           }}
         >
-          <div className="create-version-body mb-3 pb-2">
+          <div className="create-version-body mb-3">
             <div className="col">
               <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -224,10 +284,12 @@ const CreateVersionModal = ({
             </div>
             <div className="col mt-2">
               <label className="form-label mb-1 ms-1" data-cy="version-description-label">
-                {t('editor.appVersionManager.versionDescription', 'Version Description')}
+                {t('editor.appVersionManager.versionDescription', 'Version description')}
               </label>
               <textarea
                 type="text"
+                ref={textareaRef}
+                onInput={handleDescriptionInput}
                 onChange={(e) => setVersionDescription(e.target.value)}
                 className="form-control app-version-description"
                 data-cy="version-description-input-field"
@@ -237,6 +299,7 @@ const CreateVersionModal = ({
                 autoFocus={true}
                 minLength="0"
                 maxLength="500"
+                rows={1}
               />
               <small className="version-description-helper-text">
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}

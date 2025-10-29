@@ -60,6 +60,15 @@
   }
 }
 
+.app-version-description {
+  min-height: 24px;
+  max-height: 96px; // 4 lines * 24px
+  overflow-y: auto;
+  resize: none;
+  line-height: 24px;
+  transition: height 0.2s;
+}
+
 // Environment Toggle
 .environment-toggle {
   font-family: 'IBM Plex Sans', sans-serif;
@@ -179,15 +188,15 @@
 // Create Draft Button
 .create-draft-button {
   font-family: 'IBM Plex Sans', sans-serif;
+  outline: none;
 
   button {
     font-family: 'IBM Plex Sans', sans-serif;
     transition: all 0.2s ease;
+    outline: none !important;
 
     &:hover:not(:disabled) {
       background-color: var(--slate3) !important;
-      transform: translateY(-1px);
-      box-shadow: 0px 2px 4px rgba(48, 50, 51, 0.15) !important;
     }
 
     &:active:not(:disabled) {

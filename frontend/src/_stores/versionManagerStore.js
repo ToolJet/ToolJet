@@ -4,10 +4,9 @@ import { toast } from 'react-hot-toast';
 
 const initialState = {
   versions: [],
-  environments: [],
   draftVersion: null,
   searchQuery: '',
-  selectedEnvironment: null,
+  selectedEnvironmentFilter: null, // LOCAL UI state for filtering dropdown (not global selectedEnvironment)
   isDropdownOpen: false,
   loading: false,
   error: null,
@@ -19,7 +18,6 @@ export const useVersionManagerStore = create(
     (set, get) => ({
       ...initialState,
 
-      // Computed/derived state
       filteredVersions: [],
 
       // Actions
@@ -28,35 +26,20 @@ export const useVersionManagerStore = create(
         get()._filterVersionsByEnvironmentAndSearch();
       },
 
-      setSelectedEnvironment: (env) => {
-        set({ selectedEnvironment: env });
+      setSelectedEnvironmentFilter: (env) => {
+        set({ selectedEnvironmentFilter: env });
         get()._filterVersionsByEnvironmentAndSearch();
       },
 
-      // Filter versions based on environment and search query
+      // Filter versions based on search query only
+      // Note: Environment filtering is handled by fetchVersionsForEnvironment which fetches
+      // environment-specific versions from the backend. We don't need to filter by environment here.
       _filterVersionsByEnvironmentAndSearch: () => {
-        const { versions, selectedEnvironment, searchQuery } = get();
+        const { versions, searchQuery } = get();
 
         let filtered = versions;
 
-        // Filter by environment
-        if (selectedEnvironment) {
-          const envPriority = selectedEnvironment.priority;
-
-          filtered = versions.filter((version) => {
-            // Find the environment this version belongs to
-            const versionEnvPriority = version.currentEnvironmentId
-              ? get().environments?.find((e) => e.id === version.currentEnvironmentId)?.priority || 1
-              : 1;
-
-            // Show version if its environment priority is >= selected environment priority
-            // e.g., if we're in staging (priority 2), show staging and production versions
-            // if we're in production (priority 3), show only production versions
-            return versionEnvPriority >= envPriority;
-          });
-        }
-
-        // Filter by search query
+        // Filter by search query only
         if (searchQuery) {
           filtered = filtered.filter((v) => v.name?.toLowerCase().includes(searchQuery.toLowerCase()));
         }
@@ -87,13 +70,36 @@ export const useVersionManagerStore = create(
         }
       },
 
-      // Set environments (should be called from parent component)
-      setEnvironments: (environments) => {
-        set({ environments });
-        get()._filterVersionsByEnvironmentAndSearch();
+      // Fetch versions for the currently selected environment (lazy loading)
+      fetchVersionsForEnvironment: async (appId, environmentId) => {
+        set({ loading: true, error: null });
+
+        try {
+          await get()._retryWithBackoff(async () => {
+            const appEnvironmentService = (await import('@/_services')).appEnvironmentService;
+            const response = await appEnvironmentService.getVersionsByEnvironment(appId, environmentId);
+            const versions = response.appVersions || [];
+
+            // Find the draft version
+            const draft = versions.find((v) => v.status === 'DRAFT');
+
+            set({
+              versions,
+              draftVersion: draft,
+              loading: false,
+            });
+
+            // Apply filtering after setting versions
+            get()._filterVersionsByEnvironmentAndSearch();
+          });
+        } catch (error) {
+          console.error('Failed to fetch versions after retries:', error);
+          set({ error: error.message || 'Failed to load versions', loading: false });
+          toast.error('Failed to load versions. Please try again.');
+        }
       },
 
-      // Fetch all versions for an app with retry
+      // Fetch all versions for an app with retry (used when needed)
       fetchVersions: async (appId) => {
         set({ loading: true, error: null });
 
@@ -121,91 +127,14 @@ export const useVersionManagerStore = create(
         }
       },
 
-      // Create a new draft version
-      createDraftVersion: async (appId, payload) => {
-        const { versionFromId, environmentId, versionDescription } = payload;
-        set({ loading: true, error: null });
-
-        try {
-          const response = await appVersionService.createDraftVersion(appId, {
-            versionFromId,
-            environmentId,
-            versionDescription,
-          });
-
-          // Refresh versions list
+      // Refresh versions after global actions
+      // This is called by components after they call global store actions
+      refreshVersions: async (appId, environmentId) => {
+        if (environmentId) {
+          await get().fetchVersionsForEnvironment(appId, environmentId);
+        } else {
           await get().fetchVersions(appId);
-
-          set({ loading: false });
-          toast.success('Draft version created successfully');
-          return response;
-        } catch (error) {
-          console.error('Failed to create draft version:', error);
-          set({ error: error.message, loading: false });
-
-          // Handle specific error for existing draft
-          if (error.message?.includes('draft version already exists')) {
-            toast.error('A draft version already exists. Please promote it first.');
-          } else {
-            toast.error(error.message || 'Failed to create draft version');
-          }
-          throw error;
         }
-      },
-
-      // Promote draft to regular version (convert isDraft to false)
-      promoteVersion: async (appId, versionId, payload) => {
-        const { versionName, versionDescription, environmentId } = payload;
-        set({ loading: true, error: null });
-
-        try {
-          const response = await appVersionService.create(appId, {
-            versionId, // This is the draft version ID to promote
-            versionName,
-            versionDescription,
-            environmentId,
-          });
-
-          // Refresh versions list
-          await get().fetchVersions(appId);
-
-          set({ loading: false });
-          toast.success(`Version ${versionName} created successfully`);
-          return response;
-        } catch (error) {
-          console.error('Failed to promote version:', error);
-          set({ error: error.message, loading: false });
-          toast.error(error.message || 'Failed to create version');
-          throw error;
-        }
-      },
-
-      // Release a version to an environment
-      releaseVersion: async (appId, versionId, environmentId) => {
-        set({ loading: true, error: null });
-
-        try {
-          const response = await appVersionService.releaseVersion(appId, versionId, {
-            environmentId,
-          });
-
-          // Refresh versions list
-          await get().fetchVersions(appId);
-
-          set({ loading: false });
-          toast.success('Version released successfully');
-          return response;
-        } catch (error) {
-          console.error('Failed to release version:', error);
-          set({ error: error.message, loading: false });
-          toast.error(error.message || 'Failed to release version');
-          throw error;
-        }
-      },
-
-      // Clear draft version (after promotion)
-      clearDraft: () => {
-        set({ draftVersion: null });
       },
 
       // Reset state

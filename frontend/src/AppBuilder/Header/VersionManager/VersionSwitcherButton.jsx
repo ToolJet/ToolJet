@@ -4,6 +4,11 @@ const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge =
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
 
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return 'Development';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   // Determine dot color based on version status
   const getDotColor = () => {
     if (isDraft) {
@@ -74,7 +79,7 @@ const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge =
             whiteSpace: 'nowrap',
           }}
         >
-          {environment?.name || 'Development'}
+          {capitalizeFirstLetter(environment?.name)}
         </span>
       </div>
     </button>

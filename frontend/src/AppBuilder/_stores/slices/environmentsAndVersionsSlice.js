@@ -126,6 +126,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       id: newVersion.id,
       name: newVersion.name,
       current_environment_id: newVersion.current_environment_id,
+      status: newVersion.status,
     };
     set((state) => ({
       ...state,
@@ -253,6 +254,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         id: data.editing_version.id,
         name: data.editing_version.name,
         current_environment_id: data.editing_version.currentEnvironmentId,
+        status: data.editing_version.status,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -302,7 +304,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             // Preserve the currently selected version when switching environments (e.g., version=v5)
             editorVersionId: get().selectedVersion?.id,
           });
-          selectedVersion = response.editorVersion;
+          const selectedVersion = response.editorVersion;
           const appVersionEnvironment = get().environments.find(
             (environment) => environment.id === selectedVersion.currentEnvironmentId
           );
@@ -330,10 +332,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedEnvironment,
         selectedVersionDef,
       };
-      // onSuccess(callBackResponse);
+      _onSuccess(callBackResponse);
     } catch (error) {
-      console.log({ error });
-      toast.error('Failed to switch theme: ' + error?.message);
+      toast.error('Failed to switch environment: ' + error?.message);
+      if (_onFailure) {
+        _onFailure(error);
+      }
     }
   },
 
@@ -406,6 +410,67 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }));
       onSuccess(newVersion);
     } catch (error) {
+      onFailure(error);
+    }
+  },
+
+  promoteVersionAction: async (appId, versionId, versionName, versionDescription, onSuccess, onFailure) => {
+    try {
+      const editorEnvironment = get().selectedEnvironment.id;
+      const response = await appVersionService.save(appId, versionId, {
+        name: versionName,
+        description: versionDescription,
+        status: 'PUBLISHED', // Promote from DRAFT to PUBLISHED
+      });
+
+      // After promotion, refresh the state
+      const editorVersion = {
+        id: response.id || versionId,
+        name: versionName,
+        current_environment_id: editorEnvironment,
+      };
+
+      set((state) => ({
+        ...state,
+        selectedVersion: editorVersion,
+        currentVersionId: editorVersion.id,
+        versionsPromotedToEnvironment: [editorVersion],
+        appVersionsLazyLoaded: false,
+        ...calculatePromoteAndReleaseButtonVisibility(
+          editorVersion.id,
+          get().selectedEnvironment,
+          useStore.getState().releasedVersionId,
+          useStore.getState()?.license?.featureAccess
+        ),
+      }));
+
+      onSuccess(response);
+    } catch (error) {
+      console.error('Failed to promote version:', error);
+      onFailure(error);
+    }
+  },
+
+  releaseVersionAction: async (appId, versionId, environmentId, onSuccess, onFailure) => {
+    try {
+      const response = await appVersionService.releaseVersion(appId, versionId, environmentId);
+
+      // Update released version ID in global state
+      set((state) => ({
+        ...state,
+        releasedVersionId: versionId,
+        appVersionsLazyLoaded: false,
+        ...calculatePromoteAndReleaseButtonVisibility(
+          get().selectedVersion.id,
+          get().selectedEnvironment,
+          versionId,
+          useStore.getState()?.license?.featureAccess
+        ),
+      }));
+
+      onSuccess(response);
+    } catch (error) {
+      console.error('Failed to release version:', error);
       onFailure(error);
     }
   },
