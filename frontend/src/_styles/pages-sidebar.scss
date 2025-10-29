@@ -552,17 +552,31 @@
             //     margin-left: 6px;
             // }
 
-            .page-handler-wrapper {
-                .more-btn-pages {
-                    width: unset !important;
+            .more-pages-btn {
+                height: 36px;
+                width: 75px !important;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 6px 10px;
+                gap: 6px;
+                border: none;
+                background-color: transparent;
+                font-family: "IBM Plex Sans";
+                font-weight: 500;
+                font-size: 14px;
+                line-height: 20px;
+                color: var(--text-placeholder, #6A727C);
 
-                    &.tj-list-item-selected {
-                        svg {
-                            path {
-                                fill: var(--icon-accent);
-                            }
-                        }
-                    }
+                &:hover {
+                    background-color: var(--cc-appBackground-surface, #F6F6F6);
+                    border-radius: 6px;
+                }
+
+                &.more-btn-selected {
+                    background-color: var(--cc-appBackground-surface, #F6F6F6);
+                    color: var(--cc-primary-text, #1B1F24);
+                    border-radius: 6px;
                 }
             }
         }

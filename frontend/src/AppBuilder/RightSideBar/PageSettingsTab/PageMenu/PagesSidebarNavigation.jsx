@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _, { set } from 'lodash';
 import cx from 'classnames';
-import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
+import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse, IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
@@ -77,7 +77,6 @@ export const PagesSidebarNavigation = ({
   const [showPopover, setShowPopover] = useState(false);
   const [measuredHeaderWidth, setMeasuredHeaderWidth] = useState(0);
   const [measuredDarkModeToggleWidth, setMeasuredDarkModeToggleWidth] = useState(0);
-  const [measuredMoreButtonWidth, setMeasuredMoreButtonWidth] = useState(0);
 
   const navigationRef = useRef(null);
 
@@ -144,16 +143,6 @@ export const PagesSidebarNavigation = ({
       setMeasuredDarkModeToggleWidth(totalDarkModeToggleWidth);
     } else {
       setMeasuredDarkModeToggleWidth(0);
-    }
-
-    if (measurementContainerRef.current) {
-      const measuredMoreButtonElement = Array.from(measurementContainerRef.current.children).find(
-        (item) => item.dataset.id === 'more-button-measurement'
-      );
-      const MORE_BUTTON_WIDTH = measuredMoreButtonElement ? measuredMoreButtonElement.offsetWidth : 74;
-      setMeasuredMoreButtonWidth(MORE_BUTTON_WIDTH);
-    } else {
-      setMeasuredMoreButtonWidth(74);
     }
   }, [hideHeader, hideLogo, collapsable, isSidebarPinned, position, style]);
 
@@ -232,7 +221,7 @@ export const PagesSidebarNavigation = ({
 
       let spaceForMoreButton = 0;
       if (isMoreButtonNeededSoon) {
-        spaceForMoreButton = measuredMoreButtonWidth;
+        spaceForMoreButton = 75;
         if (finalVisible.length > 0 || currentFixedElementsWidth > 0) {
           spaceForMoreButton += FLEX_GAP;
         }
@@ -251,7 +240,7 @@ export const PagesSidebarNavigation = ({
 
     let totalWidthWithMoreButton = currentFixedElementsWidth + currentVisibleWidth;
     if (finalOverflow.length > 0) {
-      totalWidthWithMoreButton += measuredMoreButtonWidth;
+      totalWidthWithMoreButton += 75;
       if (finalVisible.length > 0 || currentFixedElementsWidth > 0) {
         totalWidthWithMoreButton += FLEX_GAP;
       }
@@ -266,7 +255,7 @@ export const PagesSidebarNavigation = ({
 
       totalWidthWithMoreButton = currentFixedElementsWidth + currentVisibleWidth;
       if (finalOverflow.length > 0) {
-        totalWidthWithMoreButton += measuredMoreButtonWidth;
+        totalWidthWithMoreButton += 75;
         if (finalVisible.length > 0 || currentFixedElementsWidth > 0) {
           totalWidthWithMoreButton += FLEX_GAP;
         }
@@ -280,7 +269,6 @@ export const PagesSidebarNavigation = ({
     position,
     measuredHeaderWidth,
     measuredDarkModeToggleWidth,
-    measuredMoreButtonWidth,
     canvasMaxWidth,
     isPagesSidebarHidden,
     style,
@@ -684,7 +672,6 @@ export const PagesSidebarNavigation = ({
           fontSize: '14px',
           flexGrow: 1,
         }}
-        className="tj-list-item page-name"
       >
         {mainNavBarPages.map((link) => (
           <div
@@ -699,17 +686,6 @@ export const PagesSidebarNavigation = ({
             {link?.name}
           </div>
         ))}
-        <button
-          data-id="more-button-measurement"
-          key="measure-more-button"
-          onClick={() => setShowPopover(!showPopover)}
-          className={`tj-list-item page-name more-btn-pages width-unset ${showPopover && 'tj-list-item-selected'}`}
-          style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
-        >
-          <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
-
-          <div style={{ marginLeft: '6px' }}>More</div>
-        </button>
       </button>
       {/* Wrapper div to maintain hover state between navigation and tooltip */}
       <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
@@ -857,12 +833,14 @@ const RenderPagesWithoutGroup = ({
         <>
           <button
             ref={moreBtnRef}
-            onClick={() => setShowPopover(!showPopover)}
-            className="tj-list-item page-name more-btn-pages width-unset"
-            style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowPopover(!showPopover);
+            }}
+            className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
           >
-            <SolidIcon fill={'var(--icon-weak)'} viewBox="0 3 21 18" width="16px" name="morevertical" />
-            <div style={{ marginLeft: '6px' }}>More</div>
+            <IconDotsVertical size={16} color="var(--cc-default-icon)" />
+            More
           </button>
 
           <Overlay

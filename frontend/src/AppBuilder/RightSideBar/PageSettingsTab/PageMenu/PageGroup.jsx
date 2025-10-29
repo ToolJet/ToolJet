@@ -356,12 +356,14 @@ export const RenderPageAndPageGroup = ({
         <>
           <button
             ref={moreBtnRef}
-            onClick={() => setShowPopover(!showPopover)}
-            className={`tj-list-item page-name more-btn-pages width-unset ${showPopover && 'tj-list-item-selected'}`}
-            style={{ cursor: 'pointer', fontSize: '14px', marginLeft: '0px' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowPopover(!showPopover);
+            }}
+            className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
           >
-            <Icons.IconDotsVertical size={16} color="var(--icon-weak)" />
-            <div style={{ marginLeft: '6px' }}>More</div>
+            <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
+            More
           </button>
 
           <Overlay
