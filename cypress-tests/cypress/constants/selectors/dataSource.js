@@ -69,6 +69,7 @@ export const dataSourceSelector = {
   labelRecordsToUpdate: '[data-cy="label-records-to-update"]',
 
   queryTabAdvanced: '[data-cy="query-tab-advanced"]',
+  queryTabSettings: '[data-cy="query-tab-settings"]',
 
   labelRunQueryOnPageLoad: '[data-cy="run-on-app-load-toggle-label"]',
   labelRequestConfirmationOnRun:
