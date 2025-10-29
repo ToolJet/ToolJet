@@ -1,6 +1,6 @@
 name: Render review deploy
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled, unlabeled, closed, synchronize, opened]
   issue_comment:
     types: [created, edited, deleted]
@@ -999,4 +999,3 @@ jobs:
             } catch (e) {
               console.log(e)
             }
-            
