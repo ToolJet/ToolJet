@@ -389,9 +389,10 @@ class HomePageComponent extends React.Component {
     const { appsLimit } = this.state;
     const current = appsLimit?.current ?? 0;
     const total = appsLimit?.total ?? 0;
+    const canAddUnlimited = appsLimit?.canAddUnlimited ?? false;
 
     //  Check app limit before cloning
-    if (current >= total) {
+    if (!canAddUnlimited && current >= total) {
       toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
       return;
     }
