@@ -194,6 +194,8 @@ export const commonSelectors = {
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
   editorAppNameInput: '[data-cy="editor-app-name-input"]',
+  enablePasswordLoginTitle: '[data-cy="enable-password-login-title"]',
+  enablePasswordLoginModal: '[data-cy="modal-message"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },

@@ -583,6 +583,12 @@ export const updateInstanceSettings = (key, value) => {
         sql: `UPDATE instance_settings SET value = '${value}' WHERE key = '${key}';`,
     });
 };
+export const updateAutoSSOToggle = (allow = false) => {
+    cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `UPDATE instance_settings SET value = '${allow}' WHERE key = 'AUTOMATIC_SSO_LOGIN';`,
+    });
+};
 
 
 export const updateLicense = (keyType = 'valid') => {

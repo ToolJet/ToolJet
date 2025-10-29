@@ -21,6 +21,7 @@ export const ssoSelector = {
     customLogoutUrlPlaceholder: '[data-cy="custom-logout-url-input"]',
     customLogoutUrlHelperText: '[data-cy="custom-logout-url-helper-text"]',
     ssoHeader: '[data-cy="sso-header"]',
+    googleLabel: '[data-cy="google-label"]',
     githubLabel: '[data-cy="github-label"]',
     oidcLabel: '[data-cy="openid-connect-label"]',
   },
@@ -75,5 +76,6 @@ export const ssoSelector = {
   defaultGithub: '[data-cy="dropdown-options-git"]',
   workspaceSignUpHeader: '[data-cy="workspace-signup-header"]',
   linkReadDocumentation: '[data-cy="link-read-documentation"]',
+  instanceSsoToggle: '[data-cy="instance-sso-toggle"]',
 
 };

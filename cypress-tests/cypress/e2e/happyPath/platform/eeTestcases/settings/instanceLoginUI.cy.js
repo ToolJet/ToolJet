@@ -9,6 +9,7 @@ import {
     allowPersonalWorkspace,
     resetInstanceDomain,
     instanceSSOConfig,
+    updateAutoSSOToggle,
     passwordToggle,
 } from "Support/utils/platform/eeCommon";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
@@ -19,6 +20,7 @@ describe("Instance login", () => {
         cy.defaultWorkspaceLogin();
         instanceSSOConfig();
         passwordToggle(true);
+        updateAutoSSOToggle();
     });
     it("Should verify instance login page elements", () => {
         InstanceSSO(false, false, false);
@@ -64,7 +66,7 @@ describe("Instance login", () => {
         cy.get(ssoSelector.enableSignUpToggle).check();
         cy.get(ssoSelector.saveButton).click();
         cy.get(ssoSelector.enableSignUpToggle).should("be.checked");
-
+        cy.wait(500);
         cy.get(ssoSelector.enableSignUpToggle).uncheck();
         cy.get(ssoSelector.saveButton).click();
         cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
@@ -116,11 +118,28 @@ describe("Instance login", () => {
         cy.reload();
         openInstanceSettings();
         cy.get(ssoSelector.instanceLoginListItem).click();
-        cy.get(ssoSelector.autoSSOToggle).should("not.be.disabled").check({ force: true });
+        cy.get(ssoSelector.autoSSOToggle).should("not.be.disabled").check();
         cy.get(ssoSelector.modalMessage).should("be.visible");
         cy.get(commonSelectors.confirmationButton).click();
-
         cy.get(ssoSelector.autoSSOToggle).should("be.checked");
+
+        cy.get(ssoSelector.passwordEnableToggle).check();
+        cy.get(commonSelectors.enablePasswordLoginTitle).should("be.visible").verifyVisibleElement(
+            "have.text",
+            commonText.enablePasswordLoginTitle
+        );
+        cy.get(commonSelectors.enablePasswordLoginModal).verifyVisibleElement(
+            "have.text",
+            commonText.enablePasswordLoginModal
+        );
+        cy.get(commonSelectors.cancelButton).eq(1).click();
+        cy.get(ssoSelector.passwordEnableToggle).should("not.be.checked");
+        cy.get(ssoSelector.passwordEnableToggle).check();
+        cy.get(commonSelectors.confirmationButton).click();
+        cy.get(ssoSelector.passwordEnableToggle).should("be.checked");
+        cy.get(commonSelectors.saveButton).click();
+        cy.get(ssoSelector.autoSSOToggle).should("not.be.checked").and("be.disabled");
+
         cy.get(ssoSelector.linkReadDocumentation).should("be.visible")
             .and("have.attr", "href")
             .and("include", "/enterprise/superadmin/#instance-login");
