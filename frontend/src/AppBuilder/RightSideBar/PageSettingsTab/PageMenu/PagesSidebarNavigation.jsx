@@ -204,17 +204,16 @@ export const PagesSidebarNavigation = ({
       return;
     }
 
-    const containerWidth = navRef.current.offsetWidth;
-    const effectiveContainerWidth = containerWidth - 32;
+    const effectiveContainerWidth = navRef.current.offsetWidth;
 
     let currentVisibleWidth = 0;
     const finalVisible = [];
     const finalOverflow = [];
 
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
-    const FLEX_GAP = 8;
+    const FLEX_GAP = 6;
 
-    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth;
+    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth + 32;
 
     for (let i = 0; i < mainNavBarPages.length; i++) {
       const link = mainNavBarPages[i];
@@ -609,14 +608,20 @@ export const PagesSidebarNavigation = ({
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
           border: `${styles?.pillRadius?.value}px`,
-          borderRight:
-            !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
-              ? `1px solid ${styles?.borderColor?.value}`
-              : '',
-          borderBottom:
-            !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
-              ? `1px solid ${styles?.borderColor?.value}`
-              : '',
+          borderRight: (() => {
+            if (position !== 'side' || shouldShowBlueBorder) return 'none';
+            if (styles?.borderColor?.isDefault) {
+              return '1px solid var(--cc-weak-border, #E4E7EB)';
+            }
+            return `1px solid ${styles?.borderColor?.value}`;
+          })(),
+          borderBottom: (() => {
+            if (position !== 'top' || shouldShowBlueBorder) return 'none';
+            if (styles?.borderColor?.isDefault) {
+              return '1px solid var(--cc-weak-border, #E4E7EB)';
+            }
+            return `1px solid ${styles?.borderColor?.value}`;
+          })(),
           boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
           maxWidth: (() => {
             if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
@@ -675,7 +680,7 @@ export const PagesSidebarNavigation = ({
           visibility: 'hidden',
           whiteSpace: 'nowrap',
           display: 'flex',
-          padding: '0px 16px',
+          padding: '0px',
           fontSize: '14px',
           flexGrow: 1,
         }}
@@ -684,10 +689,9 @@ export const PagesSidebarNavigation = ({
         {mainNavBarPages.map((link) => (
           <div
             style={{
-              padding: `0px ${style === 'texticon' ? '21px' : '10px'}`,
-              ...(link?.isPageGroup && { paddingRight: style === 'texticon' ? '39px' : '28px' }),
-              fontWeight:
-                currentPageId === link?.id || link?.children?.some((child) => currentPageId === child.id) ? 500 : 400,
+              padding: `0px 12px 0px ${style === 'texticon' ? '38px' : '12px'}`,
+              ...(link?.isPageGroup && { paddingRight: '32px' }),
+              fontWeight: 500,
             }}
             key={`measure-${link.id}`}
             data-id={link.id}

@@ -212,7 +212,6 @@
         width: 100%;
         z-index: 1;
         background: var(--base, #FFF);
-        border-right: 1px solid var(--cc-weak-border, #E4E7EB);
         display: flex;
         flex-direction: column;
         box-sizing: content-box;
@@ -448,121 +447,115 @@
         }
 
         &.position-top {
-            flex-direction: row;
             position: sticky !important;
-            top: 55px !important;
             width: 100% !important;
             height: 60px !important;
-            display: flex;
-            padding-top: 0px;
+            flex-direction: row;
             overflow: hidden !important;
             justify-content: space-between;
-            border-right: 0px !important;
-
-            .page-handler-wrapper {
-                width: 100%;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .page-dark-mode-btn-wrapper {
-                justify-content: center;
-                border-top: none !important;
-                padding-left: 76px;
-            }
-
-            .accordion-item {
-                .page-group-collapse {
-                    right: 4px;
-                    top: 9px;
-                    transform: rotate(30deg);
-                }
-                .tj-list-item {
-                    padding-right: 0px !important;
-                    width: unset !important;
-                    margin-bottom: 0px !important;
-                }
-                .page-group-wrapper {
-                    gap: 2px;
-                    padding: 6px 10px !important;
-                    padding-right: 0px !important;
-
-                    &:hover {
-                        background-color: var(--interactive-overlays-fill-hover);
-                    }
-
-                    button {
-                        &:hover {
-                        background-color: unset !important;
-                        }
-                    }
-
-                    .icon-btn {
-                        height: unset !important;
-                        width: unset !important;
-                        padding: 0px !important;
-                        padding-right: 10px !important;
-                        &:hover {
-                            background-color: unset !important
-                        }
-                    }
-
-                    .tj-list-item {
-                        padding: 0px !important;
-                    }
-                }
-            }
-
-            .accordion-body {
-               &.show {
-                    z-index: 2;
-                    position: fixed;
-                    background: var(--background-surface-layer-01);
-                    border-radius: 6px;
-                    box-shadow: var(--elevation-200-box-shadow);
-                    padding: 4px !important;
-
-                    .tj-list-item {
-                        padding: 6px 12px !important;
-                    }
-                }
-            }
+            gap: 16px;
 
             .app-name {
-                margin-bottom: 0px;
-                white-space: nowrap;
-                flex-shrink: 0;
-                margin-right: 40px;
+                height: 60px;
+                width: auto !important;
+                max-width: 336px;
                 align-items: center;
+                padding: 14px 16px;
+                flex-shrink: 0;
 
                 img {
                     flex-shrink: 0;
                 }
             }
 
-            .tj-list-item {
-                outline: none !important;
-                height: 32px;
-                padding: 6px 10px !important;
-                margin-bottom: 0px !important;
+            .page-handler-wrapper {
+                width: 100%;
+                flex-shrink: 1;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
             }
 
-            .page-name {
-                width: 100% !important;
-                margin-left: 6px;
+            .page-dark-mode-btn-wrapper {
+                flex-shrink: 0;
+                height: 100%;
+                justify-content: center;
+                border-top: none !important;
             }
 
-            .position-relative {
-                display: flex;
-            }
+            // .accordion-item {
+            //     .page-group-collapse {
+            //         right: 4px;
+            //         top: 9px;
+            //         transform: rotate(30deg);
+            //     }
+            //     .tj-list-item {
+            //         padding-right: 0px !important;
+            //         width: unset !important;
+            //         margin-bottom: 0px !important;
+            //     }
+            //     .page-group-wrapper {
+            //         gap: 2px;
+            //         padding: 6px 10px !important;
+            //         padding-right: 0px !important;
+
+            //         &:hover {
+            //             background-color: var(--interactive-overlays-fill-hover);
+            //         }
+
+            //         button {
+            //             &:hover {
+            //             background-color: unset !important;
+            //             }
+            //         }
+
+            //         .icon-btn {
+            //             height: unset !important;
+            //             width: unset !important;
+            //             padding: 0px !important;
+            //             padding-right: 10px !important;
+            //             &:hover {
+            //                 background-color: unset !important
+            //             }
+            //         }
+
+            //         .tj-list-item {
+            //             padding: 0px !important;
+            //         }
+            //     }
+            // }
+
+            // .accordion-body {
+            //    &.show {
+            //         z-index: 2;
+            //         position: fixed;
+            //         background: var(--background-surface-layer-01);
+            //         border-radius: 6px;
+            //         box-shadow: var(--elevation-200-box-shadow);
+            //         padding: 4px !important;
+
+            //         .tj-list-item {
+            //             padding: 6px 12px !important;
+            //         }
+            //     }
+            // }
+
+            // .tj-list-item {
+            //     outline: none !important;
+            //     height: 32px;
+            //     padding: 6px 10px !important;
+            //     margin-bottom: 0px !important;
+            // }
+
+            // .page-name {
+            //     width: 100% !important;
+            //     margin-left: 6px;
+            // }
 
             .page-handler-wrapper {
-                display: flex;
-                padding-bottom: unset !important;
-                overflow: hidden;
-
                 .more-btn-pages {
                     width: unset !important;
+
                     &.tj-list-item-selected {
                         svg {
                             path {
