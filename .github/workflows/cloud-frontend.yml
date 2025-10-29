@@ -146,21 +146,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: ✅ Check user authorization
+        run: |
+          allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+          allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+          allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized."
+          fi
+
       - name: 🧹 Purge Cloudflare Cache
         continue-on-error: true
         run: |
-          echo "🔄 Purging Cloudflare cache..."
+          echo "🔄 Purging Cloudflare cache for specific URLs..."
           response=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID_PROD }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}" \
             -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}')
+            --data '{
+              "files": [
+                "${{ secrets.CLOUDFLARE_CONFIG_URL_PROD }}",
+                "${{ secrets.CLOUDFLARE_METADATA_URL_PROD }}"
+              ]
+            }')
 
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
 
           if [ "$http_code" = "200" ]; then
-            echo "✅ Cloudflare cache purged successfully"
+            echo "✅ Cloudflare cache purged successfully for specified URLs"
             echo "$body"
           else
             echo "⚠️ Cloudflare cache purge failed with status code: $http_code"
