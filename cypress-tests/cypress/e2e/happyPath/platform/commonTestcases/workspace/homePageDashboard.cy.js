@@ -27,7 +27,7 @@ describe("Home Page Dashboard Testcases", () => {
     it("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon).click();
-        cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
+        cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome
             );
