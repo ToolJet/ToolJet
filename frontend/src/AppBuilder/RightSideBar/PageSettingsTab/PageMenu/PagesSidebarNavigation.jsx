@@ -542,7 +542,7 @@ export const PagesSidebarNavigation = ({
           style={{
             width: 226,
             position: 'sticky',
-            height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
+            height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
             top: '0px',
             bottom: '0px',
             background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,

@@ -110,7 +110,7 @@ export const QueryPanel = ({ darkMode }) => {
         const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
         const clientY = e.clientY;
 
-        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 5;
+        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 2;
         if (withinDraggableArea !== isTopOfQueryPanel) {
           setTopOfQueryPanel(withinDraggableArea);
         }
@@ -200,6 +200,7 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),

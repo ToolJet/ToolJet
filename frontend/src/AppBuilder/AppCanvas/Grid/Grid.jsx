@@ -81,6 +81,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
 
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
@@ -147,7 +148,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noOfBoxs, triggerCanvasUpdater]);
+  }, [noOfBoxs, triggerCanvasUpdater, pageMenuPosition]);
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
