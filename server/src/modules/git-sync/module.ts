@@ -23,6 +23,7 @@ export class GitSyncModule extends SubModule {
       GitLabGitSyncUtilityService,
       BaseGitUtilService,
       BaseGitSyncService,
+      GitSyncAdapter,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -35,6 +36,7 @@ export class GitSyncModule extends SubModule {
       'providers/gitlab/util.service',
       'base-git-util.service',
       'base-git.service',
+      'git-sync-adapter',
     ]);
 
     return {
@@ -61,6 +63,7 @@ export class GitSyncModule extends SubModule {
         GitLabGitSyncUtilityService,
         SourceControlProviderService,
         FeatureAbilityFactory,
+        GitSyncAdapter,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
@@ -68,6 +71,7 @@ export class GitSyncModule extends SubModule {
         GitLabGitSyncUtilityService,
         BaseGitSyncService,
         BaseGitUtilService,
+        GitSyncAdapter,
       ],
     };
   }
