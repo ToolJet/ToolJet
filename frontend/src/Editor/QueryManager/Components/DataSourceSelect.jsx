@@ -229,18 +229,18 @@ function DataSourceSelect({
     <div>
       <Select
         onChange={({ source } = {}) =>
-          source?.id !== 'if' && workflowDataSources
+          source?.id !== 'if' && source?.id !== 'agentNode' && workflowDataSources
             ? onNewNode(source.kind, source.id, source.plugin_id, source)
-            : source && (source?.id === 'if' || source?.id === 'response' || source?.id === 'agent')
-            ? onNewNode(source?.id)
-            : handleChangeDataSource(source)
+            : source && (source?.id === 'if' || source?.id === 'response' || source?.id === 'agentNode')
+              ? onNewNode(source?.id)
+              : handleChangeDataSource(source)
         }
         classNames={{
           menu: () => 'tj-scrollbar',
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
-        menuPlacement={shouldOpenUpward ? 'top' : 'auto'}
+        menuPlacement={shouldOpenUpward ? "top" : "auto"}
         components={{
           MenuList: MenuList,
           GroupHeading: HideGroupHeading,

@@ -122,5 +122,5 @@ export const workflowDefaultSources = {
   'If condition': { kind: 'if', id: 'if', name: 'If condition' },
   Response: { kind: 'response', id: 'response', name: 'Response' },
   Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
-  Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
+  'Agent Node': { kind: 'Agent Node', id: 'agentNode', name: 'Agent Node' },
 };
