@@ -53,6 +53,7 @@ ToolJet comes with a built-in Redis setup, which is used for multiplayer editing
    - **SECRET_KEY_BASE** 
    - **LOCKBOX_KEY**
    - **test_key**
+   -**2nd_test**
 
    If using Azure Database for Postgresql-Flexible server, add:
    - **PGSSLMODE = require**
