@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { setupGlobalConstant, setupSecretConstant, setupDatabaseConstant, setupPostgreSQLDataSource, createAppWithComponents, verifyEnvironmentData, selectEnvironment, verifyQueryEditorDisabled, verifyGlobalSettingsDisabled, verifyInspectorMenuNoDelete, verifyComponentsManagerDisabled, verifyPageSettingsDisabled, verifyComponentInspectorDisabled, appPromote, releaseAppFromProdAndVisitTheApp } from "Support/utils/platform/multiEnv";
+import { setupGlobalConstant, setupSecretConstant, setupDatabaseConstant, setupTableConstant, setupPostgreSQLDataSource, createAppWithComponents, verifyEnvironmentData, selectEnvironment, verifyQueryEditorDisabled, verifyGlobalSettingsDisabled, verifyInspectorMenuNoDelete, verifyComponentsManagerDisabled, verifyPageSettingsDisabled, verifyComponentInspectorDisabled, appPromote, releaseAppFromProdAndVisitTheApp } from "Support/utils/platform/multiEnv";
 
 const waitTimes = {
   promotion: 2000,
@@ -21,9 +21,15 @@ const environmentValues = {
 };
 
 const dbValues = {
-  development: "multi_env_development",
-  staging: "multi_env_stage",
-  production: "multi_env_prod",
+  development: "multi_env_development_db",
+  staging: "multi_env_staging_db",
+  production: "multi_env_production_db",
+};
+
+const tableValues = {
+  development: "multi_env_development_table",
+  staging: "multi_env_staging_table",
+  production: "multi_env_production_table",
 };
 
 const widgetPositions = {
@@ -60,15 +66,17 @@ describe("Multi env", () => {
       globalConstantName: `${testData.baseId}_global`,
       secretConstantName: `${testData.baseId}_host`,
       dbNameConstant: `${testData.baseId}_db`,
+      tableNameConstant: `${testData.baseId}_table`,
       dsName: `pg-multi-env-${testData.baseId}`,
     };
 
     setupGlobalConstant(names.globalConstantName, environmentValues);
     setupSecretConstant(names.secretConstantName, Cypress.env("pg_host"));
     setupDatabaseConstant(names.dbNameConstant, dbValues);
+    setupTableConstant(names.tableNameConstant, tableValues);
     setupPostgreSQLDataSource(names.dsName, names.secretConstantName, names.dbNameConstant);
 
-    createAppWithComponents(names.appName, names.dsName, names.dbNameConstant, names.globalConstantName).then(() => {
+    createAppWithComponents(names.appName, names.dsName, names.dbNameConstant, names.tableNameConstant, names.globalConstantName).then(() => {
       cy.openApp(
         "",
         Cypress.env("workspaceId"),
@@ -78,7 +86,7 @@ describe("Multi env", () => {
     });
   });
 
-  it("should verify constants visibility and postgresql datasource across all environments in editor and in released app", () => {
+  it("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
     cy.forceClickOnCanvas();
     cy.dragAndDropWidget("Button", 400, 400);
     cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
@@ -102,7 +110,7 @@ describe("Multi env", () => {
     verifyEnvironmentData(dbValues.production, environmentValues.production);
   });
 
-  it("should verify constants visibility and postgresql datasource across all environments in preview", () => {
+  it("should verify multi-environment behavior across dev, staging, and production in preview", () => {
     cy.forceClickOnCanvas();
     cy.dragAndDropWidget("Button", 400, 400);
 

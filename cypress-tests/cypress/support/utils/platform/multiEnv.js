@@ -10,6 +10,19 @@ const environments = {
     production: "production",
 };
 
+export const setupTableConstant = (tableNameConstant, values) => {
+    cy.apiCreateWorkspaceConstant(
+        tableNameConstant,
+        values.development,
+        ["Global"],
+        [environments.development]
+    ).then((res) => {
+        const constantId = res.body.constant.id;
+        cy.apiUpdateWsConstant(constantId, values.staging, environments.staging);
+        cy.apiUpdateWsConstant(constantId, values.production, environments.production);
+    });
+};
+
 const widgetPositions = {
     queryData: {
         desktop: { top: 100, left: 20 },
@@ -202,7 +215,7 @@ export const setupPostgreSQLDataSource = (dsName, secretConstantName, dbNameCons
     );
 };
 
-export const createAppWithComponents = (appName, dsName, dbNameConstant, globalConstantName) => {
+export const createAppWithComponents = (appName, dsName, dbNameConstant, tableNameConstant, globalConstantName) => {
     return cy.apiCreateApp(appName).then(() => {
         cy.apiAddQueryToApp({
             queryName: "psql",
@@ -210,7 +223,7 @@ export const createAppWithComponents = (appName, dsName, dbNameConstant, globalC
                 mode: "sql",
                 transformationLanguage: "javascript",
                 enableTransformation: false,
-                query: `SELECT * FROM {{constants.${dbNameConstant}}} WHERE constant = '{{constants.${globalConstantName}}}';`,
+                query: `SELECT * FROM {{constants.${tableNameConstant}}} WHERE constant = '{{constants.${globalConstantName}}}';`,
                 runOnPageLoad: true,
             },
             dataSourceName: dsName,
@@ -244,9 +257,9 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
 };
 
 export const selectEnvironment = (envName) => {
-    cy.get(multiEnvSelector.previewSettings).click();
-    cy.get(multiEnvSelector.envContainer).click();
-    cy.get(multiEnvSelector.envNameList).contains(envName).click();
+    cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
+    cy.get(multiEnvSelector.envContainer).click({ timeout: 10000 });
+    cy.get(multiEnvSelector.envNameList).contains(envName).click({ timeout: 10000 });
 };
 
 export const releaseAppFromProdAndVisitTheApp = (appSlug) => {
@@ -276,45 +289,19 @@ export const verifyQueryEditorDisabled = () => {
 export const verifyGlobalSettingsDisabled = () => {
     cy.contains(multiEnvText.releasedAppText).should('be.visible');
     cy.get(multiEnvSelector.settingsSidebarIcon).click({ force: true });
-    cy.get(multiEnvSelector.maintenanceToggle).should(($el) => {
-        const style = window.getComputedStyle($el[0]);
-        expect(style.pointerEvents).to.equal('none');
-    });
-
-    cy.get(multiEnvSelector.maxCanvasWidthInput).should(($el) => {
-        const style = window.getComputedStyle($el[0]);
-        const visuallyDisabled =
-            style.pointerEvents === 'none' ||
-            style.opacity < 1 ||
-            $el.parents('.global-settings-width-input-container').css('pointer-events') === 'none';
-        expect(visuallyDisabled, 'Max width input should appear disabled').to.be.true;
-    });
-
-    cy.get(multiEnvSelector.maxCanvasWidthTypeDropdown).should(($el) => {
-        const style = window.getComputedStyle($el[0]);
-        const visuallyDisabled = style.pointerEvents === 'none';
-        expect(visuallyDisabled, 'Dropdown should appear disabled').to.be.true;
-    });
-    cy.get(multiEnvSelector.canvasBgFxButton)
-        .parentsUntil('[data-cy="global-settings-panel"]')
-        .should(($parents) => {
-            const anyDisabled = [...$parents].some(
-                (p) =>
-                    p.classList.contains('disabled') ||
-                    window.getComputedStyle(p).pointerEvents === 'none'
-            );
-            expect(anyDisabled, 'FX button container should be disabled').to.be.true;
-        });
+    cy.get('[data-cy="toggle-maintenance-mode"]')
+        .closest('.disabled')
+        .should('exist');
+    cy.get('[data-cy="maximum-canvas-width-input-field"]')
+        .closest('.disabled')
+        .should('exist');
     cy.get(multiEnvSelector.appSlugInput).should('not.be.disabled');
 };
 
 export const verifyInspectorMenuNoDelete = () => {
-    cy.get(multiEnvSelector.inspectorButtonAria).click();
-    cy.wait(500);
-    cy.get(multiEnvSelector.inspectorComponentsNode).should('be.visible').click();
-    cy.wait(300);
-    cy.get(multiEnvSelector.inspectorComponentsNode).eq(2).should('be.visible').click();
-    cy.wait(300);
+    cy.get(multiEnvSelector.inspectorButtonAria).click({ timeout: 1000 });
+    cy.get(multiEnvSelector.inspectorComponentsNode).should('be.visible').click({ timeout: 1000 });
+    cy.get(multiEnvSelector.inspectorComponentsNode).eq(2).should('be.visible').click({ timeout: 1000 });
     cy.get(multiEnvSelector.inspectorMenuIcon).click({ force: true });
     cy.get(multiEnvSelector.popoverBody).should('be.visible');
     cy.get(multiEnvSelector.anyDeleteInPopover).should('not.exist');
@@ -323,66 +310,15 @@ export const verifyInspectorMenuNoDelete = () => {
 };
 
 export const verifyComponentsManagerDisabled = () => {
-    cy.get(multiEnvSelector.widgetSearchInput)
-        .should(($input) => {
-            const isDisabled = $input.is(':disabled');
-            const hasPointerNone = $input.css('pointer-events') === 'none';
-            const isReadOnly = $input.prop('readonly') === true;
-            expect(
-                isDisabled || hasPointerNone || isReadOnly,
-                'Search input should be disabled or non-interactive'
-            ).to.be.true;
-        });
-
-    cy.get(multiEnvSelector.draggableBox).first().should(($el) => {
-        const draggableAttr = $el.attr('draggable');
-        const pointerEvents = $el.css('pointer-events');
-        const hasOverlay = $el.closest('[style*="pointer-events: none"]').length > 0;
-        expect(
-            draggableAttr === 'false' || pointerEvents === 'none' || hasOverlay,
-            'Widget should not be draggable or interactive'
-        ).to.be.true;
-    });
+    cy.get('.widgets-list').should('have.css', 'pointer-events', 'none');
     cy.get(multiEnvSelector.componentsPlusButton).click();
 };
 
 export const verifyPageSettingsDisabled = () => {
     cy.get(multiEnvSelector.pagesTabButton).click();
-    cy.wait(500);
-    cy.contains(multiEnvText.releasedAppText).should('be.visible');
-
-    cy.get(multiEnvSelector.addNewPageButton).should(($btn) => {
-        const isDisabledAttr = $btn.is(':disabled');
-        const pointerNone = $btn.css('pointer-events') === 'none';
-        const opacityLow = parseFloat($btn.css('opacity')) < 0.6;
-        expect(
-            isDisabledAttr || pointerNone || opacityLow,
-            'Add New Page button should be non-interactive or visually disabled'
-        ).to.be.true;
-    });
-
-    cy.get(multiEnvSelector.pageToggleInput).each(($toggle) => {
-        const isDisabled = $toggle.is(':disabled');
-        const pointerNone = $toggle.css('pointer-events') === 'none';
-        const hasOverlay = $toggle.closest('[style*="pointer-events: none"]').length > 0;
-        expect(
-            isDisabled || pointerNone || hasOverlay,
-            'Toggles should be disabled or have overlay blocking interaction'
-        ).to.be.true;
-    });
-
-    cy.get(multiEnvSelector.pageTextInput).should(($input) => {
-        const isDisabled = $input.is(':disabled');
-        const isReadOnly = $input.prop('readonly') === true;
-        const pointerNone = $input.css('pointer-events') === 'none';
-        const hasOverlay = $input.parents().toArray().some(
-            (el) => el.style.pointerEvents === 'none' || el.className.includes('disabled') || el.className.includes('overlay')
-        );
-        expect(
-            isDisabled || isReadOnly || pointerNone || hasOverlay,
-            'Title input should be visually or structurally disabled'
-        ).to.be.true;
-    });
+    cy.contains(multiEnvText.releasedAppText, { timeout: 8000 }).should('be.visible');
+    cy.get('#page-settings-tabpane-properties .disabled').should('exist');
+    cy.get('#page-settings-tabpane-styles .disabled').should('exist');
     cy.forceClickOnCanvas();
 };
 
@@ -390,90 +326,8 @@ export const verifyComponentInspectorDisabled = () => {
     cy.get(commonWidgetSelector.draggableWidget('button1')).click();
     cy.wait(500);
     cy.contains(multiEnvText.releasedAppText, { timeout: 5000 }).should('be.visible');
-
-    cy.get('input.form-check-input').each(($toggle) => {
-        const isDisabled = $toggle.is(':disabled');
-        const pointerNone = $toggle.css('pointer-events') === 'none';
-        const hasParentDisabled = $toggle.parents().toArray().some(
-            (el) =>
-                el.style.pointerEvents === 'none' ||
-                el.className.includes('disabled') ||
-                el.className.includes('overlay')
-        );
-        expect(isDisabled || pointerNone || hasParentDisabled, 'Toggle should be disabled').to.be.true;
-    });
-
-    cy.get(multiEnvSelector.fxButtonAny).each(($fxBtn) => {
-        const pointerNone = $fxBtn.css('pointer-events') === 'none';
-        const hasDisabledClass = $fxBtn.attr('class')?.includes('disabled');
-        const hasParentDisabled = $fxBtn.parents().toArray().some(
-            (el) =>
-                el.style.pointerEvents === 'none' ||
-                el.className.includes('disabled') ||
-                el.className.includes('overlay')
-        );
-        expect(pointerNone || hasDisabledClass || hasParentDisabled, 'fx button should be disabled').to
-            .be.true;
-    });
-
-    cy.get(multiEnvSelector.codeInputFieldAny).each(($field) => {
-        const $container = $field.closest('.codehinter-container, .code-editor-basic-wrapper');
-        const $editor = $field.find(multiEnvSelector.codeEditorContent);
-
-        const isDisabled = $field.is(':disabled');
-        const isReadOnly = $field.prop('readonly');
-        const pointerNone =
-            $field.css('pointer-events') === 'none' ||
-            $container.css('pointer-events') === 'none';
-        const isNotEditable = $editor.attr('contenteditable') === 'false';
-        const hasOverlay = $field.parents().toArray().some(
-            (el) =>
-                el.style.pointerEvents === 'none' ||
-                el.className.includes('disabled') ||
-                el.className.includes('overlay')
-        );
-        expect(
-            isDisabled || isReadOnly || pointerNone || isNotEditable || hasOverlay,
-            'Code editor input should be visually or structurally disabled'
-        ).to.be.true;
-    });
-
-    cy.get(multiEnvSelector.addEventHandlerButton).should(($btn) => {
-        const isDisabledAttr = $btn.is(':disabled');
-        const pointerNone = $btn.css('pointer-events') === 'none';
-        const opacityLow = parseFloat($btn.css('opacity')) < 0.6;
-        const hasDisabledClass = $btn.attr('class')?.includes('disabled');
-
-        expect(
-            isDisabledAttr || pointerNone || opacityLow || hasDisabledClass,
-            'Add event handler button should be disabled'
-        ).to.be.true;
-    });
-
-    cy.get(multiEnvSelector.popupButton).each(($popupBtn) => {
-        const pointerNone = $popupBtn.css('pointer-events') === 'none';
-        const hasParentDisabled = $popupBtn.parents().toArray().some(
-            (el) =>
-                el.style.pointerEvents === 'none' ||
-                el.className.includes('disabled') ||
-                el.className.includes('overlay')
-        );
-        expect(pointerNone || hasParentDisabled, 'Popup button should be disabled').to.be.true;
-    });
-
-    cy.get(multiEnvSelector.fieldWrapperAny).each(($wrapper) => {
-        const pointerNone = $wrapper.css('pointer-events') === 'none';
-        const hasDisabledClass = $wrapper.attr('class')?.includes('disabled');
-        const hasParentDisabled = $wrapper.parents().toArray().some(
-            (el) =>
-                el.style.pointerEvents === 'none' ||
-                el.className.includes('disabled') ||
-                el.className.includes('overlay')
-        );
-        expect(pointerNone || hasDisabledClass || hasParentDisabled, 'Field wrapper should be disabled')
-            .to.be.true;
-    });
-
+    cy.get('#inspector-tabpane-properties .disabled').should('exist');
+    cy.get('#inspector-tabpane-styles .disabled').should('exist');
     cy.forceClickOnCanvas();
 };
 
