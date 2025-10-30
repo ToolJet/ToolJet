@@ -17,14 +17,15 @@ To accept any/all file type(s), set `Accept file types` to an empty value.
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div>                                                    | <div style={{ width:"200px"}}> Expected Value </div>                                                                         |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Label                                          | Text to display as the label for the field.                                                          | String                                                                                                                       |
-| Placeholder                                    | A hint displayed to guide the user.                                                                  | String                                                                                                                       |
-| Use drop zone                                  | Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop" zone.              | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Use file picker                                | On clicking it invokes the default OS file prompt.                                                   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Allow picking multiple files                   | Allows drag and drop (or selection from the file dialog) of multiple files.                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Enable parsing                                 | Enable parsing to automatically convert uploaded CSV or JSON files into usable data within your app. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Label | Text to display as the label for the field. | String |
+| Placeholder | A hint displayed to guide the user. | String |
+| Use drop zone | Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop" zone. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Use file picker | On clicking it invokes the default OS file prompt. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Allow picking multiple files | Allows drag and drop (or selection from the file dialog) of multiple files. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Enable parsing | Enable parsing to automatically convert uploaded files into usable data within your app. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| File Type | When parsing is enabled, you can choose the file type from the dropdown - Autodetect Extension, CSV, TSV, XLS, or XLSX. When CSV is selected, you can also choose the delimiter used to separate the values. | Choose from the dropdown. |
 
 ## Events
 
@@ -66,30 +67,30 @@ The following actions of the component can be controlled using the component-spe
 
 ## Validation
 
-| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div>                                           | <div style={{width: "200px"}}> Expected Value </div>                                                                         |
-| :------------------------------------------------------ | :------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Make this field mandatory                               | Displays a 'This field is mandatory. Please select a file.' message if no file is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| File type                                               | Select the acceptable file type.                                                            | Choose from dropdown or dynamically configure the value by clicking on **fx** and entering a logical expression.             |
-| Min size limit                                          | Sets the minimum file size that can be uploaded.                                            | File size in Bytes.                                                                                                          |
-| Max size limit                                          | Sets the maximum file size that can be uploaded.                                            | File size in Bytes.                                                                                                          |
-| Min file count                                          | Sets the minimum number of files that needs to be uploaded.                                 | Numeric                                                                                                                      |
-| Max file count                                          | Sets the maximum number of files that can be uploaded.                                      | Numeric                                                                                                                      |
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div> |
+| :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
+| Make this field mandatory | Displays a 'This field is mandatory. Please select a file.' message if no file is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| File type | Select the acceptable file type. | Choose from dropdown or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Min size limit | Sets the minimum file size that can be uploaded. | File size in Bytes. |
+| Max size limit | Sets the maximum file size that can be uploaded. | File size in Bytes. |
+| Min file count | Sets the minimum number of files that needs to be uploaded. | Numeric |
+| Max file count | Sets the maximum number of files that can be uploaded. | Numeric |
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                                                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility                                   | Controls component visibility. Toggle or set dynamically.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                      | Enables or disables the component. Toggle or set dynamically.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover. Set a string value for display.                               | String                                                                                                                       |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a string value for display. | String |
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>                                                                              |
-| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Styles
 
@@ -97,19 +98,19 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
-| Title                                          | Sets the title text color.                        | Select a theme or choose from color picker.                 |
-| Active color                                   | Sets the active state color.                      | Select a theme or choose from color picker.                 |
-| Error color                                    | Sets the color for error text.                    | Select a theme or choose from color picker.                 |
+| Title | Sets the title text color. | Select a theme or choose from color picker. |
+| Active color | Sets the active state color. | Select a theme or choose from color picker. |
+| Error color | Sets the color for error text. | Select a theme or choose from color picker. |
 
 ### Container
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                            |
-| :--------------------------------------------- | :------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
-| Background                                     | Sets the component background color.              | Select a theme or choose from color picker.                                                            |
-| Border                                         | Sets the border color of the component.           | Select a theme or choose from color picker.                                                            |
-| Border radius                                  | Modifies the border radius of the component.      | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.      |
-| Box shadow                                     | Sets the box shadow properties of the component.  | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
-| Padding                                        | Allows you to maintain a standard padding.        | Numeric Value.                                                                                         |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Background | Sets the component background color. | Select a theme or choose from color picker. |
+| Border | Sets the border color of the component. | Select a theme or choose from color picker. |
+| Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Box shadow | Sets the box shadow properties of the component.  | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
+| Padding | Allows you to maintain a standard padding. | Numeric Value. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
