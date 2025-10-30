@@ -29,7 +29,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    :::
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
 5. Click on the **Create** button at the bottom of the page.
-6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
+6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/ee-entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
    <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
 7. Under "Environmental variables", please add the below ToolJet application variables:
 
