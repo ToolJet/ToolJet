@@ -7,10 +7,8 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
-import { buildTree } from './Tree/utilities';
 import { Overlay, Popover } from 'react-bootstrap';
 import { ToolTip } from '@/_components';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const RenderPage = ({
   page,
@@ -22,7 +20,6 @@ export const RenderPage = ({
   homePageId,
   linkRefs,
   isSidebarPinned,
-  callback,
   position,
   onPageClick,
   currentMode,
@@ -239,6 +236,7 @@ const RenderPageGroup = ({
 };
 
 export const RenderPageAndPageGroup = ({
+  isLicensed,
   pages,
   labelStyle,
   computeStyles,
@@ -249,17 +247,13 @@ export const RenderPageAndPageGroup = ({
   linkRefs,
   moreBtnRef,
   position,
-  style,
   isSidebarPinned,
   currentMode,
+  currentPageId,
+  homePageId,
 }) => {
-  const { moduleId } = useModuleContext();
   const [expandedPageGroupId, setExpandedPageGroupId] = useState(null);
-  // Don't render empty folders if displaying only icons
-  const navBarItems = pages.filter((p) => !p?.restricted);
-  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const currentPage = pages.find((page) => page.id === currentPageId);
-  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const [showPopover, setShowPopover] = useState(false);
   const getPagesVisibility = useStore((state) => state.getPagesVisibility);
 
@@ -278,177 +272,188 @@ export const RenderPageAndPageGroup = ({
     }
     setExpandedPageGroupId(null);
   };
-  return (
-    <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
-      {/* <Accordion alwaysOpen defaultActiveKey={tree.map((page) => page.id)}> */}
-      {visibleLinks.map((page, index) => {
-        if (
-          page.isPageGroup &&
-          page.children?.length === 0 &&
-          labelStyle?.label?.hidden &&
-          page.children.some((child) => {
-            const pageVisibility = getPagesVisibility('canvas', child?.id);
+
+  const RenderLinks = () => {
+    return (
+      <>
+        {visibleLinks.map((page, index) => {
+          if (
+            isLicensed &&
+            page.isPageGroup &&
+            page.children?.length === 0 &&
+            labelStyle?.label?.hidden &&
+            page.children.some((child) => {
+              const pageVisibility = getPagesVisibility('canvas', child?.id);
+              return (
+                pageVisibility === false &&
+                !child?.disabled &&
+                (currentMode === 'view' ? child?.restricted === false : true)
+              );
+            })
+          ) {
+            return null;
+          }
+          if (
+            isLicensed &&
+            page.isPageGroup &&
+            page.children &&
+            page.children.some((child) => {
+              const pageVisibility = getPagesVisibility('canvas', child?.id);
+              return (
+                pageVisibility === false &&
+                !child?.disabled &&
+                (currentMode === 'view' ? child?.restricted === false : true)
+              );
+            })
+          ) {
             return (
-              pageVisibility === false &&
-              !child?.disabled &&
-              (currentMode === 'view' ? child?.restricted === false : true)
+              <>
+                <RenderPageGroup
+                  switchPageWrapper={switchPageWrapper}
+                  homePageId={homePageId}
+                  currentPageId={currentPageId}
+                  key={page.id}
+                  pages={page.children}
+                  pageGroup={page}
+                  currentPage={currentPage}
+                  labelStyle={labelStyle}
+                  computeStyles={computeStyles}
+                  darkMode={darkMode}
+                  linkRefs={linkRefs}
+                  isSidebarPinned={isSidebarPinned}
+                  position={position}
+                  isExpanded={expandedPageGroupId === page.id}
+                  onToggle={handleAccordionToggle}
+                  onPageClick={closeAllAccordions}
+                  currentMode={currentMode}
+                />
+              </>
             );
-          })
-        ) {
-          return null;
-        }
-        if (
-          page.children &&
-          page.isPageGroup &&
-          page.children.some((child) => {
-            const pageVisibility = getPagesVisibility('canvas', child?.id);
+          } else if (!page.isPageGroup) {
             return (
-              pageVisibility === false &&
-              !child?.disabled &&
-              (currentMode === 'view' ? child?.restricted === false : true)
-            );
-          })
-        ) {
-          return (
-            <>
-              <RenderPageGroup
-                switchPageWrapper={switchPageWrapper}
-                homePageId={homePageId}
+              <RenderPage
+                key={page.handle}
+                page={page}
                 currentPageId={currentPageId}
-                key={page.id}
-                pages={page.children}
-                pageGroup={page}
-                currentPage={currentPage}
+                switchPageWrapper={switchPageWrapper}
                 labelStyle={labelStyle}
                 computeStyles={computeStyles}
                 darkMode={darkMode}
+                homePageId={homePageId}
                 linkRefs={linkRefs}
                 isSidebarPinned={isSidebarPinned}
                 position={position}
-                isExpanded={expandedPageGroupId === page.id}
-                onToggle={handleAccordionToggle}
                 onPageClick={closeAllAccordions}
                 currentMode={currentMode}
               />
-            </>
-          );
-        } else if (!page.isPageGroup) {
-          return (
-            <RenderPage
-              key={page.handle}
-              page={page}
-              currentPageId={currentPageId}
-              switchPageWrapper={switchPageWrapper}
-              labelStyle={labelStyle}
-              computeStyles={computeStyles}
-              darkMode={darkMode}
-              homePageId={homePageId}
-              linkRefs={linkRefs}
-              isSidebarPinned={isSidebarPinned}
-              position={position}
-              onPageClick={closeAllAccordions}
-              currentMode={currentMode}
-            />
-          );
-        }
-      })}
-      {overflowLinks.length > 0 && position === 'top' && (
-        <>
-          <button
-            ref={moreBtnRef}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowPopover(!showPopover);
-            }}
-            className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
-          >
-            <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
-            More
-          </button>
+            );
+          }
+        })}
+        {overflowLinks.length > 0 && position === 'top' && (
+          <>
+            <button
+              ref={moreBtnRef}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPopover(!showPopover);
+              }}
+              className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
+            >
+              <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
+              More
+            </button>
 
-          <Overlay
-            show={showPopover}
-            target={moreBtnRef.current}
-            placement="bottom-end"
-            onHide={() => setShowPopover(false)}
-            rootClose
-          >
-            <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
-              <Popover.Body>
-                {overflowLinks.map((page, index) => {
-                  if (
-                    page.isPageGroup &&
-                    page.children.length === 0 &&
-                    labelStyle?.label?.hidden &&
-                    page.children.some((child) => {
-                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+            <Overlay
+              show={showPopover}
+              target={moreBtnRef.current}
+              placement="bottom-end"
+              onHide={() => setShowPopover(false)}
+              rootClose
+            >
+              <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
+                <Popover.Body>
+                  {overflowLinks.map((page, index) => {
+                    if (
+                      isLicensed &&
+                      page.isPageGroup &&
+                      page.children.length === 0 &&
+                      labelStyle?.label?.hidden &&
+                      page.children.some((child) => {
+                        const pageVisibility = getPagesVisibility('canvas', child?.id);
+                        return (
+                          pageVisibility === false &&
+                          !child?.disabled &&
+                          (currentMode === 'view' ? child?.restricted === false : true)
+                        );
+                      })
+                    ) {
+                      return null;
+                    }
+                    if (
+                      isLicensed &&
+                      page.isPageGroup &&
+                      page.children &&
+                      page.children.some((child) => {
+                        const pageVisibility = getPagesVisibility('canvas', child?.id);
+                        return (
+                          pageVisibility === false &&
+                          !child?.disabled &&
+                          (currentMode === 'view' ? child?.restricted === false : true)
+                        );
+                      })
+                    ) {
                       return (
-                        pageVisibility === false &&
-                        !child?.disabled &&
-                        (currentMode === 'view' ? child?.restricted === false : true)
+                        <>
+                          <RenderPageGroup
+                            switchPageWrapper={switchPageWrapper}
+                            homePageId={homePageId}
+                            currentPageId={currentPageId}
+                            key={page.id}
+                            pages={page.children}
+                            pageGroup={page}
+                            currentPage={currentPage}
+                            labelStyle={labelStyle}
+                            computeStyles={computeStyles}
+                            darkMode={darkMode}
+                            linkRefs={linkRefs}
+                            isSidebarPinned={isSidebarPinned}
+                            isExpanded={expandedPageGroupId === page.id}
+                            onToggle={handleAccordionToggle}
+                            onPageClick={closeAllAccordions}
+                          />
+                        </>
                       );
-                    })
-                  ) {
-                    return null;
-                  }
-                  if (
-                    page.children &&
-                    page.isPageGroup &&
-                    page.children.some((child) => {
-                      const pageVisibility = getPagesVisibility('canvas', child?.id);
+                    } else if (!page.isPageGroup) {
                       return (
-                        pageVisibility === false &&
-                        !child?.disabled &&
-                        (currentMode === 'view' ? child?.restricted === false : true)
-                      );
-                    })
-                  ) {
-                    return (
-                      <>
-                        <RenderPageGroup
-                          switchPageWrapper={switchPageWrapper}
-                          homePageId={homePageId}
+                        <RenderPage
+                          key={page.handle}
+                          page={page}
                           currentPageId={currentPageId}
-                          key={page.id}
-                          pages={page.children}
-                          pageGroup={page}
-                          currentPage={currentPage}
+                          switchPageWrapper={switchPageWrapper}
                           labelStyle={labelStyle}
                           computeStyles={computeStyles}
                           darkMode={darkMode}
+                          homePageId={homePageId}
                           linkRefs={linkRefs}
                           isSidebarPinned={isSidebarPinned}
-                          isExpanded={expandedPageGroupId === page.id}
-                          onToggle={handleAccordionToggle}
                           onPageClick={closeAllAccordions}
+                          currentMode={currentMode}
                         />
-                      </>
-                    );
-                  } else if (!page.isPageGroup) {
-                    return (
-                      <RenderPage
-                        key={page.handle}
-                        page={page}
-                        currentPageId={currentPageId}
-                        switchPageWrapper={switchPageWrapper}
-                        labelStyle={labelStyle}
-                        computeStyles={computeStyles}
-                        darkMode={darkMode}
-                        homePageId={homePageId}
-                        linkRefs={linkRefs}
-                        isSidebarPinned={isSidebarPinned}
-                        onPageClick={closeAllAccordions}
-                        currentMode={currentMode}
-                      />
-                    );
-                  }
-                })}
-              </Popover.Body>
-            </Popover>
-          </Overlay>
-        </>
-      )}
-      {/* </Accordion> */}
+                      );
+                    }
+                  })}
+                </Popover.Body>
+              </Popover>
+            </Overlay>
+          </>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
+      <RenderLinks />
     </div>
   );
 };

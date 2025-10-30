@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import _, { set } from 'lodash';
+import _ from 'lodash';
 import cx from 'classnames';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse, IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
@@ -30,21 +30,17 @@ export const PagesSidebarNavigation = ({
   currentPageId,
   switchPage,
   darkMode,
-  showHeader,
   isSidebarPinned,
   setIsSidebarPinned,
-  height,
   canvasMaxWidth,
   switchDarkMode,
 }) => {
-  console.log('pages sidebar rerendered');
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-  const license = useStore((state) => state.license);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
@@ -72,16 +68,18 @@ export const PagesSidebarNavigation = ({
 
   const measurementContainerRef = useRef(null);
 
-  const [overflowLinks, setOverflowLinks] = useState([]);
-  const [visibleLinks, setVisibleLinks] = useState(pages);
-  const [showPopover, setShowPopover] = useState(false);
+  const [links, setLinks] = useState({
+    visible: pages,
+    overflow: [],
+  });
   const [measuredHeaderWidth, setMeasuredHeaderWidth] = useState(0);
   const [measuredDarkModeToggleWidth, setMeasuredDarkModeToggleWidth] = useState(0);
 
   const navigationRef = useRef(null);
 
-  const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
+  const { hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
+  const license = useStore((state) => state.license);
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
     _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
@@ -89,15 +87,13 @@ export const PagesSidebarNavigation = ({
   const labelStyle = useMemo(
     () => ({
       icon: {
-        hidden: properties?.style === 'text',
+        hidden: style === 'text',
       },
       label: {
-        hidden:
-          properties?.style === 'icon' ||
-          (style === 'texticon' && collapsable && !isSidebarPinned && properties?.position != 'top'),
+        hidden: style === 'icon' || (style === 'texticon' && collapsable && !isSidebarPinned && position != 'top'),
       },
     }),
-    [properties?.style, style, collapsable, isSidebarPinned, properties?.position]
+    [style, collapsable, isSidebarPinned, position]
   );
 
   const pagesTree = useMemo(
@@ -125,26 +121,19 @@ export const PagesSidebarNavigation = ({
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
-      const headerStyle = window.getComputedStyle(headerRef.current);
-      const headerMarginLeft = parseFloat(headerStyle.marginLeft) || 0;
-      const headerMarginRight = parseFloat(headerStyle.marginRight) || 0;
-      const totalHeaderWidth = headerRef.current.offsetWidth + headerMarginLeft + headerMarginRight;
-      setMeasuredHeaderWidth(totalHeaderWidth);
+      const headerWidth = headerRef.current.offsetWidth;
+      setMeasuredHeaderWidth(headerWidth);
     } else {
       setMeasuredHeaderWidth(0);
     }
 
     if (darkModeToggleRef.current) {
-      const darkModeToggleStyle = window.getComputedStyle(darkModeToggleRef.current);
-      const darkModeToggleMarginLeft = parseFloat(darkModeToggleStyle.marginLeft) || 0;
-      const darkModeToggleMarginRight = parseFloat(darkModeToggleStyle.marginRight) || 0;
-      const totalDarkModeToggleWidth =
-        darkModeToggleRef.current.offsetWidth + darkModeToggleMarginLeft + darkModeToggleMarginRight;
-      setMeasuredDarkModeToggleWidth(totalDarkModeToggleWidth);
+      const darkModeToggleWidth = darkModeToggleRef.current.offsetWidth;
+      setMeasuredDarkModeToggleWidth(darkModeToggleWidth);
     } else {
       setMeasuredDarkModeToggleWidth(0);
     }
-  }, [hideHeader, hideLogo, collapsable, isSidebarPinned, position, style]);
+  }, []);
 
   useEffect(() => {
     let headerObserver;
@@ -178,18 +167,22 @@ export const PagesSidebarNavigation = ({
       if (darkModeToggleObserver) darkModeToggleObserver.disconnect();
       if (measurementContainerObserver) measurementContainerObserver.disconnect();
     };
-  }, [measureStaticElements, hideHeader, hideLogo, collapsable, isSidebarPinned, position, style]);
+  }, [measureStaticElements, hideHeader, hideLogo]);
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || mainNavBarPages.length === 0) {
-      setVisibleLinks([]);
-      setOverflowLinks([]);
+      setLinks({
+        visible: [],
+        overflow: [],
+      });
       return;
     }
 
     if (position !== 'top') {
-      setVisibleLinks(mainNavBarPages);
-      setOverflowLinks([]);
+      setLinks({
+        visible: mainNavBarPages,
+        overflow: [],
+      });
       return;
     }
 
@@ -262,17 +255,13 @@ export const PagesSidebarNavigation = ({
       }
     }
 
-    setVisibleLinks(finalVisible);
-    setOverflowLinks(finalOverflow);
-  }, [
-    mainNavBarPages,
-    position,
-    measuredHeaderWidth,
-    measuredDarkModeToggleWidth,
-    canvasMaxWidth,
-    isPagesSidebarHidden,
-    style,
-  ]);
+    setLinks({
+      visible: finalVisible,
+      overflow: finalOverflow,
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mainNavBarPages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, canvasMaxWidth, style]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -293,6 +282,7 @@ export const PagesSidebarNavigation = ({
   if (isMobileDevice) {
     return null;
   }
+
   const computeStyles = (isSelected, isHovered) => {
     const baseStyles = {
       pill: {
@@ -426,7 +416,7 @@ export const PagesSidebarNavigation = ({
     // Check if click is on the navigation area but not on navigation items
     const clickedElement = e.target;
     const isNavigationItem = clickedElement.closest(
-      '.tj-list-item, .page-name, .more-btn-pages, .app-name, .page-dark-mode-btn-wrapper'
+      '.tj-list-item, .page-name, .more-pages-btn, .app-name, .page-dark-mode-btn-wrapper'
     );
 
     if (!isNavigationItem) {
@@ -479,9 +469,10 @@ export const PagesSidebarNavigation = ({
   };
 
   const Body = () => {
-    if (isLicensed && !isPagesSidebarHidden) {
-      return (
+    return (
+      !isPagesSidebarHidden && (
         <RenderPageAndPageGroup
+          isLicensed={isLicensed}
           switchPageWrapper={switchPageWrapper}
           pages={pages}
           labelStyle={labelStyle}
@@ -489,36 +480,18 @@ export const PagesSidebarNavigation = ({
           darkMode={darkMode}
           switchPage={switchPage}
           linkRefs={linkRefs}
-          visibleLinks={visibleLinks}
-          overflowLinks={overflowLinks}
+          visibleLinks={links.visible}
+          overflowLinks={links.overflow}
           moreBtnRef={moreRef}
           navRef={navRef}
           position={position}
           isSidebarPinned={isSidebarPinned}
           currentMode={currentMode}
+          currentPageId={currentPageId}
+          homePageId={homePageId}
         />
-      );
-    } else {
-      return (
-        !isPagesSidebarHidden && (
-          <RenderPagesWithoutGroup
-            darkMode={darkMode}
-            homePageId={homePageId}
-            labelStyle={labelStyle}
-            isSidebarPinned={isSidebarPinned}
-            pages={pages}
-            currentPageId={currentPageId}
-            computeStyles={computeStyles}
-            switchPageWrapper={switchPageWrapper}
-            moreBtnRef={moreRef}
-            visibleLinks={visibleLinks}
-            overflowLinks={overflowLinks}
-            position={position}
-            currentMode={currentMode}
-          />
-        )
-      );
-    }
+      )
+    );
   };
 
   const Footer = ({ toggleSidebar }) => {
@@ -787,92 +760,6 @@ export const PagesSidebarNavigation = ({
         )}
       </div>{' '}
       {/* Close navigation-with-tooltip-wrapper */}
-    </div>
-  );
-};
-
-const RenderPagesWithoutGroup = ({
-  darkMode,
-  homePageId,
-  labelStyle,
-  isSidebarPinned,
-  _pages,
-  currentPageId,
-  computeStyles,
-  switchPageWrapper,
-  visibleLinks,
-  overflowLinks,
-  linkRefs,
-  handleToggle,
-  position,
-  moreBtnRef,
-  _currentMode,
-}) => {
-  const [showPopover, setShowPopover] = useState(false);
-
-  return (
-    <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-      {visibleLinks.map((page) => {
-        return (
-          <RenderPage
-            key={page.handle}
-            page={page}
-            currentPageId={currentPageId}
-            switchPageWrapper={switchPageWrapper}
-            labelStyle={labelStyle}
-            computeStyles={computeStyles}
-            darkMode={darkMode}
-            homePageId={homePageId}
-            linkRefs={linkRefs}
-            callback={handleToggle}
-            position={position}
-          />
-        );
-      })}
-      {overflowLinks.length > 0 && position === 'top' && (
-        <>
-          <button
-            ref={moreBtnRef}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowPopover(!showPopover);
-            }}
-            className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
-          >
-            <IconDotsVertical size={16} color="var(--cc-default-icon)" />
-            More
-          </button>
-
-          <Overlay
-            show={showPopover}
-            target={moreBtnRef.current}
-            placement="bottom-end"
-            onHide={() => setShowPopover(false)}
-            rootClose
-          >
-            <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
-              <Popover.Body>
-                {overflowLinks.map((page, _index) => {
-                  return (
-                    <RenderPage
-                      key={page.handle}
-                      page={page}
-                      currentPageId={currentPageId}
-                      switchPageWrapper={switchPageWrapper}
-                      labelStyle={labelStyle}
-                      computeStyles={computeStyles}
-                      darkMode={darkMode}
-                      homePageId={homePageId}
-                      linkRefs={linkRefs}
-                      isSidebarPinned={isSidebarPinned}
-                    />
-                  );
-                })}
-              </Popover.Body>
-            </Popover>
-          </Overlay>
-        </>
-      )}
     </div>
   );
 };
