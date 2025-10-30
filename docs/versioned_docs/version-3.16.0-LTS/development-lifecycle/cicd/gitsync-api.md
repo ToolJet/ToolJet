@@ -25,7 +25,7 @@ The following APIs are available to manage git sync within your CI/CD pipeline.
 ### Add GitHub HTTPS Git Configuration
 
     - **Description:** Configure GitHub HTTPS settings for an organization by associating a GitHub App and repo.
-    - **URL:** `/api/ext/organization/git`
+    - **URL:** `/api/ext/organizations/git`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
