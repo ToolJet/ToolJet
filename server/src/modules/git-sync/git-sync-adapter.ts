@@ -1,74 +1,61 @@
-// adapters/git-sync.adapter.ts
-
+import { Injectable } from '@nestjs/common';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
+import { ImportExportResourcesService } from '@ee/import-export-resources/service';
 import * as fs from 'fs';
 import * as path from 'path';
-import simpleGit, { SimpleGit } from 'simple-git';
-import { ImportExportResourcesService } from '@ee/import-export-resources/service';
 
+// Only used for compatibility, not for git actions
 export interface GitSyncConfig {
-  repoUrl: string;
+  repoUrl?: string;
   branch?: string;
   token?: string;
   commitMessage?: string;
 }
 
+@Injectable()
 export class GitSyncAdapter {
   private readonly basePath = '/Users/rohanlahori/Desktop/git-sync-poc';
-  protected readonly importExportResourcesService: ImportExportResourcesService;
+
+  constructor(private readonly importExportResourcesService: ImportExportResourcesService) {}
 
   /**
-   * Main export adapter - receives the old format and handles splitting + git sync
+   * Export adapter - receives the old format and handles splitting and writing to folders
    */
-  async exportToGit(
-    appData: any, // Your existing { appV2: appToExport } format
+  async exportToFolder(
+    appData: any,
     appId: string,
-    appName: string,
     repoPath: string,
     exportResourcesDto: ExportResourcesDto
   ): Promise<void> {
     try {
-      // console.log('🔄 Starting export to Git...');
+      // Step 1: Split the single object into file structure
+      const files = this.splitIntoFiles(appData);
 
-      // // Step 1: Split the single object into file structure
-      // const files = this.splitIntoFiles(appData);
+      // Step 2: Write files to local folder structure
+      await this.writeFilesToFolders(files, repoPath);
 
-      // // Step 2: Setup Git repository
-      // const repoPath = await this.setupGitRepo(appId, config);
-
-      // // Step 3: Write files to local folder structure
-      // await this.writeFilesToFolders(files, repoPath);
-
-      // // Step 4: Commit and push
-      // await this.commitAndPush(repoPath, appName, config);
-
-      console.log('✅ Export to Git completed successfully');
+      console.log('✅ Export to folder completed successfully');
     } catch (error) {
-      console.error('❌ Export to Git failed:', error);
+      console.error('❌ Export to folder failed:', error);
       throw error;
     }
   }
 
   /**
-   * Main import adapter - reads from git and merges back to old format
+   * Import adapter - reads from folder and merges back to old format
    */
-  async importFromGit(appId: string, config: GitSyncConfig): Promise<any> {
+  async importFromFolder(repoPath: string): Promise<any> {
     try {
-      console.log('🔄 Starting import from Git...');
-
-      // Step 1: Setup/Pull Git repository
-      const repoPath = await this.setupGitRepo(appId, config);
-
-      // Step 2: Read all files from folder structure
+      // Step 1: Read all files from folder structure
       const files = await this.readFilesFromFolders(repoPath);
 
-      // Step 3: Merge files back to single object (old format)
+      // Step 2: Merge files back to single object (old format)
       const appData = this.mergeIntoSingleObject(files);
 
-      console.log('✅ Import from Git completed successfully');
+      console.log('✅ Import from folder completed successfully');
       return appData;
     } catch (error) {
-      console.error('❌ Import from Git failed:', error);
+      console.error('❌ Import from folder failed:', error);
       throw error;
     }
   }
@@ -135,47 +122,6 @@ export class GitSyncAdapter {
     }
 
     return { appV2: appData };
-  }
-
-  /**
-   * Setup git repository (clone or pull)
-   */
-  private async setupGitRepo(appId: string, config: GitSyncConfig): Promise<string> {
-    const repoPath = path.join(this.basePath, `app-${appId}`);
-    const git: SimpleGit = simpleGit();
-    const branch = config.branch || 'main';
-
-    // Add token to URL if provided
-    let repoUrlWithAuth = config.repoUrl;
-    if (config.token) {
-      const isGitLab = config.repoUrl.includes('gitlab');
-      const protocol = config.repoUrl.split('://')[0];
-      const repoPathUrl = config.repoUrl.split('://')[1];
-
-      repoUrlWithAuth = isGitLab
-        ? `${protocol}://oauth2:${config.token}@${repoPathUrl}`
-        : `${protocol}://${config.token}@${repoPathUrl}`;
-    }
-
-    // Clone or pull
-    if (!fs.existsSync(path.join(repoPath, '.git'))) {
-      console.log('📥 Cloning repository...');
-      await git.clone(repoUrlWithAuth, repoPath);
-      git.cwd(repoPath);
-    } else {
-      console.log('📂 Using existing repository...');
-      git.cwd(repoPath);
-      await git.pull('origin', branch);
-    }
-
-    // Checkout branch
-    try {
-      await git.checkout(branch);
-    } catch {
-      await git.checkoutLocalBranch(branch);
-    }
-
-    return repoPath;
   }
 
   /**
@@ -274,23 +220,5 @@ export class GitSyncAdapter {
     }
 
     return files;
-  }
-
-  /**
-   * Commit and push changes
-   */
-  private async commitAndPush(repoPath: string, appName: string, config: GitSyncConfig): Promise<void> {
-    const git: SimpleGit = simpleGit(repoPath);
-    const branch = config.branch || 'main';
-
-    console.log('📦 Staging all changes...');
-    await git.add('.');
-
-    console.log('💾 Creating commit...');
-    const commitMessage = config.commitMessage || `Update app ${appName} - ${new Date().toISOString()}`;
-    await git.commit(commitMessage);
-
-    console.log('📤 Pushing to remote...');
-    await git.push('origin', branch);
   }
 }
