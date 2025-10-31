@@ -386,6 +386,16 @@ class HomePageComponent extends React.Component {
   };
 
   cloneApp = async (appName, appId) => {
+    const { appsLimit } = this.state;
+    const current = appsLimit?.current ?? 0;
+    const total = appsLimit?.total ?? 0;
+    const canAddUnlimited = appsLimit?.canAddUnlimited ?? false;
+
+    //  Check app limit before cloning
+    if (!canAddUnlimited && current >= total) {
+      toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
+      return;
+    }
     this.setState({ isCloningApp: true });
     try {
       const data = await appsService.cloneResource(
