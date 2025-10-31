@@ -7,8 +7,14 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
-import { Overlay, Popover } from 'react-bootstrap';
 import { ToolTip } from '@/_components';
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuContent,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 
 export const RenderPage = ({
   page,
@@ -18,15 +24,15 @@ export const RenderPage = ({
   computeStyles,
   darkMode,
   homePageId,
-  linkRefs,
   isSidebarPinned,
   position,
-  onPageClick,
   currentMode,
+  isPageInsidePopup = true,
 }) => {
   const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const isHomePage = page.id === homePageId;
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+
   const IconElement = (props) => {
     const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
 
@@ -40,38 +46,38 @@ export const RenderPage = ({
 
     return <Icon {...props} />;
   };
-  return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : (
-    <div
-      key={page.name}
-      data-id={page.id}
-      ref={(el) => {
-        if (el) {
-          if (linkRefs?.current) {
-            linkRefs.current[page.id] = el;
-          }
-        }
-      }}
-      className="tj-list-item-wrapper"
-    >
-      <FolderList
-        key={page.handle}
-        onClick={() => {
-          switchPageWrapper(page);
-          position !== 'side' && onPageClick();
-        }}
-        selectedItem={page?.id === currentPageId}
-        CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-        customStyles={computeStyles}
-        darkMode={darkMode}
-        ariaLabel={page?.name}
-      >
-        {!labelStyle?.label?.hidden && (
-          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-            <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
-          </div>
-        )}
-      </FolderList>
-    </div>
+
+  const Page = () => {
+    return (
+      <div key={page.name} data-id={page.id} className="tj-list-item-wrapper">
+        <FolderList
+          key={page.handle}
+          onClick={() => {
+            switchPageWrapper(page);
+          }}
+          selectedItem={page?.id === currentPageId}
+          CustomIcon={!labelStyle?.icon?.hidden && IconElement}
+          customStyles={computeStyles}
+          darkMode={darkMode}
+          ariaLabel={page?.name}
+        >
+          {!labelStyle?.label?.hidden && (
+            <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+              <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
+            </div>
+          )}
+        </FolderList>
+      </div>
+    );
+  };
+
+  return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : position === 'top' &&
+    !isPageInsidePopup ? (
+    <NavigationMenuItem key={page.name}>
+      <Page />
+    </NavigationMenuItem>
+  ) : (
+    <Page />
   );
 };
 
@@ -85,14 +91,12 @@ const RenderPageGroup = ({
   switchPageWrapper,
   homePageId,
   currentPageId,
-  linkRefs,
   isSidebarPinned,
   position,
-  isExpanded,
-  onToggle,
-  onPageClick,
   currentMode,
+  isPageGroupInsidePopup = true,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [hovered, setHovered] = useState(false);
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
@@ -113,28 +117,21 @@ const RenderPageGroup = ({
     return <Icon {...props} />;
   };
 
-  const handleToggle = () => {
-    onToggle(pageGroup.id);
-  };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
-        const isClickOnAccordion = event.target.closest('.accordion-item');
-        if (!isClickOnAccordion) {
-          onToggle(pageGroup.id);
-        }
+        setIsExpanded((prev) => !prev);
       }
     };
 
-    if (isExpanded) {
+    if (isExpanded && position === 'top') {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isExpanded, onToggle, pageGroup.id]);
+  }, [isExpanded]);
 
   if (pageGroupVisibility) {
     return null;
@@ -154,8 +151,6 @@ const RenderPageGroup = ({
             darkMode={darkMode}
             homePageId={homePageId}
             position={position}
-            callback={handleToggle}
-            onPageClick={onPageClick}
             currentMode={currentMode}
           />
         ))}
@@ -165,14 +160,56 @@ const RenderPageGroup = ({
 
   const active = currentPage?.pageGroupId === pageGroup?.id;
 
-  return (
+  return position === 'top' && !isPageGroupInsidePopup ? (
+    <NavigationMenuItem
+      key={pageGroup.name}
+      data-id={pageGroup.id}
+      ref={(el) => {
+        groupItemRootRef.current = el;
+      }}
+    >
+      <NavigationMenuTrigger indicator={false} className={`page-group-wrapper`}>
+        <div className="group-info">
+          {!labelStyle?.icon?.hidden && <IconElement />}
+          {!labelStyle?.label?.hidden && (
+            <div
+              style={{ width: '100%', overflow: 'hidden' }}
+              data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
+            >
+              <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
+            </div>
+          )}
+        </div>
+        <div className="icon-btn cursor-pointer flex-shrink-0">
+          <Icons.IconChevronUp
+            size={16}
+            color="var(--icon-default)"
+            className={`tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
+          />
+        </div>
+      </NavigationMenuTrigger>
+      <NavigationMenuContent className={`page-menu-popup ${darkMode && 'dark-theme'}`}>
+        {pages.map((page) => (
+          <RenderPage
+            key={page.handle}
+            page={page}
+            currentPageId={currentPageId}
+            switchPageWrapper={switchPageWrapper}
+            labelStyle={labelStyle}
+            computeStyles={computeStyles}
+            darkMode={darkMode}
+            homePageId={homePageId}
+            position={position}
+            currentMode={currentMode}
+          />
+        ))}
+      </NavigationMenuContent>
+    </NavigationMenuItem>
+  ) : (
     <div
       key={pageGroup.name}
       data-id={pageGroup.id}
       ref={(el) => {
-        if (linkRefs?.current) {
-          linkRefs.current[pageGroup.id] = el;
-        }
         groupItemRootRef.current = el;
       }}
       className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
@@ -182,7 +219,7 @@ const RenderPageGroup = ({
         style={{
           ...{ ...computedStyles.pill },
         }}
-        onClick={handleToggle}
+        onClick={() => setIsExpanded((prev) => !prev)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -202,11 +239,11 @@ const RenderPageGroup = ({
           )}
         </FolderList>
         <div className="icon-btn cursor-pointer flex-shrink-0">
-          {isExpanded ? (
-            <Icons.IconChevronUp size={16} color="var(--icon-default)" />
-          ) : (
-            <Icons.IconChevronDown size={16} color="var(--icon-default)" />
-          )}
+          <Icons.IconChevronUp
+            size={16}
+            color="var(--icon-default)"
+            className={`tw-transition tw-duration-200 ${!isExpanded && 'tw-rotate-180'}`}
+          />
         </div>
       </div>
 
@@ -222,10 +259,7 @@ const RenderPageGroup = ({
               computeStyles={computeStyles}
               darkMode={darkMode}
               homePageId={homePageId}
-              linkRefs={linkRefs}
-              callback={handleToggle}
               position={position}
-              onPageClick={onPageClick}
               currentMode={currentMode}
             />
           ))}
@@ -244,34 +278,14 @@ export const RenderPageAndPageGroup = ({
   switchPageWrapper,
   visibleLinks,
   overflowLinks,
-  linkRefs,
-  moreBtnRef,
   position,
   isSidebarPinned,
   currentMode,
   currentPageId,
   homePageId,
 }) => {
-  const [expandedPageGroupId, setExpandedPageGroupId] = useState(null);
   const currentPage = pages.find((page) => page.id === currentPageId);
-  const [showPopover, setShowPopover] = useState(false);
   const getPagesVisibility = useStore((state) => state.getPagesVisibility);
-
-  const handleAccordionToggle = (groupId) => {
-    setExpandedPageGroupId((prevId) => {
-      if (prevId === groupId) {
-        return null;
-      }
-      return groupId;
-    });
-  };
-
-  const closeAllAccordions = () => {
-    if (showPopover) {
-      setShowPopover(false);
-    }
-    setExpandedPageGroupId(null);
-  };
 
   const RenderLinks = () => {
     return (
@@ -319,13 +333,10 @@ export const RenderPageAndPageGroup = ({
                   labelStyle={labelStyle}
                   computeStyles={computeStyles}
                   darkMode={darkMode}
-                  linkRefs={linkRefs}
                   isSidebarPinned={isSidebarPinned}
                   position={position}
-                  isExpanded={expandedPageGroupId === page.id}
-                  onToggle={handleAccordionToggle}
-                  onPageClick={closeAllAccordions}
                   currentMode={currentMode}
+                  isPageGroupInsidePopup={false}
                 />
               </>
             );
@@ -340,118 +351,101 @@ export const RenderPageAndPageGroup = ({
                 computeStyles={computeStyles}
                 darkMode={darkMode}
                 homePageId={homePageId}
-                linkRefs={linkRefs}
                 isSidebarPinned={isSidebarPinned}
                 position={position}
-                onPageClick={closeAllAccordions}
                 currentMode={currentMode}
+                isPageInsidePopup={false}
               />
             );
           }
         })}
         {overflowLinks.length > 0 && position === 'top' && (
-          <>
-            <button
-              ref={moreBtnRef}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowPopover(!showPopover);
-              }}
-              className={`more-pages-btn ${showPopover && 'more-btn-selected'}`}
-            >
+          <NavigationMenuItem>
+            <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
               <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
               More
-            </button>
-
-            <Overlay
-              show={showPopover}
-              target={moreBtnRef.current}
-              placement="bottom-end"
-              onHide={() => setShowPopover(false)}
-              rootClose
-            >
-              <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
-                <Popover.Body>
-                  {overflowLinks.map((page, index) => {
-                    if (
-                      isLicensed &&
-                      page.isPageGroup &&
-                      page.children.length === 0 &&
-                      labelStyle?.label?.hidden &&
-                      page.children.some((child) => {
-                        const pageVisibility = getPagesVisibility('canvas', child?.id);
-                        return (
-                          pageVisibility === false &&
-                          !child?.disabled &&
-                          (currentMode === 'view' ? child?.restricted === false : true)
-                        );
-                      })
-                    ) {
-                      return null;
-                    }
-                    if (
-                      isLicensed &&
-                      page.isPageGroup &&
-                      page.children &&
-                      page.children.some((child) => {
-                        const pageVisibility = getPagesVisibility('canvas', child?.id);
-                        return (
-                          pageVisibility === false &&
-                          !child?.disabled &&
-                          (currentMode === 'view' ? child?.restricted === false : true)
-                        );
-                      })
-                    ) {
-                      return (
-                        <>
-                          <RenderPageGroup
-                            switchPageWrapper={switchPageWrapper}
-                            homePageId={homePageId}
-                            currentPageId={currentPageId}
-                            key={page.id}
-                            pages={page.children}
-                            pageGroup={page}
-                            currentPage={currentPage}
-                            labelStyle={labelStyle}
-                            computeStyles={computeStyles}
-                            darkMode={darkMode}
-                            linkRefs={linkRefs}
-                            isSidebarPinned={isSidebarPinned}
-                            isExpanded={expandedPageGroupId === page.id}
-                            onToggle={handleAccordionToggle}
-                            onPageClick={closeAllAccordions}
-                          />
-                        </>
-                      );
-                    } else if (!page.isPageGroup) {
-                      return (
-                        <RenderPage
-                          key={page.handle}
-                          page={page}
-                          currentPageId={currentPageId}
-                          switchPageWrapper={switchPageWrapper}
-                          labelStyle={labelStyle}
-                          computeStyles={computeStyles}
-                          darkMode={darkMode}
-                          homePageId={homePageId}
-                          linkRefs={linkRefs}
-                          isSidebarPinned={isSidebarPinned}
-                          onPageClick={closeAllAccordions}
-                          currentMode={currentMode}
-                        />
-                      );
-                    }
-                  })}
-                </Popover.Body>
-              </Popover>
-            </Overlay>
-          </>
+            </NavigationMenuTrigger>
+            <NavigationMenuContent className={`page-menu-popup ${darkMode && 'dark-theme'}`}>
+              {overflowLinks.map((page, index) => {
+                if (
+                  isLicensed &&
+                  page.isPageGroup &&
+                  page.children.length === 0 &&
+                  labelStyle?.label?.hidden &&
+                  page.children.some((child) => {
+                    const pageVisibility = getPagesVisibility('canvas', child?.id);
+                    return (
+                      pageVisibility === false &&
+                      !child?.disabled &&
+                      (currentMode === 'view' ? child?.restricted === false : true)
+                    );
+                  })
+                ) {
+                  return null;
+                }
+                if (
+                  isLicensed &&
+                  page.isPageGroup &&
+                  page.children &&
+                  page.children.some((child) => {
+                    const pageVisibility = getPagesVisibility('canvas', child?.id);
+                    return (
+                      pageVisibility === false &&
+                      !child?.disabled &&
+                      (currentMode === 'view' ? child?.restricted === false : true)
+                    );
+                  })
+                ) {
+                  return (
+                    <>
+                      <RenderPageGroup
+                        switchPageWrapper={switchPageWrapper}
+                        homePageId={homePageId}
+                        currentPageId={currentPageId}
+                        key={page.id}
+                        pages={page.children}
+                        pageGroup={page}
+                        currentPage={currentPage}
+                        labelStyle={labelStyle}
+                        computeStyles={computeStyles}
+                        darkMode={darkMode}
+                        isSidebarPinned={isSidebarPinned}
+                        position={position}
+                      />
+                    </>
+                  );
+                } else if (!page.isPageGroup) {
+                  return (
+                    <RenderPage
+                      key={page.handle}
+                      page={page}
+                      currentPageId={currentPageId}
+                      switchPageWrapper={switchPageWrapper}
+                      labelStyle={labelStyle}
+                      computeStyles={computeStyles}
+                      darkMode={darkMode}
+                      homePageId={homePageId}
+                      isSidebarPinned={isSidebarPinned}
+                      currentMode={currentMode}
+                      position={position}
+                    />
+                  );
+                }
+              })}
+            </NavigationMenuContent>
+          </NavigationMenuItem>
         )}
       </>
     );
   };
 
-  return (
+  return position === 'top' ? (
+    <NavigationMenu viewport={false} style={{ overflow: 'visible !important' }} className="page-handler-wrapper">
+      <NavigationMenuList className="page-handler-list">
+        <RenderLinks />
+      </NavigationMenuList>
+    </NavigationMenu>
+  ) : (
     <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
       <RenderLinks />
     </div>

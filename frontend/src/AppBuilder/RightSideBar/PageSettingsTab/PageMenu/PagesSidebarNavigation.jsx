@@ -61,8 +61,6 @@ export const PagesSidebarNavigation = ({
   const { appMode } = useStore((state) => state.globalSettings, shallow);
 
   const navRef = useRef(null);
-  const moreRef = useRef(null);
-  const linkRefs = useRef({});
   const headerRef = useRef(null);
   const darkModeToggleRef = useRef(null);
 
@@ -167,7 +165,7 @@ export const PagesSidebarNavigation = ({
       if (darkModeToggleObserver) darkModeToggleObserver.disconnect();
       if (measurementContainerObserver) measurementContainerObserver.disconnect();
     };
-  }, [measureStaticElements, hideHeader, hideLogo]);
+  }, [measureStaticElements, hideHeader, hideLogo, style]);
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || mainNavBarPages.length === 0) {
@@ -195,7 +193,7 @@ export const PagesSidebarNavigation = ({
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
     const FLEX_GAP = 6;
 
-    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth + 32;
+    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth + 32 + 16;
 
     for (let i = 0; i < mainNavBarPages.length; i++) {
       const link = mainNavBarPages[i];
@@ -479,10 +477,8 @@ export const PagesSidebarNavigation = ({
           computeStyles={computeStyles}
           darkMode={darkMode}
           switchPage={switchPage}
-          linkRefs={linkRefs}
           visibleLinks={links.visible}
           overflowLinks={links.overflow}
-          moreBtnRef={moreRef}
           navRef={navRef}
           position={position}
           isSidebarPinned={isSidebarPinned}
@@ -649,8 +645,8 @@ export const PagesSidebarNavigation = ({
         {mainNavBarPages.map((link) => (
           <div
             style={{
-              padding: `0px 12px 0px ${style === 'texticon' ? '38px' : '12px'}`,
-              ...(link?.isPageGroup && { paddingRight: '32px' }),
+              padding: `0px 10px 0px ${style === 'texticon' ? '32px' : '10px'}`,
+              ...(link?.isPageGroup && { paddingRight: '30px' }),
               fontWeight: 500,
             }}
             key={`measure-${link.id}`}
