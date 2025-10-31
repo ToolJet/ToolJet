@@ -12,7 +12,10 @@ Okta can be configured as the Identity Provider for OIDC, which is an authentica
 2. Navigate to the **Applications** section and click **Create App Integration**.
     <img className="screenshot-full" src="/img/user-management/sso/oidc/okta/create-app.png" alt="Okta: SSO"/>
 
-3. Select **OIDC - OpenID Connect** as the **Sign-in method** and **Web Application** as the **Application type**. Click on the **Next** button.
+3. Select **OIDC - OpenID Connect** as the **Sign-in method** and select the **Application type**:
+    - **Web Application** for Authorization Code
+    - **Single Page Application** for Authorization Code with PKCE <br/><br/>
+Click on the **Next** button. <br/><br/>
     <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/okta/app-type.png" alt="Okta: SSO" />
 
 4. Enter an **App integration name** and set the **Sign-in redirect URIs** to Redirect URL from ToolJet.
