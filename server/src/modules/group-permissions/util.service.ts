@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { GroupPermissionsRepository } from './repository';
 import { CreateDefaultGroupObject, GetUsersResponse } from './types';
-import { ERROR_HANDLER } from './constants/error';
+import { DATA_BASE_CONSTRAINTS, ERROR_HANDLER } from './constants/error';
 import {
   DEFAULT_GROUP_PERMISSIONS,
   DEFAULT_RESOURCE_PERMISSIONS,
@@ -30,8 +30,11 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { IGroupPermissionsUtilService } from './interfaces/IUtilService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { catchDbException, getTooljetEdition } from '@helpers/utils.helper';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { User } from '@entities/user.entity';
+import { LicenseUserService } from '@modules/licensing/services/user.service';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -41,7 +44,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly roleUtilService: RolesUtilService,
     protected readonly rolesRepository: RolesRepository,
     protected readonly userRepository: UserRepository,
-    protected readonly licenseUtilService: GroupPermissionLicenseUtilService
+    protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
+    protected readonly licenseUserService: LicenseUserService
   ) {}
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
@@ -314,5 +318,81 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       }
       return response;
     });
+  }
+  async updateGroup(
+    id: string,
+    user: User,
+    updateGroupPermissionDto: UpdateGroupPermissionDto,
+    manager?: EntityManager
+  ): Promise<any> {
+    return await dbTransactionWrap(async (manager) => {
+      const organizationId = user.organizationId;
+      const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
+      // License validation - Update not allowed on basic plan
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
+        throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
+      }
+
+      // Check if name is reserved
+      this.validateUpdateGroupOperation(group, updateGroupPermissionDto);
+
+      const { allowRoleChange } = updateGroupPermissionDto;
+      delete updateGroupPermissionDto.allowRoleChange;
+
+      // Some permission are enabled
+      const editPermissionsPresent = Object.keys(updateGroupPermissionDto).some(
+        (value) => typeof updateGroupPermissionDto?.[value] === 'boolean' && updateGroupPermissionDto?.[value] === true
+      );
+      if (editPermissionsPresent) {
+        const usersInGroup = await this.groupPermissionsRepository.getUsersInGroup(id, organizationId, null, manager);
+
+        if (usersInGroup?.length) {
+          // no need to proceed if there are no users in the group
+          const endUsersList = await this.rolesRepository.getRoleUsersList(
+            USER_ROLE.END_USER,
+            organizationId,
+            usersInGroup.map((groupUser) => groupUser.userId),
+            manager
+          );
+
+          if (endUsersList.length) {
+            if (!allowRoleChange) {
+              // Not allowed to change user roles, throwing error
+              throw new MethodNotAllowedException({
+                message: {
+                  error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+                  data: endUsersList?.map((user) => user.email),
+                  title: 'Cannot add this permission to the group',
+                  type: 'USER_ROLE_CHANGE',
+                },
+              });
+            }
+            // Permission is updated, converting end users to builders
+            await this.roleUtilService.changeEndUserToEditor(
+              organizationId,
+              endUsersList.map((user) => user.id),
+              endUsersList[0].userGroups[0].group.id,
+              manager
+            );
+          }
+        }
+      }
+      // Updating group permissions
+      await catchDbException(async () => {
+        await manager.update(GroupPermissions, id, updateGroupPermissionDto);
+      }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
+
+      // Validating license
+      await this.licenseUserService.validateUser(manager, organizationId);
+      //GROUP_PERMISSION_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }, manager);
   }
 }

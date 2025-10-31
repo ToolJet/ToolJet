@@ -1,4 +1,4 @@
-import { ValidateEditUserGroupAdditionObject } from '../types';
+import { ValidateEditUserGroupAdditionObject } from '@modules/external-apis/types';
 import { EntityManager } from 'typeorm';
 export interface IExternalApiUtilService {
   // generates random password by taking length as the input

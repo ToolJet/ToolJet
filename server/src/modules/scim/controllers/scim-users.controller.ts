@@ -10,7 +10,7 @@ import { Request } from 'express';
 @Controller('scim/v2')
 @InitModule(MODULES.SCIM)
 @UseGuards(FeatureAbilityGuard)
-export class UsersController {
+export class ScimUsersController {
   constructor(private readonly scimService: ScimService) {}
 
   // ============================================
