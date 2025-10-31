@@ -3,7 +3,7 @@ id: cloud
 title: ToolJet Cloud
 ---
 
-This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or **[contact the ToolJet team](mailto:support@tooljet.com)**.
 
 ## Types of Subscriptions
 
@@ -53,7 +53,7 @@ Role Required: **Admin**
 6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
 
-If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
+If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:support@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
 ## Updated Limits in New Pricing Plan
 
@@ -69,7 +69,7 @@ Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025,
 
 If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
 
-If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
+If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [support@tooljet.com](mailto:support@tooljet.com).
 
 ## FAQs
 

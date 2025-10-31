@@ -128,7 +128,6 @@ When you are creating, updating, or deleting records in a table that has a forei
 
 <img className="screenshot-full" src="/img/v2-beta/database/ux2/violate-fk.gif" alt="ToolJet database"/>
 
-
 - Similarly, if you are trying to delete a row in the target table, you need to ensure that the foreign key value is not being referenced in the source table.
 
 ## Join Tables
@@ -145,7 +144,7 @@ You can join two or more tables in the ToolJet database by using the **Join** op
   - **On**: Select the column from the **selected table** and the **joining table** on which you want to join the tables. Currently, only `=` operation is supported for joining tables. If the selected table and the joining table have a foreign key relationship, both the columns will be auto-populated in the **On** dropdown.
 
     <img className="screenshot-full" src="/img/v2-beta/database/ux2/join-on-fk-v2.gif" alt="ToolJet database"/>
-    
+
     - **AND or OR condition**: You can add multiple conditions by clicking on the **+Add more** button below each join. The conditions can be joined by `AND` or `OR` operation.
 
   <img className="screenshot-full" src="/img/v2-beta/database/newui/join1.png" alt="ToolJet Database editor" />
@@ -270,5 +269,5 @@ A nested JSON object is a JSON structure that contains key-value pairs, where so
 </details>
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at support@tooljet.com or join our **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)**
 :::
