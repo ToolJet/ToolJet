@@ -568,7 +568,7 @@ class BaseManageGroupPermissions extends React.Component {
                   noTooltipIfValid={true}
                   isAvailable={isFeatureEnabled}
                   placement={'bottom'}
-                  customMessage={'Custom groups are available only in paid plans'}
+                  customMessage={'Custom groups are not available in your plan'}
                 >
                   <ButtonSolid
                     className="btn btn-primary create-new-group-button"
@@ -748,7 +748,7 @@ class BaseManageGroupPermissions extends React.Component {
                             noTooltipIfValid={true}
                             isAvailable={isFeatureEnabled}
                             placement={'right'}
-                            customMessage={'Custom groups are available only in paid plans'}
+                            customMessage={'Custom groups are not available in your plan'}
                           >
                             <ButtonSolid
                               onClick={(e) => {
