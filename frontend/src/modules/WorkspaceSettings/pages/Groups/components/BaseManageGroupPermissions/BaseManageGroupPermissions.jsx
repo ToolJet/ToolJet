@@ -21,7 +21,7 @@ import _ from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissions extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -50,7 +50,7 @@ class BaseManageGroupPermissions extends React.Component {
     };
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.fetchGroups();
   }
 
@@ -381,7 +381,7 @@ class BaseManageGroupPermissions extends React.Component {
       });
   };
 
-  render () {
+  render() {
     const {
       isLoading,
       showNewGroupForm,
@@ -846,6 +846,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
+                    bannerType="custom-groups"
                     customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
