@@ -9,20 +9,6 @@ const environments = {
     staging: "staging",
     production: "production",
 };
-
-export const setupTableConstant = (tableNameConstant, values) => {
-    cy.apiCreateWorkspaceConstant(
-        tableNameConstant,
-        values.development,
-        ["Global"],
-        [environments.development]
-    ).then((res) => {
-        const constantId = res.body.constant.id;
-        cy.apiUpdateWsConstant(constantId, values.staging, environments.staging);
-        cy.apiUpdateWsConstant(constantId, values.production, environments.production);
-    });
-};
-
 const widgetPositions = {
     queryData: {
         desktop: { top: 100, left: 20 },
@@ -153,45 +139,6 @@ export const selectEnv = (envName) => {
     }
 };
 
-export const setupGlobalConstant = (globalConstantName, envValues) => {
-    cy.apiCreateWorkspaceConstant(
-        globalConstantName,
-        envValues.development,
-        ["Global"],
-        [environments.development]
-    ).then((res) => {
-        const constantId = res.body.constant.id;
-        cy.apiUpdateWsConstant(constantId, envValues.staging, environments.staging);
-        cy.apiUpdateWsConstant(constantId, envValues.production, environments.production);
-    });
-};
-
-export const setupSecretConstant = (secretConstantName, hostValue) => {
-    cy.apiCreateWorkspaceConstant(
-        secretConstantName,
-        hostValue,
-        ["Secret"],
-        [environments.development]
-    ).then((res) => {
-        const constantId = res.body.constant.id;
-        cy.apiUpdateWsConstant(constantId, hostValue, environments.staging);
-        cy.apiUpdateWsConstant(constantId, hostValue, environments.production);
-    });
-};
-
-export const setupDatabaseConstant = (dbNameConstant, values) => {
-    cy.apiCreateWorkspaceConstant(
-        dbNameConstant,
-        values.development,
-        ["Global"],
-        [environments.development]
-    ).then((res) => {
-        const constantId = res.body.constant.id;
-        cy.apiUpdateWsConstant(constantId, values.staging, environments.staging);
-        cy.apiUpdateWsConstant(constantId, values.production, environments.production);
-    });
-};
-
 export const setupPostgreSQLDataSource = (dsName, secretConstantName, dbNameConstant) => {
     cy.apiCreateGDS(
         `${Cypress.env("server_host")}/api/data-sources`,
@@ -253,7 +200,6 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
         .should('contain.text', expectedDbValue);;
     cy.get(commonWidgetSelector.draggableWidget('query_data'))
         .should('contain.text', expectedQueryValue);
-    cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 };
 
 export const selectEnvironment = (envName) => {
@@ -289,12 +235,14 @@ export const verifyQueryEditorDisabled = () => {
 export const verifyGlobalSettingsDisabled = () => {
     cy.contains(multiEnvText.releasedAppText).should('be.visible');
     cy.get(multiEnvSelector.settingsSidebarIcon).click({ force: true });
-    cy.get('[data-cy="toggle-maintenance-mode"]')
-        .closest('.disabled')
+
+    cy.get(multiEnvSelector.maintenanceToggle)
+        .parents('.disabled')
         .should('exist');
-    cy.get('[data-cy="maximum-canvas-width-input-field"]')
-        .closest('.disabled')
+    cy.get(multiEnvSelector.maxCanvasWidthInput)
+        .parents('.disabled')
         .should('exist');
+
     cy.get(multiEnvSelector.appSlugInput).should('not.be.disabled');
 };
 
@@ -331,3 +279,17 @@ export const verifyComponentInspectorDisabled = () => {
     cy.forceClickOnCanvas();
 };
 
+export const setupWorkspaceConstant = (constantName, values, tag = "Global") => {
+    const getValue = (env) => values[env] || values;
+
+    cy.apiCreateWorkspaceConstant(
+        constantName,
+        getValue('development'),
+        [tag],
+        [environments.development]
+    ).then((res) => {
+        const constantId = res.body.constant.id;
+        cy.apiUpdateWsConstant(constantId, getValue('staging'), environments.staging);
+        cy.apiUpdateWsConstant(constantId, getValue('production'), environments.production);
+    });
+};

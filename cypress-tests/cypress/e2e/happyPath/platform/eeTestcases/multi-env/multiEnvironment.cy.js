@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { setupGlobalConstant, setupSecretConstant, setupDatabaseConstant, setupTableConstant, setupPostgreSQLDataSource, createAppWithComponents, verifyEnvironmentData, selectEnvironment, verifyQueryEditorDisabled, verifyGlobalSettingsDisabled, verifyInspectorMenuNoDelete, verifyComponentsManagerDisabled, verifyPageSettingsDisabled, verifyComponentInspectorDisabled, appPromote, releaseAppFromProdAndVisitTheApp } from "Support/utils/platform/multiEnv";
+import { setupWorkspaceConstant, setupPostgreSQLDataSource, createAppWithComponents, verifyEnvironmentData, selectEnvironment, verifyQueryEditorDisabled, verifyGlobalSettingsDisabled, verifyInspectorMenuNoDelete, verifyComponentsManagerDisabled, verifyPageSettingsDisabled, verifyComponentInspectorDisabled, appPromote, releaseAppFromProdAndVisitTheApp } from "Support/utils/platform/multiEnv";
 
 const waitTimes = {
     promotion: 2000,
@@ -70,10 +70,10 @@ describe("Multi env", () => {
             dsName: `pg-multi-env-${testData.baseId}`,
         };
 
-        setupGlobalConstant(names.globalConstantName, environmentValues);
-        setupSecretConstant(names.secretConstantName, Cypress.env("pg_host"));
-        setupDatabaseConstant(names.dbNameConstant, dbValues);
-        setupTableConstant(names.tableNameConstant, tableValues);
+        setupWorkspaceConstant(names.globalConstantName, environmentValues, "Global");
+        setupWorkspaceConstant(names.secretConstantName, Cypress.env("pg_host"), "Secret");
+        setupWorkspaceConstant(names.dbNameConstant, dbValues, "Global");
+        setupWorkspaceConstant(names.tableNameConstant, tableValues, "Global");
         setupPostgreSQLDataSource(names.dsName, names.secretConstantName, names.dbNameConstant);
 
         createAppWithComponents(names.appName, names.dsName, names.dbNameConstant, names.tableNameConstant, names.globalConstantName).then(() => {
@@ -87,15 +87,18 @@ describe("Multi env", () => {
     });
 
     it("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
-        cy.forceClickOnCanvas();
         cy.dragAndDropWidget("Button", 400, 400);
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait(waitTimes.queryExecution)
+
         verifyEnvironmentData(dbValues.development, environmentValues.development);
+        cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
+
         appPromote(environments.development, environments.staging);
         verifyEnvironmentData(dbValues.staging, environmentValues.staging);
+        cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
         verifyQueryEditorDisabled();
         verifyGlobalSettingsDisabled();
@@ -106,24 +109,24 @@ describe("Multi env", () => {
 
         appPromote(environments.staging, environments.production);
         verifyEnvironmentData(dbValues.production, environmentValues.production);
+        cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
+
         releaseAppFromProdAndVisitTheApp(testData.appSlug)
         verifyEnvironmentData(dbValues.production, environmentValues.production);
+        cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
     });
 
     it("should verify multi-environment behavior across dev, staging, and production in preview", () => {
-        cy.forceClickOnCanvas();
-        cy.dragAndDropWidget("Button", 400, 400);
-
         cy.apiPromoteAppVersion().then(() => {
             const stagingId = Cypress.env("stagingEnvId");
             cy.apiPromoteAppVersion(stagingId);
         });
-        cy.openInCurrentTab('[data-cy="preview-link-button"]');
+
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
         selectEnvironment('Development');
         verifyEnvironmentData(dbValues.development, environmentValues.development);
 
         selectEnvironment('Staging')
-
         verifyEnvironmentData(dbValues.staging, environmentValues.staging);
 
         selectEnvironment('Production');
