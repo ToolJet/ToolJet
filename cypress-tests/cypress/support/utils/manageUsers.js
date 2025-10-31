@@ -480,7 +480,11 @@ export const openEditUserDetails = (
 
   verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
 
-  cy.contains("td", email)
+  navigateToEditUser(email);
+};
+ 
+export const navigateToEditUser = (email) => {
+ cy.contains("td", email)
     .parent()
     .within(() => {
       cy.get('[data-cy="user-actions-button"]').click();
@@ -489,6 +493,3 @@ export const openEditUserDetails = (
     .verifyVisibleElement("have.text", "Edit user details")
     .click();
 };
-
-
-
