@@ -329,6 +329,7 @@ export class AppImportExportService {
 
         return {
           ...component,
+          // updatedAt: query?.updatedAt,
           permissions: groupPermission
             ? {
                 permissionGroup: groupPermission.users
