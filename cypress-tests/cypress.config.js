@@ -19,9 +19,9 @@ module.exports = defineConfig({
   trashAssetsBeforeRuns: true,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       on("task", {
-        readPdf(pathToPdf) {
+        readPdf (pathToPdf) {
           return new Promise((resolve) => {
             const pdfPath = path.resolve(pathToPdf);
             let dataBuffer = fs.readFileSync(pdfPath);
@@ -33,7 +33,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        readXlsx(filePath) {
+        readXlsx (filePath) {
           return new Promise((resolve, reject) => {
             try {
               let dataBuffer = fs.readFileSync(filePath);
@@ -48,7 +48,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        deleteFile(filePath) {
+        deleteFile (filePath) {
           return new Promise((resolve, reject) => {
             const fullPath = path.resolve(filePath);
             if (fs.existsSync(fullPath)) {
@@ -69,7 +69,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        deleteFolder(folderName) {
+        deleteFolder (folderName) {
           return new Promise((resolve, reject) => {
             if (fs.existsSync(folderName)) {
               rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
@@ -87,7 +87,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        dbConnection({ dbconfig, sql }) {
+        dbConnection ({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -110,18 +110,20 @@ module.exports = defineConfig({
       return config;
     },
     experimentalRunAllSpecs: true,
-    experimentalModfyObstructiveThirdPartyCode: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/happyPath/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
-    numTestsKeptInMemory: 1,
-    redirectionLimit: 5,
+    numTestsKeptInMemory: 0,
+    redirectionLimit: 3,
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
-    coverage: true,
-    codeCoverageTasksRegistered: true,
+    coverage: false,
+    codeCoverageTasksRegistered: false,
     video: false,
     videoUploadOnPasses: false,
-    experimentalStudio: true,
+    // experimentalStudio: true,
+    // experimentalPromptCommand: true,
+
+    // projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
   },
 });

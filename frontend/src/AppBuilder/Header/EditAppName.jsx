@@ -47,6 +47,7 @@ function EditAppName() {
             type="button"
             data-cy="edit-app-name-button"
             onClick={() => setShowRenameModal(true)}
+            data-cy="editor-app-name-input"
           >
             <span className="tw-font-title-large tw-truncate tw-w-full tw-block group-hover:tw-w-[calc(100%-24px)]">
               {appName}
