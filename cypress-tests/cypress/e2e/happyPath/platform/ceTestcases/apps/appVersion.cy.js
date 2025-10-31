@@ -6,7 +6,6 @@ import {
   deleteVersionAndVerify,
   releasedVersionAndVerify,
   verifyDuplicateVersion,
-  verifyVersionAfterPreview,
   navigateToCreateNewVersionModal,
   verifyElementsOfCreateNewVersionModal,
   navigateToEditVersionModal,
