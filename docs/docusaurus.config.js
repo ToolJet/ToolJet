@@ -242,6 +242,39 @@ module.exports = {
           window.buildUrlWithStoredParams = buildUrlWithStoredParams; // NEW: Build URLs with UTM params
       })();
       </script>
+      <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          console.log("Script for cookie called");
+          var cookieName = "source_page";
+          var domain = ".tooljet.ai";
+          var maxAge = 7 * 24 * 60 * 60; // 7 days
+          var currentHost = window.location.hostname;
+          var fullUrl = window.location.href;
+          // Helper: read cookie
+          function getCookie(name) {
+              var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+              return match ? decodeURIComponent(match[2]) : null;
+          }
+          // Helper: set cookie
+          function setCookie(name, value, maxAgeSeconds, domain) {
+              document.cookie =
+                  name + "=" + encodeURIComponent(value) +
+                  "; path=/; domain=" + domain +
+                  "; max-age=" + maxAgeSeconds + ";";
+          }
+          // If user is on blog.tooljet.ai → always update cookie with latest blog URL
+          // Else → do not overwrite, just keep existing one
+          if (currentHost.includes("blog.tooljet.ai")) {
+              setCookie(cookieName, fullUrl, maxAge, domain);
+              console.log("Updated source_page cookie with latest blog URL: " + fullUrl);
+          } else {
+              console.log("Not on blog domain — keeping existing source_page: " + getCookie(cookieName));
+          }
+      });
+      </script>
+      <!-- Start of HubSpot Embed Code -->
+      <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/39494431.js"></script>
+      <!-- End of HubSpot Embed Code -->
       `,
     },    
     algolia: {
