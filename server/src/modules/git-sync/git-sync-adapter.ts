@@ -14,19 +14,14 @@ export interface GitSyncConfig {
 
 @Injectable()
 export class GitSyncAdapter {
-  private readonly basePath = '/Users/rohanlahori/Desktop/git-sync-poc';
+  private readonly basePath = '/Users/rohanlahori/Desktop/apps/git-sync-poc';
 
   constructor(private readonly importExportResourcesService: ImportExportResourcesService) {}
 
   /**
    * Export adapter - receives the old format and handles splitting and writing to folders
    */
-  async exportToFolder(
-    appData: any,
-    appId: string,
-    repoPath: string,
-    exportResourcesDto: ExportResourcesDto
-  ): Promise<void> {
+  async exportToFolder(appData: any, repoPath: string): Promise<void> {
     try {
       // Step 1: Split the single object into file structure
       const files = this.splitIntoFiles(appData);
