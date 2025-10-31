@@ -130,10 +130,12 @@ const MobileHeader = ({
       {!isEmpty(editingVersion) && !isReleasedVersionId && (
         <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
       )}
-      <Header className={'mobile-nav-container'}>
-        {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
-        {_renderAppNameAndLogo()}
-      </Header>
+      {(!isPagesSidebarHidden || !hideLogo || !hideHeader) && (
+        <Header className={'mobile-nav-container'}>
+          {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
+          {_renderAppNameAndLogo()}
+        </Header>
+      )}
     </div>
   );
 };
