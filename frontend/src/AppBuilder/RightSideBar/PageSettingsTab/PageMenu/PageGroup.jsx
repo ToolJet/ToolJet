@@ -188,7 +188,7 @@ const RenderPageGroup = ({
           />
         </div>
       </NavigationMenuTrigger>
-      <NavigationMenuContent className={`page-menu-popup ${darkMode && 'dark-theme'}`}>
+      <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
         {pages.map((page) => (
           <RenderPage
             key={page.handle}
@@ -365,7 +365,7 @@ export const RenderPageAndPageGroup = ({
               <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
               More
             </NavigationMenuTrigger>
-            <NavigationMenuContent className={`page-menu-popup ${darkMode && 'dark-theme'}`}>
+            <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
               {overflowLinks.map((page, index) => {
                 if (
                   isLicensed &&
