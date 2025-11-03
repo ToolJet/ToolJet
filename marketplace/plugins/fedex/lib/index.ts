@@ -64,21 +64,7 @@ export default class Fedex implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       this.validateSourceOptions(sourceOptions);
-
-      const { accessToken } = await this.generateOAuthToken(sourceOptions);
-      const { base_url } = sourceOptions;
-
-      // Use the access token to make a test API call to verify connectivity
-      const testUrl = `${base_url}/rate/v1/rates/quotes`;
-
-      await got.post(testUrl, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-        json: {},
-        responseType: 'json',
-      });
+      await this.generateOAuthToken(sourceOptions);
 
       return {
         status: 'ok',
