@@ -287,6 +287,8 @@ import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
 import PlayLucide from './PlayLucide.jsx';
 import PanelBottomCloseLucide from './PanelBottomCloseLucide.jsx';
 import PanelBottomOpenLucide from './PanelBottomOpenLucide.jsx';
@@ -870,6 +872,10 @@ const Icon = (props) => {
       return <AITopupWhite {...props} />;
     case 'ai-topup-grey':
       return <AITopupGrey {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
     case 'play-lucide':
       return <PlayLucide {...props} />;
     case 'panel-bottom-close-lucide':
