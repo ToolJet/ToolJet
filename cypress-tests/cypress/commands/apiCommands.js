@@ -625,12 +625,12 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId")) => {
+  (targetEnvId = Cypress.env("environmentId"), appId = Cypress.env("appId")) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
-          "appId"
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
+          "editingVersionId"
         )}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {

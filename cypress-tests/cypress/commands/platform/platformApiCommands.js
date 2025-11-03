@@ -1,5 +1,10 @@
 const envVar = Cypress.env("environment");
 
+const licenseKeys = {
+    valid: Cypress.env("validLicenseKey"),
+    expired: Cypress.env("expiredLicenseKey"),
+};
+
 Cypress.Commands.add(
     "apiLogin",
     (
@@ -172,6 +177,7 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
     });
 });
 
+
 Cypress.Commands.add("apiGetGroupId", (groupName) => {
     return cy.getAuthHeaders().then((headers) => {
         return cy
@@ -191,6 +197,7 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
             });
     });
 });
+
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
     return cy
         .task("dbConnection", {
@@ -347,6 +354,26 @@ Cypress.Commands.add(
         });
     }
 );
+
+Cypress.Commands.add("apiDeleteExistingApps", () => {
+    cy.getAuthHeaders().then((headers) => {
+        cy.request({
+            method: "GET",
+            url: `${Cypress.env("server_host")}/api/apps`,
+            headers,
+            log: false,
+        }).then((response) => {
+            expect(response.status).to.equal(200);
+            const apps = response.body.apps || [];
+            const appIds = apps.map((app) => app.id);
+            if (appIds.length > 0) {
+                cy.wrap(appIds).each((id) => {
+                    cy.apiDeleteApp(id);
+                });
+            }
+        });
+    });
+});
 
 Cypress.Commands.add(
     "apiUpdateSSOConfig",
@@ -722,7 +749,7 @@ Cypress.Commands.add(
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
     let headers = {};
     if (returnCached) {
-        return returnCached;
+        return Cypress.env("authHeaders");
     } else {
         cy.getCookie("tj_auth_token").then((cookie) => {
             headers = {
@@ -778,3 +805,20 @@ Cypress.Commands.add(
         });
     }
 );
+
+Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
+    const licenseKey = Cypress.env('license_keys')[keyType]
+
+    return cy.getAuthHeaders().then((headers) => {
+        return cy.request({
+            method: "PATCH",
+            url: `${Cypress.env("server_host")}/api/license`,
+            headers: headers,
+            body: { key: licenseKey },
+        }).then((response) => {
+            expect(response.status).to.equal(200);
+            cy.log(`✅ License updated to: ${keyType}`);
+            return response.body;
+        });
+    });
+});
