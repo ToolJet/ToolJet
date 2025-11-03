@@ -131,7 +131,7 @@ export const verifyModal = (title, buttonText, inputFiledSelector) => {
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
-  cy.get(commonSelectors.buttonSelector(buttonText))
+  cy.get(commonSelectors.buttonSelector(buttonText)).first()
     .should("be.visible")
     .and("have.text", buttonText);
 

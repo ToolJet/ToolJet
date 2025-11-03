@@ -686,7 +686,7 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
+    } else if (this.props.appType === 'front-end') {
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -707,6 +707,9 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
+    } else {
+      // Module permissions return true if builder
+      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
     }
   }
 
@@ -1241,16 +1244,25 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return invalidLicense;
+        return !moduleEnabled;
       } else if (this.props.appType === 'front-end') {
         return appsLimit?.percentage >= 100;
       } else {
         return this.hasWorkflowLimitReached();
+      }
+    };
+
+    const showCreateAppButtonTooltip = () => {
+      if (this.props.appType === 'module') {
+        return true;
+      } else {
+        return this.canCreateApp();
       }
     };
     const modalConfigs = {
@@ -1679,7 +1691,7 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
               <div className="create-new-app-license-wrapper">
-                {this.canCreateApp() && (
+                {showCreateAppButtonTooltip() && (
                   <LicenseTooltip
                     limits={appsLimit}
                     feature={
@@ -1902,7 +1914,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={invalidLicense}
+                        disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={this.openCreateAppModal}
@@ -1911,8 +1923,8 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={invalidLicense}
-                          message="Modules are available only on paid plans"
+                          show={!moduleEnabled}
+                          message="Modules are not available on your current plan."
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
@@ -1948,6 +1960,7 @@ class HomePageComponent extends React.Component {
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
                     basicPlan={invalidLicense}
+                    moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}

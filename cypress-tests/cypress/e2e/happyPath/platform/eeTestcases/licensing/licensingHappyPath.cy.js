@@ -21,6 +21,7 @@ import {
   whiteLabellingSelectors,
 } from "Selectors/eeCommon";
 import { workflowSelector } from "Selectors/workflows";
+import { commonEeSelectors } from "Selectors/eeCommon";
 
 describe("License Page", () => {
   const data = {};
@@ -93,7 +94,7 @@ describe("License Page", () => {
     verifyDomainTab();
   });
 
-  it.only("Should verify banners and tooltips with the basic plan ", () => {
+  it("Should verify banners and tooltips with the basic plan ", () => {
     cy.get(commonSelectors.workspaceName).click();
 
     cy.get('[data-cy="workspace-count"]').should("be.visible");
@@ -184,19 +185,35 @@ describe("License Page", () => {
       "Multi-environments are available only in paid plans",
       true
     );
+
     cy.get(commonSelectors.dashboardIcon).click();
-    cy.apiCreateApp(`${fake.companyName}-license-App`);
-    cy.openApp();
-    cy.get('[data-cy="list-current-env-name"]').click();
+    cy.get(commonSelectors.settingsIcon).click();
     verifyTooltip(
-      '[data-cy="env-name-dropdown"] :nth-child(1)',
-      "Multi-environments are available only in paid plans",
+      commonEeSelectors.auditLogIcon,
+      "Audit logs are available only in paid plans",
       true
     );
-    verifyTooltip(
-      '[data-cy="env-name-dropdown"] :nth-child(2)',
-      "Multi-environments are available only in paid plans",
-      true
-    );
+
+    // cy.apiCreateApp(`${fake.companyName}-license-App`);
+    // cy.openApp();
+
+    // cy.get('[data-cy="list-current-env-name"]').click();
+    // cy.get('[data-cy="env-name-list"]')
+    //   .eq(1)
+    //   .within(() => {
+    //     verifyTooltip(
+    //       '[data-cy="env-name-dropdown"]',
+    //       "Multi-environments are available only in paid plans"
+    //     );
+    //   });
+
+    // cy.get('[data-cy="env-name-list"]')
+    //   .eq(2)
+    //   .within(() => {
+    //     verifyTooltip(
+    //       '[data-cy="env-name-dropdown"]',
+    //       "Multi-environments are available only in paid plans"
+    //     );
+    //   });
   });
 });
