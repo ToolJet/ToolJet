@@ -45,8 +45,6 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
-import * as fs from 'fs';
-import * as path from 'path';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -292,6 +290,11 @@ export class AppImportExportService {
         };
       });
 
+      // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
+      for (const query of queriesWithPermissionGroups) {
+        delete query.updatedAt;
+      }
+
       const components =
         pages.length > 0
           ? await manager
@@ -390,70 +393,12 @@ export class AppImportExportService {
         }),
       };
       // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
-
+      delete (appToExport as any).updatedAt;
       console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
 
-  // Note -> this is done for testing : need to refactor/ remove this
-  async writeFilesToLocalFolder(files: Record<string, any>, appName: string, appId: string): Promise<void> {
-    try {
-      const timestamp = Date.now();
-      const basePath = `/Users/rohanlahori/Desktop/git-sync-poc/${appName || appId}-${timestamp}`;
-
-      // Create base folder
-      if (!fs.existsSync(basePath)) {
-        fs.mkdirSync(basePath, { recursive: true });
-      }
-
-      // Helper function to write array items
-      const writeArrayItems = async (folderName: string, items: any[]) => {
-        const folderPath = path.join(basePath, folderName);
-        if (!fs.existsSync(folderPath)) {
-          fs.mkdirSync(folderPath, { recursive: true });
-        }
-
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          // Use id, name, or index for filename
-          const fileName = item.name || item.id || `${folderName}-${i}`;
-          const filePath = path.join(folderPath, `${fileName}.json`);
-
-          await fs.promises.writeFile(filePath, JSON.stringify(item, null, 2), 'utf8');
-          console.log(`✓ Written: ${folderName}/${fileName}.json`);
-        }
-      };
-
-      // Helper function to write single object
-      const writeSingleObject = async (folderName: string, content: any) => {
-        const folderPath = path.join(basePath, folderName);
-        if (!fs.existsSync(folderPath)) {
-          fs.mkdirSync(folderPath, { recursive: true });
-        }
-
-        const filePath = path.join(folderPath, `${folderName}.json`);
-        await fs.promises.writeFile(filePath, JSON.stringify(content, null, 2), 'utf8');
-        console.log(`✓ Written: ${folderName}/${folderName}.json`);
-      };
-
-      // Process each file type
-      for (const [fileName, content] of Object.entries(files)) {
-        const folderName = fileName.replace('.json', '');
-
-        if (Array.isArray(content)) {
-          await writeArrayItems(folderName, content);
-        } else {
-          await writeSingleObject(folderName, content);
-        }
-      }
-
-      console.log(`\n✓ All files written to: ${basePath}`);
-    } catch (error) {
-      console.error('Error writing files:', error);
-      throw error;
-    }
-  }
   async mapModulesForAppImport(
     appParams: any,
     user: User,
@@ -888,9 +833,12 @@ export class AppImportExportService {
 
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
+              const sortedLayoutTypes = Object.keys(componentLayout).sort((a, b) => {
+                return componentLayout[a].id.localeCompare(componentLayout[b].id);
+              });
 
               if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-                for (const type in componentLayout) {
+                for (const type of sortedLayoutTypes) {
                   const layout = componentLayout[type];
                   const newLayout = new Layout();
                   newLayout.type = type;
