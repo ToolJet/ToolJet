@@ -76,10 +76,6 @@ const Container = React.memo(
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
-
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
       hover: (item, monitor) => {
