@@ -13,12 +13,31 @@ import {
 } from "Support/utils/license";
 
 describe("License - User Limits", () => {
-  const builderEmail = `builder-${Date.now()}@test.com`;
-  const thirdBuilderEmail = `builder-${Date.now()}-3@test.com`;
+  const builderEmail = `builder-${Date.now()}@example.com`;
+  const thirdBuilderEmail = `builder-${Date.now()}-3@example.com`;
   const thirdBuilderName = `Builder Three ${Date.now()}`;
-  const fiftiethViewerEmail = `viewer-${Date.now()}-50@test.com`;
+  const fiftiethViewerEmail = `viewer-${Date.now()}-50@example.com`;
   const fiftiethViewerName = `Viewer Fiftieth ${Date.now()}`;
-  const endUserEmail = `enduser-${Date.now()}@test.com`;
+  const endUserEmail = `enduser-${Date.now()}@example.com`;
+
+  const cleanupTestUser = (email) => {
+    cy.runSqlQuery(`CALL delete_user('${email}');`);
+  };
+
+  const allUserEmails = [thirdBuilderEmail, endUserEmail, fiftiethViewerEmail];
+  const cleanupAllTestUsers = () => {
+    allUserEmails.forEach((email) => {
+      cleanupTestUser(email);
+    });
+  };
+
+  const cleanupBulkUsers = (emailArray) => {
+    if (emailArray && emailArray.length > 0) {
+      emailArray.forEach((email) => {
+        cleanupTestUser(email);
+      });
+    }
+  };
 
   beforeEach(() => {
     cy.apiLogin();
@@ -60,12 +79,20 @@ describe("License - User Limits", () => {
     createUserViaAPI(endUserEmail, "end-user");
 
     changeRoleAndExpectLimit(endUserEmail, "builder");
+
+    cleanupAllTestUsers();
+    cleanupTestUser(builderEmail);
   });
+
   it("should enforce viewer limit, show upgrade modal, and verify role change restriction", () => {
     navigateToManageUsers();
     cy.get(usersSelector.buttonAddUsers).click();
 
     verifyResourceLimit("viewers", "basic", "usage");
+
+    allUserEmails.forEach((email) => {
+      createUserAndExpectStatus(email, "builder", 201);
+    });
 
     let bulkViewerEmails = [];
     bulkUploadUsersViaCSV(49, "end-user", "viewer").then(
@@ -100,5 +127,8 @@ describe("License - User Limits", () => {
 
     //update after fix
     // changeRoleAndExpectLimit(thirdBuilderEmail, "end-user");
+
+    cleanupAllTestUsers();
+    cleanupBulkUsers();
   });
 });
