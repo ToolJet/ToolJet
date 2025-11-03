@@ -12,6 +12,7 @@ import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
 import { resolveReferences } from '@/_helpers/utils';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const MobileHeader = ({
   showHeader,
@@ -36,7 +37,7 @@ const MobileHeader = ({
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const { showOnMobile } = properties ?? {};
+  const { showOnMobile, name, hideLogo, hideHeader } = properties ?? {};
 
   // Fetch the version parameter from the query string
   const searchParams = new URLSearchParams(window.location.search);
@@ -44,17 +45,27 @@ const MobileHeader = ({
 
   const _renderAppNameAndLogo = () => (
     <div
-      className={classNames('d-flex', 'align-items-center', 'justify-content-center')}
+      className={classNames('d-flex h-100', 'align-items-center', 'justify-content-center')}
       style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
     >
       <h1 className="navbar-brand d-none-navbar-horizontal p-0">
         <Link
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
           data-cy="viewer-page-logo"
           onClick={() => {
             redirectToDashboard();
           }}
         >
-          <AppLogo isLoadingFromHeader={false} viewer={true} />
+          {!hideLogo && <AppLogo isLoadingFromHeader={false} viewer={true} />}
+          {!hideHeader && (
+            <div className="d-flex align-items-center app-title">
+              <OverflowTooltip>{name?.trim() ? name : appName}</OverflowTooltip>
+            </div>
+          )}
         </Link>
       </h1>
     </div>
@@ -128,17 +139,19 @@ const MobileHeader = ({
           {_renderPreviewSettings()}
         </Header>
       )}
-      <Header
-        styles={{
-          height: '46px',
-        }}
-        className={'mobile-nav-container'}
-      >
-        <div className="d-flex w-100">
-          {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
-          <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
-        </div>
-      </Header>
+      {(!isPagesSidebarHidden || !hideLogo || !hideHeader) && (
+        <Header
+          styles={{
+            height: '46px',
+          }}
+          className={'mobile-nav-container'}
+        >
+          <div className="d-flex w-100">
+            {!isPagesSidebarHidden && showOnMobile && _renderMobileNavigationMenu()}
+            <span style={{ flexGrow: 1, width: '100%' }}>{_renderAppNameAndLogo()}</span>
+          </div>
+        </Header>
+      )}
     </div>
   );
 };

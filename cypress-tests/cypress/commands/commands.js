@@ -16,7 +16,7 @@ const API_ENDPOINT =
 
 Cypress.Commands.add(
   "appUILogin",
-  (email = "dev@tooljet.io", password = "password") => {
+  (email = "dev@tooljet.io", password = "password", status = 'success', toast = '') => {
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
@@ -26,7 +26,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector).type(`{selectall}{backspace}${text}`);
+  cy.get(selector).should("be.visible", { timeout: 10000 }).click({ force: true }).type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -63,7 +63,7 @@ Cypress.Commands.add("createApp", (appName) => {
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title)).click();
+    cy.get(getAppButtonSelector($title)).scrollIntoView().click({ force: true });//workaround for cypress dashboard click issue
     cy.clearAndType('[data-cy="app-name-input"]', appName);
     cy.get('[data-cy="create-app"]').click();
   });
