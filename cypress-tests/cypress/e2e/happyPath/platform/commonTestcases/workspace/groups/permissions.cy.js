@@ -5,10 +5,9 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { importSelectors } from "Selectors/exportImport";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
-    logout,
     navigateToAppEditor,
     navigateToManageGroups,
-    navigateToManageUsers,
+    navigateToManageUsers
 } from "Support/utils/common";
 import {
     apiCreateGroup,
@@ -25,11 +24,6 @@ import { groupsText } from "Texts/manageGroups";
 describe("Manage Groups", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
-
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
 
     beforeEach(() => {
         data = {
@@ -190,13 +184,12 @@ describe("Manage Groups", () => {
         });
     });
 
-    it.only("should verify datasource granular access in app builder", () => {
+    it("should verify datasource granular access in app builder", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appImportFile = "cypress/fixtures/templates/permission-export.json";
-        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-        cy.apiLogout();
-
-        cy.apiLogin();
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
+            Cypress.env("workspaceId", workspace.body.organization_id);
+        });
         cy.visit(data.workspaceSlug);
 
         cy.ifEnv("Enterprise", () => {
@@ -234,26 +227,23 @@ describe("Manage Groups", () => {
             cy.wait(1000);
 
             apiCreateGroup(groupName).then((groupId) => {
-                cy.log(`Created group: ${groupName} with ID: ${groupId}`);
+                cy.apiCreateGranularPermission(
+                    groupName,
+                    `${data.importedAppName}_permission`,
+                    "app",
+                    { canEdit: true, canView: false },
+                    Cypress.env("appId"),
+                    false
+                );
 
-                cy.apiGetAppIdByName(data.importedAppName).then((appId) => {
-                    cy.apiCreateGranularPermission(
-                        groupName,
-                        `${data.importedAppName}_permission`,
-                        "app",
-                        { canEdit: true, canView: false },
-                        [appId],
-                        false
-                    );
-                    cy.apiCreateGranularPermission(
-                        groupName,
-                        "datasource1_permission",
-                        "datasource",
-                        { canUse: true, canConfigure: false },
-                        ["datasource 1"],
-                        false
-                    );
-                });
+                cy.apiCreateGranularPermission(
+                    groupName,
+                    "datasource1_permission",
+                    "datasource",
+                    { canUse: true, canConfigure: false },
+                    ["datasource 1"],
+                    false
+                );
             });
 
             cy.apiFullUserOnboarding(

@@ -8,7 +8,7 @@ import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
 import "cypress-mailhog";
-
+import { commonEeSelectors } from "Selectors/eeCommon";
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
     ? "/api/library_apps"

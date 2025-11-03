@@ -30,8 +30,8 @@ Cypress.Commands.add(
     }
 );
 
-Cypress.Commands.add("apiLogout", () => {
-    cy.getAuthHeaders().then((headers) => {
+Cypress.Commands.add("apiLogout", (cacheHeaders = false) => {
+    cy.getAuthHeaders(cacheHeaders).then((headers) => {
         cy.request(
             {
                 method: "GET",
@@ -58,7 +58,7 @@ Cypress.Commands.add("apiGetEnvironments", () => {
     });
 });
 
-Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
+Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug, cacheHeaders = false) => {
     cy.getAuthHeaders().then((headers) => {
         cy.request(
             {
@@ -232,39 +232,41 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
     });
 });
 
-Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
-    return cy
-        .task("dbConnection", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `
-      SELECT id 
-      FROM users
-      WHERE email='${email}'
-      LIMIT 1;
-    `,
-        })
-        .then((resp) => {
-            const userId = resp.rows[0]?.id;
-            if (!userId) throw new Error(`User with email ${email} not found`);
-            return userId;
-        })
-        .then((userId) => {
-            return cy.getAuthHeaders().then((headers) => {
-                return cy
-                    .request({
-                        method: "PUT",
-                        url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
-                        headers: headers,
-                        body: {
-                            newRole: role,
-                            userId: userId,
-                        },
-                    })
-                    .then((response) => {
-                        expect(response.status).to.equal(200);
-                    });
+Cypress.Commands.add("apiGetUserDetails", (email) => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/organization-users`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                return response;
             });
+    });
+});
+
+Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
+    return cy.apiGetUserDetails(email).then((response) => {
+        const userId = response.body.users.find((u) => u.email === email).user_id;
+        return cy.getAuthHeaders().then((headers) => {
+            return cy
+                .request({
+                    method: "PUT",
+                    url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
+                    headers: headers,
+                    body: {
+                        newRole: role,
+                        userId: userId,
+                    },
+                })
+                .then((response) => {
+                    expect(response.status).to.equal(200);
+                });
         });
+    });
 });
 
 Cypress.Commands.add(
@@ -277,6 +279,11 @@ Cypress.Commands.add(
         resourcesToAdd = [],
         isAll = true
     ) => {
+        // Normalize resourcesToAdd to always be an array
+        const normalizedResources = Array.isArray(resourcesToAdd) 
+            ? resourcesToAdd 
+            : [resourcesToAdd];
+
         const formatResources = (type, resources, isAll) => {
             if (isAll) return [];
             return type === "datasource"
@@ -284,21 +291,21 @@ Cypress.Commands.add(
                 : resources.map((id) => ({ appId: id }));
         };
 
-        const buildPermissionObject = (type, perms, resources) => {
+        const buildPermissionObject = (type, perms, formattedResources) => {
             if (type === "data_source") {
                 return {
                     action: {
                         canUse: perms.canUse ?? true,
                         canConfigure: perms.canConfigure ?? false,
                     },
-                    resourcesToAdd: resources,
+                    resourcesToAdd: formattedResources,
                 };
             }
             return {
                 canEdit: perms.canEdit ?? false,
                 canView: perms.canView ?? true,
                 hideFromDashboard: perms.hideFromDashboard ?? false,
-                resourcesToAdd: resources,
+                resourcesToAdd: formattedResources,
             };
         };
 
@@ -351,7 +358,7 @@ Cypress.Commands.add(
                     : `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions`;
 
                 if (resourceType === "datasource" && !isAll) {
-                    cy.apiGetDatasourceIds(resourcesToAdd).then((dsIds) => {
+                    cy.apiGetDatasourceIds(normalizedResources).then((dsIds) => {
                         const formattedResources = formatResources(
                             "datasource",
                             dsIds,
@@ -375,7 +382,7 @@ Cypress.Commands.add(
                 } else {
                     const formattedResources = formatResources(
                         resourceType,
-                        resourcesToAdd,
+                        normalizedResources,
                         isAll
                     );
                     const permissionObject = buildPermissionObject(
