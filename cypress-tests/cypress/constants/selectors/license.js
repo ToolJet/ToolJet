@@ -36,8 +36,16 @@ export const licenseSelectors = {
   limitHeading: (type) => {
     return `[data-cy="${cyParamName(type)}-limit-heading"]`;
   },
+  totalLimitLabel: (type) => {
+    return `[data-cy="total-${cyParamName(type)}-limit-label"]`;
+  },
+  totalLimitCount: (type) => {
+    return `[data-cy="total-${cyParamName(type)}-limit-count"]`;
+  },
 
+  workspaceCount: '[data-cy="workspace-count"]',
   circularToggleDisabledIcon: '[data-cy="circular-toggle-disabled-icon"]',
+  circularToggleEnabledIcon: '[data-cy="circular-toggle-enabled-icon"]',
   licenseBannerHeading: '[data-cy="license-banner-heading"]',
   licenseBannerInfo: '[data-cy="license-banner-info"]',
   paidFeatureButton: '[data-cy="paid-feature-button"]',

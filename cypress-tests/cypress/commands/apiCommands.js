@@ -153,7 +153,6 @@ Cypress.Commands.add(
   }
 );
 
-
 Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -435,7 +434,9 @@ Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const id = response.body.data_sources.find(ds => ds.name === dataSourceName)?.id;
+      const id = response.body.data_sources.find(
+        (ds) => ds.name === dataSourceName
+      )?.id;
       Cypress.log({
         name: "apiGetDataSourceIdByName",
         displayName: "Data Source ID",
@@ -648,3 +649,29 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiUpdateLicense", (keyType) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/license`,
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+        "tj-workspace-id": Cypress.env("environmentId"),
+      },
+      body: { key: Cypress.env("license_keys")[keyType] },
+    }).then((response) => {
+      expect(response.status, "License update status").to.eq(200);
+
+      const licenseStatus = response.body?.licenseStatus || {};
+      const { expiryDate, licenseType } = licenseStatus;
+
+      Cypress.log({
+        name: "apiUpdateLicense",
+        displayName: "LICENSE UPDATED",
+        message: `Type: ${licenseType}, Expiry: ${expiryDate}`,
+      });
+    });
+  });
+});
