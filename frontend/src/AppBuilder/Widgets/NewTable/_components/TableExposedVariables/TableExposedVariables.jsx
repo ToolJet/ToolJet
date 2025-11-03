@@ -309,6 +309,7 @@ export const TableExposedVariables = ({
       if (item) {
         setRowSelection({ [index]: false });
       }
+      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: {},
         selectedRowId: null,
