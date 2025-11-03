@@ -17,7 +17,7 @@ export class WorkflowExecutionQueueService {
         throw new Error('Method not implemented.');
     }
 
-    async cancel(executionId: string): Promise<{
+    async terminate(executionId: string): Promise<{
         success: boolean;
         previousState: string;
     }> {

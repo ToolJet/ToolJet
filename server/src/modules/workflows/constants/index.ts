@@ -20,7 +20,8 @@ export enum FEATURE_KEY {
 
   CREATE_WORKFLOW = 'create_workflow',
   NPM_PACKAGES = 'npm_packages',
-  CANCEL_WORKFLOW_EXECUTION = 'cancel_workflow_execution',
+  TERMINATE_WORKFLOW_EXECUTION = 'terminate_workflow_execution',
+  WORKFLOW_EXECUTION_STATE = 'workflow_execution_state',
 }
 
 // Queue and job name constants
@@ -29,13 +30,12 @@ export const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export const SCHEDULE_JOB = 'workflow-scheduler-job';
 export const EXECUTION_JOB = 'workflow-execution-job';
 
-// Workflow execution status constants
 export const WORKFLOW_EXECUTION_STATUS = {
   TRIGGERED: 'workflow_execution_triggered',
   RUNNING: 'workflow_execution_running',
   COMPLETED: 'workflow_execution_completed',
   ERROR: 'workflow_execution_error',
-  CANCELLED: 'workflow_execution_cancelled',
+  TERMINATED: 'workflow_execution_terminated',
 };
 
 // Re-export types from types module for backward compatibility
