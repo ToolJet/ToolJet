@@ -109,6 +109,7 @@ export const selectEnv = (envName) => {
     };
 
     if (isValidEnvName(envName)) {
+        cy.wait(1000)
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.wait(500)
         const envSelector = `${multiEnvSelector.envNameList}:eq(${envIndex})`;

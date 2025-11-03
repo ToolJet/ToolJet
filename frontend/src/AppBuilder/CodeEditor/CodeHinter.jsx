@@ -98,7 +98,7 @@ const Portal = ({ children, ...restProps }) => {
 const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false, isQueryManager = false }) => {
   const size = 16;
   const topRef = isNumber(position?.height) ? Math.floor(position?.height) - 30 : 32;
-  let top = isMultiEditor ? 270 : topRef > 32 ? topRef : 0;
+  let top = topRef > 32 ? topRef : 0;
   // for query manager we allow the height of query manager to be dynamic, so we need to render the popup icon at the bottom of code editor
   const renderAtBottom = isQueryManager && (isMultiEditor || topRef > 32);
 
