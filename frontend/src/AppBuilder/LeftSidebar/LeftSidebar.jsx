@@ -169,10 +169,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }

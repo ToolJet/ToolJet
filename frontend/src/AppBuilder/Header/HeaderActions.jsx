@@ -64,27 +64,27 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       )}
       {showPreviewBtn && (
 
-        <ButtonComponent
-          size="default"
-          variant="outline"
-          leadingIcon="play01"
+        <Link
+          title="Preview"
+          to={appPreviewLink}
+          target="_blank"
+          rel="noreferrer"
           data-cy="preview-link-button"
-          style={{ padding: "7px 12px" }}
-
+          className="text-decoration-none"
+          style={{ color: 'var(--text-default)' }}
         >
-          <Link
-            title="Preview"
-            to={appPreviewLink}
-            target="_blank"
-            rel="noreferrer"
+          <ButtonComponent
+            size="default"
+            variant="outline"
+            leadingIcon="play01"
             data-cy="preview-link-button"
-            className="text-decoration-none"
-            style={{ color: 'var(--text-default)' }}
+            style={{ padding: "7px 12px" }}
+
           >
 
             Preview
-          </Link>
-        </ButtonComponent>
+          </ButtonComponent>
+        </Link>
 
       )
       }

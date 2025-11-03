@@ -7,7 +7,7 @@ export const SwitchLabel = ({ label, size, disabled }) => {
       htmlFor="label"
       type="label"
       size={size || 'default'}
-      className={`tw-font-normal ${disabled && '!tw-text-text-disabled'}`}
+      className={`tw-font-medium ${disabled && '!tw-text-text-disabled'}`}
     >
       {label}
     </Label>
