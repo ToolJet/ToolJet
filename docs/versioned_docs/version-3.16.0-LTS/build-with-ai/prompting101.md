@@ -4,10 +4,6 @@ title: Prompting 101
 ---
 
 Prompting is how you communicate with ToolJet's AI to build internal applications. Think of it as giving detailed instructions to a highly skilled developer who understands the platform but needs context about your specific business needs.
-Your prompt is essentially a requirements document that tells the AI:
-- What business problem you're solving
-- Who will use the application
-- How they'll interact with it
 
 The AI then translates these requirements into a fully functional application using ToolJet's low code application builder.
 
@@ -140,8 +136,6 @@ Describe how users will interact with the tool through specific workflows.
     Instead of "customer management," say "client project tracking for our design agency"
 - **Include Real Pain Points** <br/>
     Mention actual problems like "version control issues" or "missed deadlines"
-- **Use Your Industry Language** <br/>
-    Include terminology your team actually uses
 - **Think Workflows** <br/>
     Describe the step-by-step process users will follow
 - **Focus on Manual Processes** <br/>
@@ -149,7 +143,7 @@ Describe how users will interact with the tool through specific workflows.
 
 ### Avoid This
 
-- Generic descriptions that could apply to any company
+- Generic descriptions lacking proper use cases and context
 - Feature lists without context ("needs forms, tables, and reports")
 - Technical jargon that doesn't match your business needs
 - Overly complex requirements that try to solve everything at once
@@ -161,7 +155,7 @@ Describe how users will interact with the tool through specific workflows.
 - Best for: Simple tools with straightforward workflows
 - Risk: May lack necessary detail for complex business logic
 
-### Medium Prompts (1 paragraph per section) ⭐
+### Medium Prompts (1 paragraph per section)
 - Best for: Most internal tools
 - Sweet spot: Provides enough context without overwhelming
 - This length typically produces the most usable results
