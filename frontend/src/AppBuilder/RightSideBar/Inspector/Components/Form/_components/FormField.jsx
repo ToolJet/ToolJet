@@ -35,6 +35,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave}) 
 
   const darkMode = localStorage.getItem('darkMode') === 'true' ?? false;
 
+
   const mainPopover = (
     <Popover id="popover-basic" className={`shadow form-fields-column-popover ${darkMode ? 'dark-theme' : ''}`}>
       <FieldPopoverContent

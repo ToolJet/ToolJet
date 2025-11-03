@@ -469,7 +469,23 @@
   left: 50px;
   top: 8px;
 }
-
+.sidebar-h-100-popover {
+  position: relative;
+  height: 100vh !important;
+  overflow-y: scroll !important;
+  margin-top: 0px;
+  border-radius: 0px !important;
+  .add-datasource-btn {
+    position: absolute;
+    bottom: 0rem;
+  }
+  .card {
+    border: none !important;
+  }
+}
+.sidebar-h-100-popover-inspector {
+  min-width: 422px;
+}
 .bm-item {
   &:last-child {
     width: 78% !important;
