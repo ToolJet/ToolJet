@@ -14,7 +14,7 @@ describe("License - App & Workflow Limits", () => {
     cy.visit("/");
   });
 
-  it("should verify app limit progression, disable create/import/clone at limit, and cleanup", () => {
+  it("should verify app limit progression, disable create/import/clone at limit", () => {
     const app1Name = `${fake.companyName}-Limit-1`;
     const app2Name = `${fake.companyName}-Limit-2`;
 
@@ -43,7 +43,9 @@ describe("License - App & Workflow Limits", () => {
     // });
     // cy.get('[data-cy="app-card-clone-option"]').should("be.disabled");
 
-    cy.apiDeleteApp(null, app1Name);
+    cy.apiGetAppIdByName(app1Name).then((id) => {
+      cy.apiDeleteApp(id);
+    });
     cy.get(commonSelectors.homePageIcon).click();
     cy.get(commonSelectors.dashboardIcon).click();
 
@@ -52,10 +54,12 @@ describe("License - App & Workflow Limits", () => {
       expect(counts.current).to.equal(1);
       expect(counts.total).to.equal(2);
     });
-    cy.apiDeleteApp(null, app2Name);
+    cy.apiGetAppIdByName(app2Name).then((id) => {
+      cy.apiDeleteApp(id);
+    });
   });
 
-  it("should verify workflow limit progression, enforce API limit, validate deletion, and cleanup", () => {
+  it("should verify workflow limit progression, enforce API limit, validate deletion", () => {
     const workflow1Name = `${fake.companyName}-Workflow-1`;
     const workflow2Name = `${fake.companyName}-Workflow-2`;
 
