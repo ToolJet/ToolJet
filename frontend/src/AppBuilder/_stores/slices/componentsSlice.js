@@ -1647,10 +1647,10 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       clearSelectedComponents,
       setActiveRightSideBarTab,
-      setRightSidebarOpen,
-      isRightSidebarPinned,
       isRightSidebarOpen,
       activeRightSideBarTab,
+      isGroupResizing,
+      isGroupDragging,
     } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
@@ -1659,7 +1659,9 @@ export const createComponentsSlice = (set, get) => ({
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
       selectedComponents.length &&
-      !selectedText
+      !selectedText &&
+      !isGroupResizing &&
+      !isGroupDragging
     ) {
       clearSelectedComponents();
       if (isRightSidebarOpen) {
@@ -2232,7 +2234,7 @@ export const createComponentsSlice = (set, get) => ({
     }
     return value;
   },
-    performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+  performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
     const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
 
     const currentPageId = getCurrentPageId(moduleId);

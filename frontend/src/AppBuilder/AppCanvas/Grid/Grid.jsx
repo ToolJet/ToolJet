@@ -47,7 +47,7 @@ export const GRID_HEIGHT = 10;
 
 export default function Grid({ gridWidth, currentLayout }) {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const lastDraggedEventsRef = useRef(null);
+  const lastGroupDragEventRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
@@ -81,7 +81,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
 
@@ -203,20 +202,22 @@ export default function Grid({ gridWidth, currentLayout }) {
     return (
       <div
         className={'multiple-components-config-handle'}
+        // This is to handle dragging using config handle when multiple components are selected since dragGroup is not triggered
         onMouseUpCapture={() => {
-          if (lastDraggedEventsRef.current) {
-            // Creatint the same event object that matches what onDragGroupEnd expects
+          const lastDraggedEvents = lastGroupDragEventRef.current;
+          if (lastDraggedEvents?.length) {
+            // Creating the same event object that matches what onDragGroupEnd expects
             const event = {
-              clientX: lastDraggedEventsRef.current.events[0].clientX,
-              clientY: lastDraggedEventsRef.current.events[0].clientY,
-              events: lastDraggedEventsRef.current.events.map((ev) => ({
+              clientX: lastDraggedEvents?.[0].clientX,
+              clientY: lastDraggedEvents?.[0].clientY,
+              events: lastDraggedEvents?.map((ev) => ({
                 target: ev.target,
                 lastEvent: {
                   translate: [ev.translate[0], ev.translate[1]],
                 },
               })),
+              targets: lastDraggedEvents?.map((ev) => ev.target),
             };
-
             handleDragGroupEnd(event);
           }
 
@@ -225,7 +226,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
         onMouseDownCapture={() => {
-          lastDraggedEventsRef.current = null;
+          lastGroupDragEventRef.current = null;
           if (!useGridStore.getState().isGroupHandleHoverd) {
             useGridStore.getState().actions.setIsGroupHandleHoverd(true);
           }
@@ -254,7 +255,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       </div>
     );
   };
-
   //TO-DO -> Move this to moveableExtensions.js
   const MultiComponentHandle = {
     name: 'multiComponentHandle',
@@ -350,14 +350,6 @@ export default function Grid({ gridWidth, currentLayout }) {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComponents, openModalWidgetId, boxList, currentLayout]);
-
-  const updateNewPosition = (events, parent = null) => {
-    const posWithParent = {
-      events,
-      parent,
-    };
-    lastDraggedEventsRef.current = posWithParent;
-  };
 
   const isComponentVisible = (id) => {
     const component = getResolvedComponent(id, null, moduleId);
@@ -472,6 +464,18 @@ export default function Grid({ gridWidth, currentLayout }) {
       hideGridLines();
       handleDeactivateTargets();
       clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+      if (isGroupDraggingRef.current) {
+        useStore.getState().setIsGroupDragging(false);
+        isGroupDraggingRef.current = false;
+      }
+      e.targets.forEach((targetWidget) => {
+        if (!targetWidget) return;
+        targetWidget.classList.remove('show-ghost-group-dragging-resizing');
+        const moveableControlBox = document.getElementsByClassName(`sc-${targetWidget.id}`)[0];
+        if (moveableControlBox) {
+          moveableControlBox.style.setProperty('visibility', 'visible', 'important');
+        }
+      });
       const { events, clientX, clientY } = e;
       const initialParent = events[0].target.closest('.real-canvas');
       // Get potential new parent using same logic as onDragEnd
@@ -612,7 +616,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!shouldFreeze ? isWidgetResizable : false && mode !== 'view'}
+        resizable={!shouldFreeze ? isWidgetResizable : false}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -784,7 +788,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
           });
         }}
-        onResizeGroup={({ events }) => {
+        onResizeGroup={(e) => {
+          const { events } = e;
           if (!isGroupResizingRef.current) {
             useStore.getState().setIsGroupResizing(true);
             isGroupResizingRef.current = true;
@@ -1134,10 +1139,20 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
+          lastGroupDragEventRef.current = events;
           const parentElm = events[0]?.target?.closest('.real-canvas');
           if (!isGroupDraggingRef.current) {
             useStore.getState().setIsGroupDragging(true);
             isGroupDraggingRef.current = true;
+            // Add the class to the targets that are being dragged to hide the group selection
+            lastGroupDragEventRef?.current?.forEach((ev) => {
+              if (!ev?.target) return;
+              ev.target.classList.add('show-ghost-group-dragging-resizing');
+              const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
+              if (moveableControlBox) {
+                moveableControlBox.style.setProperty('visibility', 'hidden', 'important');
+              }
+            });
           }
           // Position single ghost for entire group
           positionGroupGhostElement(events, 'moveable-ghost-widget');
@@ -1153,32 +1168,14 @@ export default function Grid({ gridWidth, currentLayout }) {
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
           handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
-          updateNewPosition(events);
         }}
-        onDragGroupStart={({ events }) => {
+        onDragGroupStart={() => {
           showGridLines();
           handleActivateNonDraggingComponents();
-          events.forEach((ev) => {
-            ev.target.classList.add('show-ghost-group-dragging-resizing');
-            const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
-            if (moveableControlBox) {
-              moveableControlBox.style.setProperty('visibility', 'hidden', 'important');
-            }
-          });
         }}
         onDragGroupEnd={(e) => {
+          // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler
           handleDragGroupEnd(e);
-          if (isGroupDraggingRef.current) {
-            useStore.getState().setIsGroupDragging(false);
-            isGroupDraggingRef.current = false;
-          }
-          e.targets.forEach((targetWidget) => {
-            targetWidget.classList.remove('show-ghost-group-dragging-resizing');
-            const moveableControlBox = document.getElementsByClassName(`sc-${targetWidget.id}`)[0];
-            if (moveableControlBox) {
-              moveableControlBox.style.setProperty('visibility', 'visible', 'important');
-            }
-          });
           toggleCanvasUpdater();
         }}
         onClickGroup={(e) => {
