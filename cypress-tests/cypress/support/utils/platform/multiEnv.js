@@ -4,7 +4,7 @@ import { appVersionSelectors } from "Selectors/exportImport";
 import { appVersionText } from "Texts/exportImport";
 import { multiEnvText } from "Texts/eeCommon";
 import { appEditorSelector } from "Selectors/multiEnv";
-import { ENVIRONMENTS, WIDGET_POSITIONS } from "Constants/constants/multiEnv";
+import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
 import { multiEnvSelector } from "Selectors/eeCommon";
 
 export const promoteApp = () => {
@@ -39,9 +39,9 @@ export const appPromote = (fromEnv, toEnv) => {
     };
 
     const transitions = {
-        [ENVIRONMENTS.development]: {
-            [ENVIRONMENTS.staging]: commonActions,
-            [ENVIRONMENTS.production]: () => {
+        [Environments.development]: {
+            [Environments.staging]: commonActions,
+            [Environments.production]: () => {
                 commonActions();
                 appPromote("staging", "production");
             },
@@ -148,7 +148,7 @@ export const createAppWithComponents = (appName, dsName, dbNameConstant, tableNa
         cy.apiAddComponentToApp(
             appName,
             "constant_data",
-            WIDGET_POSITIONS.constantData,
+            WidgetPositions.constantData,
             "Text",
             `{{constants.${dbNameConstant}}}`
         );
@@ -156,7 +156,7 @@ export const createAppWithComponents = (appName, dsName, dbNameConstant, tableNa
         cy.apiAddComponentToApp(
             appName,
             "query_data",
-            WIDGET_POSITIONS.queryData,
+            WidgetPositions.queryData,
             "Text",
             `{{JSON.stringify(queries.psql.data)}}`
         );
@@ -177,7 +177,7 @@ export const selectEnvironment = (envName) => {
     cy.get(multiEnvSelector.envNameList).contains(envName).click({ timeout: 10000 });
 };
 
-export const releaseAppFromProdAndVisitTheApp = (appSlug) => {
+export const releaseAndVisitApp = (appSlug) => {
     cy.get(commonSelectors.releaseButton).click();
     cy.get(commonSelectors.yesButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
@@ -208,7 +208,7 @@ export const verifyGlobalSettingsDisabled = () => {
     cy.get(appEditorSelector.settings.appSlugInput).should("not.be.disabled");
 };
 
-export const verifyInspectorMenuNoDelete = () => {
+export const verifyInspectorMenuHasNoDeleteOption = () => {
     cy.get(appEditorSelector.editor.inspector.buttonAria).click({ timeout: 1000 });
     cy.get(appEditorSelector.editor.inspector.componentsNode).should("be.visible").click({ timeout: 1000 });
     cy.get(appEditorSelector.editor.inspector.componentsNode).eq(2).should("be.visible").click({ timeout: 1000 });
@@ -243,9 +243,9 @@ export const verifyComponentInspectorDisabled = () => {
 
 export const setupWorkspaceConstant = (constantName, values, tag = "Global") => {
     const getValue = (env) => values[env] || values;
-    cy.apiCreateWorkspaceConstant(constantName, getValue(ENVIRONMENTS.development), [tag], [ENVIRONMENTS.development]).then((res) => {
+    cy.apiCreateWorkspaceConstant(constantName, getValue(Environments.development), [tag], [Environments.development]).then((res) => {
         const constantId = res.body.constant.id;
-        cy.apiUpdateWsConstant(constantId, getValue(ENVIRONMENTS.staging), ENVIRONMENTS.staging);
-        cy.apiUpdateWsConstant(constantId, getValue(ENVIRONMENTS.production), ENVIRONMENTS.production);
+        cy.apiUpdateWsConstant(constantId, getValue(Environments.staging), Environments.staging);
+        cy.apiUpdateWsConstant(constantId, getValue(Environments.production), Environments.production);
     });
 };
