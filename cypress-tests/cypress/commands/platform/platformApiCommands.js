@@ -35,16 +35,13 @@ Cypress.Commands.add(
     }
 );
 
-Cypress.Commands.add("apiLogout", () => {
-    cy.getCookie("tj_auth_token").then((cookie) => {
+Cypress.Commands.add("apiLogout", (cacheHeaders = false) => {
+    cy.getAuthHeaders(cacheHeaders).then((headers) => {
         cy.request(
             {
                 method: "GET",
                 url: `${Cypress.env("server_host")}/api/session/logout`,
-                headers: {
-                    "Tj-Workspace-Id": Cypress.env("workspaceId"),
-                    Cookie: `tj_auth_token=${cookie.value}`,
-                },
+                headers: headers,
             },
             { log: false }
         ).then((response) => {
@@ -66,16 +63,13 @@ Cypress.Commands.add("apiGetEnvironments", () => {
     });
 });
 
-Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
-    cy.getCookie("tj_auth_token").then((cookie) => {
+Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug, cacheHeaders = false) => {
+    cy.getAuthHeaders().then((headers) => {
         cy.request(
             {
                 method: "POST",
                 url: `${Cypress.env("server_host")}/api/organizations`,
-                headers: {
-                    "Tj-Workspace-Id": Cypress.env("workspaceId"),
-                    Cookie: `tj_auth_token=${cookie.value}`,
-                },
+                headers: headers,
                 body: {
                     name: workspaceName,
                     slug: workspaceSlug,
@@ -91,7 +85,7 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
 
 Cypress.Commands.add(
     "apiUserInvite",
-    (userName, userEmail, userRole = "end-user", metaData = {}) => {
+    (userName, userEmail, userRole = "end-user", metaData = {}, groups = []) => {
         let normalizedMetaData = metaData;
         if (Array.isArray(metaData)) {
             normalizedMetaData = Object.fromEntries(metaData);
@@ -100,21 +94,18 @@ Cypress.Commands.add(
         const requestBody = {
             email: userEmail,
             firstName: userName,
-            groups: [],
+            groups: groups,
             lastName: "",
             role: userRole,
             userMetadata: normalizedMetaData,
         };
 
-        cy.getCookie("tj_auth_token").then((cookie) => {
+        cy.getAuthHeaders().then((headers) => {
             cy.request(
                 {
                     method: "POST",
                     url: `${Cypress.env("server_host")}/api/organization-users`,
-                    headers: {
-                        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-                        Cookie: `tj_auth_token=${cookie.value}`,
-                    },
+                    headers: headers,
                     body: requestBody,
                 },
                 { log: false }
@@ -198,40 +189,91 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
     });
 });
 
-Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
-    return cy
-        .task("dbConnection", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `
-      SELECT id 
-      FROM users
-      WHERE email='${email}'
-      LIMIT 1;
-    `,
-        })
-        .then((resp) => {
-            const userId = resp.rows[0]?.id;
-            if (!userId) throw new Error(`User with email ${email} not found`);
-            return userId;
-        })
-        .then((userId) => {
-            return cy.getAuthHeaders().then((headers) => {
-                return cy
-                    .request({
-                        method: "PUT",
-                        url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
-                        headers: headers,
-                        body: {
-                            newRole: role,
-                            userId: userId,
-                        },
+Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
+    const namesArray = Array.isArray(datasourceNames)
+        ? datasourceNames
+        : [datasourceNames];
+
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+
+                const dsIds = namesArray
+                    .map((dsName) => {
+                        const normalizedSearchName = dsName.toLowerCase().trim();
+                        const ds = response.body.data_sources.find(
+                            (d) => d.name.toLowerCase().trim() === normalizedSearchName
+                        );
+                        return ds?.id;
                     })
-                    .then((response) => {
-                        expect(response.status).to.equal(200);
-                    });
+                    .filter(Boolean);
+
+                return dsIds;
             });
-        });
+    });
 });
+
+Cypress.Commands.add("apiGetAppIdByName", (appName) => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                const app = response.body.apps.find((app) => app.name === appName);
+                expect(app, `App with name "${appName}" not found`).to.exist;
+                return app.id;
+            });
+    });
+});
+
+Cypress.Commands.add("apiGetUserDetails", (email) => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/organization-users`,
+                headers: headers,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                return response;
+            });
+    });
+});
+
+Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
+    return cy.apiGetUserDetails(email).then((response) => {
+        const userId = response.body.users.find((u) => u.email === email).user_id;
+        return cy.getAuthHeaders().then((headers) => {
+            return cy
+                .request({
+                    method: "PUT",
+                    url: `${Cypress.env("server_host")}/api/v2/group-permissions/role/user`,
+                    headers: headers,
+                    body: {
+                        newRole: role,
+                        userId: userId,
+                    },
+                })
+                .then((response) => {
+                    expect(response.status).to.equal(200);
+                });
+        });
+    });
+})
 
 Cypress.Commands.add(
     "apiCreateGranularPermission",
@@ -240,70 +282,130 @@ Cypress.Commands.add(
         name,
         resourceType = "app",
         permissions = {},
-        resourcesToAdd = []
+        resourcesToAdd = [],
+        isAll = true
     ) => {
+        // Normalize resourcesToAdd to always be an array
+        const normalizedResources = Array.isArray(resourcesToAdd)
+            ? resourcesToAdd
+            : [resourcesToAdd];
+
+        const formatResources = (type, resources, isAll) => {
+            if (isAll) return [];
+            return type === "datasource"
+                ? resources.map((id) => ({ dataSourceId: id }))
+                : resources.map((id) => ({ appId: id }));
+        };
+
+        const buildPermissionObject = (type, perms, formattedResources) => {
+            if (type === "data_source") {
+                return {
+                    action: {
+                        canUse: perms.canUse ?? true,
+                        canConfigure: perms.canConfigure ?? false,
+                    },
+                    resourcesToAdd: formattedResources,
+                };
+            }
+            return {
+                canEdit: perms.canEdit ?? false,
+                canView: perms.canView ?? true,
+                hideFromDashboard: perms.hideFromDashboard ?? false,
+                resourcesToAdd: formattedResources,
+            };
+        };
+
+        const buildRequestBody = (
+            isEnterprise,
+            name,
+            type,
+            groupId,
+            isAll,
+            permObj
+        ) => {
+            const baseBody = { name, groupId, isAll };
+            if (isEnterprise) {
+                return {
+                    ...baseBody,
+                    type,
+                    createResourcePermissionObject: permObj,
+                };
+            }
+            return {
+                ...baseBody,
+                type: "app",
+                createAppsPermissionsObject: permObj,
+            };
+        };
+
+        const sendRequest = (url, headers, body, resourceType, name) => {
+            cy.request({
+                method: "POST",
+                url,
+                headers,
+                body,
+                log: false,
+            }).then((res) => {
+                expect(res.status).to.equal(201);
+            });
+        };
+
         cy.getAuthHeaders().then((headers) => {
             cy.apiGetGroupId(groupName).then((groupId) => {
-                const environment = Cypress.env("environment");
-                const isEnterprise = environment === "Enterprise";
-
-                const resourceTypeMap = {
+                const isEnterprise = Cypress.env("environment") === "Enterprise";
+                const typeMap = {
                     app: { type: "app", endpoint: "app" },
                     workflow: { type: "workflow", endpoint: "data-source" },
                     datasource: { type: "data_source", endpoint: "data-source" },
                 };
-
-                const { type, endpoint } =
-                    resourceTypeMap[resourceType] || resourceTypeMap.app;
-
+                const { type, endpoint } = typeMap[resourceType] || typeMap.app;
                 const url = isEnterprise
                     ? `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/${endpoint}`
                     : `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions`;
-                let permissionObject;
 
-                if (resourceType === "datasource") {
-                    permissionObject = {
-                        action: {
-                            canUse: permissions.canUse ?? true,
-                            canConfigure: permissions.canConfigure ?? false,
-                        },
-                        resourcesToAdd,
-                    };
+                if (resourceType === "datasource" && !isAll) {
+                    cy.apiGetDatasourceIds(normalizedResources).then((dsIds) => {
+                        const formattedResources = formatResources(
+                            "datasource",
+                            dsIds,
+                            false
+                        );
+                        const permissionObject = buildPermissionObject(
+                            type,
+                            permissions,
+                            formattedResources
+                        );
+                        const body = buildRequestBody(
+                            isEnterprise,
+                            name,
+                            type,
+                            groupId,
+                            false,
+                            permissionObject
+                        );
+                        sendRequest(url, headers, body, resourceType, name);
+                    });
                 } else {
-                    permissionObject = {
-                        canEdit: permissions.canEdit ?? false,
-                        canView: permissions.canView ?? true,
-                        hideFromDashboard: permissions.hideFromDashboard ?? false,
-                        resourcesToAdd,
-                    };
-                }
-
-                const body = isEnterprise
-                    ? {
+                    const formattedResources = formatResources(
+                        resourceType,
+                        normalizedResources,
+                        isAll
+                    );
+                    const permissionObject = buildPermissionObject(
+                        type,
+                        permissions,
+                        formattedResources
+                    );
+                    const body = buildRequestBody(
+                        isEnterprise,
                         name,
                         type,
                         groupId,
-                        isAll: true,
-                        createResourcePermissionObject: permissionObject,
-                    }
-                    : {
-                        name,
-                        type: "app",
-                        groupId,
-                        isAll: true,
-                        createAppsPermissionsObject: permissionObject,
-                    };
-
-                cy.request({
-                    method: "POST",
-                    url: url,
-                    headers: headers,
-                    body: body,
-                    log: false,
-                }).then((res) => {
-                    expect(res.status).to.equal(201);
-                    cy.log(`Created ${resourceType} granular permission: ${name}`);
-                });
+                        isAll,
+                        permissionObject
+                    );
+                    sendRequest(url, headers, body, resourceType, name);
+                }
             });
         });
     }
@@ -600,52 +702,72 @@ Cypress.Commands.add(
         userRole = "end-user",
         userPassword = "password",
         workspaceName = "My workspace",
-        metaData = {}
+        metaData = {},
+        groups = []
     ) => {
         let invitationToken, organizationToken;
 
-        cy.apiUserInvite(userName, userEmail, userRole, metaData);
+        if (groups && groups.length > 0) {
+            const groupArray = Array.isArray(groups) ? groups : [groups];
+            const groupIds = [];
 
-        cy.task("dbConnection", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `
+            cy.wrap(groupArray)
+                .each((groupName) => {
+                    cy.apiGetGroupId(groupName).then((id) => {
+                        groupIds.push(id);
+                    });
+                })
+                .then(() => {
+                    cy.apiUserInvite(userName, userEmail, userRole, metaData, groupIds);
+                    performOnboarding(userEmail, userPassword, organizationToken);
+                });
+        } else {
+            cy.apiUserInvite(userName, userEmail, userRole, metaData, []);
+            performOnboarding(userEmail, userPassword, organizationToken);
+        }
+
+        function performOnboarding (email, password, orgToken) {
+            cy.task("dbConnection", {
+                dbconfig: Cypress.env("app_db"),
+                sql: `
       SELECT ou.invitation_token 
       FROM organization_users ou
       JOIN users u ON u.id = ou.user_id
-      WHERE u.email='${userEmail}'
+      WHERE u.email='${email}'
       LIMIT 1;`,
-        })
-            .then((resp) => {
-                organizationToken = resp.rows[0]?.invitation_token;
-                invitationToken = organizationToken;
-                return cy.request({
-                    method: "POST",
-                    url: `${Cypress.env("server_host")}/api/onboarding/activate-account-with-token`,
-                    body: {
-                        email: userEmail,
-                        password: userPassword,
-                        organizationToken: organizationToken,
-                    },
-                    log: false,
-                });
             })
-            .then((activateResp) => {
-                const setCookie = activateResp.headers["set-cookie"];
-                let authToken = "";
-                if (setCookie) {
-                    const found = setCookie.find((c) => c.startsWith("tj_auth_token="));
-                    if (found) {
-                        authToken = found.split("=")[1].split(";")[0];
+                .then((resp) => {
+                    organizationToken = resp.rows[0]?.invitation_token;
+                    invitationToken = organizationToken;
+                    return cy.request({
+                        method: "POST",
+                        url: `${Cypress.env("server_host")}/api/onboarding/activate-account-with-token`,
+                        body: {
+                            email: email,
+                            password: password,
+                            organizationToken: organizationToken,
+                        },
+                        log: false,
+                    });
+                })
+                .then((activateResp) => {
+                    const setCookie = activateResp.headers["set-cookie"];
+                    let authToken = "";
+                    if (setCookie) {
+                        const found = setCookie.find((c) => c.startsWith("tj_auth_token="));
+                        if (found) {
+                            authToken = found.split("=")[1].split(";")[0];
+                        }
                     }
-                }
-                return cy.request({
-                    method: "POST",
-                    url: `${Cypress.env("server_host")}/api/onboarding/accept-invite`,
-                    headers: authToken ? { Cookie: `tj_auth_token=${authToken}` } : {},
-                    body: { token: organizationToken },
-                    log: false,
+                    return cy.request({
+                        method: "POST",
+                        url: `${Cypress.env("server_host")}/api/onboarding/accept-invite`,
+                        headers: authToken ? { Cookie: `tj_auth_token=${authToken}` } : {},
+                        body: { token: organizationToken },
+                        log: false,
+                    });
                 });
-            });
+        }
     }
 );
 
