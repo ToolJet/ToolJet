@@ -457,7 +457,7 @@ Cypress.Commands.add(
     }
 );
 
-Cypress.Commands.add("apiDeleteExistingApps", () => {
+Cypress.Commands.add("apiDeleteAllApps", () => {
     cy.getAuthHeaders().then((headers) => {
         cy.request({
             method: "GET",
@@ -871,7 +871,7 @@ Cypress.Commands.add(
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
     let headers = {};
     if (returnCached) {
-        return Cypress.env("authHeaders");
+        return returnCached;
     } else {
         cy.getCookie("tj_auth_token").then((cookie) => {
             headers = {
