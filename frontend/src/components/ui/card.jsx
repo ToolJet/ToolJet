@@ -1,3 +1,6 @@
-import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './Card/Index';
+export * from './Rocket/card';
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+
+
+
+

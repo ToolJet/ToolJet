@@ -290,9 +290,7 @@ const SidebarHeader = React.forwardRef(({ className, ...props }, ref) => {
 SidebarHeader.displayName = 'SidebarHeader';
 
 const SidebarFooter = React.forwardRef(({ className, ...props }, ref) => {
-  return (
-    <div ref={ref} data-sidebar="footer" className={cn('tw-flex tw-flex-col tw-gap-2 tw-p-2', className)} {...props} />
-  );
+  return <div ref={ref} data-sidebar="footer" className={cn('tw-flex tw-flex-col tw-gap-2', className)} {...props} />;
 });
 SidebarFooter.displayName = 'SidebarFooter';
 

@@ -1,24 +1,12 @@
 import * as React from 'react';
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from 'lucide-react';
+import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Bell, Zap, GalleryVerticalEnd } from 'lucide-react';
 
-import { NavMain } from './nav-main';
-import { NavProjects } from './nav-projects';
+import { NavMenu } from './nav-menu';
+import { NavActions } from './nav-actions';
 import { NavUser } from './nav-user';
-import { TeamSwitcher } from './team-switcher';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from './sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from './sidebar';
 
-// This is sample data.
+// ToolJet sidebar data based on Figma design
 const data = {
   user: {
     name: 'shadcn',
@@ -27,123 +15,70 @@ const data = {
   },
   teams: [
     {
-      name: 'Acme Inc',
+      name: 'AB',
       logo: GalleryVerticalEnd,
       plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: Command,
-      plan: 'Free',
     },
   ],
   navMain: [
     {
-      title: 'Playground',
+      title: 'Home',
       url: '#',
-      icon: SquareTerminal,
+      icon: Home,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Apps',
+      url: '#',
+      icon: Blocks,
       isActive: true,
-      items: [
-        {
-          title: 'History',
-          url: '#',
-        },
-        {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
-        },
-      ],
+      items: [],
     },
     {
-      title: 'Models',
+      title: 'Workflows',
       url: '#',
-      icon: Bot,
-      items: [
-        {
-          title: 'Genesis',
-          url: '#',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
+      icon: Workflow,
+      isActive: false,
+      items: [],
     },
     {
-      title: 'Documentation',
+      title: 'Database',
       url: '#',
-      icon: BookOpen,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
+      icon: Table2,
+      isActive: false,
+      items: [],
     },
     {
-      title: 'Settings',
+      title: 'Plugins',
       url: '#',
-      icon: Settings2,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
+      icon: Puzzle,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Resources',
+      url: '#',
+      icon: KeyRound,
+      isActive: false,
+      items: [],
     },
   ],
   projects: [
     {
-      name: 'Design Engineering',
+      name: 'Theme',
       url: '#',
-      icon: Frame,
+      icon: Moon,
     },
     {
-      name: 'Sales & Marketing',
+      name: 'Notifications',
       url: '#',
-      icon: PieChart,
+      icon: Bell,
     },
     {
-      name: 'Travel',
+      name: 'Quick Actions',
       url: '#',
-      icon: Map,
+      icon: Zap,
     },
   ],
 };
@@ -151,14 +86,11 @@ const data = {
 export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMenu items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
+        <NavActions actions={data.projects} />
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />

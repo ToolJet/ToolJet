@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react";
+import * as React from 'react';
+import { Folder, Forward, MoreHorizontal, Trash2 } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from '../ui/dropdown-menu';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,7 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "./sidebar";
+} from './sidebar';
 
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
@@ -42,8 +42,8 @@ export function NavProjects({ projects }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="tw-w-48 tw-rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
+                side={isMobile ? 'bottom' : 'right'}
+                align={isMobile ? 'end' : 'start'}
               >
                 <DropdownMenuItem>
                   <Folder className="tw-text-muted-foreground" />
