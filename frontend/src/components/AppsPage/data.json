@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "Customer Dashboard",
+    "lastEdited": "2024-01-15T14:30:00Z",
+    "editedBy": "Sarah Johnson"
+  },
+  {
+    "id": 2,
+    "name": "Inventory Manager",
+    "lastEdited": "2024-01-14T09:15:00Z",
+    "editedBy": "Mike Chen"
+  },
+  {
+    "id": 3,
+    "name": "Sales Portal",
+    "lastEdited": "2024-01-13T16:45:00Z",
+    "editedBy": "Emma Davis"
+  },
+  {
+    "id": 4,
+    "name": "Analytics Dashboard",
+    "lastEdited": "2024-01-12T11:20:00Z",
+    "editedBy": "David Kim"
+  },
+  {
+    "id": 5,
+    "name": "User Management",
+    "lastEdited": "2024-01-11T13:10:00Z",
+    "editedBy": "Lisa Wong"
+  },
+  {
+    "id": 6,
+    "name": "Payment Gateway",
+    "lastEdited": "2024-01-10T15:30:00Z",
+    "editedBy": "Alex Thompson"
+  },
+  {
+    "id": 7,
+    "name": "Notification Center",
+    "lastEdited": "2024-01-09T10:45:00Z",
+    "editedBy": "Maria Garcia"
+  },
+  {
+    "id": 8,
+    "name": "Report Generator",
+    "lastEdited": "2024-01-08T14:20:00Z",
+    "editedBy": "James Wilson"
+  },
+  {
+    "id": 9,
+    "name": "Task Scheduler",
+    "lastEdited": "2024-01-07T12:15:00Z",
+    "editedBy": "Nina Patel"
+  },
+  {
+    "id": 10,
+    "name": "File Manager",
+    "lastEdited": "2024-01-06T16:00:00Z",
+    "editedBy": "Thomas Wilson"
+  },
+  {
+    "id": 11,
+    "name": "Email Integration",
+    "lastEdited": "2024-01-05T09:30:00Z",
+    "editedBy": "Sophia Martinez"
+  },
+  {
+    "id": 12,
+    "name": "Calendar Sync",
+    "lastEdited": "2024-01-04T11:45:00Z",
+    "editedBy": "Raj Patel"
+  },
+  {
+    "id": 13,
+    "name": "Data Visualization",
+    "lastEdited": "2024-01-03T14:15:00Z",
+    "editedBy": "Leila Ahmadi"
+  },
+  {
+    "id": 14,
+    "name": "API Gateway",
+    "lastEdited": "2024-01-02T10:30:00Z",
+    "editedBy": "Carlos Rodriguez"
+  },
+  {
+    "id": 15,
+    "name": "Content Management",
+    "lastEdited": "2024-01-01T15:20:00Z",
+    "editedBy": "Priya Singh"
+  },
+  {
+    "id": 16,
+    "name": "Workflow Engine",
+    "lastEdited": "2023-12-31T12:10:00Z",
+    "editedBy": "Daniel Park"
+  },
+  {
+    "id": 17,
+    "name": "Security Monitor",
+    "lastEdited": "2023-12-30T13:45:00Z",
+    "editedBy": "Michael Chen"
+  },
+  {
+    "id": 18,
+    "name": "Backup System",
+    "lastEdited": "2023-12-29T16:30:00Z",
+    "editedBy": "Sarah Chen"
+  },
+  {
+    "id": 19,
+    "name": "Log Analyzer",
+    "lastEdited": "2023-12-28T11:15:00Z",
+    "editedBy": "Eddie Lake"
+  },
+  {
+    "id": 20,
+    "name": "Performance Monitor",
+    "lastEdited": "2023-12-27T14:00:00Z",
+    "editedBy": "Jamik Tashpulatov"
+  }
+]

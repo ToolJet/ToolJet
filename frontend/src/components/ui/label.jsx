@@ -1,3 +1,6 @@
-import { Label } from './Label/Label';
+export * from './Rocket/label';
 
-export { Label };
+
+
+
+

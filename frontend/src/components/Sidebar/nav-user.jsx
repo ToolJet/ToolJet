@@ -1,16 +1,9 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from "lucide-react";
+import * as React from 'react';
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,19 +12,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "./sidebar";
+} from '../ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from './sidebar';
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="tw-p-2">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -44,9 +32,7 @@ export function NavUser({ user }) {
                 <AvatarFallback className="tw-rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="tw-grid tw-flex-1 tw-text-left tw-text-sm tw-leading-tight">
-                <span className="tw-truncate tw-font-semibold">
-                  {user.name}
-                </span>
+                <span className="tw-truncate tw-font-semibold">{user.name}</span>
                 <span className="tw-truncate tw-text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="tw-ml-auto tw-size-4" />
@@ -54,7 +40,7 @@ export function NavUser({ user }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="tw-w-[--radix-dropdown-menu-trigger-width] tw-min-w-56 tw-rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
@@ -65,9 +51,7 @@ export function NavUser({ user }) {
                   <AvatarFallback className="tw-rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="tw-grid tw-flex-1 tw-text-left tw-text-sm tw-leading-tight">
-                  <span className="tw-truncate tw-font-semibold">
-                    {user.name}
-                  </span>
+                  <span className="tw-truncate tw-font-semibold">{user.name}</span>
                   <span className="tw-truncate tw-text-xs">{user.email}</span>
                 </div>
               </div>
