@@ -10,6 +10,19 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionToEdit }) => {
   const { moduleId } = useModuleContext();
   const [isEditingVersion, setIsEditingVersion] = useState(false);
+  const textareaRef = React.useRef(null);
+
+  const handleDescriptionInput = (e) => {
+    const textarea = textareaRef.current || (e && e.target);
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    const lineHeight = 24;
+    const maxLines = 4;
+    const maxHeight = lineHeight * maxLines;
+    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  };
+
   const { updateVersionNameAction, selectedVersion, appId } = useStore(
     (state) => ({
       updateVersionNameAction: state.updateVersionNameAction,
@@ -106,7 +119,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
         setShowEditAppVersion(false);
       }}
       checkForBackground={true}
-      title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      title={'Edit version'}
       customClassName="edit-version-modal"
     >
       <form
@@ -148,6 +161,8 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
             </label>
             <textarea
               type="text"
+              ref={textareaRef}
+              onInput={handleDescriptionInput}
               onChange={(e) => {
                 setVersionDescription(e.target.value);
                 setDescriptionError(validateVersionDescription(e.target.value));
@@ -158,6 +173,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
               disabled={isEditingVersion}
               value={versionDescription}
               maxLength={500}
+              rows={1}
             />
             <small className={`version-description-helper-text ${descriptionError ? 'text-danger' : ''}`}>
               {descriptionError

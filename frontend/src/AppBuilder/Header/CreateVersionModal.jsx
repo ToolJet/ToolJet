@@ -247,7 +247,7 @@ const CreateVersionModal = ({
         setSelectedVersionForCreation(null);
         setShowCreateAppVersion(false);
       }}
-      title={'Create new version'}
+      title={'Save version'}
       customClassName="create-version-modal"
     >
       {fetchingOrgGit ? (
@@ -356,12 +356,9 @@ const CreateVersionModal = ({
                     width: '100%',
                   }}
                 >
-                  <div
-                    className="create-version-helper-text"
-                    style={{ marginBottom: '12px' }}
-                    data-cy="create-version-helper-text"
-                  >
-                    Creating this version will lock it. Any edits afterwards will automatically start a new draft.
+                  <div className="create-version-helper-text" data-cy="create-version-helper-text">
+                    Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
+                    version.
                   </div>
                 </div>
               </Alert>
@@ -389,7 +386,7 @@ const CreateVersionModal = ({
                 type="submit"
                 disabled={!selectedVersionForCreation || isCreatingVersion}
               >
-                {t('editor.appVersionManager.createVersion', 'Create Version')}
+                {t('editor.appVersionManager.saveVersion', 'Save version')}
               </ButtonSolid>
             </div>
           </div>

@@ -236,8 +236,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       {...overlayProps}
       style={{
         ...overlayProps?.style,
-        minWidth: '320px',
-        maxWidth: '400px',
+        minWidth: '350px',
         borderRadius: '8px',
         border: '1px solid var(--border-weak)',
         boxShadow: '0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1)',
@@ -318,7 +317,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
         {/* Create Draft Button - disabled if draft already exists or no published versions */}
-        <CreateDraftButton onClick={handleCreateDraft} disabled={hasDraft || !hasPublished} />
+        <CreateDraftButton onClick={handleCreateDraft} />
       </Popover.Body>
     </Popover>
   );
@@ -331,8 +330,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           environment={currentEnvironment}
           onClick={handleToggleDropdown}
           darkMode={darkMode}
-          showDraftBadge={isDropdownOpen}
           releasedVersionId={releasedVersionId}
+          isOpen={isDropdownOpen}
         />
       </div>
 

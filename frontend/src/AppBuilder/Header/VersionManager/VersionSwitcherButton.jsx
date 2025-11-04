@@ -1,6 +1,8 @@
 import React from 'react';
+import cx from 'classnames';
+import './version-switcher-button.scss';
 
-const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge = false, releasedVersionId }) => {
+const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen }) => {
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
 
@@ -9,78 +11,36 @@ const VersionSwitcherButton = ({ version, environment, onClick, showDraftBadge =
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  // Determine dot color based on version status
-  const getDotColor = () => {
+  // Determine dot status class based on version status
+  const getDotClass = () => {
     if (isDraft) {
-      return '#BF4F03'; // Orange for draft
+      return 'draft';
     }
     if (isReleased) {
-      return '#1E823B'; // Green for released
+      return 'released';
     }
-    return '#4368E3'; // Blue for published (not released)
+    return 'published';
   };
 
   return (
     <button
-      className="btn version-switcher-button d-flex align-items-center justify-content-center"
-      style={{
-        padding: '7px 12px',
-        gap: '6px',
-        border: '1px solid var(--border-weak)',
-        borderRadius: '6px',
-        backgroundColor: 'white',
-        cursor: 'pointer',
-        minWidth: '139px',
-      }}
+      className={cx('btn version-switcher-button', {
+        opened: isOpen,
+      })}
       onClick={onClick}
     >
-      <div className="d-flex align-items-center" style={{ gap: '6px' }}>
+      <div className="button-content">
         {/* Status indicator dot */}
-        <div
-          className="status-dot"
-          style={{
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: getDotColor(),
-          }}
-        />
+        <div className={cx('status-dot', getDotClass())} />
 
         {/* Version name */}
-        <span
-          className="tj-text-sm"
-          style={{
-            color: 'var(--text-default)',
-            fontWeight: 500,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {isDraft && showDraftBadge ? 'Draft' : version?.name || 'v1'}
-        </span>
+        <span className="version-name">{version?.name}</span>
 
         {/* Divider */}
-        <div
-          style={{
-            width: '1px',
-            height: '16px',
-            backgroundColor: 'var(--border-weak)',
-          }}
-        />
+        <div className="divider" />
 
         {/* Environment name */}
-        <span
-          className="tj-text-sm"
-          style={{
-            color: 'var(--text-placeholder)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {capitalizeFirstLetter(environment?.name)}
-        </span>
+        <span className="environment-name">{capitalizeFirstLetter(environment?.name)}</span>
       </div>
     </button>
   );

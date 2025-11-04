@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
+import '@/_styles/versions.scss';
 import { PromoteConfirmationModal } from './components';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
@@ -61,16 +62,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
       <>
         <ToolTip message={renderTooltipMessage()} placement="top" show={true}>
           <button
-            className="btn btn-sm"
-            style={{
-              padding: '2px 8px',
-              fontSize: '11px',
-              fontWeight: 500,
-              border: '1px solid var(--border-weak)',
-              backgroundColor: 'white',
-              color: 'var(--text-default)',
-              borderRadius: '4px',
-            }}
+            className="btn btn-sm version-action-btn"
             disabled={shouldDisablePromote || !isPromoteVersionEnabled}
             onClick={handlePromote}
           >

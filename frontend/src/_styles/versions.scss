@@ -10,6 +10,34 @@
 	}
 }
 
+.version-action-btn {
+	padding: 2px 8px !important;
+	font-size: 11px !important;
+	font-weight: 500;
+	border: 1px solid var(--border-weak);
+	background-color: #ffffff;
+	color: var(--text-default);
+	cursor: pointer;
+    box-shadow: var(--elevation-100-box-shadow);
+	transition: box-shadow 0.12s ease, transform 0.08s ease;
+	border-radius: 4px !important;
+	outline: none;
+
+	&:hover {
+		border: 1px solid var(--border-weak) !important;
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		color: #acb2b9;
+		border-color: var(--border-weak);
+		background-color: #ffffff;
+		box-shadow: none;
+		opacity: 1;
+	}
+}
+
+
 .env-option {
 	position: relative;
 	min-height: 40px;
@@ -253,4 +281,45 @@
 	.env-container {
 		min-width: unset;
 	}
+}
+
+.tooltip.version-tooltip .tooltip-inner {
+	background-color: #ffffff !important;
+	color: var(--text-default) !important;
+	border-radius: 8px !important;
+	padding: 0 !important;
+	max-width: 300px !important;
+    box-shadow: var(--elevation-400-box-shadow) !important;
+	text-align: left !important;
+}
+
+.tooltip.version-tooltip .tooltip-arrow,
+.tooltip.version-tooltip .tooltip-arrow::before,
+.tooltip.version-tooltip .tooltip-arrow::after {
+	background: transparent !important;
+}
+
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after {
+	border-left-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::after {
+	border-right-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::after {
+	border-top-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::after {
+	border-bottom-color: #ffffff !important;
+}
+
+.tooltip.version-tooltip .tooltip-arrow::before,
+.tooltip.version-tooltip .tooltip-arrow::after {
+	border-top-color: #ffffff !important;
+	border-right-color: #ffffff !important;
+	border-bottom-color: #ffffff !important;
+	border-left-color: #ffffff !important;
 }

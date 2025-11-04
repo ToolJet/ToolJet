@@ -175,16 +175,15 @@
   }
 
   .edit-version-description {
-    display: flex;
     padding: 10px 8px;
-    align-items: flex-start;
-    gap: 12px;
-    align-self: stretch;
     border-radius: 6px;
     border: 1px solid var(--border-default, #CCD1D5);
-    background: --bg-surface-layer-01;
-    width: 344px;
-    height: 80px;
+    min-height: 24px;
+    max-height: 96px;
+    overflow-y: auto;
+    resize: none;
+    line-height: 24px;
+    transition: height 0.2s;
   }
 
   .edit-version-footer {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -8,6 +8,7 @@ import {
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { ToolTip } from '@/_components/ToolTip';
 
 const VersionDropdownItem = ({
   version,
@@ -39,6 +40,23 @@ const VersionDropdownItem = ({
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
+  const metadataRef = useRef(null);
+  const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
+
+  // Check if metadata text is overflowing
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (metadataRef.current) {
+        const isOverflowing = metadataRef.current.scrollWidth > metadataRef.current.clientWidth;
+        setShowMetadataTooltip(isOverflowing);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [version.description, createdFromVersionName]);
+
   // Determine if we should show promote button based on environment logic
   const currentEnvData = environments.find((env) => env.id === currentEnvironment?.id);
   const currentPriority = currentEnvData?.priority || 1;
@@ -69,13 +87,19 @@ const VersionDropdownItem = ({
             Release
           </div>
         )}
+
         <div
-          className="dropdown-item cursor-pointer tj-text-xsm"
+          className={cx('dropdown-item tj-text-xsm', {
+            'cursor-pointer': isDraft,
+            disabled: !isDraft,
+          })}
           onClick={(e) => {
             e.stopPropagation();
+            if (!isDraft) return; // disable when not a draft
             onEdit?.(version);
             document.body.click(); // Close popover
           }}
+          aria-disabled={!isDraft}
         >
           Edit details
         </div>
@@ -95,26 +119,70 @@ const VersionDropdownItem = ({
     </Popover>
   );
 
-  return (
+  const isDisabled = false;
+
+  const tooltipContent = (createdFromVersionName || version.description) && (
+    <div>
+      <div
+        style={{
+          padding: '12px',
+          borderBottom: '1px solid var(--border-weak)',
+          fontWeight: 500,
+          fontSize: '12px',
+          lineHeight: '18px',
+          color: 'var(--text-default)',
+        }}
+      >
+        {version.name}
+      </div>
+      <div style={{ padding: '12px 12px 8px' }}>
+        {createdFromVersionName && (
+          <div
+            style={{
+              fontSize: '12px',
+              lineHeight: '18px',
+              color: 'var(--text-default)',
+              marginBottom: '4px',
+              fontWeight: 400,
+            }}
+          >
+            Version created from {createdFromVersionName}
+          </div>
+        )}
+        {version.description && (
+          <div
+            style={{
+              fontSize: '12px',
+              lineHeight: '18px',
+              color: 'var(--text-placeholder)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {version.description}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const versionItem = (
     <div
-      className={cx('version-dropdown-item cursor-pointer', {
-        selected: isSelected,
+      className={cx('version-dropdown-item', {
+        disabled: isDisabled,
+        'cursor-pointer': !isDisabled,
       })}
-      onClick={() => onSelect(version)}
+      onClick={() => !isDisabled && onSelect(version)}
       style={{ padding: '6px 4px' }}
     >
       <div className="d-flex align-items-start" style={{ gap: '8px' }}>
-        {/* Check icon for selected */}
         <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
           {isSelected && <SolidIcon name="tickv3" alt="selected" width="16" height="16" />}
         </div>
 
-        {/* Version content */}
-        <div className="flex-grow-1" style={{ minWidth: 0 }}>
-          {/* Version name and tags */}
+        <div className="flex-grow-1" style={{ minWidth: '0px' }}>
           <div className="d-flex align-items-center justify-content-between" style={{ gap: '8px' }}>
             <div className="d-flex align-items-center" style={{ gap: '8px', minWidth: 0 }}>
-              {/* Version name */}
               <div
                 className="tj-text-sm"
                 style={{
@@ -177,22 +245,13 @@ const VersionDropdownItem = ({
                 {/* Create version button - shown for drafts */}
                 {canCreateVersion && (
                   <button
-                    className="btn btn-sm"
-                    style={{
-                      padding: '2px 8px',
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      border: '1px solid var(--border-weak)',
-                      backgroundColor: 'white',
-                      color: 'var(--text-default)',
-                      borderRadius: '4px',
-                    }}
+                    className="btn btn-sm version-action-btn"
                     onClick={(e) => {
                       e.stopPropagation();
                       onCreateVersion?.(version);
                     }}
                   >
-                    Create version
+                    Save version
                   </button>
                 )}
 
@@ -217,13 +276,15 @@ const VersionDropdownItem = ({
           {/* Version metadata (created from and description combined) */}
           {(createdFromVersionName || version.description) && (
             <div
+              ref={metadataRef}
               className="tj-text-xsm"
               style={{
                 color: 'var(--text-placeholder)',
                 marginTop: '2px',
                 fontSize: '11px',
                 lineHeight: '16px',
-                maxWidth: '91%',
+                maxWidth: '95%',
+                minWidth: '95%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -238,6 +299,17 @@ const VersionDropdownItem = ({
       </div>
     </div>
   );
+
+  // Wrap with tooltip if there's overflow metadata
+  if (showMetadataTooltip && tooltipContent) {
+    return (
+      <ToolTip message={tooltipContent} placement="left" show={true} tooltipClassName="version-tooltip" width="300px">
+        {versionItem}
+      </ToolTip>
+    );
+  }
+
+  return versionItem;
 };
 
 export default VersionDropdownItem;

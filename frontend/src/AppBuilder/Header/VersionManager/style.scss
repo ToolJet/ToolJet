@@ -36,30 +36,6 @@
   }
 }
 
-// Version Switcher Button (top nav)
-.version-switcher-button {
-  font-family: 'IBM Plex Sans', sans-serif;
-  transition: all 0.2s ease;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  .status-dot {
-    flex-shrink: 0;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-  }
-
-  .divider {
-    opacity: 0.3;
-  }
-}
-
 .app-version-description {
   min-height: 24px;
   max-height: 96px; // 4 lines * 24px
@@ -122,15 +98,34 @@
 // Version Dropdown Item
 .version-dropdown-item {
   font-family: 'IBM Plex Sans', sans-serif;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
   cursor: pointer;
+  border-radius: 6px;
+  background-color: transparent;
 
-  &:hover {
-    background-color: var(--slate3);
+  &:hover:not(.disabled) {
+    background-color: var(--interactive-hover);
   }
 
-  &.selected {
-    background-color: var(--indigo1);
+
+  &.disabled {
+    background-color: transparent;
+    cursor: not-allowed;
+    opacity: 1;
+
+    .tj-text-sm,
+    .tj-text-xsm,
+    * {
+      color: #acb2b9 !important;
+    }
+
+    button {
+      background-color: #ffffff !important;
+      border-color: #e4e7eb !important;
+      color: #acb2b9 !important;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   }
 
   .version-tag {

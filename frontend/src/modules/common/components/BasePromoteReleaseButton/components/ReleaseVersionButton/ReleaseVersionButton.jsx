@@ -83,13 +83,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
           show={true}
         >
           <button
-            className="btn btn-sm btn-primary"
-            style={{
-              padding: '2px 8px',
-              fontSize: '11px',
-              fontWeight: 500,
-              borderRadius: '4px',
-            }}
+            className="btn btn-sm version-action-btn"
             disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
             onClick={onReleaseButtonClick}
           >
