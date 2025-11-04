@@ -39,7 +39,7 @@ export const testArchiveUnarchiveFlow = (userName, userEmail, workspaceName) => 
     cy.apiLogin();
     archiveUserFromInstancesettings(userName);
     cy.apiLogout();
-    cy.reload();
+    cy.visit('/');
 
     // Verify archived user cannot login
     cy.clearAndType(onboardingSelectors.loginEmailInput, userEmail);
@@ -62,7 +62,7 @@ export const testArchiveUnarchiveFlow = (userName, userEmail, workspaceName) => 
 
 export const toggleSuperAdminRole = (userEmail) => {
     cy.apiLogin();
-    cy.reload();
+    cy.visit('/');
     openInstanceSettings();
     cy.clearAndType(commonEeSelectors.userSearchBar, userEmail);
     openUserActionMenu(userEmail);
@@ -71,5 +71,5 @@ export const toggleSuperAdminRole = (userEmail) => {
     cy.get('[data-cy="update-button"]').click();
     cy.wait(1000);
     cy.apiLogout();
-    cy.reload();
+   cy.visit('/');
 };
