@@ -258,7 +258,7 @@ describe("Instance settings - White labelling", () => {
         cy.title().should('contain', 'ToolJet');
     });
 
-    // need to fix after bug fixes 
+    // need to update after bug fixes
     it.skip("should validate white label URL format", () => {
         openWhiteLabelingSettings();
         cy.get(whiteLabelSelectors.appLogoInput).clear().type('invalid-url');
