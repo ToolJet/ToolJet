@@ -1,0 +1,140 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Sheetsv2 datasource",
+  "description": "A schema defining google sheets datasource",
+  "type": "api",
+  "source": {
+    "name": "Google Sheets 2.0",
+    "kind": "googlesheetsv2",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "service_account_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_secret":{
+        "type":"string",
+        "encrypted":"true"
+      }
+    },
+    "customTesting": false,
+    "hideSave": false
+  },
+  "defaults": {
+    "access_type": {
+      "value": "read"
+    },
+    "authentication_type": {
+      "value": "oauth2"
+    },
+    "redirect_url": {
+        "value": "http://localhost:8082/oauth2/authorize",
+        "encrypted": false
+    },
+    "auth_url": {
+        "value": "https://accounts.google.com/o/oauth2/v2/auth",
+        "encrypted": false
+    },
+    "allowed_auth_types": {
+        "value": "oauth2",
+        "encrypted": false
+    },
+    "auth_type": {
+        "value": "oauth2"
+    },
+    "grant_type": {
+        "value": "authorization_code"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://oauth2.googleapis.com/token"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication Type",
+      "key": "authentication_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing authentication type",
+      "list": [
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        },
+        {
+          "value": "service_account",
+          "name": "Service Account"
+        }
+      ]
+    },
+    "oauth2": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      },
+      "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "A component for googlesheetsv2",
+        "oauth_configs": {
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ],
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": [
+                "custom_app"
+              ],
+              "ee": [
+                "custom_app"
+              ],
+              "cloud": [
+                "custom_app",
+                 "tooljet_app"
+                ]
+            }
+          },
+          "allowed_scope_field": false
+        }
+      }
+    },
+    "service_account": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      },
+      "service_account_key": {
+        "label": "Service Account Key",
+        "key": "service_account_key",
+        "type": "textarea",
+        "description": "Enter JSON private key for service account",
+        "encrypted": true 
+      }
+    }
+  }
+}
