@@ -628,17 +628,18 @@ export const calculateGroupBoundingBox = (targetElements) => {
  * @param {Object} boundingBox - Bounding box with left, top, width, height
  * @param {string} ghostElementId - The ID of the ghost element to position
  */
-export const positionGroupGhostElement = (events, ghostElementId) => {
+export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => {
+  if (!events || events.length === 0) return;
+
   const boundingBox = calculateGroupBoundingBox(events.map((e) => e.target));
   const ghostElement = document.getElementById(ghostElementId);
 
   if (!ghostElement || !boundingBox) return;
-
-  // Apply the position
-  ghostElement.style.left = `${boundingBox.left}px`;
-  ghostElement.style.top = `${boundingBox.top}px`;
   ghostElement.style.width = `${boundingBox.width}px`;
   ghostElement.style.height = `${boundingBox.height}px`;
+  ghostElement.style.willChange = 'transform';
+
+  ghostElement.style.transform = `translate(${boundingBox.left}px, ${boundingBox.top}px)`;
 };
 
 /**
