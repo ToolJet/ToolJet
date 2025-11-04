@@ -34,7 +34,7 @@ export const ConfigHandle = ({
   isDynamicHeightEnabled,
 }) => {
   const { moduleId } = useModuleContext();
-  const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
+  const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
@@ -273,11 +273,11 @@ export const ConfigHandle = ({
         <Trash size={12} color="var(--icon-inverse)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {!isLicenseValid && componentType === 'ModuleViewer' && (
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
         <Tooltip
           id={`invalid-license-modules-${componentName?.toLowerCase()}`}
           className="tooltip"
-          isOpen={_showHandle && componentType === 'ModuleViewer'}
+          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
           style={{ textAlign: 'center' }}
         />
       )}

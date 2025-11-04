@@ -123,6 +123,14 @@ export enum LICENSE_FIELD {
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',
   PLAN = 'plan',
+  MODULES = 'modulesEnabled',
+  CUSTOM_GROUPS = 'customGroupsEnabled',
+  APP_PAGES_ENABLED = 'appPagesEnabled',
+  APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
+  APP_PAGES_NAV_GROUP = 'appPagesAddNavGroupEnabled',
+  APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
+  APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
+  APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
