@@ -95,7 +95,7 @@ describe("License Page", () => {
     cy.get(groupsSelector.createNewGroupButton).should("be.disabled");
     verifyTooltip(
       groupsSelector.createNewGroupButton,
-      "Custom groups are available only in paid plans",
+      "Custom groups are not available in your plan",
       true
     );
 
