@@ -39,11 +39,11 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     trashAssetsBeforeRuns: true,
     e2e: {
-        setupNodeEvents (on, config) {
+        setupNodeEvents(on, config) {
             config.baseUrl = environment.baseUrl;
 
             on("task", {
-                readPdf (pathToPdf) {
+                readPdf(pathToPdf) {
                     return new Promise((resolve) => {
                         const pdfPath = path.resolve(pathToPdf);
                         let dataBuffer = fs.readFileSync(pdfPath);
@@ -55,7 +55,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                readXlsx (filePath) {
+                readXlsx(filePath) {
                     return new Promise((resolve, reject) => {
                         try {
                             let dataBuffer = fs.readFileSync(filePath);
@@ -69,7 +69,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                deleteFolder (folderName) {
+                deleteFolder(folderName) {
                     return new Promise((resolve, reject) => {
                         rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
                             if (err) {
@@ -83,7 +83,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                dbConnection ({ dbconfig, sql }) {
+                dbConnection({ dbconfig, sql }) {
                     const client = new pg.Pool(dbconfig);
                     return client.query(sql);
                 },
@@ -98,17 +98,16 @@ module.exports = defineConfig({
         configFile: environment.configFile,
         specPattern: [
             "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-            // "cypress/e2e/happyPath/platform/ceTestcases/apps/appSlug.cy.js",
-            // "cypress/e2e/happyPath/platform/ceTestcases/apps/!(*appSlug).cy.js",
-            "cypress/e2e/happyPath/platform/commonTestcases/userManagment/*.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/sso/*.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/workspace/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/license/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/groups/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/!(license|groups)/**/*.cy.js",
         ],
-        numTestsKeptInMemory: 1,
-        redirectionLimit: 15,
+        numTestsKeptInMemory: 0,
+        redirectionLimit: 7,
         experimentalMemoryManagement: true,
         video: false,
-        videoUploadOnPasses: false,
         retries: {
             runMode: 2,
             openMode: 0,
