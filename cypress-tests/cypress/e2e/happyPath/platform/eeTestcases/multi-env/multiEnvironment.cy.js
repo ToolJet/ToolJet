@@ -1,53 +1,30 @@
 import { fake } from "Fixtures/fake";
-import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import { commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { setupWorkspaceConstant, setupPostgreSQLDataSource, createAppWithComponents, verifyEnvironmentData, selectEnvironment, verifyQueryEditorDisabled, verifyGlobalSettingsDisabled, verifyInspectorMenuNoDelete, verifyComponentsManagerDisabled, verifyPageSettingsDisabled, verifyComponentInspectorDisabled, appPromote, releaseAppFromProdAndVisitTheApp } from "Support/utils/platform/multiEnv";
+import {
+    ENVIRONMENTS,
+    ENVIRONMENT_VALUES,
+    DB_VALUES,
+    WAIT_TIMES,
+    TABLE_VALUES,
+} from "Constants/constants/multiEnv";
+import {
+    setupWorkspaceConstant,
+    setupPostgreSQLDataSource,
+    createAppWithComponents,
+    verifyEnvironmentData,
+    selectEnvironment,
+    verifyQueryEditorDisabled,
+    verifyGlobalSettingsDisabled,
+    verifyInspectorMenuNoDelete,
+    verifyComponentsManagerDisabled,
+    verifyPageSettingsDisabled,
+    verifyComponentInspectorDisabled,
+    appPromote,
+    releaseAppFromProdAndVisitTheApp,
+} from "Support/utils/platform/multiEnv";
 
-const waitTimes = {
-    promotion: 2000,
-    queryExecution: 1000,
-};
-
-const environments = {
-    development: "development",
-    staging: "staging",
-    production: "production",
-};
-
-const environmentValues = {
-    development: "dev",
-    staging: "stage",
-    production: "prod",
-};
-
-const dbValues = {
-    development: "multi_env_development_db",
-    staging: "multi_env_staging_db",
-    production: "multi_env_production_db",
-};
-
-const tableValues = {
-    development: "multi_env_development_table",
-    staging: "multi_env_staging_table",
-    production: "multi_env_production_table",
-};
-
-const widgetPositions = {
-    queryData: {
-        desktop: { top: 100, left: 20 },
-        mobile: { width: 8, height: 50 },
-    },
-    constantData: {
-        desktop: { top: 70, left: 25 },
-        mobile: { width: 8, height: 50 },
-    },
-    textInput: {
-        x: 550,
-        y: 650,
-    },
-};
-
-describe("Multi env", () => {
+describe("Multi-Environment Behavior", () => {
     let testData = {};
 
     beforeEach(() => {
@@ -70,13 +47,19 @@ describe("Multi env", () => {
             dsName: `pg-multi-env-${testData.baseId}`,
         };
 
-        setupWorkspaceConstant(names.globalConstantName, environmentValues, "Global");
+        setupWorkspaceConstant(names.globalConstantName, ENVIRONMENT_VALUES, "Global");
         setupWorkspaceConstant(names.secretConstantName, Cypress.env("pg_host"), "Secret");
-        setupWorkspaceConstant(names.dbNameConstant, dbValues, "Global");
-        setupWorkspaceConstant(names.tableNameConstant, tableValues, "Global");
+        setupWorkspaceConstant(names.dbNameConstant, DB_VALUES, "Global");
+        setupWorkspaceConstant(names.tableNameConstant, TABLE_VALUES, "Global");
         setupPostgreSQLDataSource(names.dsName, names.secretConstantName, names.dbNameConstant);
 
-        createAppWithComponents(names.appName, names.dsName, names.dbNameConstant, names.tableNameConstant, names.globalConstantName).then(() => {
+        createAppWithComponents(
+            names.appName,
+            names.dsName,
+            names.dbNameConstant,
+            names.tableNameConstant,
+            names.globalConstantName
+        ).then(() => {
             cy.openApp(
                 "",
                 Cypress.env("workspaceId"),
@@ -91,28 +74,28 @@ describe("Multi env", () => {
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.wait(waitTimes.queryExecution)
+        cy.wait(WAIT_TIMES.queryExecution);
 
-        verifyEnvironmentData(dbValues.development, environmentValues.development);
+        verifyEnvironmentData(DB_VALUES.development, ENVIRONMENT_VALUES.development);
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
-        appPromote(environments.development, environments.staging);
-        verifyEnvironmentData(dbValues.staging, environmentValues.staging);
+        appPromote(ENVIRONMENTS.development, ENVIRONMENTS.staging);
+        verifyEnvironmentData(DB_VALUES.staging, ENVIRONMENT_VALUES.staging);
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
         verifyQueryEditorDisabled();
         verifyGlobalSettingsDisabled();
-        verifyInspectorMenuNoDelete()
+        verifyInspectorMenuNoDelete();
         verifyComponentsManagerDisabled();
-        verifyPageSettingsDisabled()
-        verifyComponentInspectorDisabled()
+        verifyPageSettingsDisabled();
+        verifyComponentInspectorDisabled();
 
-        appPromote(environments.staging, environments.production);
-        verifyEnvironmentData(dbValues.production, environmentValues.production);
+        appPromote(ENVIRONMENTS.staging, ENVIRONMENTS.production);
+        verifyEnvironmentData(DB_VALUES.production, ENVIRONMENT_VALUES.production);
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
 
-        releaseAppFromProdAndVisitTheApp(testData.appSlug)
-        verifyEnvironmentData(dbValues.production, environmentValues.production);
+        releaseAppFromProdAndVisitTheApp(testData.appSlug);
+        verifyEnvironmentData(DB_VALUES.production, ENVIRONMENT_VALUES.production);
         cy.get(commonWidgetSelector.draggableWidget("button1")).should("be.visible");
     });
 
@@ -121,15 +104,14 @@ describe("Multi env", () => {
             const stagingId = Cypress.env("stagingEnvId");
             cy.apiPromoteAppVersion(stagingId);
         });
-
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
-        selectEnvironment('Development');
-        verifyEnvironmentData(dbValues.development, environmentValues.development);
+        selectEnvironment("Development");
+        verifyEnvironmentData(DB_VALUES.development, ENVIRONMENT_VALUES.development);
 
-        selectEnvironment('Staging')
-        verifyEnvironmentData(dbValues.staging, environmentValues.staging);
+        selectEnvironment("Staging");
+        verifyEnvironmentData(DB_VALUES.staging, ENVIRONMENT_VALUES.staging);
 
-        selectEnvironment('Production');
-        verifyEnvironmentData(dbValues.production, environmentValues.production);
+        selectEnvironment("Production");
+        verifyEnvironmentData(DB_VALUES.production, ENVIRONMENT_VALUES.production);
     });
 });

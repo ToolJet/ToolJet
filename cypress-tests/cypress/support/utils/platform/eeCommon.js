@@ -2,9 +2,9 @@ import {
     commonEeSelectors,
     ssoEeSelector,
     instanceSettingsSelector,
-    multiEnvSelector,
     workspaceSelector,
 } from "Selectors/eeCommon";
+import { multiEnvSelector } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import * as common from "Support/utils/common";
