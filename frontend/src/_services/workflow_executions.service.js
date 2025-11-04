@@ -14,8 +14,8 @@ export const workflowExecutionsService = {
   getPaginatedExecutions,
   getPaginatedNodes,
   trigger,
-  streamSSE,
-  cancel,
+  terminate,
+  getExecutionStates,
 };
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
@@ -138,13 +138,20 @@ function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
     .then(handleResponse);
 }
 
-function streamSSE(workflowExecutionId) {
-  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
-    withCredentials: true,
-  });
+function terminate(executionId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${executionId}/terminate`, requestOptions).then(handleResponse);
 }
 
-function cancel(executionId) {
-  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/workflow_executions/${executionId}/cancel`, requestOptions).then(handleResponse);
+function getExecutionStates(appVersionId, executionIds) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ executionIds }),
+    credentials: 'include'
+  };
+  return fetch(
+    `${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`,
+    requestOptions
+  ).then(handleResponse);
 }
