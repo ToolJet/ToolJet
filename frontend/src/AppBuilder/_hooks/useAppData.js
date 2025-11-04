@@ -22,7 +22,7 @@ import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -126,7 +126,7 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = moduleMode ? '' : pathParams?.slug;
+  let slug = pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -231,17 +231,13 @@ const useAppData = (
     }
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
-    const isPublicAccess = moduleMode
-      ? false
-      : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        // clean up the module definition from the store
-        deleteModuleDefinition(appId);
         appDataPromise = Promise.resolve(moduleDefinition);
       } else {
         appDataPromise = appService.fetchApp(appId);
@@ -286,7 +282,12 @@ const useAppData = (
         if (mode !== 'edit') {
           try {
             const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
+            const viewerEnvironment =
+              moduleMode && isPublicAccess
+                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
+                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
               name: viewerEnvironment?.environment?.name,
