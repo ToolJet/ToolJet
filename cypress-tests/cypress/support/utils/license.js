@@ -1,7 +1,9 @@
 import { commonSelectors } from "Selectors/common";
 import { licenseSelectors } from "Selectors/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
+import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
 import { licenseText } from "Texts/license";
+import { importSelectors } from "Selectors/exportImport"
 
 export const switchTabs = (tabTitle) => {
   cy.get(licenseSelectors.listOfItems(tabTitle)).should("be.visible").click();
@@ -490,3 +492,44 @@ export const openInviteUserModal = (name, email, role) => {
   fillUserInviteForm(name, email);
   cy.get(".css-1mlj61j").type(`${role}{enter}`);
 };
+
+export const multiEnvAppSetup = (appName) => {
+  cy.get(importSelectors.importOptionInput)
+    .eq(0)
+    .selectFile("cypress/fixtures/templates/multi_env_licesning_test_app.json", { force: true });
+  cy.wait(2000);
+
+  cy.clearAndType(commonSelectors.appNameInput, appName);
+  cy.get(importSelectors.importAppButton).click();
+  cy.wait(3000);
+  cy.wait("@getAppData").then((interception) => {
+    const responseData = interception.response.body;
+    Cypress.env("appId", responseData.id);
+    Cypress.env("editingVersionId", responseData.editing_version.id);
+    Cypress.env("environmentId", responseData.editorEnvironment.id);
+  });
+
+  createAndUpdateConstant(
+    "rest_api_url",
+    "http://20.29.40.108:4000/development",
+    ["Secret"],
+    ["development", "staging", "production"],
+    {
+      staging: "http://20.29.40.108:4000/staging",
+      production: "http://20.29.40.108:4000/production",
+    }
+  );
+
+  cy.apiCreateWorkspaceConstant(
+    "restapiHeaderKey",
+    "customHeader",
+    ["Global"],
+    ["development", "staging", "production"]
+  );
+  cy.apiCreateWorkspaceConstant(
+    "restapiHeaderValue",
+    "key=value",
+    ["Global"],
+    ["development", "staging", "production"]
+  );
+}

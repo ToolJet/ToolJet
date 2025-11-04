@@ -105,36 +105,28 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   });
 });
 
-Cypress.Commands.add("apiDeleteApp", (appId = null, appName = null) => {
-  const deleteApp = (id) => {
-    cy.getAuthHeaders().then((headers) => {
-      cy.request(
-        {
-          method: "DELETE",
-          url: `${Cypress.env("server_host")}/api/apps/${id}`,
-          headers: headers,
+Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
+    cy.request(
+      {
+        method: "DELETE",
+        url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: Cypress.env("authToken"),
         },
-        { log: false }
-      ).then((response) => {
-        expect(response.status).to.equal(200);
-        Cypress.log({
-          name: "App Delete",
-          displayName: "APP DELETED",
-          message: `: ${id}`,
-        });
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+      Cypress.log({
+        name: "App Delete",
+        displayName: "APP DELETED",
+        message: `: ${Cypress.env("appId")}`,
       });
     });
-  };
-
-  if (appName) {
-    cy.apiGetAppIdByName(appName).then((id) => {
-      deleteApp(id);
-    });
-  } else if (appId) {
-    deleteApp(appId);
-  } else {
-    deleteApp(Cypress.env("appId"));
-  }
+  });
 });
 
 Cypress.Commands.add(
@@ -625,12 +617,12 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId")) => {
+  (targetEnvId = Cypress.env("environmentId"), appId = Cypress.env("appId")) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
-          "appId"
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
+          "editingVersionId"
         )}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
