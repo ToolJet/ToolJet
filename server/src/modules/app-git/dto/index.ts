@@ -74,13 +74,16 @@ export class AppGitPullUpdateDto {
   gitVersionId: string;
 
   @IsString()
-  lastCommitMessage: string;
+  @IsOptional()
+  lastCommitMessage?: string;
 
   @IsString()
-  lastCommitUser: string;
+  @IsOptional()
+  lastCommitUser?: string;
 
   @IsString()
-  lastPushDate: string;
+  @IsOptional()
+  lastPushDate?: string;
 
   @IsString()
   gitAppName: string;
