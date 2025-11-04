@@ -283,6 +283,10 @@
 	}
 }
 
+.version-tooltip {
+	opacity: 1 !important;
+}
+
 .tooltip.version-tooltip .tooltip-inner {
 	background-color: #ffffff !important;
 	color: var(--text-default) !important;
