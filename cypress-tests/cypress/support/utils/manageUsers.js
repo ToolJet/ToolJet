@@ -1,13 +1,13 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
-import * as common from "Support/utils/common";
-import { commonText } from "Texts/common";
+import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
-const envVar = Cypress.env("environment");
+import * as common from "Support/utils/common";
 import { fillInputField } from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
+import { usersText } from "Texts/manageUsers";
+const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
   cy.get(
@@ -480,7 +480,11 @@ export const openEditUserDetails = (
 
   verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
 
-  cy.contains("td", email)
+  navigateToEditUser(email);
+};
+ 
+export const navigateToEditUser = (email) => {
+ cy.contains("td", email)
     .parent()
     .within(() => {
       cy.get('[data-cy="user-actions-button"]').click();
@@ -489,6 +493,3 @@ export const openEditUserDetails = (
     .verifyVisibleElement("have.text", "Edit user details")
     .click();
 };
-
-
-

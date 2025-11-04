@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 export class WorkflowTerminationRegistry {
     constructor() { }
 
-    async requestTermination(executionId: string, timeoutSeconds?: number): Promise<void> {
+    async requestTermination(executionId: string): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
