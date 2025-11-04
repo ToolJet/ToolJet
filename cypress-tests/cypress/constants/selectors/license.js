@@ -29,6 +29,17 @@ export const licenseSelectors = {
   label: (labelName) => {
     return `[data-cy="${cyParamName(labelName)}-label"]`;
   },
+
+  limitInfo: (type) => {
+    return `[data-cy="${cyParamName(type)}-limit-info"]`;
+  },
+  limitHeading: (type) => {
+    return `[data-cy="${cyParamName(type)}-limit-heading"]`;
+  },
+
+  circularToggleDisabledIcon: '[data-cy="circular-toggle-disabled-icon"]',
+  licenseBannerHeading: '[data-cy="license-banner-heading"]',
+  licenseBannerInfo: '[data-cy="license-banner-info"]',
   paidFeatureButton: '[data-cy="paid-feature-button"]',
   warningIcon: '[data-cy="warning-icon"]',
   noDomainLinkedLabel: '[data-cy="no-domain-header"]',

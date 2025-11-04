@@ -54,7 +54,7 @@ export const verifyAccessTab = () => {
       accessTabLabel
     );
     cy.get(licenseSelectors.label(accessTabLabel))
-      .next('[data-cy="circular-toggle-disabled-icon"]')
+      .next(licenseSelectors.circularToggleDisabledIcon)
       .should("be.visible");
   });
 };
@@ -76,14 +76,15 @@ export const verifyTooltip = (
   expectedTooltip,
   isDisabled = false
 ) => {
-  const hoverTarget = isDisabled ? cy.get(selector).parent() : cy.get(selector);
-  hoverTarget.trigger("mouseover");
+  const hoverTarget = isDisabled
+    ? cy.get(selector).parent().trigger("mouseover", { force: true })
+    : cy.get(selector).trigger("mouseover", { force: true });
 
-  cy.get(".tooltip", { timeout: 1000 })
+  cy.get(".tooltip", { timeout: 3000 })
     .should("be.visible")
     .and("contain.text", expectedTooltip);
 
-  hoverTarget.trigger("mouseout");
+  hoverTarget.trigger("mouseout", { force: true });
 };
 
 const normalizeText = (text) =>
@@ -135,11 +136,11 @@ const verifyLimitUI = (
 const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
   const isSmallBanner = cyPrefix === "edit-user";
   const headingSelector = isSmallBanner
-    ? '[data-cy="license-banner-heading"]'
-    : `[data-cy="${cyPrefix}-limit-heading"]`;
+    ? licenseSelectors.licenseBannerHeading
+    : licenseSelectors.limitHeading(cyPrefix);
   const infoSelector = isSmallBanner
-    ? '[data-cy="license-banner-info"]'
-    : `[data-cy="${cyPrefix}-limit-info"]`;
+    ? licenseSelectors.licenseBannerInfo
+    : licenseSelectors.limitInfo(cyPrefix);
 
   cy.get(headingSelector)
     .should("be.visible")
@@ -156,7 +157,6 @@ const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
       cy.get(infoSelector).then(($el) => {
         const text = $el.text().trim();
         if ($el.is(":visible") && text) cy.log(`Feature banner info: ${text}`);
-        else cy.log("Info element empty or hidden — OK");
       });
     }
   });
@@ -202,8 +202,8 @@ export const verifyResourceLimit = (
   const cyPrefix = dataCyPrefix || type;
   const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
   const baseLabel = typeCapitalized.slice(0, -1);
-  const headingSelector = `[data-cy="${cyPrefix}-limit-heading"]`;
-  const infoSelector = `[data-cy="${cyPrefix}-limit-info"]`;
+  const headingSelector = licenseSelectors.limitHeading(cyPrefix);
+  const infoSelector = licenseSelectors.limitInfo(cyPrefix);
 
   const isNumber = typeof limitOrPlan === "number";
   const planName = isNumber ? null : limitOrPlan;

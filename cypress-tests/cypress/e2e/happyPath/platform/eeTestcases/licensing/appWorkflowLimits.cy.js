@@ -54,6 +54,7 @@ describe("License - App & Workflow Limits", () => {
     });
     cy.apiDeleteApp(null, app2Name);
   });
+
   it("should verify workflow limit progression, enforce API limit, validate deletion, and cleanup", () => {
     const workflow1Name = `${fake.companyName}-Workflow-1`;
     const workflow2Name = `${fake.companyName}-Workflow-2`;
