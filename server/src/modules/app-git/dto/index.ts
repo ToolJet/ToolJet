@@ -109,3 +109,20 @@ export class RenameAppOrVersionDto {
   @IsOptional()
   remoteName: string;
 }
+export class AppCommitInfoDto {
+  @IsString()
+  @IsNotEmpty()
+  commitId: string;
+
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @IsString()
+  @IsOptional()
+  author?: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
+}
