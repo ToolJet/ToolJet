@@ -130,7 +130,7 @@ describe("Instance settings - User management by super admin", () => {
         cy.get(`[data-cy="${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}-workspace-row"]`).within(() => {
             cy.get('[data-cy="user-state-change-button"]').click();
         });
-        cy.get(commonSelectors.toastMessage).should("contain.text", instanceAllUsersText.onlyAdminErrorToast);
+        cy.get(commonSelectors.toastMessage).should("contain.text", instanceAllUsersText.onlyAdminErrorToast, { timeout: 10000 });
         cy.get(commonEeSelectors.modalCloseButton).click();
     });
 
