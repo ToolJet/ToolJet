@@ -38,9 +38,9 @@ describe("Workspace constants", () => {
         data.appName = `${fake.companyName}-App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
-        cy.apiCreateWorkspace(data.workspaceSlug, data.workspaceSlug);
-        cy.apiLogout();
-        cy.apiLogin();
+        cy.apiCreateWorkspace(data.workspaceSlug, data.workspaceSlug).then((workspace) => {
+            Cypress.env("workspaceId", workspace.body.organization_id);
+        });
         cy.visit(data.workspaceSlug);
 
         // Create and update constants as needed
