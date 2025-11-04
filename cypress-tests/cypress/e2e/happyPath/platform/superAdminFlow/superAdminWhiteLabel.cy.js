@@ -10,6 +10,7 @@ describe("Instance settings - White labelling", () => {
     const WHITE_LABEL_LOGO = "https://images.pexels.com/photos/1796715/pexels-photo-1796715.jpeg?cs=srgb&dl=pexels-chaitaastic-1796715.jpg&fm=jpg";
     const WHITE_LABEL_TEXT = "Paris UK 321 321 321";
     const WHITE_LABEL_FAVICON = "https://images.pexels.com/photos/1796715/pexels-photo-1796715.jpeg?cs=srgb&dl=pexels-chaitaastic-1796715.jpg&fm=jpg";
+    const LOGO_IDENTIFIER = 'pexels-photo-1796715';
 
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
@@ -17,36 +18,30 @@ describe("Instance settings - White labelling", () => {
 
     const openWhiteLabelingSettings = () => {
         openInstanceSettings();
-        cy.wait(1000);
         cy.get(whiteLabelSelectors.navWhiteLabellingListItem).click();
-        cy.wait(1000);
     };
 
     const openSMTPSettings = () => {
         openInstanceSettings();
-        cy.wait(1000);
         cy.get(whiteLabelSelectors.smtpListItem).click();
-        cy.wait(1000);
     };
 
     const verifyWhiteLabelingUI = () => {
         cy.get(commonEeSelectors.pageTitle).verifyVisibleElement("have.text", whitelabelText.settingsPageTitle);
         cy.get(whiteLabelSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", whitelabelText.breadcrumbTitle);
 
-        cy.get('label').contains(whitelabelText.appLogoLabel).should('be.visible');
-        cy.get(whiteLabelSelectors.appLogoInput).should('be.visible');
-        cy.get(whiteLabelSelectors.appLogoHelpText)
-            .should('be.visible')
-            .and('contain', whitelabelText.appLogoHelp);
-        cy.get('label').contains(whitelabelText.pageTitleLabel).should('be.visible');
-        cy.get(whiteLabelSelectors.appLogoHelpText)
-            .should('exist')
-            .and('contain', whitelabelText.appLogoHelp);
-        cy.get('label').contains(whitelabelText.faviconLabel).should('be.visible');
-        cy.get('label').contains(whitelabelText.faviconLabel).should('be.visible');
-        cy.get(whiteLabelSelectors.favIconHelpText)
-            .should('be.visible')
-            .and('contain', whitelabelText.faviconHelp);
+        const fields = [
+            { label: whitelabelText.appLogoLabel, input: whiteLabelSelectors.appLogoInput, help: whiteLabelSelectors.appLogoHelpText, helpText: whitelabelText.appLogoHelp },
+            { label: whitelabelText.pageTitleLabel, help: whiteLabelSelectors.appLogoHelpText, helpText: whitelabelText.appLogoHelp },
+            { label: whitelabelText.faviconLabel, help: whiteLabelSelectors.favIconHelpText, helpText: whitelabelText.faviconHelp }
+        ];
+
+        fields.forEach(field => {
+            cy.contains('label', field.label).should('be.visible');
+            if (field.input) cy.get(field.input).should('be.visible');
+            cy.get(field.help).should('be.visible').and('contain', field.helpText);
+        });
+
         cy.get(whiteLabelSelectors.cancelButton).verifyVisibleElement("have.text", whitelabelText.cancelButton);
         cy.get(whiteLabelSelectors.saveButton).verifyVisibleElement("have.text", whitelabelText.saveButton);
     };
@@ -59,36 +54,32 @@ describe("Instance settings - White labelling", () => {
 
     const saveWhiteLabelingChanges = () => {
         cy.get(whiteLabelSelectors.saveButton).click();
-        cy.wait(2000);
     };
 
     const verifyLogoOnLoginPage = () => {
         cy.apiLogout();
         cy.clearCookies();
         cy.clearLocalStorage();
-        cy.wait(1000);
         cy.visit('/');
-        cy.wait(2000);
         cy.get('.tooljet-header img')
             .should('be.visible')
             .and('have.attr', 'src')
-            .and('include', 'pexels-photo-1796715');
+            .and('include', LOGO_IDENTIFIER);
     };
 
     const verifyPageTitleAndFavicon = () => {
         cy.title().should('contain', WHITE_LABEL_TEXT);
         cy.get('link[rel="icon"]')
             .should('have.attr', 'href')
-            .and('include', 'pexels-photo-1796715');
+            .and('include', LOGO_IDENTIFIER);
     };
 
     const verifyLogoOnInstanceLoginPage = (workspaceName) => {
         cy.visit(`/${workspaceName}`);
-        cy.wait(2000);
         cy.get('.tooljet-header img')
             .should('be.visible')
             .and('have.attr', 'src')
-            .and('include', 'pexels-photo-1796715');
+            .and('include', LOGO_IDENTIFIER);
         verifyPageTitleAndFavicon();
     };
 
@@ -98,15 +89,18 @@ describe("Instance settings - White labelling", () => {
             .should('have.attr', 'width', '26px')
             .should('have.attr', 'height', '26px')
             .and('have.attr', 'src')
-            .and('include', 'pexels-photo-1796715');
+            .and('include', LOGO_IDENTIFIER);
         verifyPageTitleAndFavicon();
     };
 
-    const fetchAndCheckUIViaMH = (
-        email,
-        verifyWhiteLabel = false,
-        whiteLabelConfig = {}
-    ) => {
+    const fetchAndCheckUIViaMH = (email, verifyWhiteLabel = false, whiteLabelConfig = {}) => {
+        if (!Cypress.env('mailHogUrl')) {
+            Cypress.env('mailHogUrl', 'http://localhost:8025/');
+        }
+        if (Cypress.env('mailHogAuth') === undefined) {
+            Cypress.env('mailHogAuth', '');
+        }
+        cy.wait(5000);
         cy.mhGetMailsByRecipient(email).then((mails) => {
             expect(mails, `No emails found for recipient: ${email}`).to.have.length.greaterThan(0);
 
@@ -127,42 +121,32 @@ describe("Instance settings - White labelling", () => {
 
             if (verifyWhiteLabel && whiteLabelConfig) {
                 const { expectedLogo, expectedText } = whiteLabelConfig;
+
                 if (expectedLogo) {
                     const logoBaseUrl = expectedLogo.split("?")[0];
-                    const hasLogo = cleanedBody.includes(logoBaseUrl);
-                    expect(
-                        hasLogo,
-                        `Expected email to contain white-label logo URL: ${logoBaseUrl}`
-                    ).to.be.true;
+                    expect(cleanedBody, `Expected email to contain white-label logo URL: ${logoBaseUrl}`)
+                        .to.include(logoBaseUrl);
                 }
 
                 if (expectedText) {
                     const normalizedExpectedText = expectedText.replace(/\s+/g, " ").trim();
-                    const hasTextInBody = cleanedBody.includes(normalizedExpectedText);
                     const headerString = JSON.stringify(headers).replace(/\s+/g, " ");
-                    const hasTextInHeaders = headerString.includes(normalizedExpectedText);
-                    const textParts = normalizedExpectedText
-                        .split(" ")
-                        .filter((p) => p.length > 2);
-                    const hasAllParts =
-                        textParts.every((p) => cleanedBody.includes(p)) ||
-                        textParts.every((p) => headerString.includes(p));
+                    const textParts = normalizedExpectedText.split(" ").filter((p) => p.length > 2);
 
-                    expect(
-                        hasTextInBody || hasTextInHeaders || hasAllParts,
-                        `Expected email (body or headers) to contain white-label text: ${normalizedExpectedText}`
-                    ).to.be.true;
+                    const hasTextInBody = cleanedBody.includes(normalizedExpectedText);
+                    const hasTextInHeaders = headerString.includes(normalizedExpectedText);
+                    const hasAllParts = textParts.every((p) => cleanedBody.includes(p) || headerString.includes(p));
+
+                    expect(hasTextInBody || hasTextInHeaders || hasAllParts,
+                        `Expected email (body or headers) to contain white-label text: ${normalizedExpectedText}`)
+                        .to.be.true;
                 }
             }
 
-            let inviteUrl = "";
             const hrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i);
-            if (hrefMatch) {
-                inviteUrl = hrefMatch[1];
-            } else {
-                const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i);
-                inviteUrl = urlMatch ? urlMatch[0] : "";
-            }
+            const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i);
+            const inviteUrl = hrefMatch ? hrefMatch[1] : (urlMatch ? urlMatch[0] : "");
+
             expect(inviteUrl, "Invitation URL should exist in the email").to.not.be.empty;
         });
     };
@@ -174,12 +158,44 @@ describe("Instance settings - White labelling", () => {
         cy.get(whiteLabelSelectors.smtpPasswordInput).click().clear().type(smtpPassword);
         cy.get(whiteLabelSelectors.smtpUserInput).eq(1).click().clear().type(fromAddress);
         cy.get(whiteLabelSelectors.saveButton).click();
-        cy.wait(5000);
+    };
+
+    const verifyWhiteLabelInputs = () => {
+        const decodeValue = (val) => val.replace(/&amp;/g, '&');
+
+        cy.get(whiteLabelSelectors.appLogoInput)
+            .invoke('val')
+            .then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_LOGO));
+
+        cy.get(whiteLabelSelectors.pageTitleInput)
+            .should('have.value', WHITE_LABEL_TEXT);
+
+        cy.get(whiteLabelSelectors.favIconInput)
+            .invoke('val')
+            .then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_FAVICON));
     };
 
     it("should verify all white labelling UI elements", () => {
         openWhiteLabelingSettings();
         verifyWhiteLabelingUI();
+    });
+
+    it("should verify white label in user invitation email", () => {
+        const name = fake.firstName;
+        const email = fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "");
+
+        openWhiteLabelingSettings();
+        fillWhiteLabelingForm();
+        saveWhiteLabelingChanges();
+
+        openSMTPSettings();
+        configureSMTP("localhost", "1025", "dev", fake.firstName, "hello@tooljet.io");
+
+        cy.apiUserInvite(name, email);
+        fetchAndCheckUIViaMH(email, true, {
+            expectedLogo: WHITE_LABEL_LOGO,
+            expectedText: WHITE_LABEL_TEXT
+        });
     });
 
     it("should update white labelling settings and verify across application", () => {
@@ -201,57 +217,20 @@ describe("Instance settings - White labelling", () => {
         cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
         cy.get(onboardingSelectors.signInButton).click();
-        cy.wait(3000);
         verifyLogoOnDashboard();
 
         openWhiteLabelingSettings();
-        cy.get(whiteLabelSelectors.appLogoInput)
-            .invoke('val')
-            .then((val) => {
-                const decodedVal = val.replace(/&amp;/g, '&');
-                expect(decodedVal).to.eq(WHITE_LABEL_LOGO);
-            });
-        cy.get(whiteLabelSelectors.pageTitleInput).should('have.value', WHITE_LABEL_TEXT);
-        cy.get(whiteLabelSelectors.favIconInput)
-            .invoke('val')
-            .then((val) => {
-                const decodedVal = val.replace(/&amp;/g, '&');
-                expect(decodedVal).to.eq(WHITE_LABEL_FAVICON);
-            });
-    });
-
-    it("should verify white label in user invitation email", () => {
-        const name = fake.firstName;
-        const email = fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "");
-        openWhiteLabelingSettings();
-        fillWhiteLabelingForm();
-        saveWhiteLabelingChanges();
-
-        openSMTPSettings();
-        configureSMTP("localhost", "1025", "dev", fake.firstName, "hello@tooljet.io");
-        cy.wait(5000);
-        cy.apiUserInvite(name, email);
-
-        cy.wait(3000);
-        fetchAndCheckUIViaMH(email, true, {
-            expectedLogo: WHITE_LABEL_LOGO,
-            expectedText: WHITE_LABEL_TEXT
-        });
+        verifyWhiteLabelInputs();
     });
 
     it("should verify white label persists across browser tab", () => {
         openWhiteLabelingSettings();
         fillWhiteLabelingForm();
         saveWhiteLabelingChanges();
-        cy.title().should('contain', WHITE_LABEL_TEXT);
 
-        cy.get('link[rel="icon"]')
-            .should('have.attr', 'href')
-            .and('include', 'pexels-photo-1796715');
         verifyPageTitleAndFavicon();
 
         cy.get('[data-cy="apps-icon"]').click();
-        cy.wait(1000);
         verifyPageTitleAndFavicon();
         verifyLogoOnDashboard();
     });
@@ -271,7 +250,6 @@ describe("Instance settings - White labelling", () => {
         cy.clearCookies();
         cy.clearLocalStorage();
         cy.visit('/');
-        cy.wait(2000);
 
         cy.get('[data-cy="page-logo"] svg')
             .should('be.visible')
@@ -280,7 +258,7 @@ describe("Instance settings - White labelling", () => {
         cy.title().should('contain', 'ToolJet');
     });
 
-    // need to run after bug fixes 
+    // need to fix after bug fixes 
     it.skip("should validate white label URL format", () => {
         openWhiteLabelingSettings();
         cy.get(whiteLabelSelectors.appLogoInput).clear().type('invalid-url');
