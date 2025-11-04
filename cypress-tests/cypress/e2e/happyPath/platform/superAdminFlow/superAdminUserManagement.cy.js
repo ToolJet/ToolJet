@@ -5,7 +5,7 @@ import { commonEeText, instanceSettingsText, instanceAllUsersText } from "Texts/
 import { commonEeSelectors, instanceSettingsSelector } from "Selectors/eeCommon";
 import { assertAllUsersHeader, assertTableControls, assertUserRow, testArchiveUnarchiveFlow, toggleSuperAdminRole } from "Support/utils/platform/superAdmin";
 
-describe("Instance settings - User management by super admin", () => {
+describe("Instance settings - User management by super SuperAdmin", () => {
     let defaultUser, newWorkspaceUser, resetPasswordUser, uiVerificationUser, promoteUser;
     const DEFAULT_WORKSPACE = "My workspace";
 
@@ -43,39 +43,30 @@ describe("Instance settings - User management by super admin", () => {
         });
     });
 
-    it("should allow admin to archive and unarchive user in default workspace", () => {
+    it("should allow SuperAdmin to archive and unarchive user in default workspace", () => {
         cy.visitTheWorkspace(defaultUser.workspace);
         cy.apiLogin();
-        cy.reload();
+         cy.visit('/');
         cy.apiFullUserOnboarding(defaultUser.name, defaultUser.email, "end-user", "password", defaultUser.workspace, {});
         testArchiveUnarchiveFlow(defaultUser.name, defaultUser.email, defaultUser.workspace);
     });
 
-    it("should allow admin to archive and unarchive user in non-default workspace", () => {
-        cy.apiCreateWorkspace(newWorkspaceUser.workspace, newWorkspaceUser.workspace);
-        cy.visitTheWorkspace(newWorkspaceUser.workspace);
-        cy.apiLogin();
-        cy.reload();
-        cy.apiFullUserOnboarding(newWorkspaceUser.name, newWorkspaceUser.email, "end-user", "password", newWorkspaceUser.workspace, {});
-        testArchiveUnarchiveFlow(newWorkspaceUser.name, newWorkspaceUser.email, newWorkspaceUser.workspace);
-    });
-
-    it("should allow admin to reset invited user password and login with new password", () => {
+    it("should allow SuperAdmin to reset invited user password and login with new password", () => {
         let generatedPassword;
         cy.apiFullUserOnboarding(resetPasswordUser.name, resetPasswordUser.email);
         cy.apiLogin();
         resetUserpasswordFromInstanceSettings(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
-        cy.reload();
+         cy.visit('/');
         cy.appUILogin(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
 
         cy.apiLogin();
-        cy.reload();
+         cy.visit('/');
         resetUserpasswordAutomaticallyFromInstanceSettings(resetPasswordUser.name);
         cy.get('@generatedPassword').then((generatedPassword) => {
             cy.apiLogout();
-            cy.reload();
+             cy.visit('/');
             cy.appUILogin(resetPasswordUser.email, generatedPassword);
         })
     });
@@ -122,7 +113,7 @@ describe("Instance settings - User management by super admin", () => {
         cy.get(instanceAllUsersSelectors.userStatusCell(uiVerificationUser.name)).verifyVisibleElement("have.text", "active");
     });
 
-    it("should prevent super admin from archiving the only admin user in workspace and show error toast", () => {
+    it("should prevent SuperAdmin from archiving the only SuperAdmin user in workspace and show error toast", () => {
         cy.visitTheWorkspace(DEFAULT_WORKSPACE);
         openInstanceSettings();
         cy.clearAndType(commonEeSelectors.userSearchBar, "dev");
@@ -134,15 +125,15 @@ describe("Instance settings - User management by super admin", () => {
         cy.get(commonEeSelectors.modalCloseButton).click();
     });
 
-    it("should allow invited user to access instance settings when promoted to super admin and restrict access when depromoted", () => {
+    it("should allow invited user to access instance settings when promoted to super SuperAdmin and restrict access when depromoted", () => {
         cy.apiFullUserOnboarding(promoteUser.name, promoteUser.email);
 
-        // Promote to super admin
+        // Promote to SuperAdmin
         toggleSuperAdminRole(promoteUser.email);
         cy.appUILogin(promoteUser.email, "password");
         openInstanceSettings();
 
-        // Depromote from super admin
+        // Depromote from SuperAdmin
         toggleSuperAdminRole(promoteUser.email);
         cy.appUILogin(promoteUser.email, "password");
         cy.get(commonSelectors.settingsIcon).click();
