@@ -377,6 +377,12 @@
                 gap: 4px;
                 padding: 8px;
             }
+
+            &.not-collapsable, &.collapsable-only {
+                .page-dark-mode-btn-wrapper {
+                    height: 56px;
+                }
+            }
         }
 
         &.text-only {
@@ -385,9 +391,15 @@
             }
         }
 
-        &.text-only, &.not-collapsable {
+        &.not-collapsable {
             .page-dark-mode-btn-wrapper {
                 justify-content: center;
+            }
+        }
+
+        &.collapsable-only {
+            .page-dark-mode-btn-wrapper {
+                justify-content: end;
             }
         }
 

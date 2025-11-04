@@ -88,10 +88,10 @@ export const PagesSidebarNavigation = ({
         hidden: style === 'text',
       },
       label: {
-        hidden: style === 'icon' || (style === 'texticon' && collapsable && !isSidebarPinned && position != 'top'),
+        hidden: style === 'icon' || (style === 'texticon' && !isSidebarPinned && position != 'top'),
       },
     }),
-    [style, collapsable, isSidebarPinned, position]
+    [style, isSidebarPinned, position]
   );
 
   const pagesTree = useMemo(
@@ -427,7 +427,6 @@ export const PagesSidebarNavigation = ({
 
   const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
-  const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
   const headerHidden = isLicensed ? hideHeader : false;
   const logoHidden = isLicensed ? hideLogo : false;
@@ -497,9 +496,15 @@ export const PagesSidebarNavigation = ({
       } else return;
     };
 
-    if (appMode === 'auto') {
-      return (
-        <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+    if (
+      ((isPagesSidebarHidden || position === 'top') && appMode !== 'auto') ||
+      (position === 'side' && appMode !== 'auto' && (!collapsable || style !== 'texticon'))
+    )
+      return;
+
+    return (
+      <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+        {appMode === 'auto' && (
           <DarkModeToggle
             toggleForCanvas={true}
             toggleSize="large"
@@ -508,25 +513,24 @@ export const PagesSidebarNavigation = ({
             tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
             btnClassName="!tw-w-[36px] !tw-h-[36px]"
           />
-          {collapsable && !isTopPositioned && position === 'side' && style !== 'text' && !isPagesSidebarHidden && (
-            <ButtonComponent
-              className="left-sidebar-item !tw-w-[36px] !tw-h-[36px]"
-              onClick={handleToggle}
-              variant="ghost"
-              size="large"
-              iconOnly
-            >
-              {isSidebarPinned ? (
-                <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
-              ) : (
-                <IconLayoutSidebarRightCollapse size={16} className="tw-text-icon-strong" />
-              )}
-            </ButtonComponent>
-          )}
-        </div>
-      );
-    }
-    return null;
+        )}
+        {!isPagesSidebarHidden && position === 'side' && collapsable && style === 'texticon' && (
+          <ButtonComponent
+            className="left-sidebar-item !tw-w-[36px] !tw-h-[36px]"
+            onClick={handleToggle}
+            variant="ghost"
+            size="large"
+            iconOnly
+          >
+            {isSidebarPinned ? (
+              <IconLayoutSidebarLeftCollapse size={16} className="tw-text-icon-strong" />
+            ) : (
+              <IconLayoutSidebarRightCollapse size={16} className="tw-text-icon-strong" />
+            )}
+          </ButtonComponent>
+        )}
+      </div>
+    );
   };
 
   const FooterWithToggle = () => {
@@ -545,17 +549,16 @@ export const PagesSidebarNavigation = ({
         }}
         className={cx('navigation-area', {
           'navigation-hover-trigger': currentMode === 'edit',
-          close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
+          close: !isSidebarPinned && collapsable && style !== 'text' && position === 'side',
+          'position-top': position === 'top' || isPagesSidebarHidden,
           'icon-only':
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
-            (style === 'texticon' &&
-              (collapsable ? !isSidebarPinned : false) &&
-              position === 'side' &&
-              !isPagesSidebarHidden),
-          'position-top': position === 'top' || isPagesSidebarHidden,
+            (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
           'no-preview-settings': isReleasedVersionId,
-          'not-collapsable': !collapsable,
+          'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
+          'collapsable-only':
+            !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',
           'no-header': headerHidden && logoHidden,
         })}
         style={{
@@ -588,7 +591,7 @@ export const PagesSidebarNavigation = ({
         }}
         onClick={handleSidebarClick}
       >
-        {position === 'side' ? (
+        {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned
           <>
             <SidebarHeader>
@@ -659,15 +662,19 @@ export const PagesSidebarNavigation = ({
       {/* Wrapper div to maintain hover state between navigation and tooltip */}
       <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
         {/* Main sidebar content */}
-        {position === 'side' ? (
+        {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned
           <SidebarProvider
-            open={isSidebarPinned}
+            open={style === 'icon' ? false : isSidebarPinned}
             onOpenChange={setIsSidebarPinned}
             sidebarWidth="256px"
             sidebarWidthIcon="54px"
+            className="!tw-min-h-0 tw-h-full"
           >
-            <SidebarWrapper>
+            <SidebarWrapper
+              collapsible={style === 'text' ? 'none' : 'icon'}
+              className="group-data-[side=left]:!tw-border-r-0"
+            >
               <Sidebar />
             </SidebarWrapper>
           </SidebarProvider>
