@@ -7,7 +7,6 @@ import {
   onboardingStepThree,
   onboardingStepTwo,
 } from "Support/utils/onboarding";
-import { updateLicense } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
 
@@ -17,11 +16,6 @@ describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
   });
-  after(() => {
-    cy.ifEnv("Enterprise", () => {
-      updateLicense('valid');
-    });
-  })
 
   it("verify elements on self host onboarding page", () => {
     cy.ifEnv("Enterprise", () => {
