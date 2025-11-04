@@ -854,7 +854,14 @@
             "security/constants/variables"
           ]
         },
-        "security/audit-logs",
+        {
+          "type": "category",
+          "label": "Audit Logs",
+          "items": [
+            "security/audit-logs/audit-logs",
+            "security/audit-logs/stream-audit-to-datadog"
+          ]
+        },
         "security/compliance"
       ]
     },
