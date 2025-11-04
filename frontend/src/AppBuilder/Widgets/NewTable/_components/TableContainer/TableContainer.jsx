@@ -43,7 +43,6 @@ export const TableContainer = ({
 
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
-  const tableBodyRef = useRef(null);
   const paginationBtnClicked = useRef(false); // flag to indicate when page is changed using the pagination buttons or pagination input in table footer
 
   const handleCellValueChange = useCallback(
