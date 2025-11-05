@@ -44,11 +44,13 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
-    addInstanceLevelSSO?: boolean
+    addInstanceLevelSSO?: boolean,
+    allowArchivedWorkspace: boolean = false
   ): Promise<DeepPartial<Organization>> {
     const result: Organization = await this.organizationRepository.fetchOrganizationWithSSOConfigs(
       organizationIdOrSlug,
-      statusList
+      statusList,
+      allowArchivedWorkspace
     );
     if (!result) return;
 
@@ -180,5 +182,19 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
 
   async validateAndUpdateSystemParams(params: any): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+  // Loop through all SSO config entries and remove any that are disabled
+  removeDisabledSsoConfigs(result) {
+    if (!result || Object.keys(result).length === 0) {
+      return result;
+    }
+
+    for (const key in result) {
+      if (result[key]?.enabled === false) {
+        delete result[key];
+      }
+    }
+
+    return result;
   }
 }

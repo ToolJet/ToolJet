@@ -37,11 +37,16 @@ describe('GitHub SSO Tests', () => {
             cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
             cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
             cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
+            cleanupTestUser()
         });
     });
 
     const cleanupTestUser = () => {
-        cy.runSqlQuery(`CALL delete_user('${TEST_USER_EMAIL}');`);
+        cy.runSqlQuery(`SELECT EXISTS(SELECT 1 FROM users WHERE email = '${TEST_USER_EMAIL}');`).then((result) => {
+            if (result?.[0].exists) {
+                cy.runSqlQuery(`CALL delete_user('${TEST_USER_EMAIL}');`);
+            }
+        });
     };
 
     it('should verify sso without configuration on instance', () => {
@@ -86,7 +91,6 @@ describe('GitHub SSO Tests', () => {
             cy.get(GIT_SSO_BUTTON_SELECTOR).click();
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-            cleanupTestUser();
         });
     });
 
@@ -116,7 +120,6 @@ describe('GitHub SSO Tests', () => {
             cy.get(GIT_SSO_BUTTON_SELECTOR).click();
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-            cleanupTestUser();
         });
     });
     it('should verify invite and login via sso to workspace', () => {
@@ -126,7 +129,7 @@ describe('GitHub SSO Tests', () => {
         toggleSsoViaUI('GitHub', WORKSPACE_SETTINGS_URL);
         fillInputField(workspaceGitHubConfig);
         cy.get(commonSelectors.saveButton).eq(1).click();
-        cy.apiLogout();
+
         fetchAndVisitInviteLink(TEST_USER_EMAIL);
         cy.get(GIT_SSO_BUTTON_SELECTOR).click();
         gitHubSignInWithAssertion();
@@ -134,7 +137,6 @@ describe('GitHub SSO Tests', () => {
         cy.get(commonSelectors.acceptInviteButton).click()
         cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-        cleanupTestUser();
     });
 
 });
