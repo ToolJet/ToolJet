@@ -30,8 +30,8 @@ Cypress.Commands.add(
     }
 );
 
-Cypress.Commands.add("apiLogout", (cacheHeaders = false) => {
-    cy.getAuthHeaders(cacheHeaders).then((headers) => {
+Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
+    cy.getAuthHeaders(cachedHeader).then((headers) => {
         cy.request(
             {
                 method: "GET",
@@ -280,8 +280,8 @@ Cypress.Commands.add(
         isAll = true
     ) => {
         // Normalize resourcesToAdd to always be an array
-        const normalizedResources = Array.isArray(resourcesToAdd) 
-            ? resourcesToAdd 
+        const normalizedResources = Array.isArray(resourcesToAdd)
+            ? resourcesToAdd
             : [resourcesToAdd];
 
         const formatResources = (type, resources, isAll) => {
@@ -700,7 +700,7 @@ Cypress.Commands.add(
             performOnboarding(userEmail, userPassword, organizationToken);
         }
 
-        function performOnboarding (email, password, orgToken) {
+        function performOnboarding(email, password, orgToken) {
             cy.task("dbConnection", {
                 dbconfig: Cypress.env("app_db"),
                 sql: `
