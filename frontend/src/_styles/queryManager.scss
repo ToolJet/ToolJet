@@ -107,23 +107,11 @@ $border-radius: 4px;
   border-width: 1px 0px 0px 0px;
   background-color: var(--base);
 
-  &.expanded {
+  &.expanded,
+  &.collapsed {
     z-index: 12 !important;
   }
 
-  &.collapsed {
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      border: 1px solid var(--slate5);
-      border-width: 1px 0px 0px 0px;
-      background-color: var(--base);
-      border-width: 2px 0px 0px 0px;
-    }
-  }
 
   &#query-manager {
     border-width: 3px 0px 0px 0px;

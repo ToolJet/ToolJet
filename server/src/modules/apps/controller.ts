@@ -59,6 +59,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidSlugGuard, FeatureAbilityGuard)
   @Get('validate-private-app-access/:slug')
   validatePrivateAppAccess(
+    @Query('access_type') accessType: string,
     @Query('version_name') versionName: string,
     @Query('environment_name') environmentName: string,
     @Query('version_id') versionId: string,
@@ -66,7 +67,13 @@ export class AppsController implements IAppsController {
     @Ability() ability: AppAbility,
     @App() app: AppEntity
   ) {
-    return this.appsService.validatePrivateAppAccess(app, ability, { versionName, environmentName, versionId, envId });
+    return this.appsService.validatePrivateAppAccess(app, ability, {
+      accessType,
+      versionName,
+      environmentName,
+      versionId,
+      envId,
+    });
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)

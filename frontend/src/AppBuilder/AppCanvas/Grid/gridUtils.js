@@ -288,7 +288,7 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
 };
 
 export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
-  const parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
+  let parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
   const targetDivRect = event.target.getBoundingClientRect();
@@ -533,12 +533,10 @@ export const handleDeactivateTargets = () => {
     component.classList.remove('non-dragging-component');
   });
 };
-export const computeScrollDelta = ({ source }) => {
+export const computeScrollDeltaOnDrag = (canvasId) => {
   // Only need to calculate scroll delta when moving from a sub-container
-  if (source?.slotId && source?.slotId !== 'real-canvas') {
-    const subContainerWrap = document
-      .querySelector(`#canvas-${source.slotId}`)
-      ?.closest('.sub-container-overflow-wrap');
+  if (canvasId !== 'real-canvas') {
+    const subContainerWrap = document.getElementById(`canvas-${canvasId}`);
 
     return subContainerWrap?.scrollTop || 0;
   }
@@ -546,8 +544,6 @@ export const computeScrollDelta = ({ source }) => {
   // Default case: No scroll adjustment needed
   return 0;
 };
-
-export const computeScrollDeltaOnDrag = computeScrollDelta;
 
 export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
   const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;

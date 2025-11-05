@@ -31,14 +31,14 @@
   "defaults": {},
   "properties": {
     "apiKey": {
-      "label": "API Key",
+      "label": "API key",
       "key": "apiKey",
       "type": "password",
       "description": "Enter your Portkey API Key",
       "helpText": "How to obtain API Key: <a href='https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key' target='_blank' rel='noreferrer'>See here</a>"
     },
     "virtualKey": {
-      "label": "Default Virtual Key",
+      "label": "Default virtual key",
       "key": "virtualKey",
       "type": "password",
       "description": "Enter your default Portkey Virtual Key",

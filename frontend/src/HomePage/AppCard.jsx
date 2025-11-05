@@ -209,13 +209,13 @@ export default function AppCard({
 
   return (
     <ToolTip
-      message="Modules are available only on paid plans"
+      message="Modules are not available on your current plan."
       placement="bottom"
-      show={appType === 'module' && props.basicPlan}
+      show={appType === 'module' && !props.moduleEnabled}
     >
       <div className="card homepage-app-card card--clickable" ref={cardRef}>
         <div
-          className={appType === 'module' && props.basicPlan ? 'disabled-module' : ''}
+          className={appType === 'module' && !props.moduleEnabled ? 'disabled-module' : ''}
           key={app?.id}
           ref={hoverRef}
           data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}

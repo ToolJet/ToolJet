@@ -18,7 +18,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     can: AbilityBuilder<AppEnvironmentAbility>['can'],
     userPermissions: UserAllPermissions
   ): void {
-    const { superAdmin, isAdmin, isBuilder } = userPermissions;
+    const { superAdmin, isAdmin, isBuilder, userPermission } = userPermissions;
 
     can([FEATURE_KEY.GET_DEFAULT], AppEnvironment);
 
@@ -36,6 +36,24 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         ],
         AppEnvironment
       );
+    } else {
+      // For app-environments, since this endpoint is not app-specific,
+      // we need to check if the user has general permissions to view environments
+      // End users and builders should be able to access environment information
+      const canAccessEnvironments = userPermission?.isEndUser || userPermission?.isBuilder;
+
+      if (canAccessEnvironments) {
+        can(
+          [
+            FEATURE_KEY.INIT,
+            FEATURE_KEY.POST_ACTION,
+            FEATURE_KEY.GET_ALL,
+            FEATURE_KEY.GET_BY_ID,
+            FEATURE_KEY.GET_VERSIONS_BY_ENVIRONMENT,
+          ],
+          AppEnvironment
+        );
+      }
     }
   }
 }

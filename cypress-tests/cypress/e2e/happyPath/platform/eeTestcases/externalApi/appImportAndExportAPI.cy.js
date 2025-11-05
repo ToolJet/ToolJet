@@ -1,4 +1,4 @@
-import { importApp, exportApp, allAppsDetails } from 'Support/utils/api';
+import { importApp, exportApp, allAppsDetails } from 'Support/utils/externalApi';
 import { fake } from "Fixtures/fake";
 
 describe("Export and Import API ", () => {

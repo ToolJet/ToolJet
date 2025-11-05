@@ -1,20 +1,19 @@
-import { appVersionText } from "Texts/exportImport";
-import { appVersionSelectors } from "Selectors/exportImport";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { verifyModal, closeModal } from "Support/utils/common";
+import { appVersionSelectors } from "Selectors/exportImport";
 import {
   confirmVersionModalSelectors,
   editVersionSelectors,
 } from "Selectors/version";
+import { closeModal } from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { appVersionText } from "Texts/exportImport";
 import { deleteVersionText, releasedVersionText } from "Texts/version";
-import { verifyComponent } from "Support/utils/basicComponents";
 import { appPromote } from "./platform/multiEnv";
 
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(appVersionSelectors.appVersionLabel).click();
-  cy.contains(appVersionText.createNewVersion).should("be.visible");
-  cy.contains(appVersionText.createNewVersion).click();
+  cy.contains(appVersionText.createNewVersion).first().should("be.visible");
+  cy.contains(appVersionText.createNewVersion).first().click();
 };
 
 export const navigateToEditVersionModal = (value) => {
@@ -48,7 +47,7 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
   );
   cy.get(
     commonSelectors.buttonSelector(appVersionText.createNewVersion)
-  ).verifyVisibleElement("have.text", appVersionText.createNewVersion);
+  ).first().verifyVisibleElement("have.text", appVersionText.createNewVersion);
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
@@ -113,7 +112,7 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
   cy.get(appVersionSelectors.createVersionInputField).click();
   cy.contains(`[id*="react-select-"]`, version).click();
   cy.clearAndType(appVersionSelectors.versionNameInputField, newVersion[0]);
-  cy.get(appVersionSelectors.createNewVersionButton).click();
+  cy.get(appVersionSelectors.createNewVersionButton).first().click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.versionNameAlreadyExists
@@ -160,4 +159,10 @@ export const switchVersionAndVerify = (currentVersion, newVersion) => {
     .should("be.visible")
     .click();
   cy.get(".app-version-name").contains(newVersion).click();
+  cy.wait('@appDs')
+
+};
+
+export const openPreviewSettings = () => {
+  cy.get(commonSelectors.previewSettings).should("be.visible").click();
 };

@@ -65,6 +65,10 @@
         {
           "value": "aws_arn_role",
           "name": "Use AWS ARN Role"
+        },
+        {
+          "value": "default_credentials_provider_chain",
+          "name": "Default Credential Provider Chain"
         }
       ],
       "commonFields": {

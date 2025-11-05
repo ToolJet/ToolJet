@@ -45,12 +45,22 @@ export async function getObject(minioClient: MinioClient, queryOptions: object):
 }
 
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
+  let data = queryOptions['data'];
+  if(isBase64(data)){
+    data = Buffer.from(data, 'base64');
+  }
+
   return await minioClient.putObject(
     queryOptions['bucket'],
     queryOptions['objectName'],
-    queryOptions['data'],
+    data,
     queryOptions['contentType'] && { contentType: queryOptions['contentType'] }
   );
+}
+
+const isBase64 = (str: string) => {
+  const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+  return str.length % 4 === 0 && base64Regex.test(str);
 }
 
 export async function signedUrlForPut(minioClient: MinioClient, queryOptions: object): Promise<object> {

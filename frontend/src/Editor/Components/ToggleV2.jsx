@@ -14,6 +14,10 @@ const Switch = ({
   styles,
   fireEvent,
   setUserInteracted,
+  visibility,
+  isMandatory,
+  isValid,
+  id,
 }) => {
   const handleToggleChange = () => {
     setOn(!on);
@@ -61,6 +65,7 @@ const Switch = ({
       <div className="d-flex" style={switchStyle} onClick={handleToggleChange}>
         <input
           type="checkbox"
+          id={`component-${id}`}
           style={{
             opacity: 0,
             width: 0,
@@ -70,7 +75,10 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
-          disabled={disabledState}
+          aria-disabled={disabledState}
+          aria-hidden={!visibility}
+          aria-required={isMandatory}
+          aria-invalid={!isValid}
           className="form-check-input "
           checked={on}
           onChange={onChange}
@@ -97,6 +105,7 @@ export const ToggleSwitchV2 = ({
   componentName,
   validate,
   width,
+  id,
 }) => {
   const isInitialRender = useRef(true);
   const defaultValue = properties.defaultValue ?? false;
@@ -263,7 +272,7 @@ export const ToggleSwitchV2 = ({
             whiteSpace="normal"
             width={width - 20}
           >
-            {label}
+            <label htmlFor={`component-${id}`}>{label}</label>
             {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 
@@ -281,6 +290,9 @@ export const ToggleSwitchV2 = ({
             styles={styles}
             fireEvent={fireEvent}
             setUserInteracted={setUserInteracted}
+            visibility={visibility}
+            isMandatory={isMandatory}
+            id={id}
           />
         </>
       )}

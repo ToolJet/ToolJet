@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect } from 'react';
 
-export const PaginationInput = memo(({ pageIndex, serverSidePagination, pageCount, table }) => {
+export const PaginationInput = memo(({ pageIndex, serverSidePagination, pageCount, table, paginationBtnClicked }) => {
   // Add local state to handle input value
   const [inputValue, setInputValue] = useState(pageIndex);
 
@@ -11,6 +11,7 @@ export const PaginationInput = memo(({ pageIndex, serverSidePagination, pageCoun
 
   function gotoPage(page) {
     if (!serverSidePagination) {
+      paginationBtnClicked.current = true;
       table.setPageIndex(page - 1);
     }
   }

@@ -298,6 +298,7 @@ export const DropDown = function DropDown({
           <label
             style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
             className="form-label py-0 my-0"
+            id={`${id}-label`}
           >
             {label}
           </label>
@@ -313,6 +314,11 @@ export const DropDown = function DropDown({
                 fireEvent('onSelect');
               }
             }}
+            aria-hidden={!visibility}
+            aria-disabled={disabledState}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
             options={selectOptions}
             styles={customStyles}
             isLoading={properties.loadingState}

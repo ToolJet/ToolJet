@@ -6,7 +6,7 @@ export const workspaceConstantsText = {
     emptyStateText:
         "Use workspace constants seamlessly within both the app builder and data source connections across the platform.",
     addNewConstantButton: "+ Create new constant",
-    addConstatntText: "Add new constant in production ",
+    addConstatntText: (env) => `Add new constant in ${env} `,
     constantCreatedToast: (type) => { return `${type} constant created successfully!` },
     secretConstantCreatedToast: "Secret constant created successfully!",
     constantsExisitToast: (type) => { return `${type} constant already exists!` },

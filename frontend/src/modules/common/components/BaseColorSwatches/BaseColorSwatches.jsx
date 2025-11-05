@@ -182,6 +182,7 @@ const BaseColorSwatches = ({
               fallbackPlacements={['top', 'left']}
               rootClose={true}
               overlay={eventPopover()}
+              rootCloseEvent="mousedown" // close picker when mousedown anywhere on screen
             >
               {ColorPickerInputBox()}
             </OverlayTrigger>

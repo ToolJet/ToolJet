@@ -1,53 +1,40 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { releaseApp } from "Support/utils/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
+  resolveHost,
   verifySlugValidations,
   verifySuccessfulSlugUpdate,
   verifyURLs,
-  resolveHost,
 } from "Support/utils/apps";
-import { appPromote } from "Support/utils/platform/multiEnv";
+import { releaseApp } from "Support/utils/common";
 
 describe("App Slug", () => {
-  const data = {};
-  const host = resolveHost();
-
-  beforeEach(() => {
-    data.slug = `${fake.companyName.toLowerCase()}-app`;
-    data.appName = `${fake.companyName} App`;
-    cy.defaultWorkspaceLogin();
+  const generateTestData = () => ({
+    slug: `${fake.companyName.toLowerCase()}-app`,
+    appName: `${fake.companyName} App`,
   });
 
-  before(() => {
-    data.appName = `${fake.companyName} App`;
+  const host = resolveHost();
+  let data;
+
+  beforeEach(() => {
+    data = generateTestData();
     cy.apiLogin();
+    cy.skipWalkthrough();
     cy.apiCreateApp(data.appName);
-    cy.wait(1000);
-    cy.apiLogout();
+    cy.openApp()
   });
 
   it("Verify app slug cases in global settings", () => {
-    const workspaceId = Cypress.env("workspaceId");
-    const appId = Cypress.env("appId");
-    const appUrl = `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`;
 
-    cy.apiLogin();
-    cy.skipWalkthrough();
 
-    cy.visit(appUrl);
-    cy.url().then((url) => {
-      if (url !== appUrl) {
-        cy.visit(appUrl);
-      }
-    });
-    cy.url().should("eq", appUrl);
 
-    cy.wait(1000);
+    cy.url().should("eq", `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`);
+
+    cy.get('[data-cy="query-manager-toggle-button"]', { timeout: 20000 }).should("be.visible").click();
 
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
 
-    // Verify initial state
     cy.get(commonWidgetSelector.appSlugLabel).verifyVisibleElement(
       "have.text",
       "Unique app slug"
@@ -68,26 +55,21 @@ describe("App Slug", () => {
 
     cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
       "have.text",
-      `${host}/${workspaceId}/apps/${appId}`
+      `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}`
     );
 
-    // Validate all error cases
     verifySlugValidations(commonWidgetSelector.appSlugInput);
 
-    // Verify successful slug update
     cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
-    verifySuccessfulSlugUpdate(workspaceId, data.slug);
+    verifySuccessfulSlugUpdate(Cypress.env("workspaceId"), data.slug);
 
-    // Verify persistence
     cy.get('[data-cy="left-sidebar-debugger-button"]').click();
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonWidgetSelector.appSlugInput).should("have.value", data.slug);
 
-    // Release and verify URLs
     releaseApp();
-    verifyURLs(workspaceId, data.slug, true);
+    verifyURLs(Cypress.env("workspaceId"), data.slug, true);
 
-    // Verify duplicate slug validation
     cy.visit("/my-workspace");
     cy.apiCreateApp(data.slug);
     cy.openApp("my-workspace");
@@ -101,20 +83,14 @@ describe("App Slug", () => {
   });
 
   it("Verify app slug cases in share modal", () => {
-    cy.apiLogin();
-    const workspaceId = Cypress.env("workspaceId");
 
-    cy.apiCreateApp(data.appName);
-    cy.openApp("my-workspace");
 
-    // Set up initial slug
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonWidgetSelector.appSlugInput).clear();
     cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
 
     releaseApp();
 
-    // Verify share modal
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.appLink).verifyVisibleElement(
       "have.text",
@@ -125,12 +101,11 @@ describe("App Slug", () => {
       data.slug
     );
 
-    // Validate all error cases in share modal
     verifySlugValidations(commonWidgetSelector.appNameSlugInput);
 
-    cy.wait(500);
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
     cy.get('[data-cy="app-slug-info-label"]')
+      .should("be.visible")
       .invoke("text")
       .then((text) => {
         expect(text.trim()).to.eq(
@@ -138,26 +113,23 @@ describe("App Slug", () => {
         );
       });
 
-    // Verify successful slug update in share modal
-    data.slug = `${fake.companyName.toLowerCase()}-app`;
-    cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
+    const newSlug = `${fake.companyName.toLowerCase()}-app`;
+    cy.clearAndType(commonWidgetSelector.appNameSlugInput, newSlug);
     cy.get('[data-cy="app-slug-accepted-label"]').verifyVisibleElement(
       "have.text",
       "Slug accepted!"
     );
 
-    // Close modal and verify URLs
     cy.get(commonWidgetSelector.modalCloseButton).click();
-    verifyURLs(workspaceId, data.slug, true);
+    verifyURLs(Cypress.env("workspaceId"), newSlug, true);
 
-    // Verify duplicate slug validation in share modal
     cy.visit("/my-workspace");
-    cy.apiCreateApp(data.slug);
+    cy.apiCreateApp(newSlug);
     cy.openApp("my-workspace");
 
     releaseApp();
     cy.get(commonWidgetSelector.shareAppButton).click();
-    cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
+    cy.clearAndType(commonWidgetSelector.appNameSlugInput, newSlug);
     cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
       "have.text",
       "This app slug is already taken."

@@ -5,11 +5,14 @@ import { setupWSConnection } from 'y-websocket/bin/utils';
 import { maybeSetSubPath } from '../../helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { SessionUtilService } from '@modules/session/util.service';
-
+import { TransactionLogger } from '@modules/logging/service';
 
 @WebSocketGateway({ path: maybeSetSubPath('/yjs') })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private sessionUtilService: SessionUtilService) {}
+  constructor(
+    protected readonly sessionUtilService: SessionUtilService,
+    protected readonly transactionLogger: TransactionLogger
+  ) {}
   @WebSocketServer()
   server: Server;
 
@@ -32,9 +35,9 @@ export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         try {
           const appId = this.getCookie(request?.headers?.cookie, 'app_id');
           setupWSConnection(connection, request, { docName: appId });
-          console.log(`User connected with app-id: ${appId}`);
+          this.transactionLogger.log(`User connected with app-id: ${appId}`);
         } catch (error) {
-          console.log(error);
+          this.transactionLogger.error('Error during WebSocket authentication', error);
         }
       }
     }

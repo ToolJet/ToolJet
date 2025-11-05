@@ -27,6 +27,7 @@ export const Footer = memo(
     pageCount,
     dataLength,
     columnVisibility, // Passed to trigger a re-render when columnVisibility changes
+    paginationBtnClicked,
   }) => {
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
@@ -86,7 +87,14 @@ export const Footer = memo(
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
             {enablePagination && (
-              <Pagination id={id} tableWidth={width} pageIndex={pageIndex} table={table} pageCount={pageCount} />
+              <Pagination
+                id={id}
+                tableWidth={width}
+                pageIndex={pageIndex}
+                table={table}
+                pageCount={pageCount}
+                paginationBtnClicked={paginationBtnClicked}
+              />
             )}
             <ControlButtons
               id={id}

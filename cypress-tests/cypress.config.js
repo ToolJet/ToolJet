@@ -48,7 +48,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        deleteFile(filePath) {
+        deleteFile (filePath) {
           return new Promise((resolve, reject) => {
             const fullPath = path.resolve(filePath);
             if (fs.existsSync(fullPath)) {
@@ -110,20 +110,20 @@ module.exports = defineConfig({
       return config;
     },
     experimentalRunAllSpecs: true,
-    experimentalModfyObstructiveThirdPartyCode: true,
-    experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/happyPath/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 0,
-    redirectionLimit: 10,
-    experimentalRunAllSpecs: true,
+    redirectionLimit: 3,
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
-    coverage: true,
-    codeCoverageTasksRegistered: true,
+    coverage: false,
+    codeCoverageTasksRegistered: false,
     video: false,
     videoUploadOnPasses: false,
-    experimentalStudio: true,
+    // experimentalStudio: true,
+    // experimentalPromptCommand: true,
+
+    // projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
   },
 });

@@ -14,7 +14,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 
 export class VersionModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       VersionController,
       VersionControllerV2,
@@ -51,7 +51,9 @@ export class VersionModule extends SubModule {
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
       ],
-      controllers: [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2],
+      controllers: isMainImport
+        ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
+        : [],
       providers: [
         ComponentsService,
         EventsService,

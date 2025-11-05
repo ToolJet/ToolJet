@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 class Switch extends React.Component {
   render() {
-    const { on, onClick, onChange, disabledState, color } = this.props;
+    const { on, onClick, onChange, disabledState, color, visibility, id } = this.props;
 
     return (
       <label className="form-switch form-check-inline">
@@ -10,19 +10,22 @@ class Switch extends React.Component {
             backgroundColor: on ? `${color}` : 'var(--cc-surface1-surface)',
             marginTop: '0px',
           }}
-          disabled={disabledState}
           className="form-check-input"
           type="checkbox"
+          id={`component-${id}`}
           checked={on}
           onChange={onChange}
           onClick={onClick}
+          aria-disabled={disabledState}
+          aria-hidden={!visibility}
+          aria-labelledby={`${id}-label`}
         />
       </label>
     );
   }
 }
 
-export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) => {
+export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode, dataCy, id }) => {
   // definition props
   const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = React.useState(defaultValue);
@@ -49,12 +52,18 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
 
   return (
     <div className="row py-1" style={{ height, display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
-      <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
+      <span
+        className="form-check-label form-check-label col-auto my-auto"
+        style={{ color: textColor }}
+        id={`${id}-label`}
+      >
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">
         <Switch
           disabledState={disabledState}
+          visibility={visibility}
+          id={id}
           on={on}
           onClick={toggle}
           onChange={toggleValue}

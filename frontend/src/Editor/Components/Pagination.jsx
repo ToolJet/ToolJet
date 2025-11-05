@@ -70,6 +70,11 @@ export const Pagination = ({
       className="d-flex align-items-center"
       data-cy={dataCy}
       style={{ boxShadow: visibility ? boxShadow : 'none', justifyContent: alignment }}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
+      aria-label="Pagination"
+      role="navigation"
+      id={`component-${id}`}
     >
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
@@ -119,6 +124,21 @@ export const Pagination = ({
  * "<"  less-than operator
  * ">"  greater-than operator
  */
+
+function getOperatorAriaLabel(operator) {
+  switch (operator) {
+    case '<<':
+      return 'Go to first page';
+    case '>>':
+      return 'Go to last page';
+    case '<':
+      return 'Go to previous page';
+    case '>':
+      return 'Go to next page';
+    default:
+      return '';
+  }
+}
 
 function getOperator(operator) {
   switch (operator) {
@@ -211,7 +231,10 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   };
   return (
     <React.Fragment>
-      <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
+      <li
+        className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}
+        aria-label={getOperatorAriaLabel(operator)}
+      >
         <a
           style={{ cursor: 'pointer' }}
           className={`page-link arrow-icon ${darkMode && 'text-light'}`}

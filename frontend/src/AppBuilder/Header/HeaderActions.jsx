@@ -9,6 +9,9 @@ import { Monitor, Smartphone, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+
+
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
@@ -60,21 +63,34 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-        <Link
-          title="Preview"
-          to={appPreviewLink}
-          target="_blank"
-          rel="noreferrer"
+
+        <ButtonComponent
+          size="default"
+          variant="outline"
+          leadingIcon="play01"
           data-cy="preview-link-button"
-          className="preview-link-btn"
+          style={{ padding: "7px 12px" }}
+
         >
-          <Play width="16" height="16" />
-          Preview
-        </Link>
-      )}
-      <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
+          <Link
+            title="Preview"
+            to={appPreviewLink}
+            target="_blank"
+            rel="noreferrer"
+            data-cy="preview-link-button"
+            className="text-decoration-none"
+            style={{ color: 'var(--text-default)' }}
+          >
+
+            Preview
+          </Link>
+        </ButtonComponent>
+
+      )
+      }
+      < Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
-    </div>
+    </div >
   );
 };
 

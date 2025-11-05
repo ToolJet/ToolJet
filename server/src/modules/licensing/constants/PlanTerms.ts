@@ -44,6 +44,26 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   auditLogs: {
     maximumDays: 0,
   },
+  app: {
+    pages: {
+      enabled: false,
+      features: {
+        appHeaderAndLogo: false,
+        addNavGroup: false,
+      },
+    },
+    permissions: {
+      component: false,
+      query: false,
+      pages: false,
+    },
+  },
+  modules: {
+    enabled: false,
+  },
+  permissions: {
+    customGroups: false,
+  },
 };
 
 export const BASIC_PLAN_SETTINGS = {

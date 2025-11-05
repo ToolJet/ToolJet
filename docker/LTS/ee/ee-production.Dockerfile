@@ -39,9 +39,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins ci --omit=dev
+RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build && npm --prefix plugins prune --omit=dev
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
 
@@ -108,17 +109,6 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install Neo4j + APOC
-RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
-    echo "deb https://debian.neo4j.com stable 5" > /etc/apt/sources.list.d/neo4j.list && \
-    apt-get update && apt-get install -y neo4j=1:5.26.6 && apt-mark hold neo4j && \
-    mkdir -p /var/lib/neo4j/plugins && \
-    wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar && \
-    echo "dbms.security.procedures.unrestricted=apoc.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.directories.plugins=/var/lib/neo4j/plugins" >> /etc/neo4j/neo4j.conf && \
-    echo "dbms.security.auth_enabled=true" >> /etc/neo4j/neo4j.conf && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -170,12 +160,6 @@ COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 
-RUN mkdir -p /var/lib/neo4j/data/databases /var/lib/neo4j/data/transactions /var/log/neo4j /opt/neo4j/run && \
-    chown -R appuser:0 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
-    chmod -R 770 /var/lib/neo4j /var/log/neo4j /etc/neo4j /opt/neo4j/run && \
-    chmod -R 644 /var/lib/neo4j/plugins/*.jar && \
-    chown -R appuser:0 /var/lib/neo4j/plugins && \
-    chmod 755 /var/lib/neo4j/plugins
 
 # Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \
@@ -183,6 +167,12 @@ RUN mkdir -p /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
+
+# Create rsyslog directory for audit logs with proper permissions
+RUN mkdir -p /home/appuser/rsyslog \
+    && chown -R appuser:0 /home/appuser/rsyslog \
+    && chmod g+s /home/appuser/rsyslog \
+    && chmod -R g=u /home/appuser/rsyslog
 
 # Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \

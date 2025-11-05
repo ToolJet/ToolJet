@@ -73,18 +73,9 @@ describe("Data sources", () => {
       "have.value",
       `cypress-${data.dataSourceName}-snowflake`
     );
-    cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelUserName
-    );
-
     cy.get('[data-cy="label-account"]').verifyVisibleElement(
       "have.text",
       "Account"
-    );
-    cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
-      "have.text",
-      `Password`
     );
 
     cy.get('[data-cy="label-database"]').verifyVisibleElement(
@@ -127,10 +118,6 @@ describe("Data sources", () => {
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonTextSave
-    );
-    cy.get(dataSourceSelector.connectionAlertText).should(
-      "have.text",
-      "Invalid account. The specified value must be a valid subdomain string."
     );
     deleteDatasource(`cypress-${data.dataSourceName}-snowflake`);
   });

@@ -55,90 +55,91 @@ async function bootstrap() {
     });
 
     const configService = app.get<ConfigService>(ConfigService);
-    logger.log('✅ NestJS application created successfully');
+    const appLogger = app.get<Logger>(Logger);
+    appLogger.log('✅ NestJS application created successfully');
 
     // Validate edition
-    logger.log('Validating ToolJet edition...');
+    appLogger.log('Validating ToolJet edition...');
     await validateEdition(app);
-    logger.log('✅ Edition validation completed');
+    appLogger.log('✅ Edition validation completed');
 
     // Build version
-    logger.log('Building version information...');
-    const version = buildVersion();
+    appLogger.log('Building version information...');
+    const version = buildVersion(appLogger);
     globalThis.TOOLJET_VERSION = version;
     process.env['RELEASE_VERSION'] = version;
-    logger.log(`✅ Version set: ${version}`);
+    appLogger.log(`✅ Version set: ${version}`);
 
     // Setup graceful shutdown
-    logger.log('Setting up graceful shutdown handlers...');
-    setupGracefulShutdown(app, logger);
-    logger.log('✅ Graceful shutdown handlers configured');
+    appLogger.log('Setting up graceful shutdown handlers...');
+    setupGracefulShutdown(app, appLogger);
+    appLogger.log('✅ Graceful shutdown handlers configured');
 
     // Handle static assets in production
     if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
-      logger.log('Replacing subpath placeholders in static assets...');
-      replaceSubpathPlaceHoldersInStaticAssets();
-      logger.log('✅ Static assets processed');
+      appLogger.log('Replacing subpath placeholders in static assets...');
+      replaceSubpathPlaceHoldersInStaticAssets(appLogger);
+      appLogger.log('✅ Static assets processed');
     }
 
     // Initialize licensing
-    logger.log('Initializing licensing...');
-    await handleLicensingInit(app);
-    logger.log('✅ Licensing initialization completed');
+    appLogger.log('Initializing licensing...');
+    await handleLicensingInit(app, appLogger);
+    appLogger.log('✅ Licensing initialization completed');
 
     // Configure OIDC timeout
-    logger.log('Configuring OIDC connection timeout...');
+    appLogger.log('Configuring OIDC connection timeout...');
     const oidcTimeout = parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500');
     custom.setHttpOptionsDefaults({ timeout: oidcTimeout });
-    logger.log(`✅ OIDC timeout set to ${oidcTimeout}ms`);
+    appLogger.log(`✅ OIDC timeout set to ${oidcTimeout}ms`);
 
     // Setup application middleware and pipes
-    logger.log('Setting up application middleware and pipes...');
-    await setupApplicationMiddleware(app);
-    logger.log('✅ Application middleware configured');
+    appLogger.log('Setting up application middleware and pipes...');
+    await setupApplicationMiddleware(app, appLogger);
+    appLogger.log('✅ Application middleware configured');
 
     // Configure URL prefix and excluded paths
-    logger.log('Configuring URL prefix and excluded paths...');
+    appLogger.log('Configuring URL prefix and excluded paths...');
     const { urlPrefix, pathsToExclude } = configureUrlPrefix();
     app.setGlobalPrefix(urlPrefix + 'api', { exclude: pathsToExclude });
-    logger.log(`✅ URL prefix configured: ${urlPrefix}`);
+    appLogger.log(`✅ URL prefix configured: ${urlPrefix}`);
 
     // Setup body parsers
-    logger.log('Setting up body parsers...');
+    appLogger.log('Setting up body parsers...');
     setupBodyParsers(app, configService);
-    logger.log('✅ Body parsers configured');
+    appLogger.log('✅ Body parsers configured');
 
     // Enable versioning
-    logger.log('Enabling API versioning...');
+    appLogger.log('Enabling API versioning...');
     app.enableVersioning({
       type: VersioningType.URI,
       defaultVersion: VERSION_NEUTRAL,
     });
-    logger.log('✅ API versioning enabled');
+    appLogger.log('✅ API versioning enabled');
 
     // Setup security headers
-    logger.log('Setting up security headers...');
-    setSecurityHeaders(app, configService);
-    logger.log('✅ Security headers configured');
+    appLogger.log('Setting up security headers...');
+    setSecurityHeaders(app, configService, appLogger);
+    appLogger.log('✅ Security headers configured');
 
     // Setup static assets
-    logger.log('Setting up static assets...');
+    appLogger.log('Setting up static assets...');
     app.use(`${urlPrefix}/assets`, express.static(join(__dirname, '/assets')));
-    logger.log('✅ Static assets configured');
+    appLogger.log('✅ Static assets configured');
 
     // Validate JWT guard
-    logger.log('Validating Ability guard on controllers...');
+    appLogger.log('Validating Ability guard on controllers...');
     const guardValidator = app.get(GuardValidator);
     await guardValidator.validateJwtGuard();
-    logger.log('✅ Ability guard validation completed');
+    appLogger.log('✅ Ability guard validation completed');
 
     // Start server
     const listen_addr = process.env.LISTEN_ADDR || '::';
     const port = parseInt(process.env.PORT) || 3000;
 
-    logger.log(`Starting server on ${listen_addr}:${port}...`);
+    appLogger.log(`Starting server on ${listen_addr}:${port}...`);
     await app.listen(port, listen_addr, async function () {
-      logStartupInfo(configService, logger);
+      logStartupInfo(configService, appLogger);
     });
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
@@ -163,10 +164,10 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 }
 
-async function setupApplicationMiddleware(app: NestExpressApplication) {
-  app.useLogger(app.get(Logger));
-  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), app.get(Logger), app.get(EventEmitter2)));
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
+async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {
+  app.useLogger(appLogger);
+  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)));
+  app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
 

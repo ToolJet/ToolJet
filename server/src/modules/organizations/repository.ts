@@ -19,7 +19,11 @@ export class OrganizationRepository extends Repository<Organization> {
     return await this.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async fetchOrganizationWithSSOConfigs(slug: string, statusList?: Array<boolean>): Promise<Organization> {
+  async fetchOrganizationWithSSOConfigs(
+    slug: string,
+    statusList?: Array<boolean>,
+    allowArchivedWorkspace: boolean = false
+  ): Promise<Organization> {
     const conditions: any = {
       relations: ['ssoConfigs', 'ssoConfigs.oidcGroupSyncs'],
       where: {
@@ -40,7 +44,7 @@ export class OrganizationRepository extends Repository<Organization> {
         where: { ...conditions.where, id: slug },
       });
     }
-    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE && !allowArchivedWorkspace)
       throw new BadRequestException('Organization is Archived');
     return organization;
   }

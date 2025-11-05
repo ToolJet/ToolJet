@@ -48,9 +48,16 @@ export const listviewConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    dataSourceSelector: {
+      type: 'dropdownMenu',
+      displayName: 'Data source',
+      options: [{ name: 'Raw JSON', value: 'rawJson' }],
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }, { type: 'object' }] } },
+      newLine: true,
+    },
     data: {
       type: 'code',
-      displayName: 'List data',
+      displayName: ' ',
       validation: {
         schema: {
           type: 'union',
@@ -60,6 +67,10 @@ export const listviewConfig = {
           ],
         },
         defaultValue: "[{text: 'Sample text 1'}]",
+      },
+      conditionallyRender: {
+        key: 'dataSourceSelector',
+        value: 'rawJson',
       },
     },
     dynamicHeight: {
@@ -187,6 +198,7 @@ export const listviewConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      dataSourceSelector: { value: 'rawJson' },
       data: {
         value: `{{[
     { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },

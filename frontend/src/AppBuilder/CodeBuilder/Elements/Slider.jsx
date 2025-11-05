@@ -5,7 +5,9 @@ import * as Slider from '@radix-ui/react-slider';
 import './Slider.scss';
 import { debounce } from 'lodash';
 
-function Slider1({ value, onChange, component, styleDefinition }) {
+function Slider1(props) {
+  const { value, onChange, component, styleDefinition, meta } = props;
+  const { min = 0, max = 100, step = 1, parseType = 'number', staticInputText = '%' } = meta;
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
   const isDisabled =
     styleDefinition?.auto?.value === '{{false}}' ? false : styleDefinition?.auto?.value === '{{true}}' ? true : false;
@@ -24,8 +26,13 @@ function Slider1({ value, onChange, component, styleDefinition }) {
 
   // debounce function to handle input changes
   const onInputChange = (e) => {
-    let inputValue = parseInt(e.target.value, 10) || 0;
-    inputValue = Math.min(inputValue, 100);
+    let inputValue = 0;
+    if (parseType === 'float') {
+      inputValue = parseFloat(e.target.value) || 0;
+    } else {
+      inputValue = parseInt(e.target.value, 10) || 0;
+    }
+    inputValue = Math.min(inputValue, max);
     setSliderValue(inputValue);
     debouncedOnChange(inputValue);
   };
@@ -35,19 +42,19 @@ function Slider1({ value, onChange, component, styleDefinition }) {
       <CustomInput
         disabled={isDisabled}
         value={sliderValue}
-        staticText="%"
+        staticText={staticInputText}
         onInputChange={onInputChange}
         dataCy="width"
         type="number"
-        min={0}
+        min={min}
       />
       <div style={{ position: 'absolute', top: '34px' }}>
         <Slider.Root
           className="SliderRoot"
           defaultValue={sliderValue ? [sliderValue] : [33]}
-          min={0}
-          max={100}
-          step={1}
+          min={min}
+          max={max}
+          step={step}
           value={[sliderValue]}
           onValueChange={handleSliderChange}
           onValueCommit={(value) => {

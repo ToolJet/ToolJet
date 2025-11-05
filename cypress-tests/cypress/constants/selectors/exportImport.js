@@ -14,7 +14,7 @@ export const appVersionSelectors = {
   versionNameInputField: '[data-cy="version-name-input-field"]',
   createVersionFromLabel: '[data-cy="create-version-from-label"]',
   createVersionInputField: '[data-cy="create-version-from-input-field"]',
-  createNewVersionButton: '[data-cy="create-new-version-button"]',
+  createNewVersionButton: '[data-cy="create-new-version-button"]:last',
   appVersionContentList: ".react-select__menu-list",
 };
 export const exportAppModalSelectors = {

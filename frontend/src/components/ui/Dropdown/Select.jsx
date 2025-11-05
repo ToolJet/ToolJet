@@ -86,29 +86,31 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
 ));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
-const SelectContent = React.forwardRef(({ className, children, position = 'popper', container, ...props }, ref) => (
-  <SelectPrimitive.Portal container={container}>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        `tw-relative tw-z-[99999] tw-max-h-96 tw-w-[170px] tw-p-[6px] tw-overflow-hidden tw-rounded-[10px] tw-border tw-bg-background-surface-layer-01 tw-text-text-default tw-shadow-md data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95 data-[side=bottom]:tw-slide-in-from-top-2 data-[side=left]:tw-slide-in-from-right-2 data-[side=right]:tw-slide-in-from-left-2 data-[side=top]:tw-slide-in-from-bottom-2`,
-        position === 'popper' &&
-          'data-[side=bottom]:tw-translate-y-1 data-[side=left]:-tw-translate-x-1 data-[side=right]:tw-translate-x-1 data-[side=top]:-tw-translate-y-1',
-        className
-      )}
-      position={position}
-      sideOffset={4}
-      collisionPadding={8}
-      avoidCollisions={true}
-      sticky="always"
-      {...props}
-    >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport className={cn('tw-p-[2px]')}>{children}</SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-));
+const SelectContent = React.forwardRef(
+  ({ className, children, position = 'popper', container, theme, ...props }, ref) => (
+    <SelectPrimitive.Portal className={cn({ 'dark-theme': theme === 'dark' })} container={container}>
+      <SelectPrimitive.Content
+        ref={ref}
+        className={cn(
+          `tw-relative tw-z-[99999] tw-max-h-96 tw-w-[170px] tw-p-[6px] tw-overflow-hidden tw-rounded-[10px] tw-border tw-bg-background-surface-layer-01 tw-text-text-default tw-shadow-md data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95 data-[side=bottom]:tw-slide-in-from-top-2 data-[side=left]:tw-slide-in-from-right-2 data-[side=right]:tw-slide-in-from-left-2 data-[side=top]:tw-slide-in-from-bottom-2`,
+          position === 'popper' &&
+            'data-[side=bottom]:tw-translate-y-1 data-[side=left]:-tw-translate-x-1 data-[side=right]:tw-translate-x-1 data-[side=top]:-tw-translate-y-1',
+          className
+        )}
+        position={position}
+        sideOffset={4}
+        collisionPadding={8}
+        avoidCollisions={true}
+        sticky="always"
+        {...props}
+      >
+        <SelectScrollUpButton />
+        <SelectPrimitive.Viewport className={cn('tw-p-[2px]')}>{children}</SelectPrimitive.Viewport>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  )
+);
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (

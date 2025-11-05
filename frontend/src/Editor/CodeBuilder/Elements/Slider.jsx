@@ -24,7 +24,7 @@ function Slider1({ value, onChange, component, styleDefinition }) {
 
   // debounce function to handle input changes
   const onInputChange = (e) => {
-    let inputValue = parseInt(e.target.value, 10) || 0;
+    let inputValue = parseFloat(e.target.value) || 0;
     inputValue = Math.min(inputValue, 100);
     setSliderValue(inputValue);
     debouncedOnChange(inputValue);

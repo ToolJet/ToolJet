@@ -217,6 +217,7 @@ const OpenapiAuth = ({
             className="form-control"
             onChange={(e) => apiKeyChanges(auth.key, e.target.value)}
             value={value}
+            workspaceConstants={workspaceConstants}
           />
         </div>
       );

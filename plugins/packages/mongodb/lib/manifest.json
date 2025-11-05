@@ -49,7 +49,7 @@
     },
     "tls_certificate": {
       "type": "string",
-      "title": "TLS/SSL Certificate",
+      "title": "TLS/SSL certificate",
       "description": "Single select dropdown for choosing certificates",
       "enum": [
         "ca_certificate",
@@ -65,17 +65,17 @@
     },
     "ca_cert": {
       "type": "string",
-      "title": "CA Cert",
+      "title": "CA cert",
       "description": "Enter CA certificate"
     },
     "client_key": {
       "type": "string",
-      "title": "Client Key",
+      "title": "Client key",
       "description": "Enter client key"
     },
     "client_cert": {
       "type": "string",
-      "title": "Client Cert",
+      "title": "Client cert",
       "description": "Enter client certificate"
     }
   },
@@ -173,9 +173,9 @@
     },
     "manual": {
       "tls_certificate": {
+        "label": "TLS/SSL certificate",
         "$ref": "#/properties/tls_certificate",
         "key": "tls_certificate",
-        "label": "TLS/SSL Certificate",
         "description": "Single select dropdown for choosing certificates",
         "widget": "dropdown-component-flip",
         "list": [
@@ -210,9 +210,9 @@
             "required": true
           },
           "database": {
+            "label": "Database name",
             "$ref": "#/properties/database",
             "key": "database",
-            "label": "Database name",
             "description": "Name of the database",
             "widget": "text-v3"
           },
@@ -235,32 +235,32 @@
       },
       "ca_certificate": {
         "ca_cert": {
+          "label": "CA cert",
           "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "label": "CA Cert",
           "description": "Enter CA certificate",
           "widget": "password-v3-textarea"
         }
       },
       "client_certificate": {
         "client_key": {
+          "label": "Client key",
           "$ref": "#/properties/client_key",
           "key": "client_key",
-          "label": "Client Key",
           "description": "Enter client key",
           "widget": "password-v3-textarea"
         },
         "client_cert": {
+          "label": "Client cert",
           "$ref": "#/properties/client_cert",
           "key": "client_cert",
-          "label": "Client Cert",
           "description": "Enter client certificate",
           "widget": "password-v3-textarea"
         },
         "ca_cert": {
+          "label": "CA cert",
           "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "label": "CA Cert",
           "description": "Enter CA certificate",
           "widget": "password-v3-textarea"
         }

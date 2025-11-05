@@ -595,17 +595,33 @@ class TableComponent extends React.Component {
     let items = [];
     items.push({
       title: 'Data',
-      children: renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        'data',
-        'properties',
-        currentState,
-        components,
-        darkMode,
-        false
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'dataSourceSelector',
+            'properties',
+            currentState,
+            components,
+            darkMode,
+            false
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'data',
+            'properties',
+            currentState,
+            components,
+            darkMode,
+            false
+          )}
+        </>
       ),
     });
 

@@ -279,8 +279,7 @@ export const DatepickerColumn = ({
   const _showOverlay =
     ref?.current &&
     textRef?.current &&
-    (ref.current.clientWidth < textRef.current.offsetWidth ||
-      ref.current.clientHeight < textRef.current.offsetHeight);
+    (ref.current.clientWidth < textRef.current.offsetWidth || ref.current.clientHeight < textRef.current.offsetHeight);
 
   return (
     <OverlayTrigger
@@ -317,9 +316,10 @@ export const DatepickerColumn = ({
             'theme-dark dark-theme': darkMode,
           })}
           selected={date}
-          onChange={(date) => {
+          onChange={(date, e) => {
             setIsInputFocused(false);
             handleDateChange(date);
+            e.stopPropagation();
           }}
           value={isInputFocused ? inputValue : computeDateString(date)}
           dateFormat={!isDateSelectionEnabled && isTimeChecked ? 'HH:mm' : dateDisplayFormat}

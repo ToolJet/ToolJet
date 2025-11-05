@@ -5,7 +5,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import OverflowTooltip from '@/_components/OverflowTooltip';
-function AppResourcePermissions({
+function AppResourcePermissions ({
   updateOnlyGranularPermissions,
   permissions,
   currentGroupPermission,
@@ -34,7 +34,7 @@ function AppResourcePermissions({
       onClick={() => {
         !isRoleGroup && !isBasicPlan && !notClickable && openEditPermissionModal(permissions);
       }}
-      data-cy="granular-access-permission"
+      data-cy="apps-granular-access"
     >
       <div className="resource-name">
         <SolidIcon name="app" width="20px" className="resource-icon" />
@@ -117,7 +117,7 @@ function AppResourcePermissions({
                 {'View'}
               </span>
               <span class={`tj-text-xxsm`} data-cy="app-view-helper-text">
-                Only access released version of apps
+                Access preview & released versions of apps
               </span>
             </label>
           </div>
@@ -176,7 +176,7 @@ function AppResourcePermissions({
               openEditPermissionModal(permissions);
             }}
             disabled={isRoleGroup || isBasicPlan}
-            data-cy="edit-permission-button"
+            data-cy="edit-apps-granular-access"
           />
         )}
       </div>

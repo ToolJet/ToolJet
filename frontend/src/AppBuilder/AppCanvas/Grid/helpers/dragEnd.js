@@ -212,20 +212,19 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
  * Given an event, finds the **nearest valid droppable slot**.
  */
 export const getDroppableSlotIdOnScreen = (event, widgets) => {
-  // Hack: This is a temporary solution. We need to find a better way to handle this.
-  // We have added this solution to fix dragging widget not being correctly dropped when it is there is scroll
   const widgetType = getWidgetById(widgets, event.target.id)?.component?.component || CANVAS_ID;
-  if (!DROPPABLE_PARENTS.has(widgetType) && widgetType !== 'ModuleViewer') {
+  // TO:DO - Have to remove this condition for ModuleViewer
+  if (widgetType !== 'ModuleViewer') {
     const targetElems = document.elementsFromPoint(event.clientX, event.clientY);
     const draggedOverElements = targetElems.filter(
-      (ele) => (ele.id !== event.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
+      (ele) => ele.id.replace('canvas-', '')?.slice(0, 36) !== event.target.id && ele.classList.contains('real-canvas')
     );
     const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
     const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-    return newParentId == 'canvas' ? undefined : newParentId;
+    return newParentId === 'canvas' ? undefined : newParentId;
   } else {
     const [slotId] = document
       .elementsFromPoint(event.clientX, event.clientY)
@@ -238,6 +237,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
         const widgetType = getWidgetById(widgets, slotId.slice(0, 36))?.component?.component || CANVAS_ID;
         return DROPPABLE_PARENTS.has(widgetType);
       });
+
     return slotId;
   }
 };
@@ -267,9 +267,6 @@ const extractSlotId = (element) => {
  * @returns {Object} { left, top } - The computed position.
  */
 export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gridWidth, dragged) => {
-  let left = event.lastEvent?.translate[0];
-  let top = event.lastEvent?.translate[1];
-
   if (isParentChangeAllowed) {
     // Compute the relative position inside the new container
     const { left: adjustedLeft, top: adjustedTop } = getMouseDistanceFromParentDiv(

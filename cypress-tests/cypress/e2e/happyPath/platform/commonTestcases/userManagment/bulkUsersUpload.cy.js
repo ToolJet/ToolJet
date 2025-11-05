@@ -127,6 +127,7 @@ describe("Bulk User Upload", () => {
   beforeEach(() => {
     const firstName = fake.firstName;
     const workspaceName = firstName.toLowerCase();
+    cy.mhDeleteAll();
     cy.apiLogin();
     cy.apiCreateWorkspace(firstName, workspaceName);
     cy.visit(`${workspaceName}`);
@@ -177,6 +178,7 @@ describe("Bulk User Upload", () => {
       .within(() => {
         cy.get("td small").should("have.text", "invited");
       });
+    cy.mhGetAllMails().should('have.length', 3);
 
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();

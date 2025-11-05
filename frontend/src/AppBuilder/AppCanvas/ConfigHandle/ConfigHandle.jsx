@@ -9,6 +9,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import MentionComponentInChat from './MentionComponentInChat';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -27,7 +28,7 @@ export const ConfigHandle = ({
   subContainerIndex,
 }) => {
   const { moduleId } = useModuleContext();
-  const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
+  const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
@@ -184,9 +185,10 @@ export const ConfigHandle = ({
         </div>
         {/* Delete Button */}
         {!isMultipleComponentsSelected && !shouldFreeze && (
-          <div>
+          <div className="tw-flex tw-items-center tw-gap-1 tw-ml-1">
+            <MentionComponentInChat componentName={componentName} />
+
             <img
-              style={{ cursor: 'pointer', marginLeft: '5px' }}
               src="assets/images/icons/inspect.svg"
               width="12"
               role="button"
@@ -194,11 +196,12 @@ export const ConfigHandle = ({
               draggable="false"
               onClick={() => setComponentToInspect(componentName)}
               data-cy={`${componentName.toLowerCase()}-inspect-button`}
-              className="config-handle-inspect"
+              className="config-handle-inspect tw-cursor-pointer"
             />
+
             {!isModuleContainer && (
               <span
-                style={{ cursor: 'pointer', marginLeft: '5px' }}
+                className="tw-cursor-pointer"
                 onClick={() => {
                   deleteComponents([id]);
                 }}
@@ -216,11 +219,11 @@ export const ConfigHandle = ({
         )}
       </span>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {!isLicenseValid && componentType === 'ModuleViewer' && (
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
         <Tooltip
           id={`invalid-license-modules-${componentName?.toLowerCase()}`}
           className="tooltip"
-          isOpen={_showHandle && componentType === 'ModuleViewer'}
+          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
           style={{ textAlign: 'center' }}
         />
       )}

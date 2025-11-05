@@ -23,7 +23,6 @@ export const RichTextEditor = function RichTextEditor({
   const dynamicHeight = properties.dynamicHeight ?? false;
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
-
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const [isVisible, setIsVisible] = useState(visibility);
   const [isLoading, setIsLoading] = useState(properties?.loadingState);
@@ -38,7 +37,6 @@ export const RichTextEditor = function RichTextEditor({
     width,
     visibility: isVisible,
   });
-
 
   useEffect(() => {
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
@@ -72,6 +70,11 @@ export const RichTextEditor = function RichTextEditor({
       style={{ height: dynamicHeight ? 'auto' : `${height}px`, display: isVisible ? '' : 'none', boxShadow }}
       data-cy={dataCy}
       className="scrollbar-container"
+      component-id={id}
+      aria-label="Text Editor"
+      aria-hidden={!visibility}
+      aria-disabled={isDisabled}
+      aria-busy={isLoading}
     >
       <DraftEditor
         isInitialRender={isInitialRender}

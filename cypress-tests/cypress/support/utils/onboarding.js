@@ -1,15 +1,11 @@
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import {
-  verifyandModifyUserRole,
-  verifyandModifySizeOftheCompany,
-} from "Support/utils/selfHostSignUp";
-import { navigateToManageUsers, logout } from "Support/utils/common";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { logout, navigateToManageUsers } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
+import { onboardingText } from "Texts/onboarding";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -234,7 +230,6 @@ export const signUpLink = (email) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
     cy.wait(3000);
-
   });
 };
 
@@ -336,5 +331,82 @@ export const onboardingStepThree = () => {
 
   cy.get(onboardingSelectors.onboardingSubmitButton)
     .verifyVisibleElement("have.text", "Continue")
+    .click();
+};
+
+export const addUserMetadata = (metadataList) => {
+  metadataList.forEach(([key, value], index) => {
+    cy.get(commonSelectors.buttonSelector("add-more"))
+      .should("be.visible")
+      .click();
+    cy.clearAndType(
+      onboardingSelectors.keyInputField(
+        onboardingText.userMetadataLabel,
+        index
+      ),
+      `${key}`
+    );
+    cy.clearAndType(
+      onboardingSelectors.valueInputField(
+        onboardingText.userMetadataLabel,
+        index
+      ),
+      `${value}`
+    );
+    cy.get(`[data-cy="user-metadata-${index}"] [data-cy="icon-hidden"]`)
+      .should("be.visible")
+      .click();
+    cy.get(
+      onboardingSelectors.deleteButton(onboardingText.userMetadataLabel, index)
+    ).should("be.visible");
+  });
+};
+
+export const userMetadataOnboarding = (
+  firstName,
+  email,
+  userRole = "builder",
+  metadata
+) => {
+  const getMetadataCount = (meta) => {
+    if (Array.isArray(meta)) {
+      return meta.length;
+    } else if (typeof meta === "object" && meta !== null) {
+      return Object.keys(meta).length;
+    }
+    return 0;
+  };
+
+  const metadataCount = getMetadataCount(metadata);
+  navigateToManageUsers();
+  cy.apiUserInvite(firstName, email, userRole, metadata);
+  fetchAndVisitInviteLink(email);
+  cy.wait(1000);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.acceptInviteButton).click();
+  return cy.wrap(metadataCount);
+};
+
+export const verifyUserMetadataElements = (index = 0) => {
+  cy.get(onboardingSelectors.userMetadataLabel).should("be.visible");
+  cy.get(onboardingSelectors.emptyKeyValueLabel).should("be.visible");
+  cy.get(commonSelectors.buttonSelector("add-more"))
+    .should("be.visible")
+    .click();
+  cy.get(onboardingSelectors.encryptedLabel).should("be.visible");
+  cy.get(
+    onboardingSelectors.keyInputField(onboardingText.userMetadataLabel, index)
+  ).should("be.visible");
+  cy.get(
+    onboardingSelectors.valueInputField(onboardingText.userMetadataLabel, index)
+  ).should("be.visible");
+};
+
+export const selectUserGroup = (groupName) => {
+  cy.get(onboardingSelectors.userGroupSelect).should("be.visible").click();
+  cy.contains(`[id*="react-select-"]`, groupName).should("be.visible").click();
+  cy.get(onboardingSelectors.userGroupSelect)
+    .should("contain.text", groupName)
     .click();
 };

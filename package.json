@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
+    "cypress-real-events": "^1.15.0",
     "eslint": "^9.28.0",
     "eslint-plugin-jest": "^28.13.3",
     "eslint-plugin-prettier": "^5.4.1",

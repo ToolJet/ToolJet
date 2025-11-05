@@ -278,7 +278,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
-                            {isLicenseNotValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
+                            {isLicenseNotValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

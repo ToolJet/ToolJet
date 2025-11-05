@@ -104,7 +104,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           if (isQuerySelected) return;
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
-            if (menuBtn.contains(e.target)) {
+            if (menuBtn && menuBtn.contains(e.target)) {
               e.stopPropagation();
             } else {
               toggleQueryHandlerMenu(false);
@@ -122,11 +122,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         <div className="col query-row-query-name">
           {isRenaming ? (
-            <QueryRenameInput
-              dataQuery={dataQuery}
-              darkMode={darkMode}
-              onUpdate={updateQueryName}
-            />
+            <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
               <span
@@ -163,18 +159,20 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        {!shouldFreeze && <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
-          <ButtonComponent
-            iconOnly
-            leadingIcon="morevertical01"
-            onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
-            size="small"
-            variant="outline"
-            className=""
-            id={`query-handler-menu-${dataQuery?.id}`}
-            data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-          />
-        </div>}
+        {!shouldFreeze && hasPermissions && (
+          <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
+            <ButtonComponent
+              iconOnly
+              leadingIcon="morevertical01"
+              onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+              size="small"
+              variant="outline"
+              className=""
+              id={`query-handler-menu-${dataQuery?.id}`}
+              data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
+            />
+          </div>
+        )}
       </div>
       <Confirm
         show={isDeleting}

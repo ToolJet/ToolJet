@@ -28,12 +28,21 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
     shallow
   );
 
+  const activeStepDetails = aiGenerationMetadata.steps?.find((step) => step.id === aiGenerationMetadata.active_step);
+  const activeStep = activeStepDetails?.hidden ? activeStepDetails.parent_step_id : aiGenerationMetadata.active_step;
+
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
         <div className="container-xl header-container">
           <div className="d-flex w-100 tw-h-9  tw-justify-between">
-            <div className="header-inner-wrapper d-flex tw-grow-1 tw-w-full">
+            <div
+              className="header-inner-wrapper d-flex"
+              style={{
+                width: isUserInZeroToOneFlow ? 'auto' : 'calc(100% - 348px)',
+                background: '',
+              }}
+            >
               <div className="d-flex align-items-center">
                 <div
                   className="p-0 m-0 d-flex align-items-center"
@@ -64,34 +73,36 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       </span>
                     </div>
                   </div>
-
-                  {isUserInZeroToOneFlow && (
-                    <Steps
-                      steps={
-                        aiGenerationMetadata?.steps?.map((step) => ({
-                          label: step.name,
-                          value: step.id,
-                        })) ?? []
-                      }
-                      activeStep={aiGenerationMetadata?.active_step}
-                    />
-                  )}
                 </div>
               </div>
             </div>
 
+            {isUserInZeroToOneFlow && (
+              <Steps
+                steps={
+                  aiGenerationMetadata.steps
+                    ?.filter((step) => !step.hidden)
+                    ?.map((step) => ({
+                      label: step.name,
+                      value: step.id,
+                    })) ?? []
+                }
+                activeStep={activeStep}
+                classes={{ stepsContainer: 'tw-mx-auto' }}
+              />
+            )}
             {!isUserInZeroToOneFlow && <HeaderActions darkMode={darkMode} />}
 
             {!isUserInZeroToOneFlow && (
               <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
                 <div className="d-flex align-items-center p-0">
-                  <div className="d-flex version-manager-container p-0  align-items-center ">
+                  <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
                         <AppEnvironments darkMode={darkMode} />
-                        <div className="tw-hidden navbar-seperator" />
+                        <div className="tw-hidden navbar-seperator m-0" />
                         <AppVersionsManager darkMode={darkMode} />
-                        <div className="navbar-seperator" />
+                        <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}

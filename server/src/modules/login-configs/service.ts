@@ -38,9 +38,14 @@ export class LoginConfigsService implements ILoginConfigsService {
     }
 
     try {
-      // Fetch organization details with SSO configs
-      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], true, true);
-      return result;
+      // Fetch organization details, ensuring organization ID and relevant data are always returned
+      const result = await this.loginConfigsUtilService.fetchOrganizationDetails(
+        organizationId,
+        [true, false],
+        true,
+        true
+      );
+      return this.loginConfigsUtilService.removeDisabledSsoConfigs(result);
     } catch (error) {
       this.logger.error('Error fetching organization details', error);
     }

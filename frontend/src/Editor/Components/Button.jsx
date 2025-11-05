@@ -74,8 +74,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-        ? backgroundColor
-        : 'transparent';
+      ? backgroundColor
+      : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -199,6 +199,11 @@ export const Button = function Button(props) {
         onMouseLeave={() => {
           setHovered(false);
         }}
+        aria-label={label}
+        id={`component-${id}`}
+        aria-disabled={disable}
+        aria-busy={loading}
+        aria-hidden={!visibility}
       >
         {!loading ? (
           <div

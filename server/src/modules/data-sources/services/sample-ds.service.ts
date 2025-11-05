@@ -56,8 +56,8 @@ export class SampleDataSourceService {
       },
       {
         key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? 'true' : 'false',
-        encrypted: true,
+        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
+        encrypted: false,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },
@@ -115,8 +115,8 @@ export class SampleDataSourceService {
       },
       {
         key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? 'true' : 'false',
-        encrypted: true,
+        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
+        encrypted: false,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },

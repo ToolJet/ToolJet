@@ -98,6 +98,9 @@ export const AppVersionsManager = ({ darkMode }) => {
       });
     }
 
+    // Close menu when selecting a version
+    setForceMenuOpen(false);
+
     changeEditorVersionAction(
       appId,
       id,
@@ -194,7 +197,18 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(!forceMenuOpen);
+
+  };
+
+  const handleToggleMenu = async () => {
+    if (!forceMenuOpen && !appVersionsLazyLoaded) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+      await lazyLoadAppVersions(appId);
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+    setForceMenuOpen(prev => {
+      return !prev;
+    });
   };
 
   const customSelectProps = {
@@ -212,7 +226,7 @@ export const AppVersionsManager = ({ darkMode }) => {
   useEffect(() => {
     function handleClickOutside(event) {
       if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
-        if (!forceMenuOpen) {
+        if (forceMenuOpen) {
           setForceMenuOpen(false);
         }
       }
@@ -221,8 +235,7 @@ export const AppVersionsManager = ({ darkMode }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedOutsideRef]);
+  }, [forceMenuOpen]);
   return (
     <div
       className="d-flex align-items-center p-0"
@@ -246,7 +259,7 @@ export const AppVersionsManager = ({ darkMode }) => {
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
             onMenuOpen={onMenuOpen}
-            onMenuClose={() => setForceMenuOpen(false)}
+            onToggleMenu={handleToggleMenu}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
             isEditable={isEditable}

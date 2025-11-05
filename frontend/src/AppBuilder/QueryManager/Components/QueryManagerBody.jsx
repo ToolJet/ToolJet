@@ -150,7 +150,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
       return;
     return (
       <Transformation
-        renderCopilot={renderCopilot}
+        renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
         changeOption={optionchanged}
         options={options ?? {}}
         darkMode={darkMode}
@@ -162,6 +162,22 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const handleBlur = () => {
     updateDataQuery(options);
   };
+
+  let docLinkStatic = '';
+  switch (selectedDataSource?.kind) {
+      case 'restapi':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
+        break;
+      case 'tooljetdb':
+        docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
+        break;
+      case 'runjs':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
+        break;
+      case 'runpy':
+        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
+        break;
+    }
 
   const renderQueryElement = () => {
     return (
@@ -176,18 +192,32 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               selectedDataSource?.kind === 'runpy' ||
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
-              <ParameterList
-                parameters={options.parameters}
-                handleAddParameter={handleAddParameter}
-                handleParameterChange={handleParameterChange}
-                handleParameterRemove={handleParameterRemove}
-                darkMode={darkMode}
-                containerRef={paramListContainerRef}
-              />
+              <>
+                <div style={{ marginBottom: '2px' }}>
+                  {`To know more about querying ${selectedDataSource?.kind} data,`}
+                  &nbsp;
+                  <a
+                    href={docLinkStatic}
+                    target="_blank"
+                    style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                    rel="noreferrer"
+                  >
+                    {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+                  </a>
+                </div>
+                <ParameterList
+                  parameters={options.parameters}
+                  handleAddParameter={handleAddParameter}
+                  handleParameterChange={handleParameterChange}
+                  handleParameterRemove={handleParameterRemove}
+                  darkMode={darkMode}
+                  containerRef={paramListContainerRef}
+                />
+              </>
             )}
         </div>
         <ElementToRender
-          renderCopilot={renderCopilot}
+          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
           key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
@@ -314,7 +344,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 changeDataQuery(newDataSource);
               }}
             />
-            <div>
+            <div style={{ marginBottom: '2px' }}>
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
               <a

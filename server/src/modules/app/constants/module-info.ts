@@ -41,6 +41,8 @@ import { FEATURES as EXTERNAL_API_FEATURES } from '@modules/external-apis/consta
 import { FEATURES as MODULE_FEATURES } from '@modules/modules/constants/feature';
 import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git-sync/constants/feature';
+import { FEATURES as CRM_FEATURES } from '@modules/CRM/constants/feature';
+import { FEATURES as METRICS } from '@modules/metrices/constants/features';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -51,6 +53,7 @@ const GROUP_PERMISSIONS_FEATURES =
 //every module should be here
 export const MODULE_INFO: { [key: string]: any } = {
   ...ROOT_FEATURES,
+  ...METRICS,
   ...USER_FEATURES,
   ...SESSION_FEATURES,
   ...GROUP_PERMISSIONS_FEATURES,
@@ -90,4 +93,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...MODULE_FEATURES,
   ...APP_GIT_FEATURES,
   ...GIT_SYNC_FEATURES,
+  ...CRM_FEATURES,
 };

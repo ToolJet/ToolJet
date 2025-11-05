@@ -1,6 +1,7 @@
 import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
+import { ClientMetadata } from 'openid-client';
 
 export interface Features {
   [FEATURE_KEY.LOGIN]: FeatureConfig;
@@ -24,4 +25,10 @@ export interface Features {
 
 export interface FeaturesConfig {
   [MODULES.AUTH]: Features;
+}
+
+export interface OidcClientConfig extends Partial<ClientMetadata> {
+  client_id: string;
+  client_secret?: string;
+  redirect_uris: string[];
 }

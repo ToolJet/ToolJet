@@ -69,7 +69,6 @@ export class App extends BaseEntity {
   @Column({ name: 'workflow_enabled', default: false })
   workflowEnabled: boolean;
 
-
   @Column({ name: 'is_initialised_from_prompt', default: false })
   isInitialisedFromPrompt: boolean;
 
@@ -91,12 +90,17 @@ export class App extends BaseEntity {
       name: string;
       id: string;
       loadingStates: string[];
-      appInitialisationPrompt?: string;
     }[];
+    appInitialisationPrompt?: string;
     appName?: string;
     completedSteps: string[];
     activeStep: string;
     version: string;
+    dataSource: {
+      kind: string;
+      name: string;
+      id: string;
+    };
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
@@ -136,17 +140,23 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, { onDelete: 'CASCADE' })
+  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, {
+    onDelete: 'CASCADE',
+  })
   appGitSync: AppGitSync;
 
-  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, {
+    onDelete: 'CASCADE',
+  })
   appGroups: GroupApps[];
 
   //Depreciated
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
 
-  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.app, {
+    onDelete: 'CASCADE',
+  })
   aiConversations: AiConversation[];
 
   public editingVersion;

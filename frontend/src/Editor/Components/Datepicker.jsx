@@ -74,6 +74,14 @@ export const Datepicker = function Datepicker({
   }, [disabledDates, format]);
 
   useEffect(() => {
+    //get element whose id is component-${id}
+    const datepickerInput = document.querySelector(`[id='component-${id}']`);
+    if (datepickerInput) {
+      datepickerInput.setAttribute('aria-label', 'Datepicker');
+    }
+  }, []);
+
+  useEffect(() => {
     if (isInitialRender.current) return;
     const validationStatus = validate(computeDateString(date));
     setValidationStatus(validationStatus);
@@ -105,6 +113,9 @@ export const Datepicker = function Datepicker({
         display: visibility ? '' : 'none',
         background: 'none',
       }}
+      aria-hidden={!visibility}
+      aria-disabled={disabledState}
+      aria-invalid={!isValid && showValidationError}
     >
       <DatePickerComponent
         open={isCalendarOpen}
@@ -121,6 +132,8 @@ export const Datepicker = function Datepicker({
           onComponentClick(id);
           setIsCalendarOpen(true);
         }}
+        id={`component-${id}`}
+        ariaLabelledBy={''}
         showMonthDropdown
         showYearDropdown
         portalId="component-portal"

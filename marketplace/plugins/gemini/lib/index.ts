@@ -25,10 +25,10 @@ export default class GeminiService implements QueryService {
       }
     } catch (error: any) {
       console.error('Error in Gemini query:', error);
-    
+
       let errorMessage = 'Unknown error occurred';
       let errorDetails: any = {};
-    
+
       if (error && typeof error === 'object') {
         try {
           errorMessage = error.message || error.response?.data?.error?.message || 'Unknown error';
@@ -41,9 +41,9 @@ export default class GeminiService implements QueryService {
           console.error('Failed to parse Gemini error response:', parseError);
         }
       }
-    
+
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
-    }   
+    }
 
     return {
       status: 'ok',
@@ -60,7 +60,7 @@ export default class GeminiService implements QueryService {
 
     const options: QueryOptions = {
       operation: Operation.TextGeneration,
-      model: 'models/gemini-1.5-flash',
+      model: 'models/gemini-2.0-flash-exp',
       system_prompt: 'Test system prompt',
       prompt: 'This is a test prompt to generate some text.',
       max_tokens: 100,

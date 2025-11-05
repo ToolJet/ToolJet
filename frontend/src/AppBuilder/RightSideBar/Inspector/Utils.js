@@ -166,7 +166,9 @@ export function renderElement(
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'RangeSliderV2' ||
-    componentConfig.component == 'Statistics'
+    componentConfig.component == 'Statistics' ||
+    componentConfig.component == 'Table' ||
+    componentConfig.component == 'CircularProgressBar'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

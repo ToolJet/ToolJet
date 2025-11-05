@@ -28,6 +28,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
+
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -52,7 +53,6 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     if (customOption) {
       return customOption(option);
     }
-
     return option.label;
   };
 
@@ -76,6 +76,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
       classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      data-cy={restProps['data-cy']}
     />
   );
 };

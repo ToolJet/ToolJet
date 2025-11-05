@@ -39,7 +39,8 @@
         "type": "string"
       }
     },
-    "customTesting": true
+    "customTesting": true,
+    "hideSave": true
   },
   "defaults": {
     "redirect_url": {

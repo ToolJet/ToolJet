@@ -10,7 +10,7 @@ import {
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { cloneDeep, merge, set as lodashSet } from 'lodash';
+import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import {
   computeComponentName,
   getAllChildComponents,
@@ -185,6 +185,10 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         oldName = state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name;
         state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name = newName;
+
+        if (state.modules[moduleId].pages[currentPageIndex].components[componentId].name) {
+          state.modules[moduleId].pages[currentPageIndex].components[componentId].name = newName;
+        }
       },
       false,
       'setComponentName'
@@ -1295,10 +1299,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -2155,8 +2159,36 @@ export const createComponentsSlice = (set, get) => ({
         ...Object.fromEntries(acc.map((component) => [component.id, component])),
       };
 
-      const componentName =
-        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      // When component is dropped on canvas for the first time
+      // In default component definition, .name holds the correct computed name for eg. button1
+      // Whereas .component.name holds the default component name without any computation for eg. Button
+      // Also .name is undefined when we reload app and fetch components from the backend. Hence below mentioned OR condition
+      const initialComponentName = componentDefinition.name || componentDefinition.component.name;
+
+      // Check if there is any existing component with the same name
+      const isExistingName = Object.values(currentComponents).some(
+        (component) => component.component.name === initialComponentName
+      );
+
+      // If name is valid then use the same name but if not then fallback to old flow and compute component name
+      const componentName = !isExistingName
+        ? initialComponentName
+        : computeComponentName(componentDefinition.component.component, currentComponents);
+
+      const getComponentProperties = (componentDefinition) => {
+        const properties = componentDefinition.component.definition?.properties;
+        const componentType = componentDefinition.component.component;
+        if (componentType === 'CircularProgressBar') {
+          return {
+            ...properties,
+            text: {
+              value: `{{components.${componentDefinition.id}.value}}%`,
+            },
+          };
+        }
+        return properties;
+      };
+
       const newComponent = {
         id: componentDefinition.id,
         name: componentName,
@@ -2166,7 +2198,7 @@ export const createComponentsSlice = (set, get) => ({
             general: componentDefinition.component.definition?.general,
             generalStyles: componentDefinition.component.definition?.generalStyles,
             others: componentDefinition.component.definition?.others,
-            properties: componentDefinition.component.definition?.properties,
+            properties: getComponentProperties(componentDefinition),
             styles: componentDefinition.component.definition?.styles,
             validation: componentDefinition.component.definition?.validation,
           },
@@ -2216,5 +2248,75 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
     return value;
+  },
+    performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+    const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
+
+    const currentPageId = getCurrentPageId(moduleId);
+
+    pagesInfo?.length &&
+      pagesInfo.forEach((page) => {
+        if (page.id === currentPageId) {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate =
+            page.components?.update?.reduce((acc, comp) => {
+              acc[comp.id] = comp;
+              return acc;
+            }, {}) ?? {};
+          // Convert create operations format to match addComponentToCurrentPage expectations
+          const componentsToCreate = (page.components?.create ?? []).map((component) => ({
+            id: component.id,
+            name: component.component?.name,
+            component: component.component,
+            layouts: component.layouts,
+          }));
+
+          // Delete Components
+          componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+
+          // Update Components
+          !isEmpty(componentsToUpdate) &&
+            setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+
+          // Create Components
+          componentsToCreate.length &&
+            addComponentToCurrentPage(componentsToCreate, moduleId, {
+              saveAfterAction: false,
+              skipFormUpdate: true,
+            });
+        } else {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate = page.components?.update ?? [];
+          const componentsToCreate = page.components?.create ?? [];
+
+          set(
+            (state) => {
+              const componentsInState = state.modules[moduleId].pages.find((p) => p.id === page.id)?.components;
+
+              // Delete components
+              componentIdsToDelete.forEach((id) => {
+                delete componentsInState[id];
+              });
+
+              // Update components
+              componentsToUpdate.forEach((componentToUpdate) => {
+                componentsInState[componentToUpdate.id] = componentToUpdate;
+              });
+
+              // Create/Add components
+              componentsToCreate.forEach((component) => {
+                componentsInState[component.id] = {
+                  component: component.component,
+                  layouts: component.layouts,
+                  id: component.id,
+                  name: component.component?.name,
+                };
+              });
+            },
+            undefined,
+            'performDeletionUpdationAndCreationOfComponentsInPages'
+          );
+        }
+      });
   },
 });

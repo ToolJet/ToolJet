@@ -6,8 +6,6 @@ export class QueryError extends Error {
     this.name = this.constructor.name;
     this.data = data;
     this.description = description;
-
-    console.log(this.description);
   }
 }
 
@@ -19,7 +17,5 @@ export class OAuthUnauthorizedClientError extends Error {
     this.name = this.constructor.name;
     this.data = data;
     this.description = description;
-
-    console.log(this.description);
   }
 }

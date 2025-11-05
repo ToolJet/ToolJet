@@ -1,12 +1,16 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
 import { debounce } from 'lodash';
-import PasswordResponses from 'react-pdf/dist/cjs/PasswordResponses';
-require('pdfjs-dist/build/pdf.worker.entry.js');
-// The above line is required to fix the issue of pdf becoming black when resizing
+// Constants for password prompt reasons (react-pdf v10 / pdfjs v4)
+const PasswordResponses = {
+  NEED_PASSWORD: 1,
+  INCORRECT_PASSWORD: 2,
+};
+// PDF.js v5 worker setup for react-pdf v10: provide a URL string to the worker bundle
+// Using new URL keeps this portable across bundlers (Webpack 5, Vite, etc.)
+pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 export const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
   const { visibility, boxShadow } = styles;

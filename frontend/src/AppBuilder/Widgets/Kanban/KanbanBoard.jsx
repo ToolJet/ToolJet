@@ -44,7 +44,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
-  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
+  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard, deleteLabel } = properties;
   const { accentColor } = styles;
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const [lastSelectedCard, setLastSelectedCard] = useState({});
@@ -459,7 +459,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
           </DragOverlay>,
           document.body
         )}
-        {showDeleteButton ? <Trash id={TRASH_ID} /> : null}
+        {showDeleteButton ? <Trash id={TRASH_ID} deleteLabel={deleteLabel} /> : null}
       </DndContext>
       <Modal
         showModal={showModal}

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
@@ -22,6 +22,7 @@ const WidgetWrapper = memo(
     parentId,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
+    const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
@@ -50,6 +51,11 @@ const WidgetWrapper = memo(
       if (component?.properties?.visibility === false || component?.styles?.visibility === false) return false;
       return true;
     });
+
+    useEffect(() => {
+      toggleCanvasUpdater();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visibility]);
 
     if (!canShowInCurrentLayout || !layoutData) {
       return null;

@@ -67,7 +67,6 @@ export default class Qdrant implements QueryService {
 
     try {
       await qdrant.getCollections();
-      console.log('Connection successful.');
       return { status: 'ok' };
     } catch (error) {
       console.error('Connection could not be established:', error.message);

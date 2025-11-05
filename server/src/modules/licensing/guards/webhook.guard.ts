@@ -35,11 +35,15 @@ export class WebhookGuard implements CanActivate {
     if (!workflowApp) throw new HttpException(`Workflow doesn't exists`, 404);
     request.tj_app = workflowApp;
 
-    // Webhook API token validation
-    if (request.headers.authorization.split(' ')[1] !== workflowApp.workflowApiToken) throw new UnauthorizedException();
+    // Dual authentication: Webhook API token OR External API token validation
+    const isAuthenticated = await this.validateAuthentication(request, workflowApp);
+    if (!isAuthenticated) throw new UnauthorizedException('Invalid authentication token');
+
+    // Workflow must be enabled inorder to use it
+    if (!workflowApp.isMaintenanceOn) throw new HttpException(`Workflow is disabled or does not exist`, 403);
 
     // WebHook endpoint must be enabled inorder to use it
-    if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 404);
+    if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
 
     // Workspace Level -
     if (workflowsLimit.workspace) {
@@ -119,5 +123,47 @@ export class WebhookGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  /**
+   * Validates authentication using either workflow API token or external API token
+   * Both use Bearer token format: Authorization: Bearer <token>
+   */
+  private async validateAuthentication(request: any, workflowApp: any): Promise<boolean> {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) return false;
+
+    const [scheme, token] = authHeader.split(' ');
+    if (scheme !== 'Bearer' || !token) return false;
+
+    // Method 1: Workflow-specific API token (existing behavior)
+    if (token === workflowApp.workflowApiToken) {
+      return true;
+    }
+
+    // Method 2: External API access token (new feature)
+    const isValidExternalToken = await this.validateExternalToken(token);
+    if (isValidExternalToken) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Validates external API token with proper configuration and license checks
+   */
+  private async validateExternalToken(token: string): Promise<boolean> {
+    // STEP 1: Check if external API is enabled
+    const isExternalApiEnabled = this.configService.get<string>('ENABLE_EXTERNAL_API') === 'true';
+    if (!isExternalApiEnabled) return false;
+
+    // STEP 2: Check if external API license exists
+    const hasLicense = await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.EXTERNAL_API);
+    if (!hasLicense) return false;
+
+    // STEP 3: Validate the token
+    const externalApiAccessToken = this.configService.get<string>('EXTERNAL_API_ACCESS_TOKEN');
+    return token === externalApiAccessToken;
   }
 }

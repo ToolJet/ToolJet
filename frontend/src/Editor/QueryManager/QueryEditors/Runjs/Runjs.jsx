@@ -13,7 +13,7 @@ const Runjs = (props) => {
   }, [props.options]);
 
   return (
-    <Card className="runjs-editor mb-3">
+    <div className="runjs-editor mb-3">
       <CodeHinter
         type="multiline"
         initialValue={props.options.code}
@@ -28,7 +28,7 @@ const Runjs = (props) => {
         cyLabel={`runjs`}
         delayOnChange={false}
       />
-    </Card>
+    </div>
   );
 };
 

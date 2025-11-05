@@ -20,6 +20,21 @@ export class RequestContext {
     context.res.locals[key] = data;
   }
 
+  static getTransactionId(): string | undefined {
+    const context = this.currentContext;
+    return context?.res?.locals?.tj_transactionId || '';
+  }
+
+  static getRoute(): string | undefined {
+    const context = this.currentContext;
+    return context?.res?.locals?.tj_route || 'unknown';
+  }
+
+  static getStartTime(): number | undefined {
+    const context = this.currentContext;
+    return context?.res?.locals?.tj_start_time;
+  }
+
   constructor(
     public readonly req: Request,
     public readonly res: Response

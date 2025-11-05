@@ -7,19 +7,22 @@
 /* Ensure method and URL fields have full width in workflow node */
 .workflow-rest-api .me-2 {
   width: 100% !important;
-  margin-bottom: 16px; /* Increased spacing to avoid label overlap */
+  margin-bottom: 16px;
+  /* Increased spacing to avoid label overlap */
 }
 
 /* Ensure URL label doesn't overlap with Method dropdown */
 .workflow-rest-api .field .font-weight-medium {
   margin-bottom: 4px;
   display: block;
-  padding-top: 4px; /* Add space above URL label */
+  padding-top: 4px;
+  /* Add space above URL label */
 }
 
 /* Fix the method dropdown width and height for workflow */
 .workflow-rest-api .me-2 {
-  width: 150px !important; /* Wider to accommodate "DELETE" and other long options */
+  width: 150px !important;
+  /* Wider to accommodate "DELETE" and other long options */
   height: auto !important;
   min-height: 32px;
 }
@@ -27,6 +30,11 @@
 /* Fix Add more button to fit text properly */
 .add-params-btn {
   width: 100px !important;
+  padding: 4px 8px;
+}
+
+.query-manager-add-params-btn {
+  width: fit-content !important;
   padding: 4px 8px;
 }
 
@@ -43,7 +51,7 @@
 }
 
 /* Button fix for workflow */
-.workflow-rest-api ~ .query-pane-restapi-tabs .add-params-btn {
+.workflow-rest-api~.query-pane-restapi-tabs .add-params-btn {
   width: auto !important;
   min-width: 100px;
 }

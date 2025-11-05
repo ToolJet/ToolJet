@@ -46,14 +46,15 @@ jobs:
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
                 "buildCommand": "npm i && npx storybook build",
-                "publishPath": "storybook-static/",
-                "url": "https://storybook-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "publishPath": "storybook-static/"
             }
           }')
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
+          export SERVICE_URL=$(echo $RESPONSE | jq -r '.service.serviceDetails.url')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
 
       - name: Comment deployment URL
         uses: actions/github-script@v6
@@ -64,7 +65,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://storybook-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/static/${{ env.SERVICE_ID }}'
+              body: 'Deployment: ${{ env.SERVICE_URL }} \n Dashboard: https://dashboard.render.com/static/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6

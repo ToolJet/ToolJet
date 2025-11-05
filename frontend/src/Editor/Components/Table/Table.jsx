@@ -38,14 +38,14 @@ import IndeterminateCheckbox from './IndeterminateCheckbox';
 // eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line import/no-unresolved
-import JsPDF from 'jspdf';
+import * as JsPDFNamespace from 'jspdf';
 // eslint-disable-next-line import/no-unresolved
 import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
-import * as XLSX from 'xlsx/xlsx.mjs';
+import zipcelx from 'zipcelx';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
@@ -342,6 +342,7 @@ export function Table({
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'pdf') {
       const pdfData = data.map((obj) => Object.values(obj));
+      const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace;
       const doc = new JsPDF();
       doc.autoTable({
         head: [headers],
@@ -357,12 +358,13 @@ export function Table({
       doc.save(`${fileName}.pdf`);
       return;
     } else if (fileType === 'xlsx') {
-      data.unshift(headers); //adding headers array at the beginning of data
-      let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.aoa_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
-      XLSX.writeFile(wb, `${fileName}.xlsx`);
-      // Returning false as downloading of file is already taken care of
+      const config = {
+        filename: fileName,
+        sheet: {
+          data: [headers, ...data],
+        },
+      };
+      zipcelx(config);
       return false;
     }
   }

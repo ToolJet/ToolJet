@@ -4,7 +4,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { FeatureAbilityFactory } from '@modules/group-permissions/ability';
 import { SubModule } from '@modules/app/sub-module';
 export class RolesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { RolesController, RolesService, RolesUtilService } = await this.getProviders(configs, 'roles', [
       'controller',
       'service',
@@ -12,7 +12,7 @@ export class RolesModule extends SubModule {
     ]);
     return {
       module: RolesModule,
-      controllers: [RolesController],
+      controllers: isMainImport ? [RolesController] : [],
       providers: [RolesService, RolesRepository, GroupPermissionsRepository, RolesUtilService, FeatureAbilityFactory],
       exports: [RolesUtilService],
     };
