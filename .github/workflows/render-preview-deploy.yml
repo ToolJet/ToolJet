@@ -934,7 +934,33 @@ jobs:
               const deploy = deployData[0]?.deploy || {};
               const ceCommit = deploy.commit || {};
               const status = deploy.status || 'unknown';
+              const deployId = deploy.id || '';
+              
               ceInfo = `### Community Edition\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${ceServiceId}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${status}`;
+              
+              // If deployment failed, fetch and include error logs
+              if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
+                try {
+                  const logsRes = await fetch(`https://api.render.com/v1/services/${ceServiceId}/deploys/${deployId}/logs`, {
+                    headers: {
+                      'accept': 'application/json',
+                      'authorization': `Bearer ${apiKey}`
+                    }
+                  });
+                  const logsData = await logsRes.json();
+                  
+                  if (logsData && Array.isArray(logsData)) {
+                    // Get last 20 log entries
+                    const errorLogs = logsData.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
+                    if (errorLogs) {
+                      ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                    }
+                  }
+                } catch (error) {
+                  console.log('Failed to fetch CE error logs:', error);
+                  ceInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                }
+              }
             }
 
             await github.rest.issues.createComment({
@@ -1003,7 +1029,33 @@ jobs:
               const deploy = deployData[0]?.deploy || {};
               const eeCommit = deploy.commit || {};
               const status = deploy.status || 'unknown';
+              const deployId = deploy.id || '';
+              
               eeInfo = `### Enterprise Edition\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${eeServiceId}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${status}`;
+              
+              // If deployment failed, fetch and include error logs
+              if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
+                try {
+                  const logsRes = await fetch(`https://api.render.com/v1/services/${eeServiceId}/deploys/${deployId}/logs`, {
+                    headers: {
+                      'accept': 'application/json',
+                      'authorization': `Bearer ${apiKey}`
+                    }
+                  });
+                  const logsData = await logsRes.json();
+                  
+                  if (logsData && Array.isArray(logsData)) {
+                    // Get last 20 log entries
+                    const errorLogs = logsData.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
+                    if (errorLogs) {
+                      eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                    }
+                  }
+                } catch (error) {
+                  console.log('Failed to fetch EE error logs:', error);
+                  eeInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                }
+              }
             }
 
             await github.rest.issues.createComment({
