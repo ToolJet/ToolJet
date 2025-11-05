@@ -4,10 +4,10 @@ import { releaseApp } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
-import { commonEeText, instanceSettingsText } from "Texts/eeCommon";
+import { instanceSettingsText } from "Texts/eeCommon";
 import { commonEeSelectors, workspaceSelector } from "Selectors/eeCommon";
 import { instanceWorkspaceSelectors } from "Selectors/instanceWorkspaceSelectors";
-import { instanceWorksapceText } from "Texts/instanceWorksapceText";
+import { instanceWorkspaceText } from "Texts/instanceWorkspaceText";
 
 describe("Instance settings - All workspaces management", () => {
   const DEFAULT_WORKSPACE = "My workspace";
@@ -30,7 +30,7 @@ describe("Instance settings - All workspaces management", () => {
     );
     cy.get(instanceWorkspaceSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      instanceWorksapceText.breadcrumbTitle
+      instanceWorkspaceText.breadcrumbTitle
     );
   };
 
@@ -40,7 +40,7 @@ describe("Instance settings - All workspaces management", () => {
     cy.get(instanceWorkspaceSelectors.searchBar).should("be.visible");
     cy.get(instanceWorkspaceSelectors.nameHeader).verifyVisibleElement(
       "have.text",
-      instanceWorksapceText.nameHeader
+      instanceWorkspaceText.nameHeader
     );
   };
 
@@ -116,12 +116,12 @@ describe("Instance settings - All workspaces management", () => {
   const handleArchiveWorkspaceModal = () => {
     cy.get(workspaceSelector.switchWsModalTitle).verifyVisibleElement(
       "have.text",
-      instanceWorksapceText.archiveCurrentWorkspaceTitle
+      instanceWorkspaceText.archiveCurrentWorkspaceTitle
     );
 
     cy.get(workspaceSelector.switchWsModalMessage).should(
       "contain.text",
-      instanceWorksapceText.archiveCurrentWorkspaceMessage
+      instanceWorkspaceText.archiveCurrentWorkspaceMessage
     );
     cy.get(`[data-cy="${slugify(DEFAULT_WORKSPACE)}-workspace-input"]`).check();
     cy.get(instanceWorkspaceSelectors.continueButton).click();
@@ -183,10 +183,10 @@ describe("Instance settings - All workspaces management", () => {
     assertWorkspaceRow(testWorkspace, false);
     cy.get(instanceWorkspaceSelectors.tabActive)
       .should("be.visible")
-      .and("contain", instanceWorksapceText.activeTab);
+      .and("contain", instanceWorkspaceText.activeTab);
     cy.get(instanceWorkspaceSelectors.tabArchived)
       .should("be.visible")
-      .and("contain", instanceWorksapceText.archivedTab);
+      .and("contain", instanceWorkspaceText.archivedTab);
   });
 
   it("should archive non-default workspace, show workspace switcher modal when archiving current workspace, and verify default workspace cannot be archived", () => {
@@ -311,11 +311,11 @@ describe("Instance settings - All workspaces management", () => {
 
     cy.get(workspaceSelector.switchWsModalTitle).verifyVisibleElement(
       "have.text",
-      instanceWorksapceText.archivedWorkspaceTitle
+      instanceWorkspaceText.archivedWorkspaceTitle
     );
     cy.get(workspaceSelector.switchWsModalMessage).verifyVisibleElement(
       "have.text",
-      instanceWorksapceText.archivedWorkspaceMessage
+      instanceWorkspaceText.archivedWorkspaceMessage
     );
   });
 
@@ -342,7 +342,7 @@ describe("Instance settings - All workspaces management", () => {
     cy.clearAndType(commonSelectors.inputUserSearch, userEmail);
     cy.get(instanceWorkspaceSelectors.noResultFoundText).should(
       "have.text",
-      instanceWorksapceText.noResultFound
+      instanceWorkspaceText.noResultFound
     );
 
     openAllWorkspaces();

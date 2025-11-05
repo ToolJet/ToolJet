@@ -1,4 +1,4 @@
-export const instanceWorksapceText = {
+export const instanceWorkspaceText = {
     breadcrumbTitle: "All workspaces",
     activeTab: "Active",
     archivedTab: "Archived",
