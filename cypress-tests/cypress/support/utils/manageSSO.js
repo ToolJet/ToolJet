@@ -539,6 +539,7 @@ export const toggleSsoViaUI = (provider, settingsUrl = 'settings/instance-login'
   cy.visit(settingsUrl);
   cy.wait(1000);
   cy.get(`[data-cy="${cyParamName(provider)}-label"]`).click();
+  cy.wait(1000);
   cy.get(`[data-cy="${cyParamName(provider)}-toggle-input"]`).click();
   cy.get(`[data-cy="save-button"]`).eq(1).click();
 
@@ -567,6 +568,16 @@ export const gitHubSignInWithAssertion = (assertion = null, githubUsername = Cyp
       cy.get('[alt="404 “This is not the web page you are looking for”"]').should('be.visible');
     } else if (assertion && assertion.type === 'selector') {
       cy.get(assertion.selector).should(assertion.condition, assertion.value);
+    }
+  });
+};
+
+
+export const cleanupTestUser = (email) => {
+  cy.runSqlQuery(`SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`).then((result) => {
+    cy.log('User existence :', JSON.stringify(result?.rows?.[0]?.exists));
+    if (result?.rows?.[0]?.exists) {
+      cy.runSqlQuery(`CALL delete_user('${email}');`);
     }
   });
 };
