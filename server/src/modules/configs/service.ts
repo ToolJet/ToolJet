@@ -5,7 +5,7 @@ import { IConfigService } from './interfaces/IService';
 
 @Injectable()
 export class ConfigService implements IConfigService {
-  constructor(protected instanceSettingsUtilService: InstanceSettingsUtilService) {}
+  constructor(protected instanceSettingsUtilService: InstanceSettingsUtilService) { }
   async public_config() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()
@@ -46,6 +46,8 @@ export class ConfigService implements IConfigService {
       'DISABLE_WEBHOOKS',
       'HIDE_ACCOUNT_SETUP_LINK',
       'ENABLE_WORKFLOW_SCHEDULING',
+      'SSO_HUBSPOT_PORTAL_ID',
+      'SSO_HUBSPOT_FORM_ID'
     ];
   }
 
@@ -59,6 +61,8 @@ export class ConfigService implements IConfigService {
       INSTANCE_SYSTEM_SETTINGS.ENABLE_WORKSPACE_LOGIN_CONFIGURATION,
       INSTANCE_SYSTEM_SETTINGS.AUTOMATIC_SSO_LOGIN,
       INSTANCE_SYSTEM_SETTINGS.CUSTOM_LOGOUT_URL,
+      INSTANCE_SYSTEM_SETTINGS.SSO_HUBSPOT_FORM_ID,
+      INSTANCE_SYSTEM_SETTINGS.SSO_HUBSPOT_PORTAL_ID,
     ];
   }
 
