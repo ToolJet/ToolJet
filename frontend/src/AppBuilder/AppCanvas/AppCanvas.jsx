@@ -121,11 +121,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
   useEffect(() => {
-    const handleResize = debounce(handleResizeImmediate, 85);
-    handleResize();
-    return () => handleResize.cancel();
+    if (moduleId === 'canvas') {
+      const _canvasWidth =
+        document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
+        (isViewerSidebarPinned ? 272 : 70); // expanded and collapsed sidebar width + padding of above container
+      if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleResizeImmediate, isViewerSidebarPinned]);
+  }, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
