@@ -23,7 +23,6 @@ import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
-import { onboardingSelectors } from "Selectors/onboarding";
 // import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {

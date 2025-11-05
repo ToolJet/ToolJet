@@ -2,7 +2,7 @@ import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout, navigateToManageUsers } from "Support/utils/common";
-import { fetchAndVisitInviteLink, fetchAndVisitInviteLinkViaMH } from "Support/utils/manageUsers";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 import { onboardingText } from "Texts/onboarding";

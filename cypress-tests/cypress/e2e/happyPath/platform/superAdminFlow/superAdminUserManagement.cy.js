@@ -62,16 +62,16 @@ describe("Instance settings - User management by super SuperAdmin", () => {
         cy.apiLogin();
         resetUserpasswordFromInstanceSettings(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
-         cy.visit('/');
+        cy.visit('/');
         cy.apiLogin(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
 
         cy.apiLogin();
-         cy.visit('/');
+        cy.visit('/');
         resetUserpasswordAutomaticallyFromInstanceSettings(resetPasswordUser.name);
         cy.get('@generatedPassword').then((generatedPassword) => {
             cy.apiLogout();
-             cy.visit('/');
+            cy.visit('/');
             cy.apiLogin(resetPasswordUser.email, generatedPassword);
         })
     });

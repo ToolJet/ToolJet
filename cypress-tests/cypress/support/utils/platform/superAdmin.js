@@ -1,5 +1,4 @@
 import { commonSelectors } from "Selectors/common";
-import { fake } from "Fixtures/fake";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { visitWorkspaceInvitation } from "Support/utils/onboarding";

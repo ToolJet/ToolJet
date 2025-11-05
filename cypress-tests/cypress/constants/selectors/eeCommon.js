@@ -1,4 +1,3 @@
-import { archiveUserFromInstancesettings } from "../../support/utils/platform/eeCommon";
 import { cyParamName } from "./common";
 
 export const commonEeSelectors = {
