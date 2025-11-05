@@ -82,22 +82,76 @@ sudo systemctl daemon-reload
 sudo apt-get clean
 sudo rm -rf /var/lib/apt/lists/*
 
-# Setup app directory
-mkdir -p ~/app
+# Setup temporary build directory
+BUILD_DIR="/tmp/tooljet-build"
+PROD_DIR="/home/ubuntu/app"
+
+mkdir -p "$BUILD_DIR"
 
 git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
 
 #The below url will be edited dynamically when actions is triggered
-git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
 git submodule update --init --recursive
 git submodule foreach 'git checkout lts-3.16 || true'
 
-mv /tmp/.env ~/app/.env
-mv /tmp/setup_app ~/app/setup_app
-sudo chmod +x ~/app/setup_app
-
 npm install -g npm@10.9.2
 
-# Building ToolJet app
+# Building ToolJet app in temporary directory
 npm install -g @nestjs/cli
 NODE_OPTIONS='--max-old-space-size=8000' TOOLJET_EDITION=ee npm run build
+
+# Remove marketplace folder after build (used during build but not needed in production)
+echo "Removing marketplace folder after build..."
+rm -rf "$BUILD_DIR/marketplace"
+
+# Create production directory structure
+mkdir -p "$PROD_DIR"
+
+# Copy only production-necessary files (following Docker multi-stage build pattern)
+echo "Copying production artifacts to $PROD_DIR..."
+
+# Copy root package.json
+cp "$BUILD_DIR/package.json" "$PROD_DIR/"
+
+# Copy server production files
+mkdir -p "$PROD_DIR/server"
+cp -r "$BUILD_DIR/server/dist" "$PROD_DIR/server/"
+cp -r "$BUILD_DIR/server/node_modules" "$PROD_DIR/server/"
+cp "$BUILD_DIR/server/package.json" "$PROD_DIR/server/"
+[ -f "$BUILD_DIR/server/.version" ] && cp "$BUILD_DIR/server/.version" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/templates" ] && cp -r "$BUILD_DIR/server/templates" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/scripts" ] && cp -r "$BUILD_DIR/server/scripts" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/ee/keys" ] && mkdir -p "$PROD_DIR/server/ee/keys" && cp -r "$BUILD_DIR/server/ee/keys" "$PROD_DIR/server/ee/"
+[ -d "$BUILD_DIR/server/ee/ai/assets" ] && mkdir -p "$PROD_DIR/server/ee/ai/assets" && cp -r "$BUILD_DIR/server/ee/ai/assets" "$PROD_DIR/server/ee/ai/"
+
+# Copy frontend build
+mkdir -p "$PROD_DIR/frontend"
+cp -r "$BUILD_DIR/frontend/build" "$PROD_DIR/frontend/"
+
+# Copy plugins production files
+mkdir -p "$PROD_DIR/plugins/packages"
+cp -r "$BUILD_DIR/plugins/dist" "$PROD_DIR/plugins/"
+[ -f "$BUILD_DIR/plugins/client.js" ] && cp "$BUILD_DIR/plugins/client.js" "$PROD_DIR/plugins/"
+cp -r "$BUILD_DIR/plugins/node_modules" "$PROD_DIR/plugins/"
+[ -d "$BUILD_DIR/plugins/packages/common" ] && cp -r "$BUILD_DIR/plugins/packages/common" "$PROD_DIR/plugins/packages/"
+cp "$BUILD_DIR/plugins/package.json" "$PROD_DIR/plugins/"
+
+# Move runtime configuration files
+mv /tmp/.env "$PROD_DIR/.env"
+mv /tmp/setup_app "$PROD_DIR/setup_app"
+sudo chmod +x "$PROD_DIR/setup_app"
+
+# Clean up build directory
+echo "Cleaning up build directory..."
+cd /home/ubuntu
+rm -rf "$BUILD_DIR"
+
+echo "Production files copied successfully. Total size:"
+du -sh "$PROD_DIR"
+
+echo "Verifying critical files..."
+echo "- Plugins packages/common exists:" && ls -ld "$PROD_DIR/plugins/packages/common" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Server dist exists:" && ls -ld "$PROD_DIR/server/dist" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Frontend build exists:" && ls -ld "$PROD_DIR/frontend/build" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Plugins dist exists:" && ls -ld "$PROD_DIR/plugins/dist" 2>/dev/null && echo "✓" || echo "✗ MISSING"
