@@ -21,6 +21,9 @@
   "defaults": {
     "api_token": {
       "value": ""
+    },
+    "api_version": {
+      "value": "v2"
     }
   },
   "properties": {
@@ -45,6 +48,22 @@
           "key": "api_token",
           "type": "password",
           "description": "API token for nocodb"
+        },
+        "api_version": {
+          "label": "API Version",
+          "key": "api_version",
+          "type": "dropdown-component-flip",
+          "description": "Choose api version",
+          "list": [
+            {
+              "value": "v2",
+              "label": "Api v2"
+            },
+            {
+              "value": "v3",
+              "label": "Api v3"
+            }
+          ]
         }
       }
     },

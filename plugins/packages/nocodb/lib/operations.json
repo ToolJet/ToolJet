@@ -38,6 +38,17 @@
       ]
     },
     "list_records": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
@@ -62,6 +73,17 @@
       }
     },
     "get_count": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
@@ -86,6 +108,17 @@
       }
     },
     "get_record": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
@@ -121,6 +154,17 @@
       }
     },
     "create_record": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
@@ -143,6 +187,17 @@
       }
     },
     "update_record": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
@@ -176,6 +231,17 @@
       }
     },
     "delete_record": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "py60q4fjciki88l"
+      },
       "table_id": {
         "label": "Table ID",
         "key": "table_id",
