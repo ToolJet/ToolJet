@@ -134,6 +134,9 @@ export class OnboardingService implements IOnboardingService {
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
+          if (!defaultWorkspace.enableSignUp) {
+            throw new ForbiddenException('Signup is disabled for the default workspace. Please contact the workspace admin.');
+          }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
@@ -728,7 +731,7 @@ export class OnboardingService implements IOnboardingService {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        { name: workspaceName || 'My workspace', slug: workspaceSlug },
+        { name: workspaceName || 'My workspace', slug: workspaceSlug, isDefault: true },
         null,
         manager
       );
