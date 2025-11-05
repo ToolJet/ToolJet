@@ -728,7 +728,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding(email, password, orgToken) {
+    function performOnboarding (email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
@@ -951,3 +951,27 @@ Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
       });
   });
 });
+
+
+Cypress.Commands.add(
+  "apiArchiveWorkspace",
+  (workspaceId) => {
+    if (!workspaceId) {
+      throw new Error("Workspace ID is required to archive workspace");
+    }
+
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "PATCH",
+          url: `${Cypress.env("server_host")}/api/organizations/archive/${workspaceId}`,
+          headers: headers,
+          body: { status: "archived" },
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          return response.body;
+        });
+    });
+  }
+);
