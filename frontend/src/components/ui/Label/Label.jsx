@@ -5,11 +5,11 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-const labelVariants = cva('peer-disabled:tw-cursor-not-allowed peer-disabled:tw-opacity-70', {
+const labelVariants = cva('tw-font-medium peer-disabled:tw-cursor-not-allowed peer-disabled:tw-opacity-70', {
   variants: {
     type: {
-      label: `tw-text-text-default`,
-      helper: `tw-text-text-placeholder`,
+      label: 'tw-text-text-default',
+      helper: 'tw-text-text-placeholder',
     },
   },
   compoundVariants: [
@@ -36,7 +36,7 @@ const labelVariants = cva('peer-disabled:tw-cursor-not-allowed peer-disabled:tw-
   ],
 });
 
-const Label = React.forwardRef(({ className, size, type, ...restProps }, ref) => (
+const Label = React.forwardRef(({ className, size = 'default', type = 'label', ...restProps }, ref) => (
   <LabelPrimitive.Root ref={ref} className={cn(labelVariants({ type, size }), className)} {...restProps} />
 ));
 Label.displayName = LabelPrimitive.Root.displayName;
