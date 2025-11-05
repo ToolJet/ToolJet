@@ -46,11 +46,12 @@ module.exports = defineConfig({
         configFile: environment.configFile,
         specPattern: [
             "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/license/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/groups/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/!(license|groups)/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/license/basicPlanTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/license/paidPlanTestcases/**/*.cy.js",
+
+            "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
+
+            "cypress/e2e/happyPath/platform/**/*.cy.js",
         ],
 
         testIsolation: true,
