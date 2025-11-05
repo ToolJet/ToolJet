@@ -617,12 +617,12 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId")) => {
+  (targetEnvId = Cypress.env("environmentId"), appId = Cypress.env("appId")) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
-          "appId"
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
+          "editingVersionId"
         )}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
@@ -648,3 +648,21 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiGetAppIdByName", (appName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps`,
+        headers: headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const app = response.body.apps.find((app) => app.name === appName);
+        expect(app, `App with name "${appName}" not found`).to.exist;
+        return app.id;
+      });
+  });
+});
