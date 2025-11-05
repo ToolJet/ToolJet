@@ -14,6 +14,26 @@ describe("License - Workspace Limits", () => {
         cy.get(commonSelectors.workspaceName).click();
     };
 
+    const verifyWorkspaceLimitModal = (
+        heading,
+        infoText,
+        shouldUpgradeButtonExist = true
+    ) => {
+        cy.get('[data-cy="workspaces-limit-heading"]')
+            .should("be.visible")
+            .and("have.text", heading);
+
+        cy.get('[data-cy="workspaces-limit-info"]')
+            .should("be.visible")
+            .and("have.text", infoText);
+
+        if (shouldUpgradeButtonExist) {
+            cy.get('[data-cy="workspaces-limit-banner"]').within(() => {
+                cy.get('[data-cy="upgrade-button"]').should("be.visible");
+            });
+        }
+    };
+
     beforeEach(() => {
         cy.apiLogin();
         cy.visit("/");
@@ -32,20 +52,10 @@ describe("License - Workspace Limits", () => {
 
         openWorkspaceModal();
 
-        cy.get('[data-cy="workspaces-limit-heading"]')
-            .should("be.visible")
-            .and("have.text", "Workspace  limit nearing - 2/3");
-
-        cy.get('[data-cy="workspaces-limit-info"]')
-            .should("be.visible")
-            .and(
-                "have.text",
-                "You're nearing your limit for number of workspaces. Upgrade for more"
-            );
-
-        cy.get('[data-cy="workspaces-limit-banner"]').within(() => {
-            cy.get('[data-cy="upgrade-button"]').should("be.visible");
-        });
+        verifyWorkspaceLimitModal(
+            "Workspace  limit nearing - 2/3",
+            "You're nearing your limit for number of workspaces. Upgrade for more"
+        );
 
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.get('[data-cy="create-workspace-title"]').should("be.visible");
@@ -58,20 +68,10 @@ describe("License - Workspace Limits", () => {
 
         openWorkspaceModal();
 
-        cy.get('[data-cy="workspaces-limit-heading"]')
-            .should("be.visible")
-            .and("have.text", "Workspace limit reached");
-
-        cy.get('[data-cy="workspaces-limit-info"]')
-            .should("be.visible")
-            .and(
-                "have.text",
-                "You've reached your limit for number of workspaces. Upgrade for more"
-            );
-
-        cy.get('[data-cy="workspaces-limit-banner"]').within(() => {
-            cy.get('[data-cy="upgrade-button"]').should("be.visible");
-        });
+        verifyWorkspaceLimitModal(
+            "Workspace limit reached",
+            "You've reached your limit for number of workspaces. Upgrade for more"
+        );
 
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.get('[data-cy="create-workspace-title"]').should("not.exist");
