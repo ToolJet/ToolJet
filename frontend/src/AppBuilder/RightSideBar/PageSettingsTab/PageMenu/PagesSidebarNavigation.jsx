@@ -165,7 +165,7 @@ export const PagesSidebarNavigation = ({
       if (darkModeToggleObserver) darkModeToggleObserver.disconnect();
       if (measurementContainerObserver) measurementContainerObserver.disconnect();
     };
-  }, [measureStaticElements, hideHeader, hideLogo, style]);
+  }, [measureStaticElements, hideHeader, hideLogo, position, style]);
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || mainNavBarPages.length === 0) {
@@ -305,7 +305,7 @@ export const PagesSidebarNavigation = ({
             fill: !styles.selectedIconColor.isDefault && styles.selectedIconColor.value,
           },
           pill: {
-            background: !styles.pillSelectedBackgroundColor.isDefault && styles.pillSelectedBackgroundColor.value,
+            backgroundColor: !styles.pillSelectedBackgroundColor.isDefault && styles.pillSelectedBackgroundColor.value,
             ...baseStyles.pill,
           },
         };
@@ -314,7 +314,7 @@ export const PagesSidebarNavigation = ({
         return {
           ...baseStyles,
           pill: {
-            background: !styles.pillHoverBackgroundColor.isDefault && styles.pillHoverBackgroundColor.value,
+            backgroundColor: !styles.pillHoverBackgroundColor.isDefault && styles.pillHoverBackgroundColor.value,
             ...baseStyles.pill,
           },
         };
@@ -642,14 +642,12 @@ export const PagesSidebarNavigation = ({
           display: 'flex',
           padding: '0px',
           fontSize: '14px',
-          flexGrow: 1,
         }}
       >
         {mainNavBarPages.map((link) => (
           <div
             style={{
-              padding: `0px 10px 0px ${style === 'texticon' ? '32px' : '10px'}`,
-              ...(link?.isPageGroup && { paddingRight: '30px' }),
+              padding: `0px ${link?.isPageGroup ? '30px' : '10px'} 0px ${style === 'texticon' ? '32px' : '10px'}`,
               fontWeight: 500,
             }}
             key={`measure-${link.id}`}

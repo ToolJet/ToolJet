@@ -32,6 +32,7 @@ export const RenderPage = ({
   const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const isHomePage = page.id === homePageId;
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+  const isActive = page?.id === currentPageId;
 
   const IconElement = (props) => {
     const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
@@ -47,6 +48,8 @@ export const RenderPage = ({
     return <Icon {...props} />;
   };
 
+  const computedStyles = computeStyles(isActive, '');
+
   const Page = () => {
     return (
       <div key={page.name} data-id={page.id} className="tj-list-item-wrapper">
@@ -55,7 +58,7 @@ export const RenderPage = ({
           onClick={() => {
             switchPageWrapper(page);
           }}
-          selectedItem={page?.id === currentPageId}
+          selectedItem={isActive}
           CustomIcon={!labelStyle?.icon?.hidden && IconElement}
           customStyles={computeStyles}
           darkMode={darkMode}
@@ -63,7 +66,9 @@ export const RenderPage = ({
         >
           {!labelStyle?.label?.hidden && (
             <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-              <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
+              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
+                {page.name}
+              </OverflowTooltip>
             </div>
           )}
         </FolderList>
@@ -96,11 +101,15 @@ const RenderPageGroup = ({
   currentMode,
   isPageGroupInsidePopup = true,
 }) => {
+  const active = currentPage?.pageGroupId === pageGroup?.id;
   const [isExpanded, setIsExpanded] = useState(false);
   const [hovered, setHovered] = useState(false);
   const contentRef = useRef(null);
   const groupItemRootRef = useRef(null);
-  const computedStyles = computeStyles('', hovered);
+  const computedStyles =
+    position === 'top' && !isPageGroupInsidePopup
+      ? computeStyles(active && !isExpanded, isExpanded)
+      : computeStyles(active && !isExpanded, hovered);
   const pageGroupVisibility = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
   const IconElement = (props) => {
@@ -158,8 +167,6 @@ const RenderPageGroup = ({
     );
   }
 
-  const active = currentPage?.pageGroupId === pageGroup?.id;
-
   return position === 'top' && !isPageGroupInsidePopup ? (
     <NavigationMenuItem
       key={pageGroup.name}
@@ -168,15 +175,36 @@ const RenderPageGroup = ({
         groupItemRootRef.current = el;
       }}
     >
-      <NavigationMenuTrigger indicator={false} className={`page-group-wrapper`}>
+      <NavigationMenuTrigger
+        indicator={false}
+        className={`page-group-wrapper`}
+        onClick={() => setIsExpanded((prev) => !prev)}
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+        style={{ ...{ ...computedStyles.pill } }}
+      >
         <div className="group-info">
-          {!labelStyle?.icon?.hidden && <IconElement />}
+          {!labelStyle?.icon?.hidden && (
+            <div className="custom-icon">
+              <IconElement
+                color={computedStyles?.icon?.color}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  color: computedStyles?.icon?.color,
+                  stroke: computedStyles?.icon?.color,
+                }}
+              />
+            </div>
+          )}
           {!labelStyle?.label?.hidden && (
             <div
               style={{ width: '100%', overflow: 'hidden' }}
               data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
             >
-              <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
+              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
+                {pageGroup.name}
+              </OverflowTooltip>
             </div>
           )}
         </div>
@@ -234,7 +262,9 @@ const RenderPageGroup = ({
               style={{ width: '100%', overflow: 'hidden' }}
               data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
             >
-              <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
+              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
+                {pageGroup.name}
+              </OverflowTooltip>
             </div>
           )}
         </FolderList>
@@ -440,13 +470,13 @@ export const RenderPageAndPageGroup = ({
   };
 
   return position === 'top' ? (
-    <NavigationMenu viewport={false} style={{ overflow: 'visible !important' }} className="page-handler-wrapper">
+    <NavigationMenu viewport={false} className="pages-wrapper">
       <NavigationMenuList className="page-handler-list">
         <RenderLinks />
       </NavigationMenuList>
     </NavigationMenu>
   ) : (
-    <div className={cx('page-handler-wrapper viewer', { 'dark-theme': darkMode })}>
+    <div className={cx('pages-wrapper viewer', { 'dark-theme': darkMode })}>
       <RenderLinks />
     </div>
   );

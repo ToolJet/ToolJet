@@ -12,7 +12,7 @@ const NavigationMenu = React.forwardRef(({ className, children, viewport = true,
     data-slot="navigation-menu"
     data-viewport={viewport}
     className={cn(
-      'tw-group/navigation-menu tw-relative tw-flex tw-max-w-max tw-flex-1 tw-items-center tw-justify-center',
+      'tw-group/navigation-menu tw-relative tw-flex tw-flex-1 tw-items-center tw-justify-center',
       className
     )}
     {...props}
@@ -27,7 +27,7 @@ const NavigationMenuList = React.forwardRef(({ className, ...props }, ref) => (
   <NavigationMenuPrimitive.List
     ref={ref}
     data-slot="navigation-menu-list"
-    className={cn('tw-group tw-flex tw-flex-1 tw-list-none tw-items-center tw-justify-center tw-space-x-1', className)}
+    className={cn('tw-group tw-flex tw-flex-1 tw-list-none tw-items-center tw-justify-center', className)}
     {...props}
   />
 ));
