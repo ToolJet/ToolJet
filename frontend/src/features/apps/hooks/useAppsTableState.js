@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-table';
 
 // Headless table state hook with a narrow API surface
-export function useAppsTableState({ data, columns, initial = {} }) {
+export function useAppsTableState({ data, columns, initial = {}, onPaginationChange } = {}) {
   const [rowSelection, setRowSelection] = useState(initial.rowSelection ?? {});
   const [columnVisibility, setColumnVisibility] = useState(initial.columnVisibility ?? {});
   const [columnFilters, setColumnFilters] = useState(initial.columnFilters ?? []);
@@ -18,6 +18,17 @@ export function useAppsTableState({ data, columns, initial = {} }) {
 
   const stableData = useMemo(() => data, [data]);
   const stableColumns = useMemo(() => columns, [columns]);
+
+  // Handle pagination changes with optional callback
+  const handlePaginationChange = useCallback((updater) => {
+    setPagination((prev) => {
+      const newPagination = typeof updater === 'function' ? updater(prev) : updater;
+      if (onPaginationChange) {
+        onPaginationChange(newPagination);
+      }
+      return newPagination;
+    });
+  }, [onPaginationChange]);
 
   const table = useReactTable({
     data: stableData,
@@ -29,7 +40,7 @@ export function useAppsTableState({ data, columns, initial = {} }) {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    onPaginationChange: handlePaginationChange,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
