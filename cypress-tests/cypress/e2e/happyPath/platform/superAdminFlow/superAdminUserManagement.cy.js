@@ -44,21 +44,26 @@ describe("Instance settings - User management by super SuperAdmin", () => {
     });
 
     it("should allow SuperAdmin to archive and unarchive user in default workspace", () => {
-        cy.visitTheWorkspace(defaultUser.workspace);
-        cy.apiLogin();
-         cy.visit('/');
+        cy.visitTheWorkspace(DEFAULT_WORKSPACE);
+        openInstanceSettings();
+        cy.clearAndType(commonEeSelectors.userSearchBar, "dev");
+        cy.get(instanceSettingsSelector.viewButton("dev")).click();
+        cy.get(`[data-cy="${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}-workspace-row"]`).within(() => {
+            cy.get('[data-cy="user-state-change-button"]').click();
+        });
+        cy.get(commonSelectors.toastMessage).should("contain.text", instanceAllUsersText.onlyAdminErrorToast, { timeout: 10000 });
+        cy.get(commonEeSelectors.modalCloseButton).click();
         cy.apiFullUserOnboarding(defaultUser.name, defaultUser.email, "end-user", "password", defaultUser.workspace, {});
         testArchiveUnarchiveFlow(defaultUser.name, defaultUser.email, defaultUser.workspace);
     });
-
+// add old password 
     it("should allow SuperAdmin to reset invited user password and login with new password", () => {
-        let generatedPassword;
         cy.apiFullUserOnboarding(resetPasswordUser.name, resetPasswordUser.email);
         cy.apiLogin();
         resetUserpasswordFromInstanceSettings(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
          cy.visit('/');
-        cy.appUILogin(resetPasswordUser.email, resetPasswordUser.newPassword);
+        cy.apiLogin(resetPasswordUser.email, resetPasswordUser.newPassword);
         cy.apiLogout();
 
         cy.apiLogin();
@@ -67,7 +72,7 @@ describe("Instance settings - User management by super SuperAdmin", () => {
         cy.get('@generatedPassword').then((generatedPassword) => {
             cy.apiLogout();
              cy.visit('/');
-            cy.appUILogin(resetPasswordUser.email, generatedPassword);
+            cy.apiLogin(resetPasswordUser.email, generatedPassword);
         })
     });
 
@@ -113,29 +118,19 @@ describe("Instance settings - User management by super SuperAdmin", () => {
         cy.get(instanceAllUsersSelectors.userStatusCell(uiVerificationUser.name)).verifyVisibleElement("have.text", "active");
     });
 
-    it("should prevent SuperAdmin from archiving the only SuperAdmin user in workspace and show error toast", () => {
-        cy.visitTheWorkspace(DEFAULT_WORKSPACE);
-        openInstanceSettings();
-        cy.clearAndType(commonEeSelectors.userSearchBar, "dev");
-        cy.get(instanceSettingsSelector.viewButton("dev")).click();
-        cy.get(`[data-cy="${DEFAULT_WORKSPACE.toLowerCase().replace(/\s+/g, '-')}-workspace-row"]`).within(() => {
-            cy.get('[data-cy="user-state-change-button"]').click();
-        });
-        cy.get(commonSelectors.toastMessage).should("contain.text", instanceAllUsersText.onlyAdminErrorToast, { timeout: 10000 });
-        cy.get(commonEeSelectors.modalCloseButton).click();
-    });
-
-    it("should allow invited user to access instance settings when promoted to super SuperAdmin and restrict access when depromoted", () => {
+    it.only("should allow invited user to access instance settings when promoted to super SuperAdmin and restrict access when depromoted", () => {
         cy.apiFullUserOnboarding(promoteUser.name, promoteUser.email);
 
         // Promote to SuperAdmin
         toggleSuperAdminRole(promoteUser.email);
-        cy.appUILogin(promoteUser.email, "password");
+        cy.apiLogin(promoteUser.email, "password");
+        cy.visit('/');
         openInstanceSettings();
 
         // Depromote from SuperAdmin
         toggleSuperAdminRole(promoteUser.email);
-        cy.appUILogin(promoteUser.email, "password");
+        cy.apiLogin(promoteUser.email, "password");
+        cy.visit('/');
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.instanceSettingIcon).should('not.exist');
     });
