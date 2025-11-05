@@ -46,7 +46,6 @@ Cypress.Commands.add("apiCreateWorkflow", (workflowName, reuseSession = false) =
   });
 });
 
-
 Cypress.Commands.add(
   "apiOpenWorkflowByName",
   (
@@ -262,7 +261,7 @@ Cypress.Commands.add(
             webhookParams: [],
             defaultParams,
             dependencies: { javascript: { dependencies: {} } },
-            setupScript: { javascript: "// lodash\n// const _ = require('lodash');\n" },
+            setupScript: { javascript: "" },
           },
         },
       }).then((updateResponse) => {
