@@ -67,7 +67,7 @@ Cypress.Commands.add(
   "apiCreateWorkspace",
   (workspaceName, workspaceSlug, cacheHeaders = false) => {
     cy.getAuthHeaders().then((headers) => {
-      cy.request(
+      return cy.request(
         {
           method: "POST",
           url: `${Cypress.env("server_host")}/api/organizations`,
