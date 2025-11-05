@@ -505,6 +505,7 @@ export const createAnAppWithSlug = (appName, slug) => {
 export const openInstanceSettings = () => {
     cy.get(commonSelectors.settingsIcon).click();
     cy.get(commonEeSelectors.instanceSettingIcon).click();
+    cy.get(ssoSelector.instanceLoginListItem).click();
 };
 
 export const openUserActionMenu = (email) => {
@@ -521,12 +522,12 @@ export const archiveWorkspace = (workspaceName) => {
     cy.get(commonEeSelectors.confirmButton).click();
 };
 
-export const passwordToggle = (enable) => {
+export const passwordToggle = (enable, formName = "instance") => {
     cy.getCookie("tj_auth_token").then((cookie) => {
         cy.request(
             {
                 method: "PATCH",
-                url: "http://localhost:3000/api/login-configs/instance-sso",
+                url: `http://localhost:3000/api/login-configs/${formName}-sso`,
                 headers: {
                     "Tj-Workspace-Id": Cypress.env("workspaceId"),
                     Cookie: `tj_auth_token=${cookie.value}`,
@@ -560,6 +561,25 @@ export const resetInstanceDomain = () => {
                     Cookie: `tj_auth_token=${cookie.value}`,
                 },
                 body: { allowedDomains: "" },
+            },
+            { log: false }
+        ).then((response) => {
+            expect(response.status).to.equal(200);
+        });
+    });
+};
+
+export const defaultInstanceSSO = (enable = true) => {
+    cy.getCookie("tj_auth_token").then((cookie) => {
+        cy.request(
+            {
+                method: "PATCH",
+                url: "http://localhost:3000/api/login-configs/organization-general/inherit-sso",
+                headers: {
+                    "Tj-Workspace-Id": Cypress.env("workspaceId"),
+                    Cookie: `tj_auth_token=${cookie.value}`,
+                },
+                body: { inheritSSO: enable },
             },
             { log: false }
         ).then((response) => {

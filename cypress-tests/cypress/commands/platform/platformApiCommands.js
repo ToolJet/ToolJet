@@ -367,6 +367,33 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
+    "apiUpdateLoginConfiguration",
+    (loginConfig, level = "workspace", returnCached = false) => {
+        cy.getAuthHeaders(returnCached).then((headers) => {
+            const endpoints = {
+                workspace: "/api/login-configs/organization-general",
+                instance: "/api/login-configs/instance-general",
+            };
+            const url = `${Cypress.env("server_host")}${endpoints[level] || endpoints.workspace}`;
+
+            cy.request({
+                method: "PATCH",
+                url: url,
+                headers: headers,
+                body: loginConfig,
+            }).then((response) => {
+                expect(response.status).to.equal(200);
+                Cypress.log({
+                    name: "Update Login Configuration",
+                    displayName: `Update ${level} login configuration`,
+                    message: `: Success`,
+                });
+            });
+        });
+    }
+);
+
+Cypress.Commands.add(
     "loginByKeycloak",
     (username, password, codeVerifier, tjAuthToken) => {
         cy.then(() => {

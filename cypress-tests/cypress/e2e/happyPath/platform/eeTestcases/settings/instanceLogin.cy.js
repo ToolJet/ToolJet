@@ -91,6 +91,7 @@ describe('Instance Login', () => {
     it('Should verify workspace login and custom logout configurations', () => {
         //Workspace login configuration
         updateInstanceSettings('ENABLE_WORKSPACE_LOGIN_CONFIGURATION', 'false');
+        cy.reload();
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).click();
         cy.get(commonSelectors.manageSSOOption).should('not.exist');
