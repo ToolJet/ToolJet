@@ -862,11 +862,16 @@ export const toggleSsoViaUI = (provider, settingsUrl = 'settings/instance-login'
 export const gitHubSignInWithAssertion = (assertion = null, githubUsername = Cypress.env('GITHUB_USERNAME'), githubPassword = Cypress.env('GITHUB_PASSWORD')) => {
   cy.origin('https://github.com', { args: { githubUsername, githubPassword, assertion } }, ({ githubUsername, githubPassword, assertion }) => {
     cy.get('input[name="login"]', { timeout: 15000 }).type(githubUsername);
-    cy.log('GitHub username entered', githubUsername);
-    cy.log('GitHub password entered', githubPassword);
     cy.get('input[name="password"]').type(githubPassword);
     cy.get('input[name="commit"]').click();
     cy.log('GitHub login submitted');
+
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-octo-click="oauth_application_authorization"]').length > 0) {
+        cy.get('[data-octo-click="oauth_application_authorization"]').click();
+        cy.log('GitHub authorization button clicked');
+      }
+    });
 
     if (assertion && assertion.type === 'failure') {
       cy.get('[alt="404 “This is not the web page you are looking for”"]').should('be.visible');

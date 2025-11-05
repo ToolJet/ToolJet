@@ -301,6 +301,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
   pageLogo: '[data-cy="page-logo"]',
+  homePageIcon: '[data-cy="home-page-icon"]',
 };
 
 export const commonWidgetSelector = {

@@ -168,9 +168,9 @@ else
   echo "WORKER is not true. Skipping the worker execution."
 fi
 
-TOOLJET_EDTION=ee npm --prefix server run db:setup
+TOOLJET_EDITION=ee npm --prefix server run db:setup:prod
 
-if sudo -E systemctl start nest && && sudo journalctl -u nest -f
+if sudo -E systemctl start nest && sudo journalctl -u nest -f
 then
   echo "The app will be served at ${TOOLJET_HOST}"
 else

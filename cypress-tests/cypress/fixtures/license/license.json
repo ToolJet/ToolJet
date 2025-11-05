@@ -12,13 +12,24 @@
   },
   "enterprise": {
     "planName": "Enterprise",
-    "Apps": 3,
-    "Workspaces": 2,
-    "Total Users": 3,
-    "Builders": 2,
-    "End Users": 1,
-    "Super Admins": 1,
-    "Workflows": 2,
-    "Tables": 2
+    "Apps": 100,
+    "Workspaces": 100,
+    "Total Users": 200,
+    "Builders": 100,
+    "End Users": 100,
+    "Super Admins": 10,
+    "Workflows": 100,
+    "Tables": 100
+  },
+  "paid": {
+    "planName": "paid",
+    "Apps": "Unlimited",
+    "Workspaces": "Unlimited",
+    "Total Users": "Unlimited",
+    "Builders": "Unlimited",
+    "End Users": "Unlimited",
+    "Super Admins": "Unlimited",
+    "Workflows": "Unlimited",
+    "Tables": "Unlimited"
   }
 }
