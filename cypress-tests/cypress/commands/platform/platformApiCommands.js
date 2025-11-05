@@ -36,17 +36,16 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
-    cy.getAuthHeaders(cachedHeader).then((headers) => {
-        cy.request(
-            {
-                method: "GET",
-                url: `${Cypress.env("server_host")}/api/session/logout`,
-                headers: headers,
-            },
-            { log: false }
-        ).then((response) => {
-            expect(response.status).to.equal(200);
-        });
+  cy.getAuthHeaders(cachedHeader).then((headers) => {
+    cy.request(
+      {
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/session/logout`,
+        headers: headers,
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
     });
   });
 });
@@ -430,8 +429,8 @@ Cypress.Commands.add(
 
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-                typesToDelete.includes(perm.type)
-              )
+              typesToDelete.includes(perm.type)
+            )
             : granularPermissions;
 
           permissionsToDelete.forEach((permission) => {
