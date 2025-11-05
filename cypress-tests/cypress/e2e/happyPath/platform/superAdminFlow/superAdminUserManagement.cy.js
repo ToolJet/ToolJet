@@ -56,7 +56,7 @@ describe("Instance settings - User management by super SuperAdmin", () => {
         cy.apiFullUserOnboarding(defaultUser.name, defaultUser.email, "end-user", "password", defaultUser.workspace, {});
         testArchiveUnarchiveFlow(defaultUser.name, defaultUser.email, defaultUser.workspace);
     });
-// add old password 
+
     it("should allow SuperAdmin to reset invited user password and login with new password", () => {
         cy.apiFullUserOnboarding(resetPasswordUser.name, resetPasswordUser.email);
         cy.apiLogin();
@@ -118,7 +118,7 @@ describe("Instance settings - User management by super SuperAdmin", () => {
         cy.get(instanceAllUsersSelectors.userStatusCell(uiVerificationUser.name)).verifyVisibleElement("have.text", "active");
     });
 
-    it.only("should allow invited user to access instance settings when promoted to super SuperAdmin and restrict access when depromoted", () => {
+    it("should allow invited user to access instance settings when promoted to super SuperAdmin and restrict access when depromoted", () => {
         cy.apiFullUserOnboarding(promoteUser.name, promoteUser.email);
 
         // Promote to SuperAdmin
