@@ -9,7 +9,7 @@ import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
 const envVar = Cypress.env("environment");
 
-export const manageUsersElements = () => {
+export const verifyManageUsersPageElements = () => {
   cy.get(
     `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
   ).should(($el) => {
@@ -345,38 +345,21 @@ export const inviteUserWithUserGroups = (
 export const fetchAndVisitInviteLink = (email) => {
   let invitationToken, organizationToken, workspaceId, userId;
 
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  })
+  cy.runSqlQuery(`select invitation_token from users where email='${email}';`)
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: "select id from organizations where name='My workspace';",
-      });
+      return cy.runSqlQuery("select id from organizations where name='My workspace';");
     })
     .then((resp) => {
       workspaceId = resp.rows[0]?.id;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      });
+      return cy.runSqlQuery(`select id from users where email='${email}';`);
     })
     .then((resp) => {
       userId = resp.rows[0]?.id;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select invitation_token from organization_users where user_id='${userId}';`,
-      });
+      return cy.runSqlQuery(`select invitation_token from organization_users where user_id='${userId}';`);
     })
     .then((resp) => {
-      organizationToken =
-        resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
-
+      organizationToken = resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
       const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
 
       cy.apiLogout();
