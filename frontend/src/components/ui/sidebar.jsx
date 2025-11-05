@@ -178,7 +178,7 @@ const Sidebar = React.forwardRef(
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            'tw-relative tw-w-[--sidebar-width] tw-bg-transparent tw-transition-[width] tw-duration-200 tw-ease-linear',
+            'tw-relative tw-w-[--sidebar-width] tw-bg-transparent tw-transition-[width] tw-duration-75 tw-ease-linear',
             'group-data-[collapsible=offcanvas]:tw-w-0',
             'group-data-[side=right]:tw-rotate-180',
             variant === 'floating' || variant === 'inset'
@@ -188,7 +188,7 @@ const Sidebar = React.forwardRef(
         />
         <div
           className={cn(
-            'tw-hidden tw-h-full tw-w-[--sidebar-width] tw-transition-[left,right,width] tw-duration-200 tw-ease-linear md:tw-flex',
+            'tw-hidden tw-h-full tw-w-[--sidebar-width] tw-transition-[left,right,width] tw-duration-75 tw-ease-linear md:tw-flex',
             side === 'left'
               ? 'tw-left-0 group-data-[collapsible=offcanvas]:tw-left-[calc(var(--sidebar-width)*-1)]'
               : 'tw-right-0 group-data-[collapsible=offcanvas]:tw-right-[calc(var(--sidebar-width)*-1)]',
@@ -308,7 +308,7 @@ const SidebarGroupLabel = React.forwardRef(({ className, asChild = false, ...pro
       ref={ref}
       data-sidebar="group-label"
       className={cn(
-        'tw-flex tw-h-8 tw-shrink-0 tw-items-center tw-rounded-md tw-px-2 tw-text-xs tw-font-medium tw-text-sidebar-foreground/70 tw-outline-none tw-ring-sidebar-ring tw-transition-[margin,opacity] tw-duration-200 tw-ease-linear focus-visible:tw-ring-2 [&>svg]:tw-size-4 [&>svg]:tw-shrink-0',
+        'tw-flex tw-h-8 tw-shrink-0 tw-items-center tw-rounded-md tw-px-2 tw-text-xs tw-font-medium tw-text-sidebar-foreground/70 tw-outline-none tw-ring-sidebar-ring tw-transition-[margin,opacity] tw-duration-75 tw-ease-linear focus-visible:tw-ring-2 [&>svg]:tw-size-4 [&>svg]:tw-shrink-0',
         'group-data-[collapsible=icon]:tw--mt-8 group-data-[collapsible=icon]:tw-opacity-0',
         className
       )}

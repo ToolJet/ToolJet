@@ -44,7 +44,7 @@ const RESIZABLE_CONFIG = {
 
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout }) {
+export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const { moduleId, isModuleEditor } = useModuleContext();
   const lastDraggedEventsRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
@@ -341,7 +341,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList, selectedComponents]);
+  }, [temporaryHeight, boxList, selectedComponents, mainCanvasWidth]);
 
   useEffect(() => {
     reloadGrid();

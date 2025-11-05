@@ -88,15 +88,15 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, []);
 
-  useEffect(() => {
-    function handleResizeImmediate() {
-      const _canvasWidth =
-        moduleId === 'canvas'
-          ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
-          : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
-      if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
-    }
+  const handleResizeImmediate = useCallback(() => {
+    const _canvasWidth =
+      moduleId === 'canvas'
+        ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
+        : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
+    if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
+  }, [moduleId]);
 
+  useEffect(() => {
     const handleResize = debounce(handleResizeImmediate, 300);
 
     if (moduleId === 'canvas') {
@@ -118,15 +118,22 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       window.removeEventListener('resize', handleResize);
       handleResize.cancel();
     };
-  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
+  }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
+
+  useEffect(() => {
+    const handleResize = debounce(handleResizeImmediate, 85);
+    handleResize();
+    return () => handleResize.cancel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleResizeImmediate, isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -306,7 +313,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               )}
 
               {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+                <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
               )}
             </HotkeyProvider>
           </div>
