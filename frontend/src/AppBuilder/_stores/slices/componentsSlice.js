@@ -299,7 +299,9 @@ export const createComponentsSlice = (set, get) => ({
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
       if (value === '{{true}}' || value === '{{false}}') {
-        valueWithId = value;
+        // FIX: Resolve {{true}}/{{false}} to actual booleans for return value
+        // The unresolved string is still stored via setAllValueToComponent below
+        valueWithId = value === '{{true}}' ? true : false;
         valueWithBrackets = value;
         allRefs = [];
       } else {
@@ -413,7 +415,19 @@ export const createComponentsSlice = (set, get) => ({
         if (!componentResolvedValues[componentId][i][paramType]) {
           componentResolvedValues[componentId][i][paramType] = {};
         }
-        componentResolvedValues[componentId][i][paramType][property] = resolvedValue;
+        // PHASE 1 FIX: Handle array notation properties (e.g., options[0].disable) for components
+        // inside subcontainers (Listview/Kanban). This ensures properties are stored in the correct
+        // nested structure instead of as flat string keys.
+        if (hasArrayNotation(property)) {
+          const keys = parsePropertyPath(property);
+          lodashSet(
+            componentResolvedValues,
+            [componentId, i, paramType, ...keys],
+            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+          );
+        } else {
+          componentResolvedValues[componentId][i][paramType][property] = resolvedValue;
+        }
       }
     }
   },
@@ -665,7 +679,22 @@ export const createComponentsSlice = (set, get) => ({
               updatePassedValue,
               moduleId
             );
-            lodashSet(updatedPropertyValue, [index, ...keys], updatedValue);
+
+            // DEBUG PHASE 2: Log what updateResolvedValues returns
+            if (key === 'disable' && index === 0) {
+              console.log('[checkValueAndResolve] updateResolvedValues returned:', {
+                key,
+                input: keyValue?.value ?? keyValue,
+                updatedValue,
+                type: typeof updatedValue,
+              });
+            }
+
+            // PHASE 2 FIX: Flatten nested structure by storing at [index, key] instead of [index, ...keys].
+            // This converts {disable: {value: false}} to {disable: false}, which components expect.
+            // The 'keys' array is only used for tracking nested .value properties during resolution,
+            // but the final stored value should be flat.
+            lodashSet(updatedPropertyValue, [index, key], updatedValue);
             if (allRefs.length) {
               generateDependencyGraphForRefs(
                 allRefs,
@@ -1381,6 +1410,16 @@ export const createComponentsSlice = (set, get) => ({
     const oldValue = component.definition[paramType][property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
+      // DEBUG: Log when array property is being updated
+      console.log('[setComponentProperty] Updating array property:', {
+        componentId,
+        property,
+        oldValue: oldValue?.value,
+        newValue: value,
+        firstOldOption: oldValue?.value?.[0],
+        firstNewOption: value?.[0],
+      });
+
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
       const index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
       if (index === null) {
@@ -1397,10 +1436,24 @@ export const createComponentsSlice = (set, get) => ({
         moduleId
       );
 
+      // DEBUG: Log the resolved value
+      console.log('[setComponentProperty] Resolved value:', {
+        updatedValue,
+        firstOption: updatedValue?.[0],
+      });
+
       if (index !== null) {
         const customResolvables = getCustomResolvables(parentId, null);
         const length = Object.keys(customResolvables).length;
         const limit = length === 0 ? 1 : length;
+
+        // DEBUG: Log before setting to all indices
+        console.log('[setComponentProperty] Setting to all indices:', {
+          limit,
+          updatedValue,
+          willCorrupt: updatedValue?.[0]?.disable?.value !== undefined,
+        });
+
         for (let i = 0; i < limit; i++) {
           setResolvedComponentByProperty(componentId, paramType, property, updatedValue, i, moduleId);
         }
