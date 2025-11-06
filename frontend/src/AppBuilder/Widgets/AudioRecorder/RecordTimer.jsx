@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
+import { formatSecondsToHHMMSS } from './utils';
 
 function RecordTimer({ isRunning }) {
   const [seconds, setSeconds] = useState(0);
@@ -15,11 +16,7 @@ function RecordTimer({ isRunning }) {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
-  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-  const ss = String(seconds % 60).padStart(2, '0');
-
-  return `${hh}:${mm}:${ss}`;
+  return formatSecondsToHHMMSS(seconds);
 }
 
-export default RecordTimer;
+export default memo(RecordTimer);

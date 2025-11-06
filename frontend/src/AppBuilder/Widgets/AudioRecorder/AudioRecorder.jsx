@@ -9,38 +9,22 @@ import * as Icons from '@tabler/icons-react';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
-export const AudioRecorder = ({
-  styles,
-  properties,
-  events,
-  fireEvent,
-  setExposedVariable,
-  setExposedVariables,
-  darkMode,
-  dataCy,
-  id,
-}) => {
+export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariable, setExposedVariables, dataCy }) => {
   const { recorderIcon, labelColor, accentColor, backgroundColor, borderColor, borderRadius, boxShadow } = styles;
   const { label, loadingState, disabledState, visibility } = properties;
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playTimerKey, setPlayTimerKey] = useState(0);
+  const [permissionState, setPermissionState] = useState('granted');
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState,
   });
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+  const audioRef = useRef(null);
+  const endedListenerRef = useRef(null);
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[recorderIcon] == undefined ? Icons['IconMicrophone'] : Icons[recorderIcon];
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playTimerKey, setPlayTimerKey] = useState(0);
-  const [permissionState, setPermissionState] = useState('granted');
   const { status, startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl, clearBlobUrl } =
     useReactMediaRecorder({
       audio: true,
@@ -55,9 +39,16 @@ export const AudioRecorder = ({
         fireEvent('onRecordingStop');
       },
     });
-  const audioRef = useRef(null);
-  const canvasRef = useRef(null);
-  const animationRef = useRef(null);
+
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[recorderIcon] == undefined ? Icons['IconMicrophone'] : Icons[recorderIcon];
+
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
 
   const onClick = async () => {
     if (status === 'idle') {
@@ -82,14 +73,23 @@ export const AudioRecorder = ({
     }
     audioRef.current.play();
     setIsPlaying(true);
-    audioRef.current.addEventListener('ended', () => {
+
+    // Ensure we do not attach multiple listeners across plays
+    if (endedListenerRef.current) {
+      audioRef.current.removeEventListener('ended', endedListenerRef.current);
+    }
+    const onEnded = () => {
       setIsPlaying(false);
       setPlayTimerKey((prev) => prev + 1);
-    });
+    };
+    endedListenerRef.current = onEnded;
+    audioRef.current.addEventListener('ended', onEnded);
   };
 
   const onPause = () => {
-    audioRef.current.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     setIsPlaying(false);
   };
 
@@ -104,7 +104,13 @@ export const AudioRecorder = ({
       dataURL: null,
       rawBinary: null,
     });
-    audioRef?.current?.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      if (endedListenerRef.current) {
+        audioRef.current.removeEventListener('ended', endedListenerRef.current);
+        endedListenerRef.current = null;
+      }
+    }
     audioRef.current = null;
     setIsPlaying(false);
   };
@@ -124,7 +130,7 @@ export const AudioRecorder = ({
       );
     }
     return <IconElement width={14} height={14} color="#F6430D" />;
-  }, [status, isPlaying, recorderIcon]);
+  }, [status, isPlaying, permissionState, recorderIcon]);
 
   const ButtonContent = useMemo(() => {
     if (permissionState === 'denied') {
@@ -175,12 +181,14 @@ export const AudioRecorder = ({
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'microphone' }).then((result) => {
         setPermissionState(result.state);
-        // Listen for changes (e.g., user changes in browser settings)
         result.onchange = () => setPermissionState(result.state);
       });
     }
     return () => {
       stopRecording();
+      if (audioRef.current && endedListenerRef.current) {
+        audioRef.current.removeEventListener('ended', endedListenerRef.current);
+      }
     };
   }, []);
 
@@ -202,6 +210,15 @@ export const AudioRecorder = ({
     lineHeight: '20px',
   };
 
+  const ariaLabel = useMemo(() => {
+    if (permissionState === 'denied') return 'Microphone permission denied';
+    if (status === 'idle') return 'Start recording';
+    if (status === 'recording') return 'Pause recording';
+    if (status === 'paused') return 'Resume recording';
+    if (status === 'stopped') return isPlaying ? 'Pause playback' : 'Play recording';
+    return 'Audio recorder';
+  }, [status, isPlaying, permissionState]);
+
   return (
     <div style={wrapperContainerStyle}>
       {exposedVariablesTemporaryState.isLoading ? (
@@ -216,6 +233,7 @@ export const AudioRecorder = ({
             size="md"
             onClick={onClick}
             // data-cy={dataCy}
+            aria-label={ariaLabel}
           >
             {ButtonIcon}
           </ButtonSolid>
