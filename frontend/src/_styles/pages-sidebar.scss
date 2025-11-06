@@ -345,7 +345,7 @@
             }
 
             .tj-list-item {
-                justify-content: center;
+                justify-content: start;
                 padding: 10px;
                 height: 38px;
 
@@ -615,6 +615,33 @@
                 top: 44px !important;
             }
         }
+        }
+    }
+
+    // scrollbar behaviour in viewer for vertical page menu
+    .main{
+        .canvas-container{
+            .page-menu-scroll {
+                scrollbar-color: var(--interactive-selected) transparent;
+            
+                &::-webkit-scrollbar-track {
+                    background: transparent !important;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: var(--interactive-default) !important;
+                    border-radius: 3px;
+                }
+
+                &::-webkit-scrollbar {
+                    width: 0;
+                    background: transparent;
+                }
+                
+                &:hover {
+                    scrollbar-width: thin;
+                }
+            }
         }
     }
    

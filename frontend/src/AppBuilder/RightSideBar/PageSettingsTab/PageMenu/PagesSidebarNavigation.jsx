@@ -597,7 +597,7 @@ export const PagesSidebarNavigation = ({
             <SidebarHeader>
               <Header />
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="page-menu-scroll">
               <Body />
             </SidebarContent>
             <SidebarFooter>
