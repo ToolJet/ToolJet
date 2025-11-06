@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '@helpers/utils.helper';
+import { AppVersionType } from '@entities/app_version.entity';
 
 export class VersionCreateDto {
   @IsString()
@@ -19,6 +20,9 @@ export class VersionCreateDto {
 
   @IsOptional()
   versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
 }
 
 export class PromoteVersionDto {

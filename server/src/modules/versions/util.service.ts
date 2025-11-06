@@ -13,6 +13,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { VersionCreateDto } from './dto';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { AppVersionType } from '@entities/app_version.entity';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -109,7 +110,7 @@ export class VersionUtilService implements IVersionUtilService {
     versionCreateDto: VersionCreateDto,
     manager?: EntityManager
   ): Promise<AppVersion> {
-    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
     if (!versionName || versionName.trim().length === 0) {
       // need to add logic to get the version name -> from the version created at from
       throw new BadRequestException('Version name cannot be empty.');
@@ -135,6 +136,7 @@ export class VersionUtilService implements IVersionUtilService {
           status: AppVersionStatus.DRAFT,
           parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
           description: versionDescription ? versionDescription : null,
+          versionType: versionType ? versionType : AppVersionType.VERSION,
         })
       );
 
