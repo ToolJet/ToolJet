@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _ from 'lodash';
 import cx from 'classnames';
-import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse, IconDotsVertical } from '@tabler/icons-react';
+import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
-import { RenderPage, RenderPageAndPageGroup } from './PageGroup';
+import { RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
-import { Overlay, Popover } from 'react-bootstrap';
 import { buildTree } from './Tree/utilities';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
@@ -72,8 +71,6 @@ export const PagesSidebarNavigation = ({
   });
   const [measuredHeaderWidth, setMeasuredHeaderWidth] = useState(0);
   const [measuredDarkModeToggleWidth, setMeasuredDarkModeToggleWidth] = useState(0);
-
-  const navigationRef = useRef(null);
 
   const { hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
@@ -191,9 +188,9 @@ export const PagesSidebarNavigation = ({
     const finalOverflow = [];
 
     const measuredNavItems = Array.from(measurementContainerRef.current.children);
-    const FLEX_GAP = 6;
+    const FLEX_GAP = 6; // flex gap between pages and page groups
 
-    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth + 32 + 16;
+    let currentFixedElementsWidth = measuredHeaderWidth + measuredDarkModeToggleWidth + 32 + 16; // 32 is for flex gap in 'navigation-area' and 16 is for padding inside 'page-handler-wrapper'
 
     for (let i = 0; i < mainNavBarPages.length; i++) {
       const link = mainNavBarPages[i];
@@ -212,7 +209,7 @@ export const PagesSidebarNavigation = ({
 
       let spaceForMoreButton = 0;
       if (isMoreButtonNeededSoon) {
-        spaceForMoreButton = 75;
+        spaceForMoreButton = 75; // fixed width for the more button
         if (finalVisible.length > 0 || currentFixedElementsWidth > 0) {
           spaceForMoreButton += FLEX_GAP;
         }
@@ -259,7 +256,15 @@ export const PagesSidebarNavigation = ({
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mainNavBarPages, position, measuredHeaderWidth, measuredDarkModeToggleWidth, canvasMaxWidth, style]);
+  }, [
+    mainNavBarPages,
+    position,
+    measuredHeaderWidth,
+    measuredDarkModeToggleWidth,
+    canvasMaxWidth,
+    style,
+    isPagesSidebarHidden,
+  ]);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -545,7 +550,6 @@ export const PagesSidebarNavigation = ({
       <div
         ref={(el) => {
           navRef.current = el;
-          navigationRef.current = el;
         }}
         className={cx('navigation-area', {
           'navigation-hover-trigger': currentMode === 'edit',
@@ -567,7 +571,6 @@ export const PagesSidebarNavigation = ({
           top: '0px',
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
-          border: `${styles?.pillRadius?.value}px`,
           borderRight: (() => {
             if (position !== 'side' || shouldShowBlueBorder) return 'none';
             if (styles?.borderColor?.isDefault) {
@@ -631,6 +634,7 @@ export const PagesSidebarNavigation = ({
         position: 'relative', // Add relative positioning to the parent
       }}
     >
+      {/* Arbitrary element start - used for calculating width of page menu items */}
       <button
         ref={measurementContainerRef}
         style={{
@@ -657,6 +661,7 @@ export const PagesSidebarNavigation = ({
           </div>
         ))}
       </button>
+      {/* Arbitrary element end */}
       {/* Wrapper div to maintain hover state between navigation and tooltip */}
       <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
         {/* Main sidebar content */}

@@ -29,10 +29,12 @@ export const RenderPage = ({
   currentMode,
   isPageInsidePopup = true,
 }) => {
-  const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
+  const isPageHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id)); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
   const isHomePage = page.id === homePageId;
   const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
   const isActive = page?.id === currentPageId;
+
+  if (isPageHidden || page.disabled || (page?.restricted && currentMode !== 'edit')) return null;
 
   const IconElement = (props) => {
     const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
@@ -76,8 +78,8 @@ export const RenderPage = ({
     );
   };
 
-  return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : position === 'top' &&
-    !isPageInsidePopup ? (
+  // Wrap page as navigation-menu item incase page menu is top aligned and part of visible links otherwise fall back to older flow
+  return position === 'top' && !isPageInsidePopup ? (
     <NavigationMenuItem key={page.name}>
       <Page />
     </NavigationMenuItem>
@@ -110,7 +112,7 @@ const RenderPageGroup = ({
     position === 'top' && !isPageGroupInsidePopup
       ? computeStyles(active && !isExpanded, isExpanded)
       : computeStyles(active && !isExpanded, hovered);
-  const pageGroupVisibility = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
+  const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
   const IconElement = (props) => {
     const Icon = Icons?.[pageGroup.icon] ?? Icons?.['IconHome2'];
@@ -142,10 +144,11 @@ const RenderPageGroup = ({
     };
   }, [isExpanded]);
 
-  if (pageGroupVisibility) {
+  if (isPageGroupHidden) {
     return null;
   }
 
+  // Display all the pages inside the page group without the page group itself incase label is hidden
   if (labelStyle?.label?.hidden) {
     return (
       <>
@@ -167,6 +170,7 @@ const RenderPageGroup = ({
     );
   }
 
+  // Wrap page group as navigation-menu item incase page menu is top aligned and part of visible links otherwise fall back to older flow
   return position === 'top' && !isPageGroupInsidePopup ? (
     <NavigationMenuItem
       key={pageGroup.name}
@@ -256,6 +260,7 @@ const RenderPageGroup = ({
           CustomIcon={!labelStyle?.icon?.hidden && IconElement}
           customStyles={computeStyles}
           darkMode={darkMode}
+          ariaLabel={pageGroup.name}
         >
           {!labelStyle?.label?.hidden && (
             <div
@@ -315,41 +320,36 @@ export const RenderPageAndPageGroup = ({
   homePageId,
 }) => {
   const currentPage = pages.find((page) => page.id === currentPageId);
-  const getPagesVisibility = useStore((state) => state.getPagesVisibility);
+  const getIsPageHidden = useStore((state) => state.getPagesVisibility); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
 
+  const isEmptyPageGroup = (page) => {
+    return isLicensed && page.isPageGroup && page.children?.length === 0;
+  };
+
+  const isPageGroupWithChildren = (page) => {
+    return (
+      isLicensed &&
+      page.isPageGroup &&
+      page.children &&
+      // check if the page group has at least one visible child
+      page.children.some((child) => {
+        const isPageHidden = getIsPageHidden('canvas', child?.id);
+        return (
+          isPageHidden === false && !child?.disabled && (currentMode === 'view' ? child?.restricted === false : true)
+        );
+      })
+    );
+  };
+
+  // Don't render page groups without valid license
   const RenderLinks = () => {
     return (
       <>
         {visibleLinks.map((page, index) => {
-          if (
-            isLicensed &&
-            page.isPageGroup &&
-            page.children?.length === 0 &&
-            labelStyle?.label?.hidden &&
-            page.children.some((child) => {
-              const pageVisibility = getPagesVisibility('canvas', child?.id);
-              return (
-                pageVisibility === false &&
-                !child?.disabled &&
-                (currentMode === 'view' ? child?.restricted === false : true)
-              );
-            })
-          ) {
+          if (isEmptyPageGroup(page)) {
             return null;
           }
-          if (
-            isLicensed &&
-            page.isPageGroup &&
-            page.children &&
-            page.children.some((child) => {
-              const pageVisibility = getPagesVisibility('canvas', child?.id);
-              return (
-                pageVisibility === false &&
-                !child?.disabled &&
-                (currentMode === 'view' ? child?.restricted === false : true)
-              );
-            })
-          ) {
+          if (isPageGroupWithChildren(page)) {
             return (
               <>
                 <RenderPageGroup
@@ -389,6 +389,7 @@ export const RenderPageAndPageGroup = ({
             );
           }
         })}
+        {/* Menu item for showing overflowing items using a more button */}
         {overflowLinks.length > 0 && position === 'top' && (
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
@@ -397,35 +398,10 @@ export const RenderPageAndPageGroup = ({
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
               {overflowLinks.map((page, index) => {
-                if (
-                  isLicensed &&
-                  page.isPageGroup &&
-                  page.children.length === 0 &&
-                  labelStyle?.label?.hidden &&
-                  page.children.some((child) => {
-                    const pageVisibility = getPagesVisibility('canvas', child?.id);
-                    return (
-                      pageVisibility === false &&
-                      !child?.disabled &&
-                      (currentMode === 'view' ? child?.restricted === false : true)
-                    );
-                  })
-                ) {
+                if (isEmptyPageGroup(page)) {
                   return null;
                 }
-                if (
-                  isLicensed &&
-                  page.isPageGroup &&
-                  page.children &&
-                  page.children.some((child) => {
-                    const pageVisibility = getPagesVisibility('canvas', child?.id);
-                    return (
-                      pageVisibility === false &&
-                      !child?.disabled &&
-                      (currentMode === 'view' ? child?.restricted === false : true)
-                    );
-                  })
-                ) {
+                if (isPageGroupWithChildren(page)) {
                   return (
                     <>
                       <RenderPageGroup
@@ -469,6 +445,7 @@ export const RenderPageAndPageGroup = ({
     );
   };
 
+  // Using shadcn navigation-menu component when the page menu is top aligned
   return position === 'top' ? (
     <NavigationMenu viewport={false} className="pages-wrapper">
       <NavigationMenuList className="page-handler-list">
