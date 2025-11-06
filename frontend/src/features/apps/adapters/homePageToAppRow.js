@@ -1,9 +1,9 @@
 /**
  * Transforms HomePage's app objects to AppRow format while preserving original reference.
- * 
+ *
  * @param {Array} apps - HomePage apps array from state
  * @returns {Array<AppRow & {_originalApp: Object}>} - Transformed app rows with original app reference
- * 
+ *
  * @example
  * const appRows = transformAppsToAppRow([
  *   { id: 1, name: 'My App', updated_at: '2024-01-01', user: { name: 'John' } }
@@ -17,17 +17,27 @@ export function transformAppsToAppRow(apps) {
 
   return apps.map((app) => {
     // Handle missing/invalid data gracefully
-    const updatedAt = app.updated_at || app.updatedAt || app.created_at || app.createdAt || new Date().toISOString();
-    const editedBy = app.user?.name || app.user?.email || app.updated_by?.name || app.updated_by?.email || 'Unknown';
-    
+    const updatedAt =
+      app.updated_at ||
+      app.updatedAt ||
+      app.created_at ||
+      app.createdAt ||
+      new Date().toISOString();
+    const editedBy =
+      app.user?.name ||
+      app.user?.email ||
+      app.updated_by?.name ||
+      app.updated_by?.email ||
+      "Unknown";
+
     // Validate and format date
     let formattedDate = updatedAt;
-    if (typeof updatedAt === 'number') {
+    if (typeof updatedAt === "number") {
       // Handle timestamp
       formattedDate = new Date(updatedAt).toISOString();
     } else if (updatedAt instanceof Date) {
       formattedDate = updatedAt.toISOString();
-    } else if (typeof updatedAt === 'string') {
+    } else if (typeof updatedAt === "string") {
       // Validate ISO string format
       const date = new Date(updatedAt);
       if (isNaN(date.getTime())) {
@@ -37,7 +47,7 @@ export function transformAppsToAppRow(apps) {
 
     return {
       id: app.id || String(Math.random()), // Fallback for missing ID (should never happen, but defensive)
-      name: app.name || 'Untitled App',
+      name: app.name || "Untitled App",
       lastEdited: formattedDate,
       editedBy: editedBy,
       // Preserve original for permission checks and actions
@@ -53,4 +63,3 @@ export function transformAppsToAppRow(apps) {
 }
 
 export default transformAppsToAppRow;
-

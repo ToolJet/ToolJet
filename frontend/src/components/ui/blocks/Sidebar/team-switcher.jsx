@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/Button/Button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 
 export function TeamSwitcher({ teams }) {
   const [activeTeam, setActiveTeam] = React.useState(teams[0]);
@@ -53,3 +53,4 @@ export function TeamSwitcher({ teams }) {
     </DropdownMenu>
   );
 }
+

@@ -1,29 +1,34 @@
-import React from 'react';
-import AppsPageAdapter from '../AppsPageAdapter';
-import data from '../data.json';
+import React from "react";
+import AppsPageAdapter from "../AppsPageAdapter";
+import data from "../data.json";
 
 // Mock HomePage methods
 const mockCanCreateApp = () => true;
 const mockCanUpdateApp = (_app) => true;
 const mockCanDeleteApp = (_app) => true;
-const mockPageChanged = (page) => console.log('Page changed:', page);
-const mockOnSearch = (key) => console.log('Search:', key);
-const mockDeleteApp = (app) => console.log('Delete:', app);
-const mockCloneApp = (app) => console.log('Clone:', app);
-const mockExportApp = (app) => console.log('Export:', app);
-const mockNavigate = (path) => console.log('Navigate:', path);
+const mockPageChanged = (page) => console.log("Page changed:", page);
+const mockOnSearch = (key) => console.log("Search:", key);
+const mockDeleteApp = (app) => console.log("Delete:", app);
+const mockCloneApp = (app) => console.log("Clone:", app);
+const mockExportApp = (app) => console.log("Export:", app);
+const mockNavigate = (path) => console.log("Navigate:", path);
 
 export default {
-  title: 'Flows/AppsPage/Adapter',
+  title: "Flows/AppsPage/Adapter",
   component: AppsPageAdapter,
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: "fullscreen" },
 };
 
 export const Default = () => (
   <AppsPageAdapter
     apps={data}
     isLoading={false}
-    meta={{ current_page: 1, total_pages: 1, total_count: data.length, per_page: 9 }}
+    meta={{
+      current_page: 1,
+      total_pages: 1,
+      total_count: data.length,
+      per_page: 9,
+    }}
     appSearchKey=""
     appType="front-end"
     workspaceId="storybook-workspace"
@@ -77,7 +82,7 @@ export const ErrorState = () => (
   <AppsPageAdapter
     apps={[]}
     isLoading={false}
-    error={new Error('Failed to fetch apps')}
+    error={new Error("Failed to fetch apps")}
     meta={{ current_page: 1, total_pages: 1, total_count: 0, per_page: 9 }}
     appSearchKey=""
     appType="front-end"
@@ -112,7 +117,12 @@ export const Modules = () => (
   <AppsPageAdapter
     apps={data}
     isLoading={false}
-    meta={{ current_page: 1, total_pages: 1, total_count: data.length, per_page: 9 }}
+    meta={{
+      current_page: 1,
+      total_pages: 1,
+      total_count: data.length,
+      per_page: 9,
+    }}
     appSearchKey=""
     appType="module"
     workspaceId="storybook-workspace"
@@ -129,7 +139,12 @@ export const NoPermissions = () => (
   <AppsPageAdapter
     apps={data}
     isLoading={false}
-    meta={{ current_page: 1, total_pages: 1, total_count: data.length, per_page: 9 }}
+    meta={{
+      current_page: 1,
+      total_pages: 1,
+      total_count: data.length,
+      per_page: 9,
+    }}
     appSearchKey=""
     appType="front-end"
     workspaceId="storybook-workspace"
@@ -141,4 +156,3 @@ export const NoPermissions = () => (
     navigate={mockNavigate}
   />
 );
-

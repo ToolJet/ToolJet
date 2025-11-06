@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { ChevronRight } from 'lucide-react';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -13,7 +13,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from './sidebar';
+} from '@/components/ui/Rocket/sidebar';
 
 export function NavMain({ items }) {
   return (
@@ -50,3 +50,4 @@ export function NavMain({ items }) {
     </SidebarGroup>
   );
 }
+

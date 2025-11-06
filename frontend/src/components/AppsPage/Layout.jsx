@@ -1,27 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { SidebarProvider, SidebarInset } from '@/components/Sidebar/sidebar';
-import { AppSidebar } from '@/components/Sidebar/app-sidebar';
-import { TopBar } from '@/components/ui/TopBar/TopBar';
+import { MainLayout } from '@/components/layouts/MainLayout';
+import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 
+/**
+ * @deprecated Use MainLayout from '@/components/layouts/MainLayout' instead.
+ * This component is kept for backward compatibility and wraps MainLayout.
+ * 
+ * Migration:
+ * - Replace AppsPageLayout with MainLayout
+ * - Pass search as topbarLeftSlot prop
+ * - Pass any buttons/actions as topbarRightSlot prop
+ */
 export function AppsPageLayout({ children, logo, searchPlaceholder, onSearch, searchValue }) {
+  // Create search slot for backward compatibility
+  const searchSlot = onSearch ? (
+    <TopBarSearch
+      placeholder={searchPlaceholder || 'Search'}
+      value={searchValue || ''}
+      onChange={onSearch}
+    />
+  ) : null;
+
   return (
-    <SidebarProvider
-      defaultOpen={false}
-      style={{
-        '--sidebar-width': '10rem',
-      }}
-    >
-      <div className="tw-flex tw-flex-col tw-h-screen tw-w-screen">
-        <TopBar logo={logo} searchPlaceholder={searchPlaceholder} onSearch={onSearch} searchValue={searchValue} />
-        <div className="tw-flex tw-flex-1 tw-overflow-hidden">
-          <AppSidebar className="tw-bg-background-surface-layer-01 !tw-sticky !tw-h-full" />
-          <SidebarInset>
-            <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
-          </SidebarInset>
-        </div>
-      </div>
-    </SidebarProvider>
+    <MainLayout logo={logo} topbarLeftSlot={searchSlot}>
+      {children}
+    </MainLayout>
   );
 }
 
