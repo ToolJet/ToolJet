@@ -188,12 +188,12 @@ export const AudioRecorder = ({
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     setExposedVariables(exposedVariablesTemporaryState);
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'microphone' }).then((result) => {
-        setPermissionState(result.state);
-        result.onchange = () => setPermissionState(result.state);
-      });
-    }
+    // if (navigator.permissions) {
+    //   navigator.permissions.query({ name: 'microphone' }).then((result) => {
+    //     setPermissionState(result.state);
+    //     result.onchange = () => setPermissionState(result.state);
+    //   });
+    // }
     return () => {
       stopRecording();
       if (audioRef.current && endedListenerRef.current) {
