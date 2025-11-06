@@ -337,11 +337,11 @@ const ApiEndpointInput = (props) => {
     <div>
       {/* Render spec type dropdown only for multi-spec */}
       {isMultiSpec && (
-        <div className="d-flex g-2 mb-3">
-          <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
-          </div>
-          <div className="col flex-grow-1">
+        <div className="dropdown-container mb-3">
+          <label className="form-label dropdown-label">
+            {props.t('globals.specType', 'Entity')}
+          </label>
+          <div>
             <Select
               options={specTypeOptions}
               value={{
@@ -367,11 +367,11 @@ const ApiEndpointInput = (props) => {
       )}
       {options && !loadingSpec && (
         <div>
-          <div className="d-flex g-2">
-            <div className="col-3 form-label">
-              <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
-            </div>
-            <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
+          <div className="dropdown-container mb-3">
+            <label className="form-label dropdown-label">
+              {props.t('globals.operation', 'Operation')}
+            </label>
+            <div className="stripe-operation-options">
               <Select
                 options={computeOperationSelectionOptions()}
                 value={
@@ -575,9 +575,9 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
 
   return (
     filteredParams?.length > 0 && (
-      <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
-        <h5 className="text-heading form-label">{label}</h5>
-        <div className="flex-grow-1 input-group-parent-container">
+      <div className={`${type === 'request' ? 'request-body' : type}-fields`}>
+        <h5 className="text-heading form-label mb-2">{label}</h5>
+        <div className="input-group-parent-container">
           {filteredParams.map((param) => (
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">
