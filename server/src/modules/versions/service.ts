@@ -8,7 +8,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
-import { camelizeKeys, decamelizeKeys } from 'humps';
+import { camelizeKeys } from 'humps';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -49,55 +49,7 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    const { versionName, versionFromId, versionDescription } = versionCreateDto;
-    if (!versionName || versionName.trim().length === 0) {
-      // need to add logic to get the version name -> from the version created at from
-      throw new BadRequestException('Version name cannot be empty.');
-    }
-    const { organizationId } = user;
-
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.findOneOrFail(AppVersion, {
-        where: { id: versionFromId, appId: app.id },
-        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
-      });
-
-      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
-
-      const appVersion = await manager.save(
-        AppVersion,
-        manager.create(AppVersion, {
-          name: versionName,
-          appId: app.id,
-          definition: versionFrom?.definition,
-          currentEnvironmentId: firstPriorityEnv?.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          status: AppVersionStatus.DRAFT,
-          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
-          description: versionDescription ? versionDescription : null,
-        })
-      );
-
-      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
-
-      //APP_VERSION_CREATE audit
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-        metadata: {
-          data: {
-            updatedAppVersionName: versionCreateDto.versionName,
-            updatedAppVersionFrom: versionCreateDto.versionFromId,
-            updatedAppVersionEnvironment: versionCreateDto.environmentId,
-          },
-        },
-      });
-
-      return decamelizeKeys(appVersion);
-    });
+    await this.versionsUtilService.createVersion(app, user, versionCreateDto);
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {

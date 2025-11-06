@@ -1,4 +1,4 @@
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
@@ -7,10 +7,20 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
+import { VersionsCreateService } from './services/create.service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { RequestContext } from '@modules/request-context/service';
+import { VersionCreateDto } from './dto';
+import { decamelizeKeys } from 'humps';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
-  constructor(protected readonly versionRepository: VersionRepository) {}
+  constructor(
+    protected readonly versionRepository: VersionRepository,
+    protected readonly createVersionService: VersionsCreateService,
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
+  ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
       target = {};
@@ -90,6 +100,62 @@ export class VersionUtilService implements IVersionUtilService {
       order: {
         createdAt: 'DESC',
       },
+    });
+  }
+
+  async createVersion(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto,
+    manager?: EntityManager
+  ): Promise<AppVersion> {
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      // need to add logic to get the version name -> from the version created at from
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    const { organizationId } = user;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const versionFrom = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionFromId, appId: app.id },
+        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+      });
+
+      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
+
+      const appVersion = await manager.save(
+        AppVersion,
+        manager.create(AppVersion, {
+          name: versionName,
+          appId: app.id,
+          definition: versionFrom?.definition,
+          currentEnvironmentId: firstPriorityEnv?.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
+          description: versionDescription ? versionDescription : null,
+        })
+      );
+
+      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
+
+      //APP_VERSION_CREATE audit
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceName: app.name,
+        metadata: {
+          data: {
+            updatedAppVersionName: versionCreateDto.versionName,
+            updatedAppVersionFrom: versionCreateDto.versionFromId,
+            updatedAppVersionEnvironment: versionCreateDto.environmentId,
+          },
+        },
+      });
+
+      return decamelizeKeys(appVersion);
     });
   }
 
