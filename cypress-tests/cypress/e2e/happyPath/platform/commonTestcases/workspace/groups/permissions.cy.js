@@ -1,51 +1,29 @@
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
-import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
-import { commonText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
-import {
-    setupWorkspaceAndInviteUser,
-    verifyBasicPermissions,
-    createGroupsAndAddUserInGroup,
-    updateRole,
-    verifySettingsAccess,
-    inviteUserBasedOnRole,
-    verifyUserPrivileges,
-    setupAndUpdateRole,
-} from "Support/utils/manageGroups";
-import {
-    selectAndAddDataSource,
-    fillConnectionForm,
-    addQuery,
-} from "Support/utils/postgreSql";
-import { verifyValueOnInspector } from "Support/utils/dataSource";
+import { commonSelectors } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
+import { importSelectors } from "Selectors/exportImport";
+import { groupsSelector } from "Selectors/manageGroups";
 import {
-    createFolder,
-    deleteFolder,
-    logout,
-    releaseApp,
+    navigateToAppEditor,
     navigateToManageGroups,
-    navigateToManageUsers,
-    selectAppCardOption,
+    navigateToManageUsers
 } from "Support/utils/common";
 import {
-    exportAppModalSelectors,
-    importSelectors,
-} from "Selectors/exportImport";
-import { exportAppModalText, importText } from "Texts/exportImport";
-import { clickOnExportButtonAndVerify } from "Support/utils/exportImport";
+    apiCreateGroup,
+    inviteUserBasedOnRole,
+    setupAndUpdateRole,
+    setupWorkspaceAndInviteUser,
+    updateRole,
+    verifyUserPrivileges,
+} from "Support/utils/manageGroups";
+import { getGroupPermissionInput } from "Support/utils/userPermissions";
+import { importText } from "Texts/exportImport";
+import { groupsText } from "Texts/manageGroups";
 
 describe("Manage Groups", () => {
     let data = {};
-
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
+    const isEnterprise = Cypress.env("environment") === "Enterprise";
 
     beforeEach(() => {
         data = {
@@ -61,6 +39,7 @@ describe("Manage Groups", () => {
         cy.defaultWorkspaceLogin();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
+        cy.viewport(2400, 2000);
     });
 
     it("should verify the last active admin role update protection", () => {
@@ -72,7 +51,6 @@ describe("Manage Groups", () => {
 
         navigateToManageGroups();
 
-        // Attempt to change last admin role
         cy.get(groupsSelector.groupLink("Admin")).click();
         cy.get(`[data-cy="dev@tooljet.io-user-row"] > :nth-child(3)`).click();
 
@@ -85,7 +63,6 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.confimButton).click();
         cy.get(groupsSelector.confimButton).click();
 
-        // Verify protection modal
         cy.get(groupsSelector.modalMessage).should("be.visible");
         cy.get(groupsSelector.modalHeader).should(
             "have.text",
@@ -96,215 +73,6 @@ describe("Manage Groups", () => {
             groupsText.modalMessage
         );
         cy.get(commonSelectors.closeButton).click();
-    });
-
-    it("should verify user privileges in custom groups", () => {
-        const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
-        const appName2 = fake.companyName;
-        const appName3 = fake.companyName;
-        const appSlug = appName3.toLowerCase().replace(/\s+/g, "-");
-
-        setupWorkspaceAndInviteUser(
-            data.workspaceName,
-            data.workspaceSlug,
-            data.firstName,
-            data.email
-        );
-        cy.apiLogout();
-
-        // Setup custom group
-        cy.apiLogin();
-        cy.visit(data.workspaceSlug);
-        navigateToManageGroups();
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.permissionsLink).click();
-        cy.get(groupsSelector.appsCreateCheck).uncheck();
-        cy.get(groupsSelector.appsDeleteCheck).uncheck();
-        cy.get(groupsSelector.foldersCreateCheck).uncheck();
-        cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
-
-        createGroupsAndAddUserInGroup(groupName, data.email);
-
-        // Permission configuration and verification
-        cy.get(groupsSelector.permissionsLink).click();
-
-        // App creation permission
-        cy.get(groupsSelector.appsCreateCheck).check();
-        cy.get(commonSelectors.defaultModalTitle).contains(
-            groupsText.changeUserRoleHeader
-        );
-        cy.get(groupsSelector.changeRoleModalMessage).contains(
-            groupsText.changeUserRoleMessage
-        );
-        cy.get(".item-list").contains(data.email);
-        cy.get(groupsSelector.confimButton).should(
-            "have.text",
-            groupsText.continueButtonText
-        );
-        cy.get(commonSelectors.cancelButton).click();
-
-        // Other permissions
-        const permissions = [
-            groupsSelector.appsDeleteCheck,
-            groupsSelector.foldersCreateCheck,
-            groupsSelector.workspaceVarCheckbox,
-        ];
-
-        permissions.forEach((permission) => {
-            cy.get(permission).check();
-            cy.get(".modal-content").should("be.visible");
-            cy.get(commonSelectors.cancelButton).click();
-        });
-
-        // Granular permissions
-        cy.get(groupsSelector.granularLink).click();
-        cy.get(groupsSelector.addAppButton).click();
-        cy.clearAndType(groupsSelector.permissionNameInput, data.firstName);
-        cy.get(groupsSelector.editPermissionRadio).click();
-        cy.get(groupsSelector.confimButton).click();
-
-        // Verify modal
-        cy.get(".modal-content").should("be.visible");
-        cy.get(groupsSelector.modalHeader).should(
-            "have.text",
-            groupsText.cantCreatePermissionModalHeader
-        );
-        cy.get(groupsSelector.modalMessage).should(
-            "have.text",
-            groupsText.cantCreatePermissionModalMessage
-        );
-
-        cy.get(".item-list").contains(data.email);
-        cy.get(commonSelectors.closeButton).click();
-
-        // Role transition
-        cy.get(groupsSelector.permissionsLink).click();
-        cy.get(groupsSelector.appsCreateCheck).check();
-        cy.get(groupsSelector.confimButton).click();
-        permissions.forEach((permission) => {
-            cy.get(permission).check();
-        });
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("be.visible");
-        cy.apiLogout();
-        cy.apiLogin(data.email);
-        cy.visit(data.workspaceSlug);
-
-        // Verify builder permissions
-        verifyBasicPermissions(true);
-
-        // App operations
-        cy.createApp(data.appName);
-        // cy.verifyToastMessage(
-        //     commonSelectors.toastMessage,
-        //     commonText.appCreatedToast
-        // );
-        cy.backToApps();
-
-        cy.wait(2500);
-        cy.deleteApp(data.appName);
-
-
-        // Folder operations
-        createFolder(data.folderName);
-        deleteFolder(data.folderName);
-
-        // Constants management
-        cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addAndVerifyConstants(data.firstName, data.appName);
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.firstName)
-        ).click();
-        cy.get(commonSelectors.yesButton).click();
-
-        verifySettingsAccess(false);
-        cy.get(commonSelectors.settingsIcon).click();
-        cy.wait(500);
-        cy.apiLogout();
-
-        cy.apiLogin();
-        cy.visit(data.workspaceSlug);
-        navigateToManageGroups();
-        cy.get(groupsSelector.groupLink(groupName)).click();
-
-        cy.get(groupsSelector.permissionsLink).click();
-        cy.get(groupsSelector.appsCreateCheck).uncheck();
-        permissions.forEach((permission) => {
-            cy.get(permission).uncheck();
-        });
-
-        cy.wait(2000);
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.granularLink).click();
-        cy.wait(2000);
-        cy.get(groupsSelector.granularAccessPermission)
-            .trigger("mouseenter")
-            .click({ force: true });
-        cy.get(groupsSelector.deletePermissionIcon).click();
-        cy.get(groupsSelector.yesButton).click();
-
-        // Create test apps
-        cy.get(commonSelectors.homePageLogo).click();
-        cy.apiCreateApp(data.appName);
-        cy.apiCreateApp(appName2);
-
-        // App Hide from dashboard
-        cy.apiCreateApp(appName3);
-        cy.openApp();
-        cy.apiAddComponentToApp(appName3, "text1");
-        releaseApp();
-        cy.get(commonWidgetSelector.shareAppButton).click();
-        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${appSlug}`);
-        cy.wait(500);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-        cy.backToApps();
-
-        // Configure app permissions
-        navigateToManageGroups();
-        cy.get(groupsSelector.groupLink(groupName)).click();
-        cy.get(groupsSelector.granularLink).click();
-
-        // Setup permissions for both apps
-        [data.appName, appName2, appName3].forEach((app) => {
-            cy.get(groupsSelector.addAppButton).click();
-            cy.clearAndType(groupsSelector.permissionNameInput, app);
-            cy.get(groupsSelector.customradio).check();
-            cy.get(".css-1gfides").click({ force: true }).type(`${app}{enter}`);
-            cy.get(groupsSelector.confimButton).click({ force: true });
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                groupsText.createPermissionToast
-            );
-        });
-        cy.get(groupsSelector.groupChip).contains(data.appName).click();
-        cy.get(groupsSelector.editPermissionRadio).click();
-        cy.get(groupsSelector.confimButton).click();
-
-        //To hide app
-        cy.get(groupsSelector.groupChip).contains(appName3).click();
-        cy.get(groupsSelector.hidePermissionInput).check();
-        cy.get(groupsSelector.confimButton).click();
-
-        // Verify as end user
-        cy.wait(1000);
-        cy.apiLogout()
-        cy.apiLogin(data.email);
-        cy.visit(data.workspaceSlug);
-
-        cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
-            "have.lengthOf",
-            1
-        );
-        cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
-            "have.lengthOf",
-            2
-        );
-
-        //Visit hidden app url
-        cy.visitSlug({
-            actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
-        });
     });
 
     it("should verify user role updating sequence", () => {
@@ -416,120 +184,117 @@ describe("Manage Groups", () => {
         });
     });
 
-    it("should verify query creation and import access for Builders and Admin", () => {
-        const firstName2 = fake.firstName;
-        const email2 = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-        const workspaceName2 = fake.firstName
-            .toLowerCase()
-            .replace(/[^A-Za-z]/g, "");
-        const workspaceSlug2 = fake.firstName
-            .toLowerCase()
-            .replace(/[^A-Za-z]/g, "");
-
-        createQueryAndImportApp(
-            data.firstName,
-            data.email,
-            data.workspaceName,
-            data.workspaceSlug,
-            "Builder"
-        );
-
-        cy.backToApps();
-        logout();
-
-        cy.defaultWorkspaceLogin();
-
-        createQueryAndImportApp(
-            firstName2,
-            email2,
-            workspaceName2,
-            workspaceSlug2,
-            "Admin"
-        );
-    });
-
-    const createQueryAndImportApp = (
-        firstName,
-        email,
-        workspaceName,
-        workspaceSlug,
-        role
-    ) => {
-        let currentVersion = "";
-        let exportedFilePath;
-
-        cy.apiCreateWorkspace(workspaceName, workspaceSlug);
-        cy.visit(workspaceSlug);
-        cy.wait(500);
-
-        cy.apiCreateGDS(
-            `${Cypress.env('server_host')}/api/data-sources`,
-            `cypress-${data.dsName}-qc-postgresql`,
-            "postgresql",
-            [
-                { key: "host", value: Cypress.env("pg_host") },
-                { key: "port", value: 5432 },
-                { key: "database", value: Cypress.env("pg_user") },
-                { key: "username", value: Cypress.env("pg_user") },
-                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
-                { key: "ssl_enabled", value: false, encrypted: false },
-                { key: "ssl_certificate", value: "none", encrypted: false },
-            ]
-        );
-
-        //Onboard user
-        navigateToManageUsers();
-        inviteUserBasedOnRole(firstName, email, role);
-
-        cy.wait(1000);
-
-        cy.createApp(data.appName);
-
-        //Create and run postgres query in the app
-        // Need to enable once bug is fixed
-        /*
-            
-    
-            addQuery(
-                "table_preview",
-                `SELECT * FROM persons;`,
-                `cypress-${data.dsName1}-postgresql`
-            );
-    
-            cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
-                "have.text",
-                "table_preview "
-            );
-            cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-            verifyValueOnInspector("table_preview", "7 items ");
-            */
-
-        cy.backToApps();
-
-        //Export and Import app
-        selectAppCardOption(
-            data.appName,
-            commonSelectors.appCardOptions(commonText.exportAppOption)
-        );
-        cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
-        cy.get(
-            exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
-        ).verifyVisibleElement("be.checked");
-        cy.get(
-            commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
-        ).click();
-        cy.exec("ls ./cypress/downloads/").then((result) => {
-            const downloadedAppExportFileName = result.stdout.split("\n")[0];
-            exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-            cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-            cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
-                force: true,
-            });
-            cy.get(importSelectors.importAppButton).click();
-            cy.get(".go3958317564")
-                .should("be.visible")
-                .and("have.text", importText.appImportedToastMessage);
+    it("should verify datasource granular access in app builder", () => {
+        const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
+        const appImportFile = "cypress/fixtures/templates/permission-export.json";
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
+            Cypress.env("workspaceId", workspace.body.organization_id);
         });
-        cy.exec("cd ./cypress/downloads/ && rm -rf *");
-    };
+        cy.visit(data.workspaceSlug);
+
+        cy.ifEnv("Enterprise", () => {
+            cy.apiUpdateGroupPermission(
+                "builder",
+                getGroupPermissionInput(isEnterprise, false)
+            );
+            cy.apiDeleteGranularPermission("builder", []);
+
+            cy.intercept("GET", "/api/apps/*").as("getApp");
+
+            cy.get(dashboardSelector.importAppButton).click();
+            cy.get(importSelectors.importOptionInput)
+                .eq(0)
+                .selectFile(appImportFile, { force: true });
+            cy.wait(2000);
+
+            cy.get(importSelectors.importAppButton).click();
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                importText.appImportedToastMessage
+            );
+            cy.wait(2000);
+
+            cy.wait("@getApp").then((interception) => {
+                const { id, editing_version, editorEnvironment, name } =
+                    interception.response.body;
+                Cypress.env("appId", id);
+                Cypress.env("editingVersionId", editing_version.id);
+                Cypress.env("environmentId", editorEnvironment.id);
+                data.importedAppName = name;
+            });
+
+            cy.go("back");
+            cy.wait(1000);
+
+            apiCreateGroup(groupName).then((groupId) => {
+                cy.apiCreateGranularPermission(
+                    groupName,
+                    `${data.importedAppName}_permission`,
+                    "app",
+                    { canEdit: true, canView: false },
+                    Cypress.env("appId"),
+                    false
+                );
+
+                cy.apiCreateGranularPermission(
+                    groupName,
+                    "datasource1_permission",
+                    "datasource",
+                    { canUse: true, canConfigure: false },
+                    ["datasource 1"],
+                    false
+                );
+            });
+
+            cy.apiFullUserOnboarding(
+                data.firstName,
+                data.email,
+                "builder",
+                "password",
+                data.workspaceName,
+                {},
+                [groupName]
+            );
+
+            cy.wait(1000);
+
+            cy.apiLogout();
+            cy.apiLogin(data.email, "password");
+            cy.visit(data.workspaceSlug);
+            cy.wait(1000);
+
+            navigateToAppEditor("permission-export");
+            cy.wait(3000);
+
+            cy.get(dataSourceSelector.listQuery("user1-datasource"))
+                .should("be.visible")
+                .click();
+            cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+            cy.get(dataSourceSelector.queryCreateAndRunButton)
+                .eq(0)
+                .should("be.enabled");
+            cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
+            cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
+            cy.get(dataSourceSelector.queryCardDeleteButton).click();
+            cy.get(dataSourceSelector.deleteModalConfirmButton).click();
+
+            cy.get(dataSourceSelector.listQuery("user2-datasource"))
+                .should("be.visible")
+                .click();
+            cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+            cy.get(dataSourceSelector.queryCreateAndRunButton)
+                .eq(0)
+                .should("be.enabled");
+            cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.disabled");
+
+            cy.get(dataSourceSelector.editorDSPopover).click();
+            cy.wait(500);
+
+            cy.get('[data-cy="ds-datasource 2"]').click();
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                "Failed to create query: You do not have permission to access this resource"
+            );
+        });
+    });
 });

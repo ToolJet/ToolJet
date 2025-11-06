@@ -28,6 +28,7 @@ export const commonText = {
   createFolder: "Create folder",
   AddedToFolderToast: "Added to folder.",
   appCreatedToast: "App created successfully!",
+  appRenamedToast: "App name has been updated!",
   appRemovedFromFolderMessage:
     "The app will be removed from this folder, do you want to continue?",
   appRemovedFromFolderTaost: "Removed from folder.",
@@ -135,6 +136,7 @@ export const commonText = {
   breadcrumbGlobalDatasourceTitle: "Global datasources",
   breadcrumbDatabaseTitle: "Databse",
   breadcrumbApplications: "Applications",
+  breadcrumbHome: "Home",
   breadcrumbSettings: "Settings",
   addNewDataSourceButton: "Add new datasource",
 
@@ -260,4 +262,25 @@ export const widgetValue = (widgetName) => {
 
 export const customValidation = (name, message) => {
   return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};
+
+export const settingsText = {
+  settingsHeader: "Settings",
+  allUsersListItem: "All Users",
+  allWorkspacesListItem: "All workspaces",
+  manageInstanceSettingsListItem: "Manage instance settings",
+  whiteLabellingListItem: "White labelling",
+  instanceLoginListItem: "Instance login",
+  emailProtocolListItem: "Email protocol (SMTP)",
+  licenseListItem: "License",
+};
+
+export const workspaceSettingsText = {
+  WorkspaceSettingsHeader: "Workspace settings",
+  usersListItem: "Users",
+  groupsListItem: "Groups",
+  workspaceLoginListItem: "Workspace login",
+  customStylesListItem: "Custom styles",
+  configureGitSyncListItem: "Configure git sync",
+  themesListItem: "Themes",
 };
