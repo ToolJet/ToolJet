@@ -8,7 +8,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 const useSidebarMargin = (canvasContainerRef) => {
   const { moduleId } = useModuleContext();
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
-  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
@@ -17,24 +17,20 @@ const useSidebarMargin = (canvasContainerRef) => {
 
   useEffect(() => {
     if (mode !== 'view')
-      setEditorMarginLeft(isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0);
+      setEditorMarginLeft(
+        isLeftSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0
+      );
     else setEditorMarginLeft(0);
-  }, [isSidebarOpen, mode, selectedSidebarItem]);
+  }, [isLeftSidebarOpen, mode, selectedSidebarItem]);
 
   useEffect(() => {
-    if (
-      !isEmpty(canvasContainerRef?.current) &&
-      isSidebarOpen &&
-      (canvasContainerRef.current.scrollLeft === 0 ||
-        (prevEditorMarginLeft.current !== editorMarginLeft &&
-          canvasContainerRef.current.scrollLeft === prevEditorMarginLeft.current))
-    ) {
-      canvasContainerRef.current.scrollLeft = editorMarginLeft;
-      prevEditorMarginLeft.current = editorMarginLeft;
+    const scrollLeft = editorMarginLeft;
+    const isScrollLeftChanged = canvasContainerRef.current.scrollLeft !== scrollLeft;
+    if (!isEmpty(canvasContainerRef?.current) && (canvasContainerRef.current.scrollLeft === 0 || isScrollLeftChanged)) {
+      canvasContainerRef.current.scrollLeft = scrollLeft;
+      prevEditorMarginLeft.current = scrollLeft;
     }
-  }, [editorMarginLeft, canvasContainerRef, isSidebarOpen]);
-
+  }, [editorMarginLeft, canvasContainerRef, isLeftSidebarOpen, isRightSidebarOpen]);
   return editorMarginLeft;
 };
-
 export default useSidebarMargin;
