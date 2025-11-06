@@ -46,12 +46,15 @@ module.exports = defineConfig({
         configFile: environment.configFile,
         specPattern: [
             "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/license/basicPlanTestcases/**/*.cy.js",
-            "cypress/e2e/happyPath/platform/eeTestcases/license/paidPlanTestcases/**/*.cy.js",
-
+            "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
             "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
-
-            "cypress/e2e/happyPath/platform/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
+            "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
         ],
 
         testIsolation: true,
@@ -61,7 +64,7 @@ module.exports = defineConfig({
         },
         redirectionLimit: 7,
 
-        numTestsKeptInMemory: 1,
+        numTestsKeptInMemory: 0,
         experimentalMemoryManagement: true,
 
         experimentalRunAllSpecs: true,

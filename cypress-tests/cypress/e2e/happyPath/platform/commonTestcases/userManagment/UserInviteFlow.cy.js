@@ -27,7 +27,7 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
-import { createGroup } from "Support/utils/manageGroups";
+import { apiCreateGroup } from "Support/utils/manageGroups";
 import { verifyUserInGroups } from "Support/utils/externalApi";
 
 
@@ -45,6 +45,15 @@ describe("user invite flow cases", () => {
     cy.defaultWorkspaceLogin();
     cy.ifEnv("Enterprise", () => {
       enableInstanceSignup()
+    });
+    cy.apiConfigureSmtp({
+      smtpEnabled: true,
+      host: "20.29.40.108",
+      port: "1025",
+      user: "user",
+      password: "user",
+      fromEmail: "hello@tooljet.io",
+      smtpEnvEnabled: false
     });
   });
 
@@ -98,7 +107,7 @@ describe("user invite flow cases", () => {
     cy.apiLogout()
 
 
-    fetchAndVisitInviteLinkViaMH(data.email);//email invite get and visit
+    fetchAndVisitInviteLinkViaMH(data.email);
     confirmInviteElements(data.email);
 
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "pass");
@@ -146,9 +155,7 @@ describe("user invite flow cases", () => {
   it("Should verify the user archive functionality", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-
     addNewUser(data.firstName, data.email);
-
     cy.apiLogout();
 
     cy.defaultWorkspaceLogin();
@@ -244,8 +251,8 @@ describe("user invite flow cases", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    createGroup(data.groupName1);
-    createGroup(data.groupName2);
+    apiCreateGroup(data.groupName1);
+    apiCreateGroup(data.groupName2);
 
     navigateToManageUsers();
     inviteUserWithUserGroups(
@@ -269,7 +276,7 @@ describe("user invite flow cases", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
-    createGroup(data.groupName);
+    apiCreateGroup(data.groupName);
     addNewUser(data.firstName, data.email);
     cy.apiLogout();
 
