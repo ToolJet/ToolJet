@@ -86,6 +86,9 @@ export default class Nocodb implements QueryService {
           });
 
           result = this.parseJSON(response.body);
+          if (apiVersion === 'v3') {
+            result = (result as any).records?.[0] ?? result;
+          }
           break;
         }
 
@@ -108,6 +111,9 @@ export default class Nocodb implements QueryService {
           });
 
           result = this.parseJSON(response.body);
+          if (apiVersion === 'v3') {
+            result = (result as any).records?.[0] ?? result;
+          }
           break;
         }
 
@@ -129,6 +135,9 @@ export default class Nocodb implements QueryService {
           });
 
           result = this.parseJSON(response.body);
+          if (apiVersion === 'v3') {
+            result = (result as any).records?.[0] ?? result;
+          }
           break;
         }
       }
