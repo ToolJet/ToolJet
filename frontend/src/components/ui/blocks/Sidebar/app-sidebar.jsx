@@ -4,7 +4,7 @@ import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Bell, Zap, Gall
 import { NavMenu } from './nav-menu';
 import { NavActions } from './nav-actions';
 import { NavUser } from './nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from './sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from '@/components/ui/Rocket/sidebar';
 
 // ToolJet sidebar data based on Figma design
 const data = {
@@ -97,3 +97,4 @@ export function AppSidebar({ ...props }) {
     </Sidebar>
   );
 }
+

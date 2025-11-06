@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './sidebar';
+import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/Rocket/sidebar';
 
 export function NavActions({ actions }) {
   return (
@@ -21,3 +21,4 @@ export function NavActions({ actions }) {
     </SidebarGroup>
   );
 }
+

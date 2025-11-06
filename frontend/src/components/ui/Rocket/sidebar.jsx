@@ -6,11 +6,11 @@ import { PanelLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Input } from './input';
-import { Separator } from './separator';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from './sheet';
-import { Skeleton } from './skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -99,7 +99,7 @@ const SidebarProvider = React.forwardRef(
               ...style,
             }}
             className={cn(
-              'group/sidebar-wrapper tw-flex tw-min-h-svh tw-w-full has-[[data-variant=inset]]:tw-bg-sidebar',
+              'tw-group/sidebar-wrapper tw-flex tw-min-h-svh tw-w-full has-[[data-variant=inset]]:tw-bg-sidebar',
               className
             )}
             ref={ref}
@@ -289,9 +289,7 @@ const SidebarHeader = React.forwardRef(({ className, ...props }, ref) => {
 SidebarHeader.displayName = 'SidebarHeader';
 
 const SidebarFooter = React.forwardRef(({ className, ...props }, ref) => {
-  return (
-    <div ref={ref} data-sidebar="footer" className={cn('tw-flex tw-flex-col tw-gap-2 tw-p-2', className)} {...props} />
-  );
+  return <div ref={ref} data-sidebar="footer" className={cn('tw-flex tw-flex-col tw-gap-2', className)} {...props} />;
 });
 SidebarFooter.displayName = 'SidebarFooter';
 
@@ -393,7 +391,8 @@ const SidebarMenuItem = React.forwardRef(({ className, ...props }, ref) => (
 SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const sidebarMenuButtonVariants = cva(
-  'tw-peer/menu-button tw-flex tw-w-full tw-items-center tw-gap-2 tw-overflow-hidden tw-rounded-md tw-p-2 tw-text-left tw-text-sm tw-outline-none tw-ring-sidebar-ring tw-transition-[width,height,padding] hover:tw-bg-sidebar-accent hover:tw-text-sidebar-accent-foreground focus-visible:tw-ring-2 active:tw-bg-sidebar-accent active:tw-text-sidebar-accent-foreground disabled:tw-pointer-events-none disabled:tw-opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:tw-pr-8 aria-disabled:tw-pointer-events-none aria-disabled:tw-opacity-50 data-[active=true]:tw-bg-sidebar-accent data-[active=true]:tw-font-medium data-[active=true]:tw-text-sidebar-accent-foreground data-[state=open]:hover:tw-bg-sidebar-accent data-[state=open]:hover:tw-text-sidebar-accent-foreground group-data-[collapsible=icon]:!tw-size-8 group-data-[collapsible=icon]:!tw-p-2 [&>span:last-child]:tw-truncate [&>svg]:tw-size-4 [&>svg]:tw-shrink-0',
+  'peer/menu-button tw-flex tw-w-full tw-items-center tw-gap-2 tw-overflow-hidden tw-rounded-md tw-p-2 tw-text-left tw-text-sm tw-outline-none tw-ring-sidebar-ring tw-transition-[width,height,padding] hover:tw-bg-sidebar-accent hover:tw-text-sidebar-accent-foreground focus-visible:tw-ring-2 active:tw-bg-sidebar-accent active:tw-text-sidebar-accent-foreground disabled:tw-pointer-events-none disabled:tw-opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:tw-pr-8 aria-disabled:tw-pointer-events-none aria-disabled:tw-opacity-50 data-[active=true]:tw-bg-sidebar-accent data-[active=true]:tw-font-medium data-[active=true]:tw-text-sidebar-accent-foreground data-[state=open]:hover:tw-bg-sidebar-accent data-[state=open]:hover:tw-text-sidebar-accent-foreground group-data-[collapsible=icon]:!tw-size-8 group-data-[collapsible=icon]:tw-p-2 [&>span:last-child]:tw-truncate [&>svg]:tw-size-4 [&>svg]:tw-shrink-0',
+
   {
     variants: {
       variant: {
@@ -419,6 +418,7 @@ const SidebarMenuButton = React.forwardRef(
     const Comp = asChild ? Slot : 'button';
     const { isMobile, state } = useSidebar();
 
+    console.log('Comp', Comp);
     const button = (
       <Comp
         ref={ref}

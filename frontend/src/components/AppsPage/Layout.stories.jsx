@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AppsPageLayout } from './Layout';
+import { MainLayout } from '@/components/layouts/MainLayout';
+import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 
 import { PageContainer } from '@/components/AppsPage/PageContainer';
 import { AppsPageHeader } from '@/components/AppsPage/AppsPageHeader';
@@ -142,15 +143,9 @@ function TableCellViewer({ item }) {
 
 export default {
   title: 'Flows/AppsPage/Layout',
-  component: AppsPageLayout,
+  component: MainLayout,
   parameters: {
     layout: 'fullscreen',
-  },
-  argTypes: {
-    searchPlaceholder: {
-      control: 'text',
-      description: 'Search input placeholder text',
-    },
   },
 };
 
@@ -178,7 +173,7 @@ const EmptyState = () => {
   );
 };
 
-const Template = (args) => {
+const Template = () => {
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearch = (value) => {
@@ -186,19 +181,24 @@ const Template = (args) => {
     console.log('Search:', value);
   };
 
+  const searchSlot = (
+    <TopBarSearch
+      placeholder="Search"
+      value={searchValue}
+      onChange={handleSearch}
+    />
+  );
+
   return (
     <div className="tw-h-screen tw-bg-background-surface-layer-01">
-      <AppsPageLayout {...args} searchValue={searchValue} onSearch={handleSearch}>
+      <MainLayout topbarLeftSlot={searchSlot}>
         <EmptyState />
-      </AppsPageLayout>
+      </MainLayout>
     </div>
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
-  searchPlaceholder: 'Search',
-};
+export const Default = Template;
 
 export const AppsPageListView = () => {
   const menuItems = [
@@ -245,9 +245,17 @@ export const AppsPageListView = () => {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  const searchSlot = (
+    <TopBarSearch
+      placeholder="Search apps..."
+      value={searchValue}
+      onChange={(value) => setSearchValue(value)}
+    />
+  );
+
   return (
     <div className="tw-h-screen tw-bg-background-surface-layer-01">
-      <AppsPageLayout searchPlaceholder="Search apps..." searchValue={searchValue} onSearch={setSearchValue}>
+      <MainLayout topbarLeftSlot={searchSlot}>
         <PageContainer footer={<TablePaginationFooter table={table} />}>
           <div className="tw-space-y-4">
             <AppsPageHeader
@@ -259,7 +267,7 @@ export const AppsPageListView = () => {
             <AppsList data={data} table={table} />
           </div>
         </PageContainer>
-      </AppsPageLayout>
+      </MainLayout>
     </div>
   );
 };

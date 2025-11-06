@@ -1,6 +1,6 @@
 import React from 'react';
-import { AppSidebar } from './app-sidebar';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from './sidebar';
+import { AppSidebar } from '../app-sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/Rocket/sidebar';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,11 +8,11 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '../ui/breadcrumb';
-import { Separator } from '../ui/separator';
+} from '@/components/ui/breadcrumb';
+import { Separator } from '@/components/ui/separator';
 
 export default {
-  title: 'Components/Sidebar',
+  title: 'Components/Blocks/Sidebar/AppSidebar',
   component: AppSidebar,
   decorators: [
     (Story) => (
@@ -58,3 +58,4 @@ const Template = (args) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+

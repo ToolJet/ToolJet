@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,7 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from './sidebar';
+} from '@/components/ui/Rocket/sidebar';
 
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
@@ -72,3 +72,4 @@ export function NavProjects({ projects }) {
     </SidebarGroup>
   );
 }
+

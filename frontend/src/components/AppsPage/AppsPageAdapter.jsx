@@ -258,7 +258,13 @@ function AppsPageAdapter({
 
     // Menu items based on permissions (use computedPerms since we computed it for columns)
     const menuItems = computedPerms.canImport
-      ? [{ label: 'Import template', onClick: () => console.log('Import template'), icon: 'Download' }]
+      ? [
+          {
+            label: 'Import template',
+            onClick: () => console.log('Import template'),
+            icon: 'Download',
+          },
+        ]
       : [];
 
     return (
