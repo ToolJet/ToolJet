@@ -97,7 +97,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           if (isQuerySelected) return;
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
-            if (menuBtn.contains(e.target)) {
+            if (menuBtn && menuBtn.contains(e.target)) {
               e.stopPropagation();
             } else {
               toggleQueryHandlerMenu(false);
@@ -152,7 +152,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        {!shouldFreeze && (
+        {!shouldFreeze && hasPermissions && (
           <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
             <ButtonComponent
               iconOnly

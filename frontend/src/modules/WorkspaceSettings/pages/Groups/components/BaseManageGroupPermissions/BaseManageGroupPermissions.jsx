@@ -21,7 +21,7 @@ import _ from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissions extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -50,7 +50,7 @@ class BaseManageGroupPermissions extends React.Component {
     };
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.fetchGroups();
   }
 
@@ -92,8 +92,16 @@ class BaseManageGroupPermissions extends React.Component {
           creatingGroup: false,
           groupDuplicateOption: this.props.groupDuplicateOption,
         });
-        console.error('Error occured in duplicating: ', err);
-        toast.error('Could not duplicate group.\nPlease try again!');
+
+        console.error('Error occurred in duplicating:', err);
+
+        // Use the actual backend message if available
+        const message =
+          err?.data?.message ||
+          err?.error ||
+          'Could not duplicate group.\nPlease try again!';
+
+        toast.error(message);
       });
   };
 
@@ -381,7 +389,7 @@ class BaseManageGroupPermissions extends React.Component {
       });
   };
 
-  render () {
+  render() {
     const {
       isLoading,
       showNewGroupForm,
@@ -568,7 +576,7 @@ class BaseManageGroupPermissions extends React.Component {
                   noTooltipIfValid={true}
                   isAvailable={isFeatureEnabled}
                   placement={'bottom'}
-                  customMessage={'Custom groups are available only in paid plans'}
+                  customMessage={'Custom groups are not available in your plan'}
                 >
                   <ButtonSolid
                     className="btn btn-primary create-new-group-button"
@@ -748,7 +756,7 @@ class BaseManageGroupPermissions extends React.Component {
                             noTooltipIfValid={true}
                             isAvailable={isFeatureEnabled}
                             placement={'right'}
-                            customMessage={'Custom groups are available only in paid plans'}
+                            customMessage={'Custom groups are not available in your plan'}
                           >
                             <ButtonSolid
                               onClick={(e) => {
@@ -846,6 +854,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
+                    bannerType="custom-groups"
                     customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
