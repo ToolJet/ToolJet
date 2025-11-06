@@ -23,7 +23,7 @@
       "value": ""
     },
     "api_version": {
-      "value": "v2"
+      "value": "v3"
     }
   },
   "properties": {
@@ -47,21 +47,23 @@
           "label": "API token",
           "key": "api_token",
           "type": "password",
-          "description": "API token for nocodb"
+          "description": "API token for nocodb",
+          "hint": "Your NocoDB API token. Read [here](https://nocodb.com/docs/product-docs/account-settings/api-tokens) to get one."
         },
         "api_version": {
           "label": "API Version",
           "key": "api_version",
           "type": "dropdown-component-flip",
           "description": "Choose api version",
+          "hint": "Choose the api version to use. It is recommended to use API v3 when able.",
           "list": [
             {
               "value": "v2",
-              "label": "Api v2"
+              "label": "API v2"
             },
             {
               "value": "v3",
-              "label": "Api v3"
+              "label": "API v3"
             }
           ]
         }
