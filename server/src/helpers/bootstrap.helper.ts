@@ -175,7 +175,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
               'www.googletagmanager.com',
             ].concat(cspWhitelistedDomains),
             'object-src': ["'self'", 'data:'],
-            'media-src': ["'self'", 'data:'],
+            'media-src': ["'self'", 'data:', 'blob:'],
             'default-src': [
               'maps.googleapis.com',
               'storage.googleapis.com',
