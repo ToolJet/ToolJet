@@ -1,5 +1,5 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
-import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
+import { safelyParseJSON } from '@/_helpers/utils';
 import { getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import _ from 'lodash';
 import queryString from 'query-string';

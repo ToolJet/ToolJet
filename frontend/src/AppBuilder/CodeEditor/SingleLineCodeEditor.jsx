@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved */
 import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
-import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
+import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
@@ -24,11 +24,10 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
-// import { EditorContext } from '../Context/EditorContextWrapper';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue } from '@/Editor/Components/utils';
+import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
@@ -84,10 +83,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
-
-  //! Re render the component when the componentName changes as the initialValue is not updated
-
-  // const { variablesExposedForPreview } = useContext(EditorContext) || {};
 
   // const customVariables = variablesExposedForPreview?.[componentId] ?? {};
 

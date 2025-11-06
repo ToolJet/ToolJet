@@ -10,7 +10,7 @@ import ErrorMessage from './Components/ErrorMessage';
 import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const FilePicker = (props) => {
   const {

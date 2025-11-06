@@ -1,6 +1,6 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { gitSyncService } from '@/_services';
-import { useAppDataStore } from '@/_stores/appDataStore';
+
 const initialState = {
   showGitSyncModal: false,
   allowEditing: false,

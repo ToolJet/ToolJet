@@ -4,7 +4,7 @@ import FocusTrap from 'focus-trap-react';
 import cx from 'classnames';
 import useMountTransition from '@/_hooks/useMountTransition';
 import { useEventListener } from '@/_hooks/use-event-listener';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import '@/_styles/drawer.scss';
 
 function createPortalRoot() {

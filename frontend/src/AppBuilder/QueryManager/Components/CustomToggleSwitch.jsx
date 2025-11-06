@@ -2,6 +2,7 @@ import React from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 export const CustomToggleSwitch = ({
+  onClickCapture,
   isChecked,
   toggleSwitchFunction,
   action,
@@ -10,6 +11,7 @@ export const CustomToggleSwitch = ({
   dataCy = '',
   disabled = false,
   subLabel = '',
+  stopClickPropagation = false,
 }) => {
   const switchToggle = (
     <label className="switch">
@@ -17,7 +19,9 @@ export const CustomToggleSwitch = ({
         type="checkbox"
         id={action}
         checked={isChecked}
-        onClick={() => {
+        onClickCapture={onClickCapture}
+        onClick={(event) => {
+          if (stopClickPropagation) event.stopPropagation();
           if (action === 'bodyToggle') {
             toggleSwitchFunction(!isChecked);
           } else {

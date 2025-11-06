@@ -1,5 +1,4 @@
 import { resolveDynamicValues } from '../utils';
-// import { extractAndReplaceReferencesFromString, resolveCode, resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import _ from 'lodash';
@@ -581,7 +580,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   resolveReferences: (
-    moduleId,
+    moduleId = 'canvas',
     object,
     _state,
     defaultValue,

@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
-import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const CustomButton = forwardRef((props, forwardedRef) => {

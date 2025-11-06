@@ -1,7 +1,7 @@
 import { isEmpty, isEqual, get } from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { ToolTip } from '@/_components/ToolTip';
 

@@ -4,8 +4,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import _, { debounce, omit } from 'lodash';
 import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
-import { useAppInfo } from '@/_stores/appDataStore';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
@@ -25,7 +24,7 @@ import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import './form.scss';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const FormComponent = (props) => {
   const {

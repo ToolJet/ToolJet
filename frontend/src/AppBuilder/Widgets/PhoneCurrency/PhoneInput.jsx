@@ -9,7 +9,7 @@ import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '.
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const tinycolor = require('tinycolor2');
 

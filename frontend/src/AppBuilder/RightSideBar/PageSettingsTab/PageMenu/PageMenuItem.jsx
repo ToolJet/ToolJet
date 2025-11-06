@@ -1,16 +1,13 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
-import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
 import Home from '@/_ui/Icon/solidIcons/Home';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import { RenameInput } from './RenameInput';
-import IconSelector from './IconSelector';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -20,7 +17,6 @@ import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
-import { resolveReferences } from '@/_helpers/utils';
 
 export const PAGE_TYPES = {
   default: '',
