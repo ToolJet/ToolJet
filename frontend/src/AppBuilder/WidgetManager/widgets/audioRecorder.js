@@ -4,8 +4,8 @@ export const audioRecorderConfig = {
     description: 'Records audio',
     component: 'AudioRecorder',
     defaultSize: {
-        width: 4,
-        height: 40,
+        width: 8,
+        height: 70,
     },
     others: {
         showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

@@ -5,6 +5,7 @@ import './audioRecorder.scss';
 import RecorderActionIcon from './RecorderActionIcon';
 import RecorderStatusDisplay from './RecorderStatusDisplay';
 import RecorderActions from './RecorderActions';
+import Waveform from './Waveform';
 import { blobToDataURL, blobToBinary } from './utils';
 import * as Icons from '@tabler/icons-react';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
@@ -25,6 +26,7 @@ export const AudioRecorder = ({
   // State
   const [isPlaying, setIsPlaying] = useState(false);
   const [playTimerKey, setPlayTimerKey] = useState(0);
+  const [mediaStream, setMediaStream] = useState(null);
   const [permissionState, setPermissionState] = useState('granted');
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
@@ -71,6 +73,8 @@ export const AudioRecorder = ({
   // Event handlers
   const onClick = async () => {
     if (status === 'idle') {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMediaStream(stream);
       startRecording();
       fireEvent('onRecordingStart');
     } else if (status === 'recording') {
@@ -87,12 +91,30 @@ export const AudioRecorder = ({
   };
 
   const onPlay = () => {
+    // Ensure we have a playable source
+    if (!mediaBlobUrl) return;
+
     if (!audioRef.current) {
-      audioRef.current = new Audio(mediaBlobUrl);
+      audioRef.current = new Audio();
     }
-    audioRef.current.play();
+
+    // If src differs or was cleared, set it and reload element state
+    if (audioRef.current.src !== mediaBlobUrl) {
+      audioRef.current.src = mediaBlobUrl;
+      // Calling load ensures the browser re-evaluates the new source
+      audioRef.current.load();
+    }
+
+    // Play and update UI state
+    const playPromise = audioRef.current.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        // Swallow NotSupported/NotAllowed errors triggered by rapid replays
+      });
+    }
     setIsPlaying(true);
 
+    // Rebind ended listener to reset UI on playback completion
     if (endedListenerRef.current) {
       audioRef.current.removeEventListener('ended', endedListenerRef.current);
     }
@@ -122,14 +144,19 @@ export const AudioRecorder = ({
       dataURL: null,
       rawBinary: null,
     });
+
     if (audioRef.current) {
+      // stop and reset playback
       audioRef.current.pause();
+      audioRef.current.src = ''; // clear source safely
+      audioRef.current.load(); // reset element state
+
       if (endedListenerRef.current) {
         audioRef.current.removeEventListener('ended', endedListenerRef.current);
         endedListenerRef.current = null;
       }
     }
-    audioRef.current = null;
+
     setIsPlaying(false);
   };
 
@@ -186,6 +213,7 @@ export const AudioRecorder = ({
     padding: '16px',
     boxShadow: boxShadow,
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    overflow: 'hidden',
   };
 
   const buttonTextStyle = {
@@ -204,8 +232,6 @@ export const AudioRecorder = ({
     if (status === 'stopped') return isPlaying ? 'Pause playback' : 'Play recording';
     return 'Audio recorder';
   }, [status, isPlaying, permissionState]);
-
-  console.log('status', status, permissionState);
 
   // Render
   return (
@@ -239,6 +265,15 @@ export const AudioRecorder = ({
               label={label}
             />
           </span>
+          {status !== 'idle' && (
+            <Waveform
+              status={status}
+              mediaStream={mediaStream}
+              blobUrl={mediaBlobUrl}
+              isPlaying={isPlaying}
+              audioRef={audioRef}
+            />
+          )}
           <div className="save-discard-button-container">
             <RecorderActions
               status={status}
