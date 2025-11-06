@@ -23,6 +23,10 @@ import { Page } from './page.entity';
 import { EventHandler } from './event_handler.entity';
 import { WorkflowSchedule } from './workflow_schedule.entity';
 
+export enum AppVersionType {
+  VERSION = 'version',
+  BRANCH = 'branch',
+}
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
 export class AppVersion extends BaseEntity {
@@ -46,6 +50,14 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'home_page_id' })
   homePageId: string;
+
+  @Column({
+    name: 'version_type',
+    type: 'enum',
+    enum: AppVersionType,
+    default: AppVersionType.VERSION,
+  })
+  versionType: AppVersionType;
 
   @Column({ name: 'app_id' })
   appId: string;
