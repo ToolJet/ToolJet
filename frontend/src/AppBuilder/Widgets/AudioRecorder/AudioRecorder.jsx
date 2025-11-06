@@ -1,18 +1,28 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { IconMicrophoneOff, IconPlayerPause, IconPlayerPlay, IconCheck, IconX, IconTrash } from '@tabler/icons-react';
 import './audioRecorder.scss';
-import RecordTimer from './RecordTimer';
+import RecorderActionIcon from './RecorderActionIcon';
+import RecorderStatusDisplay from './RecorderStatusDisplay';
+import RecorderActions from './RecorderActions';
 import { blobToDataURL, blobToBinary } from './utils';
 import * as Icons from '@tabler/icons-react';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
-export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariable, setExposedVariables, dataCy }) => {
+export const AudioRecorder = ({
+  styles,
+  properties,
+  fireEvent,
+  setExposedVariable,
+  setExposedVariables,
+  dataCy: _dataCy,
+}) => {
+  // Props
   const { recorderIcon, labelColor, accentColor, backgroundColor, borderColor, borderRadius, boxShadow } = styles;
   const { label, loadingState, disabledState, visibility } = properties;
 
+  // State
   const [isPlaying, setIsPlaying] = useState(false);
   const [playTimerKey, setPlayTimerKey] = useState(0);
   const [permissionState, setPermissionState] = useState('granted');
@@ -22,9 +32,11 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     isDisabled: disabledState,
   });
 
+  // Refs
   const audioRef = useRef(null);
   const endedListenerRef = useRef(null);
 
+  // Media recorder setup
   const { status, startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl, clearBlobUrl } =
     useReactMediaRecorder({
       audio: true,
@@ -40,9 +52,11 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
       },
     });
 
+  // Icons
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[recorderIcon] == undefined ? Icons['IconMicrophone'] : Icons[recorderIcon];
 
+  // Helpers
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
@@ -50,6 +64,11 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     }));
   };
 
+  const openMicPermissionsHelp = () => {
+    window.open('https://support.google.com/chrome/answer/2693767', '_blank');
+  };
+
+  // Event handlers
   const onClick = async () => {
     if (status === 'idle') {
       startRecording();
@@ -74,7 +93,6 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     audioRef.current.play();
     setIsPlaying(true);
 
-    // Ensure we do not attach multiple listeners across plays
     if (endedListenerRef.current) {
       audioRef.current.removeEventListener('ended', endedListenerRef.current);
     }
@@ -115,43 +133,6 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     setIsPlaying(false);
   };
 
-  const ButtonIcon = useMemo(() => {
-    if (permissionState === 'denied') {
-      return <IconMicrophoneOff width={14} height={14} color="var(--cc-default-icon)" />;
-    } else if (status === 'idle' || status === 'paused') {
-      return <IconElement width={14} height={14} color="#F6430D" />;
-    } else if (status === 'recording') {
-      return <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />;
-    } else if (status === 'stopped') {
-      return isPlaying ? (
-        <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />
-      ) : (
-        <IconPlayerPlay width={14} height={14} color="var(--icon-strong)" />
-      );
-    }
-    return <IconElement width={14} height={14} color="#F6430D" />;
-  }, [status, isPlaying, permissionState, recorderIcon]);
-
-  const ButtonContent = useMemo(() => {
-    if (permissionState === 'denied') {
-      return 'Microphone permission denied';
-    } else if (['recording', 'paused', 'stopping', 'stopped'].includes(status)) {
-      return (
-        <div className="audio-recorder-timer-container">
-          {status === 'stopped' && (
-            <>
-              <RecordTimer isRunning={isPlaying} key={playTimerKey} />/
-            </>
-          )}
-
-          <RecordTimer isRunning={status === 'recording'} />
-        </div>
-      );
-    } else {
-      return label;
-    }
-  }, [status, isPlaying, playTimerKey, label, permissionState]);
-
   useBatchedUpdateEffectArray([
     {
       dep: visibility,
@@ -176,6 +157,8 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     },
   ]);
 
+  // Effects
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     setExposedVariables(exposedVariablesTemporaryState);
     if (navigator.permissions) {
@@ -191,7 +174,9 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
       }
     };
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
+  // Inline styles
   const wrapperContainerStyle = {
     width: '100%',
     height: '100%',
@@ -210,6 +195,7 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     lineHeight: '20px',
   };
 
+  // Aria labels
   const ariaLabel = useMemo(() => {
     if (permissionState === 'denied') return 'Microphone permission denied';
     if (status === 'idle') return 'Start recording';
@@ -219,6 +205,9 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
     return 'Audio recorder';
   }, [status, isPlaying, permissionState]);
 
+  console.log('status', status, permissionState);
+
+  // Render
   return (
     <div style={wrapperContainerStyle}>
       {exposedVariablesTemporaryState.isLoading ? (
@@ -232,50 +221,32 @@ export const AudioRecorder = ({ styles, properties, fireEvent, setExposedVariabl
             className="audio-recorder-button"
             size="md"
             onClick={onClick}
-            // data-cy={dataCy}
             aria-label={ariaLabel}
           >
-            {ButtonIcon}
+            <RecorderActionIcon
+              permissionState={permissionState}
+              status={status}
+              isPlaying={isPlaying}
+              IconElement={IconElement}
+            />
           </ButtonSolid>
-          <span style={buttonTextStyle}>{ButtonContent}</span>
+          <span style={buttonTextStyle}>
+            <RecorderStatusDisplay
+              permissionState={permissionState}
+              status={status}
+              isPlaying={isPlaying}
+              playTimerKey={playTimerKey}
+              label={label}
+            />
+          </span>
           <div className="save-discard-button-container">
-            {status === 'paused' && (
-              <>
-                <ButtonSolid
-                  variant="primary"
-                  className="audio-recorder-button"
-                  size="md"
-                  onClick={onSave}
-                  // data-cy={dataCy}
-                >
-                  <IconCheck width={14} height={14} color="var(--icon-on-solid)" />
-                </ButtonSolid>
-                <ButtonSolid
-                  variant="tertiary"
-                  className="audio-recorder-button"
-                  size="md"
-                  onClick={onReset}
-                  // data-cy={dataCy}
-                >
-                  <IconX width={14} height={14} color="var(--icon-strong)" />
-                </ButtonSolid>
-              </>
-            )}
-            {status === 'stopped' && (
-              <ButtonSolid variant="tertiary" className="audio-recorder-button" size="md" onClick={onReset}>
-                <IconTrash width={14} height={14} color="var(--icon-strong)" />
-              </ButtonSolid>
-            )}
-            {permissionState === 'denied' && (
-              <span
-                className="permission-denied-text"
-                onClick={() => {
-                  window.open('https://support.google.com/chrome/answer/2693767', '_blank');
-                }}
-              >
-                Know more
-              </span>
-            )}
+            <RecorderActions
+              status={status}
+              permissionState={permissionState}
+              onSave={onSave}
+              onReset={onReset}
+              openMicPermissionsHelp={openMicPermissionsHelp}
+            />
           </div>
         </div>
       )}
