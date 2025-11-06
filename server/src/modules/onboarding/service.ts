@@ -135,7 +135,7 @@ export class OnboardingService implements IOnboardingService {
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
           if (!defaultWorkspace.enableSignUp) {
-            throw new ForbiddenException('Signup is disabled. Contact the workspace admin.');
+            throw new ForbiddenException('Signup is disabled for the default workspace. Please contact the workspace admin.');
           }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
