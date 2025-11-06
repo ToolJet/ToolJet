@@ -943,31 +943,32 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  const logsRes = await fetch(`https://api.render.com/v1/services/${ceServiceId}/logs`, {
+                  // Fetch logs using Render API - direction=backward to get most recent logs first
+                  const logsUrl = `https://api.render.com/v1/logs?resourceIds=${ceServiceId}&direction=backward&limit=20`;
+                  console.log('Fetching CE logs from:', logsUrl);
+                  
+                  const logsRes = await fetch(logsUrl, {
                     headers: {
-                      'accept': 'text/plain',
+                      'accept': 'application/json',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
                   
-                  if (!logsRes.ok) {
-                    throw new Error(`HTTP error! status: ${logsRes.status}`);
-                  }
+                  console.log('CE Logs Response Status:', logsRes.status);
+                  const logsResponse = await logsRes.json();
+                  console.log('CE Logs Response:', JSON.stringify(logsResponse).substring(0, 500));
                   
-                  const logsText = await logsRes.text();
-                  
-                  if (logsText && logsText.trim()) {
-                    // Split by newlines and get last 20 lines
-                    const logLines = logsText.trim().split('\n');
-                    const last20Lines = logLines.slice(-20).join('\n');
-                    if (last20Lines) {
-                      ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${last20Lines}\n\`\`\``;
+                  // The API returns an array of log objects directly
+                  if (Array.isArray(logsResponse) && logsResponse.length > 0) {
+                    // Extract log messages (logs are already in backward direction, so reverse to show chronologically)
+                    const allLogs = logsResponse.map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').reverse();
+                    const errorLogs = allLogs.join('\n');
+                    if (errorLogs) {
+                      ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
                     }
-                  }
-                } catch (error) {
-                  console.log('Failed to fetch CE error logs:', error);
-                  ceInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
-                }
+                  } else {
+                    console.log('No logs found in response');
+                    ceInfo += `\n\n**Error Logs:** No logs available for this deployment`;
                   }
                 } catch (error) {
                   console.log('Failed to fetch CE error logs:', error);
@@ -1051,30 +1052,36 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  const logsRes = await fetch(`https://api.render.com/v1/services/${eeServiceId}/logs`, {
+                  // Fetch logs using Render API - direction=backward to get most recent logs first
+                  const logsUrl = `https://api.render.com/v1/logs?resourceIds=${eeServiceId}&direction=backward&limit=20`;
+                  console.log('Fetching EE logs from:', logsUrl);
+                  
+                  const logsRes = await fetch(logsUrl, {
                     headers: {
-                      'accept': 'text/plain',
+                      'accept': 'application/json',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
                   
-                  if (!logsRes.ok) {
-                    throw new Error(`HTTP error! status: ${logsRes.status}`);
-                  }
+                  console.log('EE Logs Response Status:', logsRes.status);
+                  const logsResponse = await logsRes.json();
+                  console.log('EE Logs Response:', JSON.stringify(logsResponse).substring(0, 500));
                   
-                  const logsText = await logsRes.text();
-                  
-                  if (logsText && logsText.trim()) {
-                    // Split by newlines and get last 20 lines
-                    const logLines = logsText.trim().split('\n');
-                    const last20Lines = logLines.slice(-20).join('\n');
-                    if (last20Lines) {
-                      eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${last20Lines}\n\`\`\``;
+                  // The API returns an array of log objects directly
+                  if (Array.isArray(logsResponse) && logsResponse.length > 0) {
+                    // Extract log messages (logs are already in backward direction, so reverse to show chronologically)
+                    const allLogs = logsResponse.map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').reverse();
+                    const errorLogs = allLogs.join('\n');
+                    if (errorLogs) {
+                      eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
                     }
+                  } else {
+                    console.log('No logs found in response');
+                    eeInfo += `\n\n**Error Logs:** No logs available for this deployment`;
                   }
                 } catch (error) {
                   console.log('Failed to fetch EE error logs:', error);
-                  eeInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                  eeInfo += `\n\n**Error Logs:** Failed to retrieve error logs - ${error.message}`;
                 }
               }
             }
