@@ -205,7 +205,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     // Custom headers middleware
     app.use((req, res, next) => {
-      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(self), microphone=(self)');
       res.setHeader('X-Powered-By', 'ToolJet');
 
       if (req.path.startsWith(`${subPath || '/'}api/`)) {
