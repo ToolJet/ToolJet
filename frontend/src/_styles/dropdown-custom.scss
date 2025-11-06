@@ -1,21 +1,4 @@
 // for selects and dropdowns across app dashboard
-.dropdown-container {
-  margin-bottom: 16px;
-
-  .dropdown-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-primary, #333);
-    margin-bottom: 2px;
-    text-align: left;
-  }
-
-  .stripe-operation-options {
-    width: 100%;
-  }
-}
-
 .react-select__control {
   background-color: var(--surfaces-surface-01) !important;
   border: 1px solid var(--border-weak) !important;

@@ -579,11 +579,7 @@ const DynamicForm = ({
         <label
           className="form-label"
           data-cy={`label-${generateCypressDataCy(label)}`}
-          style={{
-            textDecoration: tooltip ? 'underline 2px dashed' : 'none',
-            textDecorationColor: 'var(--slate8)',
-            marginBottom: '2px'
-          }}
+          style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
           {label}
         </label>
@@ -640,7 +636,7 @@ const DynamicForm = ({
                       'form-label': isHorizontalLayout,
                       'align-items-center': !isHorizontalLayout,
                     })}
-                    style={{ minWidth: '100px' , marginBottom: '0'}}
+                    style={{ minWidth: '100px' }}
                   >
                     {label && renderLabel(label, obj[key].tooltip)}
 
@@ -725,7 +721,6 @@ const DynamicForm = ({
                 <label
                   className={cx('form-label')}
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                  style={{ marginBottom: '2px' }}
                 >
                   {flipComponentDropdown.label}
                 </label>

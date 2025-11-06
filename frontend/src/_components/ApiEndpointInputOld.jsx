@@ -140,11 +140,11 @@ const ApiEndpointInput = (props) => {
       )}
       {options && !loadingSpec && (
         <div>
-          <div className="dropdown-container mb-3">
-            <label className="form-label dropdown-label">
-              {props.t('globals.operation', 'Operation')}
-            </label>
-            <div className="stripe-operation-options">
+          <div className="d-flex g-2">
+            <div className="col-12 form-label">
+              <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
+            </div>
+            <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
               <Select
                 options={computeOperationSelectionOptions()}
                 value={{
@@ -158,14 +158,14 @@ const ApiEndpointInput = (props) => {
                 styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
                 useCustomStyles={true}
               />
+              {options?.selectedOperation && (
+                <small
+                  style={{ margintTop: '10px' }}
+                  className="my-2"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
+                />
+              )}
             </div>
-            {options?.selectedOperation && (
-              <small
-                style={{ margintTop: '10px' }}
-                className="my-2"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
-              />
-            )}
           </div>
           {options?.selectedOperation && (
             <div className={`row stripe-fields-row ${props.darkMode && 'theme-dark'}`}>
@@ -331,9 +331,9 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
 
   return (
     filteredParams?.length > 0 && (
-      <div className={`${type === 'request' ? 'request-body' : type}-fields`}>
-        <h5 className="text-heading form-label mb-2">{label}</h5>
-        <div className="input-group-parent-container">
+      <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
+        <h5 className="text-heading form-label">{label}</h5>
+        <div className="flex-grow-1 input-group-parent-container">
           {filteredParams.map((param) => (
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">

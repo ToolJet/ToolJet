@@ -712,7 +712,7 @@ const ToolJetDbOperations = ({
       )}
       {activeTab === 'SQL mode' && (
         <div className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
-          {/*<label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>*/}
+          <label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>
           <CodeHinter
             type="multiline"
             initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
