@@ -38,6 +38,12 @@ export class OrganizationGitSync extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ name: 'is_branching_enabled', nullable: false, default: false })
+  isBranchingEnabled: boolean;
+
+  @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
+  schemaVersion: string;
+
   @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'app_git_sync',
