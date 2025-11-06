@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet.
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup** or **when using workflows**, you must use an **external Redis instance** with proper persistence configuration.
 :::
 
 ## Deploying ToolJet Application
@@ -137,11 +137,37 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 
 ### Enabling Workflow Scheduling
 
-To activate workflow scheduling, set the following environment variable:
+To activate workflow scheduling, set the following environment variables:
 
 ```bash
+# Bull Board Dashboard Password (required for /jobs dashboard access)
+TOOLJET_QUEUE_DASH_PASSWORD=admin
+
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
 WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
+
+**Environment Variable Details:**
+- **TOOLJET_QUEUE_DASH_PASSWORD** (required): Password for accessing the `/jobs` dashboard for monitoring workflow jobs
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
+
+:::warning
+**External Redis Required for Workflows**: When running workflows, you must use an external stateful Redis instance. The built-in Redis setup is not suitable for workflow scheduling in production environments. Configure the Redis connection using the following environment variables:
+- `REDIS_HOST=localhost` - Default: localhost
+- `REDIS_PORT=6379` - Default: 6379
+- `REDIS_USERNAME=` - Optional: Redis username (ACL)
+- `REDIS_PASSWORD=` - Optional: Redis password
+- `REDIS_DB=0` - Optional: Redis database number (default: 0)
+- `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
+:::
 
 ## Upgrading to the Latest LTS Version
 
