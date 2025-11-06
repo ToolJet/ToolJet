@@ -30,7 +30,7 @@ ToolJet has replaced Temporal with BullMQ for workflow scheduling, significantly
 | Monitoring Dashboard | None | Built-in Bull Board at `/jobs` |
 | Infrastructure Cost | Higher | Lower |
 
-## How It Works (High-Level)
+## How It Works
 
 The new BullMQ-based workflow system operates as follows:
 
