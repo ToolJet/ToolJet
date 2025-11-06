@@ -943,29 +943,35 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  // Calculate time range for logs (last 30 minutes from deploy creation)
-                  const deployCreatedAt = deploy.createdAt || new Date().toISOString();
-                  const startTime = new Date(new Date(deployCreatedAt).getTime() - 30 * 60 * 1000).toISOString();
-                  const endTime = new Date().toISOString();
-                  
-                  const logsRes = await fetch(`https://api.render.com/v1/logs?serviceId=${ceServiceId}&deployId=${deployId}&startTime=${startTime}&endTime=${endTime}&limit=100`, {
+                  const logsRes = await fetch(`https://api.render.com/v1/services/${ceServiceId}/logs`, {
                     headers: {
-                      'accept': 'application/json',
+                      'accept': 'text/plain',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
-                  const logsResponse = await logsRes.json();
                   
-                  if (logsResponse && logsResponse.logs && Array.isArray(logsResponse.logs)) {
-                    // Get last 20 log entries
-                    const errorLogs = logsResponse.logs.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
-                    if (errorLogs) {
-                      ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                  if (!logsRes.ok) {
+                    throw new Error(`HTTP error! status: ${logsRes.status}`);
+                  }
+                  
+                  const logsText = await logsRes.text();
+                  
+                  if (logsText && logsText.trim()) {
+                    // Split by newlines and get last 20 lines
+                    const logLines = logsText.trim().split('\n');
+                    const last20Lines = logLines.slice(-20).join('\n');
+                    if (last20Lines) {
+                      ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${last20Lines}\n\`\`\``;
                     }
                   }
                 } catch (error) {
                   console.log('Failed to fetch CE error logs:', error);
                   ceInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                }
+                  }
+                } catch (error) {
+                  console.log('Failed to fetch CE error logs:', error);
+                  ceInfo += `\n\n**Error Logs:** Failed to retrieve error logs - ${error.message}`;
                 }
               }
             }
@@ -1045,24 +1051,25 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  // Calculate time range for logs (last 30 minutes from deploy creation)
-                  const deployCreatedAt = deploy.createdAt || new Date().toISOString();
-                  const startTime = new Date(new Date(deployCreatedAt).getTime() - 30 * 60 * 1000).toISOString();
-                  const endTime = new Date().toISOString();
-                  
-                  const logsRes = await fetch(`https://api.render.com/v1/logs?serviceId=${eeServiceId}&deployId=${deployId}&startTime=${startTime}&endTime=${endTime}&limit=100`, {
+                  const logsRes = await fetch(`https://api.render.com/v1/services/${eeServiceId}/logs`, {
                     headers: {
-                      'accept': 'application/json',
+                      'accept': 'text/plain',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
-                  const logsResponse = await logsRes.json();
                   
-                  if (logsResponse && logsResponse.logs && Array.isArray(logsResponse.logs)) {
-                    // Get last 20 log entries
-                    const errorLogs = logsResponse.logs.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
-                    if (errorLogs) {
-                      eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                  if (!logsRes.ok) {
+                    throw new Error(`HTTP error! status: ${logsRes.status}`);
+                  }
+                  
+                  const logsText = await logsRes.text();
+                  
+                  if (logsText && logsText.trim()) {
+                    // Split by newlines and get last 20 lines
+                    const logLines = logsText.trim().split('\n');
+                    const last20Lines = logLines.slice(-20).join('\n');
+                    if (last20Lines) {
+                      eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${last20Lines}\n\`\`\``;
                     }
                   }
                 } catch (error) {
