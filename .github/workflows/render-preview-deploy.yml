@@ -943,17 +943,22 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  const logsRes = await fetch(`https://api.render.com/v1/services/${ceServiceId}/deploys/${deployId}/logs`, {
+                  // Calculate time range for logs (last 30 minutes from deploy creation)
+                  const deployCreatedAt = deploy.createdAt || new Date().toISOString();
+                  const startTime = new Date(new Date(deployCreatedAt).getTime() - 30 * 60 * 1000).toISOString();
+                  const endTime = new Date().toISOString();
+                  
+                  const logsRes = await fetch(`https://api.render.com/v1/logs?serviceId=${ceServiceId}&deployId=${deployId}&startTime=${startTime}&endTime=${endTime}&limit=100`, {
                     headers: {
                       'accept': 'application/json',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
-                  const logsData = await logsRes.json();
+                  const logsResponse = await logsRes.json();
                   
-                  if (logsData && Array.isArray(logsData)) {
+                  if (logsResponse && logsResponse.logs && Array.isArray(logsResponse.logs)) {
                     // Get last 20 log entries
-                    const errorLogs = logsData.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
+                    const errorLogs = logsResponse.logs.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
                     if (errorLogs) {
                       ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
                     }
@@ -1040,17 +1045,22 @@ jobs:
               // If deployment failed, fetch and include error logs
               if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
                 try {
-                  const logsRes = await fetch(`https://api.render.com/v1/services/${eeServiceId}/deploys/${deployId}/logs`, {
+                  // Calculate time range for logs (last 30 minutes from deploy creation)
+                  const deployCreatedAt = deploy.createdAt || new Date().toISOString();
+                  const startTime = new Date(new Date(deployCreatedAt).getTime() - 30 * 60 * 1000).toISOString();
+                  const endTime = new Date().toISOString();
+                  
+                  const logsRes = await fetch(`https://api.render.com/v1/logs?serviceId=${eeServiceId}&deployId=${deployId}&startTime=${startTime}&endTime=${endTime}&limit=100`, {
                     headers: {
                       'accept': 'application/json',
                       'authorization': `Bearer ${apiKey}`
                     }
                   });
-                  const logsData = await logsRes.json();
+                  const logsResponse = await logsRes.json();
                   
-                  if (logsData && Array.isArray(logsData)) {
+                  if (logsResponse && logsResponse.logs && Array.isArray(logsResponse.logs)) {
                     // Get last 20 log entries
-                    const errorLogs = logsData.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
+                    const errorLogs = logsResponse.logs.slice(-20).map(log => log.message || log.text || '').filter(msg => msg.trim() !== '').join('\n');
                     if (errorLogs) {
                       eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
                     }
