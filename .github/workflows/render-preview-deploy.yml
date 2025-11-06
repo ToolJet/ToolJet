@@ -876,6 +876,7 @@ jobs:
             return labels.data.map(l => l.name);
 
       - name: Fetch CE service and deploy ID
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         run: |
           response=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -903,6 +904,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment CE deployment details
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         uses: actions/github-script@v6
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
@@ -971,6 +973,7 @@ jobs:
             });
 
       - name: Fetch EE service and deploy ID
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         run: |
           response=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -998,6 +1001,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment EE deployment details
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         uses: actions/github-script@v6
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
