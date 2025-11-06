@@ -181,9 +181,10 @@ export const setupWorkspaceAndInviteUser = (
   email,
   role = "end-user"
 ) => {
-  cy.apiCreateWorkspace(workspaceName, workspaceSlug);
-  cy.apiLogout();
-  cy.apiLogin();
+  cy.apiCreateWorkspace(workspaceName, workspaceSlug).then((workspace) => {
+    Cypress.env("workspaceId", workspace.body.organization_id);
+  });
+
   cy.apiFullUserOnboarding(firstName, email, role, "password", workspaceName);
   cy.apiLogout();
 
@@ -228,32 +229,23 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
 
 export const apiAddUserToGroup = (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/organization-users`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const user = response.body.users.find((u) => u.email === email);
-        const userId = user.user_id;
-        return cy
-          .request({
-            method: "POST",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
-            headers: headers,
-            body: {
-              userIds: [userId],
-              groupId: groupId,
-            },
-            log: false,
-          })
-          .then((addResponse) => {
-            expect(addResponse.status).to.equal(201);
-            return userId;
-          });
-      });
+    return cy.apiGetUserDetails(email).then((response) => {
+      const userId = response.body.users.find((u) => u.email === email).user_id;
+      return cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
+          headers: headers,
+          body: {
+            userIds: [userId],
+            groupId: groupId,
+          },
+          log: false,
+        })
+        .then((addResponse) => {
+          expect(addResponse.status).to.equal(201);
+          return userId;
+        });
+    });
   });
 };
