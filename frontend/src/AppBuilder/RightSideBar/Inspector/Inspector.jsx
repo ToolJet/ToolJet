@@ -127,6 +127,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CircularProgressBar',
   'CustomComponent',
   'Html',
+  'AudioRecorder',
 ];
 
 export const Inspector = ({

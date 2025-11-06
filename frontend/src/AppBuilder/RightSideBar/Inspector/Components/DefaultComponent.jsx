@@ -25,6 +25,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'DropdownV2',
   'MultiselectV2',
   'Button',
+  'AudioRecorder',
   'RichTextEditor',
   'Image',
   'CodeEditor',
@@ -67,6 +68,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   StarRating: 'Data',
   CircularProgressBar: 'Data',
   Kanban: 'Board configuration',
+  AudioRecorder: 'Content',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -174,6 +176,7 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'AudioRecorder',
     ],
     Layout: [],
   };

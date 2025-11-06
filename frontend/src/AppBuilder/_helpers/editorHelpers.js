@@ -4,7 +4,7 @@ import { Text } from '@/Editor/Components/Text';
 // import { Table } from '@/Editor/Components/Table/Table';
 // import { Table } from '@/AppBuilder/Widgets/Table/Table';
 import { Table } from '@/AppBuilder/Widgets/NewTable/Table';
-
+import { AudioRecorder } from '@/AppBuilder/Widgets/AudioRecorder/AudioRecorder';
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
 import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
@@ -162,6 +162,7 @@ export const AllComponents = {
   ModuleContainer,
   ModuleViewer,
   PopoverMenu,
+  AudioRecorder,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
