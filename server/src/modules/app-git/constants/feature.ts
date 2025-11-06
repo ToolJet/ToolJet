@@ -44,6 +44,10 @@ export const FEATURES: FeaturesConfig = {
 
     // Used for fetching all branches from remote repo
     [FEATURE_KEY.GET_ALL_BRANCHES]: {},
+
+    [FEATURE_KEY.CREATE_BRANCH]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
   },
 };
 

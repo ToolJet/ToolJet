@@ -9,4 +9,5 @@ export enum FEATURE_KEY {
   GIT_APP_CONFIGS_UPDATE = 'git_app_configs_update',
   GIT_FETCH_APP_CONFIGS = 'get_app_git_configs',
   GET_ALL_BRANCHES = 'get_all_branches',
+  CREATE_BRANCH = 'create_branch',
 }

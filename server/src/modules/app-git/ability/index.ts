@@ -31,6 +31,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // Used for public endpoint to get the app configs
     can(FEATURE_KEY.GIT_FETCH_APP_CONFIGS, AppGitSync);
     can(FEATURE_KEY.GET_ALL_BRANCHES, AppGitSync);
+    can(FEATURE_KEY.CREATE_BRANCH, AppGitSync);
 
     // Grant feature-level access based on resource actions
     if (isAdmin || superAdmin) {
