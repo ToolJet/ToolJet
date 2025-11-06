@@ -73,10 +73,14 @@ export const AudioRecorder = ({
   // Event handlers
   const onClick = async () => {
     if (status === 'idle') {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMediaStream(stream);
-      startRecording();
-      fireEvent('onRecordingStart');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setMediaStream(stream);
+        startRecording();
+        fireEvent('onRecordingStart');
+      } catch (error) {
+        setPermissionState('denied');
+      }
     } else if (status === 'recording') {
       pauseRecording();
     } else if (status === 'paused') {
@@ -188,12 +192,6 @@ export const AudioRecorder = ({
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     setExposedVariables(exposedVariablesTemporaryState);
-    // if (navigator.permissions) {
-    //   navigator.permissions.query({ name: 'microphone' }).then((result) => {
-    //     setPermissionState(result.state);
-    //     result.onchange = () => setPermissionState(result.state);
-    //   });
-    // }
     return () => {
       stopRecording();
       if (audioRef.current && endedListenerRef.current) {
