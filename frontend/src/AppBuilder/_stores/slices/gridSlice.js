@@ -1,6 +1,7 @@
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
   hoveredComponentForGrid: '',
@@ -476,5 +477,29 @@ export const createGridSlice = (set, get) => ({
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
+  },
+  handleCanvasContainerMouseUp: (e) => {
+    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen } = get();
+    const selectedText = window.getSelection().toString();
+    const isClickedOnSubcontainer =
+      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    // Check if any codehinter preview popover is currently open
+    const isCodehinterPreviewOpen = () => {
+      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
+      return popovers.length > 0;
+    };
+
+    if (
+      !isClickedOnSubcontainer &&
+      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+      !selectedText &&
+      !isCodehinterPreviewOpen()
+    ) {
+      clearSelectedComponents();
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
+    }
   },
 });
