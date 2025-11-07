@@ -194,7 +194,8 @@ export const useAppDataStore = create(
       },
     }),
     { name: 'App Data Store' }
-  )
+  ),
+  { skipStoreReset: true } // Skipping this store reset as on App builder page when user opens datasource details form in AI flow while creating/editing data for a particular datasource connection, some data from this store is required and resetting this store was breaking it
 );
 
 const itemToObserve = 'appDiffOptions';
