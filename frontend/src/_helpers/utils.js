@@ -1539,11 +1539,15 @@ export const hasBuilderRole = (roleObj) => {
 };
 
 export function checkIfToolJetCloud(version) {
+  if (!version) return false;
+  
   const parsed = version.split('-');
   return parsed[1] === 'cloud';
 }
 
 export function checkIfToolJetEE(version) {
+  if (!version) return false;
+  
   const parsed = version.split('-');
   return parsed[1] === 'ee';
 }
