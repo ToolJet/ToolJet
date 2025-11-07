@@ -14,7 +14,9 @@ export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanba
 
 export const DEFAULT_CANVAS_WIDTH = 1292;
 
-export const APP_HEADER_HEIGHT = 47;
+export const APP_HEADER_HEIGHT = 48;
+
+export const QUERY_PANE_HEIGHT = 40; // This represents pane that contains trigger to toggle query panel
 
 export const LEFT_SIDEBAR_WIDTH = {
   tooljetai: 440,

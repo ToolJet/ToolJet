@@ -2,6 +2,7 @@ import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/app
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
   hoveredComponentForGrid: '',
@@ -12,6 +13,8 @@ const initialState = {
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
+  isGroupDragging: false,
+  isGroupResizing: false,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
@@ -38,6 +41,8 @@ export const createGridSlice = (set, get) => ({
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+  setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
+  setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -374,8 +379,6 @@ export const createGridSlice = (set, get) => ({
         return hasHorizontalOverlap;
       });
 
-
-
       for (let index = 0; index < targetComponents.length; index++) {
         const component = targetComponents[index];
         const element = document.querySelector(`.ele-${component.id}`);
@@ -434,5 +437,32 @@ export const createGridSlice = (set, get) => ({
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
+  },
+  handleCanvasContainerMouseUp: (e) => {
+    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
+      get();
+    const selectedText = window.getSelection().toString();
+    const isClickedOnSubcontainer =
+      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    // Check if any codehinter preview popover is currently open
+    const isCodehinterPreviewOpen = () => {
+      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
+      return popovers.length > 0;
+    };
+
+    if (
+      !isClickedOnSubcontainer &&
+      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+      !selectedText &&
+      !isCodehinterPreviewOpen() &&
+      !isGroupResizing &&
+      !isGroupDragging
+    ) {
+      clearSelectedComponents();
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
+    }
   },
 });

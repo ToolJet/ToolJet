@@ -250,3 +250,7 @@
   display: none !important;
 }
 
+.show-ghost-group-dragging-resizing {
+  outline: none !important;
+  visibility: hidden !important;
+}
