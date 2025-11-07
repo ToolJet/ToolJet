@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import {
   commonEeSelectors,
@@ -16,22 +17,32 @@ import {
   verifyResourceLimit,
   verifySubTabsAndStoreCurrentLimits,
   verifyTooltip,
-  verifyTotalLimitsWithPlan
+  verifyTotalLimitsWithPlan,
 } from "Support/utils/license";
 import { navigateToEditUser } from "Support/utils/manageUsers";
 import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
 import { licenseText } from "Texts/license";
-import { dashboardSelector } from "../../../../../constants/selectors/dashboard";
+import { dashboardSelector } from "Selectors/dashboard";
+import { workflowSelector } from "Selectors/workflows";
 
 describe("License Page", () => {
-  const data = {};
-
+  const data = {
+    appName1: `${fake.companyName}-License-App-1`,
+    workflowName: `${fake.companyName}-Workflow`,
+  };
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
   });
 
+  after(() => {
+    cy.apiDeleteAllApps();
+    cy.apiDeleteWorkflow(data.workflowName);
+  });
+
   it("Should verify license page elements with the basic plan", () => {
+    cy.apiCreateApp(data.appName1);
+    cy.apiCreateWorkflow(data.workflowName);
     common.navigateToSettingPage();
     cy.get(licenseSelectors.listOfItems(licenseText.license)).click();
 
@@ -74,14 +85,20 @@ describe("License Page", () => {
     const planName = "basic";
     cy.get(commonSelectors.workspaceName).click();
 
-    cy.get('[data-cy="workspace-count"]').should("be.visible");
+    cy.get(commonSelectors.workspaceCount).should("be.visible");
     verifyResourceLimit("workspaces", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
+
     verifyResourceLimit("apps", planName);
 
-    // cy.get(workflowSelector.globalWorkFlowsIcon).click();
-    // verifyResourceLimit("workflow", planName);
+    cy.get(workflowSelector.globalWorkFlowsIcon).click();
+    cy.get(commonSelectors.breadcrumbPageTitle).should(
+      "have.text",
+      "All workflows"
+    );
+    cy.get(workflowSelector.allWorkflowsLink).should("be.visible");
+    verifyResourceLimit("workflow", planName);
 
     common.navigateToManageUsers();
     cy.get(usersSelector.buttonAddUsers).click();
@@ -174,8 +191,7 @@ describe("License Page", () => {
       true
     );
 
-    // cy.apiCreateApp(`${fake.companyName}-license-App`);
-    // cy.openApp();
+    // cy.openApp(appName1);
 
     // cy.get('[data-cy="list-current-env-name"]').click();
     // cy.get('[data-cy="env-name-list"]')

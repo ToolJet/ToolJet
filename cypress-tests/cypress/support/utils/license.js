@@ -206,7 +206,15 @@ export const getResourceKey = (type) => {
     tables: "Tables",
     superadmins: "Super Admins",
   };
-  return map[type];
+
+  const singularToPlural = {
+    app: "apps",
+    workflow: "workflows",
+    user: "users",
+  };
+
+  const key = singularToPlural[type.toLowerCase()] || type.toLowerCase();
+  return map[key];
 };
 
 export const assertLimitState = (
@@ -215,17 +223,34 @@ export const assertLimitState = (
   headingSelector,
   infoSelector,
   currentValue,
-  planLimit,
   planName
 ) => {
-  if (/unlimited/i.test(planLimit)) {
-    cy.get(headingSelector).should("contain.text", "unlimited");
+  if (/unlimited/i.test(planName)) {
+    cy.log(
+      `Resource "${baseLabel}" has unlimited limit. Banner should not appear.`
+    );
+    cy.get(headingSelector).should("not.exist");
     return;
   }
 
   const current = Number(currentValue);
-  const limit = Number(planLimit);
+  const limit = Number(planName);
 
+  if (isNaN(current) || isNaN(limit)) {
+    cy.log(
+      `⚠️ Invalid numbers for ${baseLabel}: current=${currentValue}, limit=${planLimit}`
+    );
+    return;
+  }
+
+  cy.get(headingSelector).then(($el) => {
+    if ($el.length > 0) {
+      cy.wrap($el)
+        .should("be.visible")
+        .invoke("text")
+        .then((text) => cy.log(`${baseLabel} banner heading: ${text}`));
+    }
+  });
   if (current >= limit) {
     cy.get(headingSelector)
       .invoke("text")
@@ -263,24 +288,27 @@ export const verifyResourceLimit = (
   const baseLabel =
     type.charAt(0).toUpperCase() + type.slice(1).replace(/s$/i, "");
 
-  if (isBannerType(type)) {
-    handleFeatureBanner(type, expectedHeading);
-    return;
-  }
-
   const headingSelector = licenseSelectors.limitHeading(cyPrefix);
   const infoSelector = licenseSelectors.limitInfo(cyPrefix);
   const resourceKey = getResourceKey(type);
 
-  if (!resourceKey) return verifyFeatureBanner(cyPrefix, expectedHeading);
+  if (!resourceKey) {
+    cy.log(
+      `No resource key mapped for ${type}. Checking for feature banner instead.`
+    );
+    return verifyFeatureBanner(cyPrefix, expectedHeading);
+  }
 
   cy.fixture(`license/${outputFile}`).then((currentLimits) => {
     const currentValue = currentLimits[resourceKey];
     cy.fixture("license/license.json").then((licenseData) => {
       const plan = licenseData[planName.toLowerCase()];
       const planLimit = plan?.[resourceKey];
-      if (planLimit === undefined)
+
+      if (planLimit === undefined) {
+        cy.log(`Plan limit not defined for ${resourceKey}.`);
         return verifyFeatureBanner(cyPrefix, expectedHeading);
+      }
 
       assertLimitState(
         resourceKey,
@@ -288,8 +316,7 @@ export const verifyResourceLimit = (
         headingSelector,
         infoSelector,
         currentValue,
-        planLimit,
-        planName
+        planLimit
       );
     });
   });

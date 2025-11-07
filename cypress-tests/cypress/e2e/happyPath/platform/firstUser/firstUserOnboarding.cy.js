@@ -22,7 +22,7 @@ describe("Self host onboarding", () => {
     cy.ifEnv("Enterprise", () => {
       cy.get(commonSelectors.HostBanner).should("be.visible");
       cy.get(commonSelectors.pageLogo).should("be.visible");
-      cy.get('[data-cy="welcome-to-tooljet!-header"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.welcomeHeader).verifyVisibleElement(
         "have.text",
         "Welcome to ToolJet!"
       );
@@ -30,11 +30,11 @@ describe("Self host onboarding", () => {
         "have.text",
         "Let's set up your admin account and workspace to get started!"
       );
-      cy.get('[data-cy="set-up-tooljet-button"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.setUpToolJetButton).verifyVisibleElement(
         "have.text",
         "Set up ToolJet"
       );
-      cy.get('[data-cy="set-up-tooljet-button"]').click();
+      cy.get(onboardingSelectors.setUpToolJetButton).click();
     });
 
     const commonElements = [
@@ -184,11 +184,11 @@ describe("Self host onboarding", () => {
       const prices = [
         { selector: `${onboardingSelectors.planPrice}:eq(0)`, text: "$0" },
         {
-          selector: '[data-cy="pro-plan-price"]:eq(0)',
+          selector: `${onboardingSelectors.proPlanPrice}:eq(0)`,
           text: "$79/monthper builder",
         },
         {
-          selector: '[data-cy="pro-plan-price"]:eq(1)',
+          selector: `${onboardingSelectors.proPlanPrice}:eq(1)`,
           text: "$199/monthper builder",
         },
         {
@@ -219,7 +219,7 @@ describe("Self host onboarding", () => {
         .should("have.css", "text-decoration")
         .and("include", "line-through");
 
-      cy.get('[data-cy="pro-plan-price"]')
+      cy.get(onboardingSelectors.proPlanPrice)
         .eq(0)
         .verifyVisibleElement("have.text", "$99/monthper builder");
 
@@ -233,7 +233,7 @@ describe("Self host onboarding", () => {
         .should("have.css", "text-decoration")
         .and("include", "line-through");
 
-      cy.get('[data-cy="pro-plan-price"]')
+      cy.get(onboardingSelectors.proPlanPrice)
         .eq(1)
         .verifyVisibleElement("have.text", "$249/monthper builder");
 
@@ -245,7 +245,7 @@ describe("Self host onboarding", () => {
         "have.text",
         "Custom pricing"
       );
-      cy.get('[data-cy="schedule-a-call-button"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.scheduleACallButton).verifyVisibleElement(
         "have.text",
         "Schedule a call"
       );

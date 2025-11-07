@@ -11,6 +11,7 @@ import {
   verifyResourceLimit,
   verifyUpgradeModal,
 } from "Support/utils/license";
+import { cleanupTestUser } from "Support/utils/manageSSO";
 
 describe("License - User Limits", () => {
   const builderEmail = `builder-${Date.now()}@example.com`;
@@ -19,10 +20,6 @@ describe("License - User Limits", () => {
   const fiftiethViewerEmail = `viewer-${Date.now()}-50@example.com`;
   const fiftiethViewerName = `Viewer Fiftieth ${Date.now()}`;
   const endUserEmail = `enduser-${Date.now()}@example.com`;
-
-  const cleanupTestUser = (email) => {
-    cy.runSqlQuery(`CALL delete_user('${email}');`);
-  };
 
   const allUserEmails = [thirdBuilderEmail, endUserEmail, fiftiethViewerEmail];
   const cleanupAllTestUsers = () => {
@@ -90,12 +87,10 @@ describe("License - User Limits", () => {
 
     verifyResourceLimit("viewers", "basic", "usage");
 
-    allUserEmails.forEach((email) => {
-      createUserAndExpectStatus(email, "builder", 201);
-    });
+    createUserAndExpectStatus(thirdBuilderEmail, "builder", 201);
 
     let bulkViewerEmails = [];
-    bulkUploadUsersViaCSV(49, "end-user", "viewer").then(
+    bulkUploadUsersViaCSV(50, "end-user", "viewer").then(
       ({ response, emails }) => {
         expect(response.status).to.equal(201);
         bulkViewerEmails = emails;
@@ -122,8 +117,6 @@ describe("License - User Limits", () => {
     });
 
     cy.wait(500);
-
-    createUserAndExpectStatus(fiftiethViewerEmail, "end-user", 201);
 
     //update after fix
     // changeRoleAndExpectLimit(thirdBuilderEmail, "end-user");

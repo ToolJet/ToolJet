@@ -18,6 +18,7 @@ export const commonSelectors = {
   workspaceConstantValueInput: '[data-cy="value-input-field"]',
   fileSelector: "[data-cy=uploaded-file-data]",
   searchField: "[data-cy='widget-search-box-search-bar']",
+  workspaceCount: '[data-cy="workspace-count"]',
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
