@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup** or **when using workflows**, you must use an **external Redis instance** with proper persistence configuration.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **multiple workers for workflows** and **multi-pod setup**, an **external Redis instance** is recommended for better performance and reliability.
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
@@ -175,7 +175,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
 :::warning
-**External Redis Required for Workflows**: When running workflows, you must deploy a stateful Redis instance. The built-in Redis setup is not suitable for workflow scheduling in production environments.
+**External Redis for Multiple Workflow Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
 :::
 
 #### Deploying Redis for Workflows

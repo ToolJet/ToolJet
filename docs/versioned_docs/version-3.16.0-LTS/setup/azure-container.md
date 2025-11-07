@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet.
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup** or **when using workflows**, you must use an **external Redis instance** with proper persistence configuration.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **multiple workers for workflows** and **multi-pod setup**, an **external Redis instance** is recommended for better performance and reliability.
 :::
 
 ## Deploying ToolJet Application
@@ -164,7 +164,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
 :::warning
-**External Redis Required for Workflows**: When running workflows, you must use an external stateful Redis instance. The built-in Redis setup is not suitable for workflow scheduling in production environments. Configure the Redis connection using the following environment variables:
+**External Redis for Multiple Workflow Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups. Configure the Redis connection using the following environment variables:
 - `REDIS_HOST=localhost` - Default: localhost
 - `REDIS_PORT=6379` - Default: 6379
 - `REDIS_USERNAME=` - Optional: Redis username (ACL)

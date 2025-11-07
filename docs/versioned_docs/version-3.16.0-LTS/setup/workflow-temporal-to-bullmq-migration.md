@@ -66,10 +66,10 @@ TEMPORAL_SERVER_ADDRESS=temporal:7233
 - Temporal server containers/pods
 - Temporal worker containers/pods
 
-### 2. Set Up External Redis
+### 2. Set Up Redis
 
 :::warning
-**Critical**: You must use an external stateful Redis instance with proper persistence configuration. The built-in Redis is NOT suitable for production workflows.
+**External Redis for Multiple Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
 :::
 
 **Redis Requirements:**
@@ -132,8 +132,8 @@ Use Amazon ElastiCache for Redis:
    - Automatic failover enabled
 
 2. Configure parameter group:
-   - Set `maxmemory-policy` to `noeviction`
-   - Set `appendonly` to `yes`
+   - Set **maxmemory-policy** to **noeviction**
+   - Set **appendonly** to **yes**
 
 3. Add environment variables:
 
@@ -171,7 +171,7 @@ Use Google Cloud Memorystore for Redis:
 1. Create Redis instance with:
    - Redis version 7.x
    - High availability enabled
-2. Configure Redis settings via `gcloud` CLI
+2. Configure Redis settings via **gcloud** CLI
 3. Add environment variables:
 
 ```bash
@@ -195,11 +195,16 @@ TOOLJET_QUEUE_DASH_PASSWORD=admin
 # Set to 'true' to enable job processing
 WORKER=true
 
-# Redis Connection (required)
-REDIS_HOST=your-redis-host
-REDIS_PORT=6379
-REDIS_PASSWORD=your-redis-password
+# Redis connection settings
+REDIS_HOST=localhost         # Default: localhost
+REDIS_PORT=6379              # Default: 6379
+REDIS_USERNAME=              # Optional: Redis username (ACL)
+REDIS_PASSWORD=              # Optional: Redis password
+REDIS_DB=0                   # Optional: Redis database number (default: 0)
+REDIS_TLS=false              # Optional: Enable TLS/SSL (set to 'true')
 ```
+
+**Note:** Only `REDIS_HOST` and `REDIS_PORT` are required. Authentication and TLS are optional.
 
 **Optional Variables:**
 ```bash
@@ -292,44 +297,32 @@ For production deployments with extensive workflow usage, it's recommended to de
 
 ### Architecture
 
-**Option 1: Dedicated Workers (Recommended for production)**
 ```
-┌─────────────────┐         ┌─────────────────┐
-│  ToolJet Web    │         │  ToolJet Worker │
-│  (HTTP Server)  │         │  (Jobs Only)    │
-│                 │         │                 │
-│  WORKER=false   │         │  WORKER=true    │
-│  Port: 3000     │         │  No Port        │
-└────────┬────────┘         └────────┬────────┘
-         │                           │
-         └───────────┬───────────────┘
-                     │
-              ┌──────▼──────┐
-              │    Redis    │
-              │   (BullMQ)  │
-              └─────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    ToolJet Deployment                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ Web Server   │  │  Worker 1    │  │  Worker 2    │       │
+│  │              │  │              │  │              │       │
+│  │ WORKER=true  │  │ WORKER=true  │  │ WORKER=true  │       │
+│  │              │  │              │  │              │       │
+│  │ HTTP Requests│  │ Process Jobs │  │ Process Jobs │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
+│         │                 │                 │               │
+│         └─────────────────┼─────────────────┘               │
+│                           │                                 │
+└───────────────────────────┼─────────────────────────────────┘
+                            │
+                            ▼
+                   ┌─────────────────┐
+                   │  External Redis │
+                   │   (Stateful)    │
+                   │                 │
+                   │  - Job Queue    │
+                   │  - Persistence  │
+                   └─────────────────┘
 ```
-
-**Option 2: All-in-One (Simpler for small deployments)**
-```
-┌─────────────────┐         ┌─────────────────┐
-│  ToolJet Web    │         │  ToolJet Worker │
-│  (HTTP Server)  │         │  (Jobs Only)    │
-│                 │         │                 │
-│  WORKER=true    │         │  WORKER=true    │
-│  Port: 3000     │         │  No Port        │
-└────────┬────────┘         └────────┬────────┘
-         │                           │
-         └───────────┬───────────────┘
-                     │
-              ┌──────▼──────┐
-              │    Redis    │
-              │   (BullMQ)  │
-              └─────────────┘
-```
-
-- **Option 1**: Web server only handles HTTP requests (`WORKER=false`), dedicated workers process jobs
-- **Option 2**: Web server handles both HTTP and jobs (`WORKER=true`), can still add dedicated workers for additional capacity
 
 ### Deployment Configuration
 
@@ -807,33 +800,57 @@ Active workflow schedules are stored in PostgreSQL and will be preserved during 
 
 ## FAQ
 
-### Do I need to recreate my workflows?
+<details id="tj-dropdown">
+
+<summary>Do I need to recreate my workflows?</summary>
 
 No. All existing workflow definitions and schedules are stored in PostgreSQL and will continue to work with the new BullMQ system. The Schedule Bootstrap Service automatically loads them on startup.
 
-### Can I use the built-in Redis for workflows?
+</details>
 
-No. The built-in Redis is for development only. Production workflows require an external Redis instance with proper persistence (AOF) and `maxmemory-policy noeviction`.
+<details id="tj-dropdown">
 
-### What happens to in-flight workflows during migration?
+<summary>Can I use the built-in Redis for workflows?</summary>
+
+Yes, the built-in Redis can be used for single-worker workflow setups. However, when running multiple workers for workflows, an external Redis instance with proper persistence (AOF) and **maxmemory-policy noeviction** is recommended for better performance and reliability.
+
+</details>
+
+<details id="tj-dropdown">
+
+<summary>What happens to in-flight workflows during migration?</summary>
 
 In-flight workflows in the old Temporal system will not be migrated. Complete or cancel them before migration. New schedules will trigger normally in the BullMQ system.
 
-### Can I run both Temporal and BullMQ simultaneously?
+</details>
+
+<details id="tj-dropdown">
+
+<summary>Can I run both Temporal and BullMQ simultaneously?</summary>
 
 No. ToolJet only supports one workflow engine at a time. Choose either Temporal (legacy) or BullMQ (recommended).
 
-### How do I monitor workflow performance?
+</details>
 
-Use the Bull Board dashboard at `/jobs` to monitor:
+<details id="tj-dropdown">
+
+<summary>How do I monitor workflow performance?</summary>
+
+Use the Bull Board dashboard at **/jobs** to monitor:
 - Queue depth and processing rate
 - Job success/failure rates
 - Individual job execution details
 - Retry attempts
 
-### What Redis version is required?
+</details>
+
+<details id="tj-dropdown">
+
+<summary>What Redis version is required?</summary>
 
 Redis 6.x or higher is required. Redis 7.x is recommended for best performance and features.
+
+</details>
 
 ## Support
 
