@@ -2,6 +2,8 @@ export const NO_OF_GRIDS = 43;
 
 export const GRID_HEIGHT = 10;
 
+export const HIDDEN_COMPONENT_HEIGHT = 10;
+
 export const CANVAS_WIDTHS = Object.freeze({
   deviceWindowWidth: 450,
   leftSideBarWidth: 48,
@@ -30,6 +32,8 @@ export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 44;
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
+
+export const WIDGET_BORDER_WIDTH = 1;
 
 export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 

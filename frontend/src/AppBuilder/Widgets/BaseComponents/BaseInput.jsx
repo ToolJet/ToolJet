@@ -38,6 +38,7 @@ export const BaseInput = ({
   additionalInputProps = {},
   rightIcon,
   getCustomStyles,
+  isDynamicHeightEnabled,
   id,
 }) => {
   const {
@@ -65,6 +66,7 @@ export const BaseInput = ({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)

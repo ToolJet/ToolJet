@@ -66,7 +66,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useEditorStore } from '@/_stores/editorStore';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
-import { Listview } from '@/AppBuilder/Widgets/Listview';
+import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
