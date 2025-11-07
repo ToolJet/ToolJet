@@ -150,7 +150,6 @@ export const BaseDateComponent = ({
         auto={labelAutoWidth}
         isMandatory={isMandatory}
         _width={_width}
-        top={'1px'}
         widthType={widthType}
         inputId={`component-${id}`}
       />

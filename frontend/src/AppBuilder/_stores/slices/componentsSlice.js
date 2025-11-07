@@ -1646,45 +1646,6 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
 
-  handleCanvasContainerMouseUp: (e) => {
-    const {
-      selectedComponents,
-      clearSelectedComponents,
-      setActiveRightSideBarTab,
-      isRightSidebarOpen,
-      activeRightSideBarTab,
-      isGroupResizing,
-      isGroupDragging,
-    } = get();
-    const selectedText = window.getSelection().toString();
-    const isClickedOnSubcontainer =
-      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
-    if (
-      !isClickedOnSubcontainer &&
-      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      selectedComponents.length &&
-      !selectedText &&
-      !isGroupResizing &&
-      !isGroupDragging
-    ) {
-      clearSelectedComponents();
-      if (isRightSidebarOpen) {
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-      }
-    }
-
-    // If page settings tab is active and user clicks on canvas, switch to components tab
-    if (
-      !isClickedOnSubcontainer &&
-      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      !selectedText &&
-      isRightSidebarOpen &&
-      activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-    ) {
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-    }
-  },
-
   turnOffAutoComputeLayout: async (moduleId = 'canvas') => {
     const { appStore, getCurrentPageId, currentVersionId } = get();
     const app = appStore.modules[moduleId].app;

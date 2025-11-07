@@ -470,7 +470,7 @@ const PreviewContainer = ({
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
-      id="popover-basic"
+      id="codehinter-preview-box-popover"
       className={`${darkMode && 'dark-theme'}`}
       style={{
         zIndex: 1400,

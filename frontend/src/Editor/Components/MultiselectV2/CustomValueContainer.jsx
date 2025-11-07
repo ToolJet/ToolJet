@@ -31,6 +31,7 @@ const CustomValueContainer = ({ children, ...props }) => {
                 height: '16px',
                 color: selectProps?.iconColor,
                 marginRight: '4px',
+                flexShrink: 0,
               }}
             />
           )}
