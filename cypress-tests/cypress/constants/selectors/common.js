@@ -426,6 +426,7 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+  enterpriseGradientSmIcon: '[data-cy="enterprise-gradient-sm-icon"]',
 };
 
 export const commonQuerySelectors = {

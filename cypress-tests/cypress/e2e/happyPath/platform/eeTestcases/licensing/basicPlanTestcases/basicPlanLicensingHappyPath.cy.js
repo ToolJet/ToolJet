@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import {
   commonEeSelectors,
+  multiEnvSelector,
   instanceSettingsSelector,
   whiteLabellingSelectors,
 } from "Selectors/eeCommon";
@@ -86,7 +87,7 @@ describe("License Page", () => {
     cy.get(commonSelectors.workspaceName).click();
 
     cy.get(commonSelectors.workspaceCount).should("be.visible");
-    verifyResourceLimit("workspaces", planName);
+    verifyResourceLimit("workspace", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
 
@@ -191,25 +192,19 @@ describe("License Page", () => {
       true
     );
 
-    // cy.openApp(appName1);
+    cy.openApp(data.appName1);
 
-    // cy.get('[data-cy="list-current-env-name"]').click();
-    // cy.get('[data-cy="env-name-list"]')
-    //   .eq(1)
-    //   .within(() => {
-    //     verifyTooltip(
-    //       '[data-cy="env-name-dropdown"]',
-    //       "Multi-environments are available only in paid plans"
-    //     );
-    //   });
+    cy.get(multiEnvSelector.currentEnvName).click();
+    cy.get(multiEnvSelector.envNameList)
+      .eq(1)
+      .within(() => {
+        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
+      });
 
-    // cy.get('[data-cy="env-name-list"]')
-    //   .eq(2)
-    //   .within(() => {
-    //     verifyTooltip(
-    //       '[data-cy="env-name-dropdown"]',
-    //       "Multi-environments are available only in paid plans"
-    //     );
-    //   });
+    cy.get(multiEnvSelector.envNameList)
+      .eq(2)
+      .within(() => {
+        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
+      });
   });
 });

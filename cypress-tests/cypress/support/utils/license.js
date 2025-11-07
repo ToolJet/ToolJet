@@ -4,6 +4,7 @@ import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
 import { licenseText } from "Texts/license";
 import { importSelectors } from "Selectors/exportImport";
+import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const getLicenseExpiryDate = () => {
   return cy
@@ -223,57 +224,60 @@ export const assertLimitState = (
   headingSelector,
   infoSelector,
   currentValue,
-  planName
+  planLimit
 ) => {
-  if (/unlimited/i.test(planName)) {
-    cy.log(
-      `Resource "${baseLabel}" has unlimited limit. Banner should not appear.`
-    );
-    cy.get(headingSelector).should("not.exist");
-    return;
-  }
-
   const current = Number(currentValue);
-  const limit = Number(planName);
+  const limit = planLimit === "Unlimited" ? Infinity : Number(planLimit);
 
-  if (isNaN(current) || isNaN(limit)) {
-    cy.log(
-      `⚠️ Invalid numbers for ${baseLabel}: current=${currentValue}, limit=${planLimit}`
-    );
+  if (isNaN(current)) {
+    cy.log(`⚠️ Invalid current value for ${baseLabel}: ${currentValue}`);
     return;
   }
 
-  cy.get(headingSelector).then(($el) => {
-    if ($el.length > 0) {
-      cy.wrap($el)
-        .should("be.visible")
-        .invoke("text")
-        .then((text) => cy.log(`${baseLabel} banner heading: ${text}`));
+  cy.get("body").then(($body) => {
+    const bannerExists = $body.find(headingSelector).length > 0;
+
+    if (!bannerExists && current < limit - 1) {
+      cy.log(
+        `No banner expected for ${baseLabel}, current=${current}, limit=${planLimit}`
+      );
+      return;
     }
+
+    cy.get(headingSelector)
+      .should("be.visible")
+      .invoke("text")
+      .then((headingText) => {
+        const normalizedHeading = normalizeText(headingText);
+
+        if (current >= limit) {
+          cy.log(
+            `${baseLabel} limit reached: current=${current}, limit=${planLimit}`
+          );
+          expect(normalizedHeading).to.include(
+            `${baseLabel.toLowerCase()} limit reached`
+          );
+          cy.get(infoSelector)
+            .invoke("text")
+            .should("match", /reached/i);
+        } else if (current === limit - 1) {
+          cy.log(
+            `${baseLabel} nearing limit: current=${current}, limit=${planLimit}`
+          );
+          expect(normalizedHeading).to.include(
+            `${baseLabel.toLowerCase()} limit nearing`
+          );
+          cy.get(infoSelector)
+            .invoke("text")
+            .should("match", /nearing/i);
+        } else {
+          cy.log(
+            `${baseLabel} under limit: current=${current}, limit=${planLimit}`
+          );
+          cy.get(headingSelector).should("not.exist");
+        }
+      });
   });
-  if (current >= limit) {
-    cy.get(headingSelector)
-      .invoke("text")
-      .then((t) =>
-        expect(normalizeText(t)).to.include(
-          `${baseLabel.toLowerCase()} limit reached`
-        )
-      );
-    cy.get(infoSelector)
-      .invoke("text")
-      .should("match", /reached/i);
-  } else if (current === limit - 1) {
-    cy.get(headingSelector)
-      .invoke("text")
-      .then((t) =>
-        expect(normalizeText(t)).to.include(
-          `${baseLabel.toLowerCase()} limit nearing`
-        )
-      );
-    cy.get(infoSelector)
-      .invoke("text")
-      .should("match", /nearing/i);
-  }
 };
 
 export const verifyResourceLimit = (
@@ -513,7 +517,7 @@ export const verifyButtonDisabledWithTooltip = (
 
 export const getCurrentCountFromBanner = (resourceType) => {
   const cyPrefix = resourceType.toLowerCase().trim();
-  const headingSelector = `[data-cy="${cyPrefix}-limit-heading"]`;
+  const headingSelector = licenseSelectors.limitHeading(cyPrefix);
 
   return cy
     .get(headingSelector)
@@ -580,19 +584,19 @@ export const bulkUploadUsersViaCSV = (
 };
 
 export const verifyLimitBanner = (heading, infoText) => {
-  cy.verifyElement('[data-cy="usage-limit-heading"]', heading);
-  cy.verifyElement('[data-cy="usage-limit-info"]', infoText);
+  cy.verifyElement(licenseSelectors.limitHeading(usage), heading);
+  cy.verifyElement(licenseSelectors.limitInfo(usage), infoText);
 };
 
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
-  cy.get('[data-cy="modal-header"] .modal-title').should(
+  cy.get(`${commonSelectors.modalHeader} .modal-title`).should(
     "have.text",
     "Upgrade Your Plan"
   );
-  cy.get('[data-cy="modal-close"]').should("be.visible");
+  cy.get(commonSelectors.modalCloseIcon).should("be.visible");
 
   const messageAssertion = cy
-    .get('[data-cy="modal-message"]')
+    .get(commonSelectors.modalMessage)
     .should("be.visible")
     .and("contain.text", messageText);
 
@@ -604,9 +608,9 @@ export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   }
 
   cy.get(".modal-footer").within(() => {
-    cy.get('[data-cy="cancel-button"]').eq(0).should("be.visible");
-    cy.get('[data-cy="upgrade-button"]').should("be.visible");
-    cy.get('[data-cy="cancel-button"]').eq(0).click();
+    cy.get(commonEeSelectors.cancelButton).eq(0).should("be.visible");
+    cy.get(commonEeSelectors.upgradeButton).should("be.visible");
+    cy.get(commonEeSelectors.cancelButton).eq(0).click();
   });
 };
 
