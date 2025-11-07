@@ -624,3 +624,26 @@ export const getInitialPosition = (currentWidget, temporaryLayouts, _gridWidth) 
   const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
   return { height, width, transformX, transformY };
 };
+
+// Check if dropping from modal to canvas, including nested containers within modals
+export const isDraggingModalToCanvas = (source, target, boxList) => {
+  if (!source.isModal) return false;
+
+  // If target is the same as source, it's not modal to canvas
+  if (source.id === target.id) return false;
+
+  // Check if target or any of its parents is a modal
+  let currentTargetId = target.id;
+  while (currentTargetId && currentTargetId !== 'canvas') {
+    const targetComponent = boxList.find((b) => b.id === currentTargetId);
+    if (!targetComponent) break;
+
+    // If we find a modal in the parent chain, it's not modal to canvas
+    if (source.id === targetComponent.parent) return false;
+
+    currentTargetId = targetComponent.parent;
+  }
+
+  // If we've reached canvas without finding a modal parent, it's modal to canvas
+  return currentTargetId === 'canvas' || currentTargetId === null;
+};
