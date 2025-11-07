@@ -80,6 +80,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
+  const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
@@ -149,7 +150,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noOfBoxs, triggerCanvasUpdater]);
+  }, [noOfBoxs, triggerCanvasUpdater, pageMenuPosition]);
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
