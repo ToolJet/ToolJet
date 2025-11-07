@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using **Azure Database for PostgreSQL** since this guide is for deploying using AKS. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
-ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **multiple workers for workflows** and **multi-pod setup**, an **external Redis instance** is recommended for better performance and reliability.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
@@ -137,7 +137,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
 :::warning
-**External Redis for Multiple Workflow Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
 :::
 
 #### Deploying Redis for Workflows

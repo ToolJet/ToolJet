@@ -69,7 +69,7 @@ TEMPORAL_SERVER_ADDRESS=temporal:7233
 ### 2. Set Up Redis
 
 :::warning
-**External Redis for Multiple Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
 :::
 
 **Redis Requirements:**
@@ -789,7 +789,7 @@ No. All existing workflow definitions and schedules are stored in PostgreSQL and
 
 <summary>Can I use the built-in Redis for workflows?</summary>
 
-Yes, the built-in Redis can be used for single-worker workflow setups. However, when running multiple workers for workflows, an external Redis instance with proper persistence (AOF) and **maxmemory-policy noeviction** is recommended for better performance and reliability.
+Yes, but only for **single instance deployments** where the server and worker are in the same container. When running separate worker containers or multiple instances, an external Redis instance with proper persistence (AOF) and **maxmemory-policy noeviction** is **required** for job queue coordination.
 
 </details>
 
