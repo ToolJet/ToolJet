@@ -14,6 +14,7 @@ export const workflowExecutionsService = {
   getPaginatedExecutions,
   getPaginatedNodes,
   trigger,
+  streamSSE,
   terminate,
   getExecutionStates,
 };
@@ -141,6 +142,12 @@ function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
 function terminate(executionId) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/${executionId}/terminate`, requestOptions).then(handleResponse);
+}
+
+function streamSSE(workflowExecutionId) {
+  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
+    withCredentials: true,
+  });
 }
 
 function getExecutionStates(appVersionId, executionIds) {
