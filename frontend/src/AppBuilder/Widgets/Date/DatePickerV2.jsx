@@ -100,7 +100,7 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select time');
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date');
   }, [selectedTimestamp, dateFormat, textInputFocus]);
 
   useEffect(() => {
