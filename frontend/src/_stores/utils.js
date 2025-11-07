@@ -13,15 +13,13 @@ export const zustandDevTools = (fn, options = {}) =>
 
 const resetters = [];
 
-export const create = (fn, options) => {
+export const create = (fn) => {
   if (fn === undefined) return create;
   const store = _create(fn);
   const initialState = store.getState();
-
-  !options?.skipStoreReset && // Skip pushing initial state for a particular store so it does not reset when resetAllStores is called
-    resetters.push(() => {
-      store.setState(initialState, true);
-    });
+  resetters.push(() => {
+    store.setState(initialState, true);
+  });
   return store;
 };
 
