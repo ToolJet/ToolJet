@@ -37,3 +37,11 @@
 
 .idea/*
 ti-*
+claude.md
+.claude/**
+docs/exploration/**
+docs/my-docs/**
+
+# Super Claude Kit (generated at runtime)
+.claude/**
+CLAUDE.md
