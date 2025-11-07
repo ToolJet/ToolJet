@@ -189,13 +189,47 @@ export function Authorize({ navigate }) {
 
   //   return null;
   // };
+  function getAttributionFromState() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm = {
+        utm_source: urlParams.get("utm_source") || '',
+        utm_medium: urlParams.get("utm_medium") || '',
+        utm_campaign: urlParams.get("utm_campaign") || '',
+        utm_term: urlParams.get("utm_term") || '',
+        utm_content: urlParams.get("utm_content") || ''
+      };
+
+      const hutk = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('hubspotutk='))
+        ?.split('=')[1] || '';
+
+      const referrer = document.referrer || '';
+      const pageUri = window.location.href;
+      const pageName = document.title;
+
+      const attribution = {
+        hutk,
+        referrer,
+        pageUri,
+        pageName,
+        utm
+      };
+      return attribution;
+    } catch (err) {
+      return {};
+    }
+  }
+
   const hubspotFormSubmissionForSSO = (email) => {
-    if (!email || window.__hs_original_source_submitted) return;
+    if (!email) return;
     try {
       const attribution = getAttributionFromState();
-      if (!attribution || (!attribution.hutk && !Object.keys(attribution.utm || {}).length)) return;
+      if (!attribution) return;
 
       const { SSO_HUBSPOT_PORTAL_ID: portalId, SSO_HUBSPOT_FORM_ID: formId } = window.public_config || {};
+
       if (!portalId || !formId) return;
 
       window.__hs_original_source_submitted = true;
