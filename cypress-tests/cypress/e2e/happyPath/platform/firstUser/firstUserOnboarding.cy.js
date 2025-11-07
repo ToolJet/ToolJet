@@ -17,11 +17,6 @@ describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
   });
-  after(() => {
-    cy.ifEnv("Enterprise", () => {
-      updateLicense('valid');
-    });
-  })
 
   it("verify elements on self host onboarding page", () => {
     cy.ifEnv("Enterprise", () => {
