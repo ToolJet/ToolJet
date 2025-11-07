@@ -1,0 +1,583 @@
+openapi: 3.0.3
+info:
+  title: SCIM Users & Groups API
+  version: 1.1.0
+  description: |
+    SCIM 2.0-compatible Users and Groups endpoints for ToolJet.
+    Supports standard SCIM operations and a custom ToolJet User extension schema.
+
+servers:
+  - url: https://your-domain.com/api/scim/v2
+
+paths:
+  /Users:
+    get:
+      summary: Retrieve all Users
+      operationId: listUsers
+      tags: [Users]
+      parameters:
+        - name: startIndex
+          in: query
+          description: The 1-based index of the first result.
+          schema: { type: integer, default: 1 }
+        - name: count
+          in: query
+          description: Number of results per page.
+          schema: { type: integer, default: 100 }
+        - name: filter
+          in: query
+          description: SCIM filter expression (e.g., userName eq "test@tooljet.com").
+          schema: { type: string }
+      responses:
+        '200':
+          description: SCIM list response
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMListResponse'
+
+    post:
+      summary: Create a User
+      operationId: createUser
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/ToolJetUserCreateRequest'
+            examples:
+              example1:
+                summary: Basic User Create Request
+                value:
+                  schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"]
+                  userName: "password@t2.com"
+                  name:
+                    givenName: "password"
+                    familyName: "password"
+                  emails:
+                    - primary: true
+                      value: "password@t2.com"
+                      type: "work"
+                  displayName: "password password"
+                  locale: "en-US"
+                  externalId: "00ux6458soGZxPsdZ697"
+                  groups: []
+                  password: "1kqV0hMv"
+                  active: true
+      responses:
+        '201':
+          description: Created SCIM User with custom ToolJet schema
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ToolJetUserResponse'
+        '409':
+          description: Conflict - Duplicate user or invalid data
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+  /Users/{id}:
+    get:
+      summary: Retrieve a specific User
+      operationId: getUser
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: SCIM User response
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMUserResponse'
+        '404':
+          description: User not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    put:
+      summary: Replace a User
+      operationId: replaceUser
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/ToolJetUserCreateRequest'
+            examples:
+              example1:
+                summary: Example PUT Request
+                value:
+                  schemas:
+                    [
+                      "urn:ietf:params:scim:schemas:core:2.0:User",
+                      "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0"
+                    ]
+                  id: "625d08b9-3da4-42ed-b0fa-ae4d8cbb2373"
+                  meta:
+                    resourceType: "User"
+                  userName: "password@t2.com"
+                  name:
+                    familyName: "password"
+                    givenName: "password"
+                  active: true
+                  emails:
+                    - value: "password@t2.com"
+                      primary: true
+                      type: "work"
+                  displayName: "password password"
+                  locale: "en-US"
+                  urn:ietf:params:scim:schemas:extension:tooljet:User:2.0:
+                    UserMetaData: "Meta data"
+                    bruh: "asd"
+                  externalId: "00ux6458soGZxPsdZ697"
+                  groups:
+                    - value: "e4d46318-a154-4a29-b9c0-e0243271cc1d"
+                      display: "userTest"
+      responses:
+        '200':
+          description: Updated SCIM User
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ToolJetUserResponse'
+        '404':
+          description: User not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    patch:
+      summary: Update a User with SCIM PatchOp
+      operationId: patchUser
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/SCIMPatchRequest'
+            examples:
+              replaceExample:
+                summary: Replace operation example
+                value:
+                  schemas: ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
+                  Operations:
+                    - op: "replace"
+                      path: "name.givenName"
+                      value: "UpdatedFirstName"
+              removeExample:
+                summary: Remove operation example
+                value:
+                  schemas: ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
+                  Operations:
+                    - op: "remove"
+                      path: "emails"
+      responses:
+        '200':
+          description: Patched SCIM User
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/ToolJetUserResponse'
+        '404':
+          description: User not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    delete:
+      summary: Delete a User
+      operationId: deleteUser
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: User successfully deleted
+        '404':
+          description: User not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+  /Groups:
+    get:
+      summary: Retrieve all Groups
+      operationId: listGroups
+      tags: [Groups]
+      parameters:
+        - name: startIndex
+          in: query
+          description: The 1-based index of the first result.
+          schema: { type: integer, default: 1 }
+        - name: count
+          in: query
+          description: Number of results per page.
+          schema: { type: integer, default: 100 }
+        - name: filter
+          in: query
+          description: SCIM filter expression (e.g., displayName eq "Developers").
+          schema: { type: string }
+      responses:
+        '200':
+          description: SCIM list response for Groups
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMGroupListResponse'
+
+    post:
+      summary: Create a Group
+      operationId: createGroup
+      tags: [Groups]
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/SCIMGroupRequest'
+            examples:
+              example1:
+                summary: Basic Group Create Request
+                value:
+                  schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"]
+                  displayName: "Developers"
+                  members:
+                    - value: "cbbfaec6-6a91-4ca2-9800-38ff88bb3f2f"
+                      display: "john.doe@tooljet.com"
+      responses:
+        '201':
+          description: Created SCIM Group
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMGroupResponse'
+        '409':
+          description: Conflict - Duplicate group or invalid data
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+  /Groups/{id}:
+    get:
+      summary: Retrieve a specific Group
+      operationId: getGroup
+      tags: [Groups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: SCIM Group response
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMGroupResponse'
+        '404':
+          description: Group not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    put:
+      summary: Replace a Group
+      operationId: replaceGroup
+      tags: [Groups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/SCIMGroupRequest'
+      responses:
+        '200':
+          description: Updated SCIM Group
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMGroupResponse'
+        '404':
+          description: Group not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    patch:
+      summary: Update a Group with SCIM PatchOp
+      operationId: patchGroup
+      tags: [Groups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/scim+json:
+            schema:
+              $ref: '#/components/schemas/SCIMPatchRequest'
+            examples:
+              example1:
+                summary: Add member to group
+                value:
+                  schemas: ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
+                  Operations:
+                    - op: "add"
+                      path: "members"
+                      value:
+                        - value: "cbbfaec6-6a91-4ca2-9800-38ff88bb3f2f"
+                          display: "john.doe@tooljet.com"
+      responses:
+        '200':
+          description: Patched SCIM Group
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMGroupResponse'
+        '404':
+          description: Group not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+    delete:
+      summary: Delete a Group
+      operationId: deleteGroup
+      tags: [Groups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Group successfully deleted
+        '404':
+          description: Group not found
+          content:
+            application/scim+json:
+              schema:
+                $ref: '#/components/schemas/SCIMError'
+
+components:
+  schemas:
+
+    SCIMUserRequest:
+      type: object
+      required: [schemas, userName]
+      properties:
+        schemas:
+          type: array
+          items: { type: string }
+          example: ["urn:ietf:params:scim:schemas:core:2.0:User"]
+        userName:
+          type: string
+        name:
+          type: object
+          properties:
+            givenName: { type: string }
+            familyName: { type: string }
+        active:
+          type: boolean
+        password:
+          type: string
+          description: User password for creation.
+        emails:
+          type: array
+          items:
+            type: object
+            properties:
+              value: { type: string }
+              primary: { type: boolean }
+              type: { type: string }
+        externalId:
+          type: string
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              value: { type: string }
+              display: { type: string }
+        meta:
+          type: object
+          properties:
+            resourceType: { type: string }
+
+    SCIMUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/SCIMUserRequest'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            meta:
+              type: object
+              properties:
+                resourceType: { type: string, example: "User" }
+                created: { type: string, format: date-time }
+                lastModified: { type: string, format: date-time }
+
+    SCIMListResponse:
+      type: object
+      properties:
+        totalResults: { type: integer }
+        startIndex: { type: integer }
+        itemsPerPage: { type: integer }
+        Resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SCIMUserResponse'
+
+    SCIMPatchRequest:
+      type: object
+      required: [schemas, Operations]
+      properties:
+        schemas:
+          type: array
+          items: { type: string }
+          example: ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
+        Operations:
+          type: array
+          items:
+            type: object
+            properties:
+              op: { type: string, enum: [add, remove, replace] }
+              path: { type: string }
+              value: {}
+
+    SCIMError:
+      type: object
+      properties:
+        schemas:
+          type: array
+          items: { type: string }
+          example: ["urn:ietf:params:scim:api:messages:2.0:Error"]
+        detail:
+          type: string
+        status:
+          type: string
+
+    ToolJetUserCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/SCIMUserRequest'
+        - type: object
+          properties:
+            schemas:
+              type: array
+              items: { type: string }
+              example:
+                [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0"
+                ]
+            "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0":
+              type: object
+              properties:
+                UserMetaData: { type: string }
+                bruh: { type: string }
+
+    ToolJetUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/SCIMUserResponse'
+        - type: object
+          properties:
+            schemas:
+              type: array
+              items: { type: string }
+              example:
+                [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0",
+                  "urn:ietf:params:scim:schemas:extension:tooljet:CustomGroups:2.0"
+                ]
+            "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0":
+              type: object
+              properties:
+                UserMetaData: { type: string }
+                bruh: { type: string }
+
+    SCIMGroupRequest:
+      type: object
+      required: [schemas, displayName]
+      properties:
+        schemas:
+          type: array
+          items: { type: string }
+          example: ["urn:ietf:params:scim:schemas:core:2.0:Group"]
+        displayName:
+          type: string
+          example: "Developers"
+        members:
+          type: array
+          description: List of User members belonging to this group.
+          items:
+            type: object
+            properties:
+              value: { type: string, format: uuid, description: "User ID" }
+              display: { type: string, description: "User display name" }
+        externalId:
+          type: string
+
+    SCIMGroupResponse:
+      allOf:
+        - $ref: '#/components/schemas/SCIMGroupRequest'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            meta:
+              type: object
+              properties:
+                resourceType: { type: string, example: "Group" }
+                created: { type: string, format: date-time }
+                lastModified: { type: string, format: date-time }
+
+    SCIMGroupListResponse:
+      type: object
+      properties:
+        totalResults: { type: integer }
+        startIndex: { type: integer }
+        itemsPerPage: { type: integer }
+        Resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SCIMGroupResponse'
+
+
