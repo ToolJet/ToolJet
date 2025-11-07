@@ -141,8 +141,6 @@ const Button = forwardRef(
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       loaderText = null,
       isLucid = false, // Use Lucide icons instead of SolidIcon
-      leadingIconWidth = '24',
-      trailingIconWidth = '24',
       ...props
     },
     ref
@@ -158,7 +156,7 @@ const Button = forwardRef(
         {isLucid ? (
           <DynamicIcon name={leadingIcon} size={iconSize} className={lucideIconClassName} />
         ) : (
-          <SolidIcon name={leadingIcon} fill={iconFillColor} width={leadingIconWidth} />
+          <SolidIcon name={leadingIcon} fill={iconFillColor} />
         )}
       </div>
     );
@@ -167,7 +165,7 @@ const Button = forwardRef(
         {isLucid ? (
           <DynamicIcon name={trailingIcon} size={iconSize} className={lucideIconClassName} />
         ) : (
-          <SolidIcon name={trailingIcon} fill={iconFillColor} width={trailingIconWidth} />
+          <SolidIcon name={trailingIcon} fill={iconFillColor} />
         )}
       </div>
     );
