@@ -775,29 +775,6 @@ Monitor these endpoints:
 - **Application Health**: `GET /api/health`
 - **Bull Board**: `GET /jobs` (requires auth)
 
-## Rollback Plan
-
-If you encounter critical issues, you can rollback to Temporal:
-
-1. **Redeploy Temporal infrastructure** using your previous configuration
-2. **Restore old environment variables**:
-   ```bash
-   ENABLE_WORKFLOW_SCHEDULING=true
-   WORKFLOW_WORKER=true
-   TEMPORAL_SERVER_ADDRESS=temporal:7233
-   ```
-3. **Remove BullMQ variables**:
-   ```bash
-   # Remove these
-   TOOLJET_QUEUE_DASH_PASSWORD
-   WORKER
-   ```
-4. **Restart ToolJet instances**
-
-:::note
-Active workflow schedules are stored in PostgreSQL and will be preserved during rollback. However, in-flight job executions may be lost.
-:::
-
 ## FAQ
 
 <details id="tj-dropdown">
