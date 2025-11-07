@@ -402,7 +402,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           const parentId = parent.includes('-') ? parent.split('-').slice(0, -1).join('-') : parent;
           const componentType = boxList.find((box) => box.id === parentId)?.component.component;
           const parentHeight = parentElem?.clientHeight || _height;
-          if (_height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
+          if (_height > parentHeight && ['Listview'].includes(componentType)) {
             _height = parentHeight;
             y = 0;
           }
