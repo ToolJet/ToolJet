@@ -80,7 +80,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
