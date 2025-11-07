@@ -728,7 +728,6 @@ Access the monitoring dashboard at `https://your-tooljet-host/jobs`:
 - View job details and execution logs
 
 **Authentication:**
-- Username: Any value
 - Password: Value of `TOOLJET_QUEUE_DASH_PASSWORD` environment variable
 
 ### Common Issues
