@@ -14,13 +14,15 @@ import { VersionCreateDto } from './dto';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppVersionType } from '@entities/app_version.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly createVersionService: VersionsCreateService,
-    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
+    protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -116,6 +118,22 @@ export class VersionUtilService implements IVersionUtilService {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
+    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
+      organizationId,
+      manager
+    );
+    if (organizationGit && organizationGit.isBranchingEnabled) {
+      // we can only allow one draft version for this scenario
+      const existingDraftVersion = await this.versionRepository.findOne({
+        where: {
+          appId: app.id,
+          status: AppVersionStatus.DRAFT,
+        },
+      });
+      if (existingDraftVersion && versionCreateDto.versionType !== AppVersionType.BRANCH) {
+        throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+      }
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },

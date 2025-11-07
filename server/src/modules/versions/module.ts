@@ -12,6 +12,7 @@ import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -62,6 +63,7 @@ export class VersionModule extends SubModule {
         DataQueryRepository,
         DataSourcesRepository,
         VersionRepository,
+        OrganizationGitSyncRepository,
         AppsRepository,
         AppGitRepository,
         VersionsCreateService,

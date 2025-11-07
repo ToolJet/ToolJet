@@ -36,6 +36,7 @@ export class AppGitPushDto {
   gitVersionName: string;
 
   @IsString()
+  @IsOptional()
   gitBranchName?: string;
 }
 
