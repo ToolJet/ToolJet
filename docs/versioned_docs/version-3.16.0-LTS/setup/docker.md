@@ -210,18 +210,19 @@ This example shows how to run ToolJet with multiple workers and external Redis f
 ```yaml
 services:
   tooljet:
-    container_name: tooljet-app
+    tty: true
+    stdin_open: true
+    container_name: Tooljet-app
     image: tooljet/tooljet:ee-lts-latest
+    platform: linux/amd64
+    restart: always
     env_file: .env
     ports:
       - 80:80
     environment:
       SERVE_CLIENT: "true"
       PORT: "80"
-      WORKER: "true"
     command: npm run start:prod
-    depends_on:
-      - redis
 
   tooljet-worker-1:
     container_name: tooljet-worker-1
@@ -267,22 +268,21 @@ volumes:
 
 **Redis Environment Variables:**
 
-Add these to your `.env` file to connect to the external Redis:
+Add these to your **.env** file to connect to the external Redis:
 
 ```bash
-REDIS_HOST=redis                # Redis service hostname
-REDIS_PORT=6379                 # Redis port
-REDIS_PASSWORD=                 # Optional: Redis password
-REDIS_USERNAME=                 # Optional: Redis username (ACL)
-REDIS_DB=0                      # Optional: Redis database number (default: 0)
-REDIS_TLS=false                 # Optional: Enable TLS/SSL (set to 'true')
+# Redis - Note: Only REDIS_HOST and REDIS_PORT are required. Authentication and TLS are optional.
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_USER=default
+REDIS_PASSWORD=
+# REDIS_DB=0                   # Optional: Redis database number (default: 0)
+# REDIS_TLS=false              # Optional: Enable TLS/SSL (set to 'true')
 ```
 
-**Note:** Only `REDIS_HOST` and `REDIS_PORT` are required. Authentication and TLS are optional.
-
 **Critical Redis Configuration:**
-- `--appendonly yes`: Enables AOF (Append Only File) persistence
-- `--maxmemory-policy noeviction`: Required by BullMQ to prevent job loss
+- **--appendonly yes**: Enables AOF (Append Only File) persistence
+- **--maxmemory-policy noeviction**: Required by BullMQ to prevent job loss
 
 </details>
 
