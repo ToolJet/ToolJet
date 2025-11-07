@@ -15461,19 +15461,6 @@ fieldset:disabled {
   }
 }
 
-
-#component-portal {
-  .datepicker-component {
-    .react-datepicker {
-      .react-datepicker__month-container {
-        border-top-right-radius: 10px !important;
-        border-bottom-right-radius: 10px !important;
-        border-bottom-left-radius: 5px !important;
-      }
-    }
-  }
-}
-
 .datetimepicker-component,
 #component-portal,
 .custom-inspector-validation-time-picker {

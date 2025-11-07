@@ -213,3 +213,9 @@
 .disable-moveable-line .moveable-line.moveable-direction {
   display: none !important;
 }
+
+
+.show-ghost-group-dragging-resizing {
+  outline: none !important;
+  visibility: hidden !important;
+}
