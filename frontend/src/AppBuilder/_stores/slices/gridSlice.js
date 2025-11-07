@@ -12,6 +12,8 @@ const initialState = {
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
+  isGroupDragging: false,
+  isGroupResizing: false,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
@@ -38,6 +40,8 @@ export const createGridSlice = (set, get) => ({
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+  setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
+  setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -479,7 +483,8 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen } = get();
+    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
+      get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -494,7 +499,9 @@ export const createGridSlice = (set, get) => ({
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
       !selectedText &&
-      !isCodehinterPreviewOpen()
+      !isCodehinterPreviewOpen() &&
+      !isGroupResizing &&
+      !isGroupDragging
     ) {
       clearSelectedComponents();
       if (isRightSidebarOpen) {
