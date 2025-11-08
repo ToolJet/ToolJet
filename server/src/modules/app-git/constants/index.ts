@@ -10,4 +10,5 @@ export enum FEATURE_KEY {
   GIT_FETCH_APP_CONFIGS = 'get_app_git_configs',
   GET_ALL_BRANCHES = 'get_all_branches',
   CREATE_BRANCH = 'create_branch',
+  FETCH_PULL_REQUESTS = 'fetch_pull_requests',
 }
