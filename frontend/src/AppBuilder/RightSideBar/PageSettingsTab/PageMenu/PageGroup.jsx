@@ -21,8 +21,6 @@ export const RenderPage = ({
   currentPageId,
   switchPageWrapper,
   labelStyle,
-  computeStyles,
-  darkMode,
   homePageId,
   isSidebarPinned,
   position,
@@ -50,31 +48,38 @@ export const RenderPage = ({
     return <Icon {...props} />;
   };
 
-  const computedStyles = computeStyles(isActive, '');
+  const iconColor = isActive ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
 
   const Page = () => {
     return (
-      <div key={page.name} data-id={page.id} className="tj-list-item-wrapper">
-        <FolderList
-          key={page.handle}
-          onClick={() => {
-            switchPageWrapper(page);
-          }}
-          selectedItem={isActive}
-          CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-          customStyles={computeStyles}
-          darkMode={darkMode}
-          ariaLabel={page?.name}
-        >
-          {!labelStyle?.label?.hidden && (
-            <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
-                {page.name}
-              </OverflowTooltip>
-            </div>
-          )}
-        </FolderList>
-      </div>
+      <button
+        key={page.id}
+        data-id={page.id}
+        className={`tj-list-item ${isActive && 'tj-list-item-selected'}`}
+        onClick={() => {
+          switchPageWrapper(page);
+        }}
+        aria-label={page.name}
+      >
+        {!labelStyle?.icon?.hidden && (
+          <div className="custom-icon">
+            <IconElement
+              color={iconColor}
+              style={{
+                width: '16px',
+                height: '16px',
+                color: iconColor,
+                stroke: iconColor,
+              }}
+            />
+          </div>
+        )}
+        {!labelStyle?.label?.hidden && (
+          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+            <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
+          </div>
+        )}
+      </button>
     );
   };
 
@@ -93,7 +98,6 @@ const RenderPageGroup = ({
   pageGroup,
   currentPage,
   labelStyle,
-  computeStyles,
   darkMode,
   switchPageWrapper,
   homePageId,
@@ -103,15 +107,10 @@ const RenderPageGroup = ({
   currentMode,
   isPageGroupInsidePopup = true,
 }) => {
-  const active = currentPage?.pageGroupId === pageGroup?.id;
+  const isActive = currentPage?.pageGroupId === pageGroup?.id;
   const [isExpanded, setIsExpanded] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const contentRef = useRef(null);
+  const [accordianMaxWidth, setAccordianMaxWidth] = useState(null);
   const groupItemRootRef = useRef(null);
-  const computedStyles =
-    position === 'top' && !isPageGroupInsidePopup
-      ? computeStyles(active && !isExpanded, isExpanded)
-      : computeStyles(active && !isExpanded, hovered);
   const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
   const IconElement = (props) => {
@@ -128,6 +127,8 @@ const RenderPageGroup = ({
     return <Icon {...props} />;
   };
 
+  const iconColor = isActive && !isExpanded ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
@@ -138,11 +139,16 @@ const RenderPageGroup = ({
     if (isExpanded && position === 'top') {
       document.addEventListener('mousedown', handleClickOutside);
     }
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isExpanded]);
+
+  useEffect(() => {
+    // Set max width of the accordian body if present inside more button popup so that width of popup doesn't change on opening and closing of accordian
+    const moreBtnPopup = document.getElementsByClassName('page-menu-popup')[0];
+    if (moreBtnPopup) setAccordianMaxWidth(moreBtnPopup.offsetWidth - 18); // 18px is the padding and border for popup;
+  }, []);
 
   if (isPageGroupHidden) {
     return null;
@@ -159,8 +165,6 @@ const RenderPageGroup = ({
             currentPageId={currentPageId}
             switchPageWrapper={switchPageWrapper}
             labelStyle={labelStyle}
-            computeStyles={computeStyles}
-            darkMode={darkMode}
             homePageId={homePageId}
             position={position}
             currentMode={currentMode}
@@ -170,10 +174,38 @@ const RenderPageGroup = ({
     );
   }
 
+  const TriggerBody = () => {
+    return (
+      <div className="group-info">
+        {!labelStyle?.icon?.hidden && (
+          <div className="custom-icon">
+            <IconElement
+              color={iconColor}
+              style={{
+                width: '16px',
+                height: '16px',
+                color: iconColor,
+                stroke: iconColor,
+              }}
+            />
+          </div>
+        )}
+        {!labelStyle?.label?.hidden && (
+          <div
+            style={{ width: '100%', overflow: 'hidden' }}
+            data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
+          >
+            <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Wrap page group as navigation-menu item incase page menu is top aligned and part of visible links otherwise fall back to older flow
   return position === 'top' && !isPageGroupInsidePopup ? (
     <NavigationMenuItem
-      key={pageGroup.name}
+      key={pageGroup.id}
       data-id={pageGroup.id}
       ref={(el) => {
         groupItemRootRef.current = el;
@@ -181,44 +213,18 @@ const RenderPageGroup = ({
     >
       <NavigationMenuTrigger
         indicator={false}
-        className={`page-group-wrapper`}
+        className={`page-group-wrapper ${isActive && !isExpanded && 'page-group-selected'}`}
         onClick={() => setIsExpanded((prev) => !prev)}
-        onMouseEnter={() => setIsExpanded(true)}
+        onMouseEnter={() => setIsExpanded(true)} // In horizontal page menu, page groups outside more popup open on hover too
         onMouseLeave={() => setIsExpanded(false)}
-        style={{ ...{ ...computedStyles.pill } }}
+        aria-label={pageGroup.name}
       >
-        <div className="group-info">
-          {!labelStyle?.icon?.hidden && (
-            <div className="custom-icon">
-              <IconElement
-                color={computedStyles?.icon?.color}
-                style={{
-                  width: '16px',
-                  height: '16px',
-                  color: computedStyles?.icon?.color,
-                  stroke: computedStyles?.icon?.color,
-                }}
-              />
-            </div>
-          )}
-          {!labelStyle?.label?.hidden && (
-            <div
-              style={{ width: '100%', overflow: 'hidden' }}
-              data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
-            >
-              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
-                {pageGroup.name}
-              </OverflowTooltip>
-            </div>
-          )}
-        </div>
-        <div className="icon-btn cursor-pointer flex-shrink-0">
-          <Icons.IconChevronUp
-            size={16}
-            color="var(--icon-default)"
-            className={`tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
-          />
-        </div>
+        <TriggerBody />
+        <Icons.IconChevronUp
+          size={16}
+          color="var(--cc-default-icon)"
+          className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
+        />
       </NavigationMenuTrigger>
       <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
         {pages.map((page) => (
@@ -228,8 +234,6 @@ const RenderPageGroup = ({
             currentPageId={currentPageId}
             switchPageWrapper={switchPageWrapper}
             labelStyle={labelStyle}
-            computeStyles={computeStyles}
-            darkMode={darkMode}
             homePageId={homePageId}
             position={position}
             currentMode={currentMode}
@@ -239,51 +243,32 @@ const RenderPageGroup = ({
     </NavigationMenuItem>
   ) : (
     <div
-      key={pageGroup.name}
+      key={pageGroup.id}
       data-id={pageGroup.id}
       ref={(el) => {
         groupItemRootRef.current = el;
       }}
-      className={`accordion-item ${darkMode ? 'dark-mode' : ''}`}
+      className={`accordion-item ${darkMode && 'dark-theme'}`}
     >
-      <div
-        className={`page-group-wrapper tj-list-item ${active && !isExpanded ? 'tj-list-item-selected' : ''}`}
-        style={{
-          ...{ ...computedStyles.pill },
-        }}
+      <button
+        className={`page-group-wrapper ${isActive && !isExpanded && 'page-group-selected'}`}
         onClick={() => setIsExpanded((prev) => !prev)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        aria-label={pageGroup.name}
+        aria-expanded={isExpanded}
       >
-        <FolderList
-          key={pageGroup.id}
-          CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-          customStyles={computeStyles}
-          darkMode={darkMode}
-          ariaLabel={pageGroup.name}
-        >
-          {!labelStyle?.label?.hidden && (
-            <div
-              style={{ width: '100%', overflow: 'hidden' }}
-              data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
-            >
-              <OverflowTooltip childrenClassName={'page-name'} style={{ ...{ ...computedStyles.text } }}>
-                {pageGroup.name}
-              </OverflowTooltip>
-            </div>
-          )}
-        </FolderList>
-        <div className="icon-btn cursor-pointer flex-shrink-0">
-          <Icons.IconChevronUp
-            size={16}
-            color="var(--icon-default)"
-            className={`tw-transition tw-duration-200 ${!isExpanded && 'tw-rotate-180'}`}
-          />
-        </div>
-      </div>
+        <TriggerBody />
+        <Icons.IconChevronUp
+          size={16}
+          color="var(--cc-default-icon)"
+          className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 ${!isExpanded && 'tw-rotate-180'}`}
+        />
+      </button>
 
-      <div className={`accordion-body ${isExpanded ? 'expanded' : 'collapsed'}`}>
-        <div ref={contentRef} className="accordion-content">
+      <div
+        className={`accordion-body ${isExpanded ? 'expanded' : 'collapsed'}`}
+        style={{ maxWidth: accordianMaxWidth ? `${accordianMaxWidth}px` : 'none' }}
+      >
+        <div className="accordion-content">
           {pages.map((page) => (
             <RenderPage
               key={page.handle}
@@ -291,8 +276,6 @@ const RenderPageGroup = ({
               currentPageId={currentPageId}
               switchPageWrapper={switchPageWrapper}
               labelStyle={labelStyle}
-              computeStyles={computeStyles}
-              darkMode={darkMode}
               homePageId={homePageId}
               position={position}
               currentMode={currentMode}
@@ -308,7 +291,7 @@ export const RenderPageAndPageGroup = ({
   isLicensed,
   pages,
   labelStyle,
-  computeStyles,
+  computedStyles,
   darkMode,
   switchPageWrapper,
   visibleLinks,
@@ -361,7 +344,6 @@ export const RenderPageAndPageGroup = ({
                   pageGroup={page}
                   currentPage={currentPage}
                   labelStyle={labelStyle}
-                  computeStyles={computeStyles}
                   darkMode={darkMode}
                   isSidebarPinned={isSidebarPinned}
                   position={position}
@@ -378,8 +360,6 @@ export const RenderPageAndPageGroup = ({
                 currentPageId={currentPageId}
                 switchPageWrapper={switchPageWrapper}
                 labelStyle={labelStyle}
-                computeStyles={computeStyles}
-                darkMode={darkMode}
                 homePageId={homePageId}
                 isSidebarPinned={isSidebarPinned}
                 position={position}
@@ -413,7 +393,6 @@ export const RenderPageAndPageGroup = ({
                         pageGroup={page}
                         currentPage={currentPage}
                         labelStyle={labelStyle}
-                        computeStyles={computeStyles}
                         darkMode={darkMode}
                         isSidebarPinned={isSidebarPinned}
                         position={position}
@@ -428,8 +407,6 @@ export const RenderPageAndPageGroup = ({
                       currentPageId={currentPageId}
                       switchPageWrapper={switchPageWrapper}
                       labelStyle={labelStyle}
-                      computeStyles={computeStyles}
-                      darkMode={darkMode}
                       homePageId={homePageId}
                       isSidebarPinned={isSidebarPinned}
                       currentMode={currentMode}
@@ -448,12 +425,12 @@ export const RenderPageAndPageGroup = ({
   // Using shadcn navigation-menu component when the page menu is top aligned
   return position === 'top' ? (
     <NavigationMenu viewport={false} className="pages-wrapper">
-      <NavigationMenuList className="page-handler-list">
+      <NavigationMenuList className="page-handler-list" style={computedStyles}>
         <RenderLinks />
       </NavigationMenuList>
     </NavigationMenu>
   ) : (
-    <div className={cx('pages-wrapper viewer', { 'dark-theme': darkMode })}>
+    <div className={cx('pages-wrapper viewer', { 'dark-theme': darkMode })} style={computedStyles}>
       <RenderLinks />
     </div>
   );

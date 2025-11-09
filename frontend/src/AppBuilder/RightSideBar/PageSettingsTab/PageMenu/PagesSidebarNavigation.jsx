@@ -286,56 +286,22 @@ export const PagesSidebarNavigation = ({
     return null;
   }
 
-  const computeStyles = (isSelected, isHovered) => {
-    const baseStyles = {
-      pill: {
-        borderRadius: `${styles.pillRadius.value}px`,
-      },
-      icon: {
-        color: !styles.iconColor.isDefault && styles.iconColor.value,
-        fill: !styles.iconColor.isDefault && styles.iconColor.value,
-      },
-    };
-
-    switch (true) {
-      case isSelected: {
-        return {
-          ...baseStyles,
-          text: {
-            color: !styles.selectedTextColor.isDefault && styles.selectedTextColor.value,
-          },
-          icon: {
-            stroke: !styles.selectedIconColor.isDefault && styles.selectedIconColor.value,
-            color: !styles.selectedIconColor.isDefault && styles.selectedIconColor.value,
-            fill: !styles.selectedIconColor.isDefault && styles.selectedIconColor.value,
-          },
-          pill: {
-            backgroundColor: !styles.pillSelectedBackgroundColor.isDefault && styles.pillSelectedBackgroundColor.value,
-            ...baseStyles.pill,
-          },
-        };
-      }
-      case isHovered: {
-        return {
-          ...baseStyles,
-          pill: {
-            backgroundColor: !styles.pillHoverBackgroundColor.isDefault && styles.pillHoverBackgroundColor.value,
-            ...baseStyles.pill,
-          },
-        };
-      }
-      default: {
-        return {
-          text: {
-            color: !styles.textColor.isDefault && styles.textColor.value,
-          },
-          icon: {
-            color: !styles.iconColor.isDefault && styles.iconColor.value,
-            fill: !styles.iconColor.isDefault && styles.iconColor.value,
-          },
-        };
-      }
-    }
+  const computedStyles = {
+    '--nav-item-label-color': !styles.textColor.isDefault ? styles.textColor.value : 'var(--text-placeholder, #6A727C)',
+    '--nav-item-icon-color': !styles.iconColor.isDefault ? styles.iconColor.value : 'var(--cc-default-icon, #6A727C)',
+    '--selected-nav-item-label-color': !styles.selectedTextColor.isDefault
+      ? styles.selectedTextColor.value
+      : 'var(--cc-primary-text, #1B1F24)',
+    '--selected-nav-item-icon-color': !styles.selectedIconColor.isDefault
+      ? styles.selectedIconColor.value
+      : 'var(--cc-default-icon, #6A727C)',
+    '--hovered-nav-item-pill-bg': !styles.pillHoverBackgroundColor.isDefault
+      ? styles.pillHoverBackgroundColor.value
+      : 'var(--cc-surface2-surface, #F6F8FA)',
+    '--selected-nav-item-pill-bg': !styles.pillSelectedBackgroundColor.isDefault
+      ? styles.pillSelectedBackgroundColor.value
+      : 'var(--cc-appBackground-surface, #F6F6F6)',
+    '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
   };
 
   const getAbsoluteUrl = (url) => {
@@ -478,7 +444,7 @@ export const PagesSidebarNavigation = ({
           switchPageWrapper={switchPageWrapper}
           pages={pages}
           labelStyle={labelStyle}
-          computeStyles={computeStyles}
+          computedStyles={computedStyles}
           darkMode={darkMode}
           switchPage={switchPage}
           visibleLinks={links.visible}
