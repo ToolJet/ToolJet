@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -6,13 +6,12 @@ import { GroupUsers } from 'src/entities/group_users.entity';
 import * as _ from 'lodash';
 import { GroupPermissionsRepository } from './repository';
 import { GroupPermissionsUtilService } from './util.service';
-import { CreateDefaultGroupObject, GetUsersResponse } from './types';
+import { GetUsersResponse } from './types';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GroupPermissionsDuplicateService } from './services/duplicate.service';
 import { AddGroupUserDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { GROUP_PERMISSIONS_TYPE, ResourceType } from './constants';
-import { ERROR_HANDLER } from './constants/error';
+import { ResourceType } from './constants';
 import { RolesRepository } from '@modules/roles/repository';
 import { IGroupPermissionsService } from './interfaces/IService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
@@ -30,15 +29,10 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     protected readonly groupPermissionsDuplicateService: GroupPermissionsDuplicateService,
     protected readonly roleRepository: RolesRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
-  ) {}
+  ) { }
 
   async create(user: User, name: string): Promise<GroupPermissions> {
-    const groupCreateObj: CreateDefaultGroupObject = { name };
-    this.groupPermissionsUtilService.validateCreateGroupOperation(groupCreateObj);
-    const groupPermissionResponse = await this.groupPermissionsRepository.createGroup(
-      user.organizationId,
-      groupCreateObj
-    );
+    const groupPermissionResponse = await this.groupPermissionsUtilService.create(user, name);
     //GROUP_PERMISSION_CREATE audit
     const auditLogsData = {
       userId: user.id,
@@ -70,23 +64,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async deleteGroup(id: string, user: User): Promise<void> {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const organizationId = user.organizationId;
-      const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
-
-      if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT) {
-        throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
-      }
-      //GROUP_PERMISSION_DELETE audit
-      const auditLogsData = {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: group.id,
-        resourceName: group.name,
-      };
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
-      await manager.delete(GroupPermissions, id);
-    });
+    return await this.groupPermissionsUtilService.deleteGroup(id, user);
   }
 
   async duplicateGroup(
@@ -190,20 +168,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
-    const organizationId = user.organizationId;
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const groupUser = await this.groupPermissionsRepository.getGroupUser(id, manager);
-      this.groupPermissionsUtilService.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
-      await this.groupPermissionsRepository.removeUserFromGroup(id);
-      //USER_REMOVE_FROM_GROUP audit
-      const auditLogsData = {
-        userId: user.id,
-        organizationId: organizationId,
-        resourceId: groupUser?.group.id,
-        resourceName: groupUser?.group.name,
-      };
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
-    }, manager);
+    return await this.deleteGroupUser(id, user, manager);
   }
 
   async getAddableUser(groupId: string, organizationId: string, searchInput?: string) {
