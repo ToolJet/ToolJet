@@ -2562,7 +2562,6 @@ export const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
 };
 
-
 // Color picker utils
 
 export const getRGBAValueFromHex = (hex) => {
@@ -2594,4 +2593,8 @@ export const hexToRgba = (hex) => {
 export const hexToRgb = (hex) => {
   const rgbaArray = getRGBAValueFromHex(hex);
   return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
+};
+
+export const isTruthyOrZero = (value) => {
+  return !!value || value === 0;
 };

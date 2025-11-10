@@ -8,7 +8,6 @@ import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appC
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -23,6 +22,8 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
+import ConfigHandleButton from '@/_components/ConfigHandleButton';
+import { PencilRuler } from 'lucide-react';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -531,7 +532,7 @@ export const PagesSidebarNavigation = ({
         })}
         style={{
           position: 'sticky',
-          height: currentMode === 'edit' ? `calc(100% - 2px)` : `calc(100% - 32px)`,
+          height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
           top: '0px',
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
@@ -660,32 +661,31 @@ export const PagesSidebarNavigation = ({
               zIndex: 1000,
               pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
               display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#4368E3',
-              padding: '2px 6px',
-              borderRadius: '6px',
-              whiteSpace: 'nowrap',
+              gap: '2px',
             }}
           >
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                setRightSidebarOpen(true);
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                alignItems: 'center',
+                gap: '6px',
+                padding: '2px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
               }}
             >
-              <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
-            </div>
-            <div
-              style={{
-                color: '#f6f8fa',
-                fontSize: '11px',
-                fontWeight: '500',
-              }}
-            >
-              Page and nav
-            </div>
+              <span style={{ cursor: 'default' }}>Page and nav</span>
+            </ConfigHandleButton>
+            <ConfigHandleButton>
+              <PencilRuler
+                size={12}
+                color="var(--icon-inverse)"
+                onClick={() => {
+                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+                  setRightSidebarOpen(true);
+                }}
+              />
+            </ConfigHandleButton>
           </div>
         )}
 
@@ -697,38 +697,37 @@ export const PagesSidebarNavigation = ({
               position: 'absolute',
               top: position === 'top' ? 'calc(100% + 0px)' : '7px',
               left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              zIndex: 1000,
               pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              display: 'none',
+              gap: '2px',
               alignItems: 'center',
-              gap: '6px',
-              background: '#4368E3',
-              padding: '2px 6px',
-              borderRadius: '6px',
-              whiteSpace: 'nowrap',
+              zIndex: 1000,
+              flexDirection: 'row',
+              display: 'none',
             }}
           >
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                setRightSidebarOpen(true);
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                padding: '2px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
               }}
             >
-              <SolidIcon name="propertiesstyles" width="12" fill="#f6f8fa" />
-            </div>
-            <div
-              style={{
-                color: '#f6f8fa',
-                fontSize: '11px',
-                fontWeight: '500',
-              }}
-            >
-              Page and nav
-            </div>
+              <span style={{ cursor: 'default' }}>Page and nav</span>
+            </ConfigHandleButton>
+            <ConfigHandleButton>
+              <PencilRuler
+                size={12}
+                color="var(--icon-inverse)"
+                onClick={() => {
+                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+                  setRightSidebarOpen(true);
+                }}
+              />
+            </ConfigHandleButton>
           </div>
         )}
-      </div>{' '}
+      </div>
       {/* Close navigation-with-tooltip-wrapper */}
     </div>
   );
