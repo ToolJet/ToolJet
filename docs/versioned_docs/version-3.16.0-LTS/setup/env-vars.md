@@ -257,10 +257,21 @@ Example: `LANGUAGE=fr` (for French).
 
 ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monitoring. Enable metrics collection to monitor application performance, query executions, and system health.
 
+**Basic Configuration:**
 - `ENABLE_OTEL`: Set to `true` to enable OpenTelemetry metrics collection (default: `false`)
 - `OTEL_EXPORTER_OTLP_TRACES`: OTLP traces endpoint URL (default: `http://localhost:4318/v1/traces`)
 - `OTEL_EXPORTER_OTLP_METRICS`: OTLP metrics endpoint URL (default: `http://localhost:4318/v1/metrics`)
 - `OTEL_SERVICE_NAME`: Service identifier for metrics (default: `tooljet`)
 - `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers for OTLP endpoint (optional, format: `key1=value1,key2=value2`)
+
+**Advanced Configuration:**
+- `OTEL_LOG_LEVEL`: Debug logging level for OTEL (use `debug` for detailed logs)
+- `OTEL_ACTIVE_USER_WINDOW_MINUTES`: Activity window for concurrent user tracking in minutes (default: `5`)
+- `OTEL_MAX_TRACKED_USERS`: Maximum number of tracked users/sessions (default: `10000`)
+- `OTEL_INCLUDE_QUERY_TEXT`: Include actual query text in metrics - **WARNING:** Creates high cardinality (default: `false`)
+
+:::warning High Cardinality
+Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
+:::
 
 For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.

@@ -43,6 +43,15 @@ OTEL_SERVICE_NAME=tooljet
 
 # Authentication (if required by your OTEL collector)
 OTEL_EXPORTER_OTLP_HEADERS=api-key=your-api-key
+
+# Advanced Configuration
+OTEL_LOG_LEVEL=debug                          # Enable debug logging for OTEL
+OTEL_ACTIVE_USER_WINDOW_MINUTES=5             # Activity window for concurrent user tracking (default: 5)
+OTEL_MAX_TRACKED_USERS=10000                  # Maximum tracked users/sessions (default: 10000)
+
+# WARNING: High Cardinality - Only enable for debugging
+OTEL_INCLUDE_QUERY_TEXT=false                 # Include actual query text in metrics (default: false)
+                                              # Creates HIGH CARDINALITY - use OTEL Collector to drop in production
 ```
 
 For a complete list of OpenTelemetry environment variables, refer to the [OpenTelemetry documentation](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/).
@@ -161,9 +170,25 @@ The dashboards will be immediately available with real-time data from your ToolJ
 
 ### High Cardinality Warning
 
-The app-based metrics include a `query_text` label that contains the actual SQL or query content. This creates high cardinality time series that can impact storage in Prometheus.
+The app-based metrics can optionally include a `query_text` label that contains the actual SQL or query content. **By default, this is disabled** to prevent high cardinality issues.
 
-**Recommendation:** Use an OpenTelemetry Collector in front of Prometheus to drop or hash the `query_text` label before metrics reach Prometheus:
+#### Enabling Query Text (For Debugging Only)
+
+To enable query text in metrics for debugging purposes:
+
+```bash
+OTEL_INCLUDE_QUERY_TEXT=true
+```
+
+:::warning
+Enabling `query_text` creates **high cardinality time series** that can significantly impact Prometheus storage and query performance. Only enable this temporarily for debugging specific query issues.
+:::
+
+#### Production Best Practices
+
+If you must enable `query_text` in production:
+
+1. **Use an OTEL Collector** to drop the label before metrics reach Prometheus:
 
 ```yaml
 # otel-collector-config.yaml
@@ -179,6 +204,17 @@ service:
       receivers: [otlp]
       processors: [attributes]
       exporters: [prometheus]
+```
+
+2. **Alternative: Hash the query text** to reduce cardinality:
+
+```yaml
+processors:
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["query_text"], SHA256(attributes["query_text"]))
 ```
 
 ### Performance Impact
