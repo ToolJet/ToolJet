@@ -256,6 +256,7 @@ export const commonSelectors = {
   releaseButton: '[data-cy="button-release"]',
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
+  modalCloseButton: '[data-cy="modal-close"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',

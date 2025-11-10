@@ -4,9 +4,11 @@ import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
 import * as common from "Support/utils/common";
 import { fillInputField } from "Support/utils/common";
+import { cleanupTestUser } from "Support/utils/manageSSO";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
+
 const envVar = Cypress.env("environment");
 
 export const verifyManageUsersPageElements = () => {
@@ -271,7 +273,7 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  fillInputField({ "Name": firstName, "Email address": email });
+  fillInputField({ Name: firstName, "Email address": email });
 };
 
 export const selectUserGroup = (groupName) => {
@@ -288,7 +290,6 @@ export const selectUserGroup = (groupName) => {
   });
 };
 
-
 export const selectGroup = (groupName, timeout = 1000) => {
   cy.get(usersSelector.groupSelector).eq(0).type(groupName);
   cy.wait(timeout);
@@ -299,14 +300,9 @@ export const updateUserGroup = (groupName) => {
   cy.get(usersSelector.userActionButton).click();
   cy.get(usersSelector.editUserDetailsButton).click();
   selectGroup(groupName);
-
 };
 
-export const inviteUserWithUserGroups = (
-  firstName,
-  email,
-  ...groupNames
-) => {
+export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
@@ -348,7 +344,9 @@ export const fetchAndVisitInviteLink = (email) => {
   cy.runSqlQuery(`select invitation_token from users where email='${email}';`)
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
-      return cy.runSqlQuery("select id from organizations where name='My workspace';");
+      return cy.runSqlQuery(
+        "select id from organizations where name='My workspace';"
+      );
     })
     .then((resp) => {
       workspaceId = resp.rows[0]?.id;
@@ -356,10 +354,13 @@ export const fetchAndVisitInviteLink = (email) => {
     })
     .then((resp) => {
       userId = resp.rows[0]?.id;
-      return cy.runSqlQuery(`select invitation_token from organization_users where user_id='${userId}';`);
+      return cy.runSqlQuery(
+        `select invitation_token from organization_users where user_id='${userId}';`
+      );
     })
     .then((resp) => {
-      organizationToken = resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
+      organizationToken =
+        resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
       const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
 
       cy.apiLogout();
@@ -475,4 +476,44 @@ export const navigateToEditUser = (email) => {
   cy.get('[data-cy="edit-user-details-button"]')
     .verifyVisibleElement("have.text", "Edit user details")
     .click();
+};
+
+export const cleanAllUsers = () => {
+  const collectAllUsers = () => {
+    return cy.apiGetUserDetails({ page: 1 }).then(({ body }) => {
+      const firstPageUsers = body?.users ?? [];
+      const totalPages = body?.meta?.total_pages ?? 1;
+
+      if (totalPages <= 1) {
+        return firstPageUsers;
+      }
+
+      const allUsers = [...firstPageUsers];
+      const remainingPages = Cypress._.range(2, totalPages + 1);
+
+      return cy
+        .wrap(remainingPages)
+        .each((page) => {
+          return cy.apiGetUserDetails({ page }).then(({ body }) => {
+            const pageUsers = body?.users ?? [];
+            allUsers.push(...pageUsers);
+          });
+        })
+        .then(() => allUsers);
+    });
+  };
+
+  return collectAllUsers().then((users) => {
+    const emails = users
+      .filter((user) => user.email !== "dev@tooljet.io")
+      .map((user) => user.email);
+
+    if (!emails.length) {
+      return cy.log("No users to clean up");
+    }
+
+    cy.log(`Batch deleting ${emails.length} users...`);
+
+    return cleanupTestUser(emails);
+  });
 };

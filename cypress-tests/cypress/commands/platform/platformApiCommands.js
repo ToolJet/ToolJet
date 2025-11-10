@@ -240,13 +240,16 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   });
 });
 
-Cypress.Commands.add("apiGetUserDetails", (email) => {
+Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
+  const { page = 1 } = options;
+
   return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
         method: "GET",
         url: `${Cypress.env("server_host")}/api/organization-users`,
         headers: headers,
+        qs: { page },
         log: false,
       })
       .then((response) => {
@@ -257,7 +260,7 @@ Cypress.Commands.add("apiGetUserDetails", (email) => {
 });
 
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
-  return cy.apiGetUserDetails(email).then((response) => {
+  return cy.apiGetUserDetails().then((response) => {
     const userId = response.body.users.find((u) => u.email === email).user_id;
     return cy.getAuthHeaders().then((headers) => {
       return cy
@@ -728,7 +731,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding(email, password, orgToken) {
+    function performOnboarding (email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `

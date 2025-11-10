@@ -526,15 +526,16 @@ export const uiOktaLogin = (email, password) => {
   cy.get(".button-primary").click();
 };
 
-
-
-export const toggleSsoViaUI = (provider, settingsUrl = 'settings/instance-login') => {
-  cy.wait(1000)
-  const isInstance = settingsUrl === 'settings/instance-login';
+export const toggleSsoViaUI = (
+  provider,
+  settingsUrl = "settings/instance-login"
+) => {
+  cy.wait(1000);
+  const isInstance = settingsUrl === "settings/instance-login";
   cy.intercept(
-    'PATCH',
-    `/api/login-configs/${isInstance ? 'instance' : 'organization'}-sso`
-  ).as('patchInstanceSSO');
+    "PATCH",
+    `/api/login-configs/${isInstance ? "instance" : "organization"}-sso`
+  ).as("patchInstanceSSO");
 
   cy.visit(settingsUrl);
   cy.wait(1000);
@@ -543,41 +544,56 @@ export const toggleSsoViaUI = (provider, settingsUrl = 'settings/instance-login'
   cy.get(`[data-cy="${cyParamName(provider)}-toggle-input"]`).click();
   cy.get(`[data-cy="save-button"]`).eq(1).click();
 
-  cy.wait('@patchInstanceSSO').its('response.statusCode').should('eq', 200);
+  cy.wait("@patchInstanceSSO").its("response.statusCode").should("eq", 200);
   cy.wait(1000);
-
-
 };
 
+export const gitHubSignInWithAssertion = (
+  assertion = null,
+  githubUsername = Cypress.env("GITHUB_USERNAME"),
+  githubPassword = Cypress.env("GITHUB_PASSWORD")
+) => {
+  cy.origin(
+    "https://github.com",
+    { args: { githubUsername, githubPassword, assertion } },
+    ({ githubUsername, githubPassword, assertion }) => {
+      cy.get('input[name="login"]', { timeout: 15000 }).type(githubUsername);
+      cy.get('input[name="password"]').type(githubPassword);
+      cy.get('input[name="commit"]').click();
+      cy.log("GitHub login submitted");
 
-export const gitHubSignInWithAssertion = (assertion = null, githubUsername = Cypress.env('GITHUB_USERNAME'), githubPassword = Cypress.env('GITHUB_PASSWORD')) => {
-  cy.origin('https://github.com', { args: { githubUsername, githubPassword, assertion } }, ({ githubUsername, githubPassword, assertion }) => {
-    cy.get('input[name="login"]', { timeout: 15000 }).type(githubUsername);
-    cy.get('input[name="password"]').type(githubPassword);
-    cy.get('input[name="commit"]').click();
-    cy.log('GitHub login submitted');
+      cy.get("body").then(($body) => {
+        if (
+          $body.find('[data-octo-click="oauth_application_authorization"]')
+            .length > 0
+        ) {
+          cy.get('[data-octo-click="oauth_application_authorization"]').click();
+          cy.log("GitHub authorization button clicked");
+        }
+      });
 
-    cy.get('body').then(($body) => {
-      if ($body.find('[data-octo-click="oauth_application_authorization"]').length > 0) {
-        cy.get('[data-octo-click="oauth_application_authorization"]').click();
-        cy.log('GitHub authorization button clicked');
+      if (assertion && assertion.type === "failure") {
+        cy.get(
+          '[alt="404 “This is not the web page you are looking for”"]'
+        ).should("be.visible");
+      } else if (assertion && assertion.type === "selector") {
+        cy.get(assertion.selector).should(assertion.condition, assertion.value);
       }
-    });
-
-    if (assertion && assertion.type === 'failure') {
-      cy.get('[alt="404 “This is not the web page you are looking for”"]').should('be.visible');
-    } else if (assertion && assertion.type === 'selector') {
-      cy.get(assertion.selector).should(assertion.condition, assertion.value);
     }
-  });
+  );
 };
 
+export const cleanupTestUser = (emails) => {
+  if (!emails || (Array.isArray(emails) && !emails.length)) {
+    cy.log("cleanupTestUser called without email");
+    return;
+  }
 
-export const cleanupTestUser = (email) => {
-  cy.runSqlQuery(`SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`).then((result) => {
-    cy.log('User existence :', JSON.stringify(result?.rows?.[0]?.exists));
-    if (result?.rows?.[0]?.exists) {
-      cy.runSqlQuery(`CALL delete_user('${email}');`);
-    }
-  });
+  const emailList = Array.isArray(emails) ? emails : [emails];
+  const sanitizedEmails = emailList.map((email) => email.replace(/'/g, "''"));
+  const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
+
+  cy.log(`Cleaning up ${emailList.length} user(s)`);
+
+  return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
 };

@@ -1,10 +1,10 @@
 import { commonSelectors } from "Selectors/common";
+import { commonEeSelectors } from "Selectors/eeCommon";
+import { importSelectors } from "Selectors/exportImport";
 import { licenseSelectors } from "Selectors/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
 import { licenseText } from "Texts/license";
-import { importSelectors } from "Selectors/exportImport";
-import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const getLicenseExpiryDate = () => {
   return cy
@@ -324,6 +324,7 @@ export const verifyResourceLimit = (
       );
     });
   });
+  cy.get(commonSelectors.cancelButton).click();
 };
 
 export const verifyTotalLimitsWithPlan = (
@@ -575,7 +576,7 @@ export const bulkUploadUsersViaCSV = (
 
   const emails = [];
   for (let i = 1; i <= count; i++) {
-    emails.push(`${prefix}-${timestamp}-${i}@test.com`);
+    emails.push(`${prefix}-${timestamp}-${i}@example.com`);
   }
 
   return cy.apiBulkUploadUsers(csvContent).then((response) => {
@@ -584,19 +585,19 @@ export const bulkUploadUsersViaCSV = (
 };
 
 export const verifyLimitBanner = (heading, infoText) => {
-  cy.verifyElement(licenseSelectors.limitHeading(usage), heading);
-  cy.verifyElement(licenseSelectors.limitInfo(usage), infoText);
+  cy.verifyElement(licenseSelectors.limitHeading("usage"), heading);
+  cy.verifyElement(licenseSelectors.limitInfo("usage"), infoText);
 };
 
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
-  cy.get(`${commonSelectors.modalHeader} .modal-title`).should(
+  cy.get('[data-cy="modal-header"] .modal-title').should(
     "have.text",
     "Upgrade Your Plan"
   );
-  cy.get(commonSelectors.modalCloseIcon).should("be.visible");
+  cy.get('[data-cy="modal-close"]').should("be.visible");
 
   const messageAssertion = cy
-    .get(commonSelectors.modalMessage)
+    .get('[data-cy="modal-message"]')
     .should("be.visible")
     .and("contain.text", messageText);
 
@@ -631,9 +632,13 @@ export const archiveUserAndVerify = (email) => {
   });
 };
 
-export const changeRoleAndExpectLimit = (email, newRole) => {
+export const changeRoleAndExpectLimit = (
+  email,
+  newRole,
+  expectedStatus = 451
+) => {
   return changeUserRole(email, newRole).then((roleChangeResponse) => {
-    expect(roleChangeResponse.status).to.equal(451);
+    expect(roleChangeResponse.status).to.equal(expectedStatus);
     expect(roleChangeResponse.body.message).to.contain("limit");
     return roleChangeResponse;
   });
