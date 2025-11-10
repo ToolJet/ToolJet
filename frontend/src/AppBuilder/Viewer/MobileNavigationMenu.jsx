@@ -157,7 +157,7 @@ const MobileNavigationMenu = ({
         <Header className={'mobile-header'}>
           <div onClick={toggleSidebar} className="cursor-pointer">
             <div className="icon-btn">
-              <Icons.IconX size={16} />
+              <Icons.IconX size={16} color="var(--icon-strong)" />
             </div>
           </div>
           <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">

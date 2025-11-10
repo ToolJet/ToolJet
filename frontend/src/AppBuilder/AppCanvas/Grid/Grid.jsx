@@ -80,7 +80,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
-  const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
+  const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
+  const isPageMenuHidden = useStore((state) => state?.getPagesSidebarVisibility(moduleId), shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
@@ -147,10 +148,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
   const noOfBoxs = Object.values(boxList || []).length;
 
+  const { position: menuPosition, hideLogo, hideHeader } = pageMenuProperties;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noOfBoxs, triggerCanvasUpdater, pageMenuPosition]);
+  }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
@@ -342,7 +345,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [temporaryHeight, boxList, selectedComponents, mainCanvasWidth]);
+  }, [boxList, selectedComponents, mainCanvasWidth]);
 
   useEffect(() => {
     reloadGrid();

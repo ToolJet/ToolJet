@@ -121,7 +121,16 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue, pageSettings } = get();
+    const {
+      currentLayout,
+      getCurrentMode,
+      setCanvasHeight,
+      temporaryLayouts,
+      getResolvedValue,
+      pageSettings,
+      getPagesSidebarVisibility,
+      license,
+    } = get();
     const currentMode = getCurrentMode(moduleId);
 
     // Only keep canvas components (components with no parent) & show on layout true
@@ -164,7 +173,15 @@ export const createAppSlice = (set, get) => ({
 
     const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
-    const pageMenuHeight = pageSettings?.definition?.properties?.position === 'top' ? 60 : 0;
+    const isLicensed =
+      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
+    const { position, hideHeader, hideLogo } = pageSettings?.definition?.properties || {};
+    const headerHidden = isLicensed ? hideHeader : false;
+    const logoHidden = isLicensed ? hideLogo : false;
+    const isPagesSidebarHidden = getPagesSidebarVisibility(moduleId);
+    const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight =

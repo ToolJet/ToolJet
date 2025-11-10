@@ -41,6 +41,7 @@ const MobileHeader = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const license = useStore((state) => state.license);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -163,6 +164,13 @@ const MobileHeader = ({
     );
   };
 
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
+  const headerHidden = isLicensed ? hideHeader : false;
+  const logoHidden = isLicensed ? hideLogo : false;
+
   return (
     <SidebarProvider
       open={isSidebarOpen}
@@ -175,7 +183,7 @@ const MobileHeader = ({
       {!isEmpty(editingVersion) && !isReleasedVersionId && (
         <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
       )}
-      {(!isPagesSidebarHidden || !hideLogo || !hideHeader) && (
+      {(!isPagesSidebarHidden || !headerHidden || !logoHidden) && (
         <Header className={'mobile-nav-container'}>
           {!isPagesSidebarHidden && showOnMobile && <MenuBtn />}
           {_renderAppNameAndLogo()}
