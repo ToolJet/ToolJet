@@ -12,10 +12,10 @@ import { RequestContextModule } from '@modules/request-context/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
-import { SentryModule } from '@modules/observability/sentry/module';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -141,13 +141,7 @@ export class AppModuleLoader {
     }
 
     if (process.env.APM_VENDOR == 'sentry') {
-      staticModules.unshift(
-        SentryModule.forRoot({
-          dsn: process.env.SENTRY_DNS,
-          tracesSampleRate: 1.0,
-          debug: !!process.env.SENTRY_DEBUG,
-        })
-      );
+      staticModules.unshift(SentryModule.forRoot());
     }
 
     /**

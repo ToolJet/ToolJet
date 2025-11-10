@@ -39,6 +39,7 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  initSentry,
 } from '@helpers/bootstrap.helper';
 
 let appContext: INestApplicationContext = undefined;
@@ -132,6 +133,9 @@ async function bootstrap() {
     const guardValidator = app.get(GuardValidator);
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
+
+    // Initialize Sentry
+    initSentry(appLogger, configService);
 
     // Start server
     const listen_addr = process.env.LISTEN_ADDR || '::';

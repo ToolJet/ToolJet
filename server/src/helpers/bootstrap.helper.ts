@@ -8,6 +8,7 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import * as Sentry from '@sentry/nestjs';
 
 /**
  * Creates a logger instance with a specific context
@@ -122,6 +123,25 @@ export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
   }
 
   logger.log('✅ Subpath placeholder replacement completed');
+}
+
+export function initSentry(logger: any, configService: ConfigService) {
+  if (configService.get<string>('APM_VENDOR') !== 'sentry') return;
+
+  logger.log('Initializing Sentry...');
+  // Sentry initialization logic here
+  try {
+    Sentry.init({
+      dsn: configService.get<string>('SENTRY_DNS'),
+      tracesSampleRate: 1.0,
+      environment: configService.get<string>('NODE_ENV') || 'development',
+      debug: !!configService.get<string>('SENTRY_DEBUG'),
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    logger.error('❌ Failed to set Sentry options:', error);
+  }
+  logger.log('✅ Sentry initialization completed');
 }
 
 /**
