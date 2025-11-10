@@ -108,7 +108,7 @@ it("should update white labelling and verify changes", () => {
       verifyLogoOnLoginPage();
 });
     
-it("should verify SMTP settings UI elements", () => {
+it.only("should verify SMTP settings UI elements", () => {
       openSMTPSettings();
       verifySmtpSettingsUI();
 });

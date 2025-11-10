@@ -61,10 +61,13 @@ export const whiteLabelSelectors = {
   favIconHelpText: '[data-cy="fav-icon-help-text"]',
   cancelButton: '[data-cy="cancel-button"]',
   saveButton: '[data-cy="save-button"]',
+};
+export const smtpSelectors = {
   smtpEnableToggle: '[data-cy="smtp-enable-toggle"]',
   smtpListItem: '[data-cy="email-protocol-(smtp)-list-item"]',
   smtpHostInput: '[data-cy="input-field-host"]',
   smtpPortInput: '[data-cy="input-field-port"]',
   smtpUserInput: '[data-cy="input-field-user"]',
   smtpPasswordInput: '[data-cy="input-field-password"]',
-};
+  smtpStatuslabel: '[data-cy="status-label"]',
+  };

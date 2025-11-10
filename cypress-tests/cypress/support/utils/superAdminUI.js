@@ -4,11 +4,13 @@ import { usersSelector } from "Selectors/manageUsers";
 import { instanceSettingsText } from "Texts/eeCommon";
 import { commonSelectors } from "Selectors/common";
 
+
 import {
   instanceWorkspaceSelectors,
   instanceAllUsersSelectors,
   whiteLabelSelectors,
   usersTableElementsInInstance,
+  smtpSelectors
 } from "Selectors/superAdminUISelectors"; 
 
 import {
@@ -42,7 +44,7 @@ export const openWhiteLabelingSettings = () => {
 
 export const openSMTPSettings = () => {
   openInstanceSettings();
-  cy.get(whiteLabelSelectors.smtpListItem).click();
+  cy.get(smtpSelectors.smtpListItem).click();
 };
 
 export const verifyWhiteLabelingUI = () => {
@@ -72,24 +74,26 @@ export const verifyInputPlaceholder = (selector, expected) => {
 export const verifyLabel = (text) => cy.contains("label", text).should("be.visible");
 
 export const verifySmtpSettingsUI = () => {
-  cy.get(whiteLabelSelectors.smtpEnableToggle).should("be.visible");
+  cy.get(smtpSelectors.smtpEnableToggle).should("be.visible");
   cy.contains(SMTP_TEXT.sectionTitle).should("be.visible");
   cy.contains(SMTP_TEXT.stateDisabled).should("be.visible");
+  cy.get(smtpSelectors.smtpEnableToggle).eq(0).click();
+  cy.get(smtpSelectors.smtpStatuslabel).should("have.text", SMTP_TEXT.stateEnabled);
 
   cy.contains(SMTP_TEXT.envToggle).should("be.visible");
   cy.contains(SMTP_TEXT.envHint).should("be.visible");
 
   verifyLabel(SMTP_TEXT.host);
-  verifyInputPlaceholder(whiteLabelSelectors.smtpHostInput, SMTP_TEXT.hostPlaceholder);
+  verifyInputPlaceholder(smtpSelectors.smtpHostInput, SMTP_TEXT.hostPlaceholder);
 
   verifyLabel(SMTP_TEXT.port);
-  verifyInputPlaceholder(whiteLabelSelectors.smtpPortInput, SMTP_TEXT.portPlaceholder);
+  verifyInputPlaceholder(smtpSelectors.smtpPortInput, SMTP_TEXT.portPlaceholder);
 
   verifyLabel(SMTP_TEXT.username);
-  verifyInputPlaceholder(whiteLabelSelectors.smtpUserInput, SMTP_TEXT.userPlaceholder);
+  verifyInputPlaceholder(smtpSelectors.smtpUserInput, SMTP_TEXT.userPlaceholder);
 
 verifyLabel(SMTP_TEXT.password);
-verifyInputPlaceholder(whiteLabelSelectors.smtpPasswordInput, SMTP_TEXT.passwordPlaceholder);
+verifyInputPlaceholder(smtpSelectors.smtpPasswordInput, SMTP_TEXT.passwordPlaceholder);
 
   cy.contains("label", SMTP_TEXT.senderEmail).should("be.visible").parent().find("input").should("be.visible");
   cy.contains(SMTP_TEXT.docs).should("be.visible");

@@ -46,6 +46,7 @@ export const whitelabelText = {
 export const SMTP_TEXT = {
   sectionTitle: "Email protocol (SMTP)",
   stateDisabled: "Disabled",
+  stateEnabled: "Enabled",
   envToggle: "Apply configuration from environment variables",
   envHint: "If disabled, you can configure it from the form below",
   host: "Host",
