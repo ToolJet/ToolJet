@@ -43,6 +43,7 @@ const AppList = (props) => {
                     appActionModal={props.appActionModal}
                     appType={props.appType}
                     basicPlan={props?.basicPlan || false}
+                    moduleEnabled={props?.moduleEnabled || false}
                   />
                 </div>
               );

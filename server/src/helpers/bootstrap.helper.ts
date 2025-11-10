@@ -142,6 +142,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     app.enableCors({
       origin: configService.get<string>('ENABLE_CORS') === 'true' || tooljetHost,
       credentials: true,
+      maxAge: 86400,
     });
 
     // Get CSP whitelisted domains
