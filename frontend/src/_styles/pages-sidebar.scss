@@ -208,7 +208,7 @@
 
 #sidebar-page-navigation {
     
-    .navigation-area {
+    .navigation-area, .mobile-navigation-area {
         width: 100%;
         z-index: 1;
         background: var(--base, #FFF);
@@ -598,24 +598,18 @@
             }
         }
     }
+    
     &.offset-top-bar-navigation {
-        .navbar {
-            height: 32px;
-        }
-
-        .header-container {
-            background-color: var(--background);
-        }
         #sidebar-page-navigation {
-        .navigation-area {
-            &.position-top {
-                top: 44px !important;
+            .navigation-area {
+                &.position-top {
+                    top: 44px !important;
+                }
             }
-        }
         }
     }
 
-    // scrollbar behaviour in viewer for vertical page menu
+    // scrollbar behaviour in viewer for page menu
     .main{
         .canvas-container{
             .page-menu-scroll {

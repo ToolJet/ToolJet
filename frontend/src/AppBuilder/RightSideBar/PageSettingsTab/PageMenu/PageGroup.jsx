@@ -16,7 +16,7 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 
-export const RenderPage = ({
+const RenderPage = ({
   page,
   currentPageId,
   switchPageWrapper,
@@ -168,6 +168,7 @@ const RenderPageGroup = ({
             homePageId={homePageId}
             position={position}
             currentMode={currentMode}
+            isSidebarPinned={isSidebarPinned}
           />
         ))}
       </>
@@ -237,6 +238,7 @@ const RenderPageGroup = ({
             homePageId={homePageId}
             position={position}
             currentMode={currentMode}
+            isSidebarPinned={isSidebarPinned}
           />
         ))}
       </NavigationMenuContent>
@@ -279,6 +281,7 @@ const RenderPageGroup = ({
               homePageId={homePageId}
               position={position}
               currentMode={currentMode}
+              isSidebarPinned={isSidebarPinned}
             />
           ))}
         </div>

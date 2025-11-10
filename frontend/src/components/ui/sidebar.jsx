@@ -155,6 +155,7 @@ const Sidebar = React.forwardRef(
               '--sidebar-width': sidebarWidth || SIDEBAR_WIDTH_MOBILE,
             }}
             side={side}
+            {...(props.sheetProps && props.sheetProps)}
           >
             <SheetHeader className="tw-sr-only">
               <SheetTitle>Sidebar</SheetTitle>
