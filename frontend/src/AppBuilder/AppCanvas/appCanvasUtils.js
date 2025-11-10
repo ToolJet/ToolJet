@@ -618,6 +618,12 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
 
+    if (targetParentId !== component.component?.parent) {
+      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
+      width = Math.round((width * oldContainerWidth) / containerWidth);
+    }
+
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,

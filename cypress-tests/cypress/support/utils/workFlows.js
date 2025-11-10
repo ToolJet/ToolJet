@@ -40,23 +40,23 @@ export const revealWorkflowToken = (selectors) => {
 };
 
 export const importWorkflowApp = (
-  wfName,
+  workflowName,
   fixturePath = "cypress/fixtures/exportedApp.json"
 ) => {
   cy.get(workflowSelector.importWorkFlowsOption).click();
   cy.get(workflowSelector.importWorkFlowsLabel).click();
   cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
   cy.wait(2000);
-  cy.get(workflowSelector.workFlowNameInputField).clear().type(wfName);
+  cy.get(workflowSelector.workFlowNameInputField).clear().type(workflowName);
   cy.get(workflowSelector.importWorkFlowsButton).click();
 };
 
-export const deleteAppandWorkflowAfterExecution = (wfName, appName) => {
+export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
   cy.backToApps();
   cy.deleteApp(appName);
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.get(commonSelectors.appCard(wfName))
+  cy.get(commonSelectors.appCard(workflowName))
     .realHover()
     .find(commonSelectors.appCardOptionsButton)
     .realHover()

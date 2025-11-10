@@ -76,7 +76,7 @@ export const useHeightObserver = (ref, dynamicHeight = false) => {
       mutationObserver.disconnect();
       element.removeEventListener('scroll', handleScroll);
     };
-  }, [ref, dynamicHeight]);
+  }, [ref?.current, dynamicHeight]);
 
   return heightChangeValue;
 };
