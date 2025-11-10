@@ -4,7 +4,7 @@ import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { FilterPreview, MultiSelectUser } from '@/_components';

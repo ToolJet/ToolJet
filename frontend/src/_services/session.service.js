@@ -10,6 +10,15 @@ export const sessionService = {
 };
 
 function validateSession(appId, workspaceSlug) {
+  // Check if session was prefetched in index.ejs
+  if (window.__PREFETCHED_DATA__?.session) {
+    const sessionData = window.__PREFETCHED_DATA__.session;
+    // Clear prefetched data after use
+    delete window.__PREFETCHED_DATA__.session;
+    return Promise.resolve(sessionData);
+  }
+
+  // Fallback to API call if not prefetched
   const requestOptions = {
     method: 'GET',
     credentials: 'include',

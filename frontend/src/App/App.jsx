@@ -101,6 +101,27 @@ class AppComponent extends React.Component {
   }
 
   fetchMetadata = () => {
+    // Check if metadata was prefetched
+    if (window.__PREFETCHED_DATA__?.metadata && !this.state.fetchedMetadata) {
+      const data = window.__PREFETCHED_DATA__.metadata;
+      updateCurrentSession({
+        instance_id: data?.instance_id,
+      });
+      useAppDataStore.getState().actions.setMetadata(data);
+      localStorage.setItem('currentVersion', data.installed_version);
+      this.setState({ 
+        tooljetVersion: data.installed_version,
+        fetchedMetadata: true 
+      });
+      if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        this.setState({ updateAvailable: true });
+      }
+      // Clear prefetched data after use
+      delete window.__PREFETCHED_DATA__.metadata;
+      return;
+    }
+
+    // Fallback to fetching if not prefetched
     tooljetService.fetchMetaData().then((data) => {
       updateCurrentSession({
         instance_id: data?.instance_id,

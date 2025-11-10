@@ -3,7 +3,6 @@ import { render } from 'react-dom';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { appService } from '@/_services';
 import { App } from './App';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
@@ -12,12 +11,29 @@ import Backend from 'i18next-http-backend';
 
 const AppWithProfiler = Sentry.withProfiler(App);
 
-appService
-  .getConfig()
+// Wait for config to be available (fetched in index.ejs)
+function waitForConfig() {
+  return new Promise((resolve) => {
+    console.log('Waiting for config - 1', window.public_config);
+    if (window.public_config) {
+      resolve(window.public_config);
+    } else {
+      console.log('Waiting for config - 2', window.public_config);
+      // Poll for config if not yet available
+      const interval = setInterval(() => {
+        if (window.public_config) {
+          clearInterval(interval);
+          resolve(window.public_config);
+        }
+      }, 50);
+    }
+  });
+}
+
+waitForConfig()
   .then((config) => {
     console.log({ config });
 
-    window.public_config = config;
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
     i18n
