@@ -189,14 +189,47 @@ export function Authorize({ navigate }) {
 
   //   return null;
   // };
+  const hubspotFormSubmissionForSSO = (email) => {
+    if (!email || window.__hs_original_source_submitted) return;
+    try {
+      const attribution = getAttributionFromState();
+      if (!attribution || (!attribution.hutk && !Object.keys(attribution.utm || {}).length)) return;
 
+      const { SSO_HUBSPOT_PORTAL_ID: portalId, SSO_HUBSPOT_FORM_ID: formId } = window.public_config || {};
+      if (!portalId || !formId) return;
+
+      window.__hs_original_source_submitted = true;
+
+      const fields = [
+        { name: 'email', value: email },
+        ...Object.entries(attribution.utm || {}).map(([key, value]) => ({ name: key, value })),
+      ];
+
+      const payload = {
+        fields,
+        context: {
+          hutk: attribution.hutk,
+          pageUri: attribution.pageUri || location.href,
+          pageName: attribution.pageName || document.title,
+        },
+      };
+
+      fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => { });
+    } catch { }
+  };
   const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
+      // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
+      hubspotFormSubmissionForSSO(email);
 
-      const event = `${redirect_url ? 'signup' : 'signin'}_${
-        router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
-      }`;
+      const event = `${redirect_url ? 'signup' : 'signin'}_${router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+        }`;
       posthogHelper.initPosthog(restResponse);
       posthogHelper.captureEvent(event, {
         email,
@@ -285,9 +318,8 @@ export function Authorize({ navigate }) {
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
   const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
-  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
-    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-  }`;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${!signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+    }`;
   return (
     <div>
       <TJLoader />
