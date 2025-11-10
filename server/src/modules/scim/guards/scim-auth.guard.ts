@@ -9,7 +9,7 @@ export class ScimAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'];
 
-    const scimEnabled = this.configService.get<string>('SCIM_ENABLED');
+    const scimEnabled = this.configService.get<string>('SCIM_ENABLED') === 'true';
     if (!scimEnabled) {
       throw new UnauthorizedException('SCIM not enabled');
     }
