@@ -278,44 +278,86 @@ const useAppData = (
           };
         }
 
-        let constantsResp;
+        // Prepare all parallel requests
+        const isPublicApp = isPublicAccess && mode !== 'edit' && appData.is_public;
+        const versionId = appData.editing_version?.id || appData.current_version_id;
+
+        // Start all independent requests immediately (no await yet!)
+        const customStylesPromise = fetchAndInjectCustomStyles(isPublicApp);
+
+        // Data queries can start immediately - it doesn't depend on environment
+        const dataQueriesPromise =
+          isPublicAccess || (mode !== 'edit' && appData.is_public)
+            ? Promise.resolve(appData)
+            : dataqueryService.getAll(versionId, mode).catch((_error) => {
+                console.error('Error fetching data queries:', _error);
+                return { data_queries: [] };
+              });
+
+        // Constants fetching (may need environment first in view mode)
+        let constantsPromise;
         if (mode !== 'edit') {
-          try {
-            const queryParams = { slug: slug };
+          const queryParams = { slug: slug };
 
-            const viewerEnvironment =
-              moduleMode && isPublicAccess
-                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
-                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+          // Start environment fetch immediately
+          const environmentPromise =
+            moduleMode && isPublicAccess
+              ? Promise.resolve({ environment: { id: environmentId, name: 'development' } })
+              : appEnvironmentService.getEnvironment(environmentId, queryParams);
 
-            editorEnvironment = {
-              id: viewerEnvironment?.environment?.id,
-              name: viewerEnvironment?.environment?.name,
-            };
-            constantsResp =
-              isPublicAccess && appData.is_public
-                ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
-                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
-          } catch (error) {
-            console.error('Error fetching viewer environment:', error);
-          }
+          // Chain constants fetch after environment (but still parallel with other requests)
+          constantsPromise = environmentPromise
+            .then((viewerEnvironment) => {
+              const env = {
+                id: viewerEnvironment?.environment?.id,
+                name: viewerEnvironment?.environment?.name,
+              };
+
+              // Now fetch constants with the environment ID
+              const constantsFetch =
+                isPublicAccess && appData.is_public
+                  ? orgEnvironmentConstantService.getConstantsFromPublicApp(slug, env.id)
+                  : orgEnvironmentConstantService.getConstantsFromEnvironment(env.id);
+
+              return constantsFetch.then((constants) => ({ constants, environment: env }));
+            })
+            .catch((error) => {
+              console.error('Error fetching viewer environment:', error);
+              return { constants: null, environment: editorEnvironment };
+            });
+        } else {
+          // Edit mode - can fetch constants directly
+          constantsPromise = orgEnvironmentConstantService
+            .getConstantsFromEnvironment(editorEnvironment?.id)
+            .then((constants) => ({ constants, environment: editorEnvironment }))
+            .catch((_error) => {
+              console.error('Error fetching editor environment constants:', _error);
+              return { constants: null, environment: editorEnvironment };
+            });
         }
 
-        if (mode === 'edit') {
-          constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
+        // Execute all parallel requests - this is the ONLY await, everything runs in parallel
+        const [constantsResult, , queryDataResult] = await Promise.all([
+          constantsPromise,
+          customStylesPromise,
+          dataQueriesPromise,
+        ]);
+
+        // Process constants result
+        let constantsResp = constantsResult?.constants;
+        if (constantsResult?.environment) {
+          editorEnvironment = constantsResult.environment;
         }
-        // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
 
-        !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
+        // Get the constants for specific environment
+        if (constantsResp) {
+          constantsResp = {
+            ...constantsResp,
+            constants: extractEnvironmentConstantsFromConstantsList(constantsResp?.constants, editorEnvironment?.name),
+          };
+        }
 
-        fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
+        !moduleMode && setIsPublicAccess(isPublicApp);
 
         const pages = appData.pages.map((page) => {
           return page;
@@ -455,11 +497,8 @@ const useAppData = (
           setModuleDefinition(appData.modules);
         }
 
-        const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public)
-            ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
-        const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
+        // Process data queries result (already fetched in parallel)
+        const dataQueries = queryDataResult.data_queries || queryDataResult?.editing_version?.data_queries || [];
         dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
         if (dataQueries?.length > 0) {
@@ -469,6 +508,7 @@ const useAppData = (
             moduleId
           );
         }
+
         const constants = constantsResp?.constants;
 
         if (constants) {

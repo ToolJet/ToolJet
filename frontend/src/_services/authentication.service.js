@@ -301,6 +301,15 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
 }
 
 function authorize() {
+  // Check if authorize was prefetched in index.ejs
+  if (window.__PREFETCHED_DATA__?.authorize) {
+    const authData = window.__PREFETCHED_DATA__.authorize;
+    // Clear prefetched data after use
+    delete window.__PREFETCHED_DATA__.authorize;
+    return Promise.resolve(authData);
+  }
+
+  // Fallback to API call if not prefetched
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),

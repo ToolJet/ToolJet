@@ -1,145 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <% if (process.env.NODE_ENV==='production' && process.env.SERVE_CLIENT
+    !=='false' ) { %>
+    <base href="__REPLACE_SUB_PATH__" />
+    <% } else { %>
+    <base href="/" />
+    <% } %>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading...</title>
 
-<head>
-  <% if (process.env.NODE_ENV==='production' && process.env.SERVE_CLIENT !=='false' ) { %>
-  <base href="__REPLACE_SUB_PATH__" />
-  <% } else { %>
-  <base href="/" />
-  <% } %>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loading...</title>
-
-  <style>
-    a {
-      cursor: pointer;
-    }
-
-    body {
-      margin: 0;
-    }
-
-    .load {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .load.dark-loader {
-      display: flex;
-      background-color: #1E2226;
-      margin: 0;
-    }
-
-    .load div {
-      width: 20px;
-      height: 20px;
-      background-color: #3E63DD;
-      border-radius: 50%;
-      margin: 0 5px;
-      animation-name: up-and-down;
-      animation-duration: 0.8s;
-      animation-iteration-count: infinite;
-      animation-direction: alternate;
-    }
-
-    .load .two {
-      animation-delay: 0.3s;
-    }
-
-    .load .three {
-      animation-delay: 0.6s;
-    }
-
-    @keyframes up-and-down {
-      to {
-        opacity: 0.2;
-        transform: translateY(-20px);
-
+    <style>
+      a {
+        cursor: pointer;
       }
-    }
 
-    /* roboto-100 - latin */
-    @font-face {
-      font-display: swap;
-      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 100;
-      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-100.woff2') format('woff2');
-      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-    }
+      body {
+        margin: 0;
+      }
 
-    /* roboto-300 - latin */
-    @font-face {
-      font-display: swap;
-      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 300;
-      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-300.woff2') format('woff2');
-      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-    }
+      .load {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .load.dark-loader {
+        display: flex;
+        background-color: #1e2226;
+        margin: 0;
+      }
 
-    /* roboto-regular - latin */
-    @font-face {
-      font-display: swap;
-      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 400;
-      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-regular.woff2') format('woff2');
-      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-    }
+      .load div {
+        width: 20px;
+        height: 20px;
+        background-color: #3e63dd;
+        border-radius: 50%;
+        margin: 0 5px;
+        animation-name: up-and-down;
+        animation-duration: 0.8s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
 
-    /* roboto-500 - latin */
-    @font-face {
-      font-display: swap;
-      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 500;
-      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-500.woff2') format('woff2');
-      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-    }
+      .load .two {
+        animation-delay: 0.3s;
+      }
 
-    /* source-code-pro-regular - latin */
-    @font-face {
-      font-display: swap;
-      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-      font-family: 'Source Code Pro';
-      font-style: normal;
-      font-weight: 400;
-      src: url('/assets/fonts/source-code-pro-v22-latin/source-code-pro-v22-latin-regular.woff2') format('woff2');
-      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-    }
-  </style>
+      .load .three {
+        animation-delay: 0.6s;
+      }
 
-  <link rel="icon" href="assets/images/logo.svg" sizes="any" type="image/svg+xml" />
-  <script src="assets/libs/pyodide-0.23.2/pyodide.js"></script>
-</head>
+      @keyframes up-and-down {
+        to {
+          opacity: 0.2;
+          transform: translateY(-20px);
+        }
+      }
 
-<body>
-  <div id="app">
-    <div style="width: 100%">
-      <div id="app-loader" class="load">
-        <div class="one"></div>
-        <div class="two"></div>
-        <div class="three"></div>
+      /* roboto-100 - latin */
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: "Roboto";
+        font-style: normal;
+        font-weight: 100;
+        src: url("/assets/fonts/roboto-v30-latin/roboto-v30-latin-100.woff2")
+          format("woff2");
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+
+      /* roboto-300 - latin */
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: "Roboto";
+        font-style: normal;
+        font-weight: 300;
+        src: url("/assets/fonts/roboto-v30-latin/roboto-v30-latin-300.woff2")
+          format("woff2");
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+
+      /* roboto-regular - latin */
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: "Roboto";
+        font-style: normal;
+        font-weight: 400;
+        src: url("/assets/fonts/roboto-v30-latin/roboto-v30-latin-regular.woff2")
+          format("woff2");
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+
+      /* roboto-500 - latin */
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: "Roboto";
+        font-style: normal;
+        font-weight: 500;
+        src: url("/assets/fonts/roboto-v30-latin/roboto-v30-latin-500.woff2")
+          format("woff2");
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+
+      /* source-code-pro-regular - latin */
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: "Source Code Pro";
+        font-style: normal;
+        font-weight: 400;
+        src: url("/assets/fonts/source-code-pro-v22-latin/source-code-pro-v22-latin-regular.woff2")
+          format("woff2");
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+    </style>
+
+    <link
+      rel="icon"
+      href="assets/images/logo.svg"
+      sizes="any"
+      type="image/svg+xml"
+    />
+    <script src="assets/libs/pyodide-0.23.2/pyodide.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div style="width: 100%">
+        <div id="app-loader" class="load">
+          <div class="one"></div>
+          <div class="two"></div>
+          <div class="three"></div>
+        </div>
       </div>
     </div>
-  </div>
-</body>
-<script>
-  if (typeof localStorage !== 'undefined') {
-      const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-      const loaderElement = document.getElementById('app-loader');
+  </body>
+  <script>
+    if (typeof localStorage !== "undefined") {
+      const darkModeEnabled = localStorage.getItem("darkMode") === "true";
+      const loaderElement = document.getElementById("app-loader");
       if (darkModeEnabled) {
-        loaderElement.classList.add('dark-loader');
+        loaderElement.classList.add("dark-loader");
       } else {
-        loaderElement.style.display = 'flex';
+        loaderElement.style.display = "flex";
       }
-  }
-</script>
+    }
+  </script>
+  <script>
+    // Prefetch critical API calls before React bundle evaluation
+    (function() {
+      <% if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT !== 'false') { %>
+      const apiUrl = '__REPLACE_SUB_PATH__api';
+      <% } else { %>
+      const apiUrl = 'http://localhost:<%= process.env.TOOLJET_SERVER_PORT || 3000 %>/api';
+      <% } %>
+
+      // Initialize window storage for prefetched data
+      window.__PREFETCHED_DATA__ = {
+        config: null,
+        session: null,
+        metadata: null,
+        authorize: null
+      };
+
+      // Helper to get workspace ID/slug from URL
+      function getWorkspaceFromURL() {
+        const pathname = window.location.pathname;
+        const parts = pathname.split('/').filter(Boolean);
+        // Skip subpath if exists
+        const subpath = window.public_config?.SUB_PATH;
+        const startIndex = subpath ? subpath.split('/').filter(Boolean).length : 0;
+        return parts[startIndex] || null;
+      }
+
+      // Helper to get app ID from URL for viewer pages
+      function getAppIdFromURL() {
+        const pathname = window.location.pathname;
+        if (pathname.includes('/applications/') || pathname.includes('/embed-apps/')) {
+          const parts = pathname.split('/').filter(Boolean);
+          const appIndex = parts.findIndex(function(p) { return p === 'applications' || p === 'embed-apps'; });
+          return parts[appIndex + 1] || null;
+        }
+        return null;
+      }
+
+      // Start all API calls in parallel
+      const configPromise = fetch(apiUrl + '/config', {
+        method: 'GET',
+        credentials: 'include'
+      })
+        .then(function(response) {
+          if (!response.ok) throw new Error('Failed to fetch config');
+          return response.json();
+        })
+        .then(function(config) {
+          window.public_config = config;
+          window.__PREFETCHED_DATA__.config = config;
+          return config;
+        })
+        .catch(function(error) {
+          console.error('Error fetching config:', error);
+          window.public_config = {};
+          return {};
+        });
+
+      // Fetch metadata in parallel
+      const metadataPromise = fetch(apiUrl + '/metadata', {
+        method: 'GET',
+        credentials: 'include'
+      })
+        .then(function(response) {
+          if (!response.ok) throw new Error('Failed to fetch metadata');
+          return response.json();
+        })
+        .then(function(data) {
+          window.__PREFETCHED_DATA__.metadata = data;
+          return data;
+        })
+        .catch(function(error) {
+          console.error('Error prefetching metadata:', error);
+          return null;
+        });
+
+      // Fetch session validation in parallel
+      configPromise.then(function() {
+        const appId = getAppIdFromURL();
+        const workspaceId = getWorkspaceFromURL();
+
+        let sessionUrl = apiUrl + '/session';
+        const params = new URLSearchParams();
+        if (appId) params.append('app_id', appId);
+        if (workspaceId) params.append('workspace_id', workspaceId);
+        if (params.toString()) sessionUrl += '?' + params.toString();
+
+        fetch(sessionUrl, {
+          method: 'GET',
+          credentials: 'include'
+        })
+          .then(function(response) {
+            if (!response.ok) {
+              // Session validation failed - user not authenticated
+              throw new Error('Session validation failed');
+            }
+            return response.json();
+          })
+          .then(function(session) {
+            window.__PREFETCHED_DATA__.session = session;
+
+            // Only fetch authorize if:
+            // 1. Session is valid
+            // 2. Has current_organization_id
+            // 3. Authentication is successful (authentication_status !== false)
+            if (
+              session &&
+              session.current_organization_id &&
+              session.authentication_status !== false &&
+              !session.authentication_failed
+            ) {
+              return fetch(apiUrl + '/authorize', {
+                method: 'GET',
+                credentials: 'include'
+              })
+                .then(function(response) {
+                  if (!response.ok) {
+                    // Don't throw error - just skip storing authorize data
+                    console.log('Authorize check failed - user may need to authenticate');
+                    return null;
+                  }
+                  return response.json();
+                })
+                .then(function(authData) {
+                  if (authData) {
+                    window.__PREFETCHED_DATA__.authorize = authData;
+                  }
+                })
+                .catch(function(error) {
+                  // Silent fail - React will handle authorization later
+                  console.log('Authorize prefetch skipped:', error.message);
+                });
+            }
+          })
+          .catch(function(error) {
+            // Session validation failed - this is normal for unauthenticated users
+            console.log('Session prefetch skipped:', error.message);
+          });
+      });
+
+    })();
+  </script>
 </html>
