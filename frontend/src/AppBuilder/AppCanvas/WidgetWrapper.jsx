@@ -111,7 +111,7 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': readOnly,
             'active-target': isWidgetActive,
-            'opacity-0': isDragging || isResizing,
+            'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
           })}
