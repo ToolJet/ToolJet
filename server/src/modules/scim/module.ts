@@ -1,9 +1,8 @@
 import { FeatureAbilityFactory } from './ability';
-import { DynamicModule, MiddlewareConsumer } from '@nestjs/common';
+import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
-import * as bodyParser from 'body-parser';
 
 export class ScimModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -29,15 +28,5 @@ export class ScimModule extends SubModule {
       providers: [FeatureAbilityFactory, ScimService, ScimUsersService, ScimGroupsService],
       controllers: isMainImport ? [ScimController, ScimUsersController, ScimGroupsController] : [],
     };
-  }
-  // ✅ Tell NestJS to parse SCIM payloads too
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(
-      bodyParser.json({
-        type: ['application/json', 'application/scim+json'],
-      })
-    );
-    // You can target specific controllers or the whole path prefix
-    // .forRoutes('scim', 'scim/users', 'scim/groups');
   }
 }

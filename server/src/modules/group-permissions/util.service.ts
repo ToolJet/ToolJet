@@ -408,7 +408,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     return groupPermissionResponse;
   }
 
-  async deleteGroup(id: string, user: User): Promise<void> {
+  async deleteGroup(id: string, user: User, manager?: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationId = user.organizationId;
       const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
@@ -425,7 +425,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       await manager.delete(GroupPermissions, id);
-    });
+    }, manager);
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
