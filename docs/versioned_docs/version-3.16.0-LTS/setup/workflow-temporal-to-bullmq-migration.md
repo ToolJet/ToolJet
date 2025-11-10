@@ -20,7 +20,6 @@ ToolJet has replaced Temporal with BullMQ for workflow scheduling, significantly
 ### Benefits of BullMQ-based Workflows
 
 - **Simplified Architecture**: No need for separate Temporal server deployment
-- **Built-in Monitoring**: Integrated Bull Board dashboard at `/jobs` for job monitoring
 - **Existing Infrastructure**: Leverages your existing Redis instance
 - **Better Resource Management**: Flexible worker modes for optimized scaling
 - **Improved Visibility**: Real-time job status tracking and retry capabilities
@@ -31,7 +30,6 @@ ToolJet has replaced Temporal with BullMQ for workflow scheduling, significantly
 |---------|---------------|--------------|
 | External Services | Temporal Server + Redis | Redis only |
 | Deployment Complexity | High (multi-service) | Low (single-service) |
-| Monitoring Dashboard | None | Built-in Bull Board at `/jobs` |
 | Infrastructure Cost | Higher | Lower |
 
 ## How It Works
@@ -45,7 +43,6 @@ The new BullMQ-based workflow system operates as follows:
 3. **Worker Processing**: ToolJet instances with `WORKER=true` pick up jobs from these queues and execute them
 4. **Schedule Recovery**: On startup, the Schedule Bootstrap Service automatically loads all active schedules from PostgreSQL and recreates them in Redis, ensuring no workflows are lost during deployments
 5. **State Updates**: The frontend polls workflow execution states every 3 seconds via batch API calls
-6. **Monitoring**: Access the Bull Board dashboard at `/jobs` to monitor job status, retry failed jobs, and view queue statistics
 
 ## Migration Steps
 
@@ -188,9 +185,6 @@ Add the new BullMQ workflow environment variables:
 
 **Required Variables:**
 ```bash
-# Bull Board Dashboard Password (required for /jobs dashboard access)
-TOOLJET_QUEUE_DASH_PASSWORD=admin
-
 # Worker Mode (required)
 # Set to 'true' to enable job processing
 WORKER=true
@@ -278,11 +272,8 @@ kubectl delete service temporal-service
 ### 6. Verify Migration
 
 1. **Check Workflow Scheduling**: Create a new scheduled workflow in ToolJet
-2. **Monitor Jobs**: Access the Bull Board dashboard at `https://your-tooljet-host/jobs`
-   - Username: Use any value
-   - Password: Value of `TOOLJET_QUEUE_DASH_PASSWORD`
-3. **Verify Execution**: Trigger a workflow and confirm it executes successfully
-4. **Check Logs**: Review application logs for any errors
+2. **Verify Execution**: Trigger a workflow and confirm it executes successfully
+3. **Check Logs**: Review application logs for any errors
 
 ## Scaling Workflows with Dedicated Workers
 
@@ -298,30 +289,30 @@ For production deployments with extensive workflow usage, it's recommended to de
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    ToolJet Deployment                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ Web Server   │  │  Worker 1    │  │  Worker 2    │       │
-│  │              │  │              │  │              │       │
-│  │ WORKER=true  │  │ WORKER=true  │  │ WORKER=true  │       │
-│  │              │  │              │  │              │       │
-│  │ HTTP Requests│  │ Process Jobs │  │ Process Jobs │       │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
-│         │                 │                 │               │
-│         └─────────────────┼─────────────────┘               │
-│                           │                                 │
-└───────────────────────────┼─────────────────────────────────┘
-                            │
-                            ▼
-                   ┌─────────────────┐
-                   │  External Redis │
-                   │   (Stateful)    │
-                   │                 │
-                   │  - Job Queue    │
-                   │  - Persistence  │
-                   └─────────────────┘
+            ┌─────────────────────────────────────────────────────────────┐
+            │                    ToolJet Deployment                       │
+            ├─────────────────────────────────────────────────────────────┤
+            │                                                             │
+            │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+            │  │ Web Server   │  │  Worker 1    │  │  Worker 2    │       │
+            │  │              │  │              │  │              │       │
+            │  │ WORKER=true  │  │ WORKER=true  │  │ WORKER=true  │       │
+            │  │              │  │              │  │              │       │
+            │  │ HTTP Requests│  │ Process Jobs │  │ Process Jobs │       │
+            │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
+            │         │                 │                 │               │
+            │         └─────────────────┼─────────────────┘               │
+            │                           │                                 │
+            └───────────────────────────┼─────────────────────────────────┘
+                                        │
+                                        ▼
+                               ┌─────────────────┐
+                               │  External Redis │
+                               │   (Stateful)    │
+                               │                 │
+                               │  - Job Queue    │
+                               │  - Persistence  │
+                               └─────────────────┘
 ```
 
 ### Deployment Configuration
@@ -495,8 +486,6 @@ spec:
             # Worker-specific environment variables
             - name: WORKER
               value: "true"
-            - name: TOOLJET_QUEUE_DASH_PASSWORD
-              value: "your-secure-password"
             - name: TOOLJET_WORKFLOW_CONCURRENCY
               value: "10"
             - name: REDIS_HOST
@@ -569,7 +558,7 @@ spec:
 - **ToolJet App**: Serves HTTP traffic on port 3000, `WORKER` is unset (defaults to false)
 - **Worker**: Only processes jobs with `WORKER=true`, no ports exposed
 - Both deployments use the same secrets and database configuration
-- Worker has additional workflow-specific env vars: `TOOLJET_QUEUE_DASH_PASSWORD` and `TOOLJET_WORKFLOW_CONCURRENCY`
+- Worker has additional workflow-specific env var: `TOOLJET_WORKFLOW_CONCURRENCY`
 - Update `REDIS_HOST` to point to your deployed Redis service
 
 #### Docker Compose Example
@@ -613,7 +602,6 @@ services:
       - redis
     environment:
       WORKER: "true"
-      TOOLJET_QUEUE_DASH_PASSWORD: admin
       TOOLJET_WORKFLOW_CONCURRENCY: 10
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -679,7 +667,6 @@ volumes:
       "portMappings": [],  // No ports needed
       "environment": [
         {"name": "WORKER", "value": "true"},
-        {"name": "TOOLJET_QUEUE_DASH_PASSWORD", "value": "your-password"},
         {"name": "TOOLJET_WORKFLOW_CONCURRENCY", "value": "10"},
         {"name": "REDIS_HOST", "value": "your-elasticache-endpoint"}
       ]
@@ -703,25 +690,12 @@ volumes:
 - **Hybrid**: Combine both approaches
 
 **Monitoring metrics:**
-- Queue depth in Bull Board (`/jobs`)
 - Job completion time
 - Failed job count
 - Redis memory usage
+- Application logs
 
 ## Monitoring and Troubleshooting
-
-### Bull Board Dashboard
-
-Access the monitoring dashboard at `https://your-tooljet-host/jobs`:
-
-**Features:**
-- View job status (waiting, active, completed, failed)
-- Retry failed jobs manually
-- Monitor queue statistics
-- View job details and execution logs
-
-**Authentication:**
-- Password: Value of `TOOLJET_QUEUE_DASH_PASSWORD` environment variable
 
 ### Common Issues
 
@@ -741,22 +715,13 @@ Access the monitoring dashboard at `https://your-tooljet-host/jobs`:
 
 #### Jobs Failing Repeatedly
 
-**Symptoms:** Jobs show as failed in Bull Board
+**Symptoms:** Workflow jobs fail repeatedly
 
 **Solutions:**
 1. Check application logs for error messages
 2. Verify workflow node configurations
 3. Check Redis memory usage (may be full)
 4. Review `WORKFLOW_TIMEOUT_SECONDS` setting
-
-#### Dashboard Not Accessible
-
-**Symptoms:** `/jobs` returns 401 Unauthorized
-
-**Solutions:**
-1. Verify `TOOLJET_QUEUE_DASH_PASSWORD` is set
-2. Check you're using correct password
-3. Ensure at least one instance has `WORKER=true`
 
 #### Schedules Lost After Restart
 
@@ -767,13 +732,6 @@ Access the monitoring dashboard at `https://your-tooljet-host/jobs`:
 2. Verify Redis persistence (AOF) is working
 3. Confirm PostgreSQL connection is stable
 4. Check Redis has sufficient memory
-
-### Health Checks
-
-Monitor these endpoints:
-
-- **Application Health**: `GET /api/health`
-- **Bull Board**: `GET /jobs` (requires auth)
 
 ## FAQ
 
@@ -813,11 +771,11 @@ No. ToolJet only supports one workflow engine at a time. Choose either Temporal 
 
 <summary>How do I monitor workflow performance?</summary>
 
-Use the Bull Board dashboard at **/jobs** to monitor:
-- Queue depth and processing rate
-- Job success/failure rates
-- Individual job execution details
-- Retry attempts
+Monitor workflow performance using:
+- Application logs for job execution details
+- Redis metrics for queue depth and processing rate
+- Workflow execution history in the ToolJet UI
+- Database queries for job success/failure rates
 
 </details>
 

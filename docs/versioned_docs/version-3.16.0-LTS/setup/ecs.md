@@ -186,9 +186,6 @@ For users migrating from Temporal-based workflows, please refer to the [Workflow
 To activate workflow scheduling, set the following environment variables in your ECS task definition:
 
 ```bash
-# Bull Board Dashboard Password (required for /jobs dashboard access)
-TOOLJET_QUEUE_DASH_PASSWORD=admin
-
 # Worker Mode (required)
 # Set to 'true' to enable job processing
 # Set to 'false' or unset for HTTP-only mode (scaled deployments)
@@ -201,7 +198,6 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
 **Environment Variable Details:**
-- **TOOLJET_QUEUE_DASH_PASSWORD** (required): Password for accessing the `/jobs` dashboard for monitoring workflow jobs
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
