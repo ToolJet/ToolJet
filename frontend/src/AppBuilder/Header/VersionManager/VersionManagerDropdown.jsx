@@ -30,6 +30,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     releasedVersionId,
     selectedVersion,
     developmentVersions,
+    setSelectedVersion,
     fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
@@ -45,6 +46,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       selectedVersion: state.selectedVersion,
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+      setSelectedVersion: state.setSelectedVersion,
     }),
     shallow
   );
@@ -174,6 +176,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         version.id,
         () => {
           setCurrentVersionId(version.id);
+          setSelectedVersion(version);
         },
         (error) => {
           toast.error(error.message || 'Failed to switch version');

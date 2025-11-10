@@ -5,6 +5,7 @@ const initialState = {
   showGitSyncModal: false,
   allowEditing: false,
   appLoading: false,
+  orgGit: null,
 };
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
@@ -23,7 +24,7 @@ export const createGitSyncSlice = (set, get) => ({
     try {
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
       const allowEditing = data?.app_git?.allow_editing ?? false;
-
+      set((state) => ({ orgGit: data?.app_git?.org_git }), false, 'setOrgGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
       return allowEditing;
     } catch (error) {
