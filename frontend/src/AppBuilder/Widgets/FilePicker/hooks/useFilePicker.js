@@ -27,6 +27,8 @@ export const useFilePicker = ({
   const enableMultiple = properties?.enableMultiple ?? false;
   const parseContent = properties.parseContent ?? false;
   const fileTypeFromExtension = properties.parseFileType ?? 'auto-detect';
+  const fileParsingDelimiter = properties.delimiter ?? ',';
+
   const labelText = properties.label ?? '';
 
   const initialLoading = properties.loadingState ?? false;
@@ -114,8 +116,14 @@ export const useFilePicker = ({
             readFileAsText: readFileAsText,
             readFileAsDataURL: base64Data,
           };
-          parsedValue = await processFileContent(file.type, contentForParsing);
-          parsedData = await DEPRECATED_processFileContent(file.type, contentForParsing);
+          parsedValue = await processFileContent(file.type, contentForParsing, {
+            fileParsingDelimiter,
+            fileTypeFromExtension,
+          });
+          parsedData = await DEPRECATED_processFileContent(file.type, contentForParsing, {
+            fileParsingDelimiter,
+            fileTypeFromExtension,
+          });
         }
 
         return {
@@ -129,7 +137,7 @@ export const useFilePicker = ({
           base64Data: base64Data,
           parsedValue: parsedValue,
           parsedData: parsedData,
-          filePath: file.path
+          filePath: file.path,
         };
       } catch (error) {
         console.error(`Error reading file ${file.name}:`, error);
@@ -142,7 +150,7 @@ export const useFilePicker = ({
         throw error; // Re-throw for Promise.allSettled
       }
     },
-    [getFileData, parseContent, fileTypeFromExtension]
+    [getFileData, parseContent, fileTypeFromExtension, fileParsingDelimiter]
   );
 
   // --- Dropzone Setup ---

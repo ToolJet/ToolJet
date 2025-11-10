@@ -136,3 +136,122 @@ export const importAndVerifyApp = (filePath, expectedToast) => {
   }
 };
 
+export const verifyImportModalElements = (expectedAppName) => {
+  cy.get(importSelectors.importAppTitle).verifyVisibleElement("have.text", "Import app");
+  cy.get(commonSelectors.appNameLabel).verifyVisibleElement("have.text", "App name");
+  cy.get(commonSelectors.appNameInput)
+    .should("be.visible")
+    .and("have.value", expectedAppName);
+  cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
+    "have.text",
+    "App name must be unique and max 50 characters"
+  );
+  cy.get(commonSelectors.cancelButton)
+    .should("be.visible")
+    .and("have.text", "Cancel");
+  cy.get(commonSelectors.importAppButton).verifyVisibleElement("have.text", "Import app");
+};
+
+export const setupDataSourceWithConstants = (dsEnv, password = Cypress.env("pg_password")) => {
+  cy.apiUpdateDataSource("postgresql", dsEnv, {
+    options: [{
+      key: "password",
+      value: password,
+      encrypted: true,
+    }],
+  });
+};
+
+export const validateExportedAppStructure = (
+  appData,
+  expectedAppName,
+  options = {}
+) => {
+  const {
+    validateComponents = true,
+    validateQueries = true,
+    validateVersions = true,
+    validateTooljetDB = true,
+    expectedVersions = ["v1", "v2", "v3"],
+  } = options;
+
+  // Validate the app name
+  const appNameFromFile = appData.app[0].definition.appV2.name;
+  expect(appNameFromFile).to.equal(expectedAppName);
+
+  // Validate the schema for the student table in tooljetdb
+  if (validateTooljetDB) {
+    const tooljetDatabase = appData.tooljet_database.find(
+      (db) => db.table_name === "student"
+    );
+    expect(tooljetDatabase).to.exist;
+    expect(tooljetDatabase.schema).to.exist;
+  }
+
+  // Validate components
+  if (validateComponents) {
+    const components = appData.app[0].definition.appV2.components;
+
+    const text2Component = components.find(
+      (component) => component.name === "text2"
+    );
+    expect(text2Component).to.exist;
+    expect(text2Component.properties.text.value).to.equal(
+      "{{constants.pageHeader}}"
+    );
+
+    const textinput1 = components.find(
+      (component) => component.name === "textinput1"
+    );
+    expect(textinput1).to.exist;
+    expect(textinput1.properties.value.value).to.include("queries");
+
+    const textinput2 = components.find(
+      (component) => component.name === "textinput2"
+    );
+    expect(textinput2).to.exist;
+    expect(textinput2.properties.value.value).to.include("queries");
+
+    const textinput3 = components.find(
+      (component) => component.name === "textinput3"
+    );
+    cy.log(JSON.stringify(appData.app[0].definition.appV2.appVersions));
+    expect(textinput3).to.exist;
+    expect(textinput3.properties.value.value).to.include("queries");
+  }
+
+  // Validate the data queries
+  if (validateQueries) {
+    const dataQueries = appData.app[0].definition.appV2.dataQueries;
+
+    const postgresqlQuery = dataQueries.find(
+      (query) => query.name === "postgresql1"
+    );
+    expect(postgresqlQuery).to.exist;
+    expect(postgresqlQuery.options.query).to.include(
+      "Select * from {{secrets.db_name}}"
+    );
+
+    const restapiQuery = dataQueries.find((query) => query.name === "restapi1");
+    expect(restapiQuery).to.exist;
+    expect(restapiQuery.options.url).to.equal(
+      "https://jsonplaceholder.typicode.com/users/1"
+    );
+
+    const tooljetdbQuery = dataQueries.find(
+      (query) => query.name === "tooljetdb1"
+    );
+    expect(tooljetdbQuery).to.exist;
+    expect(tooljetdbQuery.options.operation).to.equal("list_rows");
+  }
+
+  // Validate app versions
+  if (validateVersions) {
+    const appVersions = appData.app[0].definition.appV2.appVersions;
+    expect(appVersions).to.exist;
+
+    const versionNames = appVersions.map((version) => version.name);
+    expect(versionNames).to.include.members(expectedVersions);
+  }
+};
+

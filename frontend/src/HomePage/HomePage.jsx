@@ -386,6 +386,16 @@ class HomePageComponent extends React.Component {
   };
 
   cloneApp = async (appName, appId) => {
+    const { appsLimit } = this.state;
+    const current = appsLimit?.current ?? 0;
+    const total = appsLimit?.total ?? 0;
+    const canAddUnlimited = appsLimit?.canAddUnlimited ?? false;
+
+    //  Check app limit before cloning
+    if (!canAddUnlimited && current >= total) {
+      toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
+      return;
+    }
     this.setState({ isCloningApp: true });
     try {
       const data = await appsService.cloneResource(
@@ -549,7 +559,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -557,8 +567,7 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
-            this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -709,7 +718,7 @@ class HomePageComponent extends React.Component {
       }
     } else {
       // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder';
+      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
     }
   }
 
@@ -1372,9 +1381,8 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${
-                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                  }`}
+                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                    }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1450,8 +1458,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
+                  ? 'homePage.deleteAppAndData'
+                  : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1698,8 +1706,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1714,13 +1722,12 @@ class HomePageComponent extends React.Component {
                               showCreateAppModal: true,
                             })
                           }
-                          data-cy={`create-new-${
-                            this.props.appType === 'workflow'
+                          data-cy={`create-new-${this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
-                          }-button`}
+                                ? 'modules'
+                                : 'apps'
+                            }-button`}
                         >
                           <>
                             {isImportingApp && (
@@ -1729,11 +1736,10 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                  `${
-                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                  }.header.createNewApplication`,
-                                  'Create new app'
-                                )}
+                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                }.header.createNewApplication`,
+                                'Create new app'
+                              )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1794,8 +1800,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1889,8 +1895,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }

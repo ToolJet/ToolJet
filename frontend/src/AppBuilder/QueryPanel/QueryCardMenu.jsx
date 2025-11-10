@@ -148,7 +148,7 @@ const QueryCardMenu = ({ darkMode }) => {
             {QUERY_MENU_OPTIONS.map((option) => {
               const optionBody = (
                 <div
-                  data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                  data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
                   className="list-item-popover-option"
                   key={option?.value}
                   onClick={(e) => {

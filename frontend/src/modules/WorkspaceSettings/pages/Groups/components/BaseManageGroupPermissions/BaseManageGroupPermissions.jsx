@@ -92,8 +92,16 @@ class BaseManageGroupPermissions extends React.Component {
           creatingGroup: false,
           groupDuplicateOption: this.props.groupDuplicateOption,
         });
-        console.error('Error occured in duplicating: ', err);
-        toast.error('Could not duplicate group.\nPlease try again!');
+
+        console.error('Error occurred in duplicating:', err);
+
+        // Use the actual backend message if available
+        const message =
+          err?.data?.message ||
+          err?.error ||
+          'Could not duplicate group.\nPlease try again!';
+
+        toast.error(message);
       });
   };
 
@@ -185,7 +193,7 @@ class BaseManageGroupPermissions extends React.Component {
     return list;
   };
 
-  fetchGroups = (type = 'admin', callback = () => {}) => {
+  fetchGroups = (type = 'admin', callback = () => { }) => {
     this.setState({
       isLoading: true,
     });
@@ -199,8 +207,8 @@ class BaseManageGroupPermissions extends React.Component {
           type == 'admin'
             ? defaultGroups[0].id
             : type == 'current'
-            ? this.findCurrentGroupDetails(groupPermissions)
-            : groupPermissions.at(-1).id;
+              ? this.findCurrentGroupDetails(groupPermissions)
+              : groupPermissions.at(-1).id;
         this.setState(
           {
             groups: groupPermissions.filter((group) => group.type === 'custom'),
@@ -722,7 +730,9 @@ class BaseManageGroupPermissions extends React.Component {
                     {!showGroupSearchBar ? (
                       <div className="mb-2 d-flex align-items-center">
                         <SolidIcon name="usergroup" width="18px" fill="#889096" />
-                        <span className="ml-1 group-title">CUSTOM GROUPS</span>
+                        <span className="ml-1 group-title" data-cy="custom-groups-title">
+                          CUSTOM GROUPS
+                        </span>
                         <div className="create-group-cont">
                           {isFeatureEnabled ? (
                             <ButtonSolid
@@ -735,6 +745,7 @@ class BaseManageGroupPermissions extends React.Component {
                               iconWidth="15"
                               fill="#889096"
                               className="create-group-custom"
+                              data-cy="search-icon"
                             />
                           ) : (
                             <div style={{ width: '20px' }}></div>
@@ -758,6 +769,7 @@ class BaseManageGroupPermissions extends React.Component {
                               iconWidth="20"
                               className="create-group-custom"
                               disabled={!isFeatureEnabled}
+                              data-cy="create-new-group-button-icon"
                             />
                           </LicenseTooltip>
                         </div>
@@ -801,12 +813,12 @@ class BaseManageGroupPermissions extends React.Component {
                               permissionGroup.disabled
                                 ? null
                                 : () => {
-                                    this.setState({
-                                      selectedGroupPermissionId: permissionGroup.id,
-                                      selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
-                                      selectedGroupObject: permissionGroup,
-                                    });
-                                  }
+                                  this.setState({
+                                    selectedGroupPermissionId: permissionGroup.id,
+                                    selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
+                                    selectedGroupObject: permissionGroup,
+                                  });
+                                }
                             }
                             disabled={permissionGroup.disabled}
                             toolTipDisabled={permissionGroup.disabled}
@@ -842,6 +854,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
+                    bannerType="custom-groups"
                     customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
