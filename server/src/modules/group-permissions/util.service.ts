@@ -301,7 +301,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getAllGroupByOrganization(organizationId: string): Promise<GetUsersResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      const isFeatureEnabled = await this.licenseUtilService.isFeatureEnabled(organizationId);
       const result = await manager.findAndCount(GroupPermissions, {
         where: { organizationId },
         order: { type: 'DESC' },
@@ -310,7 +310,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         groupPermissions: result[0],
         length: result[1],
       };
-      if (!isLicenseValid) {
+      if (!isFeatureEnabled) {
         response.groupPermissions?.forEach((gp) => {
           if (gp.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
             gp.disabled = true;

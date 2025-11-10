@@ -26,6 +26,7 @@ const LicenseTooltip = ({
     'Import from git': 'gitSync',
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
+    'Custom groups': 'customGroups',
   };
 
   const generateMessage = () => {

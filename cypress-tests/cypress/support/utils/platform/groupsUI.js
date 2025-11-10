@@ -80,6 +80,7 @@ export const verifyGranularEditModal = (role) => {
 
     cy.get(".modal-base").should("be.visible");
 
+    cy.wait(500)
     cy.get(groupsSelector.deletePermissionIcon)
         .should("be.visible")
         .and("be.enabled");
@@ -417,7 +418,7 @@ export const verifyGranularPermissionModalStates = (
         .and(config.customRadio.enabled ? "be.enabled" : "be.disabled");
 };
 
-export const verifyEmptyStates = (customGroup = false) => {
+export const verifyEmptyStates = () => {
     // Users empty state
     cy.get(groupsSelector.usersLink).click();
     cy.get('[data-cy="user-group-search-btn"]').should("be.visible");
@@ -439,20 +440,6 @@ export const verifyEmptyStates = (customGroup = false) => {
         "have.text",
         groupsText.userEmptyPageHelperText
     );
-
-    if (customGroup) {
-        // Granular permissions empty state
-        cy.get(groupsSelector.granularLink).click();
-        cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
-        cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
-            "have.text",
-            groupsText.emptyPagePermissionTitle
-        );
-        cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement(
-            "have.text",
-            groupsText.emptyPagePermissionHelperText
-        );
-    }
 };
 
 export const verifyGroupLinks = () => {
@@ -853,3 +840,17 @@ export const verifyUserRow = (name, email) => {
         .and("contain.text", name);
     cy.get('[data-cy="user-email"]').should("be.visible").and("have.text", email);
 };
+
+export const granularPermissionEmptyState = () => {
+    cy.get(groupsSelector.granularLink).click();
+
+    cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
+    cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
+        "have.text",
+        groupsText.emptyPagePermissionTitle
+    );
+    cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement(
+        "have.text",
+        groupsText.emptyPagePermissionHelperText
+    );
+}

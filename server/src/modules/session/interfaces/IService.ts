@@ -13,7 +13,7 @@ export interface ISessionService {
 
   createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions>;
 
-  terminateSession(userId: string, sessionId: string, response: Response): Promise<void>;
+  terminateSession(user: User, sessionId: string, response: Response): Promise<void>;
 
   findActiveUser(email: string): Promise<User>;
 

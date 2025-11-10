@@ -37,6 +37,29 @@ jobs:
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
 
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -56,32 +79,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -119,7 +157,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -151,7 +192,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
@@ -162,7 +203,7 @@ jobs:
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -176,22 +217,22 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
 
           echo "✅ Server is ready!"
-          
+
       - name: Test database connection
         run: |
           # Wait for database to be ready
           echo "Testing database connection..."
-          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
 
       - name: Create delete_user procedure
         run: |
           echo "Creating delete_user stored procedure..."
-          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
           CREATE OR REPLACE PROCEDURE delete_user(p_email TEXT)
           LANGUAGE plpgsql
           AS \$\$
@@ -296,21 +337,12 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Run Cypress tests for CE
-        if: matrix.edition == 'ce'
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
-          config-file: cypress-platform.config.js
-
-      - name: Run Cypress tests for EE
-        if: matrix.edition == 'ee'
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000"
-          config-file: cypress-ee-platform.config.js
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -356,32 +388,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -421,7 +468,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -453,7 +503,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
@@ -463,7 +513,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -475,7 +525,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
@@ -542,32 +592,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -607,7 +672,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -639,7 +707,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Setup Nginx
         run: |
@@ -662,7 +730,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -674,7 +742,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
@@ -741,32 +809,47 @@ jobs:
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-          file: cypress-tests/cypress-lts.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -805,7 +888,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
-        run: docker system prune -af
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
@@ -837,7 +923,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Setup Nginx
         run: |
@@ -860,7 +946,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -872,7 +958,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
