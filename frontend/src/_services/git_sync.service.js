@@ -134,13 +134,15 @@ function getAppConfig(organizationId, versionId) {
   return response;
 }
 
-function checkForUpdates(appId) {
+function checkForUpdates(appId, branchName = '') {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}?branch=${branchName}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function gitPull() {
