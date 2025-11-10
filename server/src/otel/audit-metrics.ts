@@ -283,6 +283,12 @@ export const initializeAuditLogMetrics = () => {
   console.log('     - app.usage.total, app.active_users, app.success_rate, app.errors.total');
   console.log('     - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
   console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
+  console.log('');
+  console.log('⚙️  Configuration:');
+  console.log(`   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`);
+  if (process.env.OTEL_INCLUDE_QUERY_TEXT === 'true') {
+    console.log('   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
+  }
 };
 
 /**
@@ -409,8 +415,10 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const isReleased = mode === 'view' ? 'true' : 'false';
 
   // Extract query from parsedQueryOptions (camelCase from queryStatus.getMetaData())
+  // Only include query text if explicitly enabled (to avoid high cardinality)
+  const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
   const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
-  const queryText = parsedQueryOptions['query'] || '';
+  const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
   const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
 
   const labels = {
