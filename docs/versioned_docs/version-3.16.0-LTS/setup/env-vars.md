@@ -84,14 +84,41 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.2)** for a multi-service or multi-pod setup and have followed the necessary steps to create Redis.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.x or higher, v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
 
+**Required Variables:**
 ```
 REDIS_HOST=
 REDIS_PORT=
+```
+
+**Optional Variables:**
+```
 REDIS_USER=
 REDIS_PASSWORD=
+REDIS_DB=0                   # Redis database number (default: 0)
+REDIS_TLS=false              # Enable TLS/SSL connection (set to 'true')
 ```
+
+:::info
+**For Workflows:** When running separate worker containers or multiple instances for workflow scheduling, an external Redis instance is **required** for job queue coordination. The built-in Redis only works for single instance deployments.
+:::
+
+#### Workflow Scheduling
+
+ToolJet Workflows allows you to design and execute complex, data-centric automations using a visual, node-based interface. Configure the following environment variables to enable workflow scheduling:
+
+**Required Variables:**
+- `WORKER`: Set to `true` to enable job processing for workflow scheduling. Set to `false` or leave unset for HTTP-only mode (default: `false`)
+
+**Optional Variables:**
+- `TOOLJET_WORKFLOW_CONCURRENCY`: Number of workflow jobs processed concurrently per worker instance (default: `5`)
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
 
 ### Optional Configurations
 
