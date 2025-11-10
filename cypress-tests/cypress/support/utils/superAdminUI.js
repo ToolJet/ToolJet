@@ -9,7 +9,7 @@ import {
   instanceAllUsersSelectors,
   whiteLabelSelectors,
   usersTableElementsInInstance,
-} from "Selectors/superAminUISelectors"; 
+} from "Selectors/superAdminUISelectors"; 
 
 import {
   instanceWorkspaceText,
@@ -65,7 +65,7 @@ export const verifyWhiteLabelingUI = () => {
 };
 
 export const verifyInputPlaceholder = (selector, expected) => { 
-    cy.get(selector) .should("be.visible") .and("have.attr", "placeholder")
+    cy.get(selector).should("be.visible").and("have.attr", "placeholder")
     .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected)); 
 };
 
@@ -109,9 +109,9 @@ export const saveWhiteLabelingChanges = () => {
 
 export const verifyWhiteLabelInputs = () => { 
     const decodeValue = (val) => val.replace(/&amp;/g, '&'); 
-    cy.get(whiteLabelSelectors.appLogoInput) .invoke('val') .then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_LOGO)); 
+    cy.get(whiteLabelSelectors.appLogoInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_LOGO)); 
     cy.get(whiteLabelSelectors.pageTitleInput).should("have.value", WHITE_LABEL_TEXT); 
-    cy.get(whiteLabelSelectors.favIconInput) .invoke('val') .then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_FAVICON)); 
+    cy.get(whiteLabelSelectors.favIconInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_FAVICON)); 
 };
 
 export const verifyLogoOnLoginPage = () => {
@@ -190,14 +190,12 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.contains("label", "Automatically generate a password").should("be.visible");
   cy.contains("You will be able to view and copy the password in the next step").should("be.visible");
   cy.contains("label", "Create password").should("be.visible");
-
   cy.contains("label", "Create password").click();
   cy.get(instanceWorkspaceSelectors.passwordInputField).should("be.visible");
   cy.contains("Password should be at least 5 characters").should("be.visible");
 
   cy.get(commonSelectors.cancelButton).should("be.visible");
   cy.get(instanceWorkspaceSelectors.resetButton).should("be.visible");
-
   cy.get(commonSelectors.cancelButton).click();
 };
 

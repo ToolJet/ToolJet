@@ -32,7 +32,7 @@ import {
 
 import {
   instanceWorkspaceSelectors,
-} from "Selectors/superAminUISelectors"; 
+} from "Selectors/superAdminUISelectors"; 
 
 import {
   openInstanceSettings,
@@ -51,7 +51,6 @@ beforeEach(() => {
 const userName = () => fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
 const userEmail = () => fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, "");
 const DEFAULT_WORKSPACE = "My workspace";
-    
     
 it("should verify all users page UI", () => {
       const user = { name: userName(), email: userEmail() };
@@ -93,7 +92,7 @@ it("should verify all workspaces page UI", () => {
       verifyDefaultWorkspaceTooltip(); 
       openArchiveWorkspaceModal(testWorkspace);
       verifyArchiveWorkspaceModalUI(testWorkspace);
-      verifyOpenWorkspaceTooltip(testWorkspace);;
+      verifyOpenWorkspaceTooltip(testWorkspace);
 });
 
 it("should verify all white labelling UI elements", () => {
