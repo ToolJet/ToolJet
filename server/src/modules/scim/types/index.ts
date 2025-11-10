@@ -17,6 +17,8 @@ interface Features {
   [FEATURE_KEY.GET_RESOURCE_TYPES]: FeatureConfig;
   [FEATURE_KEY.GET_SCHEMAS]: FeatureConfig;
   [FEATURE_KEY.GET_SCHEMA]: FeatureConfig;
+  [FEATURE_KEY.DELETE_USER]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GROUP]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -61,5 +61,13 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.SCIM,
       isPublic: true,
     },
+    [FEATURE_KEY.DELETE_USER]: {
+      license: LICENSE_FIELD.SCIM,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_GROUP]: {
+      license: LICENSE_FIELD.SCIM,
+      isPublic: true,
+    },
   },
 };
