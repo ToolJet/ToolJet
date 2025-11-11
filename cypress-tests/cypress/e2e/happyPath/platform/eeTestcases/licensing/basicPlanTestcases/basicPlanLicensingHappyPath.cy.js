@@ -1,27 +1,27 @@
 import { commonSelectors } from "Selectors/common";
-import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
-import { fake } from "Fixtures/fake";
-import { licenseText } from "Texts/license";
-import { licenseSelectors } from "Selectors/license";
-import { usersSelector } from "Selectors/manageUsers";
 import {
-  switchTabs,
-  verifylicenseTab,
-  verifySubTabs,
-  verifyAccessTab,
-  verifyDomainTab,
-  verifyResourceLimit,
-  verifyTooltip,
-} from "Support/utils/license";
-import * as common from "Support/utils/common";
-import { dashboardSelector } from "../../../../../constants/selectors/dashboard";
-import { navigateToEditUser } from "Support/utils/manageUsers";
-import {
+  commonEeSelectors,
   instanceSettingsSelector,
   whiteLabellingSelectors,
 } from "Selectors/eeCommon";
-import { workflowSelector } from "Selectors/workflows";
-import { commonEeSelectors } from "Selectors/eeCommon";
+import { licenseSelectors } from "Selectors/license";
+import { groupsSelector } from "Selectors/manageGroups";
+import { usersSelector } from "Selectors/manageUsers";
+import * as common from "Support/utils/common";
+import {
+  switchTabs,
+  verifyAccessTab,
+  verifyDomainTab,
+  verifyLicenseTab,
+  verifyResourceLimit,
+  verifySubTabsAndStoreCurrentLimits,
+  verifyTooltip,
+  verifyTotalLimitsWithPlan
+} from "Support/utils/license";
+import { navigateToEditUser } from "Support/utils/manageUsers";
+import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
+import { licenseText } from "Texts/license";
+import { dashboardSelector } from "../../../../../constants/selectors/dashboard";
 
 describe("License Page", () => {
   const data = {};
@@ -31,7 +31,7 @@ describe("License Page", () => {
     cy.visit("/");
   });
 
-  it("Should verify license page elements with the basic plan ", () => {
+  it("Should verify license page elements with the basic plan", () => {
     common.navigateToSettingPage();
     cy.get(licenseSelectors.listOfItems(licenseText.license)).click();
 
@@ -45,47 +45,23 @@ describe("License Page", () => {
       .and("contain.text", licenseText.comparePlansText);
 
     switchTabs(licenseText.licenseKeyLabel);
-    verifylicenseTab();
+    verifyLicenseTab();
 
     switchTabs(licenseText.limitsTabTitle);
-    verifySubTabs(
-      licenseText.limitsTab.aiCreditsSubTab,
-      licenseText.aiCreditsSubTab,
-      {
-        "Monthly recurring": "0/0",
-        "Add on credits": "0/0",
-      }
-    );
-    verifySubTabs(licenseText.limitsTab.appsSubTab, licenseText.appsSubTab, {
-      "Number of Apps": "1/2",
+    const limitSubTabs = [
+      "aiCredits",
+      "apps",
+      "workspaces",
+      "users",
+      "workflows",
+      "tables",
+    ];
+    limitSubTabs.forEach((subTab) => {
+      verifySubTabsAndStoreCurrentLimits(
+        licenseText.limitsTab[`${subTab}SubTab`],
+        licenseText[`${subTab}SubTab`]
+      );
     });
-    verifySubTabs(
-      licenseText.limitsTab.workspacesSubTab,
-      licenseText.workspacesSubTab,
-      {
-        "Number of Workspaces": "1/1",
-      }
-    );
-    verifySubTabs(licenseText.limitsTab.usersSubTab, licenseText.usersSubTab, {
-      "Number of Total Users": "1/52",
-      "Number of Builders": "1/2",
-      "Number of End Users": "0/50",
-      "Number of Super Admins": "1/1",
-    });
-    verifySubTabs(
-      licenseText.limitsTab.workflowsSubTab,
-      licenseText.workflowsSubTab,
-      {
-        "Number of Workflows": "0/2",
-      }
-    );
-    verifySubTabs(
-      licenseText.limitsTab.tablesSubTab,
-      licenseText.tablesSubTab,
-      {
-        "Number of Tables": "Unlimited",
-      }
-    );
 
     switchTabs(licenseText.accessTabTitle);
     verifyAccessTab();
@@ -94,35 +70,36 @@ describe("License Page", () => {
     verifyDomainTab();
   });
 
-  it("Should verify banners and tooltips with the basic plan ", () => {
+  it("Should verify banners and tooltips with the basic plan", () => {
+    const planName = "basic";
     cy.get(commonSelectors.workspaceName).click();
 
     cy.get('[data-cy="workspace-count"]').should("be.visible");
-    verifyResourceLimit("workspaces", "basic");
+    verifyResourceLimit("workspaces", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
-    verifyResourceLimit("apps", "basic");
+    verifyResourceLimit("apps", planName);
 
     // cy.get(workflowSelector.globalWorkFlowsIcon).click();
-    // verifyResourceLimit("workflow", "basic");
+    // verifyResourceLimit("workflow", planName);
 
     common.navigateToManageUsers();
     cy.get(usersSelector.buttonAddUsers).click();
-    verifyResourceLimit("builders", "basic", "usage");
+    verifyResourceLimit("builders", planName, "usage");
 
     cy.reload();
 
     common.navigateToManageGroups();
-    cy.get('[data-cy="create-new-group-button"]').should("be.disabled");
+    cy.get(groupsSelector.createNewGroupButton).should("be.disabled");
     verifyTooltip(
-      '[data-cy="create-new-group-button"]',
-      "Custom groups are available only in paid plans",
+      groupsSelector.createNewGroupButton,
+      "Custom groups are not available in your plan",
       true
     );
 
     verifyResourceLimit(
       "custom-groups",
-      "basic",
+      planName,
       "custom-groups",
       "Custom groups & permissions are paid features"
     );
@@ -145,7 +122,7 @@ describe("License Page", () => {
     ).click();
     verifyResourceLimit(
       "custom-themes",
-      "basic",
+      planName,
       "custom-themes",
       "Custom themes is our paid feature. Upgrade to a paid plan to add and customize themes."
     );
@@ -154,10 +131,13 @@ describe("License Page", () => {
     cy.get(licenseSelectors.listOfItems(settingsText.allUsersListItem)).click({
       force: true,
     });
+
+    verifyTotalLimitsWithPlan(["builders", "end-users", "user"], planName);
+
     navigateToEditUser(commonText.email);
     verifyResourceLimit(
       "edit-user",
-      "basic",
+      planName,
       "edit-user",
       "Edit user details with our paid plans. For more,"
     );
