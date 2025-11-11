@@ -621,8 +621,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
@@ -691,6 +689,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             return false;
           }
           handleActivateNonDraggingComponents();
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
         onResizeEnd={(e) => {
@@ -966,7 +965,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragEnd={(e) => {
           handleDeactivateTargets();
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -1053,8 +1051,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
         onDrag={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
@@ -1078,6 +1074,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             handleActivateNonDraggingComponents();
+            updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
             isDraggingRef.current = true;
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
