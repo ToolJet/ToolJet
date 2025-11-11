@@ -22,6 +22,14 @@ export const instanceAllUsersText = {
   onlyAdminErrorToast: "Atleast one active admin is required",
   userArchivedToast: "You have been archived from this instance. Contact super admin to know more.",
   allUsersTabInInstance: "All Users",
+  archiveModalTitle: "Archive user",
+  archiveModalMessage:
+    "Archiving the user will restrict their access to all their workspaces and exclude them from the count of users covered by your plan. Are you sure you want to continue?",
+  archiveConfirmButton: "Archive",
+  unarchiveModalTitle: "Unarchive user",
+  unarchiveModalMessage:
+    "Unarchiving the user will activate them in the instance and include them in the count of users covered by your plan. Are you sure you want to continue?",
+  unarchiveConfirmButton: "Unarchive",
 };
 
 export const usersTableElementsInInstanceText = {

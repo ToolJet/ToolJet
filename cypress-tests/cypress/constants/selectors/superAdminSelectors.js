@@ -43,6 +43,9 @@ export const instanceAllUsersSelectors = {
   viewTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
   viewTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
   userStatusCell: (userName) => `[data-cy="${String(userName).toLowerCase()}-user-status"]`,
+  userName: (userName) => {
+  return `[data-cy="-${userName}-user-name"]`;
+  }
 };
 
 export const usersTableElementsInInstance = {
