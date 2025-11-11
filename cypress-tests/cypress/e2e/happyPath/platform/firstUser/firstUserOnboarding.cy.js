@@ -1,4 +1,4 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
 import {
@@ -7,7 +7,6 @@ import {
   onboardingStepThree,
   onboardingStepTwo,
 } from "Support/utils/onboarding";
-import { updateLicense } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
 
@@ -257,7 +256,7 @@ describe("Self host onboarding", () => {
     });
 
     cy.wait(2000);
-    cy.get(commonWidgetSelector.previewButton).eq(1).should("be.visible");
+    cy.get('[data-cy="button-release"]').should("be.visible");
     cy.go("back");
 
     logout();
