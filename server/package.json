@@ -141,6 +141,7 @@
     "sanitize-html": "^2.7.0",
     "semver": "^7.5.4",
     "simple-git": "^3.27.0",
+    "socket.io-client": "^4.8.1",
     "sshpk": "^1.17.0",
     "stripe": "^14.3.0",
     "ts-node": "^10.0.0",

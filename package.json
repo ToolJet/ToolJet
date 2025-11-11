@@ -66,7 +66,9 @@
     "update-version": "node update-version.js"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.41",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "ai": "^5.0.89",
     "eslint-config-prettier": "^10.1.5"
   }
 }

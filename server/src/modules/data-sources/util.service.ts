@@ -345,6 +345,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
+  async findOneWithName(name: string, organizationId: string): Promise<DataSource> {
+    return this.dataSourceRepository.findOneOrFail({
+      where: { name, organizationId },
+      relations: [
+        'apps',
+        'dataSourceOptions',
+        'appVersion',
+        'appVersion.app',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
+    });
+  }
+
   async findOneByEnvironment(
     dataSourceId: string,
     environmentId: string,

@@ -101,6 +101,7 @@ export class App extends BaseEntity {
       name: string;
       id: string;
     };
+    dataSourceContext?: string | null;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
