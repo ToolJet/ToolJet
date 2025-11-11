@@ -27,12 +27,15 @@ import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
 import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
+import ChevronDownSmall from './ChevronDownSmall.jsx';
+import CircleDot from './CircleDot.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import CaretDown from './CaretDown.jsx';
 import CaretUp from './CaretUp.jsx';
 import Clock from './Clock.jsx';
 import CursorClick from './CursorClick.jsx';
 import LockGradient from './LockGradient.jsx';
+import LockClosed from './LockClosed.jsx';
 import DatasourceGradient from './DatasourceGradient.jsx';
 import CoinIcon from './CoinIcon.jsx';
 import Column from './Column.jsx';
@@ -52,6 +55,7 @@ import EnterpriseSmall from './EnterpriseSmall.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
+import ExternalLinkIcon from './ExternalLinkIcon.jsx';
 import Expand from './Expand.jsx';
 import File01 from './File01.jsx';
 import FileDownload from './FileDownload.jsx';
@@ -62,6 +66,8 @@ import Folder from './Folder.jsx';
 import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
 import GitSync from './GitSync.jsx';
+import GitBranch from './GitBranch.jsx';
+import GitMergeIcon from './GitMergeIcon.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
 import Options from './Options.jsx';
@@ -98,6 +104,7 @@ import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
 import PageUpload from './PageUpload.jsx';
 import Pin from './Pin.jsx';
+import PlusIcon from './PlusIcon.jsx';
 import Unpin from './Unpin.jsx';
 import AlignRight from './AlignRight';
 import Play from './Play.jsx';
@@ -111,6 +118,7 @@ import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
 import Remove03 from './Remove03.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
+import Refresh from './Refresh.jsx';
 import RightArrow from './RightArrow.jsx';
 import RightOuterJoin from './RightOuterJoin.jsx';
 import Row from './Row.jsx';
@@ -229,6 +237,7 @@ import AITag from './AITag.jsx';
 import SectionCollapse from './SectionCollapse.jsx';
 import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
+import RocketIcon from './RocketIcon.jsx';
 import Outbound from './Outbound.jsx';
 import AddPageGroupIcon from './AddPageGroup.jsx';
 import PageIcon from './PageIcon.jsx';
@@ -388,6 +397,10 @@ const Icon = (props) => {
       return <CheveronRightDouble {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
+    case 'chevrondownsmall':
+      return <ChevronDownSmall {...props} />;
+    case 'circledot':
+      return <CircleDot {...props} />;
     case 'circularToggleDisabled':
       return <CircularToggleDisabled {...props} />;
     case 'circularToggleEnabled':
@@ -450,6 +463,8 @@ const Icon = (props) => {
       return <EnterpriseCrown {...props} />;
     case 'lockGradient':
       return <LockGradient {...props} />;
+    case 'lockclosed':
+      return <LockClosed {...props} />;
     case 'datasourceGradient':
       return <DatasourceGradient {...props} />;
     case 'enterbutton':
@@ -460,6 +475,8 @@ const Icon = (props) => {
       return <Eye1 {...props} />;
     case 'eyedisable':
       return <EyeDisable {...props} />;
+    case 'externallink':
+      return <ExternalLinkIcon {...props} />;
     case 'expand':
       return <Expand {...props} />;
     case 'file-code':
@@ -482,6 +499,10 @@ const Icon = (props) => {
       return <FolderUpload {...props} />;
     case 'gitsync':
       return <GitSync {...props} />;
+    case 'gitbranch':
+      return <GitBranch {...props} />;
+    case 'gitmerge':
+      return <GitMergeIcon {...props} />;
     case 'foreignkey':
       return <ForeignKey {...props} />;
     case 'fullouterjoin':
@@ -582,6 +603,8 @@ const Icon = (props) => {
       return <Play {...props} />;
     case 'plus':
       return <Plus {...props} />;
+    case 'plusicon':
+      return <PlusIcon {...props} />;
     case 'plus01':
       return <Plus01 {...props} />;
     case 'plusrectangle':
@@ -592,6 +615,8 @@ const Icon = (props) => {
       return <PostgreSQLIcon {...props} />;
     case 'reload':
       return <Reload {...props} />;
+    case 'refresh':
+      return <Refresh {...props} />;
     case 'read':
       return <Read {...props} />;
     case 'reloaderror':
@@ -612,6 +637,8 @@ const Icon = (props) => {
       return <Row {...props} />;
     case 'reset':
       return <Reset {...props} />;
+    case 'rocket':
+      return <RocketIcon {...props} />;
     case 'retry':
       return <Retry {...props} />;
     case 'sadrectangle':

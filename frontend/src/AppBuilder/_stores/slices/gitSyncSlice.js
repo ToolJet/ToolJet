@@ -24,13 +24,22 @@ export const createGitSyncSlice = (set, get) => ({
     try {
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
       const allowEditing = data?.app_git?.allow_editing ?? false;
-      set((state) => ({ orgGit: data?.app_git?.org_git }), false, 'setOrgGit');
+      const orgGit = data?.app_git?.org_git;
+      const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
+
+      set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
+
+      // Update branchingEnabled in branchSlice
+      get().updateBranchingEnabled?.(isBranchingEnabled);
+
       return allowEditing;
     } catch (error) {
       console.error('Failed to fetch app git configs:', error);
       // Set allowEditing to false on error
       set((state) => ({ allowEditing: false }), false, 'setAllowEditing');
+      // Also reset branching on error
+      get().updateBranchingEnabled?.(false);
       return false;
     } finally {
       set((state) => ({ appLoading: false }), false, 'setAppLoading');

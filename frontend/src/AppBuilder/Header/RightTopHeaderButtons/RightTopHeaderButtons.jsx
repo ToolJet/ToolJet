@@ -6,15 +6,18 @@ import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import GitSyncManager from '../GitSyncManager';
+import LifecycleCTAButton from '../LifecycleCTAButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
+  const branchingEnabled = useStore((state) => state.branchingEnabled);
+
   return (
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
-        <GitSyncManager />
+        {branchingEnabled ? <LifecycleCTAButton /> : <GitSyncManager />}
         <div className="tw-hidden navbar-seperator" />
         <PreviewAndShareIcons />
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}

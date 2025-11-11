@@ -19,6 +19,13 @@ export const gitSyncService = {
   saveProviderConfigs,
   updateAppEditState,
   getAppGitConfigs,
+  // New branch management methods
+  getAllBranches,
+  createBranch,
+  getPullRequests,
+  switchBranch,
+  updateGitConfigs,
+  getGitConfigs,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -38,11 +45,12 @@ function create(organizationId, gitUrl, gitType) {
 }
 
 function updateConfig(organizationGitId, updateParam, gitType = '') {
-  const { gitUrl, autoCommit, keyType } = updateParam;
+  const { gitUrl, autoCommit, keyType, branchingEnabled } = updateParam;
   const body = {
     ...(gitUrl && { gitUrl }),
     ...(autoCommit != null && { autoCommit }),
     ...(keyType && { keyType }),
+    ...(branchingEnabled && { branchingEnabled }),
   };
   const requestOptions = {
     method: 'PUT',
@@ -108,6 +116,7 @@ function deleteConfig(organizationGitId, gitType) {
 }
 
 function gitPush(body, appGitId, versionId) {
+  // body can now include { commitMessage, sourceBranch } when branching is enabled
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -223,4 +232,103 @@ function getAppGitConfigs(workspaceId, versionId) {
 
   return fetch(`${config.apiUrl}/app-git/${workspaceId}/app/${versionId}/configs`, requestOptions).then(handleResponse);
 }
+
+// Branch Management API Methods
+
+/**
+ * Get all branches for an app
+ * @param {string} appId - Application ID
+ * @param {string} organizationId - Organization ID
+ * @returns {Promise} Promise resolving to branches array
+ */
+function getAllBranches(appId, organizationId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/branches`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Create a new branch
+ * @param {string} appId - Application ID
+ * @param {string} organizationId - Organization ID
+ * @param {object} branchData - { branch_name, version_from_id, auto_commit }
+ * @returns {Promise} Promise resolving to created branch
+ */
+function createBranch(appId, organizationId, branchData) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(branchData),
+  };
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/branches`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Get pull requests for an app
+ * @param {string} appId - Application ID
+ * @returns {Promise} Promise resolving to pull requests array
+ */
+function getPullRequests(appId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}/pull-requests`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Switch to a different branch (pull commits from branch)
+ * @param {string} appId - Application ID
+ * @param {string} branchName - Target branch name
+ * @returns {Promise} Promise resolving to pull result
+ */
+function switchBranch(appId, branchName) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}?branch=${branchName}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+/**
+ * Update git configurations (including branching enabled status)
+ * @param {string} appId - Application ID
+ * @param {object} configs - Configuration object { branching_enabled, ...otherConfigs }
+ * @returns {Promise} Promise resolving to updated configs
+ */
+function updateGitConfigs(appId, configs) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(configs),
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/configs`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Get git configurations for an app version
+ * @param {string} organizationId - Organization ID
+ * @param {string} versionId - Version ID
+ * @returns {Promise} Promise resolving to git configs
+ */
+function getGitConfigs(organizationId, versionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${versionId}/configs`, requestOptions).then(
+    handleResponse
+  );
+}
+
 // Remove all app-git api's to separate service from here.

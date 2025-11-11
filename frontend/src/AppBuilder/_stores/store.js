@@ -32,6 +32,7 @@ import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createBranchSlice } from './slices/branchSlice';
 
 export default create(
   zustandDevTools(
@@ -68,6 +69,7 @@ export default create(
       ...createFormComponentSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

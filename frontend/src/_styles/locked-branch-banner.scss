@@ -1,0 +1,78 @@
+// LockedBranchBanner - Full-width warning banner for read-only branches
+// Displays below the editor navigation when branch is locked
+
+.locked-branch-banner {
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+  border-bottom: 1px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  position: relative;
+
+  &-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1200px;
+    padding: 0 20px;
+  }
+
+  &-icon {
+    flex-shrink: 0;
+    color: #92400e;
+    width: 16px;
+    height: 16px;
+  }
+
+  &-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &-message {
+    font-size: 14px;
+    font-weight: 500;
+    color: #92400e;
+    line-height: 20px;
+  }
+
+  &-branch {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 20px;
+
+    strong {
+      font-weight: 600;
+      color: #451a03;
+    }
+  }
+}
+
+// Dark mode support
+.dark-theme {
+  .locked-branch-banner {
+    background: linear-gradient(90deg, #451a03 0%, #78350f 100%);
+    border-bottom-color: #92400e;
+
+    &-icon {
+      color: #fbbf24;
+    }
+
+    &-message {
+      color: #fde68a;
+    }
+
+    &-branch {
+      color: #fef3c7;
+
+      strong {
+        color: #fef3c7;
+      }
+    }
+  }
+}
