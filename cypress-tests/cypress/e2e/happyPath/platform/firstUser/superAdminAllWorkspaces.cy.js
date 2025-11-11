@@ -18,8 +18,9 @@ const userName = () => fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
 const DEFAULT_WORKSPACE = "My workspace";
 
 describe("Instance Settings - All Workspaces UI", () => {
-  beforeEach(() => {
-    cy.defaultWorkspaceLogin();
+ beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
   });
 
   it("verifies All Workspaces UI components and row-level UI", () => {
@@ -44,4 +45,4 @@ describe("Instance Settings - All Workspaces UI", () => {
     // need to run after bug fixes
     // verifyUnarchiveWorkspaceModalUI(testWorkspace)
   });
-});
+  });

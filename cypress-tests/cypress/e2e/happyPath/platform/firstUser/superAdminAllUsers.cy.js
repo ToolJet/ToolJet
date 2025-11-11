@@ -18,8 +18,9 @@ const userName = () => fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
 const userEmail = () => fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, "");
 
 describe("Instance Settings - All Users UI", () => {
-  beforeEach(() => {
-    cy.defaultWorkspaceLogin();
+ beforeEach(() => {
+    cy.apiLogin();
+    cy.visit("/");
   });
 
   it("verifies All Users UI and updates user name", () => {

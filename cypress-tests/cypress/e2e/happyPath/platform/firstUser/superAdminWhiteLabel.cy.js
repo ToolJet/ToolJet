@@ -10,7 +10,8 @@ import {
 describe("Instance Settings - Super Admin UI", () => {
 
 beforeEach(() => {
-  cy.defaultWorkspaceLogin();
+  cy.apiLogin();
+  cy.visit("/");
 });
 
 it("should verify all white labelling UI elements", () => {

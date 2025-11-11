@@ -2,7 +2,8 @@ import { openSMTPSettings, verifySmtpSettingsUI } from "Support/utils/superAdmin
 
 describe("Instance Settings - SMTP Settings UI", () => {
   beforeEach(() => {
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/");
   });
 
   it("verifies SMTP settings UI", () => {
