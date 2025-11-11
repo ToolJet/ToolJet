@@ -18,6 +18,7 @@ export const commonSelectors = {
   workspaceConstantValueInput: '[data-cy="value-input-field"]',
   fileSelector: "[data-cy=uploaded-file-data]",
   searchField: "[data-cy='widget-search-box-search-bar']",
+  workspaceCount: '[data-cy="workspace-count"]',
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
@@ -255,6 +256,7 @@ export const commonSelectors = {
   releaseButton: '[data-cy="button-release"]',
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
+  modalCloseButton: '[data-cy="modal-close"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',
@@ -425,6 +427,7 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+  enterpriseGradientSmIcon: '[data-cy="enterprise-gradient-sm-icon"]',
 };
 
 export const commonQuerySelectors = {
