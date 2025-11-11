@@ -8,7 +8,16 @@ export default function AppLogo({ height = 26, isLoadingFromHeader, className })
   return (
     <>
       {url ? (
-        <img src={url} height={height} data-cy="page-logo" alt="App Logo" />
+        <img
+          src={url}
+          height={height}
+          data-cy="page-logo"
+          alt="App Logo"
+          onError={(e) => {
+            e.currentTarget.onerror = null; // prevent infinite loop
+            e.currentTarget.src = 'assets/images/logo-fallback.svg';
+          }}
+        />
       ) : (
         <>
           {isLoadingFromHeader ? <Logo height={height} data-cy="page-logo" /> : <img src={url} className={className} />}
