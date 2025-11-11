@@ -3,7 +3,7 @@ import { fake } from "Fixtures/fake";
 
 import {
   whiteLabelSelectors,
-} from "Selectors/superAdminSelectors"; 
+} from "Selectors/superAdminSelectors";
 
 import {
   whitelabelText,
@@ -46,9 +46,9 @@ export const verifyWhiteLabelingUI = () => {
   cy.get(whiteLabelSelectors.saveButton).verifyVisibleElement("have.text", whitelabelText.saveButton);
 };
 
-export const verifyInputPlaceholder = (selector, expected) => { 
+export const verifyInputPlaceholder = (selector, expected) => {
     cy.get(selector).should("be.visible").and("have.attr", "placeholder")
-    .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected)); 
+    .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected));
 };
 
 export const verifyLabel = (text) => cy.contains("label", text).should("be.visible");
@@ -63,11 +63,11 @@ export const saveWhiteLabelingChanges = () => {
   cy.get(whiteLabelSelectors.saveButton).click();
 };
 
-export const verifyWhiteLabelInputs = () => { 
+export const verifyWhiteLabelInputs = () => {
     const decodeValue = (val) => val.replace(/&amp;/g, '&'); 
-    cy.get(whiteLabelSelectors.appLogoInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_LOGO)); 
+    cy.get(whiteLabelSelectors.appLogoInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_LOGO));
     cy.get(whiteLabelSelectors.pageTitleInput).should("have.value", WHITE_LABEL_TEXT); 
-    cy.get(whiteLabelSelectors.favIconInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_FAVICON)); 
+    cy.get(whiteLabelSelectors.favIconInput).invoke('val').then((val) => expect(decodeValue(val)).to.eq(WHITE_LABEL_FAVICON));
 };
 
 export const verifyLogoOnLoginPage = () => {

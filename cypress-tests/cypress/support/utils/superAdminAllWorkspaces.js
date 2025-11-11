@@ -4,7 +4,7 @@ import { commonSelectors } from "Selectors/common";
 
 import {
   instanceWorkspaceSelectors,
-} from "Selectors/superAdminSelectors"; 
+} from "Selectors/superAdminSelectors";
 
 import {
   instanceWorkspaceText,
@@ -12,10 +12,10 @@ import {
 
 import {
   openInstanceSettings,
-} from "Support/utils/platform/eeCommon";
+} from "Support/utils/platform/eeCommon";``
 
-const DEFAULT_WORKSPACE = "My workspace";
-const DEFAULT_WS_ARCHIVE_TOOLTIP = "Default workspace cannot be archived. Set another workspace as default to proceed with archiving.";
+const defaultWorkspaceName = "My workspace";
+const defaultWsArchiveTooltip = "Default workspace cannot be archived. Set another workspace as default to proceed with archiving.";
 const toastUnarchived = (name) => `${name} \n was successfully unarchived`;
 
 export const openAllWorkspaces = () => {
@@ -64,7 +64,7 @@ export const verifyWorkspaceTabs = () => {
 
 export const verifyWorkspaceRowTags = (workspaceName) => {
   cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
-    .contains(DEFAULT_WORKSPACE)
+    .contains(defaultWorkspaceName)
     .parent()
     .within(() => {
       cy.contains("Default workspace").should("be.visible");
@@ -93,11 +93,11 @@ export const verifyArchiveWorkspaceModalUI = (workspaceName) => {
 
 export const verifyUnarchiveWorkspaceModalUI = (workspaceName) => {
   openArchiveWorkspaceModal(workspaceName);
-  cy.get('[data-cy="confirm-button"]').click();
-  cy.get('[data-cy="archived-link"]').click();
+  cy.get(instanceWorkspaceSelectors.confirmButton).click();
+  cy.get(instanceWorkspaceSelectors.tabArchived).click();
   searchWorkspace(workspaceName);
   cy.get(instanceWorkspaceSelectors.statusChangeButton).click({ force: true });
-  cy.get('[data-cy="confirm-button"]').click();
+  cy.get(instanceWorkspaceSelectors.confirmButton).click();
   cy.get(commonSelectors.toastMessage).should(
       "contain.text",
       toastUnarchived(workspaceName)
@@ -109,7 +109,7 @@ export const verifyOpenWorkspaceTooltip = (workspaceName) => {
     .contains(workspaceName)
     .parents("tr")
     .within(() => {
-      cy.get('[data-tooltip-id="tooltip-for-open-new-ws"]').trigger("mouseover");
+      cy.get(instanceWorkspaceSelectors.openWorkspaceTooltip).trigger("mouseover");
     });
   cy.contains("Open workspace in new tab").should("be.visible");
 };
@@ -124,14 +124,14 @@ export const verifyDefaultWorkspaceTooltip = () => {
       .find(instanceWorkspaceSelectors.workspaceNameCellSuffix)
       .invoke("text")
       .then((name) => {
-        if (name.trim() === DEFAULT_WORKSPACE) {
+        if (name.trim() === defaultWorkspaceName) {
           cy.wrap($row)
             .find(instanceWorkspaceSelectors.statusChangeButton)
             .trigger("mouseover");
 
           cy.get(instanceWorkspaceSelectors.tooltipDefaultWorkspace)
             .should("be.visible")
-            .and("have.attr", "data-tooltip-content", DEFAULT_WS_ARCHIVE_TOOLTIP);
+            .and("have.attr", "data-tooltip-content", defaultWsArchiveTooltip);
         }
       });
   });

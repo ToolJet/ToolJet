@@ -1,7 +1,7 @@
 import {
   whiteLabelSelectors,
   smtpSelectors
-} from "Selectors/superAdminSelectors"; 
+} from "Selectors/superAdminSelectors";
 
 import {
   whitelabelText,
@@ -19,9 +19,9 @@ export const openSMTPSettings = () => {
 
 export const verifyLabel = (text) => cy.contains("label", text).should("be.visible");
 
-export const verifyInputPlaceholder = (selector, expected) => { 
+export const verifyInputPlaceholder = (selector, expected) => {
     cy.get(selector).should("be.visible").and("have.attr", "placeholder")
-    .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected)); 
+    .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected));
 };
 
 export const verifySmtpSettingsUI = () => {

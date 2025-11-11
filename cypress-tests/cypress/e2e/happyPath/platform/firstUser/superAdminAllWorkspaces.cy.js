@@ -15,7 +15,7 @@ import {
 } from "Support/utils/superAdminAllWorkspaces";
 
 const userName = () => fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
-const DEFAULT_WORKSPACE = "My workspace";
+const defaultWorkspaceName = "My workspace";
 
 describe("Instance Settings - All Workspaces UI", () => {
  beforeEach(() => {
@@ -33,7 +33,7 @@ describe("Instance Settings - All Workspaces UI", () => {
     verifyWorkspacePageHeader();
     verifyWorkspaceTableControls();
     verifyWorkspaceSelectDropdown(testWorkspace);
-    verifyWorkspaceRow(DEFAULT_WORKSPACE, true);
+    verifyWorkspaceRow(defaultWorkspaceName, true);
     verifyWorkspaceRow(testWorkspace, false);
     verifyWorkspaceTabs();
     verifyWorkspaceRowTags(testWorkspace);

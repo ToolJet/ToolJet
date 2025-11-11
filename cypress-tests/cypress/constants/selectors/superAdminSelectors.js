@@ -31,6 +31,7 @@ export const instanceWorkspaceSelectors = {
   resetButton: '[data-cy="reset-button"]',
   viewTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
   viewTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
+  openWorkspaceTooltip: '[data-tooltip-id="tooltip-for-open-new-ws"]',
 };
 
 export const instanceAllUsersSelectors = {
@@ -43,9 +44,7 @@ export const instanceAllUsersSelectors = {
   viewTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
   viewTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
   userStatusCell: (userName) => `[data-cy="${String(userName).toLowerCase()}-user-status"]`,
-  userName: (userName) => {
-  return `[data-cy="-${userName}-user-name"]`;
-  }
+  userName: (userName) => `[data-cy="-${userName}-user-name"]`,
 };
 
 export const usersTableElementsInInstance = {
@@ -74,3 +73,4 @@ export const smtpSelectors = {
   smtpPasswordInput: '[data-cy="input-field-password"]',
   smtpStatuslabel: '[data-cy="status-label"]',
   };
+  

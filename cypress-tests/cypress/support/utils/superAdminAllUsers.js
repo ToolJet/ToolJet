@@ -103,14 +103,14 @@ export const updateUserNameAndVerifyChanges = ({ currentName, userEmail, newName
 
 export const verifyUnarchiveUserModal = (userEmail) => {
   openUserActionMenu(userEmail);
-  cy.get('[data-cy="archive-button"]').click();
+  cy.get(instanceAllUsersSelectors.archiveUserButton).click();
   cy.contains("button", instanceAllUsersText.archiveConfirmButton).should("be.visible").click();
-    openUserActionMenu(userEmail);
-  cy.get('[data-cy="archive-button"]').click();
+  openUserActionMenu(userEmail);
+  cy.get(instanceAllUsersSelectors.archiveUserButton).click();
   cy.get(commonEeSelectors.modalTitle).contains(instanceAllUsersText.unarchiveModalTitle);
   cy.contains(userEmail).should("be.visible");
   cy.contains(instanceAllUsersText.unarchiveModalMessage).should("be.visible");
   cy.get(commonSelectors.cancelButton).should("be.visible");
   cy.contains("button", instanceAllUsersText.unarchiveConfirmButton).should("be.visible");
   cy.get(commonSelectors.cancelButton).should("be.visible").click();
-;}
+};
