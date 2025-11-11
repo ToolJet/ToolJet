@@ -733,3 +733,24 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
         });
     }
 });
+
+Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
+    return cy.getAuthHeaders().then((headers) => {
+        return cy
+            .request({
+                method: "PATCH",
+                url: `${Cypress.env("server_host")}/api/smtp`,
+                headers: headers,
+                body: smtpBody,
+                log: false,
+            })
+            .then((response) => {
+                expect(response.status).to.equal(200);
+                Cypress.log({
+                    name: "apiConfigureSmtp",
+                    displayName: "SMTP CONFIGURED",
+                });
+                return response.body;
+            });
+    });
+});
