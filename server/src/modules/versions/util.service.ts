@@ -155,6 +155,7 @@ export class VersionUtilService implements IVersionUtilService {
           parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
           description: versionDescription ? versionDescription : null,
           versionType: versionType ? versionType : AppVersionType.VERSION,
+          createdBy: user.id,
         })
       );
 
