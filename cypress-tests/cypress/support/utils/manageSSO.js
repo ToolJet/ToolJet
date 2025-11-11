@@ -495,13 +495,15 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
-export const OidcConfig = (groupMapping, level = "workspace", extra = {}) => {
+export const addOIDCConfig = (groupMapping, level = "workspace", extra = {}) => {
   const config = {
     type: "openid",
     configs: {
       name: "",
       clientId: Cypress.env("okta_client_id"),
       clientSecret: Cypress.env("okta_client_secret"),
+      codeVerifier: "",
+      grantType: "authorization_code",
       wellKnownUrl: `https://${Cypress.env("okta_domain")}/.well-known/openid-configuration`,
       ...(level === "instance" ? { enableGroupSync: true } : {}),
     },

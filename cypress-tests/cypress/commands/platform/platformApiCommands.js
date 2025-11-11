@@ -67,21 +67,23 @@ Cypress.Commands.add(
   "apiCreateWorkspace",
   (workspaceName, workspaceSlug, cacheHeaders = false) => {
     cy.getAuthHeaders().then((headers) => {
-      return cy.request(
-        {
-          method: "POST",
-          url: `${Cypress.env("server_host")}/api/organizations`,
-          headers: headers,
-          body: {
-            name: workspaceName,
-            slug: workspaceSlug,
+      return cy
+        .request(
+          {
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/organizations`,
+            headers: headers,
+            body: {
+              name: workspaceName,
+              slug: workspaceSlug,
+            },
           },
-        },
-        { log: false }
-      ).then((response) => {
-        expect(response.status).to.equal(201);
-        return response;
-      });
+          { log: false }
+        )
+        .then((response) => {
+          expect(response.status).to.equal(201);
+          return response;
+        });
     });
   }
 );
@@ -482,69 +484,29 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
   });
 });
 
-Cypress.Commands.add(
-  "apiUpdateSSOConfig",
-  (ssoConfig, level = "workspace", returnCached = false) => {
-    cy.getAuthHeaders(returnCached).then((headers) => {
-      const endpoints = {
-        workspace: "/api/login-configs/organization-sso",
-        instance: "/api/login-configs/instance-sso",
-      };
-      const url = `${Cypress.env("server_host")}${endpoints[level] || endpoints.workspace}`;
+Cypress.Commands.add("apiUpdateSSOConfig", (ssoConfig, level = "workspace") => {
+  const cachedHeaders = Cypress.env("authHeaders");
 
-      cy.request({
-        method: "PATCH",
-        url: url,
-        headers: headers,
-        body: ssoConfig,
-      }).then((response) => {
-        expect(response.status).to.equal(200);
-        cy.log("SSO configuration updated successfully.");
-      });
+  cy.getAuthHeaders(cachedHeaders).then((headers) => {
+    const endpoints = {
+      workspace: "/api/login-configs/organization-sso",
+      instance: "/api/login-configs/instance-sso",
+    };
+    const url = `${Cypress.env("server_host")}${endpoints[level] || endpoints.workspace}`;
+
+    cy.request({
+      method: "PATCH",
+      url: url,
+      headers: headers,
+      body: ssoConfig,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      cy.log("SSO configuration updated successfully.");
     });
-  }
-);
+  });
+});
 
-Cypress.Commands.add(
-  "loginByKeycloak",
-  (username, password, codeVerifier, tjAuthToken) => {
-    cy.then(() => {
-      return generateCodeChallenge(codeVerifier);
-    }).then((codeChallenge) => {
-      cy.request({
-        method: "POST",
-        url: "http://localhost:8080/realms/tooljet/protocol/openid-connect/token?state=22f22523-7bc2-4134-891d-88bdfec073cd",
-        form: true,
-        body: {
-          grant_type: "password",
-          client_id: "tooljet_app",
-          client_secret: "cWBBO423mwaW7v3zYV3RbcE797Dm5jZS",
-          username,
-          password,
-        },
-      }).then((response) => {
-        const token = response.body.access_token;
-        const state = response.body.session_state;
-        const redirectUri = `${Cypress.env("redirect_uri")}`;
 
-        cy.setCookie("oidc_code_verifier", codeVerifier);
-        cy.setCookie("app_id", "cb4347c2-b2a8-4c1c-91b4-fcc789ea9a08");
-        cy.setCookie("tj_auth_token", tjAuthToken);
-
-        const authUrl =
-          `${Cypress.env("keycloak_url")}` +
-          `client_id=tooljet_app` +
-          `&scope=phone openid email profile groups` +
-          `&response_type=code` +
-          `&redirect_uri=${redirectUri}` +
-          `&code_challenge=${codeChallenge}` +
-          `&code_challenge_method=S256` +
-          `&state=22f22523-7bc2-4134-891d-88bdfec073cd`;
-        cy.visit(authUrl);
-      });
-    });
-  }
-);
 
 Cypress.Commands.add(
   "getSsoConfigId",

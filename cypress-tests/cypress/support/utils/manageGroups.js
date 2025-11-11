@@ -11,7 +11,8 @@ import {
 import { groupsText } from "Texts/manageGroups";
 
 export const apiCreateGroup = (groupName) => {
-  return cy.getAuthHeaders().then((headers) => {
+  const cachedHeaders = Cypress.env("authHeaders");
+  return cy.getAuthHeaders(cachedHeaders).then((headers) => {
     return cy
       .request({
         method: "POST",
@@ -28,7 +29,7 @@ export const apiCreateGroup = (groupName) => {
 
 export const apiDeleteGroup = (groupName) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
-    cy.getAuthHeaders().then((headers) => {
+    cy.getAuthHeaders(cachedHeaders).then((headers) => {
       cy.request({
         method: "DELETE",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
