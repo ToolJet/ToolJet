@@ -17,7 +17,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
+import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 import useCanvasMinWidth from './useCanvasMinWidth';
@@ -135,7 +135,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
-      paddingBottom: currentMode === 'edit' && '2px',
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
@@ -216,8 +215,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   />
                   {currentMode === 'edit' && (
                     <>
-                      <DragGhostWidget />
-                      <ResizeGhostWidget />
+                      <DragResizeGhostWidget />
                     </>
                   )}
                   <div id="component-portal" />
