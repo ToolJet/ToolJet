@@ -275,4 +275,14 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersions;
     }, manager || this.manager);
   }
+
+  async getAllVersions(appId: string, manager?: EntityManager): Promise<AppVersion[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersions = await manager.find(AppVersion, {
+        where: { appId: appId },
+        relations: ['user'],
+      });
+      return appVersions;
+    }, manager || this.manager);
+  }
 }

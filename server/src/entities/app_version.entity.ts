@@ -22,6 +22,7 @@ import { DataSource } from './data_source.entity';
 import { Page } from './page.entity';
 import { EventHandler } from './event_handler.entity';
 import { WorkflowSchedule } from './workflow_schedule.entity';
+import { User } from './user.entity';
 
 export enum AppVersionType {
   VERSION = 'version',
@@ -73,6 +74,10 @@ export class AppVersion extends BaseEntity {
 
   @Column({ name: 'created_by', type: 'uuid', nullable: true })
   createdBy: string;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'created_by' })
+  user: User;
 
   @Column({
     name: 'status',
