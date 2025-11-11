@@ -1,6 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { decode } from 'js-base64';
-import { requireFromString } from 'module-from-string';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { PluginsRepository } from '@modules/plugins/repository';
 import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
@@ -47,9 +46,16 @@ export class PluginsServiceSelector {
       decoded = decode(plugin.indexFile.data.toString());
       this.plugins[pluginId] = decoded;
     }
-    const code = requireFromString(decoded, { useCurrentGlobal: true });
-    const service = new code.default();
+
+    // Use dynamic import with data URL
+    const dataUrl = `data:text/javascript,${encodeURIComponent(decoded)}`;
+    const module = await import(dataUrl);
+    const service = new module.default();
 
     return service;
+    // const code = requireFromString(decoded, { useCurrentGlobal: true });
+    // const service = new code.default();
+
+    // return service;
   }
 }
