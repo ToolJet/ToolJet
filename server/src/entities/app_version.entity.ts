@@ -71,6 +71,9 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'parent_version_id', type: 'uuid', nullable: true })
   parentVersionId: string;
 
+  @Column({ name: 'created_by', type: 'uuid', nullable: true })
+  createdBy: string;
+
   @Column({
     name: 'status',
     type: 'enum',
