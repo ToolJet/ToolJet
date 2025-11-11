@@ -152,6 +152,21 @@ export const multiEnvSelector = {
   targetEnvName: '[data-cy="target-env-name"]',
   stagingLabel: '[data-cy="staging-label"]',
   productionLabel: '[data-cy="production-label"]',
+  previewSettings: '[data-cy="preview-settings"]',
+  envContainer: '[data-cy="env-container"]',
+  currentEnvName: '[data-cy="list-current-env-name"]',
+  envArrow: '[data-cy="env-arrow"]',
+  selectedEnvName: '[data-cy="selected-current-env-name"]',
+  envNameList: '[data-cy="env-name-list"]',
+  appVersionLabel: '[data-cy="app-version-label"]',
+  currentVersion: '[data-cy="current-version"]',
+  createNewVersionButton: '[data-cy="create-new-version-button"]',
+  fromLabel: '[data-cy="from-label"]',
+  toLabel: '[data-cy="to-label"]',
+  currEnvName: '[data-cy="current-env-name"]',
+  targetEnvName: '[data-cy="target-env-name"]',
+  stagingLabel: '[data-cy="staging-label"]',
+  productionLabel: '[data-cy="production-label"]',
 };
 
 export const whiteLabellingSelectors = {
