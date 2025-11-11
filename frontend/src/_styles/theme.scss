@@ -17958,7 +17958,7 @@ section.ai-message-prompt-input-wrapper {
 
 .git-sync-modal {
   width: 400px !important;
-  height: 484px !important;
+  height: 524px !important;
 }
 
 .dark-theme.git-sync-modal {
@@ -17970,6 +17970,21 @@ section.ai-message-prompt-input-wrapper {
 .git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-push.active,
 .git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
   border-bottom: 2px solid var(--indigo9) !important;
+}
+.git-sync-modal .git-sync-title .helper-text{
+  color: var(--text-placeholder, #6A727C);
+  font-family: var(--family-regular, Inter);
+  font-size: var(--size-default, 12px);
+  font-style: normal;
+  font-weight: var(--weight-regular, 400);
+  line-height: var(--line-height-default, 18px);
+  letter-spacing: var(--letter-spacing-default, -0.24px);
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: auto;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
 }
 
 .custom_fc_frame {
