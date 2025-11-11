@@ -12,6 +12,8 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 
+import './styles.scss';
+
 export const DatePickerV2 = ({
   height,
   properties,
@@ -100,7 +102,7 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select time');
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date');
   }, [selectedTimestamp, dateFormat, textInputFocus]);
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export const DatePickerV2 = ({
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
-    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datepicker-component', {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datepicker-component !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',

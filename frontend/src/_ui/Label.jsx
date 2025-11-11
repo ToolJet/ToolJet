@@ -1,5 +1,7 @@
 import React from 'react';
+
 import useStore from '@/AppBuilder/_stores/store';
+import { cn } from '@/lib/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 function Label({
@@ -16,6 +18,7 @@ function Label({
   widthType,
   inputId,
   id,
+  classes = null,
 }) {
   const { moduleId } = useModuleContext();
   const isViewerMode = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'view', shallow);
@@ -34,6 +37,7 @@ function Label({
             height: defaultAlignment === 'top' && '20px',
           }}
           htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste
+          className={cn(classes?.labelContainer)}
           id={id}
         >
           <p
