@@ -1,29 +1,25 @@
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonEeSelectors,
-  ssoEeSelector,
+  eeGroupsSelector,
   instanceSettingsSelector,
   multiEnvSelector,
+  ssoEeSelector,
   workspaceSelector,
 } from "Selectors/eeCommon";
-import { multiEnvSelector } from "Selectors/eeCommon";
-import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { eeGroupsSelector } from "Selectors/eeCommon";
-import { eeGroupsText } from "Texts/eeCommon";
+import { ssoSelector } from "Selectors/manageSSO";
+import { usersSelector } from "Selectors/manageUsers";
+import * as common from "Support/utils/common";
 import {
   // verifyOnboardingQuestions,
   // verifyCloudOnboardingQuestions,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
-import { ssoSelector } from "Selectors/manageSSO";
+import { ssoEeText } from "Texts/eeCommon";
 import { ssoText } from "Texts/manageSSO";
+import { usersText } from "Texts/manageUsers";
 // import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {
