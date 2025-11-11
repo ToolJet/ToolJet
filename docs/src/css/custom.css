@@ -967,3 +967,24 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 .footer {
   padding: 0px 70px !important;
 }
+
+.sc-kSaXSp.dkiBl { /* This hides the redocly branding at the bottom on the API pages.*/
+    visibility: hidden;
+}
+
+.jcDBan {
+  border: 0px !important;
+  margin-left: 0px !important;
+}
+
+.gHrCVQ {
+    padding: 30px 0 !important;
+}
+
+.hgujxv {
+  margin: 0 !important;
+}
+
+.sc-dTvVRJ {
+  padding: 10px 0px !important;
+}
