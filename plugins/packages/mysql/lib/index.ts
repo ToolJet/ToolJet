@@ -126,8 +126,8 @@ export default class MysqlQueryService implements QueryService {
         port: +sourceOptions.port,
       };
 
-  const shouldUseSSL = !!sourceOptions.ssl_enabled;
-  let sslObject: any = undefined;
+    const shouldUseSSL = sourceOptions.ssl_enabled;
+    let sslObject: any = null;
 
   if (shouldUseSSL) {
     sslObject = { rejectUnauthorized: true };
