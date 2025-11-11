@@ -3,6 +3,7 @@ import { decode } from 'js-base64';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { PluginsRepository } from '@modules/plugins/repository';
 import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
+import { runInNewContext } from 'vm';
 
 @Injectable()
 export class PluginsServiceSelector {
@@ -47,15 +48,38 @@ export class PluginsServiceSelector {
       this.plugins[pluginId] = decoded;
     }
 
-    // Use dynamic import with data URL
-    const dataUrl = `data:text/javascript,${encodeURIComponent(decoded)}`;
-    const module = await import(dataUrl);
-    const service = new module.default();
+    interface PluginModule {
+      default: new () => any;
+      [key: string]: any;
+    }
+
+    // Create a module context with CommonJS support
+    const moduleWrapper = {
+      exports: {} as PluginModule,
+    };
+
+    const sandbox = {
+      module: moduleWrapper,
+      exports: moduleWrapper.exports,
+      require: require,
+      console: console,
+      process: process,
+      Buffer: Buffer,
+      setTimeout: setTimeout,
+      clearTimeout: clearTimeout,
+      setInterval: setInterval,
+      clearInterval: clearInterval,
+      __dirname: process.cwd(), // or path.dirname(fileURLToPath(import.meta.url))
+      __filename: __filename,
+      global: global,
+    };
+
+    // Execute the plugin code
+    runInNewContext(decoded, sandbox);
+
+    // Get the exported service
+    const service = new sandbox.module.exports.default();
 
     return service;
-    // const code = requireFromString(decoded, { useCurrentGlobal: true });
-    // const service = new code.default();
-
-    // return service;
   }
 }
