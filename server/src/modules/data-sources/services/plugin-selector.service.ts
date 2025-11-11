@@ -62,16 +62,9 @@ export class PluginsServiceSelector {
       module: moduleWrapper,
       exports: moduleWrapper.exports,
       require: require,
-      console: console,
-      process: process,
-      Buffer: Buffer,
-      setTimeout: setTimeout,
-      clearTimeout: clearTimeout,
-      setInterval: setInterval,
-      clearInterval: clearInterval,
-      __dirname: process.cwd(), // or path.dirname(fileURLToPath(import.meta.url))
+      ...global, // This includes most global objects
+      __dirname: process.cwd(),
       __filename: __filename,
-      global: global,
     };
 
     // Execute the plugin code
