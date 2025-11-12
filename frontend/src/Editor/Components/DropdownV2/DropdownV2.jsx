@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select, { components } from 'react-select';
-import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
+import { IconX } from '@tabler/icons-react';
+
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -44,7 +45,7 @@ export const CustomDropdownIndicator = (props) => {
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </ClearIndicator>
   );
 };
@@ -471,7 +472,6 @@ export const DropdownV2 = ({
           auto={labelAutoWidth}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
           widthType={widthType}
           id={`${id}-label`}
         />

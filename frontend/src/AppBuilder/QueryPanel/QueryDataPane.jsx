@@ -9,6 +9,7 @@ import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import FilterandSortPopup from './FilterandSortPopup';
+import { Button } from '@/components/ui/Button/Button';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import useShowPopover from '@/_hooks/useShowPopover';
@@ -111,20 +112,22 @@ export const QueryDataPane = ({ darkMode }) => {
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
-            <button
+
+            <Button
+              isLucid
+              iconOnly
+              size="medium"
+              variant="ghost"
+              leadingIcon="search"
               onClick={() => {
                 showSearchBox && setSearchTermForFilters('');
                 setShowSearchBox((showSearchBox) => !showSearchBox);
               }}
-              className={cx('btn-query-panel-header', {
-                active: showSearchBox,
-              })}
+              className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Open quick search"
               data-cy="query-search-button"
-            >
-              <Search width="14" height="14" fill="var(--icons-default)" />
-            </button>
+            />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
           <AddDataSourceButton darkMode={darkMode} />
@@ -174,7 +177,7 @@ export const QueryDataPane = ({ darkMode }) => {
         ) : (
           <div
             className={`query-list tj-scrollbar overflow-auto ${filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
-              }`}
+            }`}
           >
             <div>
               {/* TODO: replace/add filter query logic here */}
@@ -288,9 +291,12 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
       }
     >
       <span className="col-auto" id="query-add-ds-popover-btn">
-        <ButtonSolid
-          size="sm"
-          variant="tertiary"
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="outline"
+          leadingIcon="plus"
           disabled={disabled}
           onClick={(e) => {
             e.stopPropagation();
@@ -299,11 +305,8 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             }
             setShowMenu((show) => !show);
           }}
-          style={{ height: '28px', width: '28px', padding: '0px' }}
           data-cy={`show-ds-popover-button`}
-        >
-          <Plus style={{ height: '14px' }} fill="var(--icons-strong)" />
-        </ButtonSolid>
+        />
       </span>
     </OverlayTrigger>
   );

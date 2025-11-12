@@ -1,32 +1,33 @@
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
-import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
-import { commonText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { commonSelectors } from "Selectors/common";
+import { groupsSelector } from "Selectors/manageGroups";
 import {
-    setupWorkspaceAndInviteUser,
-    verifyBasicPermissions,
-    createGroupsAndAddUserInGroup,
-    updateRole,
-    verifySettingsAccess,
-} from "Support/utils/manageGroups";
-
-import {
-    createFolder,
-    deleteFolder,
-    logout,
     navigateToManageGroups,
     selectAppCardOption,
 } from "Support/utils/common";
 import {
-    exportAppModalSelectors,
-    importSelectors,
-} from "Selectors/exportImport";
-import { dashboardText } from "../../../../../../constants/texts/dashboard";
+    createGroupsAndAddUserInGroup,
+    setupWorkspaceAndInviteUser,
+    updateRole,
+} from "Support/utils/manageGroups";
+import {
+    uiAppCRUDWorkflow,
+    uiDataSourceCRUDWorkflow,
+    uiFolderCRUDWorkflow,
+    uiVerifyAdminPrivileges,
+    uiVerifyBuilderPrivileges,
+    uiWorkflowCRUDWorkflow,
+    uiWorkspaceConstantCRUDWorkflow,
+} from "Support/utils/uiPermissions";
+import {
+    verifyBasicPermissions,
+    verifySettingsAccess,
+} from "Support/utils/userPermissions";
+import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
+import { groupsText } from "Texts/manageGroups";
 
-describe("Manage Groups", () => {
+describe("Basic Permissions", () => {
     let data = {};
 
     before(() => {
@@ -56,60 +57,51 @@ describe("Manage Groups", () => {
             data.firstName,
             data.email
         );
+
         verifyBasicPermissions(false);
+        verifySettingsAccess(false);
     });
 
-    it("should verify builder privileges and role updates in custom groups", () => {
-        const builderGroup = fake.firstName.replace(/[^A-Za-z]/g, "");
-        const endUserGroup = fake.firstName.replace(/[^A-Za-z]/g, "");
-
+    it("should verify builder privileges", () => {
         setupWorkspaceAndInviteUser(
             data.workspaceName,
             data.workspaceSlug,
             data.firstName,
             data.email,
-            "Builder"
+            "builder"
         );
 
-        // Verify builder permissions
-        verifyBasicPermissions(true);
+        // UI-based privilege verification for Builder
+        cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
+        uiVerifyBuilderPrivileges();
 
-        // App operations
-        cy.createApp(data.appName);
-        // cy.verifyToastMessage(
-        //     commonSelectors.toastMessage,
-        //     commonText.appCreatedToast,
-        //     false
-        // );
-        cy.backToApps();
+        // UI CRUD workflows validation
+        cy.get(commonSelectors.dashboardIcon).click();
+        const uiTestAppName = `${data.appName}_ui`;
+        const uiTestFolderName = `${data.folderName}-ui`;
+        const uiTestConstName = `${data.firstName}_const`;
+        const uiTestConstValue = "test_value";
 
-        cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast,
-            false
-        );
+        // Perform UI-based CRUD operations
+        uiAppCRUDWorkflow(uiTestAppName);
+        uiFolderCRUDWorkflow(uiTestFolderName);
+        uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
 
-        // Folder operations
-        createFolder(data.folderName);
-        deleteFolder(data.folderName);
+        // Enterprise-specific UI workflows
+        cy.ifEnv("Enterprise", () => {
+            const uiTestDsName = `${data.appName}_ds`;
+            const uiTestWorkflowName = `${data.appName}_wf`;
+            uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
+            uiWorkflowCRUDWorkflow(uiTestWorkflowName);
+        });
 
-        // Constants management
-        cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addAndVerifyConstants(data.firstName, data.appName);
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.firstName)
-        ).click();
-        cy.get(commonSelectors.yesButton).click();
-
-        verifySettingsAccess(false);
-
-        cy.get(commonSelectors.homePageLogo).click();
-        cy.createApp(data.appName);
-        cy.backToApps();
-        cy.wait(1000);
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.releaseApp();
 
         //verify clone access
+        cy.visit(data.workspaceSlug);
         selectAppCardOption(
             data.appName,
             commonSelectors.appCardOptions(commonText.cloneAppOption)
@@ -120,11 +112,60 @@ describe("Manage Groups", () => {
             dashboardText.appClonedToast,
             false
         );
-        // cy.get(commonSelectors.cancelButton).click();
-        cy.apiLogout();
+    });
 
+    it("should verify admin privileges", () => {
+        setupWorkspaceAndInviteUser(
+            data.workspaceName,
+            data.workspaceSlug,
+            data.firstName,
+            data.email,
+            "admin"
+        );
+
+        // API-based verification
+        verifyBasicPermissions(true);
+
+        // UI-based privilege verification for Admin (includes settings access)
+        uiVerifyAdminPrivileges();
+
+        // UI CRUD workflows for validation
+        cy.get(commonSelectors.dashboardIcon).click();
+        const uiTestAppName = `${data.appName}_admin_ui`;
+        const uiTestFolderName = `${data.folderName}-admin-ui`;
+        const uiTestConstName = `${data.firstName}_admin_const`;
+        const uiTestConstValue = "admin_test_value";
+
+        // Perform UI-based CRUD operations
+        uiAppCRUDWorkflow(uiTestAppName);
+        uiFolderCRUDWorkflow(uiTestFolderName);
+        uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
+
+        // Enterprise-specific UI workflows
+        cy.ifEnv("Enterprise", () => {
+            const uiTestDsName = `${data.appName}_admin_ds`;
+            const uiTestWorkflowName = `${data.appName}_admin_wf`;
+            uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
+            uiWorkflowCRUDWorkflow(uiTestWorkflowName);
+        });
+    });
+
+    it("should verify role updates in custom groups", () => {
+        const builderGroup = fake.firstName.replace(/[^A-Za-z]/g, "");
+        const endUserGroup = fake.firstName.replace(/[^A-Za-z]/g, "");
+
+        setupWorkspaceAndInviteUser(
+            data.workspaceName,
+            data.workspaceSlug,
+            data.firstName,
+            data.email,
+            "builder"
+        );
+
+        cy.apiLogout();
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
+        cy.apiCreateApp(`${data.appName}_builder`);
         navigateToManageGroups();
 
         [builderGroup, endUserGroup].forEach((group) => {
@@ -158,55 +199,10 @@ describe("Manage Groups", () => {
         cy.apiLogout();
         cy.apiLogin(data.email, "password");
         cy.visit(data.workspaceSlug);
-        cy.get(commonSelectors.appCard(data.appName))
+        cy.get(commonSelectors.appCard(`${data.appName}_builder`))
             .trigger("mouseover")
             .trigger("mouseenter")
             .find(commonSelectors.editButton)
             .should("not.exist");
     });
-
-    it("should verify admin privileges", () => {
-        setupWorkspaceAndInviteUser(
-            data.workspaceName,
-            data.workspaceSlug,
-            data.firstName,
-            data.email,
-            "admin"
-        );
-
-        verifyBasicPermissions(true);
-
-        // App operations
-        cy.createApp(data.appName);
-        // cy.verifyToastMessage(
-        //     commonSelectors.toastMessage,
-        //     commonText.appCreatedToast,
-        //     false
-        // );
-        cy.backToApps();
-
-        cy.deleteApp(data.appName);
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            commonText.appDeletedToast,
-            false
-        );
-
-        // Folder operations
-        createFolder(data.folderName);
-        deleteFolder(data.folderName);
-
-        // Constants management
-        cy.get(commonSelectors.workspaceConstantsIcon).click();
-        addAndVerifyConstants(data.firstName, data.appName);
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.firstName)
-        ).click();
-        cy.get(commonSelectors.yesButton).click();
-
-        // Settings access check - explicitly verify workspace settings
-        cy.get(commonSelectors.settingsIcon).click();
-        cy.get(commonSelectors.workspaceSettings).should("exist");
-        cy.wait(1000);
-    });
-})
+});
