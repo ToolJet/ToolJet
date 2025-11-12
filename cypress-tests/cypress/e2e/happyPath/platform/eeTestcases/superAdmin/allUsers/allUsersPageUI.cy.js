@@ -10,6 +10,7 @@ import {
     verifyUserActionMenu,
     verifyUserRow,
     verifyUsersFilterOptions,
+    openAllUsersPage,
 } from "Support/utils/platform/allUsers";
 
 const data = {
@@ -24,7 +25,8 @@ describe("Instance Settings - All Users UI", () => {
         cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
         cy.apiLogout();
         cy.apiLogin();
-        cy.visit("settings/all-users");
+        cy.visit('/my-workspace')
+        openAllUsersPage();
     });
 
     it("verifies All Users UI and updates user name", () => {

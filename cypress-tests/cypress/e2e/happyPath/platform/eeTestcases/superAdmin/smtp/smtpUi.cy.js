@@ -1,4 +1,4 @@
-import { openSMTPSettings, verifySmtpSettingsUI } from "Support/utils/superAdminSMTP";
+import { openSMTPSettings, verifySmtpSettingsUI } from "Support/utils/platform/smtp";
 
 describe("Instance Settings - SMTP Settings UI", () => {
     beforeEach(() => {
