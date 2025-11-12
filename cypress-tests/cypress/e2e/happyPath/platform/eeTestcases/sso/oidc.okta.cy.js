@@ -28,6 +28,7 @@ describe("Okta OIDC", () => {
         data.groupName = `oidc-${fake.companyName}-group`;
 
         cy.apiLogin();
+
         deleteOrganisationSSO("My workspace", ["openid"]);
         enableInstanceSignup();
         setSignupStatus(true);
@@ -50,7 +51,6 @@ describe("Okta OIDC", () => {
         cy.apiLogout();
         cy.wait(3000);
 
-        cy.pause();
         loginWithOIDC({
             username: Cypress.env("okta_inst_user"),
             password: Cypress.env("okta_password"),
@@ -63,16 +63,15 @@ describe("Okta OIDC", () => {
 
         verifyUserRole("@userId", "end-user", [data.groupName]);
         logout();
+        cy.apiLogin();
 
-        apiDeleteGroup(data.groupName, Cypress.env("workspaceId"));
-
-        // cy.apiLogin();
+        apiDeleteGroup(data.groupName);
         apiCreateGroup(data.groupName);
         addOIDCConfig({ Everyone: "Admin", OIDC: data.groupName }, "instance", {
             organizationId: orgId,
             id: "1",
         });
-        // cy.apiLogout();
+        cy.apiLogout();
         cy.wait(1000);
 
         loginWithOIDC({
@@ -86,7 +85,7 @@ describe("Okta OIDC", () => {
         });
 
         verifyUserRole("@userId", "admin", ["admin", data.groupName]);
-        apiDeleteGroup(data.groupName, Cypress.env("workspaceId"));
+        apiDeleteGroup(data.groupName);
     });
 
     it("Workspace signup and group cases", () => {
@@ -114,9 +113,9 @@ describe("Okta OIDC", () => {
         verifyUserRole("@userId", "admin");
         logout();
 
-        // cy.apiLogin();
+        cy.apiLogin();
         addOIDCConfig({ Everyone: "Builder" });
-        // cy.apiLogout();
+        cy.apiLogout();
         cy.wait(1000);
 
         loginWithOIDC({
@@ -134,9 +133,10 @@ describe("Okta OIDC", () => {
         cy.apiCreateApp(data.appName);
         logout();
 
-        // cy.apiLogin();
+        cy.apiLogin();
+
         addOIDCConfig({ Everyone: "End-user" });
-        // cy.apiLogout();
+        cy.apiLogout();
         cy.wait(1000);
 
         loginWithOIDC({
@@ -156,7 +156,7 @@ describe("Okta OIDC", () => {
         const orgId = Cypress.env("workspaceId");
         const invitedUserEmail = Cypress.env("okta_invite_user");
         const firstName = fake.firstName;
-        createGroup(data.groupName);
+        apiCreateGroup(data.groupName);
 
         cy.intercept("GET", "/api/authorize").as("openidResponse");
 
@@ -197,7 +197,10 @@ describe("Okta OIDC", () => {
         cy.wait(4000);
 
         verifyUserRole("@userId", "builder", ["builder", data.groupName]);
-        deleteGroup(data.groupName, Cypress.env("workspaceId"));
+
+        cy.apiLogout();
+        cy.apiLogin();
+        apiDeleteGroup(data.groupName);
     });
 });
 

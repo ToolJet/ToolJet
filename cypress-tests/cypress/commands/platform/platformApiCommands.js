@@ -490,9 +490,7 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
   });
 });
 
-Cypress.Commands.add("apiUpdateSSOConfig", (ssoConfig, level = "workspace") => {
-  const cachedHeaders = Cypress.env("authHeaders");
-
+Cypress.Commands.add("apiUpdateSSOConfig", (ssoConfig, level = "workspace", cachedHeaders = false) => {
   cy.getAuthHeaders(cachedHeaders).then((headers) => {
     const endpoints = {
       workspace: "/api/login-configs/organization-sso",
@@ -699,7 +697,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding(email, password, orgToken) {
+    function performOnboarding (email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `

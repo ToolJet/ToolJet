@@ -6,10 +6,12 @@ import { commonSelectors } from "Selectors/common";
 import { deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { navigateToManageSSO } from "Support/utils/common";
 import {
-    createGroup,
-    deleteGroup,
+    apiCreateGroup,
+    apiDeleteGroup,
     verifyUserRole,
 } from "Support/utils/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
+
 import {
     setSignupStatus,
     updateSsoId,
@@ -45,10 +47,13 @@ describe("SAML SSO", () => {
         cy.apiLogin();
         deleteOrganisationSSO("My workspace", ["saml"]);
         setSignupStatus(true);
+        cleanAllUsers();
+
     });
 
-    after(() => {
-        deleteGroup("SAML", Cypress.env("workspaceId"));
+    afterEach("", () => {
+        cy.apiLogin();
+        cleanAllUsers();
     });
 
     it("Should verify SAML modal elements", () => {
@@ -121,7 +126,7 @@ describe("SAML SSO", () => {
 
         cy.apiUpdateSSOConfig(config);
 
-        createGroup("SAML");
+        apiCreateGroup("SAML");
 
         updateSsoId(ssoConfigId, "saml", orgId);
 
@@ -133,6 +138,10 @@ describe("SAML SSO", () => {
             cy.wrap(userId).as("userId");
         });
         verifyUserRole("@userId", "end-user", ["SAML"]);
+
+        cy.apiLogout();
+        cy.apiLogin();
+        apiDeleteGroup(data.groupName);
     });
 
     it("Should verify the invited user onboarding using SAML SSO", () => {
