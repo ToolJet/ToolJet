@@ -26,7 +26,9 @@ Cypress.Commands.add(
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
     cy.wait(2000);
-    cy.get('[data-cy="main-wrapper"]', { timeout: 10000 }).should("be.visible");
+    cy.get('[data-cy="icon-dashboard"]', { timeout: 10000 }).should(
+      "be.visible"
+    );
   }
 );
 

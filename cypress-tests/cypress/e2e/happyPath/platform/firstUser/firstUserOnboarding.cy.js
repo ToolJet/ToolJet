@@ -15,6 +15,7 @@ describe("Self host onboarding", () => {
 
   beforeEach(() => {
     cy.visit("/setup");
+    cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -255,11 +256,14 @@ describe("Self host onboarding", () => {
       onboardingStepThree();
     });
 
-    cy.wait(2000);
-    cy.get('[data-cy="button-release"]').should("be.visible");
-    cy.go("back");
+    cy.wait("@getDataQueries");
+    cy.wait(1000);
+    cy.get('[data-cy="button-release"]', { timeout: 20000 }).should(
+      "be.visible"
+    );
 
-    logout();
+    cy.apiLogout();
+    cy.visit("/my-workspace");
     cy.appUILogin();
 
     cy.get(commonSelectors.workspaceName)
