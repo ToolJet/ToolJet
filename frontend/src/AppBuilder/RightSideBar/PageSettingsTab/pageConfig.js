@@ -89,7 +89,7 @@ export const pageConfig = {
         isDefault: false,
       },
       selectedIconColor: {
-        value: 'var(--cc-primary-brand)',
+        value: 'var(--cc-default-icon)',
         isDefault: false,
       },
       pillHoverBackgroundColor: {
@@ -97,7 +97,7 @@ export const pageConfig = {
         isDefault: false,
       },
       pillSelectedBackgroundColor: {
-        value: 'var(--cc-surface3-surface)',
+        value: 'var(--cc-appBackground-surface)',
         isDefault: false,
       },
       pillRadius: {

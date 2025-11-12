@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
-import FolderList from '@/_ui/FolderList/FolderList';
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
@@ -223,7 +222,7 @@ const RenderPageGroup = ({
         <TriggerBody />
         <Icons.IconChevronUp
           size={16}
-          color="var(--cc-default-icon)"
+          color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
         />
       </NavigationMenuTrigger>
@@ -261,7 +260,7 @@ const RenderPageGroup = ({
         <TriggerBody />
         <Icons.IconChevronUp
           size={16}
-          color="var(--cc-default-icon)"
+          color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 ${!isExpanded && 'tw-rotate-180'}`}
         />
       </button>
@@ -376,7 +375,7 @@ export const RenderPageAndPageGroup = ({
         {overflowLinks.length > 0 && position === 'top' && (
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
-              <Icons.IconDotsVertical size={16} color="var(--cc-default-icon)" />
+              <Icons.IconDotsVertical size={16} color="var(--nav-item-icon-color)" />
               More
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
