@@ -11,6 +11,7 @@ describe("License - App & Workflow Limits", () => {
 
   beforeEach(() => {
     cy.apiLogin();
+    cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
     cy.apiDeleteAllApps();
   });
 
@@ -20,6 +21,8 @@ describe("License - App & Workflow Limits", () => {
 
     cy.apiCreateApp(app1Name);
     cy.visit("/my-workspace");
+
+    cy.wait("@getLicenseAccess");
 
     verifyResourceLimit("apps", "basic");
 
@@ -65,6 +68,8 @@ describe("License - App & Workflow Limits", () => {
 
     cy.apiCreateWorkflow(workflow1Name);
     cy.visit("my-workspace/workflows");
+
+    cy.wait("@getLicenseAccess");
 
     verifyResourceLimit("workflows", "basic", "workflow");
 
