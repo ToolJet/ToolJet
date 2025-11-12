@@ -623,7 +623,7 @@ Cypress.Commands.add(
         method: "PUT",
         url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
           "editingVersionId"
-        )}/versions/${Cypress.env("editingVersionId")}/promote`,
+        )}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
           "Content-Type": "application/json",
