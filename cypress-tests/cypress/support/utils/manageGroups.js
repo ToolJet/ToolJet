@@ -11,17 +11,18 @@ import {
 import { groupsText } from "Texts/manageGroups";
 
 export const apiCreateGroup = (groupName) => {
-  const cachedHeaders = Cypress.env("authHeaders");
-  return cy.getAuthHeaders(cachedHeaders).then((headers) => {
+  return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers: headers,
         body: { name: groupName },
+        log: false
       })
       .then((response) => {
         expect(response.status).to.equal(201);
+        Cypress.log({ name: "Create group :", message: ` ${groupName}` });
         return response.body.id; // Returns the group ID as resolved value
       });
   });
@@ -29,7 +30,7 @@ export const apiCreateGroup = (groupName) => {
 
 export const apiDeleteGroup = (groupName) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
-    cy.getAuthHeaders(cachedHeaders).then((headers) => {
+    cy.getAuthHeaders().then((headers) => {
       cy.request({
         method: "DELETE",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,

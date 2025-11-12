@@ -13,6 +13,7 @@ data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
 describe("Workspace", () => {
     before(() => {
         cy.defaultWorkspaceLogin();
+        cy.intercept('GET', '**/api/library_apps').as('libraryApps');
     });
 
     it("Should verify create and edit workspace modal and flow", () => {
@@ -173,14 +174,14 @@ describe("Workspace", () => {
         cy.wait(1000);
         cy.get(commonSelectors.workspaceNameinput).clear().type(data.workspaceName);
         cy.wait(1000);
-        cy.get(dashboardSelector.workspaceSlugInputField)
+        cy.get(dashboardSelector.workspaceSlugInputField).click({ force: true })
             .clear()
             .type(data.workspaceSlug);
-        cy.wait(4000);
+        cy.wait(1000);
         cy.get(dashboardSelector.createWorkspaceButton)
             .should("be.enabled")
             .click();
-        cy.wait(1000);
+        cy.wait('@libraryApps');
         cy.get(commonSelectors.workspaceName).verifyVisibleElement(
             "have.text",
             data.workspaceName
