@@ -97,6 +97,10 @@ export class AppGitPullUpdateDto {
 
   @IsOptional()
   gitBranchName?: string;
+
+  @IsString()
+  @IsOptional()
+  currentVersionId?: string;
 }
 export class AppGitUpdateDto {
   @IsBoolean()
