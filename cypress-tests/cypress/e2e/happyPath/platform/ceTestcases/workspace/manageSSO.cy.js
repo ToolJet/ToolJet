@@ -8,10 +8,28 @@ import { commonText } from "Texts/common";
 
 describe("Manage SSO for multi workspace", () => {
   const data = {};
+  const emptyGoogleConfig = {
+    type: "google",
+    configs: {
+      clientId: "",
+    },
+    enabled: true,
+  };
+  const emptyGitConfig = {
+    type: "git",
+    configs: {
+      clientId: "",
+      clientSecret: "",
+      hostName: "",
+    },
+    enabled: true,
+  };
 
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
-    SSO.deleteOrganisationSSO("My workspace", ["google", "git"]);
+    cy.apiUpdateSSOConfig(emptyGoogleConfig, "instance");
+    cy.apiUpdateSSOConfig(emptyGitConfig, "instance");
+    //SSO.deleteOrganisationSSO("My workspace", ["google", "git"]);
     SSO.resetDomain();
   });
 

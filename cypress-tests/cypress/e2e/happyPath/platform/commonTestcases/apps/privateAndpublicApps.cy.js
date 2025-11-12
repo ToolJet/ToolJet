@@ -1,7 +1,10 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout, releaseApp } from "Support/utils/common";
-import { inviteUserToWorkspace, fetchAndVisitInviteLinkViaMH } from "Support/utils/manageUsers";
+import {
+  inviteUserToWorkspace,
+  fetchAndVisitInviteLinkViaMH,
+} from "Support/utils/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
@@ -39,10 +42,13 @@ describe(
     });
 
     const verifyWidget = (widgetName) => {
-      cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("be.visible");
+      cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
+        "be.visible"
+      );
     };
 
-    const getAppUrl = (slug) => `${Cypress.config("baseUrl")}/applications/${slug}`;
+    const getAppUrl = (slug) =>
+      `${Cypress.config("baseUrl")}/applications/${slug}`;
 
     let data;
 
@@ -55,10 +61,12 @@ describe(
     it("should verify private and public app share functionality", () => {
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.dragAndDropWidget("text", 500, 500);
+      cy.dragAndDropWidget("text", 450, 300);
 
       cy.get(commonWidgetSelector.shareAppButton).should("be.visible").click();
-      cy.contains("This version has not been released yet").should("be.visible");
+      cy.contains("This version has not been released yet").should(
+        "be.visible"
+      );
       cy.get(commonWidgetSelector.modalCloseButton).click();
 
       releaseApp();
@@ -96,7 +104,9 @@ describe(
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
 
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
       cy.appUILogin();
       verifyWidget("text1");
 
@@ -121,7 +131,9 @@ describe(
 
       inviteUserToWorkspace(data.firstName, data.email);
       logout();
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       cy.wait(2000);
@@ -134,7 +146,9 @@ describe(
       cy.defaultWorkspaceLogin();
       cy.apiMakeAppPublic();
       logout();
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       verifyWidget("text1");
@@ -161,7 +175,9 @@ describe(
       cy.apiMakeAppPublic();
       logout();
 
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       verifyWidget("text1");
@@ -173,43 +189,47 @@ describe(
 
     it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
       cy.intercept("POST", "/api/onboarding/signup").as("signup");
-      cy.intercept('GET', '**/api/white-labelling').as('whiteLabelling');
+      cy.intercept("GET", "**/api/white-labelling").as("whiteLabelling");
 
       cy.apiUserInvite(`${data.firstName}_invited`, `invited_${data.email}`);
 
       setSignupStatus(true);
-      setupAppWithSlug(data.appPublicName, data.appPublicSlug, 'public');
+      setupAppWithSlug(data.appPublicName, data.appPublicSlug, "public");
       const publicAppId = Cypress.env("appId");
       cy.apiMakeAppPublic(publicAppId);
       setupAppWithSlug(data.appPrivateName, data.appPrivateSlug);
-      cy.visitSlug({ actualUrl: getAppUrl(data.slug) })
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
 
       cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
-      verifyWidget('public')
+      verifyWidget("public");
 
       cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
-      verifyWidget('private')
+      verifyWidget("private");
 
       cy.apiLogout();
 
       cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
-      verifyWidget('public')
+      verifyWidget("public");
 
       cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
-      cy.wait('@whiteLabelling');
+      cy.wait("@whiteLabelling");
 
       cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
 
-      cy.get(onboardingSelectors.loginPasswordInput).should("be.visible").click({ force: true });
+      cy.get(onboardingSelectors.loginPasswordInput)
+        .should("be.visible")
+        .click({ force: true });
       cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
       cy.clearAndType('[data-cy="email-input"]', data.email);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(commonSelectors.signUpButton).click();
-      cy.wait('@signup');
-      cy.get(`[data-cy="resend-verification-email-button"]`).should("be.visible");
+      cy.wait("@signup");
+      cy.get(`[data-cy="resend-verification-email-button"]`).should(
+        "be.visible"
+      );
 
       fetchAndVisitInviteLinkViaMH(data.email);
-      verifyWidget('private')
+      verifyWidget("private");
 
       // cy.apiLogout();
 
@@ -217,9 +237,6 @@ describe(
       // cy.get(onboardingSelectors.loginPasswordInput).should("be.visible").click({ force: true });
       // cy.clearAndType('[data-cy="email-input"]', `invited_${data.email}`);
       // cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-
-
-
     });
 
     it("should verify restricted app access", () => {
@@ -245,6 +262,5 @@ describe(
 
       cy.apiLogout();
     });
-
   }
 );

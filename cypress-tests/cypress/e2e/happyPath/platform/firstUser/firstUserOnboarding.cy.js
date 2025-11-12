@@ -105,7 +105,7 @@ describe("Self host onboarding", () => {
     cy.get(commonSelectors.nameInputField).type("The Developer");
     cy.get(onboardingSelectors.emailInput).type("dev@tooljet.io");
     cy.get(onboardingSelectors.passwordInput).type("password");
-    cy.get(commonSelectors.continueButton).click();
+    cy.get(commonSelectors.signUpButton).click();
 
     cy.ifEnv("Enterprise", () => {
       bannerElementsVerification();
