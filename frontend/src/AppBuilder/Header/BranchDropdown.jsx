@@ -278,7 +278,6 @@ export function BranchDropdown({ appId, organizationId }) {
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
   // Use selectedVersion.name as the current branch (ToolJet's version/branch name)
   const currentBranchName = selectedVersion?.name || currentBranch?.name;
-  console.log({ defaultBranchName, currentBranchName, selectedVersion, currentBranch });
 
   // Determine if on default branch:
   // - If versionType is 'version', we're on a regular version (show default branch UI)

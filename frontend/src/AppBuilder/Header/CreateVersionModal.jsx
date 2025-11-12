@@ -17,20 +17,20 @@ const CreateVersionModal = ({
   handleCommitEnableChange,
   canCommit,
   orgGit,
-  fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation,
   versionId,
   onVersionCreated,
+  isBranchingEnabled,
+  selectedVersionForCreation,
+  setSelectedVersionForCreation,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled =
-    orgGit?.org_git?.git_ssh?.is_enabled ||
-    orgGit?.org_git?.git_https?.is_enabled ||
-    orgGit?.org_git?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const { current_organization_id } = authenticationService.currentSessionValue;
 
   const {
     changeEditorVersionAction,
@@ -63,7 +63,6 @@ const CreateVersionModal = ({
     shallow
   );
 
-  const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
 
   const handleDescriptionInput = (e) => {
@@ -151,12 +150,17 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
+      const appGit = gitData?.app_git;
+      await handleCommitOnVersionCreation(appGit);
+
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
         description: versionDescription,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
+
       toast.success('Version Created successfully');
       setVersionName('');
       setVersionDescription('');
@@ -250,64 +254,59 @@ const CreateVersionModal = ({
       title={'Save version'}
       customClassName="create-version-modal"
     >
-      {fetchingOrgGit ? (
-        <div className="loader-container">
-          <div className="primary-spin-loader"></div>
-        </div>
-      ) : (
-        <form
-          className="create-version-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createVersion();
-          }}
-        >
-          <div className="create-version-body mb-3">
-            <div className="col">
-              <label className="form-label mb-1 ms-1" data-cy="version-name-label">
-                {t('editor.appVersionManager.versionName', 'Version Name')}
-              </label>
-              <input
-                type="text"
-                onChange={(e) => setVersionName(e.target.value)}
-                className="form-control"
-                data-cy="version-name-input-field"
-                placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
-                disabled={isCreatingVersion}
-                value={versionName}
-                autoFocus={true}
-                minLength="1"
-                maxLength="25"
-              />
-              <small className="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
-              </small>
-            </div>
-            <div className="col mt-2">
-              <label className="form-label mb-1 ms-1" data-cy="version-description-label">
-                {t('editor.appVersionManager.versionDescription', 'Version description')}
-              </label>
-              <textarea
-                type="text"
-                ref={textareaRef}
-                onInput={handleDescriptionInput}
-                onChange={(e) => setVersionDescription(e.target.value)}
-                className="form-control app-version-description"
-                data-cy="version-description-input-field"
-                placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
-                disabled={isCreatingVersion}
-                value={versionDescription}
-                autoFocus={true}
-                minLength="0"
-                maxLength="500"
-                rows={1}
-              />
-              <small className="version-description-helper-text">
-                {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
-              </small>
-            </div>
+      <form
+        className="create-version-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          createVersion();
+        }}
+      >
+        <div className="create-version-body mb-3">
+          <div className="col">
+            <label className="form-label mb-1 ms-1" data-cy="version-name-label">
+              {t('editor.appVersionManager.versionName', 'Version Name')}
+            </label>
+            <input
+              type="text"
+              onChange={(e) => setVersionName(e.target.value)}
+              className="form-control"
+              data-cy="version-name-input-field"
+              placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
+              disabled={isCreatingVersion}
+              value={versionName}
+              autoFocus={true}
+              minLength="1"
+              maxLength="25"
+            />
+            <small className="version-name-helper-text">
+              {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+            </small>
+          </div>
+          <div className="col mt-2">
+            <label className="form-label mb-1 ms-1" data-cy="version-description-label">
+              {t('editor.appVersionManager.versionDescription', 'Version description')}
+            </label>
+            <textarea
+              type="text"
+              ref={textareaRef}
+              onInput={handleDescriptionInput}
+              onChange={(e) => setVersionDescription(e.target.value)}
+              className="form-control app-version-description"
+              data-cy="version-description-input-field"
+              placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
+              disabled={isCreatingVersion}
+              value={versionDescription}
+              autoFocus={true}
+              minLength="0"
+              maxLength="500"
+              rows={1}
+            />
+            <small className="version-description-helper-text">
+              {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
+            </small>
+          </div>
 
-            {/* <div className="mb-4 pb-2 version-select">
+          {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
               {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
             </label>
@@ -325,73 +324,73 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {isGitSyncEnabled && (
-              <div className="commit-changes mt-3">
-                <div>
-                  <input
-                    className="form-check-input"
-                    checked={canCommit}
-                    type="checkbox"
-                    onChange={handleCommitEnableChange}
-                    data-cy="git-commit-input"
-                  />
+          {isGitSyncEnabled && (
+            <div className="commit-changes mt-3">
+              <div>
+                <input
+                  className="form-check-input"
+                  checked={canCommit}
+                  type="checkbox"
+                  onChange={handleCommitEnableChange}
+                  disabled={isBranchingEnabled}
+                  data-cy="git-commit-input"
+                />
+              </div>
+              <div>
+                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                  Commit changes
                 </div>
-                <div>
-                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                    Commit changes
-                  </div>
-                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                    This will commit the creation of the new version to the git repo
-                  </div>
+                <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                  This will commit the creation of the new version to the git repo
                 </div>
               </div>
-            )}
-            <div className="mt-3">
-              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
-                <div
-                  className="d-flex align-items-center"
-                  style={{
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    width: '100%',
-                  }}
-                >
-                  <div className="create-version-helper-text" data-cy="create-version-helper-text">
-                    Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
-                    version.
-                  </div>
-                </div>
-              </Alert>
             </div>
-          </div>
-
-          <div className="create-version-footer">
-            <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
-            <div className="col d-flex justify-content-end">
-              <ButtonSolid
-                size="lg"
-                onClick={() => {
-                  setVersionName('');
-                  setShowCreateAppVersion(false);
+          )}
+          <div className="mt-3">
+            <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+              <div
+                className="d-flex align-items-center"
+                style={{
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  width: '100%',
                 }}
-                variant="tertiary"
-                className="mx-2"
               >
-                {t('globals.cancel', 'Cancel')}
-              </ButtonSolid>
-              <ButtonSolid
-                size="lg"
-                variant="primary"
-                className=""
-                type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion}
-              >
-                {t('editor.appVersionManager.saveVersion', 'Save version')}
-              </ButtonSolid>
-            </div>
+                <div className="create-version-helper-text" data-cy="create-version-helper-text">
+                  Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
+                  version.
+                </div>
+              </div>
+            </Alert>
           </div>
-        </form>
-      )}
+        </div>
+
+        <div className="create-version-footer">
+          <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
+          <div className="col d-flex justify-content-end">
+            <ButtonSolid
+              size="lg"
+              onClick={() => {
+                setVersionName('');
+                setShowCreateAppVersion(false);
+              }}
+              variant="tertiary"
+              className="mx-2"
+            >
+              {t('globals.cancel', 'Cancel')}
+            </ButtonSolid>
+            <ButtonSolid
+              size="lg"
+              variant="primary"
+              className=""
+              type="submit"
+              disabled={!selectedVersionForCreation || isCreatingVersion}
+            >
+              {t('editor.appVersionManager.saveVersion', 'Save version')}
+            </ButtonSolid>
+          </div>
+        </div>
+      </form>
     </AlertDialog>
   );
 };
