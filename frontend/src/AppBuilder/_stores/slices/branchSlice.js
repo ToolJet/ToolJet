@@ -433,11 +433,11 @@ export const createBranchSlice = (set, get) => ({
    * Fetch pull requests for the current app
    * @param {string} appId - Application ID
    */
-  fetchPullRequests: async (appId) => {
+  fetchPullRequests: async (appId, organizationId) => {
     set(() => ({ isLoadingPRs: true, branchError: null }), false, 'fetchPullRequests:start');
 
     try {
-      const response = await gitSyncService.getPullRequests(appId);
+      const response = await gitSyncService.getPullRequests(appId, organizationId);
       const pullRequests = response?.pull_requests || [];
 
       set(

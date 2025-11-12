@@ -210,7 +210,7 @@ export function BranchDropdown({ appId, organizationId }) {
     if (!appId || !organizationId) return;
 
     try {
-      await Promise.all([fetchBranches(appId, organizationId), fetchPullRequests(appId)]);
+      await Promise.all([fetchBranches(appId, organizationId), fetchPullRequests(appId, organizationId)]);
       setHasFetchedPRs(true); // Mark PRs as fetched
     } catch (error) {
       console.error('Error refreshing branches/PRs:', error);

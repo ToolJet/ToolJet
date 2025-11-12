@@ -272,13 +272,15 @@ function createBranch(appId, organizationId, branchData) {
  * @param {string} appId - Application ID
  * @returns {Promise} Promise resolving to pull requests array
  */
-function getPullRequests(appId) {
+function getPullRequests(appId, organizationId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}/pull-requests`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/pull-requests`, requestOptions).then(
+    handleResponse
+  );
 }
 
 /**
