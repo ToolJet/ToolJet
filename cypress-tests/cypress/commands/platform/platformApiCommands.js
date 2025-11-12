@@ -77,11 +77,16 @@ Cypress.Commands.add(
               name: workspaceName,
               slug: workspaceSlug,
             },
+            log: false
           },
-          { log: false }
         )
         .then((response) => {
           expect(response.status).to.equal(201);
+          Cypress.log({
+            name: "Create Workspace :",
+            message: ` ${workspaceName}`,
+          });
+          // Cypress.env("workspaceId", response.body.organization_id);
           return response;
         });
     });
@@ -187,6 +192,7 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
         const group = response.body.groupPermissions.find(
           (g) => g.name === groupName
         );
+        console.log('------------------------', response.body);
         if (!group) throw new Error(`Group with name ${groupName} not found`);
         return group.id;
       });
@@ -693,7 +699,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding (email, password, orgToken) {
+    function performOnboarding(email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
@@ -962,22 +968,22 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
 });
 
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
-    return cy.getAuthHeaders().then((headers) => {
-        return cy
-            .request({
-                method: "PATCH",
-                url: `${Cypress.env("server_host")}/api/smtp`,
-                headers: headers,
-                body: smtpBody,
-                log: false,
-            })
-            .then((response) => {
-                expect(response.status).to.equal(200);
-                Cypress.log({
-                    name: "apiConfigureSmtp",
-                    displayName: "SMTP CONFIGURED",
-                });
-                return response.body;
-            });
-    });
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/smtp`,
+        headers: headers,
+        body: smtpBody,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiConfigureSmtp",
+          displayName: "SMTP CONFIGURED",
+        });
+        return response.body;
+      });
+  });
 });
