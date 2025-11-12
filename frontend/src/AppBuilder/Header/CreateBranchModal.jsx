@@ -312,7 +312,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             <input
               id="branch-name-input"
               type="text"
-              className={`form-input ${validationError ? 'form-input-error' : ''}`}
+              className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
               placeholder="Enter version name"
               value={branchName}
               onChange={handleBranchNameChange}
