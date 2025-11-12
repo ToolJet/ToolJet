@@ -8,7 +8,7 @@ title: Workflow Migration - Temporal to BullMQ
 This guide helps you migrate your ToolJet workflow scheduling system from the legacy Temporal-based architecture to the new BullMQ-based system.
 
 :::note
-This migration guide is for ToolJet version **v3.20.34-LTS and later**. Versions prior to v3.20.34-LTS used a Temporal-based workflow system.
+This migration guide is for ToolJet version **v3.20.37-LTS and later**. Versions prior to v3.20.37-LTS used a Temporal-based workflow system.
 :::
 
 ## Overview
