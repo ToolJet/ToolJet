@@ -66,6 +66,8 @@ export class PluginsServiceSelector {
       process: process,
       console: console,
       Buffer: Buffer,
+      TextEncoder: TextEncoder,
+      TextDecoder: TextDecoder,
       __dirname: process.cwd(),
       __filename: __filename || '',
     });
