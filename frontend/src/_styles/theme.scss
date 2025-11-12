@@ -14442,6 +14442,13 @@ tbody {
   .pushpull-container {
     height: 260px !important;
 
+    .pull-section{
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     height: 100%; /* or set a fixed height like 200px if needed */
+    }
+    
     .form-control {
       font-weight: 400;
       font-size: 12px;
@@ -17971,7 +17978,8 @@ section.ai-message-prompt-input-wrapper {
 .git-sync-modal .modal-header .modal-title .push-pull-tabs .tab-pull.active {
   border-bottom: 2px solid var(--indigo9) !important;
 }
-.git-sync-modal .git-sync-title .helper-text{
+
+.git-sync-modal .git-sync-title .helper-text {
   color: var(--text-placeholder, #6A727C);
   font-family: var(--family-regular, Inter);
   font-size: var(--size-default, 12px);
