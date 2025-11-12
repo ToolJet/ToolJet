@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import { formatSecondsToHHMMSS } from './utils';
+import { formatSecondsToHHMMSS } from '@/AppBuilder/_stores/utils';
 
 function RecordTimer({ isRunning }) {
   const [seconds, setSeconds] = useState(0);

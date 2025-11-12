@@ -67,6 +67,7 @@ import {
   chatConfig,
   popoverMenuConfig,
   audioRecorderConfig,
+  cameraConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -128,6 +129,7 @@ export const widgets = [
   pdfConfig,
   mapConfig,
   audioRecorderConfig,
+  cameraConfig,
 
   //Presentation
   textConfig,

@@ -37,7 +37,7 @@ const sectionConfig = {
   },
   media: {
     title: 'Media',
-    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map', 'AudioRecorder']),
+    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map', 'AudioRecorder', 'Camera']),
   },
   presentation: {
     title: 'Presentation',

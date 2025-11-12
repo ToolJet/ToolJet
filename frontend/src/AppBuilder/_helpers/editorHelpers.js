@@ -75,6 +75,7 @@ import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
+import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -163,6 +164,7 @@ export const AllComponents = {
   ModuleViewer,
   PopoverMenu,
   AudioRecorder,
+  Camera,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);

@@ -128,6 +128,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CustomComponent',
   'Html',
   'AudioRecorder',
+  'Camera',
 ];
 
 export const Inspector = ({

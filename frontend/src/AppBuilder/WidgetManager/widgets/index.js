@@ -67,6 +67,7 @@ import { currencyinputConfig } from './currencyinput';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
 
 export {
   buttonConfig,
@@ -138,4 +139,5 @@ export {
   rangeSliderV2Config,
   popoverMenuConfig,
   audioRecorderConfig,
+  cameraConfig,
 };

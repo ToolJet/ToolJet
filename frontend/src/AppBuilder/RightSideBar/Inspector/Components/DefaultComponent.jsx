@@ -26,6 +26,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'MultiselectV2',
   'Button',
   'AudioRecorder',
+  'Camera',
   'RichTextEditor',
   'Image',
   'CodeEditor',
@@ -69,6 +70,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   CircularProgressBar: 'Data',
   Kanban: 'Board configuration',
   AudioRecorder: 'Content',
+  Camera: 'Content',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -177,6 +179,7 @@ export const baseComponentProperties = (
       'CircularProgressBar',
       'Kanban',
       'AudioRecorder',
+      'Camera',
     ],
     Layout: [],
   };

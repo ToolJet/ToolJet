@@ -6,7 +6,7 @@ import RecorderActionIcon from './RecorderActionIcon';
 import RecorderStatusDisplay from './RecorderStatusDisplay';
 import RecorderActions from './RecorderActions';
 import Waveform from './Waveform';
-import { blobToDataURL, blobToBinary } from './utils';
+import { blobToDataURL, blobToBinary } from '@/AppBuilder/_stores/utils';
 import * as Icons from '@tabler/icons-react';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
