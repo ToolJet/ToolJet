@@ -29,7 +29,7 @@ export const CalendarEventPopover = function ({
       !parentRef.current.contains(event.target) &&
       !event.target.closest('.editor-sidebar') &&
       !event.target.closest('.left-sidebar-item ') &&
-      !event.target.closest('.right-sidebar .left-sidebar-inspector') &&
+      !event.target.closest('.right-sidebar .left-sidebar-inspector') && // Right sidebar toggle button for adding components
       !isMoveableControlClicked(event)
     ) {
       popoverClosed();
@@ -49,8 +49,22 @@ export const CalendarEventPopover = function ({
 
   useEffect(() => {
     if (offset?.top && showPopover) {
-      const _left = offset.left - calendarBounds.x + offset.width;
-      const _top = ((offset.top - calendarBounds.y) * 100) / calendarBounds.height;
+      let _left = offset.left - calendarBounds.x + offset.width;
+      let _top = offset.top - calendarBounds.y;
+
+      if (parentRef.current) {
+        const realCanvasElement = document.getElementById('real-canvas');
+        const realCanvasBounds = realCanvasElement.getBoundingClientRect();
+
+        if (
+          offset.left - realCanvasBounds.x + offset.width + parentRef.current.offsetWidth >
+          realCanvasElement.clientWidth
+        ) {
+          _left = _left - parentRef.current.offsetWidth;
+          _top = _top + offset.height;
+        }
+      }
+
       setTop(_top);
       setLeft(_left);
     }
@@ -94,7 +108,7 @@ export const CalendarEventPopover = function ({
           width: '300px',
           maxWidth: '300px',
           minHeight,
-          top: `${top}%`,
+          top,
           left,
           display: showPopover ? 'block' : 'none',
         }}
