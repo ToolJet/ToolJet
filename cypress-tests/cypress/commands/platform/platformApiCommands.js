@@ -282,6 +282,34 @@ Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
   });
 });
 
+Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
+  if (!userId) {
+    throw new Error("userId is required to update user type");
+  }
+
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/users/user-type/instance`,
+        headers: headers,
+        body: {
+          userId: userId,
+          userType: userType
+        },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "Super Admin",
+          message: `Updated user type to ${userType}`,
+        });
+
+      });
+  });
+});
+
 Cypress.Commands.add(
   "apiCreateGranularPermission",
   (
@@ -732,6 +760,13 @@ Cypress.Commands.add(
             headers: authToken ? { Cookie: `tj_auth_token=${authToken}` } : {},
             body: { token: organizationToken },
             log: false,
+          }).then((acceptResp) => {
+            expect(acceptResp.status).to.eq(201);
+            Cypress.log({
+              name: "User onboarding completed",
+              message: `Accepted invite for ${email}`,
+            });
+            return acceptResp;
           });
         });
     }
@@ -962,22 +997,22 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
 });
 
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
-    return cy.getAuthHeaders().then((headers) => {
-        return cy
-            .request({
-                method: "PATCH",
-                url: `${Cypress.env("server_host")}/api/smtp`,
-                headers: headers,
-                body: smtpBody,
-                log: false,
-            })
-            .then((response) => {
-                expect(response.status).to.equal(200);
-                Cypress.log({
-                    name: "apiConfigureSmtp",
-                    displayName: "SMTP CONFIGURED",
-                });
-                return response.body;
-            });
-    });
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/smtp`,
+        headers: headers,
+        body: smtpBody,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiConfigureSmtp",
+          displayName: "SMTP CONFIGURED",
+        });
+        return response.body;
+      });
+  });
 });
