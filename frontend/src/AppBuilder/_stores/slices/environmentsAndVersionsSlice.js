@@ -255,6 +255,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         name: data.editing_version.name,
         current_environment_id: data.editing_version.currentEnvironmentId,
         status: data.editing_version.status,
+        // Preserve versionType from API response to distinguish between regular versions and branch versions
+        versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id

@@ -19,16 +19,25 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const { allBranches, isDraftVersionActive, createBranch, fetchBranches, editingVersion, currentBranch } = useStore(
-    (state) => ({
-      allBranches: state.allBranches || [],
-      isDraftVersionActive: state.isDraftVersionActive,
-      createBranch: state.createBranch,
-      fetchBranches: state.fetchBranches,
-      editingVersion: state.editingVersion,
-      currentBranch: state.currentBranch,
-    })
-  );
+  const {
+    allBranches,
+    isDraftVersionActive,
+    createBranch,
+    switchBranch,
+    fetchBranches,
+    lazyLoadAppVersions,
+    editingVersion,
+    currentBranch,
+  } = useStore((state) => ({
+    allBranches: state.allBranches || [],
+    isDraftVersionActive: state.isDraftVersionActive,
+    createBranch: state.createBranch,
+    switchBranch: state.switchBranch,
+    fetchBranches: state.fetchBranches,
+    lazyLoadAppVersions: state.lazyLoadAppVersions,
+    editingVersion: state.editingVersion,
+    currentBranch: state.currentBranch,
+  }));
 
   // Get versions from versionManagerStore
   const { versions, fetchVersions } = useVersionManagerStore((state) => ({
@@ -147,7 +156,22 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
       if (result.success) {
         toast.success(`Branch "${branchName}" created successfully`);
+
+        // Refresh branches list
         await fetchBranches(appId, organizationId);
+
+        // Refresh app versions to include the newly created draft branch version
+        await lazyLoadAppVersions(appId);
+
+        // Switch to the newly created branch (similar to version creation)
+        try {
+          await switchBranch(appId, branchName.trim());
+          toast.success(`Switched to branch "${branchName}"`);
+        } catch (switchError) {
+          console.error('Error switching to new branch:', switchError);
+          toast.error('Branch created but failed to switch to it');
+        }
+
         onSuccess?.(result.data);
         onClose();
       } else {

@@ -152,6 +152,18 @@
     flex-shrink: 0;
   }
 
+  // Feature branch icon (gitsync)
+  .branch-icon-container-feature {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 100px;
+    background-color: var(--indigo3);
+    flex-shrink: 0;
+  }
+
   .branch-info {
     display: flex;
     flex-direction: column;
@@ -170,7 +182,8 @@
       text-overflow: ellipsis;
     }
 
-    .branch-metadata {
+    .branch-metadata,
+    .branch-metadata-feature {
       display: flex;
       align-items: center;
       gap: 4px;
@@ -570,11 +583,548 @@
   }
 }
 
+// Fetch PRs Section (only shown on default branch at top)
+.fetch-prs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 94px;
+  border-bottom: 1px solid var(--slate6);
+
+  .fetch-prs-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    height: 28px;
+
+    &:hover {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Fetch Branch Info Section (only shown on feature branch at top)
+.fetch-branch-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 120px;
+
+  .fetch-branch-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    height: 28px;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// PR Tabs Section (only shown on default branch)
+.pr-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--slate6);
+
+  .pr-tab {
+    position: relative;
+    padding: 6px 7px 8px 7px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate11);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+
+    &:hover {
+      color: var(--slate12);
+    }
+
+    &.active {
+      color: var(--slate12);
+      border-bottom-color: var(--indigo9);
+    }
+  }
+}
+
+// PR List Container
+.pr-list-container {
+  padding: 0 16px;
+  overflow-y: auto;
+  max-height: 280px;
+
+  .pr-item {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: 6px;
+
+    &:hover {
+      background-color: var(--slate3);
+    }
+
+    .pr-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+
+    .pr-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .pr-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--slate12);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pr-metadata {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--slate11);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+// Empty PR State (old simple version)
+.empty-pr-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+
+  .empty-pr-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--slate11);
+    margin: 0;
+    text-align: center;
+  }
+}
+
+// Empty PR State Box (new Figma design with warning icon)
+.empty-pr-state-box {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  margin: 16px;
+  height: 70px;
+  border: 1px dashed var(--slate8);
+  border-radius: 6px;
+  background: transparent;
+
+  .empty-pr-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+
+  .empty-pr-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+
+    .empty-pr-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--slate12);
+    }
+
+    .empty-pr-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      color: var(--slate11);
+    }
+  }
+}
+
+// Fetch Branch Section (for non-default branches)
+.fetch-branch-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  height: 120px;
+
+  .fetch-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    height: 28px;
+    background: var(--slate1);
+    border: 1px solid var(--slate6);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate7);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+
+      &.rotating {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+// Latest Commit Section
+.latest-commit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 0 16px;
+  width: 100%;
+
+  .latest-commit-header {
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--slate11);
+      text-transform: uppercase;
+    }
+  }
+
+  .commit-info {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+
+    .commit-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .commit-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+
+      .commit-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--slate12);
+      }
+
+      .commit-metadata {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--slate11);
+      }
+    }
+  }
+}
+
+// No Commits Empty State
+.no-commits-empty-state {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  margin: 0 16px;
+  background: var(--amber2);
+  border: 1px solid var(--amber6);
+  border-radius: 6px;
+
+  .empty-state-icon-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .empty-state-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+
+    .empty-state-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--slate12);
+    }
+
+    .empty-state-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      color: var(--slate11);
+    }
+  }
+}
+
+// Loading Commit State
+.loading-commit-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  gap: 12px;
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--slate6);
+    border-top-color: var(--indigo9);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  span {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--slate11);
+  }
+}
+
+// Update footer button styles for Create PR
+.branch-dropdown-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  width: 100%;
+
+  .create-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--indigo7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex: 1;
+
+    &:hover {
+      background: var(--indigo2);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .fetch-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex: 1;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .create-pr-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--indigo7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--indigo2);
+      border-color: var(--indigo8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .switch-branch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
   }
 }

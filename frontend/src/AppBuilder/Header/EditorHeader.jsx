@@ -120,7 +120,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                     <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                       {!isModuleEditor && (
                         <>
-                          {branchingEnabled && <BranchDropdown appId={appId} organizationId={organizationId} />}
+                          {<BranchDropdown appId={appId} organizationId={organizationId} />}
                           <VersionManagerErrorBoundary>
                             <VersionManagerDropdown darkMode={darkMode} />
                           </VersionManagerErrorBoundary>

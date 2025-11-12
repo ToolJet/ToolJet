@@ -4,12 +4,20 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '@/_styles/branch-dropdown.scss';
 import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
+import { SwitchBranchModal } from './SwitchBranchModal';
 import { Tooltip } from 'react-tooltip';
+import { gitSyncService } from '@/_services';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [expandedBranches, setExpandedBranches] = useState(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('open'); // 'open' or 'closed'
+  const [lastCommit, setLastCommit] = useState(null);
+  const [isLoadingCommit, setIsLoadingCommit] = useState(false);
+  const [hasFetchedPRs, setHasFetchedPRs] = useState(false); // Track if PRs have been fetched
+  const [hasFetchedBranchInfo, setHasFetchedBranchInfo] = useState(false); // Track if branch info has been fetched
   const dropdownRef = useRef(null);
 
   // Helper function to get relative time
@@ -27,9 +35,74 @@ export function BranchDropdown({ appId, organizationId }) {
     return `Updated ${Math.floor(diffDays / 30)} months ago`;
   };
 
-  // Helper function to check if branch is locked
-  const isBranchLocked = (branch) => {
+  // Helper function to format commit date (e.g., "25 Sept, 8:45am")
+  const formatCommitDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12 || 12;
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+    return `${day} ${month}, ${hours}:${minutesStr}${ampm}`;
+  };
+
+  // Helper function to check if branch is locked (will be used for branch switching UI later)
+  const _isBranchLocked = (branch) => {
     return branch.is_merged || branch.isMerged || branch.is_released || branch.isReleased;
+  };
+
+  // Helper function to build PR creation URL
+  const buildPRCreationURL = () => {
+    const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const sourceBranch = currentBranchName;
+
+    // Get repository URL from orgGit (check https_url, ssh_url, or repository fields)
+    const repoUrl =
+      orgGit?.git_https?.https_url ||
+      orgGit?.git_https?.repository ||
+      orgGit?.git_ssh?.ssh_url ||
+      orgGit?.git_ssh?.repository;
+
+    if (!repoUrl) {
+      console.error('No repository URL found in orgGit:', orgGit);
+      return null;
+    }
+
+    // Extract owner and repo name from URL
+    // Handles: https://github.com/owner/repo.git, git@github.com:owner/repo.git, etc.
+    // Updated regex to handle dots in repo names (e.g., git-sync-2.0-repo.git)
+    const githubMatch = repoUrl.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+    const gitlabMatch = repoUrl.match(/gitlab\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+    const bitbucketMatch = repoUrl.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(\.git)?$/);
+
+    if (githubMatch) {
+      const [, owner, repo] = githubMatch;
+      return `https://github.com/${owner}/${repo}/compare/${defaultBranchName}...${sourceBranch}?expand=1`;
+    } else if (gitlabMatch) {
+      const [, owner, repo] = gitlabMatch;
+      return `https://gitlab.com/${owner}/${repo}/-/merge_requests/new?merge_request[source_branch]=${sourceBranch}&merge_request[target_branch]=${defaultBranchName}`;
+    } else if (bitbucketMatch) {
+      const [, owner, repo] = bitbucketMatch;
+      return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${defaultBranchName}`;
+    }
+
+    console.error('Could not parse repository URL:', repoUrl);
+    return null;
+  };
+
+  // Handle Create PR action
+  const _handleCreatePR = () => {
+    const prUrl = buildPRCreationURL();
+    if (prUrl) {
+      window.open(prUrl, '_blank', 'noopener,noreferrer');
+      setShowDropdown(false);
+    } else {
+      toast.error('Unable to determine repository URL for PR creation');
+    }
   };
 
   // Zustand state
@@ -38,21 +111,25 @@ export function BranchDropdown({ appId, organizationId }) {
     allBranches,
     pullRequests,
     branchingEnabled,
-    isLoadingBranches,
     fetchBranches,
     fetchPullRequests,
     switchBranch,
+    switchToDefaultBranch,
     setCurrentBranch,
+    orgGit,
+    selectedVersion,
   } = useStore((state) => ({
     currentBranch: state.currentBranch,
     allBranches: state.allBranches,
     pullRequests: state.pullRequests,
     branchingEnabled: state.branchingEnabled,
-    isLoadingBranches: state.isLoadingBranches,
     fetchBranches: state.fetchBranches,
     fetchPullRequests: state.fetchPullRequests,
     switchBranch: state.switchBranch,
+    switchToDefaultBranch: state.switchToDefaultBranch,
     setCurrentBranch: state.setCurrentBranch,
+    orgGit: state.orgGit,
+    selectedVersion: state.selectedVersion,
   }));
 
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -72,6 +149,16 @@ export function BranchDropdown({ appId, organizationId }) {
     };
   }, []);
 
+  // Reset commit state when dropdown closes
+  useEffect(() => {
+    if (!showDropdown) {
+      setLastCommit(null);
+      setIsLoadingCommit(false);
+      setHasFetchedPRs(false); // Reset PR fetch state when dropdown closes
+      setHasFetchedBranchInfo(false); // Reset branch info fetch state when dropdown closes
+    }
+  }, [showDropdown]);
+
   // Fetch branches and PRs on mount and when dropdown opens
   useEffect(() => {
     if (branchingEnabled && appId && organizationId) {
@@ -80,39 +167,100 @@ export function BranchDropdown({ appId, organizationId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchingEnabled, appId, organizationId]);
 
+  // Manual fetch last commit function
+  const fetchLastCommit = async () => {
+    const currentBranchName = selectedVersion?.name || currentBranch?.name;
+    const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const isOnDefaultBranch = currentBranchName === defaultBranchName;
+
+    // Only fetch commit if on non-default branch
+    if (!isOnDefaultBranch && currentBranchName && appId && organizationId) {
+      setIsLoadingCommit(true);
+      try {
+        const data = await gitSyncService.checkForUpdates(appId, currentBranchName);
+        const latestCommit = data?.meta_data?.latest_commit?.[0];
+
+        if (latestCommit) {
+          setLastCommit({
+            message: latestCommit.message || latestCommit.commitMessage,
+            author: latestCommit.author || latestCommit.author_name,
+            date: latestCommit.date || latestCommit.committed_date,
+          });
+          toast.success('Branch info fetched successfully');
+        } else {
+          setLastCommit(null);
+          toast.info('No commits found for this branch');
+        }
+        setIsLoadingCommit(false);
+        setHasFetchedBranchInfo(true); // Mark branch info as fetched
+      } catch (error) {
+        console.error('Error fetching last commit:', error);
+        setLastCommit(null);
+        setIsLoadingCommit(false);
+        setHasFetchedBranchInfo(true); // Mark as fetched even on error to hide button
+        toast.error('Failed to fetch branch info');
+      }
+    } else {
+      setLastCommit(null);
+      setIsLoadingCommit(false);
+    }
+  };
+
   const handleRefresh = async () => {
     if (!appId || !organizationId) return;
 
     try {
       await Promise.all([fetchBranches(appId, organizationId), fetchPullRequests(appId)]);
+      setHasFetchedPRs(true); // Mark PRs as fetched
     } catch (error) {
       console.error('Error refreshing branches/PRs:', error);
       toast.error('Failed to refresh branches');
     }
   };
 
-  const handleBranchClick = async (branch) => {
+  const _handleBranchClick = async (branch) => {
     if (branch.name === currentBranch?.name) {
       setShowDropdown(false);
       return;
     }
 
     try {
-      const result = await switchBranch(appId, branch.name);
-      if (result.success) {
-        setCurrentBranch(branch);
-        toast.success(`Switched to branch: ${branch.name}`);
-        setShowDropdown(false);
+      // Check if this is the default branch (main/master/etc from config)
+      const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+      const isDefaultBranch = branch.name === defaultBranchName;
+
+      if (isDefaultBranch) {
+        // Switch to default branch (finds active draft or latest version)
+        const result = await switchToDefaultBranch(appId, branch.name);
+        if (result.success) {
+          setCurrentBranch(branch);
+          if (result.isDraft) {
+            toast.success(`Switched to ${branch.name} - Working on draft version`);
+          } else {
+            toast.success(`Switched to ${branch.name}`);
+          }
+          setShowDropdown(false);
+        } else {
+          toast.error(`Failed to switch to default branch: ${result.error}`);
+        }
       } else {
-        toast.error(`Failed to switch branch: ${result.error}`);
+        // Switch to feature branch
+        const result = await switchBranch(appId, branch.name);
+        if (result.success) {
+          setCurrentBranch(branch);
+          toast.success(`Switched to branch: ${branch.name}`);
+          setShowDropdown(false);
+        } else {
+          toast.error(`Failed to switch branch: ${result.error}`);
+        }
       }
     } catch (error) {
       console.error('Error switching branch:', error);
-      toast.error('Failed to switch branch');
+      toast.error(error.message || 'Failed to switch branch');
     }
   };
 
-  const toggleBranchExpand = (branchName) => {
+  const _toggleBranchExpand = (branchName) => {
     const newExpanded = new Set(expandedBranches);
     if (newExpanded.has(branchName)) {
       newExpanded.delete(branchName);
@@ -122,57 +270,49 @@ export function BranchDropdown({ appId, organizationId }) {
     setExpandedBranches(newExpanded);
   };
 
-  const getPRForBranch = (branchName) => {
+  const _getPRForBranch = (branchName) => {
     return pullRequests.find((pr) => pr.source_branch === branchName || pr.sourceBranch === branchName);
   };
 
-  const getPRBadge = (pr) => {
-    if (!pr) return null;
+  // Check if current branch is the default branch
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  // Use selectedVersion.name as the current branch (ToolJet's version/branch name)
+  const currentBranchName = selectedVersion?.name || currentBranch?.name;
+  console.log({ defaultBranchName, currentBranchName, selectedVersion, currentBranch });
 
-    const badgeClass =
-      {
-        open: 'pr-badge-open',
-        merged: 'pr-badge-merged',
-        closed: 'pr-badge-closed',
-      }[pr.state?.toLowerCase()] || 'pr-badge-open';
+  // Determine if on default branch:
+  // - If versionType is 'version', we're on a regular version (show default branch UI)
+  // - If versionType is 'branch', we're on a feature branch (show branch commit UI)
+  const isOnDefaultBranch = selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-    const badgeText =
-      {
-        open: 'Open PR',
-        merged: 'Merged',
-        closed: 'Closed',
-      }[pr.state?.toLowerCase()] || 'Open PR';
+  // Display name: show default branch name when on a version, otherwise show current branch name
+  const displayBranchName = isOnDefaultBranch ? defaultBranchName : currentBranchName;
 
-    // Format date for display
-    const formatDate = (dateString) => {
-      if (!dateString) return 'Unknown';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    };
+  // Filter PRs based on active tab
+  // Check both 'state' and 'status' fields to support different API responses
+  const openPRs = pullRequests.filter(
+    (pr) => pr.state?.toLowerCase() === 'open' || pr.status?.toLowerCase() === 'open'
+  );
+  const closedPRs = pullRequests.filter(
+    (pr) =>
+      pr.state?.toLowerCase() === 'closed' ||
+      pr.status?.toLowerCase() === 'closed' ||
+      (pr.state?.toLowerCase() !== 'open' && pr.status?.toLowerCase() !== 'open')
+  );
+  const displayPRs = activeTab === 'open' ? openPRs : closedPRs;
 
-    // Build tooltip content with PR details
-    const tooltipContent = `
-      ${pr.title || 'Untitled PR'}
-      Author: ${pr.author || 'Unknown'}
-      Created: ${formatDate(pr.created_at || pr.createdAt)}
-      ${pr.merged_at || pr.mergedAt ? `Merged: ${formatDate(pr.merged_at || pr.mergedAt)}` : ''}
-    `.trim();
-
-    return (
-      <span
-        className={`pr-badge ${badgeClass}`}
-        data-tooltip-id="branch-dropdown-tooltip"
-        data-tooltip-content={tooltipContent}
-        data-tooltip-place="right"
-      >
-        {badgeText}
-      </span>
-    );
+  // Format PR date
+  const formatPRDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
   };
-
-  // Separate master and sub-branches
-  const masterBranch = allBranches.find((b) => b.name === 'master' || b.name === 'main');
-  const subBranches = allBranches.filter((b) => b.name !== 'master' && b.name !== 'main');
 
   if (!branchingEnabled) {
     return null;
@@ -191,7 +331,7 @@ export function BranchDropdown({ appId, organizationId }) {
       >
         <SolidIcon name="gitbranch" width="16" fill="var(--slate12)" />
         <span className="branch-name" data-cy="current-branch-name">
-          {currentBranch?.name || 'Select branch'}
+          {displayBranchName || 'Select branch'}
         </span>
       </button>
 
@@ -199,189 +339,235 @@ export function BranchDropdown({ appId, organizationId }) {
         <div className={`branch-dropdown-popover ${darkMode ? 'theme-dark' : ''}`} data-cy="branch-dropdown-popover">
           {/* Current Branch Header */}
           <div className="branch-dropdown-current-branch">
-            <div className="branch-icon-container">
-              <SolidIcon name="lockclosed" width="16" fill="var(--indigo9)" />
-            </div>
-            <div className="branch-info">
-              <div className="branch-name-title">{currentBranch?.name || 'No branch selected'}</div>
-              <div className="branch-metadata">
-                <span className="metadata-text">Default branch</span>
-                {currentBranch?.updatedAt && (
-                  <>
+            {isOnDefaultBranch ? (
+              <>
+                <div className="branch-icon-container">
+                  <SolidIcon name="lockclosed" width="16" fill="var(--indigo9)" />
+                </div>
+                <div className="branch-info">
+                  <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
+                  <div className="branch-metadata">
+                    <span className="metadata-text">Default branch</span>
+                    {currentBranch?.updatedAt && (
+                      <>
+                        <span className="metadata-dot">•</span>
+                        <span className="metadata-text">{getRelativeTime(currentBranch.updatedAt)}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="branch-icon-container-feature">
+                  <SolidIcon name="gitsync" width="16" fill="var(--indigo9)" />
+                </div>
+                <div className="branch-info">
+                  <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
+                  <div className="branch-metadata-feature">
+                    <span className="metadata-text">
+                      Created by {selectedVersion?.createdBy || currentBranch?.author || 'Unknown'}
+                    </span>
                     <span className="metadata-dot">•</span>
-                    <span className="metadata-text">{getRelativeTime(currentBranch.updatedAt)}</span>
-                  </>
-                )}
-              </div>
-            </div>
+                    <span className="metadata-text">
+                      {getRelativeTime(selectedVersion?.createdAt || currentBranch?.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Main Content Area */}
-          <div className="branch-dropdown-content">
-            {/* Fetch PRs Button */}
-            {!isLoadingBranches && allBranches.length > 0 && (
-              <div className="fetch-prs-section">
-                <button
-                  className="fetch-prs-btn"
-                  onClick={handleRefresh}
-                  disabled={isLoadingBranches}
-                  data-cy="fetch-prs-btn"
-                >
-                  <SolidIcon
-                    name="refresh"
-                    width="14"
-                    fill="var(--slate12)"
-                    className={isLoadingBranches ? 'rotating' : ''}
-                  />
-                  <span>Fetch PRs</span>
-                </button>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {allBranches.length === 0 && !isLoadingBranches && (
-              <div className="empty-state" data-cy="branches-empty-state">
-                <div className="empty-state-icon">
-                  <SolidIcon name="gitbranch" width="48" fill="var(--slate8)" />
-                </div>
-                <p className="empty-state-text">No branches yet</p>
-                <p className="empty-state-subtext">Create your first branch to get started</p>
-              </div>
-            )}
-
-            {/* Loading state */}
-            {isLoadingBranches && (
-              <div className="loading-state" data-cy="branches-loading-state">
-                <div className="spinner"></div>
-                <span>Loading branches...</span>
-              </div>
-            )}
-          </div>
-
-          {/* Branch list */}
-          {!isLoadingBranches && allBranches.length > 0 && (
-            <div className="branches-list" data-cy="branches-list">
-              {/* Master branch section */}
-              {masterBranch && (
-                <div className="branch-section">
-                  <div className="section-label">Master Branch</div>
-                  <div
-                    className={`branch-item ${currentBranch?.name === masterBranch.name ? 'active' : ''}`}
-                    onClick={() => handleBranchClick(masterBranch)}
-                    data-cy={`branch-item-${masterBranch.name}`}
-                  >
-                    <div className="branch-item-content">
-                      <div className="branch-name">
-                        <SolidIcon name="circledot" width="14" fill="var(--slate12)" />
-                        <span>{masterBranch.name}</span>
-                      </div>
-                      <div className="branch-metadata">
-                        {isBranchLocked(masterBranch) && (
-                          <SolidIcon name="lockclosed" width="14" fill="var(--amber10)" className="branch-lock-icon" />
-                        )}
-                        {masterBranch.updated_at && (
-                          <span className="branch-updated">{getRelativeTime(masterBranch.updated_at)}</span>
-                        )}
-                        {getPRBadge(getPRForBranch(masterBranch.name))}
-                      </div>
-                    </div>
-                  </div>
+          {isOnDefaultBranch ? (
+            <>
+              {/* Fetch PRs Button - Shown at top for default branch, hides after fetching */}
+              {!hasFetchedPRs && (
+                <div className="fetch-prs-section">
+                  <button className="fetch-prs-btn" onClick={handleRefresh} data-cy="fetch-prs-btn">
+                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <span>Fetch PRs</span>
+                  </button>
                 </div>
               )}
 
-              {/* Sub-branches section */}
-              {subBranches.length > 0 && (
-                <div className="branch-section">
-                  <div className="section-label">Feature Branches</div>
-                  {subBranches.map((branch) => {
-                    const pr = getPRForBranch(branch.name);
-                    const isExpanded = expandedBranches.has(branch.name);
-                    const isActive = currentBranch?.name === branch.name;
+              {/* PR Tabs and List - Only shown after fetching */}
+              {hasFetchedPRs && (
+                <>
+                  {/* PR Tabs */}
+                  <div className="pr-tabs">
+                    <button
+                      className={`pr-tab ${activeTab === 'open' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('open')}
+                    >
+                      Open PR
+                    </button>
+                    <button
+                      className={`pr-tab ${activeTab === 'closed' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('closed')}
+                    >
+                      Closed PR
+                    </button>
+                  </div>
 
-                    return (
-                      <div key={branch.name} className="branch-group">
-                        <div
-                          className={`branch-item ${isActive ? 'active' : ''}`}
-                          data-cy={`branch-item-${branch.name}`}
-                        >
-                          <div className="branch-item-content" onClick={() => handleBranchClick(branch)}>
-                            <div className="branch-name">
-                              {branch.has_versions && (
-                                <button
-                                  className="expand-icon"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleBranchExpand(branch.name);
-                                  }}
-                                  data-cy={`expand-branch-${branch.name}`}
-                                >
-                                  <SolidIcon
-                                    name="chevrondownsmall"
-                                    width="12"
-                                    fill="var(--slate11)"
-                                    className={isExpanded ? 'expanded' : ''}
-                                  />
-                                </button>
-                              )}
-                              <SolidIcon name="circledot" width="14" fill="var(--slate12)" />
-                              <span>{branch.name}</span>
-                            </div>
-                            <div className="branch-metadata">
-                              {isBranchLocked(branch) && (
-                                <SolidIcon
-                                  name="lockclosed"
-                                  width="14"
-                                  fill="var(--amber10)"
-                                  className="branch-lock-icon"
-                                />
-                              )}
-                              {branch.updated_at && (
-                                <span className="branch-updated">{getRelativeTime(branch.updated_at)}</span>
-                              )}
-                              {getPRBadge(pr)}
+                  {/* PR List */}
+                  <div className="pr-list-container">
+                    {displayPRs.length === 0 ? (
+                      <div className="empty-pr-state-box">
+                        <div className="empty-pr-icon">
+                          <SolidIcon name="alert" width="18" fill="var(--amber9)" />
+                        </div>
+                        <div className="empty-pr-content">
+                          <div className="empty-pr-title">
+                            {activeTab === 'open' ? 'There are no open PRs' : 'There are no closed PRs'}
+                          </div>
+                          <div className="empty-pr-description">
+                            {activeTab === 'open'
+                              ? 'Create a pull request to contribute your changes'
+                              : 'Merge a pull request to contribute your changes'}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      displayPRs.map((pr) => (
+                        <div key={pr.id} className="pr-item" data-cy={`pr-item-${pr.id}`}>
+                          <div className="pr-icon">
+                            <SolidIcon name="gitmerge" width="20" fill="var(--slate11)" />
+                          </div>
+                          <div className="pr-content">
+                            <div className="pr-title">{pr.title || 'Untitled PR'}</div>
+                            <div className="pr-metadata">
+                              from {pr.source_branch || pr.sourceBranch} | {formatPRDate(pr.created_at || pr.createdAt)}
                             </div>
                           </div>
                         </div>
-
-                        {/* Nested versions (if expanded) */}
-                        {isExpanded && branch.versions && branch.versions.length > 0 && (
-                          <div className="nested-versions">
-                            {branch.versions.map((version) => (
-                              <div key={version.id} className="version-item" data-cy={`version-item-${version.name}`}>
-                                <div className="version-name">
-                                  <span className="version-label">{version.name}</span>
-                                  {version.is_draft && <span className="draft-badge">Draft</span>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Fetch Branch Info Button - Only show when not fetched yet */}
+              {!hasFetchedBranchInfo && (
+                <div className="fetch-branch-info-section">
+                  <button
+                    className="fetch-branch-info-btn"
+                    onClick={fetchLastCommit}
+                    disabled={isLoadingCommit}
+                    data-cy="fetch-branch-info-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <span>{isLoadingCommit ? 'Fetching...' : 'Fetch branch info'}</span>
+                  </button>
                 </div>
               )}
-            </div>
+
+              {/* Latest Commit Section & Empty State - Only show after fetching */}
+              {hasFetchedBranchInfo && (
+                <>
+                  {/* Latest Commit Section - for non-default branches with commits */}
+                  {lastCommit && !isLoadingCommit && (
+                    <div className="latest-commit-section">
+                      <div className="latest-commit-header">
+                        <span className="section-label">LATEST COMMIT</span>
+                      </div>
+                      <div className="commit-info">
+                        <div className="commit-icon">
+                          <SolidIcon name="commit" width="20" fill="var(--slate11)" />
+                        </div>
+                        <div className="commit-content">
+                          <div className="commit-title">{lastCommit.message || 'No message'}</div>
+                          <div className="commit-metadata">
+                            By {lastCommit.author || 'Unknown'} | {formatCommitDate(lastCommit.date)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty state - no commits yet */}
+                  {!lastCommit && !isLoadingCommit && (
+                    <div className="no-commits-empty-state">
+                      <div className="empty-state-icon-warning">
+                        <SolidIcon name="alert" width="16" fill="var(--amber9)" />
+                      </div>
+                      <div className="empty-state-content">
+                        <div className="empty-state-title">There are no commits yet</div>
+                        <div className="empty-state-description">
+                          Commit your changes to create a pull request to contribute them
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Loading state for commit */}
+                  {isLoadingCommit && (
+                    <div className="loading-commit-state">
+                      <div className="spinner"></div>
+                      <span>Loading commit info...</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
           )}
 
           {/* Footer actions */}
           <div className="branch-dropdown-footer">
-            <button
-              className="create-branch-btn accent"
-              onClick={() => {
-                setShowDropdown(false);
-                setShowCreateModal(true);
-              }}
-              data-cy="create-branch-btn"
-            >
-              <SolidIcon name="plusicon" width="14" fill="var(--indigo9)" />
-              <span>Create new branch</span>
-            </button>
-            {allBranches.length > 0 && (
-              <button className="switch-branch-btn" onClick={() => setShowDropdown(false)} data-cy="switch-branch-btn">
-                <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
-                <span>Switch branch</span>
-              </button>
+            {/* Default branch footer: Create branch + Switch branch */}
+            {isOnDefaultBranch ? (
+              <>
+                <button
+                  className="create-branch-btn"
+                  onClick={() => {
+                    setShowDropdown(false);
+                    setShowCreateModal(true);
+                  }}
+                  data-cy="create-branch-btn"
+                >
+                  <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
+                  <span>Create new branch</span>
+                </button>
+                {allBranches.length > 0 && (
+                  <button
+                    className="switch-branch-btn"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowSwitchModal(true);
+                    }}
+                    data-cy="switch-branch-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <span>Switch branch</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Feature branch footer: Create PR + Switch branch */}
+                {/* Show Create PR button when there's a commit */}
+                {hasFetchedBranchInfo && lastCommit && (
+                  <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
+                    <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
+                    <span>Create pull request</span>
+                  </button>
+                )}
+                {allBranches.length > 0 && (
+                  <button
+                    className="switch-branch-btn"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowSwitchModal(true);
+                    }}
+                    data-cy="switch-branch-btn"
+                  >
+                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <span>Switch branch</span>
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -399,6 +585,16 @@ export function BranchDropdown({ appId, organizationId }) {
               setCurrentBranch(newBranch);
             }
           }}
+        />
+      )}
+
+      {/* Switch Branch Modal */}
+      {showSwitchModal && (
+        <SwitchBranchModal
+          show={showSwitchModal}
+          onClose={() => setShowSwitchModal(false)}
+          appId={appId}
+          organizationId={organizationId}
         />
       )}
 
