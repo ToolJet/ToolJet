@@ -3,7 +3,7 @@ import { decode } from 'js-base64';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { PluginsRepository } from '@modules/plugins/repository';
 import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
-import { runInNewContext } from 'vm';
+import { runInNewContext, createContext } from 'vm';
 
 @Injectable()
 export class PluginsServiceSelector {
@@ -58,14 +58,17 @@ export class PluginsServiceSelector {
       exports: {} as PluginModule,
     };
 
-    const sandbox = {
+    const sandbox = createContext({
+      ...global,
       module: moduleWrapper,
       exports: moduleWrapper.exports,
       require: require,
-      ...global, // This includes most global objects
+      process: process,
+      console: console,
+      Buffer: Buffer,
       __dirname: process.cwd(),
-      __filename: __filename,
-    };
+      __filename: __filename || '',
+    });
 
     // Execute the plugin code
     runInNewContext(decoded, sandbox);
