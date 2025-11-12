@@ -127,11 +127,11 @@ const RenderWidget = ({
       validateWidget({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
-        customResolveObjects: customResolvables,
+        customResolveObjects: customResolvables?.[subContainerIndex] ?? {},
         componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
+    [validateWidget, customResolvables, subContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
   );
 
   const resetComponent = useCallback(() => {
