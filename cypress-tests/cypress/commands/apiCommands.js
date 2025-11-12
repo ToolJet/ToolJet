@@ -621,9 +621,7 @@ Cypress.Commands.add(
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
-          "editingVersionId"
-        )}/versions/${Cypress.env("editingVersionId")}/promote`,
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
           "Content-Type": "application/json",
