@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 ### ⚙️ Deploy using CloudFormation
@@ -172,6 +172,70 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 - [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
 - [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
 - [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
+
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
+
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
+### Enabling Workflow Scheduling
+
+To activate workflow scheduling, set the following environment variables in your ECS task definition:
+
+```bash
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
+```
+
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+#### Setting Up Redis for Workflows
+
+We recommend using **Amazon ElastiCache for Redis** with the following configuration:
+
+1. **Create an ElastiCache Redis cluster** with these settings:
+   - Engine version: Redis 7.x
+   - Node type: cache.t3.medium or higher
+   - Number of replicas: At least 1 (for high availability)
+   - Automatic failover: Enabled
+
+2. **Configure Redis settings**:
+   - **maxmemory-policy**: Must be set to `noeviction` (critical for BullMQ)
+   - **appendonly**: Set to `yes` for AOF persistence
+   - **appendfsync**: Set to `everysec`
+
+3. **Add Redis environment variables** to your ECS task definition:
+
+```bash
+REDIS_HOST=<your-elasticache-endpoint>
+REDIS_PORT=6379
+REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
+```
+
+**Optional Redis Configuration:**
+- `REDIS_USERNAME=` - Redis username (ACL)
+- `REDIS_DB=0` - Redis database number (default: 0)
+- `REDIS_TLS=true` - Enable TLS/SSL for secure connections
+
+:::info
+For production deployments, ensure your ElastiCache Redis cluster is in the same VPC as your ECS tasks and configure security groups to allow traffic on port 6379.
+:::
 
 ## Upgrading to the Latest LTS Version
 

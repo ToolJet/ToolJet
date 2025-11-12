@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet.
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 ## Deploying ToolJet Application
@@ -130,6 +130,44 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
+
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
+### Enabling Workflow Scheduling
+
+To activate workflow scheduling, set the following environment variables:
+
+```bash
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
+```
+
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
+- `REDIS_HOST=localhost` - Default: localhost
+- `REDIS_PORT=6379` - Default: 6379
+- `REDIS_USERNAME=` - Optional: Redis username (ACL)
+- `REDIS_PASSWORD=` - Optional: Redis password
+- `REDIS_DB=0` - Optional: Redis database number (default: 0)
+- `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
+:::
 
 ## Upgrading to the Latest LTS Version
 

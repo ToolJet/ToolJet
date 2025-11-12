@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
@@ -121,32 +121,39 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
 ### Enabling Workflow Scheduling
-
-Please deploy the below containers to enable workflows scheduling.
-
-#### Worker container:
-
-You can use the same `tooljet/tooljet:ee-lts-latest` image tag and ensure it has env variables from the tooljet-app container.
 
 To activate workflow scheduling, set the following environment variables:
 
 ```bash
-WORKFLOW_WORKER=true
-ENABLE_WORKFLOW_SCHEDULING=true
-TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
-TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
-Under the containers tab, please make sure the command `npm, run, worker:prod` is set.
-<img className="screenshot-full img-m" src="/img/cloud-run/tooljet-worker-settings.png" alt="ToolJet Worker Settings" />
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
-#### Temporal server container:
-
-1. Set the image tag as `temporalio/auto-setup:1.25.1`
-   <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-settings.png" alt="Temporal Settings" />
-2. Add the below env variables to the temporal container:
-   <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/temporal-variables-and-secrets.png" alt="Temporal Variables and Secrets" />
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
+- `REDIS_HOST=localhost` - Default: localhost
+- `REDIS_PORT=6379` - Default: 6379
+- `REDIS_USERNAME=` - Optional: Redis username (ACL)
+- `REDIS_PASSWORD=` - Optional: Redis password
+- `REDIS_DB=0` - Optional: Redis database number (default: 0)
+- `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
+:::
 
 ## Upgrading to the Latest LTS Version
 

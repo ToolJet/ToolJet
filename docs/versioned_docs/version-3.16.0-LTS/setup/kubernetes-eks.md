@@ -12,7 +12,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::info
 You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
@@ -146,19 +146,85 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
 ### Enabling Workflow Scheduling
 
-Create workflow deployment:
+To activate workflow scheduling, set the following environment variables in your ToolJet deployment:
 
 ```bash
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/workflow-deployment.yaml
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
-**Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment.
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
-`ENABLE_WORKFLOW_SCHEDULING=true`
-`TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default`
-`TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>`
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+#### Deploying Redis for Workflows
+
+Deploy a stateful Redis instance using the following example configuration:
+
+```bash
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/redis-stateful.yaml
+```
+
+<details id="tj-dropdown">
+
+<summary>Built-in Redis vs External Redis</summary>
+
+ToolJet images include a built-in Redis instance for development. When deploying workflows in production, you must update your deployment configuration to use the external stateful Redis:
+
+Change **REDIS_HOST** from **localhost** to **redis-service** in your deployment YAML:
+
+```yaml
+- name: REDIS_HOST
+  value: redis-service  # Changed from localhost
+- name: REDIS_PORT
+  value: "6379"
+```
+
+</details>
+
+This example deployment creates:
+- A StatefulSet with persistent storage for Redis
+- A headless Service for stable network identity
+- ConfigMap with production-ready Redis configuration
+- A Secret for optional password authentication
+
+:::info
+This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
+:::
+
+After deploying Redis, configure ToolJet to connect to it using these environment variables in your deployment:
+
+```bash
+REDIS_HOST=redis-service.default.svc.cluster.local
+REDIS_PORT=6379
+REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-secret
+```
+
+**Optional Redis Configuration:**
+- `REDIS_USERNAME=` - Redis username (ACL)
+- `REDIS_DB=0` - Redis database number (default: 0)
+- `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')
+
+**Note:** Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
+
+**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret).
 
 ## Upgrading to the Latest LTS Version
 
