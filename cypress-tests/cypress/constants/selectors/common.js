@@ -457,3 +457,29 @@ export const inspectorSelectors = {
     return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
   },
 };
+
+export const whiteLabelSelectors = {
+  navWhiteLabellingListItem: '[data-cy="white-labelling-list-item"]',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
+  appLogoInput: '[data-cy="input-field-app-logo"]',
+  pageTitleInput: '[data-cy="input-field-page-title"]',
+  favIconInput: '[data-cy="input-field-fav-icon"]',
+  appLogoHelpText: '[data-cy="app-logo-help-text"]',
+  favIconHelpText: '[data-cy="fav-icon-help-text"]',
+  cancelButton: '[data-cy="cancel-button"]',
+  saveButton: '[data-cy="save-button"]',
+  tooljetHeaderImg: ".tooljet-header img",
+  faviconLink: 'link[rel="icon"]',
+  poweredByBanner: '[data-cy="powered-tj-banner"]',
+  homePageLogoImg: '[data-cy="home-page-logo"] img',
+  passwordInput: '[data-cy="password-input"]',
+  signUpButton: '[data-cy="sign-up-button"]',
+  signupInfo: '[data-cy="signup-info"]',
+  signupRedirectText: '[data-cy="signup-info"]',
+
+  smtpListItem: '[data-cy="email-protocol-(smtp)-list-item"]',
+  smtpHostInput: '[data-cy="input-field-host"]',
+  smtpPortInput: '[data-cy="input-field-port"]',
+  smtpUserInput: '[data-cy="input-field-user"]',
+  smtpPasswordInput: '[data-cy="input-field-password"]',
+};
