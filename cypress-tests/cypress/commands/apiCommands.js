@@ -111,7 +111,7 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
     cy.request(
       {
         method: "DELETE",
-        url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: Cypress.env("authToken"),
@@ -123,7 +123,7 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
       Cypress.log({
         name: "App Delete",
         displayName: "APP DELETED",
-        message: `: ${Cypress.env("appId")}`,
+        message: `:${appId}`,
       });
     });
   });
@@ -152,7 +152,6 @@ Cypress.Commands.add(
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
-
 
 Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
@@ -435,7 +434,9 @@ Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const id = response.body.data_sources.find(ds => ds.name === dataSourceName)?.id;
+      const id = response.body.data_sources.find(
+        (ds) => ds.name === dataSourceName
+      )?.id;
       Cypress.log({
         name: "apiGetDataSourceIdByName",
         displayName: "Data Source ID",
@@ -617,7 +618,10 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId"), appId = Cypress.env("appId")) => {
+  (
+    targetEnvId = Cypress.env("environmentId"),
+    appId = Cypress.env("appId")
+  ) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
