@@ -22,6 +22,13 @@ export const commonEeSelectors = {
   paginationSection: '[data-cy="pagination-section"]',
   createNewThemeButton: '[data-cy="create-new-theme-button"]',
   upgradeButton: '[data-cy="upgrade-button"]',
+  userActionButton: '[data-cy="user-actions-button"]',
+  archiveButton: '[data-cy="archive-button"]',
+  userSearchBar: '[data-cy="input-field-user-filter-search"]',
+  passwordResetButton: '[data-cy="reset-password-button"]',
+  createNewPasswordButton: '[data-cy="create-password-input"]',
+  passwordInputField: '[data-cy="password-input"]',
+  resetButton: '[data-cy="reset-button"]',
 };
 
 export const ssoEeSelector = {
