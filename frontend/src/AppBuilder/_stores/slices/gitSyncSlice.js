@@ -14,7 +14,7 @@ export const createGitSyncSlice = (set, get) => ({
     const selectedEnvironment = useStore.getState()?.selectedEnvironment;
     const isEditorFreezed = useStore.getState()?.isEditorFreezed;
 
-    return featureAccess?.gitSync && selectedEnvironment?.priority === 1 && (creationMode === 'GIT' || !isEditorFreezed)
+    return featureAccess?.gitSync && selectedEnvironment?.priority === 1
       ? set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal')
       : () => {};
   },
