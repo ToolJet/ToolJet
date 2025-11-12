@@ -31,7 +31,7 @@ describe("user invite flow cases", () => {
   beforeEach(() => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-
+    data.appName = fake.companyName;
     cy.defaultWorkspaceLogin();
     cy.viewport(1800, 1800);
   });
@@ -83,7 +83,7 @@ describe("user invite flow cases", () => {
         "have.text",
         "My workspace"
       );
-      cy.apiCreateApp(`${fake.companyName}-metadata-App`);
+      cy.apiCreateApp(`${data.appName}-metadata-App`);
       cy.openApp();
 
       navigateAndVerifyInspector(
@@ -94,7 +94,7 @@ describe("user invite flow cases", () => {
       cy.get('[data-cy="editor-page-logo"]').click();
       cy.get('[data-cy="back-to-app-option"]').click();
 
-      cy.apiDeleteApp(`${fake.companyName}-metadata-App`);
+      cy.apiDeleteApp();
 
       logout();
 
@@ -113,7 +113,7 @@ describe("user invite flow cases", () => {
     ).then((metadataCount) => {
       cy.intercept("GET", "/api/license/access").as("apiGetLicenseAccess");
       cy.wait("@apiGetLicenseAccess");
-      cy.apiCreateApp(`${fake.companyName}-metadata-App`);
+      cy.apiCreateApp(`${data.appName}-metadata-App`);
       cy.openApp();
       navigateAndVerifyInspector(
         ["globals", "currentUser", "metadata"],
@@ -150,7 +150,7 @@ describe("user invite flow cases", () => {
     logout();
 
     cy.apiLogin(data.email, "password");
-    cy.openApp(`${fake.companyName}-metadata-App`);
+    cy.openApp(`${data.appName}-metadata-App`);
 
     navigateAndVerifyInspector(
       ["globals", "currentUser", "metadata"],
@@ -177,13 +177,13 @@ describe("user invite flow cases", () => {
     cy.apiLogout();
 
     cy.apiLogin(data.email, "password");
-    cy.openApp(`${fake.companyName}-metadata-App`);
+    cy.openApp(`${data.appName}-metadata-App`);
 
     navigateToInspectorNodes(["globals", "currentUser"]);
     cy.get('[data-cy="editor-page-logo"]').click();
     cy.get('[data-cy="back-to-app-option"]').click();
 
-    cy.apiDeleteApp(`${fake.companyName}-metadata-App`);
+    cy.apiDeleteApp();
     cy.apiLogout();
   });
 
@@ -205,7 +205,7 @@ describe("user invite flow cases", () => {
       cy.intercept("GET", "/api/license/access").as("apiGetLicenseAccess");
       cy.wait("@apiGetLicenseAccess");
 
-      cy.apiCreateApp(`${fake.companyName}-metadataList-App`);
+      cy.apiCreateApp(`${data.appName}-metadataList-App`);
       cy.openApp();
 
       navigateAndVerifyInspector(
@@ -215,7 +215,7 @@ describe("user invite flow cases", () => {
       );
     });
 
-    cy.apiDeleteApp(`${fake.companyName}-metadataList-App`);
+    cy.apiDeleteApp();
 
     cy.apiLogout();
   });

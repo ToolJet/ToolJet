@@ -39,6 +39,7 @@ describe("License - User Limits", () => {
   it("should enforce builder limit, show upgrade modal, and verify role change restriction", () => {
     openUsersPageAndverifyBasicResourceLimit("builders");
 
+    cy.get(commonSelectors.cancelButton).click();
     verifyUserLimitReachingBanner(
       "Builder limit nearing - 1/2",
       "You're nearing your limit for number of builders in this instance. Upgrade for more. "
