@@ -1,15 +1,15 @@
-import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
-import { onboardingText } from "Texts/onboarding";
 import { logout } from "Support/utils/common";
 import {
   bannerElementsVerification,
   onboardingStepOne,
-  onboardingStepTwo,
   onboardingStepThree,
+  onboardingStepTwo,
 } from "Support/utils/onboarding";
 import { updateLicense } from "Support/utils/platform/eeCommon";
+import { commonText } from "Texts/common";
+import { onboardingText } from "Texts/onboarding";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
@@ -17,11 +17,6 @@ describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
   });
-  after(() => {
-    cy.ifEnv("Enterprise", () => {
-      updateLicense('valid');
-    });
-  })
 
   it("verify elements on self host onboarding page", () => {
     cy.ifEnv("Enterprise", () => {
@@ -82,21 +77,10 @@ describe("Self host onboarding", () => {
       cy.get(check.selector).verifyVisibleElement("have.text", check.text);
     });
 
-    cy.ifEnv("Community", () => {
-      cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(
-          // commonText.selfHostSignUpTermsHelperText
-          "By signing up you are agreeing to the"
-        );
-      });
-    });
-
-    cy.ifEnv("Enterprise", () => {
-      cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(
-          "By signing up you are agreeing to the"
-        );
-      });
+    cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        "By signing up you are agreeing to the"
+      );
     });
 
     const links = [
@@ -272,8 +256,9 @@ describe("Self host onboarding", () => {
       onboardingStepThree();
     });
 
-    // cy.get(commonSelectors.skipbutton).click();
-    cy.backToApps();
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.previewButton).eq(1).should("be.visible");
+    cy.go("back");
 
     logout();
     cy.appUILogin();

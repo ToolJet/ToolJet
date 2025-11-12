@@ -1,15 +1,10 @@
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import {
-  verifyandModifyUserRole,
-  verifyandModifySizeOftheCompany,
-} from "Support/utils/selfHostSignUp";
-import { navigateToManageUsers, logout } from "Support/utils/common";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { logout, navigateToManageUsers } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
 import { onboardingText } from "Texts/onboarding";
 
 export const verifyConfirmEmailPage = (email) => {
