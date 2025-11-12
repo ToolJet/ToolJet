@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -10,27 +10,45 @@ const useSidebarMargin = (canvasContainerRef) => {
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
-  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
-
-  const prevEditorMarginLeft = useRef(editorMarginLeft);
-
-  useEffect(() => {
-    if (mode !== 'view')
-      setEditorMarginLeft(
-        isLeftSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0
-      );
-    else setEditorMarginLeft(0);
-  }, [isLeftSidebarOpen, mode, selectedSidebarItem]);
+  const scrollLeftRef = useRef(0);
+  const appliedLeftSidebarWidthRef = useRef(0);
 
   useEffect(() => {
-    const scrollLeft = editorMarginLeft;
-    const isScrollLeftChanged = canvasContainerRef.current.scrollLeft !== scrollLeft;
-    if (!isEmpty(canvasContainerRef?.current) && (canvasContainerRef.current.scrollLeft === 0 || isScrollLeftChanged)) {
-      canvasContainerRef.current.scrollLeft = scrollLeft;
-      prevEditorMarginLeft.current = scrollLeft;
+    const handleScroll = () => {
+      if (canvasContainerRef.current) {
+        scrollLeftRef.current = canvasContainerRef.current.scrollLeft;
+      }
+    };
+
+    const canvasContainer = canvasContainerRef.current;
+    if (canvasContainer) {
+      canvasContainer.addEventListener('scroll', handleScroll);
+
+      return () => {
+        canvasContainer.removeEventListener('scroll', handleScroll);
+      };
     }
-  }, [editorMarginLeft, canvasContainerRef, isLeftSidebarOpen, isRightSidebarOpen]);
+  }, [canvasContainerRef]);
+
+  useEffect(() => {
+    if (mode !== 'view' && !isEmpty(canvasContainerRef?.current)) {
+      const leftSidebarWidth = LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default;
+      const delta = isLeftSidebarOpen
+        ? leftSidebarWidth - appliedLeftSidebarWidthRef.current
+        : -appliedLeftSidebarWidthRef.current;
+
+      const nextScrollLeft = scrollLeftRef.current + delta;
+      canvasContainerRef.current.scrollTo({ left: nextScrollLeft, behavior: 'instant' });
+
+      appliedLeftSidebarWidthRef.current = isLeftSidebarOpen ? leftSidebarWidth : 0;
+      setEditorMarginLeft(isLeftSidebarOpen ? leftSidebarWidth : 0);
+    } else {
+      setEditorMarginLeft(0);
+      appliedLeftSidebarWidthRef.current = 0;
+    }
+  }, [isLeftSidebarOpen, mode, selectedSidebarItem, canvasContainerRef]);
+
   return editorMarginLeft;
 };
 export default useSidebarMargin;
