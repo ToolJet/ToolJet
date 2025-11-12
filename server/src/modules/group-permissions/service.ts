@@ -168,7 +168,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
-    return await this.deleteGroupUser(id, user, manager);
+    return await this.groupPermissionsUtilService.deleteGroupUser(id, user, manager);
   }
 
   async getAddableUser(groupId: string, organizationId: string, searchInput?: string) {
