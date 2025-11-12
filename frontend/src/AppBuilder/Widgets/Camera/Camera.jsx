@@ -166,8 +166,15 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       }
 
       const constraints = {
-        video: selectedCameraId ? { deviceId: { exact: selectedCameraId } } : true,
-        audio: selectedMicrophoneId ? { deviceId: { exact: selectedMicrophoneId } } : true,
+        video:
+          selectedCameraId && !(typeof selectedCameraId === 'string' && selectedCameraId.startsWith('camera-'))
+            ? { deviceId: { exact: selectedCameraId } }
+            : true,
+        audio:
+          selectedMicrophoneId &&
+          !(typeof selectedMicrophoneId === 'string' && selectedMicrophoneId.startsWith('microphone-'))
+            ? { deviceId: { exact: selectedMicrophoneId } }
+            : true,
       };
 
       try {
