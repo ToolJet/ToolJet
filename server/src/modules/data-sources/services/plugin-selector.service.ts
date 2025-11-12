@@ -60,14 +60,48 @@ export class PluginsServiceSelector {
 
     const sandbox = createContext({
       ...global,
+
+      // Core Node.js APIs
       module: moduleWrapper,
       exports: moduleWrapper.exports,
       require: require,
       process: process,
       console: console,
       Buffer: Buffer,
+
+      // Timers
+      setTimeout: setTimeout,
+      clearTimeout: clearTimeout,
+      setInterval: setInterval,
+      clearInterval: clearInterval,
+      setImmediate: setImmediate,
+      clearImmediate: clearImmediate,
+
+      // Text encoding
       TextEncoder: TextEncoder,
       TextDecoder: TextDecoder,
+
+      // URL APIs
+      URL: URL,
+      URLSearchParams: URLSearchParams,
+
+      // Fetch API
+      fetch: globalThis.fetch,
+      Headers: globalThis.Headers,
+      Request: globalThis.Request,
+      Response: globalThis.Response,
+      FormData: globalThis.FormData,
+
+      // Crypto & Performance
+      crypto: globalThis.crypto,
+      performance: globalThis.performance,
+
+      // Web APIs
+      AbortController: globalThis.AbortController,
+      AbortSignal: globalThis.AbortSignal,
+      structuredClone: globalThis.structuredClone,
+
+      // CommonJS specific
       __dirname: process.cwd(),
       __filename: __filename || '',
     });
