@@ -14,6 +14,11 @@
       "type": "string",
       "title": "Private key",
       "description": "Enter JSON private key for service account"
+    },
+    "scope": {
+      "type": "string",
+      "title": "Scope",
+      "description": ""
     }
   },
   "tj:encrypted": [
@@ -30,6 +35,13 @@
       "description": "Enter JSON private key for service account",
       "widget": "password-v3-textarea",
       "required": true
+    },
+    "scope": {
+      "$ref": "#/properties/scope",
+      "key": "scope",
+      "label": "Scope",
+      "description": "Enter scopes for the BigQuery connection",
+      "widget": "text-v3"
     }
   }
 }
