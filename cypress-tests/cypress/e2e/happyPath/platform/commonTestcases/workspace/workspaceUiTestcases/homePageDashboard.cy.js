@@ -107,6 +107,7 @@ describe("Home Page Dashboard Testcases", () => {
 
         cy.apiLogin();
         cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
 
         //Update role to Builder
         cy.apiUpdateUserRole(data.email, "builder");
@@ -114,6 +115,8 @@ describe("Home Page Dashboard Testcases", () => {
 
         cy.apiLogin(data.email);
         cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
+
         cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).should("be.visible");
     });
 });
