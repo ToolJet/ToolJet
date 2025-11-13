@@ -16,6 +16,7 @@ describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
     cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
+    cy.intercept('GET', '/assets/translations/en.json').as('translations');
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -264,6 +265,8 @@ describe("Self host onboarding", () => {
 
     cy.apiLogout();
     cy.visit("/my-workspace");
+    cy.wait('@translations');
+    cy.wait(2000);
     cy.appUILogin();
 
     cy.get(commonSelectors.workspaceName)
