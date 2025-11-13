@@ -230,7 +230,7 @@ describe(
       // cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     });
 
-    it.only("should verify restricted app access", () => {
+    it("should verify restricted app access", () => {
       data.workspaceName = fake.firstName;
       data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
