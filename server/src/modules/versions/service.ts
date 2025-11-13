@@ -49,7 +49,7 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    return await this.versionsUtilService.createVersion(app, user, versionCreateDto);
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
@@ -255,8 +255,8 @@ export class VersionService implements IVersionService {
     user: User,
     draftVersionDto: DraftVersionDto,
     manager?: EntityManager
-  ): Promise<void> {
-    const { versionFromId } = draftVersionDto;
+  ): Promise<AppVersion> {
+    const { versionFromId, versionType } = draftVersionDto;
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
     const childVersionAppsCount = childVersionApps.length;
@@ -264,6 +264,7 @@ export class VersionService implements IVersionService {
       ...draftVersionDto,
       versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
       versionDescription: '',
+      versionType: versionType,
     };
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;

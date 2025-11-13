@@ -61,16 +61,31 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         );
       }
 
-      set((state) => ({
-        ...state,
-        selectedEnvironment,
-        selectedVersion: response.editorVersion,
-        appVersionEnvironment: response.appVersionEnvironment,
-        shouldRenderPromoteButton: response.shouldRenderPromoteButton,
-        shouldRenderReleaseButton: response.shouldRenderReleaseButton,
-        environments: response.environments,
-        versionsPromotedToEnvironment: [response.editorVersion],
-      }));
+      set((state) => {
+        const stateUpdate = {
+          ...state,
+          selectedEnvironment,
+          selectedVersion: response.editorVersion,
+          appVersionEnvironment: response.appVersionEnvironment,
+          shouldRenderPromoteButton: response.shouldRenderPromoteButton,
+          shouldRenderReleaseButton: response.shouldRenderReleaseButton,
+          environments: response.environments,
+          versionsPromotedToEnvironment: [response.editorVersion],
+        };
+
+        // Clear currentBranch if initial version is not a branch
+        const versionType = response.editorVersion?.versionType || response.editorVersion?.version_type;
+        console.log('DEBUG init: editorVersion:', response.editorVersion);
+        console.log('DEBUG init: versionType:', versionType);
+        console.log('DEBUG init: current state.currentBranch:', state.currentBranch);
+        if (versionType !== 'branch') {
+          console.log('DEBUG init: Clearing currentBranch because versionType is not branch');
+          stateUpdate.currentBranch = null;
+        }
+        console.log('DEBUG init: stateUpdate.currentBranch:', stateUpdate.currentBranch);
+
+        return stateUpdate;
+      });
     } catch (error) {
       console.error('Error while initializing the environment dropdown', error);
     }
@@ -150,7 +165,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     selectedVersionId,
     versionDescription = '',
     onSuccess,
-    onFailure
+    onFailure,
+    versionType = 'version'
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -159,7 +175,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionName,
         versionDescription,
         selectedVersionId,
-        editorEnvironment
+        editorEnvironment,
+        versionType
       );
       const editorVersion = {
         id: newVersion.id,
@@ -271,6 +288,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       };
+
+      // Clear currentBranch if switching to a regular version (not a branch)
+      if (selectedVersion.versionType !== 'branch') {
+        optionsToUpdate.currentBranch = null;
+      }
+
       set((state) => ({ ...state, ...optionsToUpdate }));
       onSuccess(data);
     } catch (error) {

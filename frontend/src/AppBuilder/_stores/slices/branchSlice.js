@@ -1,4 +1,5 @@
 import { gitSyncService } from '@/_services';
+import useStore from '@/AppBuilder/_stores/store';
 
 const initialState = {
   currentBranch: null,
@@ -25,9 +26,14 @@ export const createBranchSlice = (set, get) => ({
     try {
       const response = await gitSyncService.getAllBranches(appId, organizationId);
       const branches = response?.branches || [];
-      // Determine default current branch if not already set
+
+      // Only set default branch if current version is a branch type
+      // If selectedVersion is a regular version (not a branch), keep currentBranch as null
+      const selectedVersion = useStore.getState().selectedVersion;
+      const isOnBranch = selectedVersion?.versionType === 'branch';
+
       let defaultBranch = get().currentBranch;
-      if (!defaultBranch && branches.length) {
+      if (!defaultBranch && branches.length && isOnBranch) {
         defaultBranch =
           branches.find((b) => b.name === 'main') || branches.find((b) => b.name === 'master') || branches[0];
       }
@@ -36,7 +42,7 @@ export const createBranchSlice = (set, get) => ({
         () => ({
           allBranches: branches,
           isLoadingBranches: false,
-          currentBranch: defaultBranch || null,
+          currentBranch: isOnBranch ? defaultBranch || null : null,
         }),
         false,
         'fetchBranches:success'

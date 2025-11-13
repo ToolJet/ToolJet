@@ -4,7 +4,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, Not } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { VersionsCreateService } from './services/create.service';
@@ -122,16 +122,40 @@ export class VersionUtilService implements IVersionUtilService {
       organizationId,
       manager
     );
+    console.log('here2');
     if (organizationGit && organizationGit.isBranchingEnabled) {
-      // we can only allow one draft version for this scenario
-      const existingDraftVersion = await this.versionRepository.findOne({
-        where: {
-          appId: app.id,
-          status: AppVersionStatus.DRAFT,
-        },
-      });
-      if (existingDraftVersion && versionCreateDto.versionType !== AppVersionType.BRANCH) {
-        throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+      // Only allow one draft version of type 'version' (not branch)
+      // Branch versions can have multiple drafts
+      // If versionType is not provided or is not BRANCH, check for existing draft
+      console.log('DEBUG: Received versionType:', versionType);
+      console.log('DEBUG: AppVersionType.BRANCH enum value:', AppVersionType.BRANCH);
+      console.log('DEBUG: AppVersionType.VERSION enum value:', AppVersionType.VERSION);
+      const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
+      console.log('DEBUG: isCreatingBranchVersion:', isCreatingBranchVersion);
+
+      if (!isCreatingBranchVersion) {
+        const existingDraftVersion = await this.versionRepository.findOne({
+          where: {
+            appId: app.id,
+            status: AppVersionStatus.DRAFT,
+            versionType: Not(AppVersionType.BRANCH),
+          },
+        });
+        console.log(
+          'DEBUG: existingDraftVersion found:',
+          existingDraftVersion
+            ? {
+                id: existingDraftVersion.id,
+                name: existingDraftVersion.name,
+                versionType: existingDraftVersion.versionType,
+                status: existingDraftVersion.status,
+              }
+            : null
+        );
+        if (existingDraftVersion) {
+          console.log({ existingDraftVersion });
+          throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+        }
       }
     }
     return await dbTransactionWrap(async (manager: EntityManager) => {

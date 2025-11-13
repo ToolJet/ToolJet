@@ -39,6 +39,12 @@ export const useVersionManagerStore = create(
 
         let filtered = versions;
 
+        // Filter out branch-type versions (only show versions with versionType === 'version')
+        filtered = filtered.filter((v) => {
+          const versionType = v.versionType || v.version_type;
+          return versionType !== 'branch';
+        });
+
         // Filter by search query only
         if (searchQuery) {
           filtered = filtered.filter((v) => v.name?.toLowerCase().includes(searchQuery.toLowerCase()));

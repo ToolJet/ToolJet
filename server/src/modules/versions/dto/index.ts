@@ -40,4 +40,7 @@ export class DraftVersionDto {
 
   @IsOptional()
   versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
 }
