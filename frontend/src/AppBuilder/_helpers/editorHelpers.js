@@ -66,7 +66,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useEditorStore } from '@/_stores/editorStore';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
-import { Listview } from '@/AppBuilder/Widgets/Listview';
+import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
@@ -76,6 +76,8 @@ import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
+
+import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -402,7 +404,7 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  // 45 = (height of header)
-  // 85 = (the height of the query panel header when minimised) + (height of header)
-  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + 45, 85)}px)`;
+  return `calc(${100}% - ${
+    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+  }px)`;
 };

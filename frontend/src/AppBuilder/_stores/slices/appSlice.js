@@ -8,6 +8,7 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const initialState = {
   isSaving: false,
@@ -120,7 +121,7 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
+    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue, pageSettings } = get();
     const currentMode = getCurrentMode(moduleId);
 
     // Only keep canvas components (components with no parent) & show on layout true
@@ -163,8 +164,11 @@ export const createAppSlice = (set, get) => ({
 
     const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
+    const pageMenuHeight = pageSettings?.definition?.properties?.position === 'top' ? 60 : 0;
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
-    const frameHeight = currentMode === 'view' ? 45 : 85;
+    const frameHeight =
+      currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
