@@ -430,11 +430,13 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
+  // cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
   cy.apiLogin("dev@tooljet.io", "password").then(() => {
     cy.visit("/my-workspace");
-    cy.wait("@getLicenseAccess");
+    // cy.wait("@getLicenseAccess");
     cy.wait(2000);
+    cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should("be.visible", { timeout: 20000 });
+
     cy.get(commonSelectors.homePageLogo, { timeout: 20000 });
   });
 });
