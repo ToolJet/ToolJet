@@ -62,7 +62,7 @@ module.exports = defineConfig({
       runMode: 0,
       openMode: 0,
     },
-    redirectionLimit: 7,
+    redirectionLimit: 10,
 
     numTestsKeptInMemory: 0,
     experimentalMemoryManagement: true,
