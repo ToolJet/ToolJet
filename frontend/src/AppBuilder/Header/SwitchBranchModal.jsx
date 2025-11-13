@@ -3,11 +3,13 @@ import AlertDialog from '@/_ui/AlertDialog';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
+import { CreateBranchModal } from './CreateBranchModal';
 import '@/_styles/switch-branch-modal.scss';
 
 export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const {
     allBranches,
@@ -20,6 +22,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     orgGit,
     lazyLoadAppVersions,
     fetchDevelopmentVersions,
+    appVersions,
   } = useStore((state) => ({
     allBranches: state.allBranches,
     selectedVersion: state.selectedVersion,
@@ -31,6 +34,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     orgGit: state.orgGit,
     lazyLoadAppVersions: state.lazyLoadAppVersions,
     fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+    appVersions: state.appVersions,
   }));
 
   const currentBranchName = selectedVersion?.name || currentBranch?.name;
@@ -47,7 +51,22 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     }
   }, [show, appId, organizationId, fetchBranches, lazyLoadAppVersions, fetchDevelopmentVersions]);
 
-  const filteredBranches = allBranches.filter((branch) => branch.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Filter branches: exclude branches that are version names (versionType === 'version')
+  const filteredBranches = allBranches.filter((branch) => {
+    // Apply search filter
+    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+
+    // Check if this branch name corresponds to a version with versionType === 'version'
+    // If so, exclude it (it's a version name, not an actual branch)
+    const isVersionName = appVersions?.some(
+      (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
+    );
+
+    // Show the branch only if it's NOT a version name
+    return !isVersionName;
+  });
 
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
@@ -101,13 +120,47 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   };
 
   const handleViewInGitRepo = () => {
-    const gitUrl = orgGit?.git_https?.url || orgGit?.git_ssh?.url;
-    if (gitUrl) {
-      // Extract the base URL and construct the repo URL
-      const repoUrl = gitUrl.replace(/\.git$/, '');
-      window.open(repoUrl, '_blank');
-    } else {
+    // Get repository URL from orgGit (check https_url, ssh_url, or repository fields)
+    const repoUrl =
+      orgGit?.git_https?.https_url ||
+      orgGit?.git_https?.repository ||
+      orgGit?.git_ssh?.ssh_url ||
+      orgGit?.git_ssh?.repository;
+
+    if (!repoUrl) {
+      console.error('No repository URL found in orgGit:', orgGit);
       toast.error('Git repository URL not available');
+      return;
+    }
+
+    // Extract owner and repo name from URL and construct web URL
+    // Handles: https://github.com/owner/repo.git, git@github.com:owner/repo.git, etc.
+    const githubMatch = repoUrl.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+    const gitlabMatch = repoUrl.match(/gitlab\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+    const bitbucketMatch = repoUrl.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(\.git)?$/);
+
+    let webUrl = null;
+    if (githubMatch) {
+      const [, owner, repo] = githubMatch;
+      webUrl = `https://github.com/${owner}/${repo}`;
+    } else if (gitlabMatch) {
+      const [, owner, repo] = gitlabMatch;
+      webUrl = `https://gitlab.com/${owner}/${repo}`;
+    } else if (bitbucketMatch) {
+      const [, owner, repo] = bitbucketMatch;
+      webUrl = `https://bitbucket.org/${owner}/${repo}`;
+    } else {
+      // Fallback: try to clean up the URL
+      webUrl = repoUrl
+        .replace(/\.git$/, '')
+        .replace(/^git@/, 'https://')
+        .replace(/:([^/])/, '/$1');
+    }
+
+    if (webUrl) {
+      window.open(webUrl, '_blank');
+    } else {
+      toast.error('Could not parse repository URL');
     }
   };
 
@@ -182,8 +235,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           <button
             className="footer-btn accent"
             onClick={() => {
-              onClose();
-              // Trigger create branch modal (will be connected later)
+              setShowCreateModal(true);
             }}
             data-cy="create-branch-from-modal-btn"
           >
@@ -192,6 +244,22 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           </button>
         </div>
       </div>
+
+      {/* Create Branch Modal */}
+      {showCreateModal && (
+        <CreateBranchModal
+          appId={appId}
+          organizationId={organizationId}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={(newBranch) => {
+            // Optionally switch to the new branch after creation
+            if (newBranch) {
+              setCurrentBranch(newBranch);
+              onClose(); // Close the switch branch modal too
+            }
+          }}
+        />
+      )}
     </AlertDialog>
   );
 }

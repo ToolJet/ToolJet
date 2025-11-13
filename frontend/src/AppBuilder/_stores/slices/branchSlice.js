@@ -183,8 +183,11 @@ export const createBranchSlice = (set, get) => ({
             // Update current branch in state
             const targetBranch = state.allBranches.find((b) => b.name === branchName);
 
-            // changeEditorVersionAction will update selectedVersion with data from API
-            // We just need to update the currentBranch
+            // Update currentVersionId and selectedVersion (EXACTLY like version dropdown does)
+            state.setCurrentVersionId(targetVersion.id);
+            state.setSelectedVersion(targetVersion);
+
+            // Update the currentBranch
             set(
               (state) => ({
                 ...state,
@@ -248,9 +251,12 @@ export const createBranchSlice = (set, get) => ({
 
       console.log('switchToDefaultBranch - defaultBranchName:', defaultBranchName);
       console.log('switchToDefaultBranch - currentEnvironment:', state.selectedEnvironment);
+      console.log('switchToDefaultBranch - selectedVersion:', state.selectedVersion);
 
-      // Get all branch names to filter out branch versions
-      const branchNames = state.allBranches.map((b) => b.name);
+      // Get feature branch names (exclude default branch) to help with filtering
+      const featureBranchNames = state.allBranches.filter((b) => b.name !== defaultBranchName).map((b) => b.name);
+      console.log('switchToDefaultBranch - allBranches:', state.allBranches);
+      console.log('switchToDefaultBranch - featureBranchNames:', featureBranchNames);
 
       // Branches always work in Development environment - ALWAYS use developmentVersions
       // This matches the PRD scenarios where all branch work happens in Development
@@ -258,10 +264,20 @@ export const createBranchSlice = (set, get) => ({
       console.log('switchToDefaultBranch - developmentVersions:', developmentVersions);
 
       // Filter to get ONLY default branch versions (exclude branch-type versions)
+      // A version is a default branch version if it does NOT have versionType === 'branch'
+      // We rely on versionType field to distinguish branch versions from regular versions
       const defaultBranchVersions = developmentVersions.filter((v) => {
         const hasBranchType = v.versionType === 'branch' || v.version_type === 'branch';
-        const nameMatchesBranch = branchNames.includes(v.name) && v.name !== defaultBranchName;
-        return !hasBranchType && !nameMatchesBranch;
+
+        console.log(`switchToDefaultBranch - filtering version "${v.name}":`, {
+          hasBranchType,
+          versionType: v.versionType || v.version_type,
+          status: v.status,
+          shouldInclude: !hasBranchType,
+        });
+
+        // Only exclude if it has branch type - keep all versions with versionType === 'version'
+        return !hasBranchType;
       });
 
       console.log('switchToDefaultBranch - defaultBranchVersions:', defaultBranchVersions);

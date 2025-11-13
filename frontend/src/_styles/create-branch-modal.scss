@@ -10,7 +10,6 @@
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  backdrop-filter: blur(2px);
 }
 
 .create-branch-modal {
@@ -82,7 +81,6 @@
 
 .create-branch-modal-body {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
   max-height: calc(80vh - 140px);
 

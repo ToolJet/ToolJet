@@ -178,6 +178,7 @@ import CloudInvalid from './CloudInvalid.jsx';
 import CloudValid from './CloudValid.jsx';
 import LayersVersion from './LayersVersion.jsx';
 import Comments from './Comments';
+import Commit from './Commit';
 import Inspect from './Inspect.jsx';
 import ArrowForwardUp from './ArrowForwardUp.jsx';
 import ArrowBackUp from './ArrowBackUp.jsx';
@@ -667,6 +668,8 @@ const Icon = (props) => {
       return <ShiftButtonIcon {...props} />;
     case 'comments':
       return <Comments {...props} />;
+    case 'commit':
+      return <Commit {...props} />;
     case 'corners':
       return <Corners {...props} />;
     case 'share':

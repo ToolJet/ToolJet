@@ -12,6 +12,7 @@
   transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
   box-shadow: var(--elevation-100-box-shadow) !important;
   outline: none !important;
+  margin-right: 7px !important;
 
   &:focus {
     border: 1px solid var(--border-weak) !important;

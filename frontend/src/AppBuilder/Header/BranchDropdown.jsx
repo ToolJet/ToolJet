@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '@/_styles/branch-dropdown.scss';
@@ -7,6 +8,7 @@ import { CreateBranchModal } from './CreateBranchModal';
 import { SwitchBranchModal } from './SwitchBranchModal';
 import { Tooltip } from 'react-tooltip';
 import { gitSyncService } from '@/_services';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -18,7 +20,10 @@ export function BranchDropdown({ appId, organizationId }) {
   const [isLoadingCommit, setIsLoadingCommit] = useState(false);
   const [hasFetchedPRs, setHasFetchedPRs] = useState(false); // Track if PRs have been fetched
   const [hasFetchedBranchInfo, setHasFetchedBranchInfo] = useState(false); // Track if branch info has been fetched
+  const [isLoadingPRs, setIsLoadingPRs] = useState(false); // Track PR loading state
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const popoverRef = useRef(null);
 
   // Helper function to get relative time
   const getRelativeTime = (dateString) => {
@@ -113,6 +118,7 @@ export function BranchDropdown({ appId, organizationId }) {
     branchingEnabled,
     fetchBranches,
     fetchPullRequests,
+    fetchDevelopmentVersions,
     switchBranch,
     switchToDefaultBranch,
     setCurrentBranch,
@@ -125,6 +131,7 @@ export function BranchDropdown({ appId, organizationId }) {
     branchingEnabled: state.branchingEnabled,
     fetchBranches: state.fetchBranches,
     fetchPullRequests: state.fetchPullRequests,
+    fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     switchBranch: state.switchBranch,
     switchToDefaultBranch: state.switchToDefaultBranch,
     setCurrentBranch: state.setCurrentBranch,
@@ -209,12 +216,19 @@ export function BranchDropdown({ appId, organizationId }) {
   const handleRefresh = async () => {
     if (!appId || !organizationId) return;
 
+    setIsLoadingPRs(true);
     try {
-      await Promise.all([fetchBranches(appId, organizationId), fetchPullRequests(appId, organizationId)]);
+      await Promise.all([
+        fetchBranches(appId, organizationId),
+        fetchPullRequests(appId, organizationId),
+        fetchDevelopmentVersions(appId), // Fetch development versions for branch switching
+      ]);
       setHasFetchedPRs(true); // Mark PRs as fetched
     } catch (error) {
       console.error('Error refreshing branches/PRs:', error);
       toast.error('Failed to refresh branches');
+    } finally {
+      setIsLoadingPRs(false);
     }
   };
 
@@ -317,25 +331,23 @@ export function BranchDropdown({ appId, organizationId }) {
     return null;
   }
 
-  return (
-    <div
-      className={`branch-dropdown-container ${showDropdown ? 'selected' : ''} ${darkMode ? 'dark-theme' : ''}`}
-      ref={dropdownRef}
-      data-cy="branch-dropdown-container"
+  const renderPopover = (overlayProps) => (
+    <Popover
+      id="branch-dropdown-popover"
+      className="branch-dropdown-popover"
+      ref={popoverRef}
+      {...overlayProps}
+      style={{
+        ...overlayProps?.style,
+        minWidth: '320px',
+        borderRadius: '8px',
+        border: '1px solid var(--border-weak)',
+        boxShadow: '0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1)',
+        padding: 0,
+      }}
     >
-      <button
-        className="branch-dropdown-button"
-        onClick={() => setShowDropdown(!showDropdown)}
-        data-cy="branch-dropdown-header"
-      >
-        <SolidIcon name="gitbranch" width="16" fill="var(--slate12)" />
-        <span className="branch-name" data-cy="current-branch-name">
-          {displayBranchName || 'Select branch'}
-        </span>
-      </button>
-
-      {showDropdown && (
-        <div className={`branch-dropdown-popover ${darkMode ? 'theme-dark' : ''}`} data-cy="branch-dropdown-popover">
+      <Popover.Body style={{ padding: 0 }}>
+        <div className={`${darkMode ? 'theme-dark' : ''}`} data-cy="branch-dropdown-popover">
           {/* Current Branch Header */}
           <div className="branch-dropdown-current-branch">
             {isOnDefaultBranch ? (
@@ -347,10 +359,12 @@ export function BranchDropdown({ appId, organizationId }) {
                   <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
                   <div className="branch-metadata">
                     <span className="metadata-text">Default branch</span>
-                    {currentBranch?.updatedAt && (
+                    {(currentBranch?.updatedAt || currentBranch?.updated_at) && (
                       <>
-                        <span className="metadata-dot">•</span>
-                        <span className="metadata-text">{getRelativeTime(currentBranch.updatedAt)}</span>
+                        <span>•</span>
+                        <span className="metadata-text">
+                          {getRelativeTime(currentBranch.updatedAt || currentBranch.updated_at)}
+                        </span>
                       </>
                     )}
                   </div>
@@ -359,7 +373,7 @@ export function BranchDropdown({ appId, organizationId }) {
             ) : (
               <>
                 <div className="branch-icon-container-feature">
-                  <SolidIcon name="gitsync" width="16" fill="var(--indigo9)" />
+                  <SolidIcon name="gitbranch" width="16" fill="var(--indigo9)" />
                 </div>
                 <div className="branch-info">
                   <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
@@ -367,9 +381,14 @@ export function BranchDropdown({ appId, organizationId }) {
                     <span className="metadata-text">
                       Created by {selectedVersion?.createdBy || currentBranch?.author || 'Unknown'}
                     </span>
-                    <span className="metadata-dot">•</span>
+                    <span>•</span>
                     <span className="metadata-text">
-                      {getRelativeTime(selectedVersion?.createdAt || currentBranch?.createdAt)}
+                      {getRelativeTime(
+                        selectedVersion?.createdAt ||
+                          selectedVersion?.created_at ||
+                          currentBranch?.createdAt ||
+                          currentBranch?.created_at
+                      )}
                     </span>
                   </div>
                 </div>
@@ -383,9 +402,23 @@ export function BranchDropdown({ appId, organizationId }) {
               {/* Fetch PRs Button - Shown at top for default branch, hides after fetching */}
               {!hasFetchedPRs && (
                 <div className="fetch-prs-section">
-                  <button className="fetch-prs-btn" onClick={handleRefresh} data-cy="fetch-prs-btn">
-                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
-                    <span>Fetch PRs</span>
+                  <button
+                    className={`fetch-prs-btn ${isLoadingPRs ? 'loading' : ''}`}
+                    onClick={handleRefresh}
+                    disabled={isLoadingPRs}
+                    data-cy="fetch-prs-btn"
+                  >
+                    {isLoadingPRs ? (
+                      <>
+                        <div className="spinner-small"></div>
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <SolidIcon name="refresh" width="14" />
+                        <span>Fetch PRs</span>
+                      </>
+                    )}
                   </button>
                 </div>
               )}
@@ -434,7 +467,14 @@ export function BranchDropdown({ appId, organizationId }) {
                             <SolidIcon name="gitmerge" width="20" fill="var(--slate11)" />
                           </div>
                           <div className="pr-content">
-                            <div className="pr-title">{pr.title || 'Untitled PR'}</div>
+                            <OverflowTooltip
+                              className="pr-title"
+                              childrenClassName="pr-title"
+                              placement="top"
+                              whiteSpace="nowrap"
+                            >
+                              {pr.title || 'Untitled PR'}
+                            </OverflowTooltip>
                             <div className="pr-metadata">
                               from {pr.source_branch || pr.sourceBranch} | {formatPRDate(pr.created_at || pr.createdAt)}
                             </div>
@@ -457,7 +497,7 @@ export function BranchDropdown({ appId, organizationId }) {
                     disabled={isLoadingCommit}
                     data-cy="fetch-branch-info-btn"
                   >
-                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <SolidIcon name="refresh" width="14" />
                     <span>{isLoadingCommit ? 'Fetching...' : 'Fetch branch info'}</span>
                   </button>
                 </div>
@@ -469,12 +509,12 @@ export function BranchDropdown({ appId, organizationId }) {
                   {/* Latest Commit Section - for non-default branches with commits */}
                   {lastCommit && !isLoadingCommit && (
                     <div className="latest-commit-section">
-                      <div className="latest-commit-header">
+                      {/* <div className="latest-commit-header">
                         <span className="section-label">LATEST COMMIT</span>
-                      </div>
+                      </div> */}
                       <div className="commit-info">
                         <div className="commit-icon">
-                          <SolidIcon name="commit" width="20" fill="var(--slate11)" />
+                          <SolidIcon name="commit" width="20" />
                         </div>
                         <div className="commit-content">
                           <div className="commit-title">{lastCommit.message || 'No message'}</div>
@@ -538,7 +578,7 @@ export function BranchDropdown({ appId, organizationId }) {
                     }}
                     data-cy="switch-branch-btn"
                   >
-                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <SolidIcon name="refresh" width="14" />
                     <span>Switch branch</span>
                   </button>
                 )}
@@ -562,7 +602,7 @@ export function BranchDropdown({ appId, organizationId }) {
                     }}
                     data-cy="switch-branch-btn"
                   >
-                    <SolidIcon name="refresh" width="14" fill="var(--slate12)" />
+                    <SolidIcon name="refresh" width="14" />
                     <span>Switch branch</span>
                   </button>
                 )}
@@ -570,7 +610,70 @@ export function BranchDropdown({ appId, organizationId }) {
             )}
           </div>
         </div>
-      )}
+      </Popover.Body>
+    </Popover>
+  );
+
+  return (
+    <>
+      <div
+        className={`branch-dropdown-container ${showDropdown ? 'selected' : ''} ${darkMode ? 'dark-theme' : ''}`}
+        ref={buttonRef}
+        data-cy="branch-dropdown-container"
+      >
+        <button
+          className="branch-dropdown-button"
+          onClick={() => setShowDropdown(!showDropdown)}
+          data-cy="branch-dropdown-header"
+        >
+          <SolidIcon name="gitbranch" width="16" fill="var(--slate12)" />
+          <span className="branch-name" data-cy="current-branch-name">
+            {displayBranchName || 'Select branch'}
+          </span>
+        </button>
+      </div>
+
+      <Overlay
+        show={showDropdown}
+        target={buttonRef.current}
+        placement="bottom-end"
+        rootClose
+        onHide={() => setShowDropdown(false)}
+        popperConfig={{
+          modifiers: [
+            {
+              name: 'preventOverflow',
+              options: {
+                boundary: 'viewport',
+                padding: 8,
+              },
+            },
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['bottom-start', 'top-end', 'top-start'],
+              },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 4],
+              },
+            },
+          ],
+        }}
+      >
+        {({ placement: _placement, arrowProps: _arrowProps, show: _show, popper: _popper, ...props }) => (
+          <div
+            style={{
+              position: 'absolute',
+              zIndex: 1050,
+            }}
+          >
+            {renderPopover(props)}
+          </div>
+        )}
+      </Overlay>
 
       {/* Create Branch Modal */}
       {showCreateModal && (
@@ -598,6 +701,7 @@ export function BranchDropdown({ appId, organizationId }) {
       )}
 
       {/* Tooltip for PR details */}
+      {/* Tooltip for PR details */}
       <Tooltip
         id="branch-dropdown-tooltip"
         className="branch-pr-tooltip"
@@ -612,6 +716,6 @@ export function BranchDropdown({ appId, organizationId }) {
           zIndex: 10000,
         }}
       />
-    </div>
+    </>
   );
 }

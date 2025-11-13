@@ -62,6 +62,7 @@ const LifecycleCTAButton = () => {
 
   const handleClick = () => {
     // Open the git sync modal (which has pull/push tabs)
+    console.log('here');
     toggleGitSyncModal(creationMode);
   };
 

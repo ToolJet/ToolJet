@@ -36,15 +36,12 @@
   line-height: 18px;
   color: var(--slate12);
   outline: none;
+  margin-right: 7px;
+  outline: 0px !important;
 
   &:hover {
     background-color: var(--slate3);
     border-color: var(--slate7);
-  }
-
-  &:focus {
-    border-color: var(--indigo9);
-    box-shadow: 0 0 0 2px var(--indigo3);
   }
 
   svg {
@@ -52,7 +49,7 @@
   }
 
   .branch-name {
-    color: var(--slate12);
+    color: var(--text-default);
     font-weight: 500;
     font-size: 12px;
     line-height: 18px;
@@ -242,14 +239,18 @@
       transition: all 0.2s ease;
       outline: none;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background-color: var(--slate3);
         border-color: var(--slate7);
       }
 
       &:disabled {
-        opacity: 0.5;
+        opacity: 0.6;
         cursor: not-allowed;
+      }
+
+      &.loading {
+        opacity: 0.8;
       }
 
       svg {
@@ -490,6 +491,17 @@
   }
 }
 
+// Small spinner for buttons
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--slate6);
+  border-top-color: var(--indigo9);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -556,8 +568,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-  padding-left: 8px;
 }
 
 .branch-updated {
@@ -751,9 +761,8 @@
         font-weight: 400;
         line-height: 18px;
         color: var(--slate11);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        word-break: break-word;
       }
     }
   }

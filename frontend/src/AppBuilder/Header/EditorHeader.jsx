@@ -6,7 +6,7 @@ import { LogoNavDropdown } from '@/modules/Appbuilder/components';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
-import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
+import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -30,6 +30,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
     organizationId,
     currentBranch,
     isBranchReadonly,
+    selectedVersion,
   } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
@@ -41,6 +42,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
       organizationId: state.appStore.modules[moduleId].app.organizationId,
       currentBranch: state.currentBranch,
       isBranchReadonly: state.isBranchReadonly,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
@@ -120,10 +122,14 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                     <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                       {!isModuleEditor && (
                         <>
+                          <PreviewAndShareIcons />
                           {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                          <VersionManagerErrorBoundary>
-                            <VersionManagerDropdown darkMode={darkMode} />
-                          </VersionManagerErrorBoundary>
+                          {/* Hide version dropdown when on a feature branch */}
+                          {selectedVersion?.versionType !== 'branch' && (
+                            <VersionManagerErrorBoundary>
+                              <VersionManagerDropdown darkMode={darkMode} />
+                            </VersionManagerErrorBoundary>
+                          )}
                           <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                         </>
                       )}

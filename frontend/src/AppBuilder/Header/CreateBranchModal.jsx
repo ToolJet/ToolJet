@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DraftVersionWarningModal } from './DraftVersionWarningModal';
 import { Alert } from '@/_ui/Alert';
+import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import '@/_styles/create-branch-modal.scss';
 
@@ -26,6 +27,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     switchBranch,
     fetchBranches,
     lazyLoadAppVersions,
+    fetchDevelopmentVersions,
     editingVersion,
     currentBranch,
   } = useStore((state) => ({
@@ -35,6 +37,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     switchBranch: state.switchBranch,
     fetchBranches: state.fetchBranches,
     lazyLoadAppVersions: state.lazyLoadAppVersions,
+    fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     editingVersion: state.editingVersion,
     currentBranch: state.currentBranch,
   }));
@@ -81,8 +84,10 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
   // Get parent version name for "Created from" text
   const getCreatedFromText = (version) => {
-    if (version.parentVersionId || version.createdFromVersion) {
-      const parentName = version.createdFromVersion || `v${version.parentVersionId}`;
+    if (version.parentVersionId) {
+      // Look up the parent version to get its name
+      const parentVersion = versions.find((v) => v.id === version.parentVersionId);
+      const parentName = parentVersion?.name || `v${version.parentVersionId}`;
       return `Created from ${parentName}`;
     }
     return version.description || '';
@@ -157,15 +162,21 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       if (result.success) {
         toast.success(`Branch "${branchName}" created successfully`);
 
-        // Refresh branches list
-        await fetchBranches(appId, organizationId);
+        // Refresh branches list and versions BEFORE switching
+        // This ensures the new branch version is available when we call switchBranch
+        await Promise.all([
+          fetchBranches(appId, organizationId),
+          lazyLoadAppVersions(appId),
+          // Also fetch development versions since the new branch is in Development environment
+          fetchDevelopmentVersions(appId),
+        ]);
 
-        // Refresh app versions to include the newly created draft branch version
-        await lazyLoadAppVersions(appId);
+        console.log('CreateBranchModal - versions refreshed, now switching to branch:', branchName.trim());
 
         // Switch to the newly created branch (similar to version creation)
         try {
-          await switchBranch(appId, branchName.trim());
+          const switchResult = await switchBranch(appId, branchName.trim());
+          console.log('CreateBranchModal - switchBranch result:', switchResult);
           toast.success(`Switched to branch "${branchName}"`);
         } catch (switchError) {
           console.error('Error switching to new branch:', switchError);
@@ -192,21 +203,11 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     }
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('create-branch-modal-overlay')) {
-      onClose();
-    }
-  };
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !isCreating && !isDropdownOpen) {
       handleCreateBranch();
-    } else if (e.key === 'Escape') {
-      if (isDropdownOpen) {
-        setIsDropdownOpen(false);
-      } else {
-        onClose();
-      }
+    } else if (e.key === 'Escape' && isDropdownOpen) {
+      setIsDropdownOpen(false);
     }
   };
 
@@ -223,15 +224,14 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   }, [versions]);
 
   return (
-    <div className="create-branch-modal-overlay" onClick={handleOverlayClick}>
-      <div className="create-branch-modal">
-        <div className="create-branch-modal-header">
-          <h3 className="modal-title">Create branch</h3>
-          <button className="close-button" onClick={onClose} aria-label="Close modal">
-            <SolidIcon name="remove" width="14" />
-          </button>
-        </div>
-
+    <>
+      <AlertDialog
+        show={true}
+        closeModal={onClose}
+        title="Create branch"
+        checkForBackground={true}
+        customClassName="create-branch-modal"
+      >
         <div className="create-branch-modal-body">
           {/* Draft warning message */}
           {isDraftVersionActive && (
@@ -347,10 +347,9 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
           <Alert placeSvgTop={true} svg="info-icon" className="create-branch-info">
             Branch can only be created from master
           </Alert>
-        </div>
 
-        <div className="create-branch-modal-footer">
-          <div className="col d-flex justify-content-end gap-2">
+          {/* Footer buttons */}
+          <div className="col d-flex justify-content-end gap-2 mt-3">
             <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md">
               Cancel
             </ButtonSolid>
@@ -365,10 +364,10 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             </ButtonSolid>
           </div>
         </div>
-      </div>
+      </AlertDialog>
 
       {/* Draft Version Warning Modal */}
       {showDraftWarning && <DraftVersionWarningModal onClose={() => setShowDraftWarning(false)} />}
-    </div>
+    </>
   );
 }

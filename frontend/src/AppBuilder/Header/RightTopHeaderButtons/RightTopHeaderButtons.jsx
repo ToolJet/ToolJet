@@ -20,14 +20,13 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
         {<GitSyncManager />}
         <div className="tw-hidden navbar-seperator" />
         {<LifecycleCTAButton />}
-        <PreviewAndShareIcons />
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
     </div>
   );
 };
 
-const PreviewAndShareIcons = () => {
+export const PreviewAndShareIcons = () => {
   const { moduleId } = useModuleContext();
   const {
     featureAccess,
