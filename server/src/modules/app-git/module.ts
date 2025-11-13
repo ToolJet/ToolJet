@@ -10,6 +10,7 @@ import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
+import { AppVersionResourceMappingRepository } from '@modules/app-version-resource-mapping/repository';
 export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
@@ -49,6 +50,7 @@ export class AppGitModule extends SubModule {
         OrganizationGitSyncRepository,
         AppGitRepository,
         AppsRepository,
+        AppVersionResourceMappingRepository,
         AppGitService,
         SourceControlProviderService,
         SSHAppGitService,

@@ -8,6 +8,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { AppVersionResourceMappingRepository } from '@modules/app-version-resource-mapping/repository';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -52,6 +53,7 @@ export class GitSyncModule extends SubModule {
         OrganizationGitSyncRepository,
         VersionRepository,
         AppGitRepository,
+        AppVersionResourceMappingRepository,
         BaseGitUtilService,
         BaseGitSyncService,
         GitSyncService,
