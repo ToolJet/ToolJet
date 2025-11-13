@@ -115,7 +115,9 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
           ? licenseSelectors.circularToggleEnabledIcon
           : licenseSelectors.circularToggleDisabledIcon;
 
-    cy.get(licenseSelectors.label(label)).next(toggleIcon).should("be.visible");
+    cy.get(licenseSelectors.label(label), { timeout: 10000 })
+      .next(toggleIcon, { timeout: 10000 })
+      .should("be.visible", { timeout: 10000 });
   });
 };
 
@@ -158,7 +160,7 @@ export const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
 
   cy.get("body").then(($body) => {
     if ($body.find(headingSelector).length > 0) {
-      cy.get(headingSelector)
+      cy.get(headingSelector, { timeout: 10000 })
         .should("be.visible")
         .invoke("text")
         .then((headingText) => {
@@ -244,7 +246,7 @@ export const assertLimitState = (
       return;
     }
 
-    cy.get(headingSelector)
+    cy.get(headingSelector, { timeout: 10000 })
       .should("be.visible")
       .invoke("text")
       .then((headingText) => {

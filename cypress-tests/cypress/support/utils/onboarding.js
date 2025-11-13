@@ -104,7 +104,7 @@ export const inviteUser = (firstName, email) => {
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
-  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };

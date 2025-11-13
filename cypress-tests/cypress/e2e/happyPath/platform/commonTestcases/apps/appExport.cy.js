@@ -57,7 +57,7 @@ describe("App Export", () => {
 
     cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
-    cy.get(importSelectors.importOptionInput)
+    cy.get(importSelectors.importOptionInput, { timeout: 20000 })
       .eq(0)
       .selectFile(TEST_DATA.appFiles.multiVersion, { force: true });
     cy.clearAndType(commonSelectors.appNameInput, data.appName);

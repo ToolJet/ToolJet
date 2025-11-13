@@ -202,6 +202,10 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
 
 export const selectEnvironment = (envName) => {
   cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
+  cy.forceClickOnCanvas();
+  cy.wait(1000);
+  cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
+
   cy.get(multiEnvSelector.envContainer).click({ timeout: 10000 });
   cy.get(multiEnvSelector.envNameList)
     .contains(envName)

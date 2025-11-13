@@ -43,7 +43,7 @@ export const ssoText = {
   passwordEnabledToast: "Enabled Password login",
   passwordDisabledToast: "Password login disabled successfully!",
   passwordDisableWarning:
-    "Disable password login only if you have configured SSO or else you will get locked out.",
+    "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
   hostNameLabel: "Host name",
   hostNameHelpText: "Required if GitHub is self hosted",
   hostName: "Tooljet",
@@ -58,8 +58,6 @@ export const ssoText = {
     "GitHub login failed - User does not exist in the workspace",
   passwordLoginToggleLbale: "Password login",
   alertText: "Danger zone",
-  disablePasswordHelperText:
-    "Disable password login only if your SSO is configured otherwise you will get locked out",
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get locked out",
   toggleUpdateToast: (toggle) => {

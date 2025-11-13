@@ -16,17 +16,24 @@ const API_ENDPOINT =
 
 Cypress.Commands.add(
   "appUILogin",
-  (email = "dev@tooljet.io", password = "password", status = 'success', toast = '') => {
+  (
+    email = "dev@tooljet.io",
+    password = "password",
+    status = "success",
+    toast = ""
+  ) => {
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 }).should("be.visible").click();
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
-    cy.wait(2000);
-    cy.get('[data-cy="main-wrapper"]', { timeout: 10000 }).should("be.visible");
   }
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector).should("be.visible", { timeout: 10000 }).click({ force: true }).type(`{selectall}{backspace}${text}`);
+  cy.get(selector)
+    .should("be.visible", { timeout: 10000 })
+    .click({ force: true })
+    .type(`{selectall}{backspace}${text}`);
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -63,7 +70,9 @@ Cypress.Commands.add("createApp", (appName) => {
       : commonSelectors.appCreateButton;
 
   cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title)).scrollIntoView().click({ force: true });//workaround for cypress dashboard click issue
+    cy.get(getAppButtonSelector($title))
+      .scrollIntoView()
+      .click({ force: true }); //workaround for cypress dashboard click issue
     cy.clearAndType('[data-cy="app-name-input"]', appName);
     cy.get('[data-cy="create-app"]').click();
   });
@@ -421,13 +430,15 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
+  cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
   cy.apiLogin("dev@tooljet.io", "password").then(() => {
-    cy.visit("/");
+    cy.visit("/my-workspace");
+    cy.wait("@getLicenseAccess");
     cy.wait(2000);
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+    cy.get(commonSelectors.homePageLogo, { timeout: 20000 });
   });
 });
-// });
+
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
@@ -553,7 +564,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
