@@ -2,7 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';
 import { getEnvVars } from '../../../scripts/database-config-utils';
 import { LoggerModule } from 'nestjs-pino';
@@ -45,9 +45,13 @@ export class AppModuleLoader {
       }),
       ScheduleModule.forRoot(),
       BullModule.forRoot({
-        redis: {
+        connection: {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT) || 6379,
+          ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
+          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+          ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
+          ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
         },
       }),
       await ConfigModule.forRoot({

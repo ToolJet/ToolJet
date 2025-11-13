@@ -25,13 +25,13 @@ const ApiEndpointInput = (props) => {
   const fetchOpenApiSpec = () => {
     setLoadingSpec(true);
     openapiService
-      .fetchSpecFromUrl(props.specUrl)
-      .then((response) => response.text())
-      .then((text) => {
-        const data = JSON.parse(text);
-        setSpecJson(data);
-        setLoadingSpec(false);
-      });
+        .fetchSpecFromUrl(props.specUrl)
+        .then((response) => response.text())
+        .then((text) => {
+          const data = JSON.parse(text);
+          setSpecJson(data);
+          setLoadingSpec(false);
+        });
   };
 
   const changeOperation = (value) => {
@@ -73,14 +73,14 @@ const ApiEndpointInput = (props) => {
     const operation = data.operation;
     if (path && operation) {
       return (
-        <div className="row">
-          <div className="col-auto" style={{ width: '60px' }}>
-            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
+          <div className="row">
+            <div className="col-auto" style={{ width: '60px' }}>
+              <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
+            </div>
+            <div className="col">
+              <span>{path}</span>
+            </div>
           </div>
-          <div className="col">
-            <span>{path}</span>
-          </div>
-        </div>
       );
     } else {
       return 'Select an operation';
@@ -131,80 +131,80 @@ const ApiEndpointInput = (props) => {
   }, []);
 
   return (
-    <div>
-      {loadingSpec && (
-        <div className="p-3">
-          <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
-        </div>
-      )}
-      {options && !loadingSpec && (
-        <div>
-          <div className="d-flex g-2">
-            <div className="col-12 form-label">
-              <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
+      <div>
+        {loadingSpec && (
+            <div className="p-3">
+              <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+              {props.t('stripe', 'Please wait while we load the OpenAPI specification.')}
             </div>
-            <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
-              <Select
-                options={computeOperationSelectionOptions()}
-                value={{
-                  operation: options?.operation,
-                  value: `${options?.operation}${options?.path}`,
-                }}
-                onChange={(value) => changeOperation(value)}
-                width={'100%'}
-                useMenuPortal={true}
-                customOption={renderOperationOption}
-                styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
-                useCustomStyles={true}
-              />
+        )}
+        {options && !loadingSpec && (
+            <div>
+              <div className="dropdown-container mb-3">
+                <label className="form-label dropdown-label">
+                  {props.t('globals.operation', 'Operation')}
+                </label>
+                <div className="stripe-operation-options">
+                  <Select
+                      options={computeOperationSelectionOptions()}
+                      value={{
+                        operation: options?.operation,
+                        value: `${options?.operation}${options?.path}`,
+                      }}
+                      onChange={(value) => changeOperation(value)}
+                      width={'100%'}
+                      useMenuPortal={true}
+                      customOption={renderOperationOption}
+                      styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
+                      useCustomStyles={true}
+                  />
+                </div>
+                {options?.selectedOperation && (
+                    <small
+                        style={{ margintTop: '10px' }}
+                        className="my-2"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
+                    />
+                )}
+              </div>
               {options?.selectedOperation && (
-                <small
-                  style={{ margintTop: '10px' }}
-                  className="my-2"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(options?.selectedOperation?.description) }}
-                />
+                  <div className={`row stripe-fields-row ${props.darkMode && 'theme-dark'}`}>
+                    <RenderParameterFields
+                        parameters={options?.selectedOperation?.parameters}
+                        type="path"
+                        label={props.t('globals.path', 'PATH')}
+                        options={options}
+                        changeParam={changeParam}
+                        removeParam={removeParam}
+                        darkMode={props.darkMode}
+                    />
+                    <RenderParameterFields
+                        parameters={options?.selectedOperation?.parameters}
+                        type="query"
+                        label={props.t('globals.query'.toUpperCase(), 'Query')}
+                        options={options}
+                        changeParam={changeParam}
+                        removeParam={removeParam}
+                        darkMode={props.darkMode}
+                    />
+                    <RenderParameterFields
+                        parameters={
+                            options?.selectedOperation?.requestBody?.content[
+                                Object.keys(options?.selectedOperation?.requestBody?.content)[0]
+                                ]?.schema?.properties ?? {}
+                        }
+                        type="request"
+                        label={props.t('globals.requestBody', 'REQUEST BODY')}
+                        options={options}
+                        changeParam={changeParam}
+                        removeParam={removeParam}
+                        darkMode={props.darkMode}
+                    />
+                  </div>
               )}
             </div>
-          </div>
-          {options?.selectedOperation && (
-            <div className={`row stripe-fields-row ${props.darkMode && 'theme-dark'}`}>
-              <RenderParameterFields
-                parameters={options?.selectedOperation?.parameters}
-                type="path"
-                label={props.t('globals.path', 'PATH')}
-                options={options}
-                changeParam={changeParam}
-                removeParam={removeParam}
-                darkMode={props.darkMode}
-              />
-              <RenderParameterFields
-                parameters={options?.selectedOperation?.parameters}
-                type="query"
-                label={props.t('globals.query'.toUpperCase(), 'Query')}
-                options={options}
-                changeParam={changeParam}
-                removeParam={removeParam}
-                darkMode={props.darkMode}
-              />
-              <RenderParameterFields
-                parameters={
-                  options?.selectedOperation?.requestBody?.content[
-                    Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                  ]?.schema?.properties ?? {}
-                }
-                type="request"
-                label={props.t('globals.requestBody', 'REQUEST BODY')}
-                options={options}
-                changeParam={changeParam}
-                removeParam={removeParam}
-                darkMode={props.darkMode}
-              />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   );
 };
 
@@ -228,78 +228,78 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
 
   const paramLabelWithDescription = (param) => {
     return (
-      <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
-        <div className="cursor-help">
-          <input
-            type="text"
-            value={type === 'request' ? param : param.name}
-            className="form-control form-control-underline"
-            placeholder="key"
-            disabled
-          />
-        </div>
-      </ToolTip>
+        <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
+          <div className="cursor-help">
+            <input
+                type="text"
+                value={type === 'request' ? param : param.name}
+                className="form-control form-control-underline"
+                placeholder="key"
+                disabled
+            />
+          </div>
+        </ToolTip>
     );
   };
 
   const paramLabelWithoutDescription = (param) => {
     return (
-      <input
-        type="text"
-        value={type === 'request' ? param : param.name}
-        className="form-control"
-        placeholder="key"
-        disabled
-      />
+        <input
+            type="text"
+            value={type === 'request' ? param : param.name}
+            className="form-control"
+            placeholder="key"
+            disabled
+        />
     );
   };
 
   const paramType = (param) => {
     return (
-      <div className="p-2 text-muted">
-        {type === 'query' &&
-          param?.schema?.anyOf &&
-          param?.schema?.anyOf.map((type, i) =>
-            i < param.schema?.anyOf.length - 1
-              ? type.type.substring(0, 3).toUpperCase() + '|'
-              : type.type.substring(0, 3).toUpperCase()
-          )}
-        {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
-          param?.schema?.type?.substring(0, 3).toUpperCase()}
-        {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
-      </div>
+        <div className="p-2 text-muted">
+          {type === 'query' &&
+              param?.schema?.anyOf &&
+              param?.schema?.anyOf.map((type, i) =>
+                  i < param.schema?.anyOf.length - 1
+                      ? type.type.substring(0, 3).toUpperCase() + '|'
+                      : type.type.substring(0, 3).toUpperCase()
+              )}
+          {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
+              param?.schema?.type?.substring(0, 3).toUpperCase()}
+          {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
+        </div>
     );
   };
 
   const paramDetails = (param) => {
     return (
-      <div className="col-auto d-flex field field-width-179 align-items-center">
-        {(type === 'request' && parameters[param].description) || param?.description
-          ? paramLabelWithDescription(param)
-          : paramLabelWithoutDescription(param)}
-        {param.required && <span className="text-danger fw-bold">*</span>}
-        {paramType(param)}
-      </div>
+        <div className="col-auto d-flex field field-width-179 align-items-center">
+          {(type === 'request' && parameters[param].description) || param?.description
+              ? paramLabelWithDescription(param)
+              : paramLabelWithoutDescription(param)}
+          {param.required && <span className="text-danger fw-bold">*</span>}
+          {paramType(param)}
+        </div>
     );
   };
 
   const inputField = (param) => {
     return (
-      <CodeHinter
-        initialValue={(type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''}
-        mode="text"
-        placeholder={'Value'}
-        theme={darkMode ? 'monokai' : 'duotone-light'}
-        lineNumbers={false}
-        onChange={(value) => {
-          if (type === 'request') {
-            changeParam(type, param, value);
-          } else {
-            changeParam(type, param.name, value);
-          }
-        }}
-        height={'32px'}
-      />
+        <CodeHinter
+            initialValue={(type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''}
+            mode="text"
+            placeholder={'Value'}
+            theme={darkMode ? 'monokai' : 'duotone-light'}
+            lineNumbers={false}
+            onChange={(value) => {
+              if (type === 'request') {
+                changeParam(type, param, value);
+              } else {
+                changeParam(type, param.name, value);
+              }
+            }}
+            height={'32px'}
+        />
     );
   };
 
@@ -313,40 +313,40 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
     };
 
     return (
-      <span
-        className="code-hinter-clear-btn"
-        role="button"
-        onClick={handleClear}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleClear();
-          }
-        }}
-        tabIndex="0"
-      >
+        <span
+            className="code-hinter-clear-btn"
+            role="button"
+            onClick={handleClear}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleClear();
+              }
+            }}
+            tabIndex="0"
+        >
         <SolidIcons name="removerectangle" width="20" fill="#ACB2B9" />
       </span>
     );
   };
 
   return (
-    filteredParams?.length > 0 && (
-      <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
-        <h5 className="text-heading form-label">{label}</h5>
-        <div className="flex-grow-1 input-group-parent-container">
-          {filteredParams.map((param) => (
-            <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
-              <div className="input-group">
-                {paramDetails(param)}
-                <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
-                {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) &&
-                  clearButton(param)}
-              </div>
+      filteredParams?.length > 0 && (
+          <div className={`${type === 'request' ? 'request-body' : type}-fields`}>
+            <h5 className="text-heading form-label mb-2">{label}</h5>
+            <div className="input-group-parent-container">
+              {filteredParams.map((param) => (
+                  <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
+                    <div className="input-group">
+                      {paramDetails(param)}
+                      <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
+                      {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) &&
+                          clearButton(param)}
+                    </div>
+                  </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-    )
+          </div>
+      )
   );
 };
 
