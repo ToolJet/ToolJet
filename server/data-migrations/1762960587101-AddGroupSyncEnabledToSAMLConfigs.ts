@@ -17,7 +17,7 @@ export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationI
     // Use SQL literal 'true' or 'false' accordingly
     const sqlBool = desiredBool ? 'true' : 'false';
 
-    // Update SAML and (optionally) OPENID configs missing the key
+    // Update SAML 
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = jsonb_set(
@@ -26,7 +26,7 @@ export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationI
         '${sqlBool}'::jsonb,
         true
       )
-      WHERE sso IN ('saml', 'openid')
+      WHERE sso = 'saml'
         AND NOT (configs::jsonb ? 'groupSyncEnabled');
     `);
 
@@ -34,7 +34,7 @@ export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationI
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = configs::jsonb - 'group_sync_enabled'
-      WHERE sso IN ('saml', 'openid') AND (configs::jsonb ? 'group_sync_enabled');
+      WHERE sso = 'saml' AND (configs::jsonb ? 'group_sync_enabled');
     `);
   }
 
@@ -43,7 +43,7 @@ export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationI
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = configs::jsonb - 'groupSyncEnabled'
-      WHERE sso IN ('saml', 'openid');
+      WHERE sso = 'saml';
     `);
   }
 }
