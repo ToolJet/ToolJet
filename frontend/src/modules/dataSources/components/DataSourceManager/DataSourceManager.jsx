@@ -71,7 +71,7 @@ class DataSourceManagerComponent extends React.Component {
       queryString: null,
       plugins: [],
       filteredDatasources: [],
-      activeDatasourceList: '#alldatasources',
+  activeDatasourceList: this.getInitialTabFromURL(),
       suggestingDatasources: false,
       scope: props?.scope,
       modalProps: props?.modalProps ?? {},
@@ -89,6 +89,22 @@ class DataSourceManagerComponent extends React.Component {
       showValidationErrors: false,
     };
   }
+
+  getInitialTabFromURL = () => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('datasource_tab') || '#alldatasources';
+    }
+    return '#alldatasources';
+  };
+
+  updateURLWithActiveTab = (activeTab) => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location);
+      url.searchParams.set('datasource_tab', activeTab);
+      window.history.replaceState({}, '', url);
+    }
+  };
 
   componentDidMount() {
     this.setState({
@@ -466,6 +482,7 @@ class DataSourceManagerComponent extends React.Component {
       if (suggestingDatasources) {
         this.setState({ suggestingDatasources: false });
       }
+      this.updateURLWithActiveTab(activekey); // persist selected tab in URL
       this.setState({ activeDatasourceList: activekey });
     };
 
@@ -497,7 +514,6 @@ class DataSourceManagerComponent extends React.Component {
         unmountOnExit={true}
         onSelect={(activekey) => handleOnSelect(activekey)}
         id="list-group-tabs-example"
-        defaultActiveKey={this.state.activeDatasourceList}
       >
         <Row>
           <Col sm={6} md={4} className={`modal-sidebar ${darkMode ? 'dark' : ''}`}>
