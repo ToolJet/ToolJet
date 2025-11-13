@@ -86,7 +86,7 @@ describe("user invite flow cases", () => {
     );
   });
 
-  it.only("Should verify the confirm invite page and new user account", () => {
+  it("Should verify the confirm invite page and new user account", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 

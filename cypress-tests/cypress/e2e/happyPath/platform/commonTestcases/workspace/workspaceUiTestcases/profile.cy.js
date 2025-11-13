@@ -59,6 +59,8 @@ describe("Profile Settings", () => {
   });
 
   it("Should verify the password reset functionality", () => {
+    cy.intercept('GET', '/assets/translations/en.json').as('translations');
+
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
     cy.get(profileSelector.newPasswordField).should("have.value", "");
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
@@ -185,6 +187,8 @@ describe("Profile Settings", () => {
     );
 
     common.logout();
+    cy.wait('@translations');
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 }).should("be.visible").click();
     cy.clearAndType(onboardingSelectors.loginEmailInput, commonText.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
     cy.get(onboardingSelectors.signInButton).click();
@@ -209,7 +213,12 @@ describe("Profile Settings", () => {
       profileText.passwordSuccessToast
     );
 
+
     common.logout();
+
+
+    cy.wait('@translations');
+    cy.wait(500); //wait for toast to disappear if any
 
     cy.appUILogin(commonText.email, profileText.password);
     common.logout();
