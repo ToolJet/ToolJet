@@ -68,6 +68,8 @@ describe("inviteflow edge cases", () => {
     });
 
     it("should verify the user signup with same creds after invited in a workspace", () => {
+        cy.intercept('GET', '/assets/translations/en.json').as('translations');
+
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.signUpName = fake.firstName;
@@ -78,8 +80,10 @@ describe("inviteflow edge cases", () => {
         fillUserInviteForm(data.firstName, data.email);
         cy.get(usersSelector.buttonInviteUsers).click();
         logout();
+        cy.wait('@translations');
+        cy.wait(500)
 
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         SignUpPageElements();
         cy.wait(5000);
 
@@ -97,6 +101,7 @@ describe("inviteflow edge cases", () => {
     });
 
     it("should verify exisiting user workspace signup from instance using form", () => {
+        cy.intercept('GET', '/assets/translations/en.json').as('translations');
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.signUpName = fake.firstName;
@@ -106,8 +111,9 @@ describe("inviteflow edge cases", () => {
         navigateToManageUsers();
         addNewUser(data.firstName, data.email);
         logout();
-        cy.wait(3000);
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.wait('@translations');
+        cy.wait(500)
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         cy.wait(1000);
         cy.clearAndType(onboardingSelectors.nameInput, data.firstName);
         cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
@@ -128,7 +134,7 @@ describe("inviteflow edge cases", () => {
         cy.apiLogout();
 
         cy.visit(`login/${data.workspaceName}`);
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         cy.wait(3000);
         cy.clearAndType(onboardingSelectors.nameInput, data.firstName);
         cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
