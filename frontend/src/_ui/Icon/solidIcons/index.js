@@ -297,6 +297,8 @@ import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -897,6 +899,10 @@ const Icon = (props) => {
       return <AITopupWhite {...props} />;
     case 'ai-topup-grey':
       return <AITopupGrey {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
     default:
       return <Apps {...props} />;
   }

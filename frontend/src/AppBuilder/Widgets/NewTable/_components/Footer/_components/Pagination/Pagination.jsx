@@ -6,7 +6,14 @@ import { shallow } from 'zustand/shallow';
 
 // TODO: Need to replace all the default data
 
-export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, table, pageCount, fireEvent }) {
+export const Pagination = function Pagination({
+  id,
+  pageIndex = 1,
+  tableWidth,
+  table,
+  pageCount,
+  paginationBtnClicked,
+}) {
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
   const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
@@ -17,12 +24,12 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
   const showGoToFirstAndLast = !serverSidePagination && tableWidth > 460;
 
   function goToNextPage() {
-    fireEvent('onPageChanged');
+    paginationBtnClicked.current = true;
     table.nextPage();
   }
 
   function goToPreviousPage() {
-    fireEvent('onPageChanged');
+    paginationBtnClicked.current = true;
     table.previousPage();
   }
 
@@ -33,7 +40,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           {showGoToFirstAndLast && (
             <PaginationButton
               onClick={() => {
-                fireEvent('onPageChanged');
+                paginationBtnClicked.current = true;
                 table.firstPage();
               }}
               disabled={!canGoToPreviousPage}
@@ -57,7 +64,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           serverSidePagination={serverSidePagination}
           table={table}
           pageCount={pageCount}
-          fireEvent={fireEvent}
+          paginationBtnClicked={paginationBtnClicked}
         />
 
         <div className="d-flex">
@@ -72,7 +79,7 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
           {showGoToFirstAndLast && (
             <PaginationButton
               onClick={() => {
-                fireEvent('onPageChanged');
+                paginationBtnClicked.current = true;
                 table.lastPage();
               }}
               disabled={!canGoToNextPage}
