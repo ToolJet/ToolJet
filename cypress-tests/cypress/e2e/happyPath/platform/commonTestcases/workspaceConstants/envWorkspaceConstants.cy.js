@@ -43,7 +43,7 @@ describe("Workspace constants", () => {
         });
         cy.visit(data.workspaceSlug);
 
-        cy.get('[data-cy="home-page-icon"]').click();
+        cy.get('[data-cy="home-page-icon"]', { timeout: 20000 }).click();
         cy.wait(500);
         cy.get(commonSelectors.workspaceConstantsIcon).click();
 

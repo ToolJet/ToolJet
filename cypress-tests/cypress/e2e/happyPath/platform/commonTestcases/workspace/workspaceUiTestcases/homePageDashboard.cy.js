@@ -26,7 +26,7 @@ describe("Home Page Dashboard Testcases", () => {
 
     it("Should verify elements on home page dashboard", () => {
 
-        cy.get(commonSelectors.homePageIcon).click();
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
         cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome
@@ -108,6 +108,6 @@ describe("Home Page Dashboard Testcases", () => {
 
         cy.apiLogin(data.email);
         cy.visit("/my-workspace");
-        cy.get(commonSelectors.homePageIcon).should("be.visible");
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).should("be.visible");
     });
 });

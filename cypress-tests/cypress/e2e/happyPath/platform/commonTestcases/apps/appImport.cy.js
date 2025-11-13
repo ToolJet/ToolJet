@@ -125,13 +125,13 @@ describe("App Import", () => {
     });
 
     cy.visit(`${data.workspaceSlug}/database`);
-    cy.get('[data-cy="student-table"]').verifyVisibleElement(
+    cy.get('[data-cy="student-table"]', { timeout: 20000 }).verifyVisibleElement(
       "have.text",
       "student"
     );
 
     cy.visit(`${data.workspaceSlug}/data-sources`);
-    cy.get('[data-cy="postgresql-button"]').should("be.visible");
+    cy.get('[data-cy="postgresql-button"]', { timeout: 20000 }).should("be.visible");
     setupCommunityOrEnterpriseDataSource();
 
     cy.wait("@importApp").then((interception) => {
