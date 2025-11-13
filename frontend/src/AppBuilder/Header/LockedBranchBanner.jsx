@@ -17,6 +17,8 @@ const LockedBranchBanner = ({ isVisible = false, branchName = '', reason = 'merg
   const reasonText =
     reason === 'released'
       ? 'This branch has been released and is now read-only'
+      : reason === 'main_config_branch'
+      ? `${branchName} is locked. Create a branch to make edits.`
       : 'This branch has been merged and is now read-only';
 
   return (
