@@ -650,7 +650,7 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
 });
 
 Cypress.Commands.add("runSqlQuery", (query, db = Cypress.env("app_db")) => {
-  cy.task("dbConnection", {
+  return cy.task("dbConnection", {
     dbconfig: db,
     sql: query,
   });

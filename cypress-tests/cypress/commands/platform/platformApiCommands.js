@@ -531,6 +531,7 @@ Cypress.Commands.add("apiUpdateSSOConfig", (ssoConfig, level = "workspace", cach
       url: url,
       headers: headers,
       body: ssoConfig,
+      log: false,
     }).then((response) => {
       expect(response.status).to.equal(200);
       cy.log("SSO configuration updated successfully.");

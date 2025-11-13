@@ -320,7 +320,7 @@ export const invitePageElements = () => {
 export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id=${workspaceId};`,
+    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id='${workspaceId}';`,
   });
 };
 
