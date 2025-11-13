@@ -34,6 +34,7 @@ export const PagesSidebarNavigation = ({
   setIsSidebarPinned,
   canvasMaxWidth,
   switchDarkMode,
+  canvasContentRef,
 }) => {
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
@@ -282,6 +283,40 @@ export const PagesSidebarNavigation = ({
       window.removeEventListener('resize', handleResize);
     };
   }, [calculateOverflow]);
+
+  useEffect(() => {
+    // Box shadow on the navigation menu only appears when the canvas is scrolled and not on the top
+    if (position !== 'top') {
+      const navbar = navRef.current;
+      if (navbar) {
+        navbar.classList.remove('navigation-area--shadow');
+      }
+      return;
+    }
+
+    const canvasContent = canvasContentRef?.current;
+    if (!canvasContent) return;
+
+    const applyShadow = () => {
+      const navbar = navRef.current;
+      if (!navbar) return;
+
+      const shouldShowShadow = canvasContent.scrollTop > 0;
+      navbar.classList.toggle('navigation-area--shadow', shouldShowShadow);
+    };
+
+    const handleScroll = () => {
+      requestAnimationFrame(applyShadow);
+    };
+
+    applyShadow();
+
+    canvasContent.addEventListener('scroll', handleScroll);
+
+    return () => {
+      canvasContent.removeEventListener('scroll', handleScroll);
+    };
+  }, [position]);
 
   if (isMobileDevice) {
     return null;
@@ -550,7 +585,6 @@ export const PagesSidebarNavigation = ({
             }
             return `1px solid ${styles?.borderColor?.value}`;
           })(),
-          boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
           maxWidth: (() => {
             if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
               return canvasMaxWidth;
@@ -628,7 +662,10 @@ export const PagesSidebarNavigation = ({
       </button>
       {/* Arbitrary element end */}
       {/* Wrapper div to maintain hover state between navigation and tooltip */}
-      <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
+      <div
+        className={`navigation-with-tooltip-wrapper ${shouldShowBlueBorder && 'active'}`}
+        style={{ position: 'relative' }}
+      >
         {/* Main sidebar content */}
         {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned

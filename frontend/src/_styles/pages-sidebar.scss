@@ -357,6 +357,10 @@
             }
         }
 
+        &.navigation-area--shadow {
+            box-shadow: var(--elevation-100-box-shadow);
+        }
+
         &.icon-only {
             .pages-wrapper {
                 gap: 4px;
@@ -726,6 +730,12 @@
         // Only show hover tooltip if active tooltip is not present
         .navigation-tooltip-hover {
             display: flex !important;
+        }
+    }
+
+    &.active {
+        .navigation-area.navigation-hover-trigger {
+            box-shadow: 0 0 0 1px #3E63DD !important;
         }
     }
 }
