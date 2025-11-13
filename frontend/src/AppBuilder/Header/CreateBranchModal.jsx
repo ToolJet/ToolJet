@@ -269,36 +269,42 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
               </button>
               {isDropdownOpen && (
                 <div className="custom-dropdown-menu">
-                  {versions.map((version) => {
-                    const badge = getVersionStatusBadge(version);
-                    const createdFrom = getCreatedFromText(version);
-                    const isSelected = version.id === createFrom;
+                  {versions
+                    .filter((version) => {
+                      // Only show versions with versionType === 'version' (exclude branch-type versions)
+                      const versionType = version.versionType || version.version_type;
+                      return versionType === 'version';
+                    })
+                    .map((version) => {
+                      const badge = getVersionStatusBadge(version);
+                      const createdFrom = getCreatedFromText(version);
+                      const isSelected = version.id === createFrom;
 
-                    return (
-                      <div
-                        key={version.id}
-                        className={cx('dropdown-item', { 'is-selected': isSelected })}
-                        onClick={() => {
-                          setCreateFrom(version.id);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        {isSelected && (
-                          <div className="check-icon">
-                            <SolidIcon name="tick" width="16" />
+                      return (
+                        <div
+                          key={version.id}
+                          className={cx('dropdown-item', { 'is-selected': isSelected })}
+                          onClick={() => {
+                            setCreateFrom(version.id);
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {isSelected && (
+                            <div className="check-icon">
+                              <SolidIcon name="tick" width="16" />
+                            </div>
+                          )}
+                          {!isSelected && <div className="check-icon-placeholder" />}
+                          <div className="item-content">
+                            <div className="item-header">
+                              <span className="item-name">{version.name}</span>
+                              {badge && <span className={cx('status-badge', badge.className)}>{badge.label}</span>}
+                            </div>
+                            {createdFrom && <div className="item-description">{createdFrom}</div>}
                           </div>
-                        )}
-                        {!isSelected && <div className="check-icon-placeholder" />}
-                        <div className="item-content">
-                          <div className="item-header">
-                            <span className="item-name">{version.name}</span>
-                            {badge && <span className={cx('status-badge', badge.className)}>{badge.label}</span>}
-                          </div>
-                          {createdFrom && <div className="item-description">{createdFrom}</div>}
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>
