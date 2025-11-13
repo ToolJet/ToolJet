@@ -108,7 +108,7 @@ export const pageConfig = {
         isDefault: false,
       },
       borderColor: {
-        value: 'var(--cc-default-border)',
+        value: 'var(--cc-weak-border)',
         isDefault: false,
       },
     },
