@@ -40,7 +40,7 @@
       "$ref": "#/properties/scope",
       "key": "scope",
       "label": "Scope",
-      "description": "Enter scopes for the BigQuery connection",
+      "description": "Enter required scopes",
       "widget": "text-v3"
     }
   }
