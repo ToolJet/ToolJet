@@ -138,9 +138,11 @@ Cypress.Commands.add(
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.intercept("GET", "/api/apps/*").as("getAppData");
+
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
+
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
     cy.wait("@getAppData").then((interception) => {

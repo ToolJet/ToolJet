@@ -464,8 +464,8 @@ Cypress.Commands.add(
 
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-                typesToDelete.includes(perm.type)
-              )
+              typesToDelete.includes(perm.type)
+            )
             : granularPermissions;
 
           permissionsToDelete.forEach((permission) => {

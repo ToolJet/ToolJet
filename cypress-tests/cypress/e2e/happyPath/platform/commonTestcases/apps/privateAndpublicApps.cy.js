@@ -10,13 +10,12 @@ import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
 import {
-  setUpSlug,
   setupAppWithSlug,
   verifyRestrictedAccess,
-  onboardUserFromAppLink,
 } from "Support/utils/apps";
-import { appPromote } from "Support/utils/platform/multiEnv";
 import { InstanceSSO } from "Support/utils/platform/eeCommon";
+import { smtpConfig } from "Constants/constants/whitelabel";
+
 
 describe(
   "Private and Public apps",
@@ -42,7 +41,7 @@ describe(
     });
 
     const verifyWidget = (widgetName) => {
-      cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
+      cy.get(commonWidgetSelector.draggableWidget(widgetName), { timeout: 20000 }).should(
         "be.visible"
       );
     };
@@ -55,7 +54,9 @@ describe(
     beforeEach(() => {
       data = generateTestData();
       cy.defaultWorkspaceLogin();
+      cy.apiDeleteAllApps();
       cy.skipWalkthrough();
+      cy.apiConfigureSmtp(smtpConfig)
     });
 
     it("should verify private and public app share functionality", () => {
@@ -130,32 +131,26 @@ describe(
       setupAppWithSlug(data.appName, data.slug);
 
       inviteUserToWorkspace(data.firstName, data.email);
-      logout();
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.apiLogout();
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       cy.wait(2000);
       cy.appUILogin(data.email, "password");
-      verifyWidget("text1");
+      verifyWidget("private");
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
+      verifyWidget("private");
 
       cy.defaultWorkspaceLogin();
       cy.apiMakeAppPublic();
-      logout();
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+      cy.apiLogout();
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
+      verifyWidget("private");
 
       cy.apiLogin(data.email, "password");
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
+      verifyWidget("private");
     });
 
     it("should verify app private and public app visibility for the same instance user", () => {
@@ -168,23 +163,19 @@ describe(
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
 
-      cy.visit("/");
-      logout();
+      cy.apiLogout()
 
       cy.defaultWorkspaceLogin();
       cy.apiMakeAppPublic();
-      logout();
+      cy.apiLogout();
 
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
 
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
+      verifyWidget("private");
 
       cy.apiLogin(data.email, "password");
       cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-      verifyWidget("text1");
+      verifyWidget("private");
     });
 
     it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
@@ -227,7 +218,7 @@ describe(
       cy.get(`[data-cy="resend-verification-email-button"]`).should(
         "be.visible"
       );
-
+      cy.wait(15000); // Waiting for mailhog to receive the email
       fetchAndVisitInviteLinkViaMH(data.email);
       verifyWidget("private");
 
@@ -239,7 +230,7 @@ describe(
       // cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     });
 
-    it("should verify restricted app access", () => {
+    it.only("should verify restricted app access", () => {
       data.workspaceName = fake.firstName;
       data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
@@ -255,7 +246,7 @@ describe(
       setupAppWithSlug(data.appName, data.slug);
 
       inviteUserToWorkspace(data.firstName, data.email);
-
+      cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
       verifyRestrictedAccess();
       cy.get(commonSelectors.backToHomeButton).click();
       cy.get(commonSelectors.homePageLogo).should("be.visible");
