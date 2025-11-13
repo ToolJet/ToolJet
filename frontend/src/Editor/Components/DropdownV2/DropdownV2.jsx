@@ -116,25 +116,65 @@ export const DropdownV2 = ({
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
   function findDefaultItem(schema) {
-    let _schema = schema;
     if (!Array.isArray(schema)) {
-      _schema = [];
+      return null;
     }
-    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
-    return defaultItem?.value;
+
+    for (const item of schema) {
+      const isItemVisible = item?.visible ?? true;
+      if (!isItemVisible) continue;
+
+      if (Array.isArray(item?.options)) {
+        const defaultChild = item.options.find((child) => (child?.visible ?? true) && child?.default === true);
+        if (defaultChild) {
+          return defaultChild?.value;
+        }
+      }
+
+      if (item?.default === true) {
+        return item?.value;
+      }
+    }
+
+    return null;
   }
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
+      const sanitizeOption = (option) => ({
+        ...option,
+        label: getSafeRenderableValue(option?.label),
+        value: option?.value,
+        isDisabled: option?.disable ?? false,
+      });
+
+      const sanitizeGroup = (group) => {
+        if (!Array.isArray(group?.options)) {
+          return {
+            ...group,
+            label: getSafeRenderableValue(group?.label),
+            options: [],
+            isDisabled: group?.disable ?? false,
+          };
+        }
+
+        const visibleGroupOptions = group.options
+          .filter((opt) => opt?.visible ?? true)
+          .map((opt) => sanitizeOption(opt));
+
+        const groupOptions = sortArray(visibleGroupOptions, sort);
+        return {
+          ...group,
+          label: getSafeRenderableValue(group?.label),
+          options: groupOptions,
+          isDisabled: group?.disable ?? false,
+        };
+      };
+
       let _selectOptions = _options
         .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          isDisabled: data?.disable ?? false,
-        }));
+        .map((data) => (Array.isArray(data?.options) ? sanitizeGroup(data) : sanitizeOption(data)));
 
       return sortArray(_selectOptions, sort);
     } else {
@@ -142,8 +182,25 @@ export const DropdownV2 = ({
     }
   }, [advanced, schema, options, sort]);
 
+  const flattenedOptions = useMemo(() => {
+    const flat = [];
+    selectOptions.forEach((option) => {
+      if (Array.isArray(option?.options)) {
+        option.options.forEach((child) => flat.push(child));
+      } else {
+        flat.push(option);
+      }
+    });
+    return flat;
+  }, [selectOptions]);
+
+  const exposedOptions = useMemo(
+    () => flattenedOptions.map(({ label, value }) => ({ label, value })),
+    [flattenedOptions]
+  );
+
   function selectOption(value) {
-    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
+    const val = flattenedOptions.find((option) => !option.isDisabled && option.value === value);
     if (val) {
       setInputValue(value);
       fireEvent('onSelect');
@@ -160,10 +217,10 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
+    const _selectedOption = flattenedOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
-      selectedOption: pick(_selectedOption, ['label', 'value']),
+      selectedOption: _selectedOption ? pick(_selectedOption, ['label', 'value']) : null,
     });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
@@ -224,8 +281,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
-    setExposedVariable('options', _options);
+    setExposedVariable('options', exposedOptions);
 
     setExposedVariable('selectOption', async function (value) {
       let _value = value;
@@ -233,7 +289,7 @@ export const DropdownV2 = ({
       selectOption(_value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(selectOptions)]);
+  }, [currentValue, exposedOptions, flattenedOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -278,7 +334,7 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const _options = exposedOptions;
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
@@ -455,7 +511,7 @@ export const DropdownV2 = ({
           whiteSpace: 'nowrap',
           width: '100%',
         }}
-        onMouseDown={(event) => {
+        onMouseDown={() => {
           onComponentClick(id);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
@@ -488,7 +544,7 @@ export const DropdownV2 = ({
             ref={selectRef}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
-            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+            value={flattenedOptions.find((option) => option.value === currentValue) ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
