@@ -102,4 +102,13 @@ export class AppVersionResourceMappingRepository extends Repository<AppVersionRe
       return consolidated;
     }, manager || this.manager);
   }
+
+  async hasMappings(appVersionId: string): Promise<boolean> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const count = await manager.count(AppVersionResourceMapping, {
+        where: { appVersionId },
+      });
+      return count > 0;
+    }, this.manager);
+  }
 }
