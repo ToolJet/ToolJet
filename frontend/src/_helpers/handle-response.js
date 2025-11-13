@@ -36,6 +36,12 @@ export function handleResponse(
     );
     const data = text && JSON.parse(text);
     if (!response.ok) {
+      // Custom friendly error messages
+      if (response.status === 422 && typeof data?.message === 'string') {
+        if (data.message.includes('value too long for type character varying(50)')) {
+          data.message = 'Failed to duplicate group.\nName exceeds 50 characters.';
+        }
+      }
       if ([401].indexOf(response.status) !== -1) {
         // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
         const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;

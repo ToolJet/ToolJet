@@ -30,6 +30,7 @@ import {
   verifyGroupLinks,
   verifyPermissionCheckBoxLabelsAndHelperTexts,
   verifyUserRow,
+  granularPermissionEmptyState
 } from "Support/utils/platform/groupsUI";
 
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
@@ -98,7 +99,12 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.get(groupsSelector.groupLink(groupName2)).click();
 
     verifyGroupLinks();
-    verifyEmptyStates(true);
+    verifyEmptyStates();
+
+    cy.reload();
+    cy.wait(1000)
+    cy.get(groupsSelector.groupLink(groupName2)).click();
+    granularPermissionEmptyState();
 
     cy.get(groupsSelector.permissionsLink).click();
     verifyCheckPermissionStates("custom");

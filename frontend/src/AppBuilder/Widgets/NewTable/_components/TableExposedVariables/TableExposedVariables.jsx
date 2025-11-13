@@ -20,6 +20,7 @@ export const TableExposedVariables = ({
   pageIndex = 1,
   lastClickedRowRef,
   hasDataChanged,
+  paginationBtnClicked,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -147,8 +148,16 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
+
+    // Fire onPageChanged event only when the page was changed using pagination buttons and input in table footer,
+    // not when using setPage CSA to maintain backward compatibility
+    if (paginationBtnClicked.current) {
+      mounted && fireEvent('onPageChanged');
+    }
+    paginationBtnClicked.current = false; // reset the flag
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIndex, setExposedVariables]); // Didn't add mounted as it's not a dependency
+  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {

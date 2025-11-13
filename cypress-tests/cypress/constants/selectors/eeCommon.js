@@ -139,6 +139,7 @@ export const instanceSettingsSelector = {
 
 
 export const multiEnvSelector = {
+    previewSettings: '[data-cy="preview-settings"]',
     envContainer: '[data-cy="env-container"]',
     currentEnvName: '[data-cy="list-current-env-name"]',
     envArrow: '[data-cy="env-arrow"]',

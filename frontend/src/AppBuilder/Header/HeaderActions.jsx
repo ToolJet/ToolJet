@@ -11,8 +11,6 @@ import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
-
-
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
@@ -63,34 +61,25 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-
         <ButtonComponent
+          isLucid
           size="default"
           variant="outline"
-          leadingIcon="play01"
+          leadingIcon="play"
           data-cy="preview-link-button"
-          style={{ padding: "7px 12px" }}
-
+          component={Link}
+          to={appPreviewLink}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:tw-no-underline hover:tw-text-text-default"
         >
-          <Link
-            title="Preview"
-            to={appPreviewLink}
-            target="_blank"
-            rel="noreferrer"
-            data-cy="preview-link-button"
-            className="text-decoration-none"
-            style={{ color: 'var(--text-default)' }}
-          >
-
-            Preview
-          </Link>
+          Preview
         </ButtonComponent>
+      )}
 
-      )
-      }
-      < Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
+      <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
-    </div >
+    </div>
   );
 };
 

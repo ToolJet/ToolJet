@@ -437,7 +437,7 @@ export const MultiselectV2 = ({
       padding: '8px 6px 8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'transparent',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       cursor: 'pointer',
@@ -496,7 +496,6 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
           widthType={widthType}
           id={`${id}-label`}
         />
