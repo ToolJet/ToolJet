@@ -45,6 +45,7 @@ type SAML = {
   name: string;
   idpMetadata: string;
   groupAttribute: string;
+  groupSyncEnabled: boolean;
 };
 export enum SSOType {
   GOOGLE = 'google',
