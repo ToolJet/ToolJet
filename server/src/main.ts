@@ -24,7 +24,6 @@ import { ResponseInterceptor } from '@modules/app/interceptors/response.intercep
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
-import * as bodyParser from 'body-parser';
 
 // Import helper functions
 import {
@@ -136,7 +135,7 @@ async function bootstrap() {
     const port = parseInt(process.env.PORT) || 3000;
 
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
-    app.use('/api/scim', bodyParser.json({ type: ['application/json', 'application/scim+json'] }));
+    app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
     appLogger.log(`Starting server on ${listen_addr}:${port}...`);
     await app.listen(port, listen_addr, async function () {
