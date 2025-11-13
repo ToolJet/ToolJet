@@ -982,6 +982,17 @@ Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
 });
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   return cy.getAuthHeaders().then((headers) => {
+    cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/smtp/status`,
+        headers: headers,
+        body: { smtpEnabled: smtpBody.smtpEnabled },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+      })
     return cy
       .request({
         method: "PATCH",
@@ -1001,26 +1012,6 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   });
 });
 
-Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/smtp`,
-        headers: headers,
-        body: smtpBody,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        Cypress.log({
-          name: "apiConfigureSmtp",
-          displayName: "SMTP CONFIGURED",
-        });
-        return response.body;
-      });
-  });
-});
 
 Cypress.Commands.add(
   "apiGetWorkspaceIDs",

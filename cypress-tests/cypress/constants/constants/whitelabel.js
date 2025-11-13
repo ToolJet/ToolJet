@@ -18,5 +18,5 @@ export const smtpConfig = {
   user: "user",
   password: "user",
   fromEmail: "hello@tooljet.io",
-  smtpEnvEnabled: true,
+  smtpEnvEnabled: false,
 };
