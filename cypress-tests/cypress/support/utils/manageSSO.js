@@ -354,7 +354,7 @@ export const defaultSSO = (enable) => {
     cy.request(
       {
         method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/organizations`,
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general/inherit-sso`,
         headers: headers,
         body: { inheritSSO: enable },
       },

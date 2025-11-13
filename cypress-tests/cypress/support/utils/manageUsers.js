@@ -170,14 +170,17 @@ export const inviteUserToWorkspace = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const confirmInviteElements = (email) => {
+export const confirmInviteElements = (
+  email,
+  workspaceName = "My workspace"
+) => {
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text",
     "Sign up"
   );
   cy.get('[data-cy="signup-info"]').verifyVisibleElement(
     "have.text",
-    "Sign up to the workspace - My workspace. "
+    `Sign up to the workspace - ${workspaceName}. `
   );
 
   // cy.verifyLabel("Email")
@@ -338,14 +341,17 @@ export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const fetchAndVisitInviteLink = (email) => {
+export const fetchAndVisitInviteLink = (
+  email,
+  workspaceName = "My workspace"
+) => {
   let invitationToken, organizationToken, workspaceId, userId;
 
   cy.runSqlQuery(`select invitation_token from users where email='${email}';`)
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
       return cy.runSqlQuery(
-        "select id from organizations where name='My workspace';"
+        `select id from organizations where name='${workspaceName}';`
       );
     })
     .then((resp) => {
@@ -479,35 +485,88 @@ export const navigateToEditUser = (email) => {
 };
 
 export const cleanAllUsers = () => {
-  return cy.apiGetUserDetails({ page: 1 }).then(({ body }) => {
-    const totalPages = body?.meta?.total_pages ?? 1;
-    const pageNumbers = Cypress._.range(1, totalPages + 1);
+  let authHeaders;
+  const emailsToDelete = new Set();
+  const devEmail = "dev@tooljet.io";
 
-    const allUsers = [];
+  const collectEmails = (users = []) => {
+    users.forEach(({ email }) => {
+      if (!email) {
+        return;
+      }
 
+      const normalized = String(email).toLowerCase();
+
+      if (normalized !== devEmail) {
+        emailsToDelete.add(email);
+      }
+    });
+  };
+
+  const fetchUsersByPage = (page = 1) => {
     return cy
-      .wrap(pageNumbers)
-      .each((page) => {
-        return cy.apiGetUserDetails({ page }).then(({ body }) => {
-          allUsers.push(...(body?.users ?? []));
-        });
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/users`,
+        headers: authHeaders,
+        qs: {
+          page,
+          searchText: "",
+          status: "",
+        },
+        log: false,
       })
-      .then(() => {
-        const emailsToDelete = allUsers
-          .filter((user) => user.email !== "dev@tooljet.io")
-          .map((user) => user.email);
+      .then(({ body }) => {
+        collectEmails(body?.users ?? []);
 
-        if (!emailsToDelete.length) {
-          return cy.log("No users to clean up");
-        }
-
-        cy.log(`Batch deleting ${emailsToDelete.length} users...`);
-
-        const sanitizedEmails = emailsToDelete.map((email) => email.replace(/'/g, "''"));
-        const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
-
-        return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
+        const totalPages = Number(body?.meta?.total_pages) || 1;
+        return { totalPages };
       });
-  });
+  };
+
+  return cy
+    .getAuthHeaders()
+    .then((headers) => {
+      authHeaders = headers;
+    })
+    .then(() => fetchUsersByPage(1))
+    .then(({ totalPages }) => {
+      if (totalPages <= 1) {
+        return;
+      }
+
+      const remainingPages = Array.from({ length: totalPages - 1 }, (_, index) => index + 2);
+      return cy.wrap(remainingPages).each((pageNumber) => fetchUsersByPage(pageNumber));
+    })
+    .then(() => {
+      if (!emailsToDelete.size) {
+        return cy.log("No users to clean up");
+      }
+
+      const deletableEmails = Array.from(emailsToDelete);
+
+      cy.log(`Batch deleting ${deletableEmails.length} users...`);
+
+      const sanitizedEmails = deletableEmails.map((email) => email.replace(/'/g, "''"));
+      const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
+
+      return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
+    });
 };
 
+
+export const apiArchiveUnarchiveUser = (userId, action) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "POST",
+      url: `${Cypress.env("server_host")}/api/organization-users/${userId}/${action}`,
+      headers: headers,
+      log: false,
+    }).then(() => {
+      Cypress.log({
+        name: "Status Updated",
+        message: `User ${userId} ${action}d`,
+      });
+    });
+  });
+};
