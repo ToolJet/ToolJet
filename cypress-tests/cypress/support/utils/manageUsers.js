@@ -4,7 +4,6 @@ import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
 import * as common from "Support/utils/common";
 import { fillInputField } from "Support/utils/common";
-import { cleanupTestUser } from "Support/utils/manageSSO";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
@@ -535,8 +534,13 @@ export const cleanAllUsers = () => {
         return;
       }
 
-      const remainingPages = Array.from({ length: totalPages - 1 }, (_, index) => index + 2);
-      return cy.wrap(remainingPages).each((pageNumber) => fetchUsersByPage(pageNumber));
+      const remainingPages = Array.from(
+        { length: totalPages - 1 },
+        (_, index) => index + 2
+      );
+      return cy
+        .wrap(remainingPages)
+        .each((pageNumber) => fetchUsersByPage(pageNumber));
     })
     .then(() => {
       if (!emailsToDelete.size) {
@@ -547,26 +551,51 @@ export const cleanAllUsers = () => {
 
       cy.log(`Batch deleting ${deletableEmails.length} users...`);
 
-      const sanitizedEmails = deletableEmails.map((email) => email.replace(/'/g, "''"));
+      const sanitizedEmails = deletableEmails.map((email) =>
+        email.replace(/'/g, "''")
+      );
       const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
 
       return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
     });
 };
 
+export const apiArchiveUnarchiveUser = (
+  email,
+  action,
+  workspaceId = Cypress.env("workspaceId")
+) => {
+  return cy.apiGetUserDetails().then((res) => {
+    const resp = res?.body ?? res;
+    cy.log("org-users response: " + JSON.stringify(resp));
 
-export const apiArchiveUnarchiveUser = (userId, action) => {
-  cy.getAuthHeaders().then((headers) => {
-    cy.request({
-      method: "POST",
-      url: `${Cypress.env("server_host")}/api/organization-users/${userId}/${action}`,
-      headers: headers,
-      log: false,
-    }).then(() => {
-      Cypress.log({
-        name: "Status Updated",
-        message: `User ${userId} ${action}d`,
+    const users = Array.isArray(resp?.users) ? resp.users : [];
+    const orgUser = users.find((u) => u.email === email);
+
+    if (!orgUser?.id) {
+      throw new Error(`Organization user record not found for email: ${email}`);
+    }
+
+    const organizationId = orgUser.organization_id || workspaceId;
+
+    return cy
+      .getAuthHeaders()
+      .then((headers) =>
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/organization-users/${orgUser.id}/${action}`,
+          headers,
+          body: { organizationId },
+          log: false,
+        })
+      )
+      .then((response) => {
+        expect(response.status).to.be.oneOf([200, 201, 204]);
+        Cypress.log({
+          name: "Status Updated",
+          message: `User ${email} ${action}d`,
+        });
+        return response;
       });
-    });
   });
 };

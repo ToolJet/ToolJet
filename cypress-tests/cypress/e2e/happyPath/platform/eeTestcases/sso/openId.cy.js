@@ -202,46 +202,40 @@ describe("Verify OIDC user onboarding", () => {
     }
 
     it("Verify archived user login using OIDC", () => {
-        let userId = "";
         setSignupStatus(true);
         cy.ifEnv("Enterprise", () => {
             enableInstanceSignup();
         });
-        cy.apiFullUserOnboarding("user two", "usertwo@tooljet.com").then((res) => {
+        cy.apiFullUserOnboarding("user two", "usertwo@tooljet.com")
 
-            cy.log(JSON.stringify(res.body));
-            cy.pause();
-            userId = res.body.id;
+        cy.apiLogout();
 
+        cy.apiLogin();
+        apiArchiveUnarchiveUser("usertwo@tooljet.com", "archive", Cypress.env("workspaceId"));
+        cy.apiLogout();
 
+        cy.visit(`${data.workspaceName}`);
+        cy.wait(3000);
+        cy.get(ssoEeSelector.oidcSSOText).click();
+        cy.wait(3000);
+        cy.get(".user-two-button").click();
 
-            cy.apiLogout();
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            "Open ID login failed - User is archived in the workspace"
+        );
 
-            cy.apiLogin();
-            cy.pause();
-            apiArchiveUnarchiveUser(userId, "archive");
-            cy.apiLogout();
+        cy.apiLogin();
+        apiArchiveUnarchiveUser("usertwo@tooljet.com", "unarchive", Cypress.env("workspaceId"));
+        cy.apiLogout();
 
-            cy.visit(`${data.workspaceName}`);
-            cy.wait(2000);
-            cy.get(ssoEeSelector.oidcSSOText).click();
-            cy.get(".user-two-button").click();
+        cy.visit(`${data.workspaceName}`);
+        cy.wait(3000);
+        cy.get(ssoEeSelector.oidcSSOText).click();
+        cy.wait(3000);
+        cy.get(".user-two-button").click();
 
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                "Open ID login failed - User is archived in the workspace"
-            );
+        cy.contains(data.workspaceName).should("be.visible");
 
-            cy.apiLogin();
-            apiArchiveUnarchiveUser(userId, "unarchive");
-            cy.apiLogout();
-
-            cy.visit(`${data.workspaceName}`);
-            cy.wait(2000);
-            cy.get(ssoEeSelector.oidcSSOText).click();
-            cy.get(".user-two-button").click();
-
-            cy.contains(data.workspaceName).should("be.visible");
-        });
     });
 });
