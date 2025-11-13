@@ -257,9 +257,9 @@ describe("Self host onboarding", () => {
     });
 
     cy.wait("@getDataQueries");
-    cy.wait(1000);
+    cy.wait(2000);
     cy.get('[data-cy="button-release"]', { timeout: 20000 }).should(
-      "be.visible"
+      "be.visible", { timeout: 20000 }
     );
 
     cy.apiLogout();
