@@ -32,6 +32,7 @@ export const DatepickerInput = forwardRef(
     labelWidth,
     label,
   }) => {
+    console.log(value)
     return (
       <>
         <input
@@ -53,7 +54,7 @@ export const DatepickerInput = forwardRef(
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           ref={dateInputRef}
           id={`component-${inputId}`}
-          style={inputStyles}
+          style={{ ...inputStyles, color: value === 'Select date' ? 'var(--text-placeholder)' : inputStyles.color }}
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
@@ -71,7 +72,7 @@ export const DatepickerInput = forwardRef(
               }
             }
           }}
-          // disabled={disable || loading}
+        // disabled={disable || loading}
         />
         <span className="cell-icon-display">
           <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
