@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -102,16 +102,14 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.contains('.homepage-app-card', appName).within(() => {
-    cy.get('.home-app-card-header .menu-ico')
-      .then(($el) => {
-        $el[0].style.setProperty('visibility', 'visible', 'important');
-      });
-
-    cy.get('[data-cy="app-card-menu-icon"]').click();
+  cy.contains(".homepage-app-card", appName).within(() => {
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).realHover();
+    cy.get('[data-cy="app-card-menu-icon"]')
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click({ timeout: 10000 });
   });
 };
-
 export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
@@ -131,7 +129,8 @@ export const verifyModal = (title, buttonText, inputFiledSelector) => {
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
-  cy.get(commonSelectors.buttonSelector(buttonText)).first()
+  cy.get(commonSelectors.buttonSelector(buttonText))
+    .first()
     .should("be.visible")
     .and("have.text", buttonText);
 

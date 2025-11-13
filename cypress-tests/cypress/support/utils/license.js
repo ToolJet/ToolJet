@@ -324,7 +324,7 @@ export const verifyResourceLimit = (
       );
     });
   });
-  cy.get(commonSelectors.cancelButton).click();
+  // cy.get(commonSelectors.cancelButton).click();
 };
 
 export const verifyTotalLimitsWithPlan = (

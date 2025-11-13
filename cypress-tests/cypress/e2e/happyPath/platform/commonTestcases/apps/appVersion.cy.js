@@ -27,6 +27,8 @@ import { deleteVersionText, onlydeleteVersionText } from "Texts/version";
 import { createRestAPIQuery } from "Support/utils/dataSource";
 import { deleteQuery } from "Support/utils/queries";
 import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
+import { performQueryAction } from "Support/utils/queries";
+
 describe("App Version", () => {
   const generateTestData = () => ({
     appName: `${fake.companyName}-Version-App`,
@@ -36,8 +38,10 @@ describe("App Version", () => {
   });
 
   const verifyWidget = (selector, assertion, expectedValue) => {
-    cy.get(commonWidgetSelector.draggableWidget(selector))
-      .verifyVisibleElement(assertion, expectedValue);
+    cy.get(commonWidgetSelector.draggableWidget(selector)).verifyVisibleElement(
+      assertion,
+      expectedValue
+    );
   };
 
   let data;
@@ -52,6 +56,7 @@ describe("App Version", () => {
   });
 
   it("should verify basic version management operations", () => {
+    cy.get('[data-cy="query-manager-toggle-button"]').click();
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     navigateToCreateNewVersionModal("v1");
     verifyElementsOfCreateNewVersionModal(["v1"]);
@@ -87,7 +92,7 @@ describe("App Version", () => {
 
     verifyComponentinrightpannel("table");
     cy.get(commonSelectors.rightSidebarPlusButton).click();
-    cy.dragAndDropWidget("text");
+    cy.dragAndDropWidget("text", 450, 300);
     cy.waitForAutoSave();
 
     navigateToCreateNewVersionModal("v2");
@@ -157,9 +162,10 @@ describe("App Version", () => {
     cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
 
     deleteComponentAndVerify("text1");
+
     cy.waitForAutoSave();
-    deleteQuery(data.query1);
-    cy.get(commonSelectors.modalConfirmButton).click();
+    performQueryAction(data.query1, "delete");
+
     createRestAPIQuery(data.query2, data.datasourceName, "", "", "/2", true);
     cy.apiAddComponentToApp(
       data.appName,
@@ -198,13 +204,20 @@ describe("App Version", () => {
       navigateToCreateNewVersionModal(check.create.from);
       createNewVersion([check.create.version], check.create.from);
       cy.waitForAutoSave();
-      cy.get(appVersionSelectors.currentVersionField(check.create.version)).should("be.visible");
+      cy.get(
+        appVersionSelectors.currentVersionField(check.create.version)
+      ).should("be.visible");
 
-      const assertion = check.verify.component.value ? "have.value" : "have.text";
-      const expected = check.verify.component.value || check.verify.component.text;
+      const assertion = check.verify.component.value
+        ? "have.value"
+        : "have.text";
+      const expected =
+        check.verify.component.value || check.verify.component.text;
       verifyWidget(check.verify.component.selector, assertion, expected);
 
-      cy.get(`[data-cy="list-query-${check.verify.query}"]`).should("be.visible");
+      cy.get(`[data-cy="list-query-${check.verify.query}"]`).should(
+        "be.visible"
+      );
     });
 
     releasedVersionAndVerify("v5");
@@ -252,7 +265,9 @@ describe("App Version", () => {
       navigateToCreateNewVersionModal("v5");
       createNewVersion(["v6"], "v5");
       cy.waitForAutoSave();
-      cy.get(appVersionSelectors.currentVersionField("v6")).should("be.visible");
+      cy.get(appVersionSelectors.currentVersionField("v6")).should(
+        "be.visible"
+      );
 
       appPromote("development", "staging");
       verifyWidget("textInput", "have.value", "Ervin Howell");

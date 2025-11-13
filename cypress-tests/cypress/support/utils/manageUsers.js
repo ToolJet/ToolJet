@@ -479,41 +479,35 @@ export const navigateToEditUser = (email) => {
 };
 
 export const cleanAllUsers = () => {
-  const collectAllUsers = () => {
-    return cy.apiGetUserDetails({ page: 1 }).then(({ body }) => {
-      const firstPageUsers = body?.users ?? [];
-      const totalPages = body?.meta?.total_pages ?? 1;
+  return cy.apiGetUserDetails({ page: 1 }).then(({ body }) => {
+    const totalPages = body?.meta?.total_pages ?? 1;
+    const pageNumbers = Cypress._.range(1, totalPages + 1);
 
-      if (totalPages <= 1) {
-        return firstPageUsers;
-      }
+    const allUsers = [];
 
-      const allUsers = [...firstPageUsers];
-      const remainingPages = Cypress._.range(2, totalPages + 1);
+    return cy
+      .wrap(pageNumbers)
+      .each((page) => {
+        return cy.apiGetUserDetails({ page }).then(({ body }) => {
+          allUsers.push(...(body?.users ?? []));
+        });
+      })
+      .then(() => {
+        const emailsToDelete = allUsers
+          .filter((user) => user.email !== "dev@tooljet.io")
+          .map((user) => user.email);
 
-      return cy
-        .wrap(remainingPages)
-        .each((page) => {
-          return cy.apiGetUserDetails({ page }).then(({ body }) => {
-            const pageUsers = body?.users ?? [];
-            allUsers.push(...pageUsers);
-          });
-        })
-        .then(() => allUsers);
-    });
-  };
+        if (!emailsToDelete.length) {
+          return cy.log("No users to clean up");
+        }
 
-  return collectAllUsers().then((users) => {
-    const emails = users
-      .filter((user) => user.email !== "dev@tooljet.io")
-      .map((user) => user.email);
+        cy.log(`Batch deleting ${emailsToDelete.length} users...`);
 
-    if (!emails.length) {
-      return cy.log("No users to clean up");
-    }
+        const sanitizedEmails = emailsToDelete.map((email) => email.replace(/'/g, "''"));
+        const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
 
-    cy.log(`Batch deleting ${emails.length} users...`);
-
-    return cleanupTestUser(emails);
+        return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
+      });
   });
 };
+

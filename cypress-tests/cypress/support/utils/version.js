@@ -45,9 +45,9 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
     "have.text",
     version[0]
   );
-  cy.get(
-    commonSelectors.buttonSelector(appVersionText.createNewVersion)
-  ).first().verifyVisibleElement("have.text", appVersionText.createNewVersion);
+  cy.get(commonSelectors.buttonSelector(appVersionText.createNewVersion))
+    .first()
+    .verifyVisibleElement("have.text", appVersionText.createNewVersion);
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
@@ -159,8 +159,7 @@ export const switchVersionAndVerify = (currentVersion, newVersion) => {
     .should("be.visible")
     .click();
   cy.get(".app-version-name").contains(newVersion).click();
-  cy.wait('@appDs')
-
+  //cy.wait('@appDs')
 };
 
 export const openPreviewSettings = () => {
