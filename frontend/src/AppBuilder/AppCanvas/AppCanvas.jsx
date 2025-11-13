@@ -32,7 +32,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const canvasContainerRef = useRef();
   const scrollTimeoutRef = useRef(null);
   const canvasContentRef = useRef(null);
-  const [isScrolling, setIsScrolling] = useState(false);
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const resolveReferences = useStore((state) => state.resolveReferences);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
@@ -157,26 +156,21 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
-  const toggleSidebarPinned = useCallback(() => {
-    const newValue = !isViewerSidebarPinned;
-    setIsSidebarPinned(newValue);
-    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
-  }, [isViewerSidebarPinned]);
-
   useEffect(() => {
+    const canvasContent = canvasContentRef.current;
+
     const handleScroll = () => {
-      setIsScrolling(true);
+      canvasContent.classList.remove('scrollbar-hidden');
 
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
       scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
+        canvasContent.classList.add('scrollbar-hidden');
       }, 600);
     };
 
-    const canvasContent = canvasContentRef.current;
     if (canvasContent) {
       canvasContent.addEventListener('scroll', handleScroll);
     }
@@ -264,6 +258,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               setIsSidebarPinned={setIsSidebarPinned}
               darkMode={darkMode}
               canvasMaxWidth={canvasMaxWidth}
+              canvasContentRef={canvasContentRef}
             />
           )}
           <div
@@ -274,9 +269,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
               ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
-            className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content scrollbar`, {
-              'scrollbar-hidden': !isScrolling,
-            })}
+            className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content scrollbar`)}
           >
             {currentMode === 'edit' && (
               <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
