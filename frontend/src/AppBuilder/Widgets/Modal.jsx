@@ -353,6 +353,9 @@ const Component = ({ children, ...restProps }) => {
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalBodyClick = (event) => {
+    // If shift is pressed, don't select the component since its used for multi select
+    const isShiftPressed = event.shiftKey || event.nativeEvent?.shiftKey || false;
+    if (isShiftPressed) return;
     const clickedComponentId = event.target.getAttribute('component-id');
 
     // Check if the clicked element is part of the modal canvas & same widget with id

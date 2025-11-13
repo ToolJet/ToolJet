@@ -55,6 +55,10 @@ export const ModalWidget = ({ ...restProps }) => {
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalSlotClick = (event) => {
+    // If shift is pressed, don't select the component since its used for multi select
+    const isShiftPressed = event.shiftKey || event.nativeEvent?.shiftKey || false;
+    if (isShiftPressed) return;
+
     const clickedComponentId = event.target.getAttribute('component-id');
     const clickedId = event.target.getAttribute('id');
 
