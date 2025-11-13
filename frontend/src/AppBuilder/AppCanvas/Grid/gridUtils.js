@@ -581,6 +581,68 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 };
 
 /**
+ * Calculates the unified bounding box for a group of elements
+ * @param {HTMLElement[]} targetElements - Array of elements being dragged as a group
+ * @returns {Object} - Bounding box with left, top, width, height relative to main canvas
+ */
+export const calculateGroupBoundingBox = (targetElements) => {
+  if (!targetElements || targetElements.length === 0) return null;
+
+  const mainCanvas = document.getElementById('real-canvas');
+  if (!mainCanvas) return null;
+
+  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+
+  // Initialize with extreme values
+  let minLeft = Infinity;
+  let minTop = Infinity;
+  let maxRight = -Infinity;
+  let maxBottom = -Infinity;
+
+  // Find the bounds of all elements
+  targetElements.forEach((element) => {
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    const relativeLeft = rect.left - mainCanvasRect.left;
+    const relativeTop = rect.top - mainCanvasRect.top;
+    const relativeRight = relativeLeft + rect.width;
+    const relativeBottom = relativeTop + rect.height;
+
+    minLeft = Math.min(minLeft, relativeLeft);
+    minTop = Math.min(minTop, relativeTop);
+    maxRight = Math.max(maxRight, relativeRight);
+    maxBottom = Math.max(maxBottom, relativeBottom);
+  });
+
+  return {
+    left: minLeft,
+    top: minTop,
+    width: maxRight - minLeft,
+    height: maxBottom - minTop,
+  };
+};
+
+/**
+ * Positions a ghost element to cover the entire bounding box of a group
+ * @param {Object} boundingBox - Bounding box with left, top, width, height
+ * @param {string} ghostElementId - The ID of the ghost element to position
+ */
+export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => {
+  if (!events || events.length === 0) return;
+
+  const boundingBox = calculateGroupBoundingBox(events.map((e) => e.target));
+  const ghostElement = document.getElementById(ghostElementId);
+
+  if (!ghostElement || !boundingBox) return;
+  ghostElement.style.width = `${boundingBox.width}px`;
+  ghostElement.style.height = `${boundingBox.height}px`;
+  ghostElement.style.willChange = 'transform';
+
+  ghostElement.style.transform = `translate(${boundingBox.left}px, ${boundingBox.top}px)`;
+};
+
+/**
  * Finds the new parent ID based on the current mouse position during drag operations
  * @param {number} clientX - The X coordinate of the mouse position
  * @param {number} clientY - The Y coordinate of the mouse position
@@ -617,10 +679,21 @@ export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => 
   }
 };
 
-export const getInitialPosition = (currentWidget, temporaryLayouts, _gridWidth) => {
-  const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
-  const width = currentWidget.width * _gridWidth;
-  const transformX = currentWidget.left * _gridWidth;
-  const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
-  return { height, width, transformX, transformY };
+export const updateDashedBordersOnHover = (targetId) => {
+  const dynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  const targetMoveableBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+  if (targetMoveableBox && dynamicHeight && !targetMoveableBox.classList.contains('moveable-dynamic-height')) {
+    targetMoveableBox.classList.add('moveable-dynamic-height');
+  } else if (targetMoveableBox && !dynamicHeight) {
+    targetMoveableBox.classList.remove('moveable-dynamic-height');
+  }
+};
+
+export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClassList) => {
+  const hasDynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  if (hasDynamicHeight && !moveableControlBoxClassList?.contains('moveable-dynamic-height')) {
+    moveableControlBoxClassList?.add('moveable-dynamic-height');
+  } else if (moveableControlBoxClassList?.contains('moveable-dynamic-height') && !hasDynamicHeight) {
+    moveableControlBoxClassList?.remove('moveable-dynamic-height');
+  }
 };
