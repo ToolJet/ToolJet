@@ -1,11 +1,11 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Github datasource",
+  "title": "GitHub datasource",
   "description": "A schema defining Github datasource",
   "type": "api",
   "source": {
-    "name": "Github",
+    "name": "GitHub",
     "kind": "github",
     "exposedVariables": {
       "isLoading": false,

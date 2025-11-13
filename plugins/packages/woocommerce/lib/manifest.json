@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Woocommerce datasource",
+  "title": "WooCommerce datasource",
   "description": "A schema defining Woocommerce datasource",
   "type": "api",
   "source": {
-    "name": "Woocommerce",
+    "name": "WooCommerce",
     "kind": "woocommerce",
     "exposedVariables": {
       "isLoading": false,
