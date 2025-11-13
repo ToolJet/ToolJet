@@ -108,7 +108,6 @@ const RenderPageGroup = ({
 }) => {
   const isActive = currentPage?.pageGroupId === pageGroup?.id;
   const [isExpanded, setIsExpanded] = useState(false);
-  const [accordianMaxWidth, setAccordianMaxWidth] = useState(null);
   const groupItemRootRef = useRef(null);
   const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
@@ -142,12 +141,6 @@ const RenderPageGroup = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isExpanded]);
-
-  useEffect(() => {
-    // Set max width of the accordian body if present inside more button popup so that width of popup doesn't change on opening and closing of accordian
-    const moreBtnPopup = document.getElementsByClassName('page-menu-popup')[0];
-    if (moreBtnPopup) setAccordianMaxWidth(moreBtnPopup.offsetWidth - 18); // 18px is the padding and border for popup;
-  }, []);
 
   if (isPageGroupHidden) {
     return null;
@@ -253,7 +246,10 @@ const RenderPageGroup = ({
     >
       <button
         className={`page-group-wrapper ${isActive && !isExpanded && 'page-group-selected'}`}
-        onClick={() => setIsExpanded((prev) => !prev)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded((prev) => !prev);
+        }}
         aria-label={pageGroup.name}
         aria-expanded={isExpanded}
       >
@@ -265,10 +261,7 @@ const RenderPageGroup = ({
         />
       </button>
 
-      <div
-        className={`accordion-body ${isExpanded ? 'expanded' : 'collapsed'}`}
-        style={{ maxWidth: accordianMaxWidth ? `${accordianMaxWidth}px` : 'none' }}
-      >
+      <div className={`accordion-body ${isExpanded ? 'expanded' : 'collapsed'}`}>
         <div className="accordion-content">
           {pages.map((page) => (
             <RenderPage
