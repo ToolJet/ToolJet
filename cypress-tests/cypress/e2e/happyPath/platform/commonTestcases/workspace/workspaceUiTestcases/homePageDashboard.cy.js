@@ -21,7 +21,7 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
-        cy.visit("/");
+        cy.visit("/my-workspace");
     });
 
     it("Should verify elements on home page dashboard", () => {
@@ -95,19 +95,19 @@ describe("Home Page Dashboard Testcases", () => {
         cy.apiLogout();
 
         cy.apiLogin(data.email);
-        cy.visit("/");
+        cy.visit("/my-workspace");
         cy.get(commonSelectors.homePageIcon).should("not.exist");
         cy.apiLogout();
 
         cy.apiLogin();
-        cy.visit("/");
+        cy.visit("/my-workspace");
 
         //Update role to Builder
         cy.apiUpdateUserRole(data.email, "builder");
         cy.apiLogout();
 
         cy.apiLogin(data.email);
-        cy.visit("/");
+        cy.visit("/my-workspace");
         cy.get(commonSelectors.homePageIcon).should("be.visible");
     });
 });

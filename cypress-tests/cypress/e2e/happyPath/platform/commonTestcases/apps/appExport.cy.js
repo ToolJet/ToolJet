@@ -1,7 +1,10 @@
 import { fake } from "Fixtures/fake";
 
 import { commonSelectors } from "Selectors/common";
-import { importSelectors, exportAppModalSelectors } from "Selectors/exportImport";
+import {
+  importSelectors,
+  exportAppModalSelectors,
+} from "Selectors/exportImport";
 import { commonText } from "Texts/common";
 import { exportAppModalText } from "Texts/exportImport";
 
@@ -11,7 +14,11 @@ import {
   verifyElementsOfExportModal,
   validateExportedAppStructure,
 } from "Support/utils/exportImport";
-import { selectAppCardOption, closeModal, deleteDownloadsFolder } from "Support/utils/common";
+import {
+  selectAppCardOption,
+  closeModal,
+  deleteDownloadsFolder,
+} from "Support/utils/common";
 
 describe("App Export", () => {
   const TEST_DATA = {
@@ -44,6 +51,7 @@ describe("App Export", () => {
   it("should verify elements of export dialog box", () => {
     cy.intercept("POST", "**/api/v2/resources/import").as("importApp");
     cy.intercept("POST", "**/api/v2/resources/export").as("exportApp");
+    cy.intercept("GET", "/api/license/organizations/limits").as("getOrgLimits");
 
     cy.skipWalkthrough();
 
@@ -56,7 +64,9 @@ describe("App Export", () => {
     cy.get(importSelectors.importAppButton).click();
     cy.wait("@importApp");
     cy.backToApps();
-    cy.reload();
+
+    cy.wait("@getOrgLimits");
+    cy.wait(500);
 
     selectAppCardOption(
       data.appName,

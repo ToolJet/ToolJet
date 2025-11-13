@@ -435,7 +435,7 @@ export const commonQuerySelectors = {
     return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
   },
   queryActionButton: (action) => {
-    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+    return `[data-cy="query-card-${cyParamName(action)}-button"]`;
   },
   queryEditInputField: '[data-cy="query-edit-input-field"]',
 };

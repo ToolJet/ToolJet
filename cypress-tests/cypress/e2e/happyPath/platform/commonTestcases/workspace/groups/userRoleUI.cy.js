@@ -62,7 +62,7 @@ describe("User Role UI and Functionality verification", () => {
             "USER ROLE"
         );
         cy.verifyElement('[data-cy="custom-groups-title"]', "CUSTOM GROUPS");
-        cy.get('[data-cy="create-group-button-icon"]').should("be.visible");
+        cy.get('[data-cy="create-new-group-button-icon"]').should("be.visible");
         cy.get('[data-cy="search-icon"]').should("be.visible");
 
         // Admin List Item Verification
@@ -92,7 +92,7 @@ describe("User Role UI and Functionality verification", () => {
             groupsText.emailTableHeader
         );
 
-        verifyUserRow("The Developer", "dev@tooljet.io");
+        verifyUserRow("The Developer", " dev@tooljet.io");
 
         cy.get('[data-cy="edit-role-button"]')
             .should("be.visible")

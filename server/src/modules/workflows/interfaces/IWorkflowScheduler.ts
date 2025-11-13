@@ -1,11 +1,9 @@
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 
-export interface ITemporalService {
-  isTemporalConnected(): Promise<boolean>;
+export interface IWorkflowScheduler {
+  isConnected(): Promise<boolean>;
 
-  runWorker(): Promise<void>;
-
-  createScheduleInTemporal(
+  createSchedule(
     workflowScheduleId: string,
     settings: any,
     schedule: WorkflowSchedule,
@@ -27,5 +25,5 @@ export interface ITemporalService {
     userId: string
   ): Promise<void>;
 
-  shutDownWorker(): void;
+  shutdown(): void;
 }
