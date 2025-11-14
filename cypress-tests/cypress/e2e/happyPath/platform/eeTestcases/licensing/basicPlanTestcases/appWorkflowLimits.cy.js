@@ -23,6 +23,7 @@ describe("License - App & Workflow Limits", () => {
     cy.visit("/my-workspace");
 
     cy.wait("@getLicenseAccess");
+    cy.wait(2000);
 
     verifyResourceLimit("apps", "basic");
 
@@ -70,6 +71,7 @@ describe("License - App & Workflow Limits", () => {
     cy.visit("my-workspace/workflows");
 
     cy.wait("@getLicenseAccess");
+    cy.wait(2000);
 
     verifyResourceLimit("workflows", "basic", "workflow");
 

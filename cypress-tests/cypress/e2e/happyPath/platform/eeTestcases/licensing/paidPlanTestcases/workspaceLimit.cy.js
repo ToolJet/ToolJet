@@ -12,6 +12,7 @@ describe("License - Workspace Limits", () => {
   const openWorkspaceModal = () => {
     cy.visit("/my-workspace");
     cy.wait("@getLicenseAccess");
+    cy.wait(2000);
     cy.get(commonSelectors.workspaceName).click();
   };
 
@@ -48,6 +49,7 @@ describe("License - Workspace Limits", () => {
     });
     cy.visit("/my-workspace");
     cy.wait("@getLicenseAccess");
+    cy.wait(2000);
   });
 
   afterEach(() => {

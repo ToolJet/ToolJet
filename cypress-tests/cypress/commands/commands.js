@@ -22,7 +22,9 @@ Cypress.Commands.add(
     status = "success",
     toast = ""
   ) => {
-    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 }).should("be.visible").click();
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
+      .should("be.visible")
+      .click();
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
@@ -259,9 +261,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -435,12 +437,14 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     cy.visit("/my-workspace");
     // cy.wait("@getLicenseAccess");
     cy.wait(2000);
-    cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should("be.visible", { timeout: 20000 });
+    cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should(
+      "be.visible",
+      { timeout: 20000 }
+    );
 
     cy.get(commonSelectors.homePageLogo, { timeout: 20000 });
   });
 });
-
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
@@ -477,6 +481,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
+  cy.wait(2000);
 });
 
 Cypress.Commands.add(
