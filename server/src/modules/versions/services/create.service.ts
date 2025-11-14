@@ -22,6 +22,7 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import { AppVersionResourceMapping } from '@entities/app_version_resource_mapping.entity';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -38,9 +39,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -75,6 +76,16 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       await this.updateEventActionsForNewVersionWithNewMappingIds(
         manager,
+        appVersion.id,
+        oldDataQueryToNewMapping,
+        oldComponentToNewComponentMapping,
+        oldPageToNewPageMapping
+      );
+
+      // Create new version resource mappings based on parent version mappings
+      await this.createVersionResourceMappings(
+        manager,
+        versionFrom.id,
         appVersion.id,
         oldDataQueryToNewMapping,
         oldComponentToNewComponentMapping,
@@ -619,6 +630,55 @@ export class VersionsCreateService implements IVersionsCreateService {
       event.event = eventDefinition;
 
       await manager.save(event);
+    }
+  }
+
+  protected async createVersionResourceMappings(
+    manager: EntityManager,
+    parentVersionId: string,
+    newVersionId: string,
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    // Fetch parent version resource mappings
+    const parentMappings = await manager.find(AppVersionResourceMapping, {
+      where: { appVersionId: parentVersionId },
+    });
+
+    if (!parentMappings || parentMappings.length === 0) {
+      return;
+    }
+
+    // Combine all mappings (old -> new)
+    const allResourceMappings = {
+      ...oldDataQueryToNewMapping,
+      ...oldComponentToNewComponentMapping,
+      ...oldPageToNewPageMapping,
+    };
+
+    // Create new mappings for the new version
+    for (const parentMapping of parentMappings) {
+      const oldToNewResourceMappings: Record<string, string> = {};
+
+      // Update the resource mappings with new IDs
+      for (const [gitResourceId, oldLocalResourceId] of Object.entries(parentMapping.resourceMappings)) {
+        const newLocalResourceId = allResourceMappings[oldLocalResourceId];
+        if (newLocalResourceId) {
+          oldToNewResourceMappings[gitResourceId] = newLocalResourceId as string;
+        }
+      }
+
+      if (Object.keys(oldToNewResourceMappings).length > 0) {
+        const newMapping = manager.create(AppVersionResourceMapping, {
+          appId: parentMapping.appId,
+          appVersionId: newVersionId,
+          resourceType: parentMapping.resourceType,
+          resourceMappings: oldToNewResourceMappings,
+        });
+
+        await manager.save(newMapping);
+      }
     }
   }
 }
