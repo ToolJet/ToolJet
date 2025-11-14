@@ -315,7 +315,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               // 2. AND we're viewing the current global environment (not browsing another environment)
               const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
               const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
-              
+
               return (
                 <VersionDropdownItem
                   key={version.id}

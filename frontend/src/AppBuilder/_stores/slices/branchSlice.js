@@ -233,11 +233,7 @@ export const createBranchSlice = (set, get) => ({
             },
             (error) => {
               console.error('switchBranch - error switching version:', error);
-              set(
-                () => ({ branchError: error.message || 'Failed to switch to branch' }),
-                false,
-                'switchBranch:error'
-              );
+              set(() => ({ branchError: error.message || 'Failed to switch to branch' }), false, 'switchBranch:error');
               reject({ success: false, error: error.message });
             }
           );
