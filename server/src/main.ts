@@ -6,13 +6,7 @@ import * as compression from 'compression';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
-import {
-  RequestMethod,
-  ValidationPipe,
-  VersioningType,
-  VERSION_NEUTRAL,
-  INestApplicationContext,
-} from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { custom } from 'openid-client';
 import { join } from 'path';
@@ -38,8 +32,6 @@ import {
   logShutdownInfo,
   initSentry,
 } from '@helpers/bootstrap.helper';
-
-let appContext: INestApplicationContext = undefined;
 
 async function bootstrap() {
   const logger = createLogger('Bootstrap');
@@ -214,10 +206,6 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
       parameterLimit: 1000000,
     })
   );
-}
-
-export function getAppContext(): INestApplicationContext {
-  return appContext;
 }
 
 // Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
