@@ -312,7 +312,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSourceName: dataSource?.name,
           },
         };
-        console.log('[DEBUG] Setting audit context. App:', appToUse?.id, appToUse?.name, 'DS:', dataSource?.id, dataSource?.kind);
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
       }
     }
