@@ -132,6 +132,7 @@
             "setup/azure-container",
             "setup/google-cloud-run",
             "setup/env-vars",
+            "setup/observability-otel",
             "setup/http-proxy",
             "setup/tooljet-subpath",
             "setup/v2-migration-guide",
