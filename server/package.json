@@ -145,6 +145,7 @@
     "rimraf": "^6.0.1",
     "rxjs": "^7.2.0",
     "sanitize-html": "^2.7.0",
+    "scimmy": "^1.3.5",
     "semver": "^7.5.4",
     "simple-git": "^3.27.0",
     "sshpk": "^1.17.0",
