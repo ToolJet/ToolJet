@@ -1,8 +1,7 @@
-import { OnModuleInit, RequestMethod, MiddlewareConsumer, DynamicModule } from '@nestjs/common';
+import { OnModuleInit, DynamicModule } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
-import * as Sentry from '@sentry/node';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
@@ -175,13 +174,6 @@ export class AppModule implements OnModuleInit {
         AuditLogsClearScheduler,
       ],
     };
-  }
-
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL,
-    });
   }
 
   async onModuleInit() {
