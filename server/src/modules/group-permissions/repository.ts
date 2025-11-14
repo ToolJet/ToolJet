@@ -30,7 +30,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
 
   getGroup(options: FindOptionsWhere<GroupPermissions>, manager?: EntityManager): Promise<GroupPermissions> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(GroupPermissions, { where: options });
+      return await manager.findOne(GroupPermissions, { where: options });
     }, manager || this.manager);
   }
 
