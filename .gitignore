@@ -37,17 +37,3 @@
 
 .idea/*
 ti-*
-# Super Claude Kit session files (generated at runtime)
-CLAUDE.md
-.claude/
-.claude/capsule.toon
-.claude/capsule_persist.json
-.claude/capsule.hash
-.claude/last_refresh_state.txt
-.claude/last_snapshot.txt
-.claude/message_count.txt
-.claude/session_start.txt
-.claude/session_files.log
-.claude/current_tasks.log
-.claude/subagent_results.log
-.claude/session_discoveries.log
