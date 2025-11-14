@@ -64,7 +64,7 @@ export const ModalV2 = function Modal({
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const iconName = styles.icon;
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+  const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
