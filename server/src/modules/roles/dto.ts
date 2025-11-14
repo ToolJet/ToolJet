@@ -15,5 +15,5 @@ export class EditUserRoleDto {
   updatingUserId?: string;
 
   @IsOptional()
-  currentRole: GroupPermissions;
+  currentRole?: GroupPermissions;
 }

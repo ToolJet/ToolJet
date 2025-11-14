@@ -63,13 +63,17 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { ScimModule } from '@modules/scim/module';
+import { BullBoardModule } from "@bull-board/nestjs";
+import { ExpressAdapter } from "@bull-board/express";
+import * as basicAuth from 'express-basic-auth';
 
 export class AppModule implements OnModuleInit {
   constructor(
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
-  ) {}
+  ) { }
 
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -131,12 +135,27 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await ScimModule.register(configs, true),
     ];
 
     const conditionalImports = [];
+
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs, true));
+      conditionalImports.push(
+        await WorkflowsModule.register(configs, true)
+      )
+      conditionalImports.push(
+        BullBoardModule.forRoot({
+          route: '/jobs',
+          adapter: ExpressAdapter,
+          middleware: basicAuth({
+            challenge: true,
+            users: { admin: process.env.TOOLJET_QUEUE_DASH_PASSWORD },
+          }),
+        })
+      )
     }
+
     if (process.env.ENABLE_METRICS === 'true') {
       conditionalImports.push(MetricsModule);
     }
