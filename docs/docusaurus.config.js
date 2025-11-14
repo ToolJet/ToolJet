@@ -83,7 +83,7 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'light', 
+      style: 'light',
       logo: {
         alt: 'ToolJet Logo',
         src: '/img/docs_logo.svg',
@@ -276,7 +276,7 @@ module.exports = {
       <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/39494431.js"></script>
       <!-- End of HubSpot Embed Code -->
       `,
-    },    
+    },
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
