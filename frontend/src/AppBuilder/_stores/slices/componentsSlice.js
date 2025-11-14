@@ -2233,4 +2233,23 @@ export const createComponentsSlice = (set, get) => ({
         }
       });
   },
+  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+    const component = getComponentDefinition(componentId, moduleId)?.component;
+    const componentName = component?.name;
+    const parentId = component?.parent;
+    const parentType = getComponentTypeFromId(parentId);
+    if (parentType === 'Listview') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      return subcontainerParentComponent?.[componentName]?.[property];
+    } else if (parentType === 'Form') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[componentName];
+      return subcontainerParentComponent?.[property];
+    } else {
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      return componentExposedProperty;
+    }
+  },
 });

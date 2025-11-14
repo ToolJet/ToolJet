@@ -38,6 +38,10 @@ const WidgetWrapper = memo(
       }
       return state.temporaryLayouts?.[transformedId];
     }, shallow);
+    const getExposedPropertyForAdditionalActions = useStore(
+      (state) => state.getExposedPropertyForAdditionalActions,
+      shallow
+    );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
@@ -60,7 +64,12 @@ const WidgetWrapper = memo(
 
     const visibility = useStore((state) => {
       const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-      const componentExposedVisibility = state.getExposedValueOfComponent(id, moduleId)?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        id,
+        subContainerIndex,
+        'isVisible',
+        moduleId
+      );
       if (componentExposedVisibility !== undefined) return componentExposedVisibility;
       return component?.properties?.visibility || component?.styles?.visibility;
     });
