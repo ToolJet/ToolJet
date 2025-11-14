@@ -83,7 +83,7 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'light', 
+      style: 'light',
       logo: {
         alt: 'ToolJet Logo',
         src: '/img/docs_logo.svg',
@@ -276,7 +276,7 @@ module.exports = {
       <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/39494431.js"></script>
       <!-- End of HubSpot Embed Code -->
       `,
-    },    
+    },
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
@@ -293,7 +293,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
+          includeCurrentVersion: true, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
