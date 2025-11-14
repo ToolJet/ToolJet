@@ -292,11 +292,6 @@ export class AppImportExportService {
         };
       });
 
-      // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
-      for (const query of queriesWithPermissionGroups) {
-        delete query.updatedAt;
-      }
-
       const components =
         pages.length > 0
           ? await manager
@@ -395,10 +390,115 @@ export class AppImportExportService {
         }),
       };
       // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
-      delete (appToExport as any).updatedAt;
+
+      // Remove all IDs and timestamps that are regenerated during import
+      // this.cleanupExportData(appToExport);
+
       console.log('files testing', files);
       return { appV2: appToExport };
     });
+  }
+
+  /**
+   * Remove all IDs and timestamps from export data that are regenerated during import.
+   * This makes exports cleaner, smaller, and more suitable for version control.
+   */
+
+  // pending to review -> Rohan
+  private cleanupExportData(appData: any): void {
+    // Remove app-level metadata
+    delete appData.id;
+    delete appData.organizationId;
+    delete appData.userId;
+    delete appData.createdAt;
+    delete appData.updatedAt;
+
+    // Clean components
+    appData.components?.forEach((component) => {
+      delete component.id;
+      delete component.appVersionId;
+      delete component.pageId;
+      delete component.createdAt;
+      delete component.updatedAt;
+
+      // Clean component layouts
+      component.layouts?.forEach((layout) => {
+        delete layout.id;
+        delete layout.componentId;
+        delete layout.createdAt;
+        delete layout.updatedAt;
+      });
+    });
+
+    // Clean pages
+    appData.pages?.forEach((page) => {
+      delete page.id;
+      delete page.appVersionId;
+      delete page.createdAt;
+      delete page.updatedAt;
+    });
+
+    // Clean queries
+    appData.dataQueries?.forEach((query) => {
+      delete query.id;
+      delete query.appVersionId;
+      delete query.dataSourceId;
+      delete query.organizationId;
+      delete query.createdAt;
+      delete query.updatedAt;
+    });
+
+    // Clean data sources
+    appData.dataSources?.forEach((ds) => {
+      delete ds.id;
+      delete ds.appId;
+      delete ds.appVersionId;
+      delete ds.organizationId;
+      delete ds.createdAt;
+      delete ds.updatedAt;
+    });
+
+    // Clean versions
+    appData.appVersions?.forEach((version) => {
+      delete version.id;
+      delete version.appId;
+      delete version.createdAt;
+      delete version.updatedAt;
+    });
+
+    // Clean environments
+    appData.appEnvironments?.forEach((env) => {
+      delete env.id;
+      delete env.organizationId;
+      delete env.createdAt;
+      delete env.updatedAt;
+    });
+
+    // Clean data source options
+    appData.dataSourceOptions?.forEach((dso) => {
+      delete dso.id;
+      delete dso.dataSourceId;
+      delete dso.environmentId;
+      delete dso.createdAt;
+      delete dso.updatedAt;
+    });
+
+    // Clean events
+    appData.events?.forEach((event) => {
+      delete event.id;
+      delete event.appVersionId;
+      delete event.createdAt;
+      delete event.updatedAt;
+    });
+
+    // Recursively clean nested modules
+    // if (appData.modules?.length > 0) {
+    //   appData.modules.forEach((module) => {
+    //     if (module.appV2) {
+    //       this.cleanupExportData(module.appV2);
+    //     }
+    //   });
+    // }
   }
 
   async mapModulesForAppImport(
@@ -640,11 +740,11 @@ export class AppImportExportService {
       await fs.mkdir(baseDir, { recursive: true });
       const filePath = path.join(baseDir, `${appId}.json`);
       await fs.writeFile(filePath, JSON.stringify(resourceMapping, null, 2), 'utf8');
-      // eslint-disable-next-line no-console
+
       console.log(`Saved import resource mapping to ${filePath}`);
     } catch (err) {
       // Do not fail the import if writing the file fails; just log for debugging
-      // eslint-disable-next-line no-console
+
       console.warn('Failed to write import resource mapping to file', err?.message || err);
     }
   }
