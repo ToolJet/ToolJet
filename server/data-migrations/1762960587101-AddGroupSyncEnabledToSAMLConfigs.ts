@@ -1,23 +1,34 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import { filePathForEnvVars } from '../scripts/database-config-utils';
 
-export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationInterface {
-  name = 'AddGroupSyncEnabledToSAMLConfigs1731400000000';
+export class AddGroupSyncEnabledToSAMLConfigs1762960587101 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Decide desired boolean to write based on env:
-    // If DISABLE_SAML_GROUP_SYNC is present:
-    //    'true'  => groupSyncEnabled = false
-    //    anything else => groupSyncEnabled = true
-    // If env not present => default to false (existing default)
-    const envVal = process.env.DISABLE_SAML_GROUP_SYNC;
-    const desiredBool = typeof envVal !== 'undefined'
-      ? (envVal === 'true' ? false : true)
-      : false;
 
-    // Use SQL literal 'true' or 'false' accordingly
-    const sqlBool = desiredBool ? 'true' : 'false';
+    let data: any = process.env;
+    const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
 
-    // Update SAML 
+    if (fs.existsSync(envVarsFilePath)) {
+      const envFileContent = fs.readFileSync(envVarsFilePath);
+      const parsedEnvVars = dotenv.parse(envFileContent);
+      data = { ...data, ...parsedEnvVars };
+    }
+
+    const rawValue = data.DISABLE_SAML_GROUP_SYNC;
+
+    // Rule:
+    // DISABLE_SAML_GROUP_SYNC = "false" --> desiredBool = true
+    // otherwise → false
+    const desiredBool = rawValue === 'false';
+    const sqlBool = String(desiredBool);
+
+    console.log("ENV RAW:", rawValue);
+    console.log("desiredBool:", desiredBool);
+    console.log("sqlBool:", sqlBool);
+
+    // Update SAML
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = jsonb_set(
@@ -29,17 +40,9 @@ export class AddGroupSyncEnabledToSAMLConfigs1731400000000 implements MigrationI
       WHERE sso = 'saml'
         AND NOT (configs::jsonb ? 'groupSyncEnabled');
     `);
-
-    // Remove legacy snake_case key if exists (optional cleanup)
-    await queryRunner.query(`
-      UPDATE sso_configs
-      SET configs = configs::jsonb - 'group_sync_enabled'
-      WHERE sso = 'saml' AND (configs::jsonb ? 'group_sync_enabled');
-    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Rollback: remove the groupSyncEnabled key from SAML/OpenID configs
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = configs::jsonb - 'groupSyncEnabled'

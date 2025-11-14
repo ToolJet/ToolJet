@@ -1,29 +1,43 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import { filePathForEnvVars } from '../scripts/database-config-utils';
 
-export class PopulateOIDCCustomScopes1729870000000 implements MigrationInterface {
-  name = 'PopulateOIDCCustomScopes1729870000000';
+export class PopulateOIDCCustomScopes1762517351039 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const oidcCustomScopes = process.env.OIDC_CUSTOM_SCOPES;
+
+    let data: any = process.env;
+    const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
+
+    if (fs.existsSync(envVarsFilePath)) {
+      const envFileContent = fs.readFileSync(envVarsFilePath);
+      const parsedEnvVars = dotenv.parse(envFileContent);
+      data = { ...data, ...parsedEnvVars };
+    }
+
+    const oidcCustomScopes = data.OIDC_CUSTOM_SCOPES;
 
     if (!oidcCustomScopes) {
       console.log('OIDC_CUSTOM_SCOPES not set — skipping migration');
       return;
     }
 
+    console.log("OIDC_CUSTOM_SCOPES:", oidcCustomScopes);
+
+ 
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = jsonb_set(
         configs::jsonb,
         '{customScopes}',
-        to_jsonb('${oidcCustomScopes}')
+        to_jsonb('${oidcCustomScopes}'::text)
       )
       WHERE sso = 'openid';
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // ✅ Remove customScopes field if rollback happens
     await queryRunner.query(`
       UPDATE sso_configs
       SET configs = configs - 'customScopes'
