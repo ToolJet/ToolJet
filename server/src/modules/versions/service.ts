@@ -114,12 +114,19 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
-        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-      }
+      // Check version status first
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
+      } else if (appVersion?.status === AppVersionStatus.DRAFT) {
+        // Draft versions should never be frozen by git config
+        // Only respect environment-based freeze (shouldFreezeEditor from environment priority)
+        // Keep existing value, don't modify based on git
+      } else {
+        // For other statuses, check git config
+        const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+        if (appGit) {
+          shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+        }
       }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {

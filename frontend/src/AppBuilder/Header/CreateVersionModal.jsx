@@ -150,9 +150,12 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
-      const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
-      const appGit = gitData?.app_git;
-      await handleCommitOnVersionCreation(appGit);
+      // Only call git-related APIs if git sync is enabled
+      if (isGitSyncEnabled) {
+        const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
+        const appGit = gitData?.app_git;
+        await handleCommitOnVersionCreation(appGit);
+      }
 
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,

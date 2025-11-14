@@ -353,8 +353,13 @@ export class AppsService implements IAppsService {
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = shouldFreezeEditor;
+      // Check if editing version is a draft
+      const editingVersion = response['editing_version'];
+      const isDraft = editingVersion?.status === 'DRAFT';
+      
       const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
       response['editorEnvironment'] = {

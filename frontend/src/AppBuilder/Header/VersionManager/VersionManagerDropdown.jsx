@@ -32,6 +32,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    orgGit,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -47,6 +48,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -108,6 +110,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
+  
+  // Only disable create draft button when:
+  // 1. Git is configured AND there's already a version-type draft
+  // When git is not configured, allow multiple drafts (old behavior)
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const shouldDisableCreateDraft = orgGit && isGitSyncEnabled && hasVersionTypeDraft;
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -342,8 +350,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        {/* Create Draft Button - disabled if version-type draft already exists or no published versions */}
-        <CreateDraftButton onClick={handleCreateDraft} disabled={hasVersionTypeDraft} />
+        {/* Create Draft Button - disabled if branching is enabled AND version-type draft already exists */}
+        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} />
       </Popover.Body>
     </Popover>
   );
