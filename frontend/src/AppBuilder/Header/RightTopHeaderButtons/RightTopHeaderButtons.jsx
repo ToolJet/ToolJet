@@ -12,14 +12,19 @@ import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
-  const branchingEnabled = useStore((state) => state.branchingEnabled);
+  const { selectedVersion, selectedEnvironment } = useStore((state) => ({
+    selectedVersion: state.selectedVersion,
+    selectedEnvironment: state.selectedEnvironment,
+  }));
+
+  const isNotPromotedOrReleased = selectedEnvironment?.name === 'development' && !selectedVersion?.isReleased;
 
   return (
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
         {<GitSyncManager />}
         <div className="tw-hidden navbar-seperator" />
-        {<LifecycleCTAButton />}
+        {isNotPromotedOrReleased && <LifecycleCTAButton />}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
     </div>
