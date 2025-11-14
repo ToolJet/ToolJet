@@ -123,6 +123,7 @@ export const createBranchSlice = (set, get) => ({
   /**
    * Switch to a different branch (changes the editing version to the branch version)
    * Branches are represented as versions with versionType === 'branch'
+   * IMPORTANT: Branches always work in Development environment, so we switch to Development first
    * @param {string} appId - Application ID
    * @param {string} branchName - Target branch name
    */
@@ -134,89 +135,113 @@ export const createBranchSlice = (set, get) => ({
 
       // Debug: Log available data
       console.log('switchBranch - branchName:', branchName);
+      console.log('switchBranch - currentEnvironment:', state.selectedEnvironment);
       console.log('switchBranch - allBranches:', state.allBranches);
-      console.log('switchBranch - appVersions:', state.appVersions);
-      console.log('switchBranch - versionsPromotedToEnvironment:', state.versionsPromotedToEnvironment);
 
-      // Try to find the version in appVersions first (includes all versions, even drafts)
-      const allVersions = state.appVersions || [];
-      const branchVersionFromAll = allVersions.find(
+      // Get Development environment - branches ALWAYS work in Development
+      const developmentEnv = state.environments?.find((env) => env.name === 'Development' || env.priority === 1);
+      if (!developmentEnv) {
+        throw new Error('Development environment not found');
+      }
+
+      // Get development versions to find the branch version
+      const developmentVersions = state.developmentVersions || [];
+      const branchVersion = developmentVersions.find(
         (version) =>
           (version.versionType === 'branch' || version.version_type === 'branch') && version.name === branchName
       );
 
-      console.log('switchBranch - branchVersionFromAll:', branchVersionFromAll);
+      console.log('switchBranch - developmentVersions:', developmentVersions);
+      console.log('switchBranch - found branchVersion:', branchVersion);
 
-      // Fallback: check in versionsPromotedToEnvironment for non-draft versions
-      let targetVersion = branchVersionFromAll;
-
-      if (!branchVersionFromAll) {
-        const versionsPromotedToEnvironment = state.versionsPromotedToEnvironment || [];
-        const branchVersions = versionsPromotedToEnvironment.filter((v) => v.versionType === 'branch');
-        const branchVersion = branchVersions.find((version) => version.name === branchName);
-
-        console.log('switchBranch - branchVersions (filtered):', branchVersions);
-        console.log('switchBranch - found branchVersion in promoted:', branchVersion);
-
-        if (!branchVersion) {
-          // Check if branch exists in allBranches but not as a version
-          const branchExists = state.allBranches.find((b) => b.name === branchName);
-          if (branchExists) {
-            throw new Error(
-              `Branch "${branchName}" exists in Git but has no corresponding version. You may need to create this branch in ToolJet first.`
-            );
-          }
-
+      if (!branchVersion) {
+        // Check if branch exists in allBranches but not as a version
+        const branchExists = state.allBranches.find((b) => b.name === branchName);
+        if (branchExists) {
           throw new Error(
-            `Branch version not found: ${branchName}. Available branch versions: ${branchVersions
-              .map((v) => v.name)
-              .join(', ')}`
+            `Branch "${branchName}" exists in Git but has no corresponding version. You may need to create this branch in ToolJet first.`
           );
         }
 
-        targetVersion = branchVersion;
+        const availableBranches = developmentVersions
+          .filter((v) => v.versionType === 'branch' || v.version_type === 'branch')
+          .map((v) => v.name)
+          .join(', ');
+        throw new Error(
+          `Branch version not found: ${branchName}. Available branch versions: ${availableBranches || 'none'}`
+        );
       }
 
-      // Use changeEditorVersionAction to switch to the branch version
-      // This is the same way the version dropdown switches versions
+      // Check if already on this branch version AND in Development environment
+      const alreadyOnVersion = state.selectedVersion?.id === branchVersion.id;
+      const alreadyInDevelopment = state.selectedEnvironment?.id === developmentEnv.id;
+
+      if (alreadyOnVersion && alreadyInDevelopment) {
+        console.log('switchBranch - already on target branch in Development');
+        return { success: true, data: state.selectedVersion };
+      }
+
+      // Update current branch first
+      const targetBranch = state.allBranches.find((b) => b.name === branchName) || { name: branchName };
+      set(
+        (state) => ({
+          ...state,
+          currentBranch: targetBranch,
+        }),
+        false,
+        'switchBranch:updating-branch'
+      );
+
+      // Switch to branch version (and Development environment if needed)
       return new Promise((resolve, reject) => {
-        state.changeEditorVersionAction(
-          appId,
-          targetVersion.id,
-          (data) => {
-            console.log('switchBranch - changeEditorVersionAction success:', data);
-
-            // Update current branch in state
-            const targetBranch = state.allBranches.find((b) => b.name === branchName);
-
-            // Update currentVersionId and selectedVersion (EXACTLY like version dropdown does)
-            state.setCurrentVersionId(targetVersion.id);
-            state.setSelectedVersion(targetVersion);
-
-            // Update the currentBranch
-            set(
-              (state) => ({
-                ...state,
-                currentBranch: targetBranch || { name: branchName },
-              }),
-              false,
-              'switchBranch:success'
+        // If not in Development environment, switch to it first
+        if (!alreadyInDevelopment) {
+          console.log('switchBranch - switching to Development environment first');
+          state.environmentChangedAction(developmentEnv, () => {
+            // After environment switch, change to the branch version
+            state.changeEditorVersionAction(
+              appId,
+              branchVersion.id,
+              (data) => {
+                console.log('switchBranch - version switched after environment change');
+                state.setCurrentVersionId(branchVersion.id);
+                state.setSelectedVersion(branchVersion);
+                resolve({ success: true, data });
+              },
+              (error) => {
+                console.error('switchBranch - error after environment change:', error);
+                set(
+                  () => ({ branchError: error.message || 'Failed to switch to branch' }),
+                  false,
+                  'switchBranch:error'
+                );
+                reject({ success: false, error: error.message });
+              }
             );
-
-            resolve({ success: true, data });
-          },
-          (error) => {
-            console.error('switchBranch - changeEditorVersionAction error:', error);
-            set(
-              () => ({
-                branchError: error.message || 'Failed to switch branch',
-              }),
-              false,
-              'switchBranch:error'
-            );
-            reject({ success: false, error: error.message });
-          }
-        );
+          });
+        } else {
+          // Already in Development, just switch to branch version
+          console.log('switchBranch - already in Development, switching to branch version');
+          state.changeEditorVersionAction(
+            appId,
+            branchVersion.id,
+            (data) => {
+              console.log('switchBranch - version switched');
+              state.setCurrentVersionId(branchVersion.id);
+              state.setSelectedVersion(branchVersion);
+              resolve({ success: true, data });
+            },
+            (error) => {
+              console.error('switchBranch - error switching version:', error);
+              set(
+                () => ({ branchError: error.message || 'Failed to switch to branch' }),
+                false,
+                'switchBranch:error'
+              );
+              reject({ success: false, error: error.message });
+            }
+          );
+        }
       });
     } catch (error) {
       console.error('Error switching branch:', error);

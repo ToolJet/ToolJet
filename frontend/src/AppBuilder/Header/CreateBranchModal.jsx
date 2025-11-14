@@ -214,10 +214,27 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   // Set default "Create from" on mount
   useEffect(() => {
     if (versions.length > 0 && !createFrom) {
+      // Filter to only version-type versions (exclude branches)
+      const versionTypeVersions = versions.filter((v) => {
+        const versionType = v.versionType || v.version_type;
+        return versionType === 'version';
+      });
+
+      if (versionTypeVersions.length === 0) {
+        return; // No valid versions to select from
+      }
+
+      // If editingVersion is a version-type, use it; otherwise use first valid version
       if (editingVersion?.id) {
-        setCreateFrom(editingVersion.id);
+        const editingVersionType = editingVersion.versionType || editingVersion.version_type;
+        if (editingVersionType === 'version') {
+          setCreateFrom(editingVersion.id);
+        } else {
+          // Current editing version is a branch, use first version-type version
+          setCreateFrom(versionTypeVersions[0].id);
+        }
       } else {
-        setCreateFrom(versions[0].id);
+        setCreateFrom(versionTypeVersions[0].id);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
