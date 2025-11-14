@@ -267,7 +267,8 @@ describe("Self host onboarding", () => {
     cy.apiLogout();
     cy.visit("/my-workspace");
     cy.wait("@translations");
-    cy.wait(4000);
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
+    cy.wait(1000);
     cy.appUILogin();
 
     cy.get(commonSelectors.workspaceName)

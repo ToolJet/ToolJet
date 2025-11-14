@@ -95,7 +95,11 @@ Cypress.Commands.add(
 
     // Open widget panel and search
     cy.get('[data-cy="right-sidebar-plus-button"]').click();
-    cy.get(commonSelectors.searchField).should("be.visible").first().clear().type(widgetName);
+    cy.get(commonSelectors.searchField)
+      .should("be.visible")
+      .first()
+      .clear()
+      .type(widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
 
     // Get element positions for coordinate calculations
@@ -113,14 +117,19 @@ Cypress.Commands.add(
             button: 0,
             clientX: widgetRect.left + widgetRect.width / 2,
             clientY: widgetRect.top + widgetRect.height / 2,
-            force: true
+            force: true,
           })
           .trigger("dragstart", { dataTransfer, force: true });
 
         // Drag over canvas with target coordinates
         cy.get(canvas)
           .trigger("dragenter", { dataTransfer, force: true })
-          .trigger("dragover", { dataTransfer, clientX: dropX, clientY: dropY, force: true });
+          .trigger("dragover", {
+            dataTransfer,
+            clientX: dropX,
+            clientY: dropY,
+            force: true,
+          });
 
         // Inject ghost position for headless mode
         // Required because Cypress doesn't create native ghost elements
@@ -143,16 +152,22 @@ Cypress.Commands.add(
                   right: rect.left + positionX,
                   bottom: rect.top + positionY,
                   width: 0,
-                  height: 0
+                  height: 0,
                 }),
-                closest: (selector) => selector === '.real-canvas' ? canvasElement : null
-              }
-            }
+                closest: (selector) =>
+                  selector === ".real-canvas" ? canvasElement : null,
+              },
+            },
           });
         });
 
         cy.get(canvas)
-          .trigger("drop", { dataTransfer, clientX: dropX, clientY: dropY, force: true })
+          .trigger("drop", {
+            dataTransfer,
+            clientX: dropX,
+            clientY: dropY,
+            force: true,
+          })
           .trigger("mouseup", { force: true });
 
         cy.waitForAutoSave();
@@ -292,9 +307,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -727,3 +742,24 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("waitForElement", (selector, timeout = 50000) => {
+  cy.get(selector, { timeout: timeout, log: false }).should("be.visible", {
+    timeout: timeout,
+    log: false,
+  });
+
+  Cypress.log({
+    name: "waitForElement",
+    displayName: "WAIT",
+    message: `Waiting for element: ${selector}`,
+    consoleProps: () => {
+      return {
+        Selector: selector,
+        Timeout: timeout,
+      };
+    },
+  });
+
+  cy.wait(200, { log: false });
+});
