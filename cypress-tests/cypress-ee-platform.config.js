@@ -31,6 +31,7 @@ module.exports = defineConfig({
   viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
+  projectId: "sk3oji",
 
   e2e: {
     setupNodeEvents(on, config) {
