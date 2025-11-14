@@ -110,7 +110,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
-  
+
   // Only disable create draft button when:
   // 1. Git is configured AND there's already a version-type draft
   // When git is not configured, allow multiple drafts (old behavior)
