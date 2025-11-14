@@ -10,7 +10,6 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-
       - name: Checkout code to main for pre-release CE edition
         if: "!contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
@@ -71,7 +70,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification
-        if: always()
         run: |
           # Determine release type and tags
           if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
@@ -93,9 +91,7 @@ jobs:
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   build-tooljet-image-for-ee-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -133,7 +129,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-
       - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
@@ -167,7 +162,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification
-        if: always()
         run: |
           # Determine release type and tags
           if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
@@ -189,9 +183,7 @@ jobs:
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   build-tooljet-image-for-cloud-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -240,7 +232,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification
-        if: always()
         run: |
           # Cloud edition only runs for LTS releases
           release_type="🔒 LTS Release"
@@ -255,7 +246,6 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
@@ -339,7 +329,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification
-        if: always()
         run: |
           # Determine release type and tags
           if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
