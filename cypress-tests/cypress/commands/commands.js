@@ -93,40 +93,71 @@ Cypress.Commands.add(
   ) => {
     const dataTransfer = new DataTransfer();
 
+    // Open widget panel and search
     cy.get('[data-cy="right-sidebar-plus-button"]').click();
-    cy.get(commonSelectors.searchField).should("be.visible");
-
-    cy.get(commonSelectors.searchField).first().clear().type(widgetName);
+    cy.get(commonSelectors.searchField).should("be.visible").first().clear().type(widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
 
-    cy.get(commonWidgetSelector.widgetBox(widgetName2))
-      .trigger("mousedown", { which: 1, button: 0, force: true })
-      .trigger("dragstart", { dataTransfer, force: true });
+    // Get element positions for coordinate calculations
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).then(($widget) => {
+      cy.get(canvas).then(($canvas) => {
+        const widgetRect = $widget[0].getBoundingClientRect();
+        const canvasRect = $canvas[0].getBoundingClientRect();
+        const dropX = canvasRect.left + positionX;
+        const dropY = canvasRect.top + positionY;
 
-    cy.get(canvas)
-      .trigger("dragenter", {
-        dataTransfer,
-        clientX: positionX,
-        clientY: positionY,
-        force: true,
-      })
-      .trigger("dragover", {
-        dataTransfer,
-        clientX: positionX,
-        clientY: positionY,
-        force: true,
+        // Initiate drag from widget center
+        cy.get(commonWidgetSelector.widgetBox(widgetName2))
+          .trigger("mousedown", {
+            which: 1,
+            button: 0,
+            clientX: widgetRect.left + widgetRect.width / 2,
+            clientY: widgetRect.top + widgetRect.height / 2,
+            force: true
+          })
+          .trigger("dragstart", { dataTransfer, force: true });
+
+        // Drag over canvas with target coordinates
+        cy.get(canvas)
+          .trigger("dragenter", { dataTransfer, force: true })
+          .trigger("dragover", { dataTransfer, clientX: dropX, clientY: dropY, force: true });
+
+        // Inject ghost position for headless mode
+        // Required because Cypress doesn't create native ghost elements
+        cy.window().then((win) => {
+          if (!win.useGridStore) return;
+
+          const canvasElement = win.document.querySelector(canvas);
+          if (!canvasElement) return;
+
+          const rect = canvasElement.getBoundingClientRect();
+
+          win.useGridStore.getState().actions.setGhostDragPosition({
+            left: positionX,
+            top: positionY,
+            e: {
+              target: {
+                getBoundingClientRect: () => ({
+                  left: rect.left + positionX,
+                  top: rect.top + positionY,
+                  right: rect.left + positionX,
+                  bottom: rect.top + positionY,
+                  width: 0,
+                  height: 0
+                }),
+                closest: (selector) => selector === '.real-canvas' ? canvasElement : null
+              }
+            }
+          });
+        });
+
+        cy.get(canvas)
+          .trigger("drop", { dataTransfer, clientX: dropX, clientY: dropY, force: true })
+          .trigger("mouseup", { force: true });
+
+        cy.waitForAutoSave();
       });
-
-    cy.get(canvas)
-      .trigger("drop", {
-        dataTransfer,
-        clientX: positionX,
-        clientY: positionY,
-        force: true,
-      })
-      .trigger("mouseup", { force: true });
-
-    cy.waitForAutoSave();
+    });
   }
 );
 
@@ -261,9 +292,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
