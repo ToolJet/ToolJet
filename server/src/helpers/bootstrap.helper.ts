@@ -294,7 +294,7 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
-  logger.log(`OTEL_ENABLED: ${configService.get('OTEL_ENABLED') === 'true'}`);
+  logger.log(`OTEL_ENABLED: ${configService.get('ENABLE_OTEL') === 'true'}`);
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);
