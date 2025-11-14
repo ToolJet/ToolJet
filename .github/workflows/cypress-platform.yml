@@ -373,6 +373,9 @@ jobs:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: "ca6a0d5f-b763-4be7-b554-3425a973104e"  
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
