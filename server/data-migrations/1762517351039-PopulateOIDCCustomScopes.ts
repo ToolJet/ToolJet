@@ -19,11 +19,8 @@ export class PopulateOIDCCustomScopes1762517351039 implements MigrationInterface
     const oidcCustomScopes = data.OIDC_CUSTOM_SCOPES;
 
     if (!oidcCustomScopes) {
-      console.log('OIDC_CUSTOM_SCOPES not set — skipping migration');
       return;
     }
-
-    console.log("OIDC_CUSTOM_SCOPES:", oidcCustomScopes);
 
  
     await queryRunner.query(`

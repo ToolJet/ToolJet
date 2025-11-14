@@ -24,10 +24,6 @@ export class AddGroupSyncEnabledToSAMLConfigs1762960587101 implements MigrationI
     const desiredBool = rawValue === 'false';
     const sqlBool = String(desiredBool);
 
-    console.log("ENV RAW:", rawValue);
-    console.log("desiredBool:", desiredBool);
-    console.log("sqlBool:", sqlBool);
-
     // Update SAML
     await queryRunner.query(`
       UPDATE sso_configs
