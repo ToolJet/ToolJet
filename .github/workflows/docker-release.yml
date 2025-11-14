@@ -167,11 +167,11 @@ jobs:
           if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
             release_type="🔒 LTS Release"
             branch="lts-3.16"
-            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet-ee:ee-lts-latest, tooljet/tooljet:ee-lts-latest, tooljet/tooljet:${{ github.event.release.tag_name }}"
+            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet:${{ github.event.release.tag_name }}"
           else
             release_type="🔄 Pre-release"
             branch="main"
-            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet-ee:ee-latest, tooljet/tooljet:ee-latest, tooljet/tooljet:${{ github.event.release.tag_name }}"
+            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet:${{ github.event.release.tag_name }}"
           fi
 
           # Build message based on job status
