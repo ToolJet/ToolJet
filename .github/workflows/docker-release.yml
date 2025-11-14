@@ -10,7 +10,6 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-
       - name: Checkout code to main for pre-release CE edition
         if: "!contains(github.event.release.tag_name, '-lts')"
         uses: actions/checkout@v2
@@ -72,17 +71,27 @@ jobs:
 
       - name: Send Slack Notification
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet community image published:\n\`tooljet/tooljet-ce:${{ github.event.release.tag_name }}\`"
+          # Determine release type and tags
+          if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
+            release_type="🔒 LTS Release"
+            branch="lts-3.16"
+            tags="tooljet/tooljet-ce:${{ github.event.release.tag_name }}, tooljet/tooljet-ce:ce-lts-latest"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+            release_type="🔄 Pre-release"
+            branch="main"
+            tags="tooljet/tooljet-ce:${{ github.event.release.tag_name }}, tooljet/tooljet-ce:ce-latest"
+          fi
+
+          # Build message based on job status
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="✅ *ToolJet Community Edition Published*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nTags: \`${tags}\`"
+          else
+            message="❌ *ToolJet Community Edition Build Failed*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nStatus: Build or push failed"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   build-tooljet-image-for-ee-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -120,7 +129,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-
       - name: Build and Push Docker image for pre-release tag
         if: "!contains(github.event.release.tag_name, '-lts')"
         uses: docker/build-push-action@v4
@@ -155,17 +163,27 @@ jobs:
 
       - name: Send Slack Notification
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise image published:\n\`tooljet/tooljet-ee:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`"
+          # Determine release type and tags
+          if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
+            release_type="🔒 LTS Release"
+            branch="lts-3.16"
+            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet:${{ github.event.release.tag_name }}"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/tooljet-ee:${{ github.event.release.tag_name }}\`\n\`tooljet/tooljet:${{ github.event.release.tag_name }}\`"
+            release_type="🔄 Pre-release"
+            branch="main"
+            tags="tooljet/tooljet-ee:${{ github.event.release.tag_name }}, tooljet/tooljet:${{ github.event.release.tag_name }}"
+          fi
+
+          # Build message based on job status
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="✅ *ToolJet Enterprise Edition Published*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nTags: \`${tags}\`"
+          else
+            message="❌ *ToolJet Enterprise Edition Build Failed*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nStatus: Build or push failed"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   build-tooljet-image-for-cloud-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -215,14 +233,19 @@ jobs:
 
       - name: Send Slack Notification
         run: |
+          # Cloud edition only runs for LTS releases
+          release_type="🔒 LTS Release"
+          branch="lts-3.16"
+          tags="tooljet/saas:${{ github.event.release.tag_name }}"
+
+          # Build message based on job status
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet cloud image published:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
+            message="✅ *ToolJet Cloud Edition Published*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nTags: \`${tags}\`"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! Image built:\n\`tooljet/saas:${{ github.event.release.tag_name }}\`"
+            message="❌ *ToolJet Cloud Edition Build Failed*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nStatus: Build or push failed"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
@@ -307,10 +330,22 @@ jobs:
 
       - name: Send Slack Notification
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="Try-ToolJet image published:\\n\`tooljet/try:${{ github.event.release.tag_name }}\`"
+          # Determine release type and tags
+          if [[ "${{ github.event.release.tag_name }}" == *"-lts"* ]]; then
+            release_type="🔒 LTS Release"
+            branch="lts-3.16"
+            tags="tooljet/try:${{ github.event.release.tag_name }}, tooljet/try:ee-lts-latest"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! tooljet/try:${{ github.event.release.tag_name }}"
+            release_type="🔄 Pre-release"
+            branch="main"
+            tags="tooljet/try:${{ github.event.release.tag_name }}, tooljet/try:ee-latest"
+          fi
+
+          # Build message based on job status
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="✅ *Try-ToolJet Image Published*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nTags: \`${tags}\`"
+          else
+            message="❌ *Try-ToolJet Image Build Failed*\nVersion: \`${{ github.event.release.tag_name }}\`\nType: ${release_type}\nBranch: \`${branch}\`\nStatus: Build or push failed"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

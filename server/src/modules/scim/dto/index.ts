@@ -100,10 +100,6 @@ export class CreateUserDto {
   @IsOptional()
   status?: Status = Status.ARCHIVED;
 
-  @IsString()
-  @IsOptional()
-  defaultOrganizationId: string;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => WorkspaceDto)
