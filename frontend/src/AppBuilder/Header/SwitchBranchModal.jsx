@@ -216,7 +216,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                   <div className="branch-list-content">
                     <div className="branch-list-name">{branch.name}</div>
                     <div className="branch-list-meta">
-                      Created by {branch.author || branch.createdBy || 'default'},{' '}
+                      Created by {branch.author || branch.created_by || 'default'},{' '}
                       {getRelativeTime(branch.createdAt || branch.created_at)}
                     </div>
                   </div>
