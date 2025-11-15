@@ -38,6 +38,10 @@ export class AppGitPushDto {
   @IsString()
   @IsOptional()
   gitBranchName?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowMasterPush?: boolean;
 }
 
 export class AppGitPullDto {

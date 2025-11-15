@@ -61,7 +61,7 @@ export class AppsService implements IAppsService {
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) {}
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -123,12 +123,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-            await this.versionRepository.findLatestVersionForEnvironment(
-              app.id,
-              envId,
-              environmentName,
-              app.organizationId
-            );
+          await this.versionRepository.findLatestVersionForEnvironment(
+            app.id,
+            envId,
+            environmentName,
+            app.organizationId
+          );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -187,6 +187,13 @@ export class AppsService implements IAppsService {
         appUpdateDto: appUpdateDto,
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
+    }
+
+    if (appUpdateDto.is_maintenance_on !== undefined && appUpdateDto.is_maintenance_on !== app.isMaintenanceOn) {
+      this.eventEmitter.emit('app.maintenance-toggled', {
+        appId: app.id,
+        isMaintenanceOn: appUpdateDto.is_maintenance_on,
+      });
     }
 
     //APP_UPDATE audit
@@ -346,8 +353,13 @@ export class AppsService implements IAppsService {
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = shouldFreezeEditor;
+      // Check if editing version is a draft
+      const editingVersion = response['editing_version'];
+      const isDraft = editingVersion?.status === 'DRAFT';
+      
       const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
       response['editorEnvironment'] = {

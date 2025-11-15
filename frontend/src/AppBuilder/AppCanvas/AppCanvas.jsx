@@ -23,10 +23,9 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
+import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
-import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -311,8 +310,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     />
                     {currentMode === 'edit' && (
                       <>
-                        <DragGhostWidget />
-                        <ResizeGhostWidget />
+                        <DragResizeGhostWidget />
                       </>
                     )}
                     <div id="component-portal" />

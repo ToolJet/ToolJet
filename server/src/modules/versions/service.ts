@@ -49,7 +49,7 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    return await this.versionsUtilService.createVersion(app, user, versionCreateDto);
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
@@ -114,12 +114,19 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
-        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-      }
+      // Check version status first
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
+      } else if (appVersion?.status === AppVersionStatus.DRAFT) {
+        // Draft versions should never be frozen by git config
+        // Only respect environment-based freeze (shouldFreezeEditor from environment priority)
+        // Keep existing value, don't modify based on git
+      } else {
+        // For other statuses, check git config
+        const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+        if (appGit) {
+          shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+        }
       }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {
@@ -255,8 +262,8 @@ export class VersionService implements IVersionService {
     user: User,
     draftVersionDto: DraftVersionDto,
     manager?: EntityManager
-  ): Promise<void> {
-    const { versionFromId } = draftVersionDto;
+  ): Promise<AppVersion> {
+    const { versionFromId, versionType } = draftVersionDto;
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
     const childVersionAppsCount = childVersionApps.length;
@@ -264,6 +271,7 @@ export class VersionService implements IVersionService {
       ...draftVersionDto,
       versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
       versionDescription: '',
+      versionType: versionType,
     };
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;

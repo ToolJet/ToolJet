@@ -7,9 +7,9 @@ const CreateDraftButton = ({ onClick, disabled = false }) => {
   return (
     <div className="create-draft-button" style={{ padding: '8px' }}>
       <ToolTip
-        message={'Draft version can only be created from saved versions.'}
+        message={'Only one draft version is allowed when branching is enabled.'}
         tooltipClassName="create-draft-button-tooltip"
-        placement="left"
+        placement="bottom"
         show={disabled}
       >
         <div className="">

@@ -380,7 +380,7 @@ export const fetchAndVisitInviteLink = (email) => {
       const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
 
       cy.apiLogout();
-      cy.wait(1000);
+      cy.wait(200);
       cy.visit(url);
     });
 };
@@ -480,6 +480,10 @@ export const openEditUserDetails = (
 
   verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
 
+  navigateToEditUser(email);
+};
+
+export const navigateToEditUser = (email) => {
   cy.contains("td", email)
     .parent()
     .within(() => {
@@ -489,6 +493,3 @@ export const openEditUserDetails = (
     .verifyVisibleElement("have.text", "Edit user details")
     .click();
 };
-
-
-

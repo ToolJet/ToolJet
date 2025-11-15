@@ -214,10 +214,27 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   // Set default "Create from" on mount
   useEffect(() => {
     if (versions.length > 0 && !createFrom) {
+      // Filter to only version-type versions (exclude branches)
+      const versionTypeVersions = versions.filter((v) => {
+        const versionType = v.versionType || v.version_type;
+        return versionType === 'version';
+      });
+
+      if (versionTypeVersions.length === 0) {
+        return; // No valid versions to select from
+      }
+
+      // If editingVersion is a version-type, use it; otherwise use first valid version
       if (editingVersion?.id) {
-        setCreateFrom(editingVersion.id);
+        const editingVersionType = editingVersion.versionType || editingVersion.version_type;
+        if (editingVersionType === 'version') {
+          setCreateFrom(editingVersion.id);
+        } else {
+          // Current editing version is a branch, use first version-type version
+          setCreateFrom(versionTypeVersions[0].id);
+        }
       } else {
-        setCreateFrom(versions[0].id);
+        setCreateFrom(versionTypeVersions[0].id);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -269,36 +286,42 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
               </button>
               {isDropdownOpen && (
                 <div className="custom-dropdown-menu">
-                  {versions.map((version) => {
-                    const badge = getVersionStatusBadge(version);
-                    const createdFrom = getCreatedFromText(version);
-                    const isSelected = version.id === createFrom;
+                  {versions
+                    .filter((version) => {
+                      // Only show versions with versionType === 'version' (exclude branch-type versions)
+                      const versionType = version.versionType || version.version_type;
+                      return versionType === 'version';
+                    })
+                    .map((version) => {
+                      const badge = getVersionStatusBadge(version);
+                      const createdFrom = getCreatedFromText(version);
+                      const isSelected = version.id === createFrom;
 
-                    return (
-                      <div
-                        key={version.id}
-                        className={cx('dropdown-item', { 'is-selected': isSelected })}
-                        onClick={() => {
-                          setCreateFrom(version.id);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        {isSelected && (
-                          <div className="check-icon">
-                            <SolidIcon name="tick" width="16" />
+                      return (
+                        <div
+                          key={version.id}
+                          className={cx('dropdown-item', { 'is-selected': isSelected })}
+                          onClick={() => {
+                            setCreateFrom(version.id);
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {isSelected && (
+                            <div className="check-icon">
+                              <SolidIcon name="tick" width="16" />
+                            </div>
+                          )}
+                          {!isSelected && <div className="check-icon-placeholder" />}
+                          <div className="item-content">
+                            <div className="item-header">
+                              <span className="item-name">{version.name}</span>
+                              {badge && <span className={cx('status-badge', badge.className)}>{badge.label}</span>}
+                            </div>
+                            {createdFrom && <div className="item-description">{createdFrom}</div>}
                           </div>
-                        )}
-                        {!isSelected && <div className="check-icon-placeholder" />}
-                        <div className="item-content">
-                          <div className="item-header">
-                            <span className="item-name">{version.name}</span>
-                            {badge && <span className={cx('status-badge', badge.className)}>{badge.label}</span>}
-                          </div>
-                          {createdFrom && <div className="item-description">{createdFrom}</div>}
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>

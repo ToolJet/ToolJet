@@ -577,7 +577,6 @@ button {
     background-color: var(--surfaces-surface-01);
     background-clip: border-box;
     height: 100vh;
-    z-index: 2;
 
     >div {
       background-color: var(--surfaces-surface-01);
@@ -2620,17 +2619,8 @@ hr {
     position: relative !important;
   }
 }
-
-.multiple-components-config-handle {
-  position: absolute;
-  left: 54px;
-  top: -20px;
-  transform: translate(-50%, 0px);
-  width: 110px;
-}
-
 .config-handle {
-  top: -20px;
+  top: -22px;
   position: fixed;
   max-height: 10px;
   z-index: 100;
@@ -2641,36 +2631,6 @@ hr {
       cursor: move;
       color: #fff;
       background: #c6cad0 !important;
-    }
-  }
-}
-
-.config-handle,
-.multiple-components-config-handle {
-  .handle-content {
-    cursor: move;
-    color: #ffffff;
-    background: $primary;
-  }
-
-  .badge {
-    font-size: 9px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-
-    .delete-part {
-      margin-left: 10px;
-      float: right;
-    }
-
-    .delete-part::before {
-      height: 12px;
-      display: inline-block;
-      width: 2px;
-      background-color: rgba(255, 255, 255, 0.8);
-      opacity: 0.5;
-      content: "";
-      vertical-align: middle;
     }
   }
 }
@@ -15333,19 +15293,6 @@ fieldset:disabled {
     input.dark-theme {
       background-color: var(--slate3);
       color: var(--slate12);
-    }
-  }
-}
-
-
-#component-portal {
-  .datepicker-component {
-    .react-datepicker {
-      .react-datepicker__month-container {
-        border-top-right-radius: 10px !important;
-        border-bottom-right-radius: 10px !important;
-        border-bottom-left-radius: 5px !important;
-      }
     }
   }
 }

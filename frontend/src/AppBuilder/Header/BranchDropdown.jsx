@@ -569,19 +569,20 @@ export function BranchDropdown({ appId, organizationId }) {
                   <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
                   <span>Create new branch</span>
                 </button>
-                {allBranches.length > 0 && (
-                  <button
-                    className="switch-branch-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowSwitchModal(true);
-                    }}
-                    data-cy="switch-branch-btn"
-                  >
-                    <SolidIcon name="refresh" width="14" />
-                    <span>Switch branch</span>
-                  </button>
-                )}
+                {console.log('BranchDropdown - allBranches:', allBranches, 'length:', allBranches.length) ||
+                  (true && allBranches.length > 0 && (
+                    <button
+                      className="switch-branch-btn"
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowSwitchModal(true);
+                      }}
+                      data-cy="switch-branch-btn"
+                    >
+                      <SolidIcon name="refresh" width="14" />
+                      <span>Switch branch</span>
+                    </button>
+                  ))}
               </>
             ) : (
               <>

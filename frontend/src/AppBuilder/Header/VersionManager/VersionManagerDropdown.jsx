@@ -32,6 +32,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    orgGit,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -47,6 +48,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -103,7 +105,17 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
   const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
+  // Check if there's a draft version of type 'version' (not branch)
+  const hasVersionTypeDraft = developmentVersions.some(
+    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
+
+  // Only disable create draft button when:
+  // 1. Git is configured AND there's already a version-type draft
+  // When git is not configured, allow multiple drafts (old behavior)
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const shouldDisableCreateDraft = orgGit && isGitSyncEnabled && hasVersionTypeDraft;
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -142,16 +154,26 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleVersionSelect = (version) => {
-    const isSameVersionSelected = currentVersionId === version.id;
+    console.log('handleVersionSelect called', {
+      version,
+      currentVersionId,
+      selectedEnvironmentFilter,
+      currentEnvironment,
+    });
 
-    if (isSameVersionSelected) {
+    // Check if the selected environment filter is different from current global environment
+    const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
+
+    // Only early return if same version AND same environment
+    const isSameVersionSelected = currentVersionId === version.id;
+    const isSameEnvironment = !isDifferentEnvironment;
+
+    if (isSameVersionSelected && isSameEnvironment) {
+      console.log('Same version and environment, closing dropdown');
       closeDropdown();
       return;
     }
     closeDropdown();
-
-    // Check if the selected environment filter is different from current global environment
-    const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
 
     if (isDifferentEnvironment) {
       // First switch environment, then switch version
@@ -163,6 +185,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           version.id,
           () => {
             setCurrentVersionId(version.id);
+            setSelectedVersion(version);
           },
           (error) => {
             toast.error(error.message || 'Failed to switch version');
@@ -294,33 +317,41 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               {searchQuery ? 'No versions found' : 'No versions available'}
             </div>
           ) : (
-            filteredVersions.map((version) => (
-              <VersionDropdownItem
-                key={version.id}
-                version={version}
-                isSelected={version.id === currentVersionId}
-                currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
-                environments={environments}
-                onSelect={() => handleVersionSelect(version)}
-                onPromote={() => handlePromoteDraft(version)}
-                onCreateVersion={() => handleCreateVersion(version)}
-                onEdit={(v) => {
-                  setVersionToEdit(v);
-                  setShowEditVersionModal(true);
-                  closeDropdown();
-                }}
-                onDelete={(v) => openDeleteModal(v)}
-                appId={appId}
-              />
-            ))
+            filteredVersions.map((version) => {
+              // Only show as selected if:
+              // 1. The version ID matches the current version ID
+              // 2. AND we're viewing the current global environment (not browsing another environment)
+              const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
+              const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
+
+              return (
+                <VersionDropdownItem
+                  key={version.id}
+                  version={version}
+                  isSelected={isVersionSelected}
+                  currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
+                  environments={environments}
+                  onSelect={() => handleVersionSelect(version)}
+                  onPromote={() => handlePromoteDraft(version)}
+                  onCreateVersion={() => handleCreateVersion(version)}
+                  onEdit={(v) => {
+                    setVersionToEdit(v);
+                    setShowEditVersionModal(true);
+                    closeDropdown();
+                  }}
+                  onDelete={(v) => openDeleteModal(v)}
+                  appId={appId}
+                />
+              );
+            })
           )}
         </div>
 
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        {/* Create Draft Button - disabled if draft already exists or no published versions */}
-        <CreateDraftButton onClick={handleCreateDraft} />
+        {/* Create Draft Button - disabled if branching is enabled AND version-type draft already exists */}
+        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} />
       </Popover.Body>
     </Popover>
   );
