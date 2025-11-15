@@ -23,6 +23,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -37,7 +38,8 @@ export class VersionService implements IVersionService {
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
