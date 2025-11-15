@@ -122,16 +122,12 @@ export class VersionUtilService implements IVersionUtilService {
       organizationId,
       manager
     );
-    console.log('here2');
+
     if (organizationGit && organizationGit.isBranchingEnabled) {
       // Only allow one draft version of type 'version' (not branch)
       // Branch versions can have multiple drafts
       // If versionType is not provided or is not BRANCH, check for existing draft
-      console.log('DEBUG: Received versionType:', versionType);
-      console.log('DEBUG: AppVersionType.BRANCH enum value:', AppVersionType.BRANCH);
-      console.log('DEBUG: AppVersionType.VERSION enum value:', AppVersionType.VERSION);
       const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
-      console.log('DEBUG: isCreatingBranchVersion:', isCreatingBranchVersion);
 
       if (!isCreatingBranchVersion) {
         const existingDraftVersion = await this.versionRepository.findOne({
@@ -141,19 +137,8 @@ export class VersionUtilService implements IVersionUtilService {
             versionType: Not(AppVersionType.BRANCH),
           },
         });
-        console.log(
-          'DEBUG: existingDraftVersion found:',
-          existingDraftVersion
-            ? {
-                id: existingDraftVersion.id,
-                name: existingDraftVersion.name,
-                versionType: existingDraftVersion.versionType,
-                status: existingDraftVersion.status,
-              }
-            : null
-        );
+
         if (existingDraftVersion) {
-          console.log({ existingDraftVersion });
           throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
         }
       }
@@ -201,7 +186,7 @@ export class VersionUtilService implements IVersionUtilService {
       });
 
       return decamelizeKeys(appVersion);
-    });
+    }, manager);
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
