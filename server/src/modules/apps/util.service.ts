@@ -15,7 +15,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { VersionRepository } from '@modules/versions/repository';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -740,5 +740,44 @@ export class AppsUtilService implements IAppsUtilService {
     return dbTransactionWrap((manager: EntityManager) => {
       return this.appRepository.findByAppId(appId, manager);
     }, manager);
+  }
+
+  /**
+   * Determines if the editor should be frozen based on version status, type, and git configuration
+   * @param editingVersion - The app version being edited
+   * @param environmentPriority - The priority of the current environment (> 1 means production-like)
+   * @param appGit - The app's git configuration
+   * @param orgGit - The organization's git configuration
+   * @returns boolean indicating if editor should be frozen
+   */
+  shouldFreezeEditor(editingVersion: AppVersion, appGit: any, orgGit: any): boolean {
+    let shouldFreezeEditor = false;
+    // Check version status and type
+    if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
+      // Published versions are always frozen
+      shouldFreezeEditor = true;
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status === AppVersionStatus.DRAFT &&
+      (!orgGit || !orgGit?.isBranchingEnabled)
+    ) {
+      // Draft versions should never be frozen by git config, only by environment
+      // Keep existing shouldFreezeEditor value from environment priority check
+    } else if (
+      editingVersion?.versionType === AppVersionType.VERSION &&
+      editingVersion?.status !== AppVersionStatus.DRAFT
+    ) {
+      // Non-draft version types are frozen
+      shouldFreezeEditor = true;
+    } else {
+      // For branch versions, check git config
+      if (appGit && editingVersion?.status !== AppVersionStatus.DRAFT) {
+        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
+      } else if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
+        shouldFreezeEditor = orgGit?.isBranchingEnabled || shouldFreezeEditor;
+      }
+    }
+
+    return shouldFreezeEditor;
   }
 }
