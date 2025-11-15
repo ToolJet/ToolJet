@@ -744,7 +744,7 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      version,
+      version
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1973,6 +1973,7 @@ export class AppImportExportService {
         createdAt: new Date(),
         updatedAt: new Date(),
         status: AppVersionStatus.DRAFT,
+        versionType: oldVersion?.versionType,
         parent_version_id: appVersion?.id || null,
       });
 
