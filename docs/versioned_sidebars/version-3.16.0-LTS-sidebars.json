@@ -703,6 +703,22 @@
                 "user-management/sso/saml/setup",
                 "user-management/sso/saml/okta"
               ]
+            },
+            {
+              "type": "category",
+              "label": "SCIM",
+              "link": {
+                "type": "doc",
+                "id": "user-management/sso/scim/overview"
+              },
+              "items": [
+                "user-management/sso/scim/overview",
+                {
+                  "type": "link",
+                  "label": "API References",
+                  "href": "/api/scim"
+                }
+              ]
             }
           ]
         },
