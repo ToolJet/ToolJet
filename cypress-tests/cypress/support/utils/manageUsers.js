@@ -245,10 +245,8 @@ export const bulkUserUpload = (
       .and("have.text", toastMessage);
     cy.get(usersSelector.modalClose).click();
   } else {
-    cy.get(commonSelectors.newToastMessage)
-      .should("be.visible")
-      .and("have.text", toastMessage);
-    cy.get(usersSelector.toastCloseButton).click();
+    cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
+    cy.get('[data-cy="toast-close-button"]').click();
   }
   cy.wait(1500);
 };
