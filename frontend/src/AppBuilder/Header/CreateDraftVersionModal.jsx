@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
@@ -23,6 +24,10 @@ const CreateDraftVersionModal = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
+
+  // Get refreshVersions from versionManagerStore
+  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
+
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -30,6 +35,7 @@ const CreateDraftVersionModal = ({
     developmentVersions,
     appId,
     selectedVersion,
+    selectedEnvironment,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -135,6 +141,8 @@ const CreateDraftVersionModal = ({
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
+        // Refresh versionManagerStore so CreateBranchModal gets the latest versions
+        refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
         changeEditorVersionAction(
