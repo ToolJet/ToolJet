@@ -74,7 +74,7 @@ const VersionDropdownItem = ({
 
   const renderMenu = (
     <Popover id={`popover-positioned-bottom-end`} style={{ minWidth: '160px' }}>
-      <Popover.Body className="d-flex flex-column p-0">
+      <Popover.Body className="d-flex flex-column p-2">
         {canRelease && (
           <div
             className="dropdown-item cursor-pointer tj-text-xsm"

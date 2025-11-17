@@ -40,7 +40,7 @@ const LifecycleCTAButton = () => {
       // Default branch - show "Pull commit" button
       return {
         label: 'Pull commit',
-        icon: 'gitsync',
+        icon: 'commit',
         variant: 'secondary',
         disabled: !isGitSyncEnabled,
       };
@@ -48,7 +48,7 @@ const LifecycleCTAButton = () => {
       // Feature branch - show "Commit" button
       return {
         label: 'Commit',
-        icon: 'gitbranch',
+        icon: 'commit',
         variant: 'secondary',
         disabled: !isGitSyncEnabled,
       };
@@ -73,8 +73,8 @@ const LifecycleCTAButton = () => {
         data-tooltip-id="editor-header-tooltip"
         data-tooltip-content={config.tooltip}
       >
-        <SolidIcon name={config.icon} width="14" />
-        <span className="tw-ml-2">{config.label}</span>
+        <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name={config.icon} width="16" />
+        <span>{config.label}</span>
       </Button>
     </div>
   );

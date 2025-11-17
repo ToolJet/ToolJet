@@ -9,6 +9,7 @@ import { SwitchBranchModal } from './SwitchBranchModal';
 import { Tooltip } from 'react-tooltip';
 import { gitSyncService } from '@/_services';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { AlertTriangle } from 'lucide-react';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -205,7 +206,7 @@ export function BranchDropdown({ appId, organizationId }) {
         setLastCommit(null);
         setIsLoadingCommit(false);
         setHasFetchedBranchInfo(true); // Mark as fetched even on error to hide button
-        toast.error('Failed to fetch branch info');
+        // toast.error('Failed to fetch branch info');
       }
     } else {
       setLastCommit(null);
@@ -262,7 +263,6 @@ export function BranchDropdown({ appId, organizationId }) {
         const result = await switchBranch(appId, branch.name);
         if (result.success) {
           setCurrentBranch(branch);
-          toast.success(`Switched to branch: ${branch.name}`);
           setShowDropdown(false);
         } else {
           toast.error(`Failed to switch branch: ${result.error}`);
@@ -349,7 +349,7 @@ export function BranchDropdown({ appId, organizationId }) {
       <Popover.Body style={{ padding: 0 }}>
         <div className={`${darkMode ? 'theme-dark' : ''}`} data-cy="branch-dropdown-popover">
           {/* Current Branch Header */}
-          <div className="branch-dropdown-current-branch">
+          <div className={`branch-dropdown-current-branch ${!isOnDefaultBranch ? 'with-border' : ''}`}>
             {isOnDefaultBranch ? (
               <>
                 <div className="branch-icon-container">
@@ -379,7 +379,7 @@ export function BranchDropdown({ appId, organizationId }) {
                   <div className="branch-name-title">{displayBranchName || 'No branch selected'}</div>
                   <div className="branch-metadata-feature">
                     <span className="metadata-text">
-                      Created by {selectedVersion?.createdBy || currentBranch?.author || 'Unknown'}
+                      Created by {currentBranch?.created_by || currentBranch?.author || 'Unknown'}
                     </span>
                     <span>•</span>
                     <span className="metadata-text">
@@ -446,9 +446,7 @@ export function BranchDropdown({ appId, organizationId }) {
                   <div className="pr-list-container">
                     {displayPRs.length === 0 ? (
                       <div className="empty-pr-state-box">
-                        <div className="empty-pr-icon">
-                          <SolidIcon name="alert" width="18" fill="var(--amber9)" />
-                        </div>
+                        <AlertTriangle width="18" height="18" />
                         <div className="empty-pr-content">
                           <div className="empty-pr-title">
                             {activeTab === 'open' ? 'There are no open PRs' : 'There are no closed PRs'}
@@ -529,9 +527,7 @@ export function BranchDropdown({ appId, organizationId }) {
                   {/* Empty state - no commits yet */}
                   {!lastCommit && !isLoadingCommit && (
                     <div className="no-commits-empty-state">
-                      <div className="empty-state-icon-warning">
-                        <SolidIcon name="alert" width="16" fill="var(--amber9)" />
-                      </div>
+                      <AlertTriangle width="18" height="18" />
                       <div className="empty-state-content">
                         <div className="empty-state-title">There are no commits yet</div>
                         <div className="empty-state-description">
