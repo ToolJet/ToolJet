@@ -18,7 +18,7 @@ const ConfigHandleButton = ({
       <ToolTip message={message} show={show}>
         <button
           style={{
-            background: 'var(--background-inverse)',
+            background: 'var(--background-accent-strong)',
             color: 'var(--text-inverse)',
             ...customStyles,
           }}

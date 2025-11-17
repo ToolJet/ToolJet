@@ -677,10 +677,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);
@@ -716,10 +721,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);
