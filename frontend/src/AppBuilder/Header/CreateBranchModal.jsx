@@ -13,7 +13,7 @@ import '@/_styles/create-branch-modal.scss';
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
   const [createFrom, setCreateFrom] = useState('');
-  const [autoCommit, setAutoCommit] = useState(false);
+  const [autoCommit, setAutoCommit] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [showDraftWarning, setShowDraftWarning] = useState(false);
@@ -355,7 +355,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                 className="form-checkbox"
                 checked={autoCommit}
                 onChange={(e) => setAutoCommit(e.target.checked)}
-                disabled={isCreating}
+                disabled={true}
               />
               <span className="checkbox-text">
                 Commit changes

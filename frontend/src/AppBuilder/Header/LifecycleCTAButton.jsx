@@ -42,7 +42,6 @@ const LifecycleCTAButton = () => {
         label: 'Pull commit',
         icon: 'gitsync',
         variant: 'secondary',
-        tooltip: 'Pull changes from repository or commit changes',
         disabled: !isGitSyncEnabled,
       };
     } else {
@@ -51,7 +50,6 @@ const LifecycleCTAButton = () => {
         label: 'Commit',
         icon: 'gitbranch',
         variant: 'secondary',
-        tooltip: 'Commit changes to current branch',
         disabled: !isGitSyncEnabled,
       };
     }
