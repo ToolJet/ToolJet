@@ -382,11 +382,7 @@ export const userMetadataOnboarding = (
   cy.apiUserInvite(firstName, email, userRole, metadata);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.waitForElement(onboardingSelectors.loginPasswordInput);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.waitForElement(commonSelectors.signUpButton);
-  cy.get(commonSelectors.signUpButton).click();
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   return cy.wrap(metadataCount);
 };
 
@@ -411,4 +407,13 @@ export const selectUserGroup = (groupName) => {
   cy.get(onboardingSelectors.userGroupSelect)
     .should("contain.text", groupName)
     .click();
+};
+
+export const enterPasswordAndAcceptInvite = (password = "password") => {
+  cy.waitForElement(onboardingSelectors.loginPasswordInput);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+  cy.waitForElement(commonSelectors.signUpButton);
+  cy.get(commonSelectors.signUpButton).click();
+  cy.waitForElement(commonSelectors.acceptInviteButton);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
