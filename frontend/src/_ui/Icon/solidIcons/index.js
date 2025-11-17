@@ -186,6 +186,7 @@ import CheveronLeftDouble from './CheveronLeftDouble.jsx';
 import CheveronRightDouble from './CheveronRightDouble.jsx';
 import Dot from './Dot.jsx';
 import Check from './Check.jsx';
+import Check2 from './Check2.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
@@ -760,6 +761,8 @@ const Icon = (props) => {
       return <Dot {...props} />;
     case 'check':
       return <Check {...props} />;
+    case 'check2':
+      return <Check2 {...props} />;
     case 'editable':
       return <Editable {...props} />;
     case 'minimize':
