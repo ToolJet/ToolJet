@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       branch_name:
-        description: 'Git branch to build from'
+        description: "Git branch to build from"
         required: true
-        default: 'main'
+        default: "main"
       dockerfile_path:
-        description: 'Select Dockerfile'
+        description: "Select Dockerfile"
         required: true
         type: choice
         options:
           - ./docker/LTS/ee/ee-production.Dockerfile
           - ./docker/pre-release/ee/ee-production.Dockerfile
       docker_tag:
-        description: 'Docker tag suffix (e.g., pre-release-14, 3.16-lts, etc.)'
+        description: "Docker tag suffix (e.g., pre-release-14, 3.16-lts, etc.)"
         required: true
       test_system:
-        description: 'Select test system'
+        description: "Select test system"
         required: true
         type: choice
         options:
@@ -36,6 +36,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          df -h
+
       - name: ✅ Check user authorization
         run: |
           # Define allowed users
@@ -55,17 +65,17 @@ jobs:
             "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
           )
-          
+
           current_user="${{ github.actor }}"
           authorized=false
-          
+
           for user in "${allowed_users[@]}"; do
             if [[ "$current_user" == "$user" ]]; then
               authorized=true
               break
             fi
           done
-          
+
           if [[ "$authorized" == "false" ]]; then
             echo "❌ User '$current_user' is not authorized to trigger this workflow."
             exit 1
@@ -106,6 +116,8 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
@@ -121,39 +133,39 @@ jobs:
         run: |
           test_system="${{ github.event.inputs.test_system }}"
           vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
-          
+
           if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
             echo "VM mapping not found for $test_system"
             exit 1
           fi
-          
+
           echo "host=$vm_host" >> $GITHUB_OUTPUT
 
       - name: Deploy to target environment
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          
+
           IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-          
+
           # Debug: Show what we're deploying
           echo "DEBUG: IMAGE_TAG=$IMAGE_TAG"
           echo "DEBUG: TARGET_SYSTEM=$TARGET_SYSTEM"
-          
+
           ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
           set -e
-          
+
           IMAGE_TAG="$IMAGE_TAG"
           TARGET_SYSTEM="$TARGET_SYSTEM"
-          
+
           cd ~
           echo "📁 Finding correct deployment directory"
-          
+
           # Debug: Show variables on remote host
           echo "Debug on remote: IMAGE_TAG=\$IMAGE_TAG"
           echo "Debug on remote: TARGET_SYSTEM=\$TARGET_SYSTEM"
-          
+
           if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
             echo "Detected LTS system: \$TARGET_SYSTEM"
             echo "🔍 Searching for LTS directories..."
@@ -184,39 +196,39 @@ jobs:
             cd ~
             echo "✅ Now in directory: \$(pwd)"
           fi
-          
+
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          
+
           echo "current image"
           cat .env | grep TOOLJET_IMAGE
-          
+
           echo "📦 Reading current TOOLJET_IMAGE from .env"
           CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
           echo "Found CURRENT_IMAGE: \$CURRENT_IMAGE"
-          
+
           echo "🛑 Stopping containers"
           sudo docker-compose down
-          
+
           echo "📝 Updating .env with new image"
           sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
-          
+
           echo "📥 Pulling new image: \$IMAGE_TAG"
           if [ -z "\$IMAGE_TAG" ]; then
             echo "❌ IMAGE_TAG is empty!"
             exit 1
           fi
           sudo docker pull "\$IMAGE_TAG"
-          
+
           echo "🚀 Starting container in background"
           sudo docker-compose up -d
-          
+
           # Wait for ToolJet to start and show success message
           echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
-          
+
           while [ \$ELAPSED -lt \$TIMEOUT ]; do
             # Check for success message in logs
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
@@ -229,7 +241,7 @@ jobs:
             sleep 10
             ELAPSED=\$((ELAPSED + 10))
           done
-          
+
           if [ "\$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
@@ -250,20 +262,19 @@ jobs:
             echo "✅ Rollback completed!"
             exit 1
           fi
-          
+
           echo "✅ Deployment successful!"
-          
+
           echo "📌 Storing successful deployment info in .env"
           sudo sed -i "/^OLD_IMAGE=/d" .env
           echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
           echo "📄 Final application logs:"
           sudo docker-compose logs --tail=50
-          
+
           echo "🧹 Pruning old Docker images"
           sudo docker image prune -a -f
-          
+
           EOF
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
-          
