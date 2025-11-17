@@ -107,16 +107,17 @@ export const createBranchSlice = (set, get) => ({
 
       return { success: true, branch: response?.branch };
     } catch (error) {
-      console.error('Error creating branch:', error);
+      const apiErrorMessage = error?.data?.message || error?.error || error?.message || 'Failed to create branch';
+
       set(
         () => ({
-          branchError: error.message || 'Failed to create branch',
+          branchError: apiErrorMessage,
         }),
         false,
         'createBranch:error'
       );
 
-      return { success: false, error: error.message };
+      return { success: false, error: apiErrorMessage };
     }
   },
 

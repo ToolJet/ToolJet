@@ -43,6 +43,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -60,8 +61,9 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
-  ) { }
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -123,12 +125,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -356,7 +358,7 @@ export class AppsService implements IAppsService {
       // Check if editing version is a draft
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
-      
+
       const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
       if (appGit && !isDraft) {
         // Only apply git-based freezing for non-draft versions

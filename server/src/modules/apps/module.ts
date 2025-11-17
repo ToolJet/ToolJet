@@ -26,6 +26,7 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -53,7 +54,6 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
-
     return {
       module: AppsModule,
       imports: [
@@ -75,6 +75,7 @@ export class AppsModule extends SubModule {
         WorkflowService,
         VersionRepository,
         AppsRepository,
+        OrganizationGitSyncRepository,
         AppGitRepository,
         PageService,
         EventsService,

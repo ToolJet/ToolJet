@@ -86,8 +86,6 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           setCurrentBranch(branch);
           if (result.isDraft) {
             toast.success(`Switched to ${branch.name} - Working on draft version`);
-          } else {
-            toast.success(`Switched to branch: ${branch.name}`);
           }
           onClose();
         }
@@ -95,7 +93,6 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         // Switch to feature branch
         await switchBranch(appId, branch.name);
         setCurrentBranch(branch);
-        toast.success(`Switched to branch: ${branch.name}`);
         onClose();
       }
     } catch (error) {
@@ -211,12 +208,12 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                   data-cy={`branch-list-item-${branch.name}`}
                 >
                   <div className="branch-checkbox">
-                    {isCurrentBranch && <SolidIcon name="check" width="16" fill="var(--indigo9)" />}
+                    {isCurrentBranch && <SolidIcon name="check2" width="16" fill="var(--indigo9)" />}
                   </div>
                   <div className="branch-list-content">
                     <div className="branch-list-name">{branch.name}</div>
                     <div className="branch-list-meta">
-                      Created by {branch.author || branch.createdBy || 'default'},{' '}
+                      Created by {branch.author || branch.created_by || 'default'},{' '}
                       {getRelativeTime(branch.createdAt || branch.created_at)}
                     </div>
                   </div>
@@ -230,7 +227,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         <div className="modal-footer-actions">
           <button className="footer-btn secondary" onClick={handleViewInGitRepo} data-cy="view-in-git-repo-btn">
             <span>View in git repo</span>
-            <SolidIcon name="externallink" width="14" fill="var(--slate12)" />
+            <SolidIcon name="newtab" width="14" fill="var(--icon-default)" />
           </button>
           <button
             className="footer-btn accent"

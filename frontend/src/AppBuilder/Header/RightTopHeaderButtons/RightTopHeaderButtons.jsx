@@ -23,7 +23,7 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
         {<GitSyncManager />}
-        <div className="tw-hidden navbar-seperator" />
+        {/* <div className="tw-hidden navbar-seperator" /> */}
         {isNotPromotedOrReleased && <LifecycleCTAButton />}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
@@ -81,7 +81,7 @@ export const PreviewAndShareIcons = () => {
 
   return (
     <>
-      <div className="preview-share-wrap navbar-nav flex-row tw-mr-1">
+      <div className="preview-share-wrap navbar-nav flex-row">
         <div className="nav-item">
           {appId && (
             <ManageAppUsers

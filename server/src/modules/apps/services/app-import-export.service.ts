@@ -45,8 +45,6 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
-import { promises as fs } from 'fs';
-import * as path from 'path';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -292,6 +290,11 @@ export class AppImportExportService {
         };
       });
 
+      // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
+      for (const query of queriesWithPermissionGroups) {
+        delete query.updatedAt;
+      }
+      // Added orderBy for layouts as well to maintain consistency -> in the exported file and avoid merge conflicts
       const components =
         pages.length > 0
           ? await manager
@@ -304,9 +307,9 @@ export class AppImportExportService {
                 pageId: pages.map((v) => v.id),
               })
               .orderBy('components.created_at', 'ASC')
+              .addOrderBy('layouts.type', 'ASC')
               .getMany()
           : [];
-
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
@@ -390,19 +393,12 @@ export class AppImportExportService {
         }),
       };
       // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
-
-      // Remove all IDs and timestamps that are regenerated during import
-      // this.cleanupExportData(appToExport);
-
+      delete (appToExport as any).updatedAt;
       console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
 
-  /**
-   * Remove all IDs and timestamps from export data that are regenerated during import.
-   * This makes exports cleaner, smaller, and more suitable for version control.
-   */
   async mapModulesForAppImport(
     appParams: any,
     user: User,
@@ -540,10 +536,6 @@ export class AppImportExportService {
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
 
-      // For testing: persist resource mapping to a local JSON file so it can be inspected
-      // Files are written to <repo-root>/tmp/import_resource_mappings/<appId>.json
-      await this.saveResourceMappingToFile(importedApp.id, resourceMapping);
-
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
@@ -629,25 +621,6 @@ export class AppImportExportService {
 
     if (appVersionIds.length > 0) {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
-    }
-  }
-
-  /**
-   * Write resource mapping JSON to disk for quick local testing/inspection.
-   * Location: <repo-root>/tmp/import_resource_mappings/<appId>.json
-   */
-  public async saveResourceMappingToFile(appId: string, resourceMapping: AppResourceMappings) {
-    try {
-      const baseDir = path.join(process.cwd(), 'tmp', 'import_resource_mappings');
-      await fs.mkdir(baseDir, { recursive: true });
-      const filePath = path.join(baseDir, `${appId}.json`);
-      await fs.writeFile(filePath, JSON.stringify(resourceMapping, null, 2), 'utf8');
-
-      console.log(`Saved import resource mapping to ${filePath}`);
-    } catch (err) {
-      // Do not fail the import if writing the file fails; just log for debugging
-
-      console.warn('Failed to write import resource mapping to file', err?.message || err);
     }
   }
   async createImportedAppForUser(
@@ -2000,6 +1973,7 @@ export class AppImportExportService {
         createdAt: new Date(),
         updatedAt: new Date(),
         status: AppVersionStatus.DRAFT,
+        versionType: oldVersion?.versionType,
         parent_version_id: appVersion?.id || null,
       });
 

@@ -76,6 +76,7 @@ export class GitSyncModule extends SubModule {
         BaseGitSyncService,
         BaseGitUtilService,
         GitSyncAdapter,
+        OrganizationGitSyncRepository,
       ],
     };
   }

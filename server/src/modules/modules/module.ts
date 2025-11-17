@@ -17,6 +17,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 @Module({})
 export class ModulesModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -58,6 +59,7 @@ export class ModulesModule {
         RolesRepository,
         AppGitRepository,
         GroupPermissionsRepository,
+        OrganizationGitSyncRepository,
       ],
     };
   }
