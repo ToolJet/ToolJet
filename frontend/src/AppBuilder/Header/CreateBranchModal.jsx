@@ -30,6 +30,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     fetchDevelopmentVersions,
     editingVersion,
     currentBranch,
+    releasedVersionId,
   } = useStore((state) => ({
     allBranches: state.allBranches || [],
     isDraftVersionActive: state.isDraftVersionActive,
@@ -40,6 +41,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     editingVersion: state.editingVersion,
     currentBranch: state.currentBranch,
+    releasedVersionId: state.releasedVersionId,
   }));
 
   // Get versions from versionManagerStore
@@ -48,12 +50,12 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     fetchVersions: state.fetchVersions,
   }));
 
-  // Load versions when modal opens
+  // Load versions when modal opens - always refresh to get latest versions
   useEffect(() => {
-    if (appId && versions.length === 0) {
+    if (appId) {
       fetchVersions(appId);
     }
-  }, [appId, fetchVersions, versions.length]);
+  }, [appId, fetchVersions]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -70,14 +72,13 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   // Get status badge for version
   const getVersionStatusBadge = (version) => {
     const status = version.status || '';
-    const isReleased = version.isReleased || version.is_released;
+    // Use releasedVersionId to determine if version is released (same pattern as VersionDropdownItem)
+    const isReleased = version.id === releasedVersionId;
 
     if (status === 'DRAFT') {
       return { label: 'Draft', className: 'status-badge-draft' };
-    } else if (isReleased || status === 'RELEASED') {
+    } else if (isReleased) {
       return { label: 'Released', className: 'status-badge-released' };
-    } else if (status === 'PUBLISHED') {
-      return { label: 'Published', className: 'status-badge-published' };
     }
     return null;
   };
@@ -177,7 +178,6 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         try {
           const switchResult = await switchBranch(appId, branchName.trim());
           console.log('CreateBranchModal - switchBranch result:', switchResult);
-          toast.success(`Switched to branch "${branchName}"`);
         } catch (switchError) {
           console.error('Error switching to new branch:', switchError);
           toast.error('Branch created but failed to switch to it');

@@ -583,13 +583,11 @@ export function BranchDropdown({ appId, organizationId }) {
             ) : (
               <>
                 {/* Feature branch footer: Create PR + Switch branch */}
-                {/* Show Create PR button when there's a commit */}
-                {hasFetchedBranchInfo && lastCommit && (
-                  <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
-                    <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                    <span>Create pull request</span>
-                  </button>
-                )}
+                {/* Always show Create PR button when on sub-branch */}
+                <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
+                  <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
+                  <span>Create pull request</span>
+                </button>
                 {allBranches.length > 0 && (
                   <button
                     className="switch-branch-btn"
