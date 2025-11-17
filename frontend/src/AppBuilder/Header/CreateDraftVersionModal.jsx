@@ -71,9 +71,21 @@ const CreateDraftVersionModal = ({
   }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
+    console.log('CreateDraftVersionModal - useEffect [savedVersions] triggered', {
+      savedVersionsLength: savedVersions?.length,
+      selectedVersionForCreationId: selectedVersionForCreation?.id,
+    });
+
+    // Only set initial value if no version is selected yet
+    if (selectedVersionForCreation) {
+      console.log('CreateDraftVersionModal - Version already selected, skipping initialization');
+      return;
+    }
+
     // If savedVersions is empty but we have a selectedVersion that is not DRAFT, use it
     if (!savedVersions?.length) {
       if (selectedVersion && selectedVersion.status !== 'DRAFT') {
+        console.log('CreateDraftVersionModal - Setting from selectedVersion (no savedVersions)', selectedVersion);
         setSelectedVersionForCreation(selectedVersion);
       }
       return;
@@ -83,6 +95,7 @@ const CreateDraftVersionModal = ({
     if (selectedVersion?.id) {
       const selected = savedVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
+        console.log('CreateDraftVersionModal - Setting from savedVersions (found match)', selected);
         setSelectedVersionForCreation(selected);
         return;
       }
@@ -90,9 +103,10 @@ const CreateDraftVersionModal = ({
 
     // Otherwise, default to the first saved version
     if (savedVersions.length > 0) {
+      console.log('CreateDraftVersionModal - Setting first savedVersion', savedVersions[0]);
       setSelectedVersionForCreation(savedVersions[0]);
     }
-  }, [savedVersions, selectedVersion]);
+  }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
   // Update version name when selectedVersionForCreation changes or when modal opens
   useEffect(() => {
@@ -104,12 +118,24 @@ const CreateDraftVersionModal = ({
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
+  // Use version.id as value for proper react-select comparison
   const options =
     savedVersions.length > 0
-      ? savedVersions.map((version) => ({ label: version.name, value: version }))
+      ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-      ? [{ label: selectedVersion.name, value: selectedVersion }]
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
       : [];
+
+  console.log('CreateDraftVersionModal - Render:', {
+    savedVersionsCount: savedVersions.length,
+    savedVersions: savedVersions.map((v) => ({ id: v.id, name: v.name })),
+    options,
+    selectedVersionForCreation: selectedVersionForCreation
+      ? { id: selectedVersionForCreation.id, name: selectedVersionForCreation.name }
+      : null,
+    selectedVersionForCreationId: selectedVersionForCreation?.id,
+    selectedVersion: selectedVersion ? { id: selectedVersion.id, name: selectedVersion.name } : null,
+  });
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -222,9 +248,22 @@ const CreateDraftVersionModal = ({
                 <div className="ts-control" data-cy="create-draft-version-from-input-field">
                   <Select
                     options={options}
-                    value={selectedVersionForCreation}
-                    onChange={(version) => {
+                    value={selectedVersionForCreation?.id}
+                    onChange={(versionId) => {
+                      console.log('CreateDraftVersionModal - Select onChange called', {
+                        versionId,
+                        savedVersionsCount: savedVersions.length,
+                      });
+                      const version = savedVersions.find((v) => v.id === versionId);
+                      console.log(
+                        'CreateDraftVersionModal - Found version:',
+                        version ? { id: version.id, name: version.name } : null
+                      );
                       setSelectedVersionForCreation(version);
+                      console.log(
+                        'CreateDraftVersionModal - setSelectedVersionForCreation called with:',
+                        version ? { id: version.id, name: version.name } : null
+                      );
                     }}
                     useMenuPortal={false}
                     width="100%"
