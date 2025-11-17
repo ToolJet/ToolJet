@@ -382,8 +382,10 @@ export const userMetadataOnboarding = (
   cy.apiUserInvite(firstName, email, userRole, metadata);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
+  cy.waitForElement(onboardingSelectors.loginPasswordInput);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
+  cy.waitForElement(commonSelectors.signUpButton);
+  cy.get(commonSelectors.signUpButton).click();
   cy.get(commonSelectors.acceptInviteButton).click();
   return cy.wrap(metadataCount);
 };
