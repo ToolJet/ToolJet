@@ -294,7 +294,7 @@ export class AppImportExportService {
       for (const query of queriesWithPermissionGroups) {
         delete query.updatedAt;
       }
-
+      // Added orderBy for layouts as well to maintain consistency -> in the exported file and avoid merge conflicts
       const components =
         pages.length > 0
           ? await manager
@@ -307,9 +307,9 @@ export class AppImportExportService {
                 pageId: pages.map((v) => v.id),
               })
               .orderBy('components.created_at', 'ASC')
+              .addOrderBy('layouts.type', 'ASC')
               .getMany()
           : [];
-
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
