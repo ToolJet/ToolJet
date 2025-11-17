@@ -22,6 +22,7 @@ import {
 } from "Support/utils/platform/customGroups";
 
 import {
+  granularPermissionEmptyState,
   verifyCheckPermissionStates,
   verifyEmptyStates,
   verifyGranularAccessByRole,
@@ -29,8 +30,7 @@ import {
   verifyGranularPermissionModalStates,
   verifyGroupLinks,
   verifyPermissionCheckBoxLabelsAndHelperTexts,
-  verifyUserRow,
-  granularPermissionEmptyState
+  verifyUserRow
 } from "Support/utils/platform/groupsUI";
 
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
