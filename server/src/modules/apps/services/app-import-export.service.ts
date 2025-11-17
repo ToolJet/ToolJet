@@ -45,6 +45,8 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
+import { promises as fs } from 'fs';
+import path from 'path';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -621,6 +623,24 @@ export class AppImportExportService {
 
     if (appVersionIds.length > 0) {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
+    }
+  }
+  /**
+   * Write resource mapping JSON to disk for quick local testing/inspection.
+   * Location: <repo-root>/tmp/import_resource_mappings/<appId>.json
+   */
+  public async saveResourceMappingToFile(appId: string, resourceMapping: AppResourceMappings) {
+    try {
+      const baseDir = path.join(process.cwd(), 'tmp', 'import_resource_mappings');
+      await fs.mkdir(baseDir, { recursive: true });
+      const filePath = path.join(baseDir, `${appId}.json`);
+      await fs.writeFile(filePath, JSON.stringify(resourceMapping, null, 2), 'utf8');
+
+      console.log(`Saved import resource mapping to ${filePath}`);
+    } catch (err) {
+      // Do not fail the import if writing the file fails; just log for debugging
+
+      console.warn('Failed to write import resource mapping to file', err?.message || err);
     }
   }
   async createImportedAppForUser(
