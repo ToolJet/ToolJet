@@ -80,18 +80,6 @@ export const verifyGranularEditModal = (role) => {
 
     cy.get(".modal-base").should("be.visible");
 
-    cy.wait(500)
-    cy.get(groupsSelector.deletePermissionIcon)
-        .should("be.visible")
-        .and("be.enabled");
-    cy.get(groupsSelector.deletePermissionIcon).click();
-
-    verifyDeleteConfirmationModal();
-    cy.contains("Cancel").click();
-
-    cy.get(groupsSelector.granularAccessPermission)
-        .realHover()
-        .click({ force: true });
     cy.verifyElement(
         `${groupsSelector.addEditPermissionModalTitle}:eq(2)`,
         groupsText.editPermissionModalTitle
@@ -113,6 +101,19 @@ export const verifyGranularEditModal = (role) => {
     cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
+
+    cy.wait(1000)
+    cy.get(groupsSelector.granularAccessPermission).realHover();
+    cy.get('[data-cy="edit-apps-granular-access"]').click();
+
+    cy.get(groupsSelector.deletePermissionIcon)
+        .should("be.visible")
+        .and("be.enabled");
+    cy.get(groupsSelector.deletePermissionIcon).click();
+
+    verifyDeleteConfirmationModal();
+    cy.contains("Cancel").click();
+
 };
 
 export const verifyGranularAddModal = (role) => {
