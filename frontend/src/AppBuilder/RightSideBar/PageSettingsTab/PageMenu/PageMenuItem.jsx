@@ -437,7 +437,16 @@ export const PageMenuItem = withRouter(
                               }}
                             />
                             <PageOptions
-                              text="Delete page"
+                              text={
+                                <ToolTip
+                                  message="Home page can't be deleted"
+                                  placement="auto"
+                                  show={isHomePage}
+                                  tooltipClassName="!tw-z-[100000]"
+                                >
+                                  <span>Delete page</span>
+                                </ToolTip>
+                              }
                               icon="trash"
                               darkMode={darkMode}
                               disabled={isHomePage}

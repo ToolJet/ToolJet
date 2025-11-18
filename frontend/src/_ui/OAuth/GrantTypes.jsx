@@ -27,7 +27,7 @@ const CommonOAuthFields = ({
   const { oauthTypes } = oauth_configs || {};
   const { tooljetVersion } = useAppDataStore(
     (state) => ({
-      tooljetVersion: state?.metadata?.installed_version,
+      tooljetVersion: state?.metadata?.installed_version ?? localStorage.getItem('currentVersion'), // Added fallback because while loading app builder page, we reset & store so metadata value was getting back to null and we need this value in AI app building flow, where we show datasource connection form
     }),
     shallow
   );
