@@ -149,7 +149,7 @@ export const verifyGranularAddModal = (role) => {
         groupsText.customHelperText
     );
 
-    cy.verifyElement(groupsSelector.confimButton, groupsText.addButtonText);
+    cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
     cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
