@@ -125,7 +125,7 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     // check if version is cloud or ee
     const data = localStorage.getItem('currentVersion');
-    if (data && (data.includes('cloud') || data.includes('ee'))) {
+    if (data && data.includes('cloud')) {
       this.setState({
         showBanner: true, // show banner if version has "cloud" or "ee"
       });
