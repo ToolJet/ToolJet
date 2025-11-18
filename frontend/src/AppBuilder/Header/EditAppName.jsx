@@ -49,7 +49,7 @@ function EditAppName() {
             onClick={() => setShowRenameModal(true)}
             data-cy="editor-app-name-input"
           >
-            <span className="tw-font-title-large tw-truncate tw-w-full tw-block group-hover:tw-w-[calc(100%-24px)]">
+            <span className="tw-font-title-large tw-truncate tw-w-full tw-block group-hover:tw-w-[calc(100%-24px)] text-black-000">
               {appName}
             </span>
             <span className="tw-absolute tw-right-0.5 tw-top-1 tw-text-icon-default tw-hidden group-hover:tw-block tw-w-7 tw-h-7 tw-items-center tw-justify-center">
