@@ -1,41 +1,20 @@
-import React, { forwardRef } from "react";
-import PropTypes from "prop-types";
-import { cn } from "@/lib/utils";
-import { TeamSwitcher } from "@/components/ui/blocks/Sidebar/team-switcher";
-import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
-import { TopBarSearch } from "@/components/ui/blocks/TopBarSearch";
+import React, { forwardRef } from 'react';
+import PropTypes from 'prop-types';
+import { cn } from '@/lib/utils';
+import { WorkspaceSwitcher } from '@/components/ui/blocks/WorkspaceSwitcher';
+import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 
-import SolidIcon from "@/_ui/Icon/SolidIcons";
-
-const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-};
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const TopBar = forwardRef(
   (
     {
       className,
       logo,
-      workspaceName = "ABC cargo main team",
+      workspaceName = 'ABC cargo main team',
       workspaces = [],
       onWorkspaceChange,
-      searchPlaceholder = "Search",
+      searchPlaceholder = 'Search',
       onSearch,
       searchValue,
       // New slot props
@@ -46,19 +25,16 @@ const TopBar = forwardRef(
     ref
   ) => {
     // Default search component (for backward compatibility)
-    const defaultSearch = (
-      <TopBarSearch
-        placeholder={searchPlaceholder}
-        value={searchValue}
-        onChange={onSearch}
-      />
-    );
+    const defaultSearch = <TopBarSearch placeholder={searchPlaceholder} value={searchValue} onChange={onSearch} />;
+
+    // Derive active workspace object from workspaceName string
+    const activeWorkspace = workspaces.find((w) => w.name === workspaceName) || workspaces[0];
 
     return (
       <div
         ref={ref}
         className={cn(
-          "tw-flex tw-items-center tw-justify-between tw-border-b tw-border-border-weak tw-bg-background-surface-layer-01 tw-pl-2 tw-pr-8 tw-py-0 tw-h-[48px]",
+          'tw-flex tw-items-center tw-justify-between tw-border-b tw-border-border-weak tw-bg-background-surface-layer-01 tw-pl-2 tw-pr-8 tw-py-0 tw-h-[48px]',
           className
         )}
         {...props}
@@ -70,22 +46,26 @@ const TopBar = forwardRef(
             {logo || <SolidIcon name="tooljetai" fill="var(--icon-brand)" />}
           </div>
 
-          <TeamSwitcher teams={data.teams} />
+          {workspaces && workspaces.length > 0 && activeWorkspace && (
+            <WorkspaceSwitcher
+              workspaces={workspaces}
+              activeWorkspace={activeWorkspace}
+              onWorkspaceChange={onWorkspaceChange}
+            />
+          )}
         </div>
 
         {/* Center section - Search (slot or default) */}
         {topbarLeftSlot || (onSearch != null && defaultSearch)}
 
         {/* Right section - Actions (slot or empty) */}
-        <div className="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-justify-end">
-          {topbarRightSlot}
-        </div>
+        <div className="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-justify-end">{topbarRightSlot}</div>
       </div>
     );
   }
 );
 
-TopBar.displayName = "TopBar";
+TopBar.displayName = 'TopBar';
 
 TopBar.propTypes = {
   className: PropTypes.string,
@@ -94,7 +74,8 @@ TopBar.propTypes = {
   workspaces: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
-      id: PropTypes.string,
+      logo: PropTypes.elementType,
+      plan: PropTypes.string,
     })
   ),
   onWorkspaceChange: PropTypes.func,
@@ -106,11 +87,12 @@ TopBar.propTypes = {
 };
 
 TopBar.defaultProps = {
-  className: "",
-  workspaceName: "ABC cargo main team",
+  className: '',
+  workspaceName: 'ABC cargo main team',
   workspaces: [],
-  searchPlaceholder: "Search",
-  searchValue: "",
+  searchPlaceholder: 'Search',
+  searchValue: '',
 };
 
 export { TopBar };
+

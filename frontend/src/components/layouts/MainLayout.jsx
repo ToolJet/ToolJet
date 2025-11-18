@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { SidebarProvider, SidebarInset } from '@/components/ui/Rocket/sidebar';
-import { AppSidebar } from '@/components/ui/blocks/Sidebar/app-sidebar';
-import { TopBar } from '@/components/ui/TopBar/TopBar';
+import React from "react";
+import PropTypes from "prop-types";
+import { SidebarProvider, SidebarInset } from "@/components/ui/Rocket/sidebar";
+import { AppSidebar } from "@/components/ui/blocks/Sidebar/AppSidebar";
+import { TopBar } from "@/components/ui/blocks/TopBar";
 
 /**
  * Generic main layout component with sidebar, topbar, and content area.
@@ -14,9 +14,13 @@ import { TopBar } from '@/components/ui/TopBar/TopBar';
  * @param {React.ReactNode} [props.topbarLeftSlot] - Search area slot (center of topbar)
  * @param {React.ReactNode} [props.topbarRightSlot] - Actions slot (right side of topbar)
  * @param {React.ReactNode} [props.logo] - Logo component (optional, defaults to ToolJet logo)
- * @param {string} [props.workspaceName] - Workspace name for team switcher
- * @param {Array} [props.workspaces] - Workspaces array for team switcher
+ * @param {string} [props.workspaceName] - Workspace name for workspace switcher
+ * @param {Array} [props.workspaces] - Workspaces array for workspace switcher
  * @param {Function} [props.onWorkspaceChange] - Workspace change handler
+ * @param {Object} [props.sidebarUser] - User data for sidebar
+ * @param {Array} [props.sidebarTeams] - Teams data for sidebar
+ * @param {Array} [props.sidebarNavMain] - Navigation items for sidebar
+ * @param {Array} [props.sidebarProjects] - Project/action items for sidebar
  */
 export function MainLayout({
   children,
@@ -26,12 +30,16 @@ export function MainLayout({
   workspaceName,
   workspaces,
   onWorkspaceChange,
+  sidebarUser,
+  sidebarTeams,
+  sidebarNavMain,
+  sidebarProjects,
 }) {
   return (
     <SidebarProvider
       defaultOpen={false}
       style={{
-        '--sidebar-width': '10rem',
+        "--sidebar-width": "10rem",
       }}
     >
       <div className="tw-flex tw-flex-col tw-h-screen tw-w-screen">
@@ -44,9 +52,17 @@ export function MainLayout({
           topbarRightSlot={topbarRightSlot}
         />
         <div className="tw-flex tw-flex-1 tw-overflow-hidden">
-          <AppSidebar className="tw-bg-background-surface-layer-01 !tw-sticky !tw-h-full" />
+          <AppSidebar 
+            className="tw-bg-background-surface-layer-01 !tw-sticky !tw-h-full"
+            user={sidebarUser}
+            teams={sidebarTeams}
+            navMain={sidebarNavMain}
+            projects={sidebarProjects}
+          />
           <SidebarInset>
-            <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
+            <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">
+              {children}
+            </main>
           </SidebarInset>
         </div>
       </div>
@@ -63,20 +79,28 @@ MainLayout.propTypes = {
   workspaces: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
-      id: PropTypes.string,
+      logo: PropTypes.elementType,
+      plan: PropTypes.string,
     })
   ),
   onWorkspaceChange: PropTypes.func,
+  sidebarUser: PropTypes.object,
+  sidebarTeams: PropTypes.array,
+  sidebarNavMain: PropTypes.array,
+  sidebarProjects: PropTypes.array,
 };
 
 MainLayout.defaultProps = {
   topbarLeftSlot: null,
   topbarRightSlot: null,
   logo: null,
-  workspaceName: 'ABC cargo main team',
+  workspaceName: "ABC cargo main team",
   workspaces: [],
   onWorkspaceChange: undefined,
+  sidebarUser: undefined,
+  sidebarTeams: undefined,
+  sidebarNavMain: undefined,
+  sidebarProjects: undefined,
 };
 
 export default MainLayout;
-

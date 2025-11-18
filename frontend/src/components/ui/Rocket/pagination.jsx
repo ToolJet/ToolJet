@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/Button/Button';
 
 const Pagination = ({ className, ...props }) => (
   <nav
@@ -24,7 +24,7 @@ const PaginationItem = React.forwardRef(({ className, ...props }, ref) => (
 ));
 PaginationItem.displayName = 'PaginationItem';
 
-const PaginationLink = ({ className, isActive, size = 'icon', ...props }) => (
+const PaginationLink = ({ className, isActive, size = 'medium', ...props }) => (
   <a
     aria-current={isActive ? 'page' : undefined}
     className={cn(
@@ -43,7 +43,7 @@ const PaginationPrevious = ({ className, ...props }) => (
   <PaginationLink
     aria-label="Go to previous page"
     size="default"
-    className={cn('tw-gap-1 tw-pl-2.5', className)}
+    className={cn('tw-gap-1 tw-px-2.5', className)}
     {...props}
   >
     <ChevronLeft className="tw-h-4 tw-w-4" />
@@ -56,7 +56,7 @@ const PaginationNext = ({ className, ...props }) => (
   <PaginationLink
     aria-label="Go to next page"
     size="default"
-    className={cn('tw-gap-1 tw-pr-2.5', className)}
+    className={cn('tw-gap-1 tw-px-2.5', className)}
     {...props}
   >
     <span>Next</span>

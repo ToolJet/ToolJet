@@ -109,7 +109,7 @@ module.exports = {
         'secondary-foreground': 'var(--text-default)',
         muted: 'var(--interactive-default)',
         'muted-foreground': 'var(--text-placeholder)',
-        accent: 'var(--background-accent-strong)',
+        accent: 'var(--interactive-default)',
         'accent-foreground': 'var(--text-on-solid)',
         destructive: 'var(--background-error-strong)',
         'destructive-foreground': 'var(--text-on-solid)',

@@ -24,7 +24,7 @@ const AppsPageHeader = forwardRef(
         </div>
 
         {/* Action Group */}
-        <div className="tw-flex tw-items-center tw-gap-2">
+        <div className="tw-flex tw-items-center tw-gap-1">
           {/* Create Blank App Button */}
           <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={onCreateBlankApp} className="">
             Create blank app
@@ -39,7 +39,7 @@ const AppsPageHeader = forwardRef(
           {createAppMenuItems.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="large" iconOnly isLucid leadingIcon="more-vertical" />
+                <Button variant="outline" size="default" iconOnly isLucid leadingIcon="more-vertical" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="tw-w-[200px]">
                 {createAppMenuItems.map((item) => (

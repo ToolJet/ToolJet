@@ -1,9 +1,10 @@
-import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '../avatar';
+import React from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "../avatar";
 
 export default {
-  title: 'Components/Avatar',
+  title: "UI/Rocket/Avatar",
   component: Avatar,
+  tags: ["autodocs"],
 };
 
 export const Default = () => (

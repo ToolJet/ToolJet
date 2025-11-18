@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { AppsShellView } from './AppsShellView';
@@ -6,7 +6,7 @@ import { AppsTabs } from './AppsTabs';
 import { appsColumns } from './AppsPage.columns';
 import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
 import { TablePaginationFooter } from './TablePaginationFooter';
-import { EmptyNoApps } from './EmptyNoApps';
+import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 // import { getWorkspaceId } from '@/_helpers/utils';
 
 /**
@@ -36,7 +36,8 @@ import { EmptyNoApps } from './EmptyNoApps';
  *     cloneApp={this.cloneApp}
  *     exportApp={this.exportApp}
  *     navigate={this.props.navigate}
- *     darkMode={this.props.darkMode}
+ *     folders={this.state.folders}
+ *     foldersLoading={this.state.foldersLoading}
  *   />
  *
  * @component
@@ -59,8 +60,18 @@ function AppsPageAdapter({
   cloneApp,
   exportApp,
   navigate,
-  darkMode,
   workspaceId,
+  folders,
+  foldersLoading,
+  // Workspace switcher props (for Storybook and layouts)
+  workspaceName,
+  workspaces,
+  onWorkspaceChange,
+  // Sidebar props (for Storybook and layouts)
+  sidebarUser,
+  sidebarTeams,
+  sidebarNavMain,
+  sidebarProjects,
 }) {
   // Prop validation with runtime checks
   if (!Array.isArray(apps)) {
@@ -81,8 +92,11 @@ function AppsPageAdapter({
   // This allows Storybook to pass workspaceId without importing heavy utils
   const resolvedWorkspaceId = workspaceId || '32434r';
 
-  // Error boundary handling
-  const errorBoundaryRef = useRef(null);
+  // folderChanged handler is stored for future use
+  // Note: Folder filtering UI is not yet implemented in the new components
+  // This handler is ready to be passed to a future FolderFilter component
+  // eslint-disable-next-line no-unused-vars
+  const folderChangedHandler = folderChanged;
 
   try {
     // Row action handlers with error handling
@@ -156,12 +170,29 @@ function AppsPageAdapter({
             console.warn('Missing _originalApp or cloneApp handler');
             return;
           }
-          cloneApp(originalApp);
+          // HomePage.cloneApp expects (appName, appId)
+          cloneApp(originalApp.name, originalApp.id);
         } catch (err) {
           console.error('Failed to clone app:', err);
         }
       },
       [cloneApp]
+    );
+
+    const handleExport = useCallback(
+      (appRow) => {
+        try {
+          const originalApp = appRow?._originalApp;
+          if (!originalApp || !exportApp) {
+            console.warn('Missing _originalApp or exportApp handler');
+            return;
+          }
+          exportApp(originalApp);
+        } catch (err) {
+          console.error('Failed to export app:', err);
+        }
+      },
+      [exportApp]
     );
 
     // Compute permissions first (needed for columns) - we need this before hook call
@@ -185,23 +216,42 @@ function AppsPageAdapter({
       }
     }, [canCreateApp, canUpdateApp]);
 
+    // Create canDelete function for permission checking
+    const canDelete = useCallback(
+      (appRow) => {
+        try {
+          const originalApp = appRow?._originalApp;
+          if (!originalApp || !canDeleteApp) return false;
+          return typeof canDeleteApp === 'function' ? canDeleteApp(originalApp) : false;
+        } catch (err) {
+          console.error('Delete permission check failed:', err);
+          return false;
+        }
+      },
+      [canDeleteApp]
+    );
+
     // Create columns with permissions and handlers
     const finalColumns = useMemo(() => {
       return appsColumns({
         perms: computedPerms,
         onPlay: handlePlay,
         onEdit: handleEdit,
+        onClone: handleClone,
+        onDelete: handleDelete,
+        onExport: handleExport,
+        canDelete: canDelete,
       });
-    }, [computedPerms, handlePlay, handleEdit]);
+    }, [computedPerms, handlePlay, handleEdit, handleClone, handleDelete, handleExport, canDelete]);
 
     // Use adapter hook with computed columns
     const {
-      appRows: finalAppRows,
-      perms: hookPerms, // Use hook's perms for consistency (though we computed our own)
+      appRows: _finalAppRows,
+      perms: _hookPerms, // Use hook's perms for consistency (though we computed our own)
       table: finalTable,
       getSearch: finalGetSearch,
       handleSearch: finalHandleSearch,
-      handlePaginationChange: finalHandlePaginationChange,
+      handlePaginationChange: _finalHandlePaginationChange,
       appsEmpty: finalAppsEmpty,
       modulesEmpty: finalModulesEmpty,
       error: adapterError,
@@ -234,6 +284,7 @@ function AppsPageAdapter({
             {errorMessage}
           </div>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="tw-mt-4 tw-px-4 tw-py-2 tw-bg-primary tw-text-white tw-rounded hover:tw-bg-primary/90"
             aria-label="Retry loading apps"
@@ -273,6 +324,13 @@ function AppsPageAdapter({
         menuItems={menuItems}
         searchValue={finalGetSearch()}
         onSearch={finalHandleSearch}
+        workspaceName={workspaceName}
+        workspaces={workspaces}
+        onWorkspaceChange={onWorkspaceChange}
+        sidebarUser={sidebarUser}
+        sidebarTeams={sidebarTeams}
+        sidebarNavMain={sidebarNavMain}
+        sidebarProjects={sidebarProjects}
         footer={<TablePaginationFooter table={finalTable} />}
         contentSlot={
           <AppsTabs
@@ -281,6 +339,10 @@ function AppsPageAdapter({
             modulesEmpty={finalModulesEmpty}
             emptyAppsSlot={<EmptyNoApps />}
             emptyModulesSlot={<EmptyNoApps />}
+            folders={folders}
+            currentFolder={currentFolder}
+            onFolderChange={folderChanged}
+            foldersLoading={foldersLoading}
           />
         }
       />
@@ -293,6 +355,7 @@ function AppsPageAdapter({
         <div className="tw-text-red-500 tw-mb-2">An unexpected error occurred</div>
         <div className="tw-text-sm tw-text-muted-foreground">{error.message}</div>
         <button
+          type="button"
           onClick={() => window.location.reload()}
           className="tw-mt-4 tw-px-4 tw-py-2 tw-bg-primary tw-text-white tw-rounded hover:tw-bg-primary/90"
         >
@@ -329,8 +392,24 @@ AppsPageAdapter.propTypes = {
   cloneApp: PropTypes.func,
   exportApp: PropTypes.func,
   navigate: PropTypes.func,
-  darkMode: PropTypes.bool,
   workspaceId: PropTypes.string,
+  folders: PropTypes.arrayOf(PropTypes.object),
+  foldersLoading: PropTypes.bool,
+  // Workspace switcher props
+  workspaceName: PropTypes.string,
+  workspaces: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      logo: PropTypes.oneOfType([PropTypes.elementType, PropTypes.node]),
+      plan: PropTypes.string,
+    })
+  ),
+  onWorkspaceChange: PropTypes.func,
+  // Sidebar props
+  sidebarUser: PropTypes.object,
+  sidebarTeams: PropTypes.array,
+  sidebarNavMain: PropTypes.array,
+  sidebarProjects: PropTypes.array,
 };
 
 AppsPageAdapter.defaultProps = {
@@ -341,8 +420,16 @@ AppsPageAdapter.defaultProps = {
   currentFolder: {},
   appSearchKey: '',
   appType: 'front-end',
-  darkMode: false,
   workspaceId: undefined,
+  folders: [],
+  foldersLoading: false,
+  workspaceName: undefined,
+  workspaces: [],
+  onWorkspaceChange: undefined,
+  sidebarUser: undefined,
+  sidebarTeams: undefined,
+  sidebarNavMain: undefined,
+  sidebarProjects: undefined,
 };
 
 export default React.memo(AppsPageAdapter);

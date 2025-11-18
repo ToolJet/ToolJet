@@ -37,8 +37,3 @@ export const Default = () => (
     </PaginationContent>
   </Pagination>
 );
-
-
-
-
-
