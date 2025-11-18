@@ -68,7 +68,7 @@ export class LoginConfigsService implements ILoginConfigsService {
 
   async updateOrganizationSSOConfigs(user: User, params: any): Promise<any> {
     const organizationId = user.organizationId;
-    const { type, configs, enabled, oidcGroupSyncs } = params;
+    const { type, configs, enabled, oidcGroupSyncs, configId } = params;
 
     if (
       !(type && [SSOType.GOOGLE, SSOType.GIT, SSOType.FORM, SSOType.OPENID, SSOType.SAML, SSOType.LDAP].includes(type))
@@ -87,13 +87,36 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
 
-    const ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
-      sso: type,
-      configs,
-      enabled,
-      organizationId,
-      configScope: ConfigScope.ORGANIZATION,
-    });
+    let ssoConfig;
+
+    // Handle OIDC with configId (multi-tenant OIDC)
+    if (type === SSOType.OPENID && configId) {
+      // Verify config exists and belongs to organization
+      const existingConfig = await this.ssoConfigsRepository.findOne({
+        where: {
+          id: configId,
+          organizationId,
+          sso: SSOType.OPENID,
+        },
+      });
+
+      if (!existingConfig) {
+        throw new BadRequestException('OIDC configuration not found or does not belong to this organization');
+      }
+
+      // Update by ID
+      await this.ssoConfigsRepository.update(configId, { configs, enabled });
+      ssoConfig = await this.ssoConfigsRepository.findOne({ where: { id: configId } });
+    } else {
+      // Existing logic for other SSO types (update by sso + organizationId)
+      ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
+        sso: type,
+        configs,
+        enabled,
+        organizationId,
+        configScope: ConfigScope.ORGANIZATION,
+      });
+    }
 
     if (oidcGroupSyncs) {
       await this.oidcGroupSyncRepository.createOrUpdateGroupSync(oidcGroupSyncs, ssoConfig.id);

@@ -122,7 +122,16 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
         delete config['createdAt'];
         delete config['updatedAt'];
 
-        configs[config.sso] = this.buildConfigs(config, configId);
+        // Handle OIDC as array (multiple configs allowed)
+        if (config.sso === 'openid') {
+          if (!configs['openid']) {
+            configs['openid'] = [];
+          }
+          configs['openid'].push(this.buildConfigs(config, configId));
+        } else {
+          // Other SSO types remain as single object
+          configs[config.sso] = this.buildConfigs(config, configId);
+        }
       }
     }
     return configs;
@@ -190,7 +199,16 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     }
 
     for (const key in result) {
-      if (result[key]?.enabled === false) {
+      // Handle OIDC as array
+      if (key === 'openid' && Array.isArray(result[key])) {
+        // Filter out disabled configs
+        result[key] = result[key].filter((config) => config.enabled !== false);
+        // Remove the key if no enabled configs remain
+        if (result[key].length === 0) {
+          delete result[key];
+        }
+      } else if (result[key]?.enabled === false) {
+        // Other SSO types - remove if disabled
         delete result[key];
       }
     }
