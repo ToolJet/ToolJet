@@ -56,6 +56,7 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
   moduleId,
+  currentMode,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -67,6 +68,7 @@ const RenderWidget = ({
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
     shallow
   );
+
   const resolvedStyles = useStore(
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
     shallow
@@ -102,17 +104,15 @@ const RenderWidget = ({
   const isDisabled = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
     const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
-    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
-    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
-    return false;
+    if (componentExposedDisabled !== undefined) return componentExposedDisabled;
+    return component?.properties?.disabledState || component?.styles?.disabledState;
   });
 
   const isLoading = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
     const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
-    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
-    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
-    return false;
+    if (componentExposedLoading !== undefined) return componentExposedLoading;
+    return component?.properties?.loadingState || component?.styles?.loadingState;
   });
 
   const obj = {
@@ -235,6 +235,8 @@ const RenderWidget = ({
             adjustComponentPositions={adjustComponentPositions}
             componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
+            currentMode={currentMode}
+            subContainerIndex={subContainerIndex}
           />
         </div>
       </OverlayTrigger>

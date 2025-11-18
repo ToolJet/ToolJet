@@ -89,6 +89,7 @@ export const commonSelectors = {
   invitedUserEmail: '[data-cy="email-input-value"]',
   invitedUseremail: '[data-cy="email-input-input-value"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  homePageIcon: '[data-cy="icon-home"]',
   databaseIcon: '[data-cy="icon-database"]',
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettings: '[data-cy="workspace-settings"]',
@@ -176,7 +177,9 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
-  breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  // breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
@@ -190,6 +193,7 @@ export const commonSelectors = {
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
+  editorAppNameInput: '[data-cy="editor-app-name-input"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -268,6 +272,7 @@ export const commonSelectors = {
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
+  previewSettings: '[data-cy="preview-settings"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
@@ -281,6 +286,8 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+  modalConfirmButton: '[data-cy="modal-confirm-button"]',
+  rightSidebarPlusButton: '[data-cy="right-sidebar-plus-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -292,6 +299,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
   pageLogo: '[data-cy="page-logo"]',
+  homePageIcon: '[data-cy="home-page-icon"]',
 };
 
 export const commonWidgetSelector = {

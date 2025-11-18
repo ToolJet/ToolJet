@@ -22,6 +22,7 @@ import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
+import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -85,13 +86,15 @@ export const BaseLeftSidebar = ({
 
   useEffect(() => {
     if (isUserInZeroToOneFlow) {
-      setPopoverContentHeight(((window.innerHeight - 48) / window.innerHeight) * 100);
+      setPopoverContentHeight(((window.innerHeight - APP_HEADER_HEIGHT) / window.innerHeight) * 100);
       return;
     }
 
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
-        ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+        ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
+          window.innerHeight) *
+        100
       );
     } else {
       setPopoverContentHeight(100);
@@ -173,10 +176,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }

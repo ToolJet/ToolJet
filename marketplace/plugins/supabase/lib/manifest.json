@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Supabase datasource",
@@ -31,12 +30,15 @@
       "description": "Supabase project url"
     },
     "service_role_secret": {
-      "label": "Service Role Secret",
+      "label": "Service role secret",
       "key": "service_role_secret",
       "type": "textarea",
       "encrypted": true,
       "description": "Enter service role key of supabase account"
     }
   },
-  "required": ["project_url", "service_role_secret"]
+  "required": [
+    "project_url",
+    "service_role_secret"
+  ]
 }

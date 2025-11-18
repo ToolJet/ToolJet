@@ -185,30 +185,31 @@ export class DataQueriesService implements IDataQueriesService {
     ability: AppAbility,
     dataSource: DataSource,
     response: Response,
-    mode?: string
+    mode?: string,
+    app?: App
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
 
     if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode);
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response) {
+  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
     const { resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true, apps: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view');
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
 
-  async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response) {
-    return this.runAndGetResult(user, dataQuery, options, response, environmentId);
+  async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
+    return this.runAndGetResult(user, dataQuery, options, response, environmentId, undefined, app);
   }
 
   protected async runAndGetResult(
@@ -217,7 +218,8 @@ export class DataQueriesService implements IDataQueriesService {
     resolvedOptions: object,
     response: Response,
     environmentId?: string,
-    mode?: string
+    mode?: string,
+    app?: App
   ): Promise<object> {
     let result = {};
 
@@ -228,7 +230,9 @@ export class DataQueriesService implements IDataQueriesService {
         resolvedOptions,
         response,
         environmentId,
-        mode
+        mode,
+        app,
+        undefined // opts parameter
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

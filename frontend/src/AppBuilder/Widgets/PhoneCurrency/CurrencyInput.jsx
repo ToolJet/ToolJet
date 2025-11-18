@@ -174,6 +174,8 @@ export const CurrencyInput = (props) => {
     }
   }, []);
 
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
+
   return (
     <>
       <div
@@ -207,6 +209,7 @@ export const CurrencyInput = (props) => {
           labelWidth={labelWidth}
           widthType={widthType}
           inputId={`component-${id}`}
+          classes={labelClasses}
         />
         <div
           className="d-flex h-100"

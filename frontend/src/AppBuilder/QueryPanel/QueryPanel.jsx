@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
+import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
+
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
@@ -110,7 +112,7 @@ export const QueryPanel = ({ darkMode }) => {
         const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
         const clientY = e.clientY;
 
-        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 5;
+        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 2;
         if (withinDraggableArea !== isTopOfQueryPanel) {
           setTopOfQueryPanel(withinDraggableArea);
         }
@@ -171,15 +173,14 @@ export const QueryPanel = ({ darkMode }) => {
               height: '100%',
               paddingTop: isQueryPaneExpanded ? '2px' : '4px',
               borderTop: isQueryPaneExpanded && '2px solid #4368E3',
-              width: '77px',
             }}
           >
             <button
               data-cy="query-manager-toggle-button"
-              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
+              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
+              <span>{isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}</span>
               <span>Queries</span>
             </button>
           </div>
@@ -200,6 +201,7 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),

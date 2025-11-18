@@ -1,35 +1,5 @@
 const envVar = Cypress.env("environment");
 
-Cypress.Commands.add(
-  "apiLogin",
-  (
-    userEmail = "dev@tooljet.io",
-    userPassword = "password",
-    workspaceId = "",
-    redirection = "/"
-  ) => {
-    cy.request({
-      url: `${Cypress.env("server_host")}/api/authenticate/${workspaceId}`,
-      method: "POST",
-      body: {
-        email: userEmail,
-        password: userPassword,
-        redirectTo: redirection,
-      },
-    })
-      .its("body")
-      .then((res) => {
-        Cypress.env("workspaceId", res.current_organization_id);
-
-        Cypress.log({
-          name: "Api login",
-          displayName: "LOGIN: ",
-          message: `: Success`,
-        });
-      });
-  }
-);
-
 Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -64,7 +34,7 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
   });
 });
 
-Cypress.Commands.add("apiFetchDataSourcesId", () => {
+Cypress.Commands.add("apiFetchDataSourcesIdFromApp", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
       method: "GET",
@@ -183,23 +153,6 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("apiLogout", () => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    cy.request(
-      {
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/session/logout`,
-        headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
-          Cookie: `tj_auth_token=${cookie.value}`,
-        },
-      },
-      { log: false }
-    ).then((response) => {
-      expect(response.status).to.equal(200);
-    });
-  });
-});
 
 Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
@@ -233,7 +186,7 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
 
 Cypress.Commands.add(
   "apiAddQueryToApp",
-  ({ queryName, options, dsName, dsKind }) => {
+  ({ queryName, options, dataSourceName, dsKind }) => {
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = cookie?.value;
       const workspaceId = Cypress.env("workspaceId");
@@ -259,10 +212,10 @@ Cypress.Commands.add(
           headers: commonHeaders,
         }).then((dsResponse) => {
           const dataSource = dsResponse.body.data_sources.find(
-            (ds) => ds.name === dsName
+            (ds) => ds.name === dataSourceName
           );
           const dataSourceID = dataSource.id;
-          Cypress.env(`${dsName}`, dataSourceID);
+          Cypress.env(`${dataSourceName}`, dataSourceID);
 
           cy.request({
             method: "POST",
@@ -378,19 +331,6 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("apiGetEnvironments", () => {
-  cy.getAuthHeaders().then((headers) => {
-    cy.request({
-      method: "GET",
-      url: `${Cypress.env("server_host")}/api/app-environments`,
-      headers: headers,
-    }).then((response) => {
-      expect(response.status).to.equal(200);
-      return response.body.environments;
-    });
-  });
-});
-
 Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -495,28 +435,15 @@ Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const dataSource = response.body.data_sources.find(
-        (ds) => ds.name === dataSourceName
-      );
-      return dataSource.id;
+      const id = response.body.data_sources.find(ds => ds.name === dataSourceName)?.id;
+      Cypress.log({
+        name: "apiGetDataSourceIdByName",
+        displayName: "Data Source ID",
+        message: `Data source ID for '${dataSourceName}': ${id}`,
+      });
+      return id;
     });
   });
-});
-
-Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
-  let headers = {};
-  if (returnCached) {
-    return returnCached;
-  } else {
-    cy.getCookie("tj_auth_token").then((cookie) => {
-      headers = {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: `tj_auth_token=${cookie.value}`,
-      };
-      Cypress.env("authHeaders", headers);
-      return headers;
-    });
-  }
 });
 
 Cypress.Commands.add(
@@ -690,12 +617,12 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId")) => {
+  (targetEnvId = Cypress.env("environmentId"), appId = Cypress.env("appId")) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
-          "appId"
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env(
+          "editingVersionId"
         )}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
@@ -721,3 +648,21 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiGetAppIdByName", (appName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps`,
+        headers: headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const app = response.body.apps.find((app) => app.name === appName);
+        expect(app, `App with name "${appName}" not found`).to.exist;
+        return app.id;
+      });
+  });
+});

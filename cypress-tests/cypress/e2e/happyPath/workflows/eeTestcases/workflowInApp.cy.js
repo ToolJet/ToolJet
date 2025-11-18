@@ -2,15 +2,15 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteDatasource } from "Support/utils/dataSource";
+import { deleteDatasource} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
-
 import {
   enterJsonInputInStartNode,
-  deleteAppandWorkflowAfterExecution,
+  verifyPreviewOutputText,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard,
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -19,15 +19,15 @@ describe("Workflows in apps", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.appName = `${data.wfName}-wf-app`;
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.appName = `${data.workflowName}-wf-app`;
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("Creating workflows with runjs and validating execution in apps", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -51,7 +51,7 @@ describe("Workflows in apps", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
 
-    cy.addWorkflowInApp(data.wfName);
+    cy.addWorkflowInApp(data.workflowName);
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
 
@@ -59,19 +59,19 @@ describe("Workflows in apps", () => {
 
     // cy.verifyToastMessage(
     //   commonSelectors.toastMessage,
-    //   `Query (${data.dsName}) completed.`
+    //   `Query (${data.dataSourceName}) completed.`
     // );
-
-    deleteAppandWorkflowAfterExecution(data.wfName, data.appName);
+    cy.apiDeleteApp();
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Creating workflows with postgres and validating execution in apps", () => {
-    const dsName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
+      dataSourceName,
       "postgresql",
       [
         { key: "connection_type", value: "manual", encrypted: false },
@@ -94,7 +94,7 @@ describe("Workflows in apps", () => {
       ]
     );
 
-    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
       .should("be.visible")
       .click();
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -103,9 +103,10 @@ describe("Workflows in apps", () => {
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.reload();
 
-    cy.createWorkflowApp(data.wfName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
       force: true,
@@ -127,7 +128,7 @@ describe("Workflows in apps", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
 
-    cy.addWorkflowInApp(data.wfName);
+    cy.addWorkflowInApp(data.workflowName);
 
     cy.get(dataSourceSelector.queryPreviewButton).click();
 
@@ -135,10 +136,10 @@ describe("Workflows in apps", () => {
 
     // cy.verifyToastMessage(
     //   commonSelectors.toastMessage,
-    //   `Query (${data.dsName}) completed.`
+    //   `Query (${data.dataSourceName}) completed.`
     // );
-    deleteAppandWorkflowAfterExecution(data.wfName, data.appName);
-
-    deleteDatasource(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.apiDeleteApp();
+    cy.apiDeleteWorkflow(data.workflowName);
+    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
   });
 });
