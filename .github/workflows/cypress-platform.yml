@@ -43,7 +43,7 @@ jobs:
           df -h
 
           # Remove unnecessary packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
           sudo apt-get autoremove -y
           sudo apt-get clean
 
@@ -376,6 +376,7 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
