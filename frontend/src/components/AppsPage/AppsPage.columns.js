@@ -1,14 +1,14 @@
-import React from "react";
-import { Button } from "@/components/ui/Button/Button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { MoreVertical, Play, Smile, SquarePen } from "lucide-react";
+import React from 'react';
+import { Button } from '@/components/ui/Button/Button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MoreVertical, Play, Smile, SquarePen } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 function TableCellViewer({ item }) {
   return (
@@ -24,16 +24,7 @@ function TableCellViewer({ item }) {
 // Factory to build columns with optional dependencies (permissions, formatters, handlers)
 // deps: { perms?, formatDate?, onPlay?, onEdit?, onClone?, onDelete?, onExport?, canDelete? }
 export const appsColumns = (deps = {}) => {
-  const {
-    perms,
-    formatDate,
-    onPlay,
-    onEdit,
-    onClone,
-    onDelete,
-    onExport,
-    canDelete,
-  } = deps;
+  const { perms, formatDate, onPlay, onEdit, onClone, onDelete, onExport, canDelete } = deps;
 
   const canEdit = perms?.canEdit ?? true;
   const canPlay = perms?.canPlay ?? true;
@@ -41,7 +32,7 @@ export const appsColumns = (deps = {}) => {
 
   return [
     {
-      id: "select",
+      id: 'select',
       colSpan: 1,
       size: 40,
       minSize: 40,
@@ -49,13 +40,8 @@ export const appsColumns = (deps = {}) => {
       header: ({ table }) => (
         <div className="tw-flex tw-items-center tw-justify-center tw-size-10">
           <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
+            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
           />
         </div>
@@ -78,54 +64,38 @@ export const appsColumns = (deps = {}) => {
       enableHiding: false,
     },
     {
-      accessorKey: "name",
-      header: "Name",
+      accessorKey: 'name',
+      header: 'Name',
       cell: ({ row }) => {
         return <TableCellViewer item={row.original} className="!tw-h-10" />;
       },
       enableHiding: false,
     },
     {
-      accessorKey: "lastEdited",
+      accessorKey: 'lastEdited',
       header: () => <div className="tw-w-full tw-text-right">Last edited</div>,
       cell: ({ row }) => {
         return (
-          <div className="tw-text-right tw-text-sm tw-text-muted-foreground">
-            {fmtDate(row.original.lastEdited)}
-          </div>
+          <div className="tw-text-right tw-text-sm tw-text-muted-foreground">{fmtDate(row.original.lastEdited)}</div>
         );
       },
     },
     {
-      accessorKey: "editedBy",
+      accessorKey: 'editedBy',
       header: () => <div className="tw-w-full tw-text-right">Edited by</div>,
       cell: ({ row }) => {
-        return (
-          <div className="tw-text-right tw-text-sm tw-text-muted-foreground">
-            {row.original.editedBy}
-          </div>
-        );
+        return <div className="tw-text-right tw-text-sm tw-text-muted-foreground">{row.original.editedBy}</div>;
       },
     },
     {
-      id: "actions",
+      id: 'actions',
       cell: ({ row }) => (
         <div className="group-hover:tw-opacity-100 tw-opacity-0 has-[button[data-state=open]]:tw-opacity-100 tw-flex tw-items-center tw-justify-end tw-gap-2 tw-transition-opacity">
-          <Button
-            variant="ghost"
-            size="medium"
-            disabled={!canPlay}
-            onClick={() => onPlay?.(row.original)}
-          >
+          <Button variant="ghost" size="medium" disabled={!canPlay} onClick={() => onPlay?.(row.original)}>
             <Play className="tw-size-4 tw-text-icon-strong" />
             Play
           </Button>
-          <Button
-            variant="secondary"
-            size="medium"
-            disabled={!canEdit}
-            onClick={() => onEdit?.(row.original)}
-          >
+          <Button variant="secondary" size="medium" disabled={!canEdit} onClick={() => onEdit?.(row.original)}>
             <SquarePen className="tw-size-4 tw-text-icon-accent" />
             Edit
           </Button>
@@ -142,17 +112,9 @@ export const appsColumns = (deps = {}) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="tw-w-32">
-              <DropdownMenuItem onClick={() => onEdit?.(row.original)}>
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onClone?.(row.original)}>
-                Make a copy
-              </DropdownMenuItem>
-              {onExport && (
-                <DropdownMenuItem onClick={() => onExport?.(row.original)}>
-                  Export
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem onClick={() => onEdit?.(row.original)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onClone?.(row.original)}>Make a copy</DropdownMenuItem>
+              {onExport && <DropdownMenuItem onClick={() => onExport?.(row.original)}>Export</DropdownMenuItem>}
               <DropdownMenuItem>Favorite</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
