@@ -86,7 +86,11 @@ export const verifyLoginSettings = (pageName) => {
 
   cy.reload();
 
-  if (pageName === "instance" ? openInstanceSettings() : common.navigateToManageSSO());
+  if (pageName === "instance" ){
+ openInstanceSettings();
+  cy.get(ssoSelector.instanceLoginListItem).click();
+  } 
+  else common.navigateToManageSSO();
 
   cy.get(ssoSelector.autoSSOToggle).should("not.be.disabled").check();
   cy.get(ssoSelector.modalMessage).should("be.visible");
@@ -642,9 +646,8 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
       if (ssoConfigResp.rows.length > 0) {
         cy.task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
-          sql: `UPDATE sso_configs SET enabled = ${
-            enabled ? "true" : "false"
-          } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
+          sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
+            } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
         });
       }
     });

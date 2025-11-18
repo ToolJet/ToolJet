@@ -17,18 +17,14 @@ describe('Instance Login', () => {
         cy.intercept('GET', '/api/library_apps').as('appLibrary');
         cy.apiLogin();
         cy.visit('/');
-
-
     });
+
     it('Should verify personal workspace creation functionality', () => {
-
-
         // Enable personal workspace
         cy.apiUpdateLicense("valid");
         allowPersonalWorkspace(true);
         cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
         cy.apiLogout();
-
 
         cy.apiLogin(data.email);
         cy.visit('/');
@@ -51,10 +47,8 @@ describe('Instance Login', () => {
         cy.url().should("eq", `${Cypress.config("baseUrl")}/${data.workspaceSlug}`);
         cy.apiLogout();
 
-
         // Disable personal workspacw
         allowPersonalWorkspace(false);
-
 
         cy.apiLogin(data.email);
         cy.visit('/');
@@ -62,18 +56,13 @@ describe('Instance Login', () => {
         cy.get(commonSelectors.addWorkspaceButton).should('not.exist');
         cy.apiLogout();
 
-
         allowPersonalWorkspace(true);
-
-
     });
-
 
     it('Should verify instance signup and password login configuration', () => {
         //Verify Signup flag
         updateInstanceSettings('ENABLE_SIGNUP', 'true');
         cy.apiLogout();
-
 
         cy.visit('/');
         cy.get(commonSelectors.createAnAccountLink).should('be.visible');
@@ -83,7 +72,6 @@ describe('Instance Login', () => {
         updateInstanceSettings('ENABLE_SIGNUP', 'false');
         cy.visit('/');
         cy.get(commonSelectors.createAnAccountLink).should('not.exist');
-
 
         //Password login configuration
         cy.apiLogin();

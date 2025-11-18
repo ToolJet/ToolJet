@@ -8,19 +8,16 @@ import {
   workspaceSelector,
 } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { ssoSelector } from "Selectors/manageSSO";
 import { usersSelector } from "Selectors/manageUsers";
-import * as common from "Support/utils/common";
 import {
   // verifyOnboardingQuestions,
   // verifyCloudOnboardingQuestions,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
-import { ssoEeText } from "Texts/eeCommon";
 import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
 // import { appPromote } from "Support/utils/multiEnv";
@@ -504,7 +501,6 @@ export const createAnAppWithSlug = (appName, slug) => {
 export const openInstanceSettings = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
-  cy.get(ssoSelector.instanceLoginListItem).click();
 };
 
 export const openUserActionMenu = (email) => {

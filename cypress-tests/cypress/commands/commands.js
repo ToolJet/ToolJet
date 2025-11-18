@@ -33,6 +33,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.get(selector)
+    .scrollIntoView()
     .should("be.visible", { timeout: 10000 })
     .click({ force: true })
     .type(`{selectall}{backspace}${text}`);
@@ -307,9 +308,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
