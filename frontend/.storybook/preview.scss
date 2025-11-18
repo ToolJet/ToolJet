@@ -3,4 +3,8 @@
 @import "tailwindcss/utilities";
 
 @import "../src/styles/globals.css";
-@import '../src/_styles/componentdesign.scss'
+@import "../src/_styles/componentdesign.scss";
+
+body {
+  font-family: var(--font-family-inter, "Inter", sans-serif);
+}

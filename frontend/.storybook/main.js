@@ -4,6 +4,8 @@ import path from "node:path";
 const config = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
 
+  staticDirs: ["../assets"],
+
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-onboarding",
