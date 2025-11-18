@@ -22,7 +22,7 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
-import { AppVersionResourceMapping } from '@entities/app_version_resource_mapping.entity';
+import { AppVersionResourceMapping, ResourceMappingType } from '@entities/app_version_resource_mapping.entity';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -678,6 +678,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         });
 
         await manager.save(newMapping);
+      }
+    }
+    const parentVersionMapping = parentMappings.find((m) => m.resourceType === ResourceMappingType.APP_VERSION_MAPPING);
+    if (parentVersionMapping) {
+      const gitVersionId = Object.keys(parentVersionMapping.resourceMappings)[0];
+      if (gitVersionId) {
+        const newVersionMapping = manager.create(AppVersionResourceMapping, {
+          appId: parentVersionMapping.appId,
+          appVersionId: newVersionId,
+          resourceType: ResourceMappingType.APP_VERSION_MAPPING,
+          resourceMappings: { [gitVersionId]: newVersionId },
+        });
+
+        await manager.save(newVersionMapping);
       }
     }
   }

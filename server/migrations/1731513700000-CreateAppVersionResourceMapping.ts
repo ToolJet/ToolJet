@@ -61,29 +61,43 @@ export class CreateAppVersionResourceMapping1731513700000 implements MigrationIn
             true
         );
 
-        // Create foreign key for app_id
-        await queryRunner.createForeignKey(
-            'app_version_resource_mappings',
-            new TableForeignKey({
-                name: 'fk_app_version_resource_mappings_app',
-                columnNames: ['app_id'],
-                referencedColumnNames: ['id'],
-                referencedTableName: 'apps',
-                onDelete: 'CASCADE',
-            })
+        // Check and create foreign key for app_id if it doesn't exist
+        const appForeignKey = await queryRunner.getTable('app_version_resource_mappings');
+        const hasAppForeignKey = appForeignKey?.foreignKeys.some(
+            (fk) => fk.columnNames.includes('app_id') && fk.referencedTableName === 'apps'
         );
 
-        // Create foreign key for app_version_id
-        await queryRunner.createForeignKey(
-            'app_version_resource_mappings',
-            new TableForeignKey({
-                name: 'fk_app_version_resource_mappings_app_version',
-                columnNames: ['app_version_id'],
-                referencedColumnNames: ['id'],
-                referencedTableName: 'app_versions',
-                onDelete: 'CASCADE',
-            })
+        if (!hasAppForeignKey) {
+            await queryRunner.createForeignKey(
+                'app_version_resource_mappings',
+                new TableForeignKey({
+                    name: 'fk_app_version_resource_mappings_app',
+                    columnNames: ['app_id'],
+                    referencedColumnNames: ['id'],
+                    referencedTableName: 'apps',
+                    onDelete: 'CASCADE',
+                })
+            );
+        }
+
+        // Check and create foreign key for app_version_id if it doesn't exist
+        const hasAppVersionForeignKey = appForeignKey?.foreignKeys.some(
+            (fk) => fk.columnNames.includes('app_version_id') && fk.referencedTableName === 'app_versions'
         );
+
+        if (!hasAppVersionForeignKey) {
+            await queryRunner.createForeignKey(
+                'app_version_resource_mappings',
+                new TableForeignKey({
+                    name: 'fk_app_version_resource_mappings_app_version',
+                    columnNames: ['app_version_id'],
+                    referencedColumnNames: ['id'],
+                    referencedTableName: 'app_versions',
+                    onDelete: 'CASCADE',
+                })
+            );
+        }
+
         // Review if we need to add indexes in this table later for performance optimization
     }
 
