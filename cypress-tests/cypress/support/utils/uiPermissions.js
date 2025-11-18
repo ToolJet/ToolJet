@@ -10,7 +10,7 @@ import { commonText } from "Texts/common";
 export const uiCreateApp = (appName) => {
   cy.createApp(appName);
   cy.wait(2000);
-  cy.go("back");
+  cy.backToApps();
 };
 
 export const uiVerifyAppCreated = (appName, shouldExist = true) => {
@@ -98,6 +98,7 @@ export const uiCreateWorkflow = (workflowName) => {
   cy.get(workflowSelector.createWorkFlowsButton).click();
   cy.wait(2000);
   cy.go("back");
+  cy.wait(2000);
 };
 
 export const uiVerifyWorkflowCreated = (workflowName) => {

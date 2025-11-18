@@ -1,22 +1,19 @@
-import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers";
+import { commonSelectors } from "Selectors/common";
 import { usersSelector } from "Selectors/manageUsers";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
-import { commonText } from "Texts/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
+import { fillUserInviteForm } from "Support/utils/manageUsers";
 import {
     SignUpPageElements,
-    signUpLink,
-    verifyOnboardingQuestions,
-    visitWorkspaceInvitation,
     addNewUser,
-    enableInstanceSignUp,
+    visitWorkspaceInvitation
 } from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
+import { usersText } from "Texts/manageUsers";
 
 import {
-    navigateToManageUsers,
     logout,
+    navigateToManageUsers,
     searchUser,
 } from "Support/utils/common";
 
@@ -71,6 +68,8 @@ describe("inviteflow edge cases", () => {
     });
 
     it("should verify the user signup with same creds after invited in a workspace", () => {
+        cy.intercept('GET', '/assets/translations/en.json').as('translations');
+
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.signUpName = fake.firstName;
@@ -81,8 +80,10 @@ describe("inviteflow edge cases", () => {
         fillUserInviteForm(data.firstName, data.email);
         cy.get(usersSelector.buttonInviteUsers).click();
         logout();
+        cy.wait('@translations');
+        cy.wait(500)
 
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         SignUpPageElements();
         cy.wait(5000);
 
@@ -100,6 +101,7 @@ describe("inviteflow edge cases", () => {
     });
 
     it("should verify exisiting user workspace signup from instance using form", () => {
+        cy.intercept('GET', '/assets/translations/en.json').as('translations');
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.signUpName = fake.firstName;
@@ -109,8 +111,9 @@ describe("inviteflow edge cases", () => {
         navigateToManageUsers();
         addNewUser(data.firstName, data.email);
         logout();
-        cy.wait(3000);
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.wait('@translations');
+        cy.wait(500)
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         cy.wait(1000);
         cy.clearAndType(onboardingSelectors.nameInput, data.firstName);
         cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
@@ -121,16 +124,17 @@ describe("inviteflow edge cases", () => {
         cy.get(commonSelectors.signUpButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
-            "User already exists in the workspace."
+            "User with this email already exists in one or more workspaces."
         );
         cy.apiLogin();
-        cy.apiCreateWorkspace(data.workspaceName, data.workspaceName);
-        cy.visit(`${data.workspaceName}`);
-        cy.wait(3000);
-        setSignupStatus(true, data.workspaceName);
-        logout();
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceName).then((response) => {
+            Cypress.env("workspaceId", response.body.organization_id)
+            setSignupStatus(true, data.workspaceName);
+        })
+        cy.apiLogout();
 
-        cy.get(commonSelectors.createAnAccountLink).click();
+        cy.visit(`login/${data.workspaceName}`);
+        cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
         cy.wait(3000);
         cy.clearAndType(onboardingSelectors.nameInput, data.firstName);
         cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
@@ -143,6 +147,5 @@ describe("inviteflow edge cases", () => {
         cy.defaultWorkspaceLogin();
         visitWorkspaceInvitation(data.email, data.workspaceName);
         cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
-        logout();
     });
 });

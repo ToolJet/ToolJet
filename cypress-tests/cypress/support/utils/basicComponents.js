@@ -39,11 +39,13 @@ export const deleteComponentAndVerify = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
     .then(() => {
-      cy.get(`[data-cy="${widgetName}-delete-button"]`)
+      cy.get(`[data-cy="${widgetName}-delete-component-button"]`)
         .realHover({ position: "topRight" })
         .last()
         .realClick();
     });
+  cy.get('[data-cy="modal-component"]').should("be.visible");
+  cy.get(commonSelectors.yesButton).click();
   // cy.verifyToastMessage(
   //   `[class=go3958317564]`,
   //   "Component deleted! (Ctrl + Z to undo)"

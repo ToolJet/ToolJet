@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { toggleSsoViaUI, updateSsoId, gitHubSignInWithAssertion } from "Support/utils/manageSSO";
+import { toggleSsoViaUI, updateSsoId, gitHubSignInWithAssertion, cleanupTestUser } from "Support/utils/manageSSO";
 import { fillInputField } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
@@ -37,17 +37,11 @@ describe('GitHub SSO Tests', () => {
             cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
             cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
             cy.apiUpdateSSOConfig(emptyGitConfig, 'workspace', adminHeaders);
-            cleanupTestUser()
+            cleanupTestUser(TEST_USER_EMAIL)
         });
     });
 
-    const cleanupTestUser = () => {
-        cy.runSqlQuery(`SELECT EXISTS(SELECT 1 FROM users WHERE email = '${TEST_USER_EMAIL}');`).then((result) => {
-            if (result?.[0].exists) {
-                cy.runSqlQuery(`CALL delete_user('${TEST_USER_EMAIL}');`);
-            }
-        });
-    };
+
 
     it('should verify sso without configuration on instance', () => {
 

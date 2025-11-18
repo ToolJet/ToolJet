@@ -104,7 +104,7 @@ export const inviteUser = (firstName, email) => {
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
-  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
@@ -382,9 +382,7 @@ export const userMetadataOnboarding = (
   cy.apiUserInvite(firstName, email, userRole, metadata);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   return cy.wrap(metadataCount);
 };
 
@@ -409,4 +407,13 @@ export const selectUserGroup = (groupName) => {
   cy.get(onboardingSelectors.userGroupSelect)
     .should("contain.text", groupName)
     .click();
+};
+
+export const enterPasswordAndAcceptInvite = (password = "password") => {
+  cy.waitForElement(onboardingSelectors.loginPasswordInput);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+  cy.waitForElement(commonSelectors.signUpButton);
+  cy.get(commonSelectors.signUpButton).click();
+  cy.waitForElement(commonSelectors.acceptInviteButton);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };

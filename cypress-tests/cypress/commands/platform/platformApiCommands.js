@@ -67,8 +67,8 @@ Cypress.Commands.add(
   "apiCreateWorkspace",
   (workspaceName, workspaceSlug, cacheHeaders = false) => {
     cy.getAuthHeaders().then((headers) => {
-      cy.request(
-        {
+      return cy
+        .request({
           method: "POST",
           url: `${Cypress.env("server_host")}/api/organizations`,
           headers: headers,
@@ -76,12 +76,17 @@ Cypress.Commands.add(
             name: workspaceName,
             slug: workspaceSlug,
           },
-        },
-        { log: false }
-      ).then((response) => {
-        expect(response.status).to.equal(201);
-        return response;
-      });
+          log: false,
+        })
+        .then((response) => {
+          expect(response.status).to.equal(201);
+          Cypress.log({
+            name: "Create Workspace :",
+            message: ` ${workspaceName}`,
+          });
+          // Cypress.env("workspaceId", response.body.organization_id);
+          return response;
+        });
     });
   }
 );
@@ -240,13 +245,16 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   });
 });
 
-Cypress.Commands.add("apiGetUserDetails", (email) => {
+Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
+  const { page = 1 } = options;
+
   return cy.getAuthHeaders().then((headers) => {
     return cy
       .request({
         method: "GET",
         url: `${Cypress.env("server_host")}/api/organization-users`,
         headers: headers,
+        qs: { page },
         log: false,
       })
       .then((response) => {
@@ -257,7 +265,7 @@ Cypress.Commands.add("apiGetUserDetails", (email) => {
 });
 
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
-  return cy.apiGetUserDetails(email).then((response) => {
+  return cy.apiGetUserDetails().then((response) => {
     const userId = response.body.users.find((u) => u.email === email).user_id;
     return cy.getAuthHeaders().then((headers) => {
       return cy
@@ -274,6 +282,33 @@ Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
           expect(response.status).to.equal(200);
         });
     });
+  });
+});
+
+Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
+  if (!userId) {
+    throw new Error("userId is required to update user type");
+  }
+
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/users/user-type/instance`,
+        headers: headers,
+        body: {
+          userId: userId,
+          userType: userType,
+        },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "Super Admin",
+          message: `Updated user type to ${userType}`,
+        });
+      });
   });
 });
 
@@ -481,8 +516,8 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
 
 Cypress.Commands.add(
   "apiUpdateSSOConfig",
-  (ssoConfig, level = "workspace", returnCached = false) => {
-    cy.getAuthHeaders(returnCached).then((headers) => {
+  (ssoConfig, level = "workspace", cachedHeaders = false) => {
+    cy.getAuthHeaders(cachedHeaders).then((headers) => {
       const endpoints = {
         workspace: "/api/login-configs/organization-sso",
         instance: "/api/login-configs/instance-sso",
@@ -494,50 +529,10 @@ Cypress.Commands.add(
         url: url,
         headers: headers,
         body: ssoConfig,
+        log: false
       }).then((response) => {
         expect(response.status).to.equal(200);
         cy.log("SSO configuration updated successfully.");
-      });
-    });
-  }
-);
-
-Cypress.Commands.add(
-  "loginByKeycloak",
-  (username, password, codeVerifier, tjAuthToken) => {
-    cy.then(() => {
-      return generateCodeChallenge(codeVerifier);
-    }).then((codeChallenge) => {
-      cy.request({
-        method: "POST",
-        url: "http://localhost:8080/realms/tooljet/protocol/openid-connect/token?state=22f22523-7bc2-4134-891d-88bdfec073cd",
-        form: true,
-        body: {
-          grant_type: "password",
-          client_id: "tooljet_app",
-          client_secret: "cWBBO423mwaW7v3zYV3RbcE797Dm5jZS",
-          username,
-          password,
-        },
-      }).then((response) => {
-        const token = response.body.access_token;
-        const state = response.body.session_state;
-        const redirectUri = `${Cypress.env("redirect_uri")}`;
-
-        cy.setCookie("oidc_code_verifier", codeVerifier);
-        cy.setCookie("app_id", "cb4347c2-b2a8-4c1c-91b4-fcc789ea9a08");
-        cy.setCookie("tj_auth_token", tjAuthToken);
-
-        const authUrl =
-          `${Cypress.env("keycloak_url")}` +
-          `client_id=tooljet_app` +
-          `&scope=phone openid email profile groups` +
-          `&response_type=code` +
-          `&redirect_uri=${redirectUri}` +
-          `&code_challenge=${codeChallenge}` +
-          `&code_challenge_method=S256` +
-          `&state=22f22523-7bc2-4134-891d-88bdfec073cd`;
-        cy.visit(authUrl);
       });
     });
   }
@@ -761,13 +756,24 @@ Cypress.Commands.add(
               authToken = found.split("=")[1].split(";")[0];
             }
           }
-          return cy.request({
-            method: "POST",
-            url: `${Cypress.env("server_host")}/api/onboarding/accept-invite`,
-            headers: authToken ? { Cookie: `tj_auth_token=${authToken}` } : {},
-            body: { token: organizationToken },
-            log: false,
-          });
+          return cy
+            .request({
+              method: "POST",
+              url: `${Cypress.env("server_host")}/api/onboarding/accept-invite`,
+              headers: authToken
+                ? { Cookie: `tj_auth_token=${authToken}` }
+                : {},
+              body: { token: organizationToken },
+              log: false,
+            })
+            .then((acceptResp) => {
+              expect(acceptResp.status).to.eq(201);
+              Cypress.log({
+                name: "User onboarding completed",
+                message: `Accepted invite for ${email}`,
+              });
+              return acceptResp;
+            });
         });
     }
   }
@@ -951,3 +957,84 @@ Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
       });
   });
 });
+
+Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
+  if (!workspaceId) {
+    throw new Error("Workspace ID is required to archive workspace");
+  }
+
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/organizations/archive/${workspaceId}`,
+        headers: headers,
+        body: { status: "archived" },
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiArchiveWorkspace",
+          displayName: `WORKSPACE ARCHIVED : ${workspaceId}`,
+        });
+        return response.body;
+      });
+  });
+});
+Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
+  return cy.getAuthHeaders().then((headers) => {
+    cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/smtp/status`,
+        headers: headers,
+        body: { smtpEnabled: smtpBody.smtpEnabled },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+      })
+    return cy
+      .request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/smtp`,
+        headers: headers,
+        body: smtpBody,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiConfigureSmtp",
+          displayName: "SMTP CONFIGURED",
+        });
+        return response.body;
+      });
+  });
+});
+
+
+Cypress.Commands.add(
+  "apiGetWorkspaceIDs",
+  (parameters = "?status=active", cacheHeaders = false) => {
+    cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "GET",
+          url: `${Cypress.env("server_host")}/api/organizations${parameters}`,
+          headers: headers,
+          body: {},
+          log: false,
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          Cypress.log({
+            name: "Get Workspace IDs",
+            message: ` ${parameters}`,
+          });
+          // Cypress.env("workspaceId", response.body.organization_id);
+          return response.body.organizations;
+        });
+    });
+  }
+);

@@ -42,11 +42,13 @@ export const onboardingSelectors = {
   planToggleLabel: '[data-cy="plan-toggle-label"]',
   builderPrice: '[data-cy="builder-price"]',
   endUserPrice: '[data-cy="enduser-price"]',
+  proPlanPrice: '[data-cy="pro-plan-price"]',
   declineButton: '[data-cy="decline-button"]',
   skipButton: '[data-cy="skip-button"]',
   backLogo: '[data-cy="back-logo"]',
   backToApps: '[data-cy="back-to-apps"]',
   workspaceName: '[data-cy="workspace-name"]',
+  scheduleACallButton: '[data-cy="schedule-a-call-button"]',
   sampleAppHeader:
     '[data-cy="we\'ve-created-a-sample-application-for-you!-header"]',
   stepsDetails: '[data-cy="steps-details"]',

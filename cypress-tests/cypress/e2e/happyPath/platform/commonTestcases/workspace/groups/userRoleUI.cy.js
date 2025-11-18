@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
+import { apiUpdateProfile } from "Support/utils/platform/apiUtils/commonApi";
 import {
     commonGroupVerification,
     toggleAllPermissions,
@@ -19,23 +20,20 @@ import {
 import { groupsText } from "Texts/manageGroups";
 
 describe("User Role UI and Functionality verification", () => {
-    const data = {
-        firstName: fake.firstName,
-        email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
-        workspaceName: fake.firstName,
-        workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
-    };
-
-    before(() => {
-        cy.apiLogin();
-        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-    });
+    const data = {};
 
     beforeEach(() => {
+        data.workspaceName = fake.firstName;
+        data.workspaceSlug = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
+
         cy.apiLogin();
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
         navigateToManageGroups();
         cy.viewport(2000, 1900);
+        apiUpdateProfile("The", "Developer");
     });
 
     it("should verify admin role UI elements and interactions", () => {
@@ -62,7 +60,7 @@ describe("User Role UI and Functionality verification", () => {
             "USER ROLE"
         );
         cy.verifyElement('[data-cy="custom-groups-title"]', "CUSTOM GROUPS");
-        cy.get('[data-cy="create-group-button-icon"]').should("be.visible");
+        cy.get('[data-cy="create-new-group-button-icon"]').should("be.visible");
         cy.get('[data-cy="search-icon"]').should("be.visible");
 
         // Admin List Item Verification
@@ -92,7 +90,7 @@ describe("User Role UI and Functionality verification", () => {
             groupsText.emailTableHeader
         );
 
-        verifyUserRow("The Developer", "dev@tooljet.io");
+        verifyUserRow("The Developer", " dev@tooljet.io");
 
         cy.get('[data-cy="edit-role-button"]')
             .should("be.visible")
@@ -183,7 +181,7 @@ describe("User Role UI and Functionality verification", () => {
 
         // Granular Access Tab Verification
         cy.reload();
-        cy.wait(2000);
+        cy.wait(3000);
         cy.get(groupsSelector.groupLink("End-user")).click();
 
         verifyGranularAccessByRole("enduser");

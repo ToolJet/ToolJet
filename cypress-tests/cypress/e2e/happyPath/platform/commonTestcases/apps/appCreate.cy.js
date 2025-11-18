@@ -179,7 +179,7 @@ describe("App creation", () => {
         cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
 
-        cy.get(commonSelectors.appCreateButton).click();
+        cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
         cy.get(commonSelectors.createAppButton).click();
         cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(

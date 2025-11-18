@@ -49,7 +49,7 @@ describe("dashboard", () => {
       },
     }).as("version");
 
-    cy.visit("/");
+    cy.visit("/my-workspace");
 
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -181,8 +181,9 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
     cy.apiCreateApp(data.appName);
+    cy.visit("/my-workspace");
+
 
     // cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     // cy.wait(2000);
@@ -349,7 +350,7 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
+    cy.visit("/my-workspace");
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
@@ -376,7 +377,7 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
+    cy.visit("/my-workspace");
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
     cy.backToApps();

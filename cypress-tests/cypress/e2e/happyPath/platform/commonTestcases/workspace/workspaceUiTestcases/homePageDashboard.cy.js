@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
@@ -21,7 +22,9 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
-        cy.visit("/");
+        cleanAllUsers()
+        cy.visit("/my-workspace");
+
     });
 
     it("Should verify elements on home page dashboard", () => {
@@ -90,24 +93,30 @@ describe("Home Page Dashboard Testcases", () => {
     });
 
     it("Should verify Home page accessibility for the specific role", () => {
+        cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
         //Invite End-user
         cy.apiFullUserOnboarding(data.firstName, data.email);
         cy.apiLogout();
 
         cy.apiLogin(data.email);
-        cy.visit("/");
+        cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
+
         cy.get(commonSelectors.homePageIcon).should("not.exist");
         cy.apiLogout();
 
         cy.apiLogin();
-        cy.visit("/");
+        cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
 
         //Update role to Builder
         cy.apiUpdateUserRole(data.email, "builder");
         cy.apiLogout();
 
         cy.apiLogin(data.email);
-        cy.visit("/");
-        cy.get(commonSelectors.homePageIcon).should("be.visible");
+        cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
+
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).should("be.visible");
     });
 });

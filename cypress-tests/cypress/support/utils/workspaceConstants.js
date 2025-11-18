@@ -1,11 +1,12 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { importSelectors } from "Selectors/exportImport";
+import { workflowSelector } from "Selectors/workflows";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { getAllConstantsWithCount } from "Support/utils/platform/apiUtils/apiWSConstants";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
-import { workflowSelector } from "../../constants/selectors/workflows";
 
 export const contantsNameValidation = (
   selector,
@@ -118,10 +119,14 @@ export const verifySearch = (data) => {
   cy.wait(500);
   cy.get(commonSelectors.workspaceConstantsIcon).click();
 
-  cy.get(workspaceConstantsSelectors.envName).should(
-    "have.text",
-    `${data.envName} (10)`
-  );
+  getAllConstantsWithCount().then(({ count }) => {
+    // use count only
+    cy.get(workspaceConstantsSelectors.envName).should(
+      "have.text",
+      `${data.envName} (${count})`
+    );
+  });
+
   switchToConstantTab("Global");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "globalconst");
   cy.get(workspaceConstantsSelectors.constantName("globalconst")).should(

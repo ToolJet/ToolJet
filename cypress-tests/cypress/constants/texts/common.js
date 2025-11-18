@@ -286,3 +286,16 @@ export const workspaceSettingsText = {
   configureGitSyncListItem: "Configure git sync",
   themesListItem: "Themes",
 };
+
+export const whitelabelText = {
+  settingsPageTitle: "Settings",
+  breadcrumbTitle: "White labelling",
+  appLogoLabel: "App Logo",
+  pageTitleLabel: "Page Title",
+  faviconLabel: "Favicon",
+  appLogoHelp: "This will be used for branding across the app",
+  pageTitleHelp: "This will be used on the browser page title",
+  faviconHelp: "This will be displayed in the address bar of the browser",
+  saveButton: "Save changes",
+  cancelButton: "Cancel",
+};

@@ -180,12 +180,29 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
   async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
+      let envName: string;
+
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, false, manager)).id;
+        const environment = await this.get(organizationId, null, false, manager);
+        envId = environment.id;
+        envName = environment.name;
+      } else {
+        // Fetch environment name for the given environment ID
+        const environment = await manager.findOne(AppEnvironment, {
+          where: { id: envId, organizationId },
+          select: ['name'],
+        });
+        envName = environment?.name || 'unknown';
       }
-      return await manager.findOneOrFail(DataSourceOptions, {
+
+      const dataSourceOptions = await manager.findOneOrFail(DataSourceOptions, {
         where: { environmentId: envId, dataSourceId },
       });
+
+      // Add environment name to the returned object
+      (dataSourceOptions as any).environmentName = envName;
+
+      return dataSourceOptions;
     });
   }
 

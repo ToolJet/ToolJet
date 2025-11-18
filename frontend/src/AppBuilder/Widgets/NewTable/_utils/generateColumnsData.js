@@ -106,6 +106,7 @@ export default function generateColumnsData({
             : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
+          const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });
           switch (columnType) {
             case 'string':
             case undefined:

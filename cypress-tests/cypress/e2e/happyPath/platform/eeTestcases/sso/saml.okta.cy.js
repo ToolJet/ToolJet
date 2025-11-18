@@ -6,10 +6,12 @@ import { commonSelectors } from "Selectors/common";
 import { deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { navigateToManageSSO } from "Support/utils/common";
 import {
-    createGroup,
-    deleteGroup,
+    apiCreateGroup,
+    apiDeleteGroup,
     verifyUserRole,
 } from "Support/utils/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
+
 import {
     setSignupStatus,
     updateSsoId,
@@ -41,14 +43,31 @@ describe("SAML SSO", () => {
         enabled: true,
     };
 
+    const deleteGroup = (orgId) => {
+        cy.runSqlQuery(
+            `SELECT id FROM permission_groups WHERE name = 'SAML' AND organization_id = '${orgId}';`
+        ).then(({ rows }) => {
+            const existingGroupId = rows?.[0]?.id;
+            if (existingGroupId) {
+                cy.runSqlQuery(
+                    `DELETE FROM permission_groups WHERE id = '${existingGroupId}'::uuid;`
+                );
+            }
+        });
+    };
+
     beforeEach("", () => {
         cy.apiLogin();
         deleteOrganisationSSO("My workspace", ["saml"]);
         setSignupStatus(true);
+        cleanAllUsers();
+
     });
 
-    after(() => {
-        deleteGroup("SAML", Cypress.env("workspaceId"));
+    after("", () => {
+        cy.apiLogin();
+        cleanAllUsers();
+        cy.apiDeleteAllApps()
     });
 
     it("Should verify SAML modal elements", () => {
@@ -118,10 +137,11 @@ describe("SAML SSO", () => {
     it("Should verify SAML sso signup and group sync", () => {
         const orgId = Cypress.env("workspaceId");
         const ssoConfigId = Cypress.env("saml_config_id");
+        deleteGroup(orgId);
 
         cy.apiUpdateSSOConfig(config);
 
-        createGroup("SAML");
+        apiCreateGroup("SAML");
 
         updateSsoId(ssoConfigId, "saml", orgId);
 
@@ -133,6 +153,10 @@ describe("SAML SSO", () => {
             cy.wrap(userId).as("userId");
         });
         verifyUserRole("@userId", "end-user", ["SAML"]);
+
+        cy.apiLogout();
+        cy.apiLogin();
+        apiDeleteGroup('SAML');
     });
 
     it("Should verify the invited user onboarding using SAML SSO", () => {
