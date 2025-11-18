@@ -68,20 +68,19 @@ export default class PostgresqlQueryService implements QueryService {
             const queryTimeout = this.getQueryTimeout(queryOptions);
             const query = queryOptions.query;
             let result = { rows: [] };
-            try {
-              await pgConnection.query('BEGIN');
-              if (queryTimeout !== null) await pgConnection.query(`SET LOCAL statement_timeout = ${queryTimeout}`);
 
-              result = await pgConnection.query(query);
-              await pgConnection.query('COMMIT');
-              return {
-                status: 'ok',
-                data: result.rows,
-              };
-            } catch (error) {
-              await pgConnection.query('ROLLBACK');
-              throw error;
-            }
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(
+                () => reject(new Error(`Defined query timeout of ${queryTimeout}ms exceeded when running query.`)),
+                queryTimeout
+              );
+            });
+            const queryPromise = pgConnection.query(query);
+            result = await Promise.race([queryPromise, timeoutPromise]);
+            return {
+              status: 'ok',
+              data: result.rows,
+            };
           }
         }
         case 'gui': {
