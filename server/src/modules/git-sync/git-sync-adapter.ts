@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ExportResourcesDto } from '@dto/export-resources.dto';
-import { ImportExportResourcesService } from '@ee/import-export-resources/service';
+import { ImportExportResourcesService } from '@modules/import-export-resources/service';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Only used for compatibility, not for git actions
 export interface GitSyncConfig {
   repoUrl?: string;
   branch?: string;
@@ -150,7 +148,6 @@ export class GitSyncAdapter {
           }
         }
       } else {
-        // Write single object
         const filePath = path.join(folderPath, `${folderName}.json`);
         fs.writeFileSync(filePath, JSON.stringify(content, null, 2), 'utf8');
         fileCount++;
@@ -217,3 +214,5 @@ export class GitSyncAdapter {
     return files;
   }
 }
+
+// remove from CE if it's not required later
