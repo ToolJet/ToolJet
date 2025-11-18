@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Smile } from 'lucide-react';
-import AppListItem from '@/components/ui/AppListItem';
+import { AppCard } from '@/components/ui/blocks/AppCard';
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString) => {
@@ -31,7 +31,7 @@ const iconColors = [
   'tw-bg-red-500',
 ];
 
-export function AppsGrid({ table }) {
+export function AppsGrid({ table, onPlay, onEdit, onClone, onDelete, onExport, perms, canDelete }) {
   const rows = table.getRowModel().rows;
 
   return (
@@ -42,7 +42,7 @@ export function AppsGrid({ table }) {
         const iconColor = iconColors[index % iconColors.length];
 
         return (
-          <AppListItem
+          <AppCard
             key={row.id}
             icon={
               <div className={`tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center ${iconColor}`}>
@@ -53,6 +53,15 @@ export function AppsGrid({ table }) {
             description={`Edited ${timeAgo} by ${app.editedBy}`}
             variant="outline"
             className="tw-p-4 tw-flex-col tw-items-start"
+            app={app}
+            onPlay={onPlay}
+            onEdit={onEdit}
+            onClone={onClone}
+            onDelete={onDelete}
+            onExport={onExport}
+            canPlay={perms?.canPlay?.(app) ?? true}
+            canEdit={perms?.canEdit?.(app) ?? true}
+            canDelete={canDelete}
           />
         );
       })}
