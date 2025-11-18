@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { TopBar } from './TopBar';
+import { GalleryVerticalEnd, AudioWaveform, Command, Building2, Briefcase, Users } from 'lucide-react';
 
 export default {
-  title: 'UI/TopBar',
+  title: 'UI/Blocks/TopBar',
   component: TopBar,
   parameters: {
     layout: 'fullscreen',
@@ -57,10 +58,10 @@ Default.args = {
   workspaceName: 'ABC cargo main team',
   searchPlaceholder: 'Search',
   workspaces: [
-    { name: 'ABC cargo main team', id: '1' },
-    { name: 'XYZ Logistics', id: '2' },
-    { name: 'Global Shipping Co.', id: '3' },
-    { name: 'Fast Delivery Inc.', id: '4' },
+    { name: 'ABC cargo main team', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+    { name: 'XYZ Logistics', logo: AudioWaveform, plan: 'Startup' },
+    { name: 'Global Shipping Co.', logo: Command, plan: 'Pro' },
+    { name: 'Fast Delivery Inc.', logo: Building2, plan: 'Free' },
   ],
 };
 
@@ -68,7 +69,7 @@ export const SingleWorkspace = Template.bind({});
 SingleWorkspace.args = {
   workspaceName: 'My Workspace',
   searchPlaceholder: 'Search applications...',
-  workspaces: [{ name: 'My Workspace', id: '1' }],
+  workspaces: [{ name: 'My Workspace', logo: GalleryVerticalEnd, plan: 'Pro' }],
 };
 
 export const ManyWorkspaces = Template.bind({});
@@ -76,14 +77,14 @@ ManyWorkspaces.args = {
   workspaceName: 'Enterprise Team Alpha',
   searchPlaceholder: 'Search across all workspaces',
   workspaces: [
-    { name: 'Enterprise Team Alpha', id: '1' },
-    { name: 'Development Team Beta', id: '2' },
-    { name: 'Marketing Team Gamma', id: '3' },
-    { name: 'Sales Team Delta', id: '4' },
-    { name: 'Support Team Epsilon', id: '5' },
-    { name: 'Operations Team Zeta', id: '6' },
-    { name: 'Research Team Eta', id: '7' },
-    { name: 'Finance Team Theta', id: '8' },
+    { name: 'Enterprise Team Alpha', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+    { name: 'Development Team Beta', logo: AudioWaveform, plan: 'Startup' },
+    { name: 'Marketing Team Gamma', logo: Command, plan: 'Pro' },
+    { name: 'Sales Team Delta', logo: Building2, plan: 'Enterprise' },
+    { name: 'Support Team Epsilon', logo: Briefcase, plan: 'Startup' },
+    { name: 'Operations Team Zeta', logo: Users, plan: 'Pro' },
+    { name: 'Research Team Eta', logo: GalleryVerticalEnd, plan: 'Free' },
+    { name: 'Finance Team Theta', logo: AudioWaveform, plan: 'Enterprise' },
   ],
 };
 
@@ -92,9 +93,9 @@ LongWorkspaceName.args = {
   workspaceName: 'Very Long Workspace Name That Should Be Truncated',
   searchPlaceholder: 'Search',
   workspaces: [
-    { name: 'Very Long Workspace Name That Should Be Truncated', id: '1' },
-    { name: 'Another Very Long Workspace Name For Testing', id: '2' },
-    { name: 'Short Name', id: '3' },
+    { name: 'Very Long Workspace Name That Should Be Truncated', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+    { name: 'Another Very Long Workspace Name For Testing', logo: AudioWaveform, plan: 'Startup' },
+    { name: 'Short Name', logo: Command, plan: 'Pro' },
   ],
 };
 
@@ -102,8 +103,8 @@ export const WithoutSearch = Template.bind({});
 WithoutSearch.args = {
   workspaceName: 'ABC cargo main team',
   workspaces: [
-    { name: 'ABC cargo main team', id: '1' },
-    { name: 'XYZ Logistics', id: '2' },
+    { name: 'ABC cargo main team', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+    { name: 'XYZ Logistics', logo: AudioWaveform, plan: 'Startup' },
   ],
 };
 
@@ -112,10 +113,10 @@ export const Interactive = () => {
   const [searchValue, setSearchValue] = useState('');
   const [currentWorkspace, setCurrentWorkspace] = useState('ABC cargo main team');
   const [workspaces] = useState([
-    { name: 'ABC cargo main team', id: '1' },
-    { name: 'XYZ Logistics', id: '2' },
-    { name: 'Global Shipping Co.', id: '3' },
-    { name: 'Fast Delivery Inc.', id: '4' },
+    { name: 'ABC cargo main team', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+    { name: 'XYZ Logistics', logo: AudioWaveform, plan: 'Startup' },
+    { name: 'Global Shipping Co.', logo: Command, plan: 'Pro' },
+    { name: 'Fast Delivery Inc.', logo: Building2, plan: 'Free' },
   ]);
 
   const handleWorkspaceChange = (workspace) => {
@@ -162,7 +163,7 @@ export const Interactive = () => {
             <div className="tw-space-y-1">
               {workspaces.map((workspace) => (
                 <div
-                  key={workspace.id}
+                  key={workspace.name}
                   className={`tw-text-sm tw-p-2 tw-rounded ${
                     workspace.name === currentWorkspace
                       ? 'tw-bg-background-accent-strong tw-text-text-on-solid'
@@ -179,3 +180,7 @@ export const Interactive = () => {
     </div>
   );
 };
+
+
+
+

@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo } from "react";
-import { AppsShellView } from "@/components/AppsPage/AppsShellView";
-import { AppsTabs } from "@/components/AppsPage/AppsTabs";
-import { appsColumns } from "@/components/AppsPage/AppsPage.columns";
-import { useAppsQuery } from "@/features/apps/hooks/useAppsQuery";
-import { useAppsPermissions } from "@/features/apps/hooks/useAppsPermissions";
-import { useAppsTableState } from "@/features/apps/hooks/useAppsTableState";
-import { useAppsUrlState } from "@/features/apps/hooks/useAppsUrlState";
-import { TablePaginationFooter } from "@/components/AppsPage/TablePaginationFooter";
-import { EmptyNoApps } from "@/components/AppsPage/EmptyNoApps";
+import React, { useEffect, useMemo } from 'react';
+import { AppsShellView } from '@/components/AppsPage/AppsShellView';
+import { AppsTabs } from '@/components/AppsPage/AppsTabs';
+import { appsColumns } from '@/components/AppsPage/AppsPage.columns';
+import { useAppsQuery } from '@/features/apps/hooks/useAppsQuery';
+import { useAppsPermissions } from '@/features/apps/hooks/useAppsPermissions';
+import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
+import { useAppsUrlState } from '@/features/apps/hooks/useAppsUrlState';
+import { TablePaginationFooter } from '@/components/AppsPage/TablePaginationFooter';
+import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 
 export function AppsPageContainer() {
   const { data = [], isLoading, error } = useAppsQuery();
@@ -41,9 +41,7 @@ export function AppsPageContainer() {
     url.setFilters(state.columnFilters);
   }, [state.columnFilters, url]);
 
-  const menuItems = perms.canImport
-    ? [{ label: "Import template", onClick: () => {}, icon: "Download" }]
-    : [];
+  const menuItems = perms.canImport ? [{ label: 'Import template', onClick: () => {}, icon: 'Download' }] : [];
 
   if (isLoading) return <div className="tw-p-6">Loading…</div>;
   if (error) return <div className="tw-p-6">Failed to load</div>;

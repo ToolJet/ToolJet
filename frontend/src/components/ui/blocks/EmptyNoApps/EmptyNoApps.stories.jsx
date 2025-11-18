@@ -1,8 +1,8 @@
 import React from 'react';
-import { EmptyNoApps } from '../EmptyNoApps';
+import { EmptyNoApps } from './EmptyNoApps';
 
 export default {
-  title: 'AppsPage/EmptyNoApps',
+  title: 'UI/Blocks/EmptyNoApps',
   component: EmptyNoApps,
   tags: ['autodocs'],
   parameters: {
@@ -24,3 +24,7 @@ export const InContainer = {
     ),
   ],
 };
+
+
+
+

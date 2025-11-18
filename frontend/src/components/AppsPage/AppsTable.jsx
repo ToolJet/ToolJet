@@ -23,7 +23,7 @@ export function AppsTable({ table }) {
         <TableBody className="**:data-[slot=table-cell]:first:tw-w-8">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="tw-group">
+              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="tw-group tw-border-b-0">
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                 ))}

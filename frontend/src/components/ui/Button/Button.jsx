@@ -45,7 +45,7 @@ const buttonVariants = cva(
           disabled:tw-bg-button-outline-disabled disabled:tw-text-text-disabled 
           focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background tw-shadow-[0px_1px_0px_0px_rgba(0,0,0,0.10)]`,
         ghost: `
-          tw-border-none tw-text-text-default tw-bg-[#ffffff00] hover:tw-bg-button-outline-hover
+          tw-border-none tw-text-text-default tw-bg-[#ffffff00] hover:tw-bg-interactive-hover
           active:tw-bg-button-outline-pressed tw-focus-visible:tw-bg-button-outline disabled:tw-bg-transparent
           disabled:tw-text-text-disabled focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background tw-border-none`,
         ghostBrand: `

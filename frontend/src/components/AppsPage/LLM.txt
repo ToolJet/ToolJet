@@ -51,18 +51,14 @@ AppsPageAdapter (Adapter - bridges HomePage)
 frontend/src/components/AppsPage/
 ├── AppsShellView.jsx              # Layout shell with contentSlot
 ├── AppsTabs.jsx                   # Tabbed content (apps/modules)
-├── AppsPageView.jsx               # Deprecated wrapper (to be removed)
 ├── AppsPageHeader.jsx             # Header with create buttons
 ├── AppsPageViewHeader.jsx         # View switcher and filters
 ├── AppsTable.jsx                  # Table renderer
 ├── AppsGrid.jsx                   # Grid renderer
-├── AppsList.jsx                   # Deprecated (use AppsTabs)
-├── EmptyNoApps.jsx                # Empty state component
-├── Layout.jsx                     # Main layout wrapper
 ├── PageContainer.jsx              # Content container with footer
 ├── TablePaginationFooter.jsx      # Pagination controls
 ├── AppsPage.columns.js            # Column factory
-├── AppsPageView.stories.jsx       # Storybook stories (View)
+├── AppsPageAdapter.jsx            # Adapter component for HomePage integration
 ├── AppsPageContainer.stories.jsx  # Storybook stories (Container)
 ├── AppsPageAdapter.stories.jsx    # Storybook stories (Adapter)
 ├── INTEGRATION.md                 # Integration guide
@@ -288,7 +284,7 @@ appsColumns(deps = {})
 data.json
   → appsColumns({})
   → useAppsTableState({ data, columns })
-  → AppsPageView / AppsShellView + AppsTabs
+  → AppsShellView + AppsTabs
 ```
 
 ### Container Flow (Future)
@@ -617,16 +613,11 @@ Replace the existing UI rendering in `HomePage.render()` with:
 1. Frontend team integrates adapter into HomePage
 2. Test with real data
 3. Add URL state sync (optional)
-4. Remove deprecated components (AppsList, AppsPageView)
-
-### Deprecation Timeline
-- `AppsList.jsx`: Deprecated, use `AppsTabs` instead
-- `AppsPageView.jsx`: Deprecated wrapper, use `AppsShellView` directly
 
 ## Key Design Decisions
 
 ### 1. Why Separate Shell and Tabs?
-**Decision**: Split `AppsPageView` into `AppsShellView` + `AppsTabs`
+**Decision**: Use `AppsShellView` + `AppsTabs` pattern
 
 **Rationale**:
 - Shell handles layout (header, search, footer)
@@ -734,7 +725,6 @@ Replace the existing UI rendering in `HomePage.render()` with:
 - `LLM.txt`: This file
 
 ### Stories
-- `AppsPageView.stories.jsx`: View stories
 - `AppsPageContainer.stories.jsx`: Container stories
 - `AppsPageAdapter.stories.jsx`: Adapter stories
 

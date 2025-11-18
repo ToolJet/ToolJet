@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppSidebar } from '../app-sidebar';
+import { AppSidebar } from './AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/Rocket/sidebar';
 import {
   Breadcrumb,
@@ -10,9 +10,87 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
+import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Bell, Zap, GalleryVerticalEnd } from 'lucide-react';
+
+// Mock sidebar data
+const mockSidebarData = {
+  user: {
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatar: '/avatars/shadcn.jpg',
+  },
+  teams: [
+    {
+      name: 'AB',
+      logo: GalleryVerticalEnd,
+      plan: 'Enterprise',
+    },
+  ],
+  navMain: [
+    {
+      title: 'Home',
+      url: '#',
+      icon: Home,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Apps',
+      url: '#',
+      icon: Blocks,
+      isActive: true,
+      items: [],
+    },
+    {
+      title: 'Workflows',
+      url: '#',
+      icon: Workflow,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Database',
+      url: '#',
+      icon: Table2,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Plugins',
+      url: '#',
+      icon: Puzzle,
+      isActive: false,
+      items: [],
+    },
+    {
+      title: 'Resources',
+      url: '#',
+      icon: KeyRound,
+      isActive: false,
+      items: [],
+    },
+  ],
+  projects: [
+    {
+      name: 'Theme',
+      url: '#',
+      icon: Moon,
+    },
+    {
+      name: 'Notifications',
+      url: '#',
+      icon: Bell,
+    },
+    {
+      name: 'Quick Actions',
+      url: '#',
+      icon: Zap,
+    },
+  ],
+};
 
 export default {
-  title: 'Components/Blocks/Sidebar/AppSidebar',
+  title: 'UI/Blocks/AppSidebar',
   component: AppSidebar,
   decorators: [
     (Story) => (
@@ -57,5 +135,8 @@ const Template = (args) => (
 );
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = mockSidebarData;
+
+
+
 

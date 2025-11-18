@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Rows3, Grid2x2 } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,13 +12,8 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FolderSelector } from '@/components/ui/blocks/FolderSelector';
 
 export function AppsPageViewHeader({
   activeTab = 'apps',
@@ -25,6 +21,11 @@ export function AppsPageViewHeader({
   breadcrumbItems = [],
   viewAs = 'list',
   onViewChange,
+  // Folder selection props
+  folders = [],
+  currentFolder = null,
+  onFolderChange,
+  foldersLoading = false,
 }) {
   return (
     <div className="tw-border-b tw-border-border-weak tw-flex tw-items-center tw-justify-between tw-h-10 tw-w-full">
@@ -54,16 +55,21 @@ export function AppsPageViewHeader({
                             className="-tw-ml-2 data-[state=open]:tw-bg-interactive-hover"
                             size="small"
                             variant="ghost"
+                            disabled={foldersLoading}
                           >
                             {item.label}
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="tw-w-32">
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-                          <DropdownMenuItem>Favorite</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="tw-min-w-48 tw-p-0">
+                          <FolderSelector
+                            folders={folders}
+                            currentFolder={currentFolder}
+                            onFolderChange={onFolderChange}
+                            onNewFolder={() => {
+                              // Handle new folder creation
+                              // TODO: Implement new folder creation logic
+                            }}
+                          />
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
@@ -92,3 +98,43 @@ export function AppsPageViewHeader({
     </div>
   );
 }
+
+AppsPageViewHeader.propTypes = {
+  activeTab: PropTypes.string,
+  onTabChange: PropTypes.func,
+  breadcrumbItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string,
+      href: PropTypes.string,
+    })
+  ),
+  viewAs: PropTypes.string,
+  onViewChange: PropTypes.func,
+  // Folder selection props
+  folders: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+      count: PropTypes.number,
+    })
+  ),
+  currentFolder: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    count: PropTypes.number,
+  }),
+  onFolderChange: PropTypes.func,
+  foldersLoading: PropTypes.bool,
+};
+
+AppsPageViewHeader.defaultProps = {
+  activeTab: 'apps',
+  onTabChange: null,
+  breadcrumbItems: [],
+  viewAs: 'list',
+  onViewChange: null,
+  folders: [],
+  currentFolder: null,
+  onFolderChange: null,
+  foldersLoading: false,
+};

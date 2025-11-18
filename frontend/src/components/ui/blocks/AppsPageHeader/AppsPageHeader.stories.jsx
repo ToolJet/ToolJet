@@ -1,8 +1,8 @@
 import React from 'react';
-import { AppsPageHeader } from '../AppsPageHeader';
+import { AppsPageHeader } from './AppsPageHeader';
 
 export default {
-  title: 'UI/AppsPageHeader',
+  title: 'UI/Blocks/AppsPageHeader',
   component: AppsPageHeader,
   parameters: {
     layout: 'padded',
@@ -40,3 +40,7 @@ export const WithMenu = () => {
     />
   );
 };
+
+
+
+
