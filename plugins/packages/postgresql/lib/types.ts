@@ -23,4 +23,5 @@ export type QueryOptions = {
   primary_key_column: string;
   records: Record<string, unknown>[];
   query_params: string[][];
+  query_timeout?: string | number;
 };

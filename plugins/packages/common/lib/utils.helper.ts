@@ -271,3 +271,10 @@ export const redactHeaders = (headers) => {
   });
   return redactedHeaders;
 };
+
+export function getTooljetEdition(): string {
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
+  return 'ce';
+}

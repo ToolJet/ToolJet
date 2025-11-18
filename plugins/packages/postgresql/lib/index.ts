@@ -6,6 +6,7 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  getTooljetEdition,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
@@ -14,8 +15,10 @@ import { isEmpty } from '@tooljet-plugins/common';
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
   private STATEMENT_TIMEOUT;
+  private tooljet_edition: string;
 
   constructor() {
+    this.tooljet_edition = getTooljetEdition();
     // Default 120 secs
     this.STATEMENT_TIMEOUT =
       process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
@@ -59,15 +62,26 @@ export default class PostgresqlQueryService implements QueryService {
           if (this.isSqlParametersUsed(queryOptions)) {
             return await this.handleRawQuery(knexInstance, queryOptions);
           } else {
+            // Query level timeout :-
             pgPool = knexInstance.client.pool;
             pgConnection = await pgPool.acquire().promise;
+            const queryTimeout = this.getQueryTimeout(queryOptions);
             const query = queryOptions.query;
             let result = { rows: [] };
-            result = await pgConnection.query(query);
-            return {
-              status: 'ok',
-              data: result.rows,
-            };
+            try {
+              await pgConnection.query('BEGIN');
+              if (queryTimeout !== null) await pgConnection.query(`SET LOCAL statement_timeout = ${queryTimeout}`);
+
+              result = await pgConnection.query(query);
+              await pgConnection.query('COMMIT');
+              return {
+                status: 'ok',
+                data: result.rows,
+              };
+            } catch (error) {
+              await pgConnection.query('ROLLBACK');
+              throw error;
+            }
           }
         }
         case 'gui': {
@@ -89,7 +103,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
-      if (pgPool && pgConnection) pgPool.release(pgConnection);
+      if (pgPool && pgConnection) await pgPool.release(pgConnection);
       if (!checkCache) await knexInstance.destroy();
     }
   }
@@ -106,7 +120,8 @@ export default class PostgresqlQueryService implements QueryService {
     }
 
     const query = this.buildBulkUpdateQuery(queryOptions);
-    return await this.executeQuery(knexInstance, query);
+    const queryTimeout = this.getQueryTimeout(queryOptions);
+    return await this.executeQuery(knexInstance, query, queryTimeout);
   }
 
   private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
@@ -120,14 +135,23 @@ export default class PostgresqlQueryService implements QueryService {
     const { query, query_params } = queryOptions;
     const queryParams = query_params || [];
     const sanitizedQueryParams: Record<string, any> = Object.fromEntries(queryParams.filter(([key]) => !isEmpty(key)));
-    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams);
+    const queryTimeout = this.getQueryTimeout(queryOptions);
+    const result = await this.executeQuery(knexInstance, query, queryTimeout, sanitizedQueryParams);
 
     return { status: 'ok', data: result };
   }
 
-  private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
+  private async executeQuery(
+    knexInstance: Knex,
+    query: string,
+    queryTimeout: number | null,
+    sanitizedQueryParams: Record<string, any> = {}
+  ) {
     if (isEmpty(query)) throw new Error('Query is empty');
-    const { rows } = await knexInstance.raw(query, sanitizedQueryParams);
+    const { rows } =
+      queryTimeout !== null
+        ? await knexInstance.raw(query, sanitizedQueryParams).timeout(queryTimeout)
+        : await knexInstance.raw(query, sanitizedQueryParams);
     return rows;
   }
 
@@ -150,12 +174,10 @@ export default class PostgresqlQueryService implements QueryService {
         password: sourceOptions.password,
         port: sourceOptions.port,
         ssl: this.getSslConfig(sourceOptions),
-        statement_timeout: this.STATEMENT_TIMEOUT,
       };
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
-        statement_timeout: this.STATEMENT_TIMEOUT,
       };
     }
     const connectionOptions: Knex.Config = {
@@ -222,5 +244,23 @@ export default class PostgresqlQueryService implements QueryService {
     }
 
     return queryText.trim();
+  }
+
+  private getQueryTimeout(queryOptions: QueryOptions): number | null {
+    const queryTimeoutMs =
+      typeof queryOptions.query_timeout === 'string' && queryOptions.query_timeout.trim() === ''
+        ? NaN
+        : Number(queryOptions?.query_timeout);
+
+    const isValidQueryTimeout = !isNaN(queryTimeoutMs);
+
+    if (['ce', 'ee'].includes(this.tooljet_edition)) {
+      return isValidQueryTimeout ? queryTimeoutMs : this.STATEMENT_TIMEOUT;
+    }
+
+    if (this.tooljet_edition === 'cloud') {
+      return isValidQueryTimeout ? queryTimeoutMs : null;
+    }
+    return null;
   }
 }
