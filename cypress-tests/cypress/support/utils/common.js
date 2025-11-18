@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -103,11 +103,14 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   cy.contains(".homepage-app-card", appName).within(() => {
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).realHover();
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .should("be.visible")
       .should("not.be.disabled")
-      .click({ timeout: 10000 });
+    // .click({ timeout: 10000 });
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click();
+    cy.get('[data-cy="app-card-menu-icon"]')
+      .click();
   });
 };
 export const viewFolderCardOptions = (folderName) => {
