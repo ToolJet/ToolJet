@@ -7,7 +7,7 @@ import {
   onboardingStepThree,
   onboardingStepTwo,
 } from "Support/utils/onboarding";
-import { updateLicense } from "Support/utils/platform/eeCommon";
+// import { updateLicense } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
 

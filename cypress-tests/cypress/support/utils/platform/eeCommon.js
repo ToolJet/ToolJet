@@ -5,7 +5,6 @@ import {
   multiEnvSelector,
   workspaceSelector,
 } from "Selectors/eeCommon";
-import { multiEnvSelector } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import * as common from "Support/utils/common";
@@ -505,6 +504,7 @@ export const createAnAppWithSlug = (appName, slug) => {
 export const openInstanceSettings = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
+  cy.get(ssoSelector.instanceLoginListItem).click();
 };
 
 export const openUserActionMenu = (email) => {
@@ -521,12 +521,12 @@ export const archiveWorkspace = (workspaceName) => {
   cy.get(commonEeSelectors.confirmButton).click();
 };
 
-export const passwordToggle = (enable) => {
+export const passwordToggle = (enable, formName = "instance") => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations/configs",
+        url: `http://localhost:3000/api/login-configs/${formName}-sso`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -554,7 +554,7 @@ export const resetInstanceDomain = () => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/instance-login-configs",
+        url: "http://localhost:3000/api/login-configs/instance-general",
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -567,7 +567,24 @@ export const resetInstanceDomain = () => {
     });
   });
 };
-
+export const defaultInstanceSSO = (enable = true) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "PATCH",
+        url: "http://localhost:3000/api/login-configs/organization-general/inherit-sso",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: { inheritSSO: enable },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+};
 export const instanceSSOConfig = (allow = true) => {
   const value = allow ? "true" : "false";
 
@@ -578,8 +595,14 @@ export const instanceSSOConfig = (allow = true) => {
 };
 
 export const updateInstanceSettings = (key, value) => {
-  cy.task("updateSetting", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE instance_settings SET value = ${value} WHERE key = ${key};`,
+    sql: `UPDATE instance_settings SET value = '${value}' WHERE key = '${key}';`,
+  });
+};
+export const updateAutoSSOToggle = (allow = false) => {
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `UPDATE instance_settings SET value = '${allow}' WHERE key = 'AUTOMATIC_SSO_LOGIN';`,
   });
 };
