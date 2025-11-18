@@ -783,7 +783,7 @@ export const baseTheme = {
         },
         weak: {
           light: '#E4E7EB',
-          dark: '#2B3036',
+          dark: '#EEF0F1',
         }
       },
     },

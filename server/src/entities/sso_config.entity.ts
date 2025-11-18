@@ -23,7 +23,6 @@ type OpenId = {
   clientId: string;
   clientSecret: string;
   name: string;
-  customScopes: string; 
   wellKnownUrl: string;
   claimName: string;
   groupMapping: { [key: string]: string };
@@ -46,7 +45,6 @@ type SAML = {
   name: string;
   idpMetadata: string;
   groupAttribute: string;
-  groupSyncEnabled: boolean;
 };
 export enum SSOType {
   GOOGLE = 'google',
