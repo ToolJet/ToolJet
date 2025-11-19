@@ -134,7 +134,7 @@ function setDefaultWorkspace(workspaceId) {
 // Multi-tenant OIDC functions
 function createOIDCConfig(params) {
   const requestOptions = {
-    method: 'PATCH',
+    method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(params),

@@ -225,4 +225,172 @@ export class LoginConfigsService implements ILoginConfigsService {
   public async validateAndUpdateSystemParams(params: any, user: User): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
+  /**
+   * Create initial SSO configuration with default values
+   * Generates unique name: "{SSO_TYPE} {number}"
+   * Examples: "OIDC 1", "OIDC 2", "SAML 1", "LDAP 1"
+   */
+  async createOrganizationSSOConfig(user: User, params: any): Promise<any> {
+    const { type, enabled = false } = params;
+    const organizationId = user.organizationId;
+
+    // Validate SSO type
+    if (
+      !(type && [SSOType.GOOGLE, SSOType.GIT, SSOType.FORM, SSOType.OPENID, SSOType.SAML, SSOType.LDAP].includes(type))
+    ) {
+      throw new BadRequestException('Invalid SSO type');
+    }
+
+    // Count existing configs of this SSO type
+    const existingConfigs = await this.ssoConfigsRepository.find({
+      where: {
+        organizationId,
+        sso: type,
+        configScope: ConfigScope.ORGANIZATION,
+      },
+    });
+
+    // Generate unique name: "{SSO_TYPE} {number}" (with space)
+    // First config: "OIDC 1", subsequent: "OIDC 2", "OIDC 3", etc.
+    const count = existingConfigs.length + 1;
+    const ssoTypeName = this.getSSOTypeName(type);
+    const generatedName = `${ssoTypeName} ${count}`;
+
+    // Create default configs based on SSO type
+    const defaultConfigs = this.getDefaultConfigsForSSOType(type, generatedName);
+
+    // Create new SSO config entry
+    const newConfig = this.ssoConfigsRepository.create({
+      organizationId,
+      sso: type,
+      configs: defaultConfigs,
+      enabled,
+      configScope: ConfigScope.ORGANIZATION,
+    });
+
+    const savedConfig = await this.ssoConfigsRepository.save(newConfig);
+
+    // Audit log
+    const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: organizationId,
+      resourceId: organizationId,
+      resourceName: organization.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+
+    return savedConfig;
+  }
+
+  /**
+   * Delete SSO configuration
+   */
+  async deleteOrganizationSSOConfig(user: User, configId: string): Promise<void> {
+    const organizationId = user.organizationId;
+
+    // Find the config
+    const config = await this.ssoConfigsRepository.findOne({
+      where: { id: configId, organizationId },
+    });
+
+    if (!config) {
+      throw new NotFoundException('SSO configuration not found');
+    }
+
+    // Check if it's the last enabled login method
+    const allConfigs = await this.ssoConfigsRepository.find({
+      where: { organizationId, enabled: true },
+    });
+
+    if (allConfigs.length === 1 && config.enabled) {
+      throw new BadRequestException('Cannot delete the last enabled login method');
+    }
+
+    // Delete associated group syncs if OIDC
+    if (config.sso === SSOType.OPENID) {
+      await this.oidcGroupSyncRepository.delete({ ssoConfigId: configId });
+    }
+
+    // Delete the config
+    await this.ssoConfigsRepository.delete(configId);
+
+    // Audit log
+    const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
+    const auditLogsData = {
+      userId: user.id,
+      organizationId: organizationId,
+      resourceId: organizationId,
+      resourceName: organization.name,
+    };
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+  }
+
+  /**
+   * Get SSO type display name for name generation
+   */
+  private getSSOTypeName(type: SSOType): string {
+    const nameMap = {
+      [SSOType.OPENID]: 'OIDC',
+      [SSOType.SAML]: 'SAML',
+      [SSOType.LDAP]: 'LDAP',
+      [SSOType.GOOGLE]: 'Google',
+      [SSOType.GIT]: 'Git',
+      [SSOType.FORM]: 'Form',
+    };
+    return nameMap[type] || type.toUpperCase();
+  }
+
+  /**
+   * Get default configuration object for each SSO type
+   */
+  private getDefaultConfigsForSSOType(type: SSOType, name: string): Record<string, any> {
+    switch (type) {
+      case SSOType.OPENID:
+        return {
+          name,
+          client_id: '',
+          client_secret: '',
+          well_known_url: '',
+          grant_type: 'authorization_code',
+        };
+
+      case SSOType.SAML:
+        return {
+          name,
+          entry_point: '',
+          issuer: '',
+          cert: '',
+        };
+
+      case SSOType.LDAP:
+        return {
+          name,
+          url: '',
+          bind_dn: '',
+          bind_password: '',
+          search_base: '',
+          search_filter: '',
+        };
+
+      case SSOType.GOOGLE:
+        return {
+          name,
+          client_id: '',
+          client_secret: '',
+        };
+
+      case SSOType.GIT:
+        return {
+          name,
+          client_id: '',
+          client_secret: '',
+          host: '',
+        };
+
+      default:
+        return { name };
+    }
+  }
 }
