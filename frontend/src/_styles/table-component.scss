@@ -69,7 +69,13 @@
 
   .table-row {
     border-top: 0 !important;
-    border-bottom: 1px solid var(--cc-default-border);
+    border-bottom: 1px solid var(--cc-weak-border);
+  }
+
+  .table-bordered, .table-striped {
+    .table-row {
+      border-bottom: none !important;
+    }
   }
 
   .table-bordered> :not(caption)>*>* {
@@ -1577,8 +1583,10 @@
 
     th,
     td {
-      border-bottom: 1px solid var(--interactive-overlay-border-pressed) !important;
-      border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
+      &:not(:focus-within) {
+        border-bottom: 1px solid var(--cc-weak-border) !important;
+        border-right: 1px solid var(--cc-weak-border) !important;
+      }
 
       &:first-child {
         border-left: none !important;
