@@ -157,12 +157,15 @@ export const ControlButtons = memo(
           fireEvent('onTableDataDownload');
         };
         return (
-          <RenderButton
-            icon="IconFileDownload"
-            onClick={onClick}
-            tooltipId="tooltip-for-download-serverside-pagingation"
-            tooltipContent="Download"
-          />
+          <>
+            <Tooltip id="tooltip-for-download-serverside-pagingation" className="tooltip" />
+            <RenderButton
+              icon="IconFileDownload"
+              onClick={onClick}
+              tooltipId="tooltip-for-download-serverside-pagingation"
+              tooltipContent="Download"
+            />
+          </>
         );
       }
 
