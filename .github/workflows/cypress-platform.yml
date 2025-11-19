@@ -163,6 +163,11 @@ jobs:
           echo "TOOLJET_GLOBAL_CONSTANTS__production={\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}" >> .env
           echo "TOOLJET_SECRET_CONSTANTS__production={\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}" >> .env
 
+      - name: Debug TOOLJET_*CONSTANTS in .env on host
+        run: |
+          echo "Checking TOOLJET_*CONSTANTS entries in .env (host side):"
+          grep 'TOOLJET_.*CONSTANTS' .env || echo "No TOOLJET_*CONSTANTS lines found in .env"
+
       - name: clean up old docker containers
         run: |
           docker system prune -af --volumes
@@ -180,6 +185,28 @@ jobs:
           elif [ "${{ matrix.edition }}" = "ee" ]; then
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
           fi
+
+      - name: Inject TOOLJET_CONSTANTS into docker-compose
+        run: |
+          echo "Checking docker-compose.yaml structure..."
+
+          if ! grep -q "tooljet:" docker-compose.yaml; then
+            echo "No tooljet service found in docker-compose.yaml"
+            exit 1
+          fi
+
+          # Check if env_file already exists
+          if grep -A 10 "tooljet:" docker-compose.yaml | grep -q "env_file:"; then
+            echo "env_file already exists in docker-compose.yaml"
+          else
+            echo "Adding env_file reference..."
+            awk '/^  tooljet:/ {print; print "    env_file:"; print "      - .env"; next}1' docker-compose.yaml > docker-compose.tmp
+            mv docker-compose.tmp docker-compose.yaml
+            echo "env_file reference added"
+          fi
+
+          echo "Verifying env_file was added:"
+          grep -A 2 "tooljet:" docker-compose.yaml | head -5
 
       - name: view docker-compose file
         run: cat docker-compose.yaml
@@ -230,10 +257,10 @@ jobs:
 
           echo "✅ Server is ready!"
 
-      - name: Debug TOOLJET_GLOBAL_CONSTANTS__development in tooljet container
+      - name: Debug TOOLJET_*CONSTANTS inside tooljet container
         run: |
-          echo "TOOLJET_GLOBAL_CONSTANTS__development inside tooljet container:"
-          docker-compose exec -T tooljet printenv | grep TOOLJET_GLOBAL_CONSTANTS__development || echo "TOOLJET_GLOBAL_CONSTANTS__development not set in container"
+          echo "Checking TOOLJET_*CONSTANTS env vars inside tooljet container:"
+          docker-compose exec -T tooljet printenv | grep 'TOOLJET_.*CONSTANTS' || echo "No TOOLJET_*CONSTANTS env vars found inside container"
 
       - name: Test database connection
         run: |
