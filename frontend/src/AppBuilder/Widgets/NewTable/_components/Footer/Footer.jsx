@@ -91,6 +91,8 @@ export const Footer = memo(
                 table={table}
                 pageCount={pageCount}
                 paginationBtnClicked={paginationBtnClicked}
+                darkMode={darkMode}
+                height={height}
               />
             )}
             {editedRows.size > 0 && showBulkUpdateActions && (
