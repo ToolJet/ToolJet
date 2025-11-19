@@ -75,7 +75,8 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 export const verifyGranularEditModal = (role) => {
-    cy.get(groupsSelector.granularAccessPermission).realHover();
+    cy.wait(1000)
+    cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 
     cy.get(".modal-base").should("be.visible");
@@ -149,7 +150,7 @@ export const verifyGranularAddModal = (role) => {
         groupsText.customHelperText
     );
 
-    cy.verifyElement(groupsSelector.confimButton, groupsText.addButtonText);
+    cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
     cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();

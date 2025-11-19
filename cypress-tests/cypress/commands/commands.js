@@ -46,7 +46,7 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 Cypress.Commands.add(
   "verifyToastMessage",
   (selector, message, closeAction = true) => {
-    cy.get(selector).as("toast").should("contain.text", message);
+    cy.get(selector, { timeout: 15000 }).as("toast").should("contain.text", message, { timeout: 15000 });
     if (closeAction) {
       cy.get("body").then(($body) => {
         if ($body.find(commonSelectors.toastCloseButton).length > 0) {

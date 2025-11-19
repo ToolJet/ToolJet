@@ -43,7 +43,7 @@ jobs:
           df -h
 
           # Remove unnecessary packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
           sudo apt-get autoremove -y
           sudo apt-get clean
 
@@ -230,6 +230,11 @@ jobs:
 
           echo "✅ Server is ready!"
 
+      - name: Debug TOOLJET_GLOBAL_CONSTANTS__development in tooljet container
+        run: |
+          echo "TOOLJET_GLOBAL_CONSTANTS__development inside tooljet container:"
+          docker-compose exec -T tooljet printenv | grep TOOLJET_GLOBAL_CONSTANTS__development || echo "TOOLJET_GLOBAL_CONSTANTS__development not set in container"
+
       - name: Test database connection
         run: |
           # Wait for database to be ready
@@ -376,6 +381,7 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}

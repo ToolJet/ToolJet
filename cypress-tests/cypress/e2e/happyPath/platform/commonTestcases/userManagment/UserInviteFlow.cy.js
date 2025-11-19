@@ -22,12 +22,11 @@ import {
   fillInputField,
   logout,
   navigateToManageUsers,
-  searchUser
+  searchUser,
 } from "Support/utils/common";
 import { verifyUserInGroups } from "Support/utils/externalApi";
 import { apiCreateGroup } from "Support/utils/manageGroups";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
-
 
 let invitationToken,
   organizationToken,
@@ -42,9 +41,9 @@ describe("user invite flow cases", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.ifEnv("Enterprise", () => {
-      enableInstanceSignup()
+      enableInstanceSignup();
     });
-    cy.apiConfigureSmtp(smtpConfig)
+    cy.apiConfigureSmtp(smtpConfig);
   });
 
   it("Should verify the Manage users page", () => {
@@ -59,7 +58,7 @@ describe("user invite flow cases", () => {
     cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
-    fillInputField({ "Name": data.firstName, "Email address": data.email });
+    fillInputField({ Name: data.firstName, "Email address": data.email });
     cy.get(commonSelectors.inputFieldEmailAddress).clear();
     cy.get(usersSelector.emailError).verifyVisibleElement(
       "have.text",
@@ -67,7 +66,10 @@ describe("user invite flow cases", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
-    fillInputField({ "Name": data.firstName, "Email address": usersText.adminUserEmail });
+    fillInputField({
+      Name: data.firstName,
+      "Email address": usersText.adminUserEmail,
+    });
     cy.get(usersSelector.buttonInviteUsers).click();
 
     cy.get('[data-cy="modal-icon"]').should("be.visible");
@@ -143,7 +145,7 @@ describe("user invite flow cases", () => {
   });
 
   it("Should verify the user archive functionality", () => {
-    cy.intercept('GET', '/assets/translations/en.json').as('translations');
+    cy.intercept("GET", "/assets/translations/en.json").as("translations");
 
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -169,10 +171,13 @@ describe("user invite flow cases", () => {
 
     cy.apiLogout();
     cy.visit("/");
-    cy.wait('@translations');
-    cy.wait(500)
+    cy.wait("@translations");
+    cy.wait(500);
 
-    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 }).should("be.visible").click();
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
+      .should("be.visible")
+      .click();
     cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
     cy.get(onboardingSelectors.signInButton).click();
@@ -233,14 +238,12 @@ describe("user invite flow cases", () => {
     cy.get(".selected-value").verifyVisibleElement("have.text", "Admin");
     cy.get(commonSelectors.cancelButton).click();
 
-
     // Verify default End-user role
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(".selected-value").should("have.text", "End-user");
     cy.get(commonSelectors.cancelButton).click();
 
     inviteUserWithUserRole(data.firstName, data.email, "Admin");
-
 
     verifyUserInGroups(data.email, ["Admin"]);
 
@@ -261,8 +264,9 @@ describe("user invite flow cases", () => {
     cy.wait(1000);
 
     cy.defaultWorkspaceLogin();
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
-
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should(
+      "be.visible"
+    );
 
     verifyUserInGroups(data.email, [data.groupName1, data.groupName2]);
   });
@@ -323,7 +327,6 @@ describe("user invite flow cases", () => {
 
     selectGroup("Admin");
     cy.get(commonSelectors.cancelButton).click();
-
 
     updateUserGroup("Admin");
     cy.get(usersSelector.buttonInviteUsers).click();
