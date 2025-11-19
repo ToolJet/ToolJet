@@ -86,12 +86,23 @@
       padding: 12px;
       height: 56px;
 
+      .tj-tertiary-btn {
+        &:not(.always-active-btn):not(:hover) {
+          background: var(--cc-surface1-surface) !important;
+        }
+        border-color: var(--cc-default-border) !important;
+      }
 
       .table-global-search {
-        border: 1px solid var(--cc-default-border,--borders-default) !important;
+        width: 200px;
+        border: 1px solid var(--cc-default-border, --borders-default) !important;
 
         input {
-          color: var(--text-primary) !important;
+          color: var(--cc-primary-text) !important;
+
+          &::placeholder {
+            color: var(--cc-placeholder-text) !important;
+          }
         }
 
         &:hover {
