@@ -230,6 +230,11 @@ jobs:
 
           echo "✅ Server is ready!"
 
+      - name: Debug TOOLJET_GLOBAL_CONSTANTS__development in tooljet container
+        run: |
+          echo "TOOLJET_GLOBAL_CONSTANTS__development inside tooljet container:"
+          docker exec Tooljet-app printenv | grep TOOLJET_GLOBAL_CONSTANTS__development || echo "TOOLJET_GLOBAL_CONSTANTS__development not set in container"
+
       - name: Test database connection
         run: |
           # Wait for database to be ready
