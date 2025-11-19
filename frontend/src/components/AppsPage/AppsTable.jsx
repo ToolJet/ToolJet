@@ -2,8 +2,9 @@ import * as React from 'react';
 import { flexRender } from '@tanstack/react-table';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AppsTableSkeleton } from './AppsTableSkeleton';
 
-export function AppsTable({ table }) {
+export function AppsTable({ table, isLoading }) {
   return (
     <div className="tw-overflow-hidden">
       <Table>
@@ -20,21 +21,29 @@ export function AppsTable({ table }) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="**:data-[slot=table-cell]:first:tw-w-8">
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="tw-group tw-border-b-0">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                ))}
+        {isLoading ? (
+          <AppsTableSkeleton rowCount={4} />
+        ) : (
+          <TableBody className="**:data-[slot=table-cell]:first:tw-w-8">
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className="tw-group tw-border-b-0"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell className="tw-h-24 tw-text-center">No results.</TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell className="tw-h-24 tw-text-center">No results.</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
+            )}
+          </TableBody>
+        )}
       </Table>
     </div>
   );
