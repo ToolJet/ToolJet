@@ -102,13 +102,16 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.contains(".homepage-app-card", appName).within(() => {
+  if (Cypress.env("environment") !== "Community") {
+    cy.get('[data-cy="dashboard-prompt-header"]', { timeout: 30000 }).should("be.visible", { timeout: 30000 });
+  }
+  cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
     cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .should("be.visible")
       .should("not.be.disabled")
     // .click({ timeout: 10000 });
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click();
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .click();
   });
