@@ -124,7 +124,7 @@ export const BaseLeftSidebar = ({
       case 'apphistory':
         return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
       case 'debugger':
-        return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
+        return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} toggleLeftSidebar={toggleLeftSidebar} />;
       case 'settings':
         return (
           <GlobalSettings
@@ -229,7 +229,9 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai or inspector is open don't close
-          if (selectedSidebarItem === 'tooljetai' || selectedSidebarItem === 'inspect' || selectedSidebarItem === 'page') return;
+          if (['tooljetai', 'inspect', 'page', 'debugger'].includes(selectedSidebarItem)) {
+            return
+          }
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
