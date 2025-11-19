@@ -15,7 +15,9 @@ import { usersText } from "Texts/manageUsers";
 
 const data = {
   userName: fake.firstName.toLowerCase().replace(/[^a-z]/g, ""),
-  userEmail: fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, ""),
+  get userEmail() {
+    return `${this.userName}@example.com`;
+  },
 };
 
 const loginAsUser = (email, password = usersText.password) => {
@@ -39,6 +41,8 @@ const visitAllUsersPage = (loginEmail) => {
     cy.apiLogin();
   }
   cy.visit("settings/all-users");
+  cy.waitForElement(commonSelectors.homePageLogo);
+  cy.wait(1000);
 };
 
 describe("Instance Settings - All Users UI", () => {
@@ -46,6 +50,7 @@ describe("Instance Settings - All Users UI", () => {
     cy.apiLogin();
     cy.apiGetWorkspaceIDs().then((ids) => {
       ids.forEach((org) => {
+        cy.log(`Cleaning up workspace: ${org.slug}`);
         if (org.slug !== "my-workspace") {
           cy.apiArchiveWorkspace(org.id);
         }
@@ -80,6 +85,7 @@ describe("Instance Settings - All Users UI", () => {
 
     //Workspace level unarchive and login verification
     visitAllUsersPage();
+    cy.waitForElement(commonSelectors.inputUserSearch);
     cy.clearAndType(commonSelectors.inputUserSearch, data.userEmail);
     cy.get(instanceSettingsSelector.viewButton(data.userName)).click();
     cy.get(instanceSettingsSelector.userStatusChangeButton).click();
