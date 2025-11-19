@@ -13,7 +13,7 @@ import ErrorBoundary from '@/_ui/ErrorBoundary';
 
 import './styles.scss';
 
-const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
+const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType, toggleLeftSidebar }) => {
   const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
   const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
   const exposedVariables = useStore((state) => state.getAllExposedValues().variables || {}, shallow);
@@ -155,22 +155,23 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="State inspector">
+        <HeaderSection.PanelHeader title="Inspector">
           <div className="d-flex justify-content-end">
             <ButtonComponent
               iconOnly
-              leadingIcon={pinned ? 'unpin' : 'pin'}
-              onClick={() => setPinned(!pinned)}
+              leadingIcon={'x'}
+              onClick={() => toggleLeftSidebar(false)}
               variant="ghost"
               fill="var(--icon-strong,#6A727C)"
               size="medium"
-              data-cy="left-sidebar-pin-button"
+              data-cy="left-sidebar-close-button"
+              isLucid={true}
             />
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
 
-      <div className="card-body p-1 pb-5">
+      <div className="card-body p-0 pt-2 pb-5">
         <ErrorBoundary>
           <JSONTreeViewerV2
             data={memoizedJSONData}
