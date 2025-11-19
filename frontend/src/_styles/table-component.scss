@@ -310,8 +310,9 @@
         }
 
 
-        &:not(:focus-within):hover {
-          background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
+
+        &.isEditable:not(:focus-within):hover {
+          background-color: var(--cc-table-editable-column-hover) !important;
         }
 
         &.isEdited:not(:focus-within) {
@@ -387,6 +388,14 @@
       .table-row:hover,
       .table-row:focus {
         background: var(--cc-table-row-hover, #ECEEF0) !important;
+      }
+
+      &.table-striped {
+        .table-row[data-index]:nth-child(even) {
+          &:hover, &:focus {
+            background: var(--cc-table-striped-row-hover, #ECEEF0) !important;
+          }
+        }
       }
     }
 
@@ -1625,7 +1634,7 @@
       }
 
       tr[data-index]:nth-child(even) {
-        background-color: var(--slate2) !important;
+        background-color: var(--cc-table-striped-row-bg-color);
         --tblr-table-accent-bg: none;
         color: inherit !important;
       }
