@@ -203,7 +203,7 @@ export const ConfigHandle = ({
     >
       <ConfigHandleButton
         customStyles={getConfigHandleButtonStyle}
-        className="no-hover"
+        className="no-hover component-name-btn"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
