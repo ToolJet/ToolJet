@@ -68,7 +68,7 @@ describe("inviteflow edge cases", () => {
   });
 
   it("should verify the user signup with same creds after invited in a workspace", () => {
-    cy.intercept("GET", "/assets/translations/en.json").as("translations");
+    // cy.intercept("GET", "/assets/translations/en.json").as("translations");
 
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -82,8 +82,8 @@ describe("inviteflow edge cases", () => {
     logout();
 
     cy.visit("/");
-    cy.wait("@translations");
-    cy.wait(500);
+    //cy.wait("@translations");
+    cy.wait(1000);
 
     cy.waitForElement(commonSelectors.createAnAccountLink);
     cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
@@ -104,7 +104,7 @@ describe("inviteflow edge cases", () => {
   });
 
   it("should verify exisiting user workspace signup from instance using form", () => {
-    cy.intercept("GET", "/assets/translations/en.json").as("translations");
+    // cy.intercept("GET", "/assets/translations/en.json").as("translations");
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.signUpName = fake.firstName;
@@ -116,8 +116,9 @@ describe("inviteflow edge cases", () => {
     logout();
 
     cy.visit("/");
-    cy.wait("@translations");
-    cy.wait(500);
+    //cy.wait("@translations");
+    cy.wait(1000);
+
     cy.waitForElement(commonSelectors.createAnAccountLink);
     cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
     cy.wait(1000);

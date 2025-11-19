@@ -22,6 +22,7 @@ Cypress.Commands.add(
     status = "success",
     toast = ""
   ) => {
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
     cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
       .should("be.visible")
       .click();
@@ -46,7 +47,9 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 Cypress.Commands.add(
   "verifyToastMessage",
   (selector, message, closeAction = true) => {
-    cy.get(selector, { timeout: 15000 }).as("toast").should("contain.text", message, { timeout: 15000 });
+    cy.get(selector, { timeout: 15000 })
+      .as("toast")
+      .should("contain.text", message, { timeout: 15000 });
     if (closeAction) {
       cy.get("body").then(($body) => {
         if ($body.find(commonSelectors.toastCloseButton).length > 0) {
@@ -308,9 +311,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );

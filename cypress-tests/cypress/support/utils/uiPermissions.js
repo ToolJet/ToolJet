@@ -96,11 +96,11 @@ export const uiCreateWorkflow = (workflowName) => {
   cy.get('[data-cy="button-new-workflow-from-scratch"]').click();
   cy.get(workflowSelector.workFlowNameInputField).type(workflowName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
-  cy.wait(2000);
+  cy.wait(3000);
   cy.go("back");
-  cy.wait(2000);
+  cy.waitForElement('[data-cy="home-page-logo"]')
 };
-
+cy.wait(2000)
 export const uiVerifyWorkflowCreated = (workflowName) => {
   cy.get(commonSelectors.globalWorkFlowsIcon).click();
   cy.get(`[data-cy="${workflowName.toLowerCase()}-card"]`)
@@ -112,7 +112,7 @@ export const uiDeleteWorkflow = () => {
   cy.get(".homepage-app-card .home-app-card-header .menu-ico").then(($el) => {
     $el[0].style.setProperty("visibility", "visible", "important");
   });
-
+  cy.get(".homepage-app-card").realHover()
   cy.get('[data-cy="app-card-menu-icon"]').click();
   cy.get(workflowSelector.deleteWorkFlowOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();

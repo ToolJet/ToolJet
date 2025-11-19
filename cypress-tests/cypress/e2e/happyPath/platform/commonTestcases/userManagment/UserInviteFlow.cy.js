@@ -171,8 +171,8 @@ describe("user invite flow cases", () => {
 
     cy.apiLogout();
     cy.visit("/");
-    cy.wait("@translations");
-    cy.wait(500);
+    //cy.wait("@translations");
+    cy.wait(1000);
 
     cy.waitForElement(onboardingSelectors.loginPasswordInput);
     cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })

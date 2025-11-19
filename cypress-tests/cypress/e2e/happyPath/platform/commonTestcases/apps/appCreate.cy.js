@@ -10,10 +10,11 @@ describe("App creation", () => {
     const data = {};
     const appFile = "cypress/fixtures/templates/one_version.json";
 
-    beforeEach(() => {
-        cy.defaultWorkspaceLogin();
-        cy.skipWalkthrough();
-    });
+  beforeEach(() => {
+    cy.defaultWorkspaceLogin();
+    cy.skipWalkthrough();
+    cy.viewport(2000, 1900);
+  });
 
     it("Should verify create, rename and clone app flow", () => {
         data.appName = `${fake.companyName}-App`;
