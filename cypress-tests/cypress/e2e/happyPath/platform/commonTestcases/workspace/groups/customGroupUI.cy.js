@@ -251,6 +251,7 @@ describe("Custom groups UI and Functionality verification", () => {
 
     openGroupAndValidateEmptyStates(groupName2);
     configureInitialGranularPermissions();
+    cy.wait(1000) // need to add alias to avoid flakiness
     verifyAppGranularModalFlow(groupName2);
     verifyEnterpriseGranularModalFlows();
 
