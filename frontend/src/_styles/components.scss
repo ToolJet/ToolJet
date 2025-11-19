@@ -102,8 +102,8 @@ $btn-dark-color: #FFFFFF;
 }
 
 .leftsidebar-panel-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--border-weak);
+  padding: 16px 16px 0 16px;
+
 
   .panel-header-container {
     display: flex;
@@ -128,8 +128,8 @@ $btn-dark-color: #FFFFFF;
 
 .page-selector-panel-body {
   border-right: 1px solid #DFE3E6;
-  padding-left:16px;
-  padding-right:16px;
+  padding-left: 16px;
+  padding-right: 16px;
 
   &.dark-theme {
     border-right: 1px solid var(--slate7);
@@ -531,4 +531,3 @@ $btn-dark-color: #FFFFFF;
     }
   }
 }
-

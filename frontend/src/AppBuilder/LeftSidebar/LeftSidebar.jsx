@@ -116,6 +116,7 @@ export const BaseLeftSidebar = ({
             pinned={pinned}
             moduleId={moduleId}
             appType={appType}
+            toggleLeftSidebar={toggleLeftSidebar}
           />
         );
       case 'tooljetai':
@@ -227,8 +228,8 @@ export const BaseLeftSidebar = ({
       {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
-          // if tooljetai is open don't close
-          if (selectedSidebarItem === 'tooljetai') return;
+          // if tooljetai or inspector is open don't close
+          if (selectedSidebarItem === 'tooljetai' || selectedSidebarItem === 'inspect' || selectedSidebarItem === 'page') return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

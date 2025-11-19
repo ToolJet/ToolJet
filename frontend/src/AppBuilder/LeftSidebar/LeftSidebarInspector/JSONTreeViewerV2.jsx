@@ -168,7 +168,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     <>
       {!selectedNodePath || !selectedData || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
         <div>
-          <div style={{ margin: '8px 16px 12px 16px' }}>
+          <div style={{ borderBottom: '1px solid var(--border-base,#E3E7EB)' }}>
             {/* <SearchBox
               dataCy={`inspector-search`}
               initialValue={searchValue}
@@ -180,18 +180,21 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
               width={300}
             /> */}
 
-            <InputComponent
-              leadingIcon="search01"
-              onChange={(e) => setSearchValue(e.target.value)}
-              onClear={() => setSearchValue('')}
-              size="medium"
-              placeholder="Search"
-              value={searchValue}
-              {...(searchValue && { trailingAction: 'clear' })}
-              data-cy="inspector-search-input"
-            />
+            <div style={{ margin: "0px 16px 16px 16px" }}>
+              <InputComponent
+                leadingIcon="search01"
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue('')}
+                size="medium"
+                placeholder="Search"
+                value={searchValue}
+                {...(searchValue && { trailingAction: 'clear' })}
+                data-cy="inspector-search-input"
+                className="mb-1"
+              />
+            </div>
           </div>
-          <div className="json-tree-view">
+          <div className="json-tree-view border-t">
             <TreeView
               data={flattendedData}
               className="basic"
@@ -221,7 +224,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
               }}
             />
           </div>
-        </div>
+        </div >
       ) : (
         <JSONViewer
           data={selectedData}
