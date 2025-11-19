@@ -506,6 +506,7 @@ jobs:
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_AI_FEATURES=true" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
