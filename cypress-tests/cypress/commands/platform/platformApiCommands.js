@@ -803,7 +803,8 @@ Cypress.Commands.add(
         url: "https://www.googleapis.com/oauth2/v3/userinfo",
         headers: { Authorization: `Bearer ${access_token}` },
       }).then(({ body: userInfo }) => {
-        const tooljetBase = `http://localhost:8082/sso/google${defaultid}`;
+        const baseUrl = Cypress.config("baseUrl") || "http://localhost:3000";
+        const tooljetBase = `${baseUrl}/sso/google${defaultid}`;
         const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
         const fullUrl = `${tooljetBase}#${hash}`;
 
