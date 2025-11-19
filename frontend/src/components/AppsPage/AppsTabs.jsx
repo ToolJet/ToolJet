@@ -77,11 +77,22 @@ export function AppsTabs({
           />
         )}
       </TabsContent>
-      <TabsContent value="modules" className="tw-flex tw-flex-col tw-px-4 lg:tw-px-6">
+      <TabsContent value="modules" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
         {modulesEmpty ? (
           emptyModulesSlot
+        ) : viewAs === 'list' ? (
+          <AppsTable table={table} isLoading={isLoading} />
         ) : (
-          <div className="tw-aspect-video tw-w-full tw-flex-1 tw-rounded-lg tw-border tw-border-dashed" />
+          <AppsGrid
+            table={table}
+            onPlay={onPlay}
+            onEdit={onEdit}
+            onClone={onClone}
+            onDelete={onDelete}
+            onExport={onExport}
+            perms={perms}
+            canDelete={canDelete}
+          />
         )}
       </TabsContent>
     </Tabs>
