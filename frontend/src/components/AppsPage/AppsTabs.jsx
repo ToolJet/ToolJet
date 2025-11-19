@@ -1,9 +1,9 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { AppsPageViewHeader } from "./AppsPageViewHeader";
-import { AppsTable } from "./AppsTable";
-import { AppsGrid } from "./AppsGrid";
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { AppsPageViewHeader } from './AppsPageViewHeader';
+import { AppsTable } from './AppsTable';
+import { AppsGrid } from './AppsGrid';
 
 export function AppsTabs({
   table,
@@ -16,7 +16,7 @@ export function AppsTabs({
   currentFolder = null,
   onFolderChange,
   foldersLoading = false,
-  activeTab = "apps",
+  activeTab = 'apps',
   onTabChange,
   // Action handlers
   onPlay,
@@ -27,26 +27,21 @@ export function AppsTabs({
   perms,
   canDelete,
 }) {
-  const [viewAs, setViewAs] = React.useState("list");
+  const [viewAs, setViewAs] = React.useState('list');
 
-  const hideHeader =
-    (activeTab === "apps" && appsEmpty) ||
-    (activeTab === "modules" && modulesEmpty);
+  const hideHeader = (activeTab === 'apps' && appsEmpty) || (activeTab === 'modules' && modulesEmpty);
 
   // Build breadcrumb items dynamically based on current folder
   const breadcrumbItems = React.useMemo(() => {
-    const currentFolderLabel = currentFolder?.name || "All apps";
+    const currentFolderLabel = currentFolder?.name || 'All apps';
     return [
-      { label: "Folders", href: "/folders" },
+      { label: 'Folders', href: '/folders' },
       { label: currentFolderLabel, href: null },
     ];
   }, [currentFolder]);
 
   return (
-    <Tabs
-      defaultValue="apps"
-      className="tw-w-full tw-flex-col tw-justify-start tw-gap-6"
-    >
+    <Tabs defaultValue="apps" className="tw-w-full tw-flex-col tw-justify-start tw-gap-6">
       {!hideHeader && (
         <div className="tw-flex tw-items-center tw-justify-between">
           <AppsPageViewHeader
@@ -62,13 +57,10 @@ export function AppsTabs({
           />
         </div>
       )}
-      <TabsContent
-        value="apps"
-        className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0"
-      >
+      <TabsContent value="apps" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
         {appsEmpty ? (
           emptyAppsSlot
-        ) : viewAs === "list" ? (
+        ) : viewAs === 'list' ? (
           <AppsTable table={table} />
         ) : (
           <AppsGrid
@@ -83,10 +75,7 @@ export function AppsTabs({
           />
         )}
       </TabsContent>
-      <TabsContent
-        value="modules"
-        className="tw-flex tw-flex-col tw-px-4 lg:tw-px-6"
-      >
+      <TabsContent value="modules" className="tw-flex tw-flex-col tw-px-4 lg:tw-px-6">
         {modulesEmpty ? (
           emptyModulesSlot
         ) : (
