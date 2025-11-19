@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -103,17 +103,16 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
-    cy.get('[data-cy="dashboard-prompt-header"]', { timeout: 30000 }).should("be.visible", { timeout: 30000 });
+    cy.waitForElement('[data-cy="ai-icon"]');
   }
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
     cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .should("be.visible")
-      .should("not.be.disabled")
+      .should("not.be.disabled");
     // .click({ timeout: 10000 });
     cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
-    cy.get('[data-cy="app-card-menu-icon"]')
-      .click();
+    cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };
 export const viewFolderCardOptions = (folderName) => {

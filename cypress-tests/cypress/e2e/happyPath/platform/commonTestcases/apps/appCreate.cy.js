@@ -71,14 +71,17 @@ describe("App creation", () => {
     cy.clearAndType(commonSelectors.appNameInput, data.appName);
     cy.get(commonSelectors.createAppButton).should("be.enabled").click();
     cy.wait(1000);
+    cy.get(commonSelectors.editorAppNameInput).verifyVisibleElement(
+      "have.text",
+      data.appName
+    );
 
     cy.visit("/my-workspace");
     cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should(
       "be.visible",
       { timeout: 20000 }
     );
-    cy.wait(5000);
-
+    cy.wait(500);
 
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions("Rename app")).verifyVisibleElement(
@@ -187,12 +190,20 @@ describe("App creation", () => {
     );
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.get(commonSelectors.cloneAppButton).should("be.enabled").click();
-    cy.go("back");
-    cy.visit("/my-workspace");
+    cy.get(commonSelectors.editorAppNameInput).verifyVisibleElement(
+      "have.text",
+      data.cloneAppName
+    );
+    cy.backToApps();
 
-    cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
+    cy.waitForElement(commonSelectors.homePageLogo);
+    cy.wait(500);
+
+    cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click({
+      force: true,
+    });
     cy.clearAndType(commonSelectors.appNameInput, data.rename);
-    cy.get(commonSelectors.createAppButton).click();
+    cy.get(commonSelectors.createAppButton).click({ force: true });
     cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
       "have.text",
       "App name already exists"
@@ -321,6 +332,8 @@ describe("App creation", () => {
       commonText.enterAppName
     );
     cy.clearAndType(commonSelectors.appNameInput, data.appName);
-    cy.get(commonSelectors.createAppButton).should("be.enabled").click();
+    cy.get(commonSelectors.createAppButton)
+      .should("be.enabled")
+      .click({ force: true });
   });
 });
