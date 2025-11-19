@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 13,
-    height: 480,
+    width: 15,
+    height: 450,
   },
   component: 'Container',
   others: {
@@ -62,7 +62,7 @@ export const containerConfig = {
       componentName: 'Text',
       slotName: 'header',
       layout: {
-        top: 20,
+        top: 10,
         left: 1,
         height: 40,
         width: 20,
@@ -161,7 +161,7 @@ export const containerConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
-      headerHeight: { value: `{{80}}` },
+      headerHeight: { value: `{{60}}` },
     },
     events: [],
     styles: {
