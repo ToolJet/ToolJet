@@ -48,6 +48,7 @@ describe("Basic Permissions", () => {
         cy.defaultWorkspaceLogin();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
+        cy.viewport(2000, 1900);
     });
 
     it("should verify end-user privileges", () => {

@@ -13,6 +13,7 @@ describe("App creation", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
+    cy.viewport(2000, 1900);
   });
 
   it("Should verify create, rename and clone app flow", () => {
@@ -69,10 +70,16 @@ describe("App creation", () => {
     );
     cy.clearAndType(commonSelectors.appNameInput, data.appName);
     cy.get(commonSelectors.createAppButton).should("be.enabled").click();
-    cy.go("back");
-    cy.visit("/my-workspace");
-
     cy.wait(1000);
+
+    cy.visit("/my-workspace");
+    cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should(
+      "be.visible",
+      { timeout: 20000 }
+    );
+    cy.wait(5000);
+
+
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions("Rename app")).verifyVisibleElement(
       "have.text",
