@@ -46,6 +46,7 @@ export function AppsTabs({
       {!hideHeader && (
         <div className="tw-flex tw-items-center tw-justify-between">
           <AppsPageViewHeader
+            isLoading={isLoading}
             activeTab={activeTab}
             onTabChange={onTabChange}
             breadcrumbItems={breadcrumbItems}
