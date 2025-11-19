@@ -102,6 +102,7 @@ export const Footer = memo(
               darkMode={darkMode}
               height={height}
               componentName={componentName}
+              showAddNewRowPopup={showAddNewRowPopup}
               setShowAddNewRowPopup={setShowAddNewRowPopup}
               fireEvent={fireEvent}
               columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
