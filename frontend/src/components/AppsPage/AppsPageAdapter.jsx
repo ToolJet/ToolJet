@@ -297,15 +297,6 @@ function AppsPageAdapter({
       );
     }
 
-    // Loading state
-    if (isLoading || adapterIsLoading) {
-      return (
-        <div className="tw-p-6 tw-text-center" aria-live="polite" aria-busy="true">
-          <div className="tw-text-muted-foreground">Loading apps...</div>
-        </div>
-      );
-    }
-
     // Pagination is now handled in useAppsPageAdapter hook via onPaginationChange callback
     // No need for additional sync here
 
@@ -347,6 +338,7 @@ function AppsPageAdapter({
             currentFolder={currentFolder}
             onFolderChange={folderChanged}
             foldersLoading={foldersLoading}
+            isLoading={isLoading || adapterIsLoading}
             onPlay={handlePlay}
             onEdit={handleEdit}
             onClone={handleClone}

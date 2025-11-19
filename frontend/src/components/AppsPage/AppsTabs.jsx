@@ -18,6 +18,7 @@ export function AppsTabs({
   foldersLoading = false,
   activeTab = 'apps',
   onTabChange,
+  isLoading = false,
   // Action handlers
   onPlay,
   onEdit,
@@ -61,7 +62,7 @@ export function AppsTabs({
         {appsEmpty ? (
           emptyAppsSlot
         ) : viewAs === 'list' ? (
-          <AppsTable table={table} />
+          <AppsTable table={table} isLoading={isLoading} />
         ) : (
           <AppsGrid
             table={table}
