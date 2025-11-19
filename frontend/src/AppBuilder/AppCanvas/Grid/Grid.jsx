@@ -232,28 +232,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           }
         }}
       >
-        <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
-        <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
-        {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img
-              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-              src="assets/images/icons/settings.svg"
-              width="12"
-              height="12"
-              draggable="false"
-            />
-            <span>components</span>
-
-            <hr
-              className={cn(
-                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
-              )}
-            />
-
-            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
-          </div> */}
-        {/* </span> */}
+        <span id={id}>
+          <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
+          <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+        </span>
       </div>
     );
   };
@@ -624,8 +606,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
@@ -694,6 +674,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             return false;
           }
           handleActivateNonDraggingComponents();
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
         onResizeEnd={(e) => {
@@ -969,7 +950,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         onDragEnd={(e) => {
           handleDeactivateTargets();
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -1056,8 +1036,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           }
         }}
         onDrag={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
@@ -1081,6 +1059,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             handleActivateNonDraggingComponents();
+            updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
             isDraggingRef.current = true;
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
