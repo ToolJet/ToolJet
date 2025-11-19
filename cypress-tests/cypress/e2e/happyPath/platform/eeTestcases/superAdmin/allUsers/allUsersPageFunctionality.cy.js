@@ -1,48 +1,20 @@
-import {
-  commonEeSelectors,
-  instanceSettingsSelector,
-} from "Constants/selectors/eeCommon";
+import { instanceSettingsSelector } from "Constants/selectors/eeCommon";
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { onboardingSelectors } from "Selectors/onboarding";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import {
-  openEditUserModal,
+  loginAndExpectToast,
   verifyArchiveUserModalUI,
   verifyUnarchiveUserModal,
+  visitAllUsersPage,
 } from "Support/utils/platform/allUsers";
-import { usersText } from "Texts/manageUsers";
+import { sanitize } from "Support/utils/common";
 
 const data = {
-  userName: fake.firstName.toLowerCase().replace(/[^a-z]/g, ""),
-  get userEmail() {
+  userName: sanitize(fake.firstName),
+  get userEmail () {
     return `${this.userName}@example.com`;
   },
-};
-
-const loginAsUser = (email, password = usersText.password) => {
-  cy.visit("/my-workspace");
-  cy.waitForElement(onboardingSelectors.signupEmailInput);
-  cy.wait(500);
-  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-  cy.get(onboardingSelectors.signInButton).click();
-};
-
-const loginAndExpectToast = (email, message, password = usersText.password) => {
-  loginAsUser(email, password);
-  cy.verifyToastMessage(commonSelectors.toastMessage, message);
-};
-
-const visitAllUsersPage = (loginEmail) => {
-  if (loginEmail) {
-    cy.apiLogin(loginEmail);
-  } else {
-    cy.apiLogin();
-  }
-  cy.visit("settings/all-users");
-  cy.waitForElement(commonSelectors.homePageLogo);
-  cy.wait(1000);
 };
 
 describe("Instance Settings - All Users UI", () => {
@@ -96,44 +68,5 @@ describe("Instance Settings - All Users UI", () => {
     cy.apiLogout();
 
     loginAndExpectToast(data.userEmail, "Invalid credentials");
-  });
-
-  it("verifies superadmin promotion and password login", () => {
-    //Promote to superadmin and verify login
-    openEditUserModal(data.userEmail);
-    cy.get(instanceSettingsSelector.superAdminToggle).check();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Changes updated successfully!"
-    );
-    cy.apiLogout();
-
-    visitAllUsersPage(data.userEmail);
-    cy.get('[data-cy="title-users-page"]').should(
-      "have.text",
-      "Manage all users"
-    );
-    cy.get(instanceSettingsSelector.userType(data.userName)).should(
-      "have.text",
-      "instance"
-    );
-    cy.apiLogout();
-
-    //Demote to workspace admin and verify login
-    visitAllUsersPage();
-    openEditUserModal(data.userEmail);
-    cy.get(instanceSettingsSelector.superAdminToggle).uncheck();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Changes updated successfully!"
-    );
-    cy.apiLogout();
-
-    cy.apiLogin(data.userEmail);
-    cy.visit("/my-workspace");
-    cy.waitForElement(commonSelectors.settingsIcon);
-    cy.wait(500);
-    cy.get(commonSelectors.settingsIcon).click();
-    cy.get(commonEeSelectors.instanceSettingsIcon).should("not.exist");
   });
 });

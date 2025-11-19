@@ -18,6 +18,10 @@ import {
   usersTableElementsInInstanceText,
 } from "Texts/superAdminText";
 
+import { onboardingSelectors } from "Selectors/onboarding";
+
+import { usersText } from "Texts/manageUsers";
+
 export const openAllUsersPage = () => {
   openInstanceSettings();
 };
@@ -154,15 +158,16 @@ export const verifyArchiveUserModalUI = (userName, userEmail) => {
 
   openArchiveUserModal(userEmail);
   cy.get('[data-cy="confirm-button"]').click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "User has been archived from this instance successfully!"
+  );
   cy.wait(1000);
   cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
     "have.text",
     "archived"
   );
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "User has been archived from this instance successfully!"
-  );
+
 };
 
 export const openEditUserModal = (userEmail) => {
@@ -207,12 +212,40 @@ export const verifyUnarchiveUserModal = (userName, userEmail) => {
 
   openArchiveUserModal(userEmail);
   cy.get('[data-cy="confirm-button"]').click();
-  cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
-    "have.text",
-    "active"
-  );
+
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     "User has been unarchived from this instance successfully!"
   );
+
+  cy.wait(1000);
+  cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
+    "have.text",
+    "active"
+  );
+};
+
+export const loginAsUser = (email, password = usersText.password) => {
+  cy.visit("/my-workspace");
+  cy.waitForElement(onboardingSelectors.signupEmailInput);
+  cy.wait(500);
+  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+  cy.get(onboardingSelectors.signInButton).click();
+};
+
+export const loginAndExpectToast = (email, message, password = usersText.password) => {
+  loginAsUser(email, password);
+  cy.verifyToastMessage(commonSelectors.toastMessage, message);
+};
+
+export const visitAllUsersPage = (loginEmail) => {
+  if (loginEmail) {
+    cy.apiLogin(loginEmail);
+  } else {
+    cy.apiLogin();
+  }
+  cy.visit("settings/all-users");
+  cy.waitForElement(commonSelectors.homePageLogo);
+  cy.wait(1000);
 };

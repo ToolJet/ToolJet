@@ -1,8 +1,8 @@
 import { importApp, exportApp, allAppsDetails, fetchWorkspaceApps } from "Support/utils/externalApi";
 import { fake } from "Fixtures/fake";
+import { sanitize } from "Support/utils/common";
 
 describe("ToolJet: Apps API Validation", () => {
-    const sanitize = (str) => str.toLowerCase().replace(/[^A-Za-z]/g, "");
     const workspaceMeta = {
         workspaceName: sanitize(fake.lastName),
         workspaceSlug: sanitize(fake.lastName),

@@ -5,13 +5,10 @@ import {
     ssoEeSelector,
 } from "Selectors/eeCommon";
 import * as common from "Support/utils/common";
-import {
-    defaultSSO,
-    setSignupStatus
-} from "Support/utils/manageSSO";
+import { defaultSSO, setSignupStatus } from "Support/utils/manageSSO";
 import {
     apiArchiveUnarchiveUser,
-    cleanAllUsers
+    cleanAllUsers,
 } from "Support/utils/manageUsers";
 import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
@@ -19,28 +16,22 @@ import { usersText } from "Texts/manageUsers";
 import { fake } from "Fixtures/fake";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { sanitize } from "Support/utils/common";
 
-const updateOIDCConfig = (level) => {
-    let config = {
-        type: "openid",
-        configs: {
-            name: "",
-            clientId: Cypress.env("SSO_OPENID_CLIENT_ID"),
-            clientSecret: Cypress.env("SSO_OPENID_CLIENT_SECRET"),
-            codeVerifier: "",
-            grantType: "authorization_code",
-            wellKnownUrl: Cypress.env("SSO_OPENID_WELL_KNOWN_URL"),
-            ...(level === "instance" ? { enableGroupSync: true } : {}),
-        },
-        enabled: true,
-        oidcGroupSyncs: [
-            {
-                claimName: "groups",
-                groupMapping: "{}",
-            },
-        ],
-    };
-    return config;
+const config = {
+    type: "openid",
+    configs: {
+        name: "tj-oidc-simulator",
+        clientId: Cypress.env("SSO_OPENID_CLIENT_ID"),
+        clientSecret: Cypress.env("SSO_OPENID_CLIENT_SECRET"),
+        customScopes: "",
+        wellKnownUrl: Cypress.env("SSO_OPENID_WELL_KNOWN_URL"),
+        grantType: "authorization_code",
+        codeVerifier: "",
+        enableGroupSync: false,
+    },
+    enabled: true,
+    oidcGroupSyncs: [],
 };
 
 describe("Verify OIDC user onboarding", () => {
@@ -49,8 +40,9 @@ describe("Verify OIDC user onboarding", () => {
     let data = {};
 
     beforeEach(() => {
-        data.workspaceName = `${fake.companyName.toLowerCase()}-workspace`;
+        data.workspaceName = `${sanitize(fake.companyName)}-openid`;
         cy.apiLogin();
+        cy.apiUpdateSSOConfig(config);
         cy.intercept("GET", "api/library_apps").as("apps");
         cleanAllUsers();
 
@@ -67,11 +59,17 @@ describe("Verify OIDC user onboarding", () => {
         cleanAllUsers();
     });
 
+    afterEach("", () => {
+        cy.apiLogin();
+        cy.apiUpdateSSOConfig(config, "instance");
+    });
+
+
     it("Verify user onboarding using workspace OIDC", () => {
         defaultSSO(false);
         setSignupStatus(false, data.workspaceName);
         common.navigateToManageSSO();
-        cy.wait(1000);
+        cy.wait(2000);
 
         cy.get(ssoEeSelector.oidc).click();
         cy.get(ssoEeSelector.oidcToggle).click();
@@ -182,7 +180,7 @@ describe("Verify OIDC user onboarding", () => {
             cy.wait(3000);
             cy.get(commonSelectors.workspaceName).verifyVisibleElement(
                 "have.text",
-                'My workspace'
+                "My workspace"
             );
             common.logout();
 
@@ -206,12 +204,16 @@ describe("Verify OIDC user onboarding", () => {
         cy.ifEnv("Enterprise", () => {
             enableInstanceSignup();
         });
-        cy.apiFullUserOnboarding("user two", "usertwo@tooljet.com")
+        cy.apiFullUserOnboarding("user two", "usertwo@tooljet.com");
 
         cy.apiLogout();
 
         cy.apiLogin();
-        apiArchiveUnarchiveUser("usertwo@tooljet.com", "archive", Cypress.env("workspaceId"));
+        apiArchiveUnarchiveUser(
+            "usertwo@tooljet.com",
+            "archive",
+            Cypress.env("workspaceId")
+        );
         cy.apiLogout();
 
         cy.visit(`${data.workspaceName}`);
@@ -226,7 +228,11 @@ describe("Verify OIDC user onboarding", () => {
         );
 
         cy.apiLogin();
-        apiArchiveUnarchiveUser("usertwo@tooljet.com", "unarchive", Cypress.env("workspaceId"));
+        apiArchiveUnarchiveUser(
+            "usertwo@tooljet.com",
+            "unarchive",
+            Cypress.env("workspaceId")
+        );
         cy.apiLogout();
 
         cy.visit(`${data.workspaceName}`);
@@ -236,6 +242,5 @@ describe("Verify OIDC user onboarding", () => {
         cy.get(".user-two-button").click();
 
         cy.contains(data.workspaceName).should("be.visible");
-
     });
 });
