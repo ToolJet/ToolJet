@@ -2,7 +2,6 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
-import { cleanAllUsers } from "Support/utils/manageUsers";
 import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
@@ -22,7 +21,6 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
-        cleanAllUsers()
         cy.visit("/my-workspace");
 
     });
