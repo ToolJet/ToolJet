@@ -736,8 +736,8 @@ export const tableConfig = {
     },
     events: [],
     styles: {
-      columnTitleColor: { value: 'var(--cc-placeholder-text)' },
-      columnBackgroundColor: { value: 'var(--cc-surface2-surface)' },
+      columnTitleColor: { value: 'var(--cc-primary-text)' },
+      columnBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       textColor: { value: 'var(--cc-primary-text)' },
       columnHeaderWrap: { value: 'fixed' },
@@ -745,7 +745,7 @@ export const tableConfig = {
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       tableType: { value: 'table-classic' },
       maxRowHeight: { value: 'auto' },
       maxRowHeightValue: { value: '{{0}}' }, // Setting it here as 0 since TableRowHeightInput component will set the value
