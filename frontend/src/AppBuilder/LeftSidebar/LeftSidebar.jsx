@@ -92,7 +92,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-          100
+        100
       );
     } else {
       setPopoverContentHeight(100);
@@ -152,7 +152,7 @@ export const BaseLeftSidebar = ({
       //       />
       //     );
       case 'debugger':
-        return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
+        return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} toggleLeftSidebar={toggleLeftSidebar} />;
       //     );
       //   case 'settings':
       //     return (
@@ -173,10 +173,10 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-            // toggleAppMaintenance={toggleAppMaintenance}
-            // isMaintenanceOn={isMaintenanceOn}
-            // app={app}
-            // backgroundFxQuery={backgroundFxQuery}
+          // toggleAppMaintenance={toggleAppMaintenance}
+          // isMaintenanceOn={isMaintenanceOn}
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery}
           />
         );
     }
@@ -267,7 +267,9 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai or inspector is open don't close
-          if (selectedSidebarItem === 'tooljetai' || selectedSidebarItem === 'inspect' || selectedSidebarItem === 'page') return;
+          if (['tooljetai', 'inspect', 'page', 'debugger'].includes(selectedSidebarItem)) {
+            return
+          }
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

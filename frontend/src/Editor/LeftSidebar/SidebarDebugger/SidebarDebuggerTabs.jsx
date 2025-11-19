@@ -40,7 +40,7 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
       })}
       justify
     >
-      <Tab eventKey="allLog" title="All Log">
+      <Tab eventKey="allLog" title="All Log" className='debugger-tab'>
         <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} />
       </Tab>
       <Tab eventKey="errors" title="Errors">

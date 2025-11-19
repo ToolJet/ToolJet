@@ -4,7 +4,7 @@ import { LeftSidebarDebugger } from '@/Editor/LeftSidebar/SidebarDebugger/Sideba
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-function Debugger({ pinned, setPinned }) {
+function Debugger({ pinned, setPinned, toggleLeftSidebar }) {
   const [logs, clearLogs] = useStore(
     (state) => [state.debugger.logs, state.debugger.clear, state.debugger.pinned, state.debugger.setPinned],
     shallow
@@ -23,6 +23,7 @@ function Debugger({ pinned, setPinned }) {
         setPinned={setPinned}
         pinned={pinned}
         allLog={logs}
+        toggleLeftSidebar={toggleLeftSidebar}
       />
     </div>
   );
