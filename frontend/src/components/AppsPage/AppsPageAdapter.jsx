@@ -1,12 +1,12 @@
-import React, { useMemo, useCallback } from "react";
-import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
-import { AppsShellView } from "./AppsShellView";
-import { AppsTabs } from "./AppsTabs";
-import { appsColumns } from "./AppsPage.columns";
-import { useAppsPageAdapter } from "@/features/apps/hooks/useAppsPageAdapter";
-import { TablePaginationFooter } from "./TablePaginationFooter";
-import { EmptyNoApps } from "@/components/ui/blocks/EmptyNoApps";
+import React, { useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
+import { AppsShellView } from './AppsShellView';
+import { AppsTabs } from './AppsTabs';
+import { appsColumns } from './AppsPage.columns';
+import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
+import { TablePaginationFooter } from './TablePaginationFooter';
+import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 // import { getWorkspaceId } from '@/_helpers/utils';
 
 /**
@@ -81,23 +81,18 @@ function AppsPageAdapter({
 
   // Prop validation with runtime checks
   if (!Array.isArray(apps)) {
-    console.warn(
-      "AppsPageAdapter: apps must be an array, received:",
-      typeof apps
-    );
+    console.warn('AppsPageAdapter: apps must be an array, received:', typeof apps);
     return (
       <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
         <div className="tw-text-red-500 tw-mb-2">Invalid data</div>
-        <div className="tw-text-sm tw-text-muted-foreground">
-          Apps data is not in the expected format.
-        </div>
+        <div className="tw-text-sm tw-text-muted-foreground">Apps data is not in the expected format.</div>
       </div>
     );
   }
 
   // Get workspaceId: use prop if provided, otherwise fallback to getWorkspaceId()
   // This allows Storybook to pass workspaceId without importing heavy utils
-  const resolvedWorkspaceId = workspaceId || "32434r";
+  const resolvedWorkspaceId = workspaceId || '32434r';
 
   // folderChanged handler is stored for future use
   // Note: Folder filtering UI is not yet implemented in the new components
@@ -112,19 +107,17 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp) {
-            console.warn("Missing _originalApp in appRow for play action");
+            console.warn('Missing _originalApp in appRow for play action');
             return;
           }
 
-          if (navigateToApp && typeof navigateToApp === "function") {
-            navigateToApp(
-              `/${resolvedWorkspaceId}/applications/${originalApp.slug}`
-            );
+          if (navigateToApp && typeof navigateToApp === 'function') {
+            navigateToApp(`/${resolvedWorkspaceId}/applications/${originalApp.slug}`);
           } else {
             window.location.href = `/${resolvedWorkspaceId}/applications/${originalApp.slug}`;
           }
         } catch (err) {
-          console.error("Failed to navigate to app (play):", err);
+          console.error('Failed to navigate to app (play):', err);
         }
       },
       [navigateToApp, resolvedWorkspaceId]
@@ -135,17 +128,17 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp) {
-            console.warn("Missing _originalApp in appRow for edit action");
+            console.warn('Missing _originalApp in appRow for edit action');
             return;
           }
 
-          if (navigateToApp && typeof navigateToApp === "function") {
+          if (navigateToApp && typeof navigateToApp === 'function') {
             navigateToApp(`/${resolvedWorkspaceId}/apps/${originalApp.slug}`);
           } else {
             window.location.href = `/${resolvedWorkspaceId}/apps/${originalApp.slug}`;
           }
         } catch (err) {
-          console.error("Failed to navigate to app (edit):", err);
+          console.error('Failed to navigate to app (edit):', err);
         }
       },
       [navigateToApp, resolvedWorkspaceId]
@@ -156,20 +149,16 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp || !deleteApp) {
-            console.warn("Missing _originalApp or deleteApp handler");
+            console.warn('Missing _originalApp or deleteApp handler');
             return;
           }
 
           // Confirm before deleting (HomePage might handle this, but we'll add a safety check)
-          if (
-            window.confirm(
-              `Are you sure you want to delete "${originalApp.name}"?`
-            )
-          ) {
+          if (window.confirm(`Are you sure you want to delete "${originalApp.name}"?`)) {
             deleteApp(originalApp);
           }
         } catch (err) {
-          console.error("Failed to delete app:", err);
+          console.error('Failed to delete app:', err);
         }
       },
       [deleteApp]
@@ -180,13 +169,13 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp || !cloneApp) {
-            console.warn("Missing _originalApp or cloneApp handler");
+            console.warn('Missing _originalApp or cloneApp handler');
             return;
           }
           // HomePage.cloneApp expects (appName, appId)
           cloneApp(originalApp.name, originalApp.id);
         } catch (err) {
-          console.error("Failed to clone app:", err);
+          console.error('Failed to clone app:', err);
         }
       },
       [cloneApp]
@@ -197,12 +186,12 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp || !exportApp) {
-            console.warn("Missing _originalApp or exportApp handler");
+            console.warn('Missing _originalApp or exportApp handler');
             return;
           }
           exportApp(originalApp);
         } catch (err) {
-          console.error("Failed to export app:", err);
+          console.error('Failed to export app:', err);
         }
       },
       [exportApp]
@@ -211,25 +200,20 @@ function AppsPageAdapter({
     // Compute permissions first (needed for columns) - we need this before hook call
     const computedPerms = useMemo(() => {
       try {
-        const canImport =
-          typeof canCreateApp === "function"
-            ? canCreateApp()
-            : canCreateApp ?? false;
+        const canImport = typeof canCreateApp === 'function' ? canCreateApp() : canCreateApp ?? false;
         const canEdit = (appRow) => {
           const originalApp = appRow?._originalApp;
           if (!originalApp) return false;
           try {
-            return typeof canUpdateApp === "function"
-              ? canUpdateApp(originalApp)
-              : false;
+            return typeof canUpdateApp === 'function' ? canUpdateApp(originalApp) : false;
           } catch (err) {
-            console.error("Permission check failed:", err);
+            console.error('Permission check failed:', err);
             return false;
           }
         };
         return { canImport, canEdit, canPlay: canEdit };
       } catch (err) {
-        console.error("Failed to compute permissions:", err);
+        console.error('Failed to compute permissions:', err);
         return { canImport: false, canEdit: () => false, canPlay: () => false };
       }
     }, [canCreateApp, canUpdateApp]);
@@ -240,11 +224,9 @@ function AppsPageAdapter({
         try {
           const originalApp = appRow?._originalApp;
           if (!originalApp || !canDeleteApp) return false;
-          return typeof canDeleteApp === "function"
-            ? canDeleteApp(originalApp)
-            : false;
+          return typeof canDeleteApp === 'function' ? canDeleteApp(originalApp) : false;
         } catch (err) {
-          console.error("Delete permission check failed:", err);
+          console.error('Delete permission check failed:', err);
           return false;
         }
       },
@@ -262,15 +244,7 @@ function AppsPageAdapter({
         onExport: handleExport,
         canDelete: canDelete,
       });
-    }, [
-      computedPerms,
-      handlePlay,
-      handleEdit,
-      handleClone,
-      handleDelete,
-      handleExport,
-      canDelete,
-    ]);
+    }, [computedPerms, handlePlay, handleEdit, handleClone, handleDelete, handleExport, canDelete]);
 
     // Use adapter hook with computed columns
     const {
@@ -302,22 +276,13 @@ function AppsPageAdapter({
 
     // Error state rendering with accessibility
     if (error || adapterError) {
-      const errorMessage =
-        error?.message || adapterError?.message || "An error occurred";
+      const errorMessage = error?.message || adapterError?.message || 'An error occurred';
       return (
-        <div
-          className="tw-p-6 tw-text-center"
-          role="alert"
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite" aria-atomic="true">
           <div className="tw-text-red-500 tw-mb-2" aria-label="Error message">
             Failed to load apps
           </div>
-          <div
-            className="tw-text-sm tw-text-muted-foreground"
-            id="error-description"
-          >
+          <div className="tw-text-sm tw-text-muted-foreground" id="error-description">
             {errorMessage}
           </div>
           <button
@@ -335,11 +300,7 @@ function AppsPageAdapter({
     // Loading state
     if (isLoading || adapterIsLoading) {
       return (
-        <div
-          className="tw-p-6 tw-text-center"
-          aria-live="polite"
-          aria-busy="true"
-        >
+        <div className="tw-p-6 tw-text-center" aria-live="polite" aria-busy="true">
           <div className="tw-text-muted-foreground">Loading apps...</div>
         </div>
       );
@@ -352,16 +313,16 @@ function AppsPageAdapter({
     const menuItems = computedPerms.canImport
       ? [
           {
-            label: "Import template",
-            onClick: () => console.log("Import template"),
-            icon: "Download",
+            label: 'Import template',
+            onClick: () => console.log('Import template'),
+            icon: 'Download',
           },
         ]
       : [];
 
     return (
       <AppsShellView
-        title={appType === "module" ? "Modules" : "Applications"}
+        title={appType === 'module' ? 'Modules' : 'Applications'}
         menuItems={menuItems}
         searchValue={finalGetSearch()}
         onSearch={finalHandleSearch}
@@ -399,15 +360,11 @@ function AppsPageAdapter({
     );
   } catch (error) {
     // Error boundary - catch any unexpected errors
-    console.error("AppsPageAdapter error:", error);
+    console.error('AppsPageAdapter error:', error);
     return (
       <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
-        <div className="tw-text-red-500 tw-mb-2">
-          An unexpected error occurred
-        </div>
-        <div className="tw-text-sm tw-text-muted-foreground">
-          {error.message}
-        </div>
+        <div className="tw-text-red-500 tw-mb-2">An unexpected error occurred</div>
+        <div className="tw-text-sm tw-text-muted-foreground">{error.message}</div>
         <button
           type="button"
           onClick={() => window.location.reload()}
@@ -423,11 +380,7 @@ function AppsPageAdapter({
 AppsPageAdapter.propTypes = {
   apps: PropTypes.arrayOf(PropTypes.object).isRequired,
   isLoading: PropTypes.bool,
-  error: PropTypes.oneOfType([
-    PropTypes.instanceOf(Error),
-    PropTypes.string,
-    PropTypes.object,
-  ]),
+  error: PropTypes.oneOfType([PropTypes.instanceOf(Error), PropTypes.string, PropTypes.object]),
   meta: PropTypes.shape({
     current_page: PropTypes.number,
     total_pages: PropTypes.number,
@@ -439,7 +392,7 @@ AppsPageAdapter.propTypes = {
     name: PropTypes.string,
   }),
   appSearchKey: PropTypes.string,
-  appType: PropTypes.oneOf(["front-end", "module", "workflow"]),
+  appType: PropTypes.oneOf(['front-end', 'module', 'workflow']),
   pageChanged: PropTypes.func,
   folderChanged: PropTypes.func,
   onSearch: PropTypes.func,
@@ -478,8 +431,8 @@ AppsPageAdapter.defaultProps = {
   error: null,
   meta: {},
   currentFolder: {},
-  appSearchKey: "",
-  appType: "front-end",
+  appSearchKey: '',
+  appType: 'front-end',
   workspaceId: undefined,
   folders: [],
   foldersLoading: false,
@@ -490,7 +443,7 @@ AppsPageAdapter.defaultProps = {
   sidebarTeams: undefined,
   sidebarNavMain: undefined,
   sidebarProjects: undefined,
-  activeTab: "apps",
+  activeTab: 'apps',
   onTabChange: () => {},
 };
 
