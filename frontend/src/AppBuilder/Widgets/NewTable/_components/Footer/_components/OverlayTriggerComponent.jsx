@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { Tooltip } from 'react-tooltip';
 
-// This overlayTriggerComponent is used in the Table component, for download and manage columns popover
+// This overlayTriggerComponent is used in the Table component, for download, manage columns popover and pagination
 export const OverlayTriggerComponent = ({
   trigger = 'click',
   overlay,
   rootClose = true,
   placement = 'top',
   children,
+  tooltipId,
 }) => {
   const [isOpen, setOpen] = useState(false);
   const modifiedChild = React.cloneElement(children, {
@@ -25,7 +27,10 @@ export const OverlayTriggerComponent = ({
         setOpen(show);
       }}
     >
-      <span>{modifiedChild}</span>
+      <span>
+        {tooltipId && <Tooltip id={tooltipId} className="tooltip" />}
+        {modifiedChild}
+      </span>
     </OverlayTrigger>
   );
 };
