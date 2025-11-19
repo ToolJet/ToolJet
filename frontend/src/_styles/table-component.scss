@@ -264,6 +264,9 @@
           background: linear-gradient(0deg, var(--interactive-overlays-fill-hover), var(--interactive-overlays-fill-hover)),
         }
 
+        &.isEdited:not(:focus-within) {
+          background-color: var(--cc-table-edited-cell) !important;
+        }
 
         .td-container {
           margin-top: auto;
@@ -272,6 +275,14 @@
 
         .td-container:has(.action-button) {
           height: inherit !important;
+        }
+      }
+
+      .table-striped {
+        .td {
+          &.isEditable:not(:focus-within):hover {
+            background-color: var(--cc-table-striped-editable-column-hover) !important;
+          }
         }
       }
 
