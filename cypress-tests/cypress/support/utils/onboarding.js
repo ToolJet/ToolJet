@@ -311,7 +311,16 @@ export const onboardingStepTwo = (workspaceName = "My workspace") => {
   cy.get(commonSelectors.workspaceNameInputLabel)
     .should("be.visible")
     .and("have.text", commonText.workspaceNameInputLabel);
+
+  cy.waitForElement(commonSelectors.workspaceNameInputField);
+  cy.wait(500);
+
   cy.clearAndType(commonSelectors.workspaceNameInputField, workspaceName);
+  cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+    "have.value",
+    workspaceName
+  );
+
   cy.get(commonSelectors.OnbordingContinue)
     .verifyVisibleElement("have.text", "Continue")
     .click();
