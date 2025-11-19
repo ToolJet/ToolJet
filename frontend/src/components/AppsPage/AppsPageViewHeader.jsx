@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FolderSelector } from '@/components/ui/blocks/FolderSelector';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function AppsPageViewHeader({
   activeTab = 'apps',
@@ -26,6 +27,7 @@ export function AppsPageViewHeader({
   currentFolder = null,
   onFolderChange,
   foldersLoading = false,
+  isLoading = false,
 }) {
   return (
     <div className="tw-border-b tw-border-border-weak tw-flex tw-items-center tw-justify-between tw-h-10 tw-w-full">
@@ -41,46 +43,53 @@ export function AppsPageViewHeader({
 
       {/* Right: Breadcrumb + View toggle */}
       <div className="tw-flex tw-items-center tw-gap-3">
-        {/* Breadcrumb */}
-        {breadcrumbItems.length > 0 && (
-          <Breadcrumb>
-            <BreadcrumbList>
-              {breadcrumbItems.map((item, index) => (
-                <React.Fragment key={item.label || index}>
-                  <BreadcrumbItem>
-                    {index === breadcrumbItems.length - 1 ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            className="-tw-ml-2 data-[state=open]:tw-bg-interactive-hover"
-                            size="small"
-                            variant="ghost"
-                            disabled={foldersLoading}
-                          >
-                            {item.label}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="tw-min-w-48 tw-p-0">
-                          <FolderSelector
-                            folders={folders}
-                            currentFolder={currentFolder}
-                            onFolderChange={onFolderChange}
-                            onNewFolder={() => {
-                              // Handle new folder creation
-                              // TODO: Implement new folder creation logic
-                            }}
-                          />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <BreadcrumbLink href="#">{item.label}</BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                  {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
-                </React.Fragment>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
+        {isLoading ? (
+          <div className="tw-flex tw-items-center tw-gap-1">
+            <Skeleton className="tw-h-5 tw-w-16" />
+            <Skeleton className="tw-h-3 tw-w-3" />
+            <Skeleton className="tw-h-5 tw-w-20" />
+          </div>
+        ) : (
+          breadcrumbItems.length > 0 && (
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbItems.map((item, index) => (
+                  <React.Fragment key={item.label || index}>
+                    <BreadcrumbItem>
+                      {index === breadcrumbItems.length - 1 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              className="-tw-ml-2 data-[state=open]:tw-bg-interactive-hover"
+                              size="small"
+                              variant="ghost"
+                              disabled={foldersLoading}
+                            >
+                              {item.label}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="tw-min-w-48 tw-p-0">
+                            <FolderSelector
+                              folders={folders}
+                              currentFolder={currentFolder}
+                              onFolderChange={onFolderChange}
+                              onNewFolder={() => {
+                                // Handle new folder creation
+                                // TODO: Implement new folder creation logic
+                              }}
+                            />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <BreadcrumbLink href="#">{item.label}</BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                    {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+                  </React.Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          )
         )}
 
         {/* View toggle */}
