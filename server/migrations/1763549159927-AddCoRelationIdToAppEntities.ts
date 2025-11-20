@@ -13,9 +13,10 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
             'app_versions',
             'data_source_options',
             'internal_tables',
+            'app_versions',
         ];
 
-        for(const table of tables){
+        for (const table of tables) {
             await queryRunner.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS "co_relation_id" uuid DEFAULT NULL`);
         }
     }
@@ -30,10 +31,11 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
             'versions',
             'data_source_options',
             'internal_tables',
+            'app_versions',
         ];
 
         for (const table of tables) {
-        await queryRunner.query(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "co_relation_id"`);
+            await queryRunner.query(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "co_relation_id"`);
         }
     }
 
