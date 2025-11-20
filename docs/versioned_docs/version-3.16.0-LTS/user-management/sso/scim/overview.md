@@ -3,14 +3,56 @@ id: overview
 title: Overview
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+</div>
+
 System for Cross-domain Identity Management (**SCIM**) enables automated user and group provisioning for enterprise customers. With SCIM, identity providers (IdPs) like Okta can automatically create, update, deactivate, and sync users in ToolJet, removing the need for manual user management.
 
-**Use Cases**
+#### Use Cases
 - Automatically provision new users in ToolJet when they are added in the IdP.
 - Update user attributes (name, email, role mapping) in real time based on IdP changes.
 - Archive users in ToolJet instantly when access is revoked in the IdP.
 - Maintain a centralized, secure identity workflow across large teams and enterprises.
 - Reduce manual user management and minimize access control errors.
+
+#### Roles vs Groups
+
+- ToolJet only manages Custom Groups via SCIM.
+- User Roles must be passed as part of the User attributes (not through groups).
+- If no role is provided, **the user defaults to an end-user**, this **may cause permission mismatches** if the user belongs to a builder/admin custom group.
+
+#### Default Workspace
+
+- All SCIM operations (User and Group creation, updates, deletions) are performed in the Default Workspace of your ToolJet instance.
+
+#### Group Management
+
+- Only Custom Groups are supported via SCIM.
+- Any group created in your IDP will be considered a Custom Group for Tooljet
+- To sync a group with ToolJet, assign the group to your SCIM application or push groups manually from your IdP (e.g., Okta).
+
+#### User Management
+
+- Users must be assigned to the ToolJet SCIM application in your IdP.
+- Only then will be provisioning and updates (create, update, deactivate, delete) be synchronized with ToolJet.
+
+#### Editable User Attributes
+
+ToolJet supports SCIM updates for:
+- firstName
+- lastName
+- email
+- status
+- groups
 
 ## SCIM Setup
 
@@ -123,41 +165,6 @@ This namespace **must match exactly**, do not modify or use a different string.
 <img className="screenshot-full img-m" src="/img/user-management/sso/scim/okta/attribute-mapping.png" alt="Attribute Mapping for Okta" />
 
 Once this is done, Okta will send the user’s role attribute to ToolJet during provisioning or updates.
-
-## Important Notes
-
-### Roles vs Groups
-
-- ToolJet only manages Custom Groups via SCIM.
-- User Roles must be passed as part of the User attributes (not through groups).
-- If no role is provided, **the user defaults to an end-user**, this **may cause permission mismatches** if the user belongs to a builder/admin custom group.
-
-### Default Workspace
-
-- All SCIM operations (User and Group creation, updates, deletions) are performed in the Default Workspace of your ToolJet instance.
-
-### Group Management
-
-- Only Custom Groups are supported via SCIM.
-- Any group created in your IDP will be considered a Custom Group for Tooljet
-- To sync a group with ToolJet, assign the group to your SCIM application or push groups manually from your IdP (e.g., Okta).
-
-### User Management
-
-- Users must be assigned to the ToolJet SCIM application in your IdP.
-- Only then will be provisioning and updates (create, update, deactivate, delete) be synchronized with ToolJet.
-
-### License Requirements
-- Ensure your ToolJet license has SCIM and Custom Groups enabled.
-
-### Editable User Attributes
-
-ToolJet supports SCIM updates for:
-- firstName
-- lastName
-- email
-- status
-- groups
 
 ## SCIM Standards Support
 
