@@ -135,11 +135,16 @@ export const createGridSlice = (set, get) => ({
       const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
 
       // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
-      const transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
+      let transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
 
       // If the component is a container, we need to calculate the height of the container
       let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
+
+      // If the component is a modal, change id further to include the body
+      if (componentType === 'ModalV2') {
+        transformedComponentId = `${transformedComponentId}-body`;
+      }
 
       // Determine component visibility by checking multiple sources in priority order
       const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
@@ -406,7 +411,7 @@ export const createGridSlice = (set, get) => ({
       }
 
       if (isContainer) {
-        if (componentType !== 'Listview') {
+        if (componentType !== 'Listview' && componentType !== 'ModalV2') {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
