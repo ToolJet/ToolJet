@@ -30,10 +30,11 @@ describe("User Role UI and Functionality verification", () => {
 
         cy.apiLogin();
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+        apiUpdateProfile("The", "Developer");
+
         cy.visit(`${data.workspaceSlug}`);
         navigateToManageGroups();
         cy.viewport(2000, 1900);
-        apiUpdateProfile("The", "Developer");
     });
 
     it("should verify admin role UI elements and interactions", () => {

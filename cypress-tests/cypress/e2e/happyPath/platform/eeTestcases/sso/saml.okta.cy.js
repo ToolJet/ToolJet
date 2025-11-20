@@ -1,21 +1,21 @@
 import { fake } from "Fixtures/fake";
-import { ssoSelector } from "Selectors/manageSSO";
-import { ssoEeSelector, commonEeSelectors } from "Selectors/eeCommon";
-import { ssoText, ssoEeText } from "Texts/manageSSO";
 import { commonSelectors } from "Selectors/common";
-import { deleteOrganisationSSO } from "Support/utils/manageSSO";
-import { navigateToManageSSO } from "Support/utils/common";
+import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
+import { ssoSelector } from "Selectors/manageSSO";
+import { navigateToManageSSO, sanitize } from "Support/utils/common";
 import {
     apiCreateGroup,
     apiDeleteGroup,
     verifyUserRole,
 } from "Support/utils/manageGroups";
+import { deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { cleanAllUsers } from "Support/utils/manageUsers";
+import { ssoEeText, ssoText } from "Texts/manageSSO";
 
 import {
     setSignupStatus,
-    updateSsoId,
     uiOktaLogin,
+    updateSsoId,
 } from "Support/utils/manageSSO";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
@@ -36,9 +36,10 @@ describe("SAML SSO", () => {
     const config = {
         type: "saml",
         configs: {
-            name: "SAML_workspace",
-            idpMetadata: Cypress.env("saml_idp_metadata"),
             groupAttribute: "groups",
+            groupSyncEnabled: true,
+            idpMetadata: Cypress.env("saml_idp_metadata"),
+            name: "SAML_workspace",
         },
         enabled: true,
     };
@@ -57,21 +58,33 @@ describe("SAML SSO", () => {
     };
 
     beforeEach("", () => {
+        data.workspaceName = `${sanitize(fake.firstName)}-saml`;
+        data.workspaceSlug = `${sanitize(fake.firstName)}-saml`;
+
         cy.apiLogin();
-        deleteOrganisationSSO("My workspace", ["saml"]);
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then(
+            (res) => {
+                Cypress.env("workspaceId", res.body.organization_id);
+            }
+        );
+
+        deleteOrganisationSSO(data.workspaceName, ["saml"]);
         setSignupStatus(true);
         cleanAllUsers();
-
     });
 
     after("", () => {
         cy.apiLogin();
         cleanAllUsers();
-        cy.apiDeleteAllApps()
+        cy.apiDeleteAllApps();
+    });
+    afterEach("", () => {
+        cy.apiLogin();
+        deleteOrganisationSSO(data.workspaceName, ["saml"]);
     });
 
     it("Should verify SAML modal elements", () => {
-        cy.visit("/");
+        cy.visit(`${data.workspaceSlug}`);
         navigateToManageSSO();
         cy.get(ssoEeSelector.saml.card).should("be.visible");
         cy.get(ssoEeSelector.saml.label).verifyVisibleElement("have.text", "SAML");
@@ -130,7 +143,7 @@ describe("SAML SSO", () => {
         cy.get(ssoEeSelector.saml.copyIcon).should("be.visible");
 
         cy.apiLogout();
-        cy.visit("/login/my-workspace");
+        cy.visit(`/login/${data.workspaceSlug}`);
         cy.get(ssoEeSelector.saml.ssoText).should("be.visible");
     });
 
@@ -146,7 +159,7 @@ describe("SAML SSO", () => {
         updateSsoId(ssoConfigId, "saml", orgId);
 
         cy.apiLogout();
-        cy.visit("/login/my-workspace");
+        cy.visit(`/login/${data.workspaceSlug}`);
         loginViaSamlSSO(Cypress.env("saml_signup"), Cypress.env("okta_password"));
         cy.wait("@openidResponse").then((interception) => {
             const userId = interception.response.body.id;
@@ -156,7 +169,7 @@ describe("SAML SSO", () => {
 
         cy.apiLogout();
         cy.apiLogin();
-        apiDeleteGroup('SAML');
+        apiDeleteGroup("SAML");
     });
 
     it("Should verify the invited user onboarding using SAML SSO", () => {
@@ -176,10 +189,9 @@ describe("SAML SSO", () => {
         // Start SSO login process
         loginViaSamlSSO(invitedUserEmail, Cypress.env("okta_password"));
 
-        cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
-            "have.text",
-            "Join My workspace"
-        );
+        cy.get(
+            `[data-cy="join-${data.workspaceName}-header"]`
+        ).verifyVisibleElement("have.text", `Join ${data.workspaceName}`);
         cy.get(commonSelectors.acceptInviteButton).click();
 
         // Verify successful login and role
