@@ -1,5 +1,5 @@
 /* eslint-disable import/namespace */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
@@ -107,7 +107,7 @@ const RenderPageGroup = ({
   isPageGroupInsidePopup = true,
 }) => {
   const isActive = currentPage?.pageGroupId === pageGroup?.id;
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(isActive);
   const groupItemRootRef = useRef(null);
   const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
@@ -126,21 +126,6 @@ const RenderPageGroup = ({
   };
 
   const iconColor = isActive && !isExpanded ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isExpanded && groupItemRootRef.current && !groupItemRootRef.current.contains(event.target)) {
-        setIsExpanded((prev) => !prev);
-      }
-    };
-
-    if (isExpanded && position === 'top') {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isExpanded]);
 
   if (isPageGroupHidden) {
     return null;
