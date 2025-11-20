@@ -103,7 +103,7 @@ export const verifyGranularEditModal = (role) => {
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
 
-    cy.wait(1000)
+    cy.wait(2000)
     cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 

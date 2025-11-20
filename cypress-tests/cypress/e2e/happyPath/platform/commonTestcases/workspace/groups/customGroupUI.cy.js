@@ -115,7 +115,7 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.get(groupsSelector.groupLink("builder")).click();
     cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.granularLink).click();
-    cy.wait(500);
+    cy.wait(2000);
     cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 
