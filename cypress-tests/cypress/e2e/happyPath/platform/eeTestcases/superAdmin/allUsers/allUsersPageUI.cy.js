@@ -16,7 +16,7 @@ import {
 
 const data = {
     userName: sanitize(fake.firstName),
-    userEmail: sanitize(fake.email),
+    userEmail: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
 };
 
 describe("Instance Settings - All Users UI", () => {
