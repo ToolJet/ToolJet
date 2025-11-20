@@ -36,7 +36,6 @@ export const PagesSidebarNavigation = ({
   switchDarkMode,
   canvasContentRef,
 }) => {
-  console.log('pages');
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
