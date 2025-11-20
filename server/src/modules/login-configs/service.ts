@@ -78,7 +78,6 @@ export class LoginConfigsService implements ILoginConfigsService {
 
     await this.loginConfigsUtilService.encryptSecret(configs);
     const organization = await this.organizationsRepository.findOne({ where: { id: organizationId } });
-    //SSO_UPDATE audit
     const auditLogsData = {
       userId: user.id,
       organizationId: organizationId,
@@ -88,27 +87,46 @@ export class LoginConfigsService implements ILoginConfigsService {
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
 
     let ssoConfig;
+    // Handle OIDC multi-tenant (supports multiple configs per organization)
+    if (type === SSOType.OPENID) {
+      if (configId) {
+        // configId provided - try to update existing config
+        const existingConfig = await this.ssoConfigsRepository.findOne({
+          where: {
+            id: configId,
+            organizationId,
+            sso: SSOType.OPENID,
+          },
+        });
 
-    // Handle OIDC with configId (multi-tenant OIDC)
-    if (type === SSOType.OPENID && configId) {
-      // Verify config exists and belongs to organization
-      const existingConfig = await this.ssoConfigsRepository.findOne({
-        where: {
-          id: configId,
+        if (existingConfig) {
+          // Config exists - UPDATE
+          await this.ssoConfigsRepository.update(configId, { configs, enabled });
+          ssoConfig = await this.ssoConfigsRepository.findOne({ where: { id: configId } });
+        } else {
+          // configId provided but doesn't exist - CREATE new (use frontend-provided name)
+          const newConfig = this.ssoConfigsRepository.create({
+            organizationId,
+            sso: type,
+            configs, // Use name from frontend
+            enabled,
+            configScope: ConfigScope.ORGANIZATION,
+          });
+          ssoConfig = await this.ssoConfigsRepository.save(newConfig);
+        }
+      } else {
+        // No configId - CREATE new config (use frontend-provided name)
+        const newConfig = this.ssoConfigsRepository.create({
           organizationId,
-          sso: SSOType.OPENID,
-        },
-      });
-
-      if (!existingConfig) {
-        throw new BadRequestException('OIDC configuration not found or does not belong to this organization');
+          sso: type,
+          configs, // Use name from frontend
+          enabled,
+          configScope: ConfigScope.ORGANIZATION,
+        });
+        ssoConfig = await this.ssoConfigsRepository.save(newConfig);
       }
-
-      // Update by ID
-      await this.ssoConfigsRepository.update(configId, { configs, enabled });
-      ssoConfig = await this.ssoConfigsRepository.findOne({ where: { id: configId } });
     } else {
-      // Existing logic for other SSO types (update by sso + organizationId)
+      // Other SSO types (single config per organization)
       ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
         sso: type,
         configs,
