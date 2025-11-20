@@ -331,6 +331,7 @@ module.exports = {
           ignorePatterns: ['/docs/1.x.x/**'],
           filename: 'sitemap.xml',
         },
+
         googleTagManager: isProd
           ? {
             containerId: process.env.GTM || 'development',
@@ -338,6 +339,18 @@ module.exports = {
           : undefined,
       },
     ],
+    [
+    'redocusaurus',
+    {
+      openapi: {
+        path: 'openapi',       // scans all folders inside openapi/, e.g., scim, tj-api
+        routeBasePath: '/api', // pages will be /api/scim, /api/tj-api
+      },
+      theme: {
+        primaryColor: '#1890ff', // customize the color
+      },
+    },
+  ],
   ],
   plugins: [
     devServerPlugin,
