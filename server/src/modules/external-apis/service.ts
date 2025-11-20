@@ -6,7 +6,7 @@ import { IExternalApisService } from './Interfaces/IService';
 @Injectable()
 export class ExternalApisService implements IExternalApisService {
   constructor() {}
-  async getAllUsers(id?: string, manager?: EntityManager) {
+  async getAllUsers(lookupKey?: string, groupNames?: string[], manager?: EntityManager) {
     throw new Error('Method not implemented.');
   }
   async createUser(userDto: CreateUserDto) {
