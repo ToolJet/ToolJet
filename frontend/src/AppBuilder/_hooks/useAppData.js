@@ -85,6 +85,7 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
+  const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -367,6 +368,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
 
           // If the app builder mode is AI
           // - Do not show zero state - if there is some conversation already done or if route state has prompt

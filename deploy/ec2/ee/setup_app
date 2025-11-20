@@ -161,16 +161,9 @@ else
   exit 1
 fi
 
-if [[ "$WORKFLOW_WORKER" == "true" ]]; then
-  echo "WORKER is true. Running the worker..."
-  npm run worker:prod &
-else
-  echo "WORKER is not true. Skipping the worker execution."
-fi
-
 TOOLJET_EDTION=ee npm --prefix server run db:setup
 
-if sudo -E systemctl start nest && && sudo journalctl -u nest -f
+if sudo -E systemctl start nest && sudo journalctl -u nest -f
 then
   echo "The app will be served at ${TOOLJET_HOST}"
 else

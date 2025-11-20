@@ -189,14 +189,81 @@ export function Authorize({ navigate }) {
 
   //   return null;
   // };
+  function getAttributionFromState() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm = {
+        utm_source: urlParams.get("utm_source") || '',
+        utm_medium: urlParams.get("utm_medium") || '',
+        utm_campaign: urlParams.get("utm_campaign") || '',
+        utm_term: urlParams.get("utm_term") || '',
+        utm_content: urlParams.get("utm_content") || ''
+      };
 
+      const hutk = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('hubspotutk='))
+        ?.split('=')[1] || '';
+
+      const referrer = document.referrer || '';
+      const pageUri = window.location.href;
+      const pageName = document.title;
+
+      const attribution = {
+        hutk,
+        referrer,
+        pageUri,
+        pageName,
+        utm
+      };
+      return attribution;
+    } catch (err) {
+      return {};
+    }
+  }
+
+  const hubspotFormSubmissionForSSO = (email) => {
+    if (!email) return;
+    try {
+      const attribution = getAttributionFromState();
+      if (!attribution) return;
+
+      const { SSO_HUBSPOT_PORTAL_ID: portalId, SSO_HUBSPOT_FORM_ID: formId } = window.public_config || {};
+
+      if (!portalId || !formId) return;
+
+      window.__hs_original_source_submitted = true;
+
+      const fields = [
+        { name: 'email', value: email },
+        ...Object.entries(attribution.utm || {}).map(([key, value]) => ({ name: key, value })),
+      ];
+
+      const payload = {
+        fields,
+        context: {
+          hutk: attribution.hutk,
+          pageUri: attribution.pageUri || location.href,
+          pageName: attribution.pageName || document.title,
+        },
+      };
+
+      fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => { });
+    } catch { }
+  };
   const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
+      // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
+      hubspotFormSubmissionForSSO(email);
 
-      const event = `${redirect_url ? 'signup' : 'signin'}_${
-        router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
-      }`;
+      const event = `${redirect_url ? 'signup' : 'signin'}_${router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+        }`;
       posthogHelper.initPosthog(restResponse);
       posthogHelper.captureEvent(event, {
         email,
@@ -285,9 +352,8 @@ export function Authorize({ navigate }) {
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
   const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
-  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
-    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-  }`;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${!signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+    }`;
   return (
     <div>
       <TJLoader />

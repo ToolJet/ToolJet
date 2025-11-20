@@ -141,6 +141,7 @@ const Button = forwardRef(
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       loaderText = null,
       isLucid = false, // Use Lucide icons instead of SolidIcon
+      component = 'button',
       ...props
     },
     ref
@@ -148,7 +149,7 @@ const Button = forwardRef(
     const iconFillColor =
       !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
     const lucideIconClassName = getLucideIconClassName(variant, iconOnly);
-    const Comp = asChild ? Slot : 'button';
+    const Comp = asChild ? Slot : component;
     const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
 
     const leadingIconElement = leadingIcon && (

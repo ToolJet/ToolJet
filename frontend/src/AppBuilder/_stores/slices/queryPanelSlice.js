@@ -246,6 +246,8 @@ export const createQueryPanelSlice = (set, get) => ({
             return { status: 'COMPLETE', result: eventData.result, data: eventData };
           } else if (eventData.type === 'workflow_execution_error') {
             return { status: 'ERROR', data: eventData };
+          } else if (eventData.type === 'workflow_execution_cancelled') {
+            return { status: 'CANCELLED', data: eventData };
           } else {
             return { status: 'PROGRESS', data: eventData };
           }
@@ -281,6 +283,18 @@ export const createQueryPanelSlice = (set, get) => ({
               metadata: e?.error?.metadata,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+          onCancel: (data) => {
+            handleFailure({
+              status: 'cancelled',
+              message: 'Workflow execution cancelled',
+              description: data?.error?.message || 'User cancelled the workflow execution',
+              data: data?.error,
+            });
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on cancellation
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
