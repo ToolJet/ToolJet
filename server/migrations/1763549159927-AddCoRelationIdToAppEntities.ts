@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        // missing modules and events
+        // missing modules
         const tables = [
             'apps',
             'components',
@@ -14,6 +14,7 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
             'data_source_options',
             'internal_tables',
             'app_versions',
+            'event_handlers',
         ];
 
         for (const table of tables) {
@@ -32,6 +33,7 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
             'data_source_options',
             'internal_tables',
             'app_versions',
+            'event_handlers',
         ];
 
         for (const table of tables) {
