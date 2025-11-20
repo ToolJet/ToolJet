@@ -3,7 +3,8 @@ import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
     navigateToManageGroups,
-    selectAppCardOption,
+    sanitize,
+    selectAppCardOption
 } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -30,22 +31,17 @@ import { groupsText } from "Texts/manageGroups";
 describe("Basic Permissions", () => {
     let data = {};
 
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
-
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
             appName: fake.companyName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
-            workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
-            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceName: `${sanitize(fake.lastName)}-basic`,
+            workspaceSlug: `${sanitize(fake.lastName)}-basic`,
             folderName: fake.companyName,
         };
 
-        cy.defaultWorkspaceLogin();
+        cy.apiLogin();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2000, 1900);
@@ -73,7 +69,6 @@ describe("Basic Permissions", () => {
         );
 
         // UI-based privilege verification for Builder
-        cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
         uiVerifyBuilderPrivileges();
 
         // UI CRUD workflows validation
