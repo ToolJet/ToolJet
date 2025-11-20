@@ -7,7 +7,7 @@ export const ssoText = {
     allowedDomainInput: "",
     allowedDomainHelperText: "Support multiple domains. Enter allowed domains names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
     superAdminUrlLabel: "Super admin login URL",
-    superAdminUrl: "http://localhost:8082/login/super-admin",
+    superAdminUrl: `${Cypress.config("baseUrl")}/login/super-admin`,
     superAdminUrlHelperText: "Use this URL for super admin to login via password",
     enableSignupLabel: "Enable Signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
@@ -32,7 +32,7 @@ export const ssoText = {
     allowedDomainInput: "",
     allowedDomainHelperText: "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
     workspaceLoginUrlLabel: "Login URL",
-    workspaceLoginUrl: 'http://localhost:8082/login/my-workspace',
+    workspaceLoginUrl: `${Cypress.config("baseUrl")}/login/my-workspace`,
     workspaceLoginUrlHelperText: "Use this URL to login directly to this workspace",
     enableSignupLabel: "Enable signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
@@ -102,7 +102,7 @@ export const ssoText = {
   saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
   passwordDisableWarning: "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
-  superAdminInfoText: "Super admin can still access their account via http://localhost:8082/login/super-admin",
+  superAdminInfoText: `Super admin can still access their account via ${Cypress.config("baseUrl")}/login/super-admin`,
   ssoToast: "Organization settings have been updated",
   workspaceSsoToast: "Organization settings have been updated",
   copySuccessToast: "Copied to clipboard!",
@@ -185,7 +185,7 @@ export const ssoText = {
   samlMetadataInput: 'Tooljet SAML test data',
   samlGroupAttributeInput: 'groups',
   groupMappingHelperText: 'Separate mappings with commas e.g., Marketing Team -> marketing, Sales Team -> sales',
-  clientSecretToast:"Client secret cannot be emtpy",
+  clientSecretToast: "Client secret cannot be emtpy",
 
 };
 
