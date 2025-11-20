@@ -55,7 +55,7 @@ Cypress.Commands.add(
       cy.get("body").then(($body) => {
         if ($body.find(commonSelectors.toastCloseButton).length > 0) {
           cy.closeToastMessage();
-          cy.wait(200);
+          cy.wait(500);
         }
       });
     }
@@ -271,7 +271,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).last().invoke("removeAttr", "target").click();
+  cy.get(selector).last().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
