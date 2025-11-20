@@ -79,6 +79,7 @@ describe("SAML SSO", () => {
         cleanAllUsers();
         cy.apiDeleteAllApps();
     });
+
     afterEach("", () => {
         cy.apiLogin();
         deleteOrganisationSSO(data.workspaceName, ["saml"]);

@@ -180,7 +180,7 @@ describe("Verify OIDC user onboarding", () => {
             cy.wait(3000);
             cy.get(commonSelectors.workspaceName).verifyVisibleElement(
                 "have.text",
-                data.workspaceName
+                'My workspace'
             );
             common.logout();
 
