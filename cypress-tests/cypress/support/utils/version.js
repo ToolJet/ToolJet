@@ -69,7 +69,9 @@ export const editVersionAndVerify = (
       }
     }
   );
+  cy.wait(500);
   navigateToEditVersionModal(currentVersion);
+  cy.waitForElement(editVersionSelectors.versionNameInputField);
   cy.get(editVersionSelectors.versionNameInputField).verifyVisibleElement(
     "have.value",
     currentVersion
@@ -77,11 +79,11 @@ export const editVersionAndVerify = (
 
   cy.clearAndType(editVersionSelectors.versionNameInputField, newVersion[0]);
   cy.get(editVersionSelectors.saveButton).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
 };
 
-export const deleteVersionAndVerify = (value, toastMessageText) => {
+export const deleteVersionAndVerify = (value) => {
   cy.get(appVersionSelectors.currentVersionField(value))
     .should("be.visible")
     .click();
@@ -155,6 +157,7 @@ export const verifyVersionAfterPreview = (currentVersion) => {
 };
 
 export const switchVersionAndVerify = (currentVersion, newVersion) => {
+  cy.waitForElement(appVersionSelectors.currentVersionField(currentVersion));
   cy.get(appVersionSelectors.currentVersionField(currentVersion))
     .should("be.visible")
     .click();

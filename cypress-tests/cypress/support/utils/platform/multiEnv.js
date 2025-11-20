@@ -109,6 +109,7 @@ export const selectEnv = (envName) => {
 
   if (isValidEnvName(envName)) {
     cy.wait(1000);
+    cy.waitForElement('[data-cy="list-current-env-name"]');
     cy.get('[data-cy="list-current-env-name"]').click();
     cy.wait(500);
     const envSelector = `${appEditorSelector.editor.pages.envNameList}:eq(${envIndex})`;
