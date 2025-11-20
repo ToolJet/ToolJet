@@ -79,7 +79,6 @@ describe("SAML SSO", () => {
         cleanAllUsers();
         cy.apiDeleteAllApps();
     });
-
     afterEach("", () => {
         cy.apiLogin();
         deleteOrganisationSSO(data.workspaceName, ["saml"]);
@@ -162,7 +161,6 @@ describe("SAML SSO", () => {
 
         cy.apiLogout();
         cy.visit(`/login/${data.workspaceSlug}`);
-        cy.wait(4000);
         loginViaSamlSSO(Cypress.env("saml_signup"), Cypress.env("okta_password"));
         cy.wait("@samlResponse").then((interception) => {
             const userId = interception.response.body.id;
