@@ -102,11 +102,102 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      // chunks: 'all',
+      // maxInitialRequests: 10, // Reduced from 25 - limits initial load chunks
+      // maxAsyncRequests: 10,   // Limits async chunks (lazy loaded)
+      // minSize: 50000,         // Increased from 20KB - only split if >50KB
+      // maxSize: 1244000,        // Max chunk size ~244KB (helps with parallel downloads)
       cacheGroups: {
-        vendors: {
+        // CRITICAL: React core - always loaded (enforce: true means always split)
+        // react: {
+        //   test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+        //   name: 'vendor-react',
+        //   priority: 50,
+        //   reuseExistingChunk: true,
+        //   enforce: true, // Always split React, even if small
+        // },
+
+        // // HEAVY EDITORS GROUP - Split these out as they're HUGE and editor-only
+        // // ~2MB+ combined, almost never needed on viewer pages
+        // editors: {
+        //   test: /[\\/]node_modules[\\/](@codemirror|@uiw\/react-codemirror|@uiw\/codemirror-theme-github|@uiw\/codemirror-theme-okaidia|draft-js|draft-js-export-html|draft-js-import-html|@mdxeditor)[\\/]/,
+        //   name: 'vendor-editors',
+        //   priority: 40,
+        //   reuseExistingChunk: true,
+        //   enforce: true, // Always split - too large
+        // },
+
+        // // CHARTS - Plotly is MASSIVE (~3MB), split separately
+        // plotly: {
+        //   test: /[\\/]node_modules[\\/](plotly\.js|plotly\.js-dist-min|react-plotly\.js)[\\/]/,
+        //   name: 'vendor-plotly',
+        //   priority: 40,
+        //   reuseExistingChunk: true,
+        //   enforce: true, // Always split - very large
+        // },
+
+        // // PDF - Large libraries, only for PDF features
+        // pdf: {
+        //   test: /[\\/]node_modules[\\/](pdfjs-dist|react-pdf|jspdf|jspdf-autotable)[\\/]/,
+        //   name: 'vendor-pdf',
+        //   priority: 40,
+        //   reuseExistingChunk: true,
+        //   enforce: true, // Always split - large
+        // },
+
+        // // EXCEL - XLSX is huge (~1MB), only for spreadsheet features
+        // excel: {
+        //   test: /[\\/]node_modules[\\/](xlsx|read-excel-file|papaparse|zipcelx)[\\/]/,
+        //   name: 'vendor-excel',
+        //   priority: 40,
+        //   reuseExistingChunk: true,
+        //   enforce: true, // Always split - large
+        // },
+
+        // // UI FRAMEWORK - Combine related UI libraries to reduce requests
+        // // Radix + Bootstrap + DnD + Forms together
+        // uiFramework: {
+        //   test: /[\\/]node_modules[\\/](@radix-ui|bootstrap|react-bootstrap|@dnd-kit|react-dnd|react-dnd-html5-backend|react-beautiful-dnd|react-select|react-select-search|react-multi-select-component|react-color|rc-slider)[\\/]/,
+        //   name: 'vendor-ui',
+        //   priority: 35,
+        //   reuseExistingChunk: true,
+        // },
+
+        // // DATA VISUALIZATION - Tables + ReactFlow + Maps (used together often)
+        // dataViz: {
+        //   test: /[\\/]node_modules[\\/](react-table|react-table-plugins|@tanstack\/react-table|@tanstack\/react-virtual|react-virtuoso|reactflow|react-zoom-pan-pinch|@react-google-maps)[\\/]/,
+        //   name: 'vendor-dataviz',
+        //   priority: 35,
+        //   reuseExistingChunk: true,
+        // },
+
+        // // UTILITIES & COMMON - Lodash, Axios, Moment, etc. (frequently used together)
+        // // Combine small utility libraries to reduce HTTP requests
+        // common: {
+        //   test: /[\\/]node_modules[\\/](lodash|axios|classnames|clsx|moment|moment-timezone|humps|uuid|semver|fuse\.js|dompurify|superstruct|rfdc|flatted|zustand|immer|rxjs|i18next|react-i18next|i18next-http-backend)[\\/]/,
+        //   name: 'vendor-common',
+        //   priority: 30,
+        //   reuseExistingChunk: true,
+        // },
+
+        // // FEATURES - Combine feature-specific libraries
+        // // Date pickers, phone inputs, markdown, icons, monitoring
+        // features: {
+        //   test: /[\\/]node_modules[\\/](react-datepicker|react-datetime|react-dates|@wojtekmaj|react-big-calendar|react-currency-input-field|react-phone-input-2|react-phone-number-input|react-mentions|react-markdown|rehype-raw|remark-gfm|react-syntax-highlighter|@tabler\/icons-react|lucide-react|emoji-mart|@emoji-mart|@sentry|posthog-js|yjs|y-websocket|@y-presence|react-moveable|react-rnd|react-selecto)[\\/]/,
+        //   name: 'vendor-features',
+        //   priority: 25,
+        //   reuseExistingChunk: true,
+        // },
+
+        // Everything else - catch-all for remaining node_modules
+        defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
           chunks: 'all',
+          // name: 'vendor-misc',
+          // priority: 10,
+          // minChunks: 2, // Only split if used in 2+ places
+          // reuseExistingChunk: true,
         },
       },
     },

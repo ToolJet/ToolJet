@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
-// eslint-disable-next-line no-unused-vars
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+// BrowserRouter removed - now in RootRouter.jsx
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
@@ -9,7 +9,8 @@ import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
+// Viewer import removed - now handled by ViewerApp.jsx
+// import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { MarketplacePage } from '@/MarketplacePage';
 import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
@@ -44,7 +45,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { BasicPlanMigrationBanner } from '@/HomePage/BasicPlanMigrationBanner/BasicPlanMigrationBanner';
 import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
-import EmbedApp from '@/AppBuilder/EmbedApp';
+// EmbedApp import removed - now handled by ViewerApp.jsx
+// import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
@@ -61,16 +63,16 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+  // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
+  // App.jsx is now wrapped by RootRouter which provides the router context
   return (
     <Suspense fallback={null}>
-      <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter
-          props={props}
-          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
-          darkMode={isTJDarkMode} // This is the dark mode of entire platform
-          updateIsTJDarkMode={updateIsTJDarkMode}
-        />
-      </BrowserRouter>
+      <AppWithRouter
+        props={props}
+        isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+        darkMode={isTJDarkMode} // This is the dark mode of entire platform
+        updateIsTJDarkMode={updateIsTJDarkMode}
+      />
     </Suspense>
   );
 };
@@ -281,24 +283,10 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-                <Route
-                  exact
-                  path="/applications/:slug/:pageHandle?"
-                  element={
-                    <AppsRoute componentType="viewer">
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
-                    </AppsRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
-                  element={
-                    <AppsRoute componentType="viewer">
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
-                    </AppsRoute>
-                  }
-                />
+                {/* VIEWER ROUTES REMOVED - Now handled by ViewerApp.jsx via RootRouter.jsx */}
+                {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
+                {/* - /applications/:slug/:pageHandle? */}
+                {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
                 <Route
                   exact
                   path="/oauth2/authorize"
@@ -376,24 +364,7 @@ class AppComponent extends React.Component {
                   }
                 />
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
-                <Route
-                  exact
-                  path="/applications/:id/versions/:versionId/:pageHandle?"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/applications/:slug/:pageHandle?"
-                  element={
-                    <PrivateRoute>
-                      <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
+                {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}
                 <Route
                   exact
                   path="/:workspaceId/home"
@@ -505,7 +476,7 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-                <Route exact path="/embed-apps/:appId" element={<EmbedApp />} />
+                {/* EMBED APPS ROUTE REMOVED - handled by ViewerApp.jsx */}
                 <Route
                   path="*"
                   render={() => {

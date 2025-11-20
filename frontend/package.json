@@ -197,6 +197,7 @@
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^29.4.2",
+    "madge": "^8.0.0",
     "path": "^0.12.7",
     "postcss": "^8.4.35",
     "postcss-loader": "^8.1.0",
@@ -211,8 +212,7 @@
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^5.2.2",
-    "@storybook/addon-docs": "^9.1.5"
+    "webpack-dev-server": "^5.2.2"
   },
   "overrides": {
     "react-dates": {
@@ -271,7 +271,10 @@
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "npx storybook build"
+    "build-storybook": "npx storybook build",
+    "check:circular": "bash scripts/check-circular-deps.sh",
+    "check:bundle": "node scripts/check-bundle-size.js",
+    "check:all": "npm run check:circular && npm run check:bundle"
   },
   "eslintConfig": {
     "extends": "react-app"
