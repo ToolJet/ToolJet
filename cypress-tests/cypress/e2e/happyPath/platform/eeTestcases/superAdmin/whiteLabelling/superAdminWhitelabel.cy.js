@@ -16,9 +16,20 @@ import {
 } from "Support/utils/whitelabel";
 
 describe("Instance settings - White labelling", () => {
+    const whiteLabelConfig = {
+        white_label_text: "ToolJet",
+        white_label_logo: "assets/images/tj-logo.svg",
+        white_label_favicon: "assets/images/logo.svg", // URL or base64 string
+    };
+
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         cy.apiConfigureSmtp(smtpConfig);
+    });
+
+    after(() => {
+        cy.apiLogin()
+        cy.apiUpdateWhiteLabeling(whiteLabelConfig)
     });
 
     it("should verify all white labelling UI elements", () => {

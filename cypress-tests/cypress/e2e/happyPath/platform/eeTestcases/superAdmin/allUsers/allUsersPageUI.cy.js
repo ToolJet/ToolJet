@@ -1,8 +1,10 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { instanceWorkspaceSelectors } from "Selectors/superAdminSelectors";
+import { sanitize } from "Support/utils/common";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import {
+    openAllUsersPage,
     updateUserNameAndVerifyChanges,
     verifyAllUsersHeaderUI,
     verifyResetPasswordModalUI,
@@ -10,12 +12,11 @@ import {
     verifyUserActionMenu,
     verifyUserRow,
     verifyUsersFilterOptions,
-    openAllUsersPage,
 } from "Support/utils/platform/allUsers";
 
 const data = {
-    userName: fake.firstName.toLowerCase().replace(/[^a-z]/g, ""),
-    userEmail: fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, ""),
+    userName: sanitize(fake.firstName),
+    userEmail: sanitize(fake.email),
 };
 
 describe("Instance Settings - All Users UI", () => {
@@ -25,12 +26,13 @@ describe("Instance Settings - All Users UI", () => {
         cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
         cy.apiLogout();
         cy.apiLogin();
-        cy.visit('/my-workspace')
+        cy.visit("/my-workspace");
         openAllUsersPage();
     });
 
     it("verifies All Users UI and updates user name", () => {
-        const updatedName = fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
+        const updatedName = sanitize(fake.firstName);
+
         verifyAllUsersHeaderUI();
         verifyTableControls();
         verifyUsersFilterOptions();

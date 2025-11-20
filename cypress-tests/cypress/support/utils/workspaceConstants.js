@@ -3,7 +3,6 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { importSelectors } from "Selectors/exportImport";
 import { workflowSelector } from "Selectors/workflows";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
-import { getAllConstantsWithCount } from "Support/utils/platform/apiUtils/apiWSConstants";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
@@ -119,13 +118,10 @@ export const verifySearch = (data) => {
   cy.wait(500);
   cy.get(commonSelectors.workspaceConstantsIcon).click();
 
-  getAllConstantsWithCount().then(({ count }) => {
-    // use count only
-    cy.get(workspaceConstantsSelectors.envName).should(
-      "have.text",
-      `${data.envName} (${count})`
-    );
-  });
+  cy.get(workspaceConstantsSelectors.envName).should(
+    "have.text",
+    `${data.envName} (10)`
+  );
 
   switchToConstantTab("Global");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "globalconst");

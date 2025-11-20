@@ -32,6 +32,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
+  cy.waitForElement(commonWidgetSelector.draggableWidget(widgetName));
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
     .realHover();

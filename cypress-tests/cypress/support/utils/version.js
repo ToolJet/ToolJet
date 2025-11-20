@@ -159,9 +159,13 @@ export const switchVersionAndVerify = (currentVersion, newVersion) => {
     .should("be.visible")
     .click();
   cy.get(".app-version-name").contains(newVersion).click();
+  cy.wait(1000);
+  //Note: add assertion to verify version switched
   //cy.wait('@appDs')
 };
 
 export const openPreviewSettings = () => {
   cy.get(commonSelectors.previewSettings).should("be.visible").click();
+  cy.wait(1000);
+  // Note: add alias wait for version and env load
 };

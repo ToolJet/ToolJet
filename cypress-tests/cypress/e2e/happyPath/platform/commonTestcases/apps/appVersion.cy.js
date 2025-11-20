@@ -289,10 +289,13 @@ describe("App Version", () => {
 
       openPreviewSettings();
       switchVersionAndVerify("v1", "v6");
+      cy.wait(1000);
 
       openPreviewSettings();
+      cy.wait(500);
       cy.forceClickOnCanvas();
       openPreviewSettings();
+
       selectEnv("staging");
 
       verifyWidget("textInput", "have.value", "Ervin Howell");

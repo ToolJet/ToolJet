@@ -803,7 +803,8 @@ Cypress.Commands.add(
         url: "https://www.googleapis.com/oauth2/v3/userinfo",
         headers: { Authorization: `Bearer ${access_token}` },
       }).then(({ body: userInfo }) => {
-        const tooljetBase = `http://localhost:8082/sso/google${defaultid}`;
+        const baseUrl = Cypress.config("baseUrl") || "http://localhost:3000";
+        const tooljetBase = `${baseUrl}/sso/google${defaultid}`;
         const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
         const fullUrl = `${tooljetBase}#${hash}`;
 
@@ -1038,3 +1039,24 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/white-labelling`,
+        headers: headers,
+        body: whiteLabelConfig,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiUpdateWhiteLabeling",
+          displayName: "WHITE LABELING UPDATED",
+        });
+        return response.body;
+      });
+  });
+});
