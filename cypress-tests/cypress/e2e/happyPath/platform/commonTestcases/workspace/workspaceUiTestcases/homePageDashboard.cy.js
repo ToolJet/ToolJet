@@ -6,13 +6,6 @@ import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
-    const isEnterprise = Cypress.env("environment") === "Enterprise";
-
-    before(function () {
-        if (Cypress.env("environment") === "Community") {
-            this.skip();
-        }
-    });
     beforeEach(() => {
 
         data = {

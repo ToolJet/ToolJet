@@ -86,10 +86,10 @@ export const verifyLoginSettings = (pageName) => {
 
   cy.reload();
 
-  if (pageName === "instance" ){
- openInstanceSettings();
-  cy.get(ssoSelector.instanceLoginListItem).click();
-  } 
+  if (pageName === "instance") {
+    openInstanceSettings();
+    cy.get(ssoSelector.instanceLoginListItem).click();
+  }
   else common.navigateToManageSSO();
 
   cy.get(ssoSelector.autoSSOToggle).should("not.be.disabled").check();
@@ -205,7 +205,7 @@ export const googleSSOPageElements = (pageName) => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit("/login/my-workspace") : cy.visit("localhost:8082/login"));
+  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
   cy.get(ssoSelector.googleIcon).should("be.visible");
   cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
     "have.text",
@@ -277,7 +277,7 @@ export const gitSSOPageElements = (pageName) => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit("/login/my-workspace") : cy.visit("localhost:8082/login"));
+  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
   cy.get(ssoSelector.gitIcon).should("be.visible");
   cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
     "have.text",
@@ -367,7 +367,7 @@ export const oidcSSOPageElements = (pageName) => {
 
 
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit("/login/my-workspace") : cy.visit("localhost:8082/login"));
+  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
   cy.get(ssoSelector.oidcIcon).should("be.visible");
   cy.get(ssoSelector.oidcSSOText).verifyVisibleElement(
     "have.text",
