@@ -102,6 +102,7 @@ export const CodeEditor = ({
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
+          border: '1px solid var(--cc-weak-border)',
           '--cc-code-editor-min-height': `${height - 1}px`,
         }}
       >
