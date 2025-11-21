@@ -488,7 +488,7 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     cy.visit("/my-workspace");
     // cy.wait("@getLicenseAccess");
     cy.wait(2000);
-    cy.get('[data-cy="home-page-logo"]', { timeout: 50000 }).should(
+    cy.get(commonWidgetSelector.homePageLogo, { timeout: 50000 }).should(
       "be.visible",
       { timeout: 20000 }
     );
