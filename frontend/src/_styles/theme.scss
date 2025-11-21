@@ -21,6 +21,7 @@
 @import "./pages-sidebar.scss";
 @import "./modules.scss";
 @import "./rocket/card.scss";
+@import './widgets/datepicker.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -2619,6 +2620,7 @@ hr {
     position: relative !important;
   }
 }
+
 .config-handle {
   top: -22px;
   position: fixed;
@@ -10894,7 +10896,7 @@ tbody {
 }
 
 .bounded-box {
-  .sc-iwsKbI.lmGPCf {
+  .sc-dxgOiQ.jcdOkx {
     height: 100%;
     margin: auto;
     width: max-content;
