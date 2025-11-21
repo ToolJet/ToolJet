@@ -245,7 +245,7 @@ export const formConfig = {
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
   },
@@ -319,7 +319,7 @@ export const formConfig = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
     },
   },
 };

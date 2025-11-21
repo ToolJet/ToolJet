@@ -226,7 +226,7 @@ export const tabsConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'Container',
     },
@@ -418,7 +418,7 @@ export const tabsConfig = {
       tabWidth: { value: 'auto' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
-      border: { value: 'var(--cc-default-border)' },
+      border: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },
