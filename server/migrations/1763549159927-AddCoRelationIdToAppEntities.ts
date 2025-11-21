@@ -8,6 +8,7 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
             'apps',
             'components',
             'pages',
+            'layouts',
             'data_queries',
             'data_sources',
             'app_versions',
@@ -26,6 +27,7 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
         const tables = [
             'apps',
             'components',
+            'layouts',
             'pages',
             'queries',
             'data_sources',

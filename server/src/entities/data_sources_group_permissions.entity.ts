@@ -18,9 +18,6 @@ export class DataSourcesGroupPermissions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'co_relation_id', nullable: true })
-  co_relation_id: string;
-
   @Index()
   @Column({ name: 'granular_permission_id' })
   granularPermissionId: string;
