@@ -265,7 +265,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderTimeout = () => {
     return (
       <div className="d-flex">
-        <div className="form-label mt-2">{t('editor.queryManager.timeout', 'Timeout (in seconds)')}</div>
+        <div className="form-label mt-2">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
         <div className="query-manager-query-timeout">
           <CodeHinter
             theme={darkMode ? 'monokai' : 'base16-light'}
