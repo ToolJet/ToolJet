@@ -21,23 +21,23 @@ export function AppsTableSkeleton({ rowCount = 5 }) {
             </div>
           </TableCell>
           <TableCell>
-            <Skeleton className="tw-h-6 tw-w-96" />
+            <Skeleton className="tw-h-4 tw-w-64" />
           </TableCell>
           <TableCell>
             <div className="tw-text-right">
-              <Skeleton className="tw-h-4 tw-w-24 tw-ml-auto" />
+              <Skeleton className="tw-h-3 tw-w-24 tw-ml-auto" />
             </div>
           </TableCell>
           <TableCell>
             <div className="tw-text-right">
-              <Skeleton className="tw-h-4 tw-w-20 tw-ml-auto" />
+              <Skeleton className="tw-h-3 tw-w-20 tw-ml-auto" />
             </div>
           </TableCell>
           <TableCell>
             <div className="tw-flex tw-items-center tw-justify-end tw-gap-2">
-              <Skeleton className="tw-h-8 tw-w-16" />
-              <Skeleton className="tw-h-8 tw-w-16" />
-              <Skeleton className="tw-h-8 tw-w-8" />
+              <Skeleton className="tw-h-6 tw-w-16" />
+              <Skeleton className="tw-h-6 tw-w-16" />
+              <Skeleton className="tw-h-6 tw-w-8" />
             </div>
           </TableCell>
         </TableRow>

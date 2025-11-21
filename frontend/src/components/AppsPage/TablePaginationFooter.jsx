@@ -8,8 +8,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { TablePaginationFooterSkeleton } from './TablePaginationFooterSkeleton';
 
-export function TablePaginationFooter({ table }) {
+export function TablePaginationFooter({ table, isLoading }) {
   const currentPage = table.getState().pagination.pageIndex + 1;
   const totalPages = table.getPageCount();
 
@@ -55,6 +56,10 @@ export function TablePaginationFooter({ table }) {
   };
 
   const pageNumbers = generatePageNumbers();
+
+  if (isLoading) {
+    return <TablePaginationFooterSkeleton />;
+  }
 
   return (
     <div className="tw-flex tw-items-center tw-justify-between tw-h-12">

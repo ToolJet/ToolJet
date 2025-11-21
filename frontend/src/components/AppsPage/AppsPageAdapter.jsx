@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { AppsShellView } from './AppsShellView';
@@ -7,6 +7,10 @@ import { appsColumns } from './AppsPage.columns';
 import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
 import { TablePaginationFooter } from './TablePaginationFooter';
 import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
+import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
+import { transformAppsToAppRow } from '@/features/apps/adapters/homePageToAppRow';
+import { Button } from '@/components/ui/Button/Button';
+import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
 // import { getWorkspaceId } from '@/_helpers/utils';
 
 /**
@@ -72,22 +76,99 @@ function AppsPageAdapter({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
-  activeTab,
-  onTabChange,
 }) {
   // Use React Router's navigate if not provided
   const routerNavigate = useNavigate();
   const navigateToApp = navigate || routerNavigate;
 
-  // Prop validation with runtime checks
-  if (!Array.isArray(apps)) {
+  // Tab state management - derive from appType prop
+  const [activeTab, setActiveTab] = useState(() => {
+    return appType === 'module' ? 'modules' : 'apps';
+  });
+
+  // Sync activeTab when appType prop changes
+  useEffect(() => {
+    setActiveTab(appType === 'module' ? 'modules' : 'apps');
+  }, [appType]);
+
+  // Handle tab change (local state only, no navigation)
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+    // Navigation will be handled at higher level (HomePage) when ready
+  }, []);
+
+  // Modules data state
+  const [modulesData, setModulesData] = useState({
+    data: [],
+    isLoading: false,
+    error: null,
+    meta: {},
+  });
+
+  // Mock modules data - simulate loading state on tab switch
+  useEffect(() => {
+    if (activeTab === 'modules') {
+      // Simulate loading
+      setModulesData((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      // Simulate async fetch with setTimeout
+      setTimeout(() => {
+        // Mock modules data in the same format as apps from HomePage
+        const mockModules = [
+          {
+            id: 'module-1',
+            name: 'User Management Module',
+            updated_at: new Date().toISOString(),
+            user: { name: 'John Doe' },
+            slug: 'user-management',
+            icon: null,
+            is_public: false,
+            folder_id: null,
+            user_id: 1,
+          },
+          {
+            id: 'module-2',
+            name: 'Dashboard Module',
+            updated_at: new Date().toISOString(),
+            user: { name: 'Jane Smith' },
+            slug: 'dashboard',
+            icon: null,
+            is_public: true,
+            folder_id: null,
+            user_id: 2,
+          },
+          {
+            id: 'module-3',
+            name: 'Analytics Module',
+            updated_at: new Date().toISOString(),
+            user: { name: 'Bob Wilson' },
+            slug: 'analytics',
+            icon: null,
+            is_public: false,
+            folder_id: null,
+            user_id: 3,
+          },
+        ];
+
+        setModulesData({
+          data: mockModules,
+          isLoading: false,
+          error: null,
+          meta: {
+            current_page: 1,
+            total_pages: 1,
+            total_count: mockModules.length,
+            per_page: 10,
+          },
+        });
+      }, 500); // Simulate 500ms loading delay
+    }
+  }, [activeTab]);
+
+  // Prop validation with runtime checks (non-blocking, handled in render)
+  const isValidApps = Array.isArray(apps);
+  if (!isValidApps) {
     console.warn('AppsPageAdapter: apps must be an array, received:', typeof apps);
-    return (
-      <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
-        <div className="tw-text-red-500 tw-mb-2">Invalid data</div>
-        <div className="tw-text-sm tw-text-muted-foreground">Apps data is not in the expected format.</div>
-      </div>
-    );
   }
 
   // Get workspaceId: use prop if provided, otherwise fallback to getWorkspaceId()
@@ -100,273 +181,352 @@ function AppsPageAdapter({
   // eslint-disable-next-line no-unused-vars
   const folderChangedHandler = folderChanged;
 
-  try {
-    // Row action handlers with error handling
-    const handlePlay = useCallback(
-      (appRow) => {
-        try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp) {
-            console.warn('Missing _originalApp in appRow for play action');
-            return;
-          }
-
-          if (navigateToApp && typeof navigateToApp === 'function') {
-            navigateToApp(`/${resolvedWorkspaceId}/applications/${originalApp.slug}`);
-          } else {
-            window.location.href = `/${resolvedWorkspaceId}/applications/${originalApp.slug}`;
-          }
-        } catch (err) {
-          console.error('Failed to navigate to app (play):', err);
-        }
-      },
-      [navigateToApp, resolvedWorkspaceId]
-    );
-
-    const handleEdit = useCallback(
-      (appRow) => {
-        try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp) {
-            console.warn('Missing _originalApp in appRow for edit action');
-            return;
-          }
-
-          if (navigateToApp && typeof navigateToApp === 'function') {
-            navigateToApp(`/${resolvedWorkspaceId}/apps/${originalApp.slug}`);
-          } else {
-            window.location.href = `/${resolvedWorkspaceId}/apps/${originalApp.slug}`;
-          }
-        } catch (err) {
-          console.error('Failed to navigate to app (edit):', err);
-        }
-      },
-      [navigateToApp, resolvedWorkspaceId]
-    );
-
-    const handleDelete = useCallback(
-      (appRow) => {
-        try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp || !deleteApp) {
-            console.warn('Missing _originalApp or deleteApp handler');
-            return;
-          }
-
-          // Confirm before deleting (HomePage might handle this, but we'll add a safety check)
-          if (window.confirm(`Are you sure you want to delete "${originalApp.name}"?`)) {
-            deleteApp(originalApp);
-          }
-        } catch (err) {
-          console.error('Failed to delete app:', err);
-        }
-      },
-      [deleteApp]
-    );
-
-    const handleClone = useCallback(
-      (appRow) => {
-        try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp || !cloneApp) {
-            console.warn('Missing _originalApp or cloneApp handler');
-            return;
-          }
-          // HomePage.cloneApp expects (appName, appId)
-          cloneApp(originalApp.name, originalApp.id);
-        } catch (err) {
-          console.error('Failed to clone app:', err);
-        }
-      },
-      [cloneApp]
-    );
-
-    const handleExport = useCallback(
-      (appRow) => {
-        try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp || !exportApp) {
-            console.warn('Missing _originalApp or exportApp handler');
-            return;
-          }
-          exportApp(originalApp);
-        } catch (err) {
-          console.error('Failed to export app:', err);
-        }
-      },
-      [exportApp]
-    );
-
-    // Compute permissions first (needed for columns) - we need this before hook call
-    const computedPerms = useMemo(() => {
+  // Row action handlers with error handling
+  const handlePlay = useCallback(
+    (appRow) => {
       try {
-        const canImport = typeof canCreateApp === 'function' ? canCreateApp() : canCreateApp ?? false;
-        const canEdit = (appRow) => {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp) return false;
-          try {
-            return typeof canUpdateApp === 'function' ? canUpdateApp(originalApp) : false;
-          } catch (err) {
-            console.error('Permission check failed:', err);
-            return false;
-          }
-        };
-        return { canImport, canEdit, canPlay: canEdit };
-      } catch (err) {
-        console.error('Failed to compute permissions:', err);
-        return { canImport: false, canEdit: () => false, canPlay: () => false };
-      }
-    }, [canCreateApp, canUpdateApp]);
+        const originalApp = appRow?._originalApp;
+        if (!originalApp) {
+          console.warn('Missing _originalApp in appRow for play action');
+          return;
+        }
 
-    // Create canDelete function for permission checking
-    const canDelete = useCallback(
-      (appRow) => {
+        if (navigateToApp && typeof navigateToApp === 'function') {
+          navigateToApp(`/${resolvedWorkspaceId}/applications/${originalApp.slug}`);
+        } else {
+          window.location.href = `/${resolvedWorkspaceId}/applications/${originalApp.slug}`;
+        }
+      } catch (err) {
+        console.error('Failed to navigate to app (play):', err);
+      }
+    },
+    [navigateToApp, resolvedWorkspaceId]
+  );
+
+  const handleEdit = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp) {
+          console.warn('Missing _originalApp in appRow for edit action');
+          return;
+        }
+
+        if (navigateToApp && typeof navigateToApp === 'function') {
+          navigateToApp(`/${resolvedWorkspaceId}/apps/${originalApp.slug}`);
+        } else {
+          window.location.href = `/${resolvedWorkspaceId}/apps/${originalApp.slug}`;
+        }
+      } catch (err) {
+        console.error('Failed to navigate to app (edit):', err);
+      }
+    },
+    [navigateToApp, resolvedWorkspaceId]
+  );
+
+  const handleDelete = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !deleteApp) {
+          console.warn('Missing _originalApp or deleteApp handler');
+          return;
+        }
+
+        // Confirm before deleting (HomePage might handle this, but we'll add a safety check)
+        if (window.confirm(`Are you sure you want to delete "${originalApp.name}"?`)) {
+          deleteApp(originalApp);
+        }
+      } catch (err) {
+        console.error('Failed to delete app:', err);
+      }
+    },
+    [deleteApp]
+  );
+
+  const handleClone = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !cloneApp) {
+          console.warn('Missing _originalApp or cloneApp handler');
+          return;
+        }
+        // HomePage.cloneApp expects (appName, appId)
+        cloneApp(originalApp.name, originalApp.id);
+      } catch (err) {
+        console.error('Failed to clone app:', err);
+      }
+    },
+    [cloneApp]
+  );
+
+  const handleExport = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !exportApp) {
+          console.warn('Missing _originalApp or exportApp handler');
+          return;
+        }
+        exportApp(originalApp);
+      } catch (err) {
+        console.error('Failed to export app:', err);
+      }
+    },
+    [exportApp]
+  );
+
+  // Compute permissions first (needed for columns) - we need this before hook call
+  const computedPerms = useMemo(() => {
+    try {
+      const canImport = typeof canCreateApp === 'function' ? canCreateApp() : canCreateApp ?? false;
+      const canEdit = (appRow) => {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp) return false;
         try {
-          const originalApp = appRow?._originalApp;
-          if (!originalApp || !canDeleteApp) return false;
-          return typeof canDeleteApp === 'function' ? canDeleteApp(originalApp) : false;
+          return typeof canUpdateApp === 'function' ? canUpdateApp(originalApp) : false;
         } catch (err) {
-          console.error('Delete permission check failed:', err);
+          console.error('Permission check failed:', err);
           return false;
         }
-      },
-      [canDeleteApp]
-    );
-
-    // Create columns with permissions and handlers
-    const finalColumns = useMemo(() => {
-      return appsColumns({
-        perms: computedPerms,
-        onPlay: handlePlay,
-        onEdit: handleEdit,
-        onClone: handleClone,
-        onDelete: handleDelete,
-        onExport: handleExport,
-        canDelete: canDelete,
-      });
-    }, [computedPerms, handlePlay, handleEdit, handleClone, handleDelete, handleExport, canDelete]);
-
-    // Use adapter hook with computed columns
-    const {
-      appRows: _finalAppRows,
-      perms: _hookPerms, // Use hook's perms for consistency (though we computed our own)
-      table: finalTable,
-      getSearch: finalGetSearch,
-      handleSearch: finalHandleSearch,
-      handlePaginationChange: _finalHandlePaginationChange,
-      appsEmpty: finalAppsEmpty,
-      modulesEmpty: finalModulesEmpty,
-      error: adapterError,
-      isLoading: adapterIsLoading,
-    } = useAppsPageAdapter({
-      apps,
-      isLoading,
-      error,
-      meta,
-      currentFolder,
-      appSearchKey,
-      appType,
-      canCreateApp,
-      canUpdateApp,
-      canDeleteApp,
-      pageChanged,
-      onSearch,
-      columns: finalColumns,
-    });
-
-    // Error state rendering with accessibility
-    if (error || adapterError) {
-      const errorMessage = error?.message || adapterError?.message || 'An error occurred';
-      return (
-        <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite" aria-atomic="true">
-          <div className="tw-text-red-500 tw-mb-2" aria-label="Error message">
-            Failed to load apps
-          </div>
-          <div className="tw-text-sm tw-text-muted-foreground" id="error-description">
-            {errorMessage}
-          </div>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="tw-mt-4 tw-px-4 tw-py-2 tw-bg-primary tw-text-white tw-rounded hover:tw-bg-primary/90"
-            aria-label="Retry loading apps"
-          >
-            Retry
-          </button>
-        </div>
-      );
+      };
+      return { canImport, canEdit, canPlay: canEdit };
+    } catch (err) {
+      console.error('Failed to compute permissions:', err);
+      return { canImport: false, canEdit: () => false, canPlay: () => false };
     }
+  }, [canCreateApp, canUpdateApp]);
 
-    // Pagination is now handled in useAppsPageAdapter hook via onPaginationChange callback
-    // No need for additional sync here
+  // Create canDelete function for permission checking
+  const canDelete = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !canDeleteApp) return false;
+        return typeof canDeleteApp === 'function' ? canDeleteApp(originalApp) : false;
+      } catch (err) {
+        console.error('Delete permission check failed:', err);
+        return false;
+      }
+    },
+    [canDeleteApp]
+  );
 
-    // Menu items based on permissions (use computedPerms since we computed it for columns)
-    const menuItems = computedPerms.canImport
-      ? [
-          {
-            label: 'Import template',
-            onClick: () => console.log('Import template'),
-            icon: 'Download',
-          },
-        ]
-      : [];
+  // Create columns with permissions and handlers
+  const finalColumns = useMemo(() => {
+    return appsColumns({
+      perms: computedPerms,
+      onPlay: handlePlay,
+      onEdit: handleEdit,
+      onClone: handleClone,
+      onDelete: handleDelete,
+      onExport: handleExport,
+      canDelete: canDelete,
+    });
+  }, [computedPerms, handlePlay, handleEdit, handleClone, handleDelete, handleExport, canDelete]);
 
-    return (
-      <AppsShellView
-        title={appType === 'module' ? 'Modules' : 'Applications'}
-        menuItems={menuItems}
-        searchValue={finalGetSearch()}
-        onSearch={finalHandleSearch}
-        workspaceName={workspaceName}
-        workspaces={workspaces}
-        onWorkspaceChange={onWorkspaceChange}
-        sidebarUser={sidebarUser}
-        sidebarTeams={sidebarTeams}
-        sidebarNavMain={sidebarNavMain}
-        sidebarProjects={sidebarProjects}
-        footer={<TablePaginationFooter table={finalTable} />}
-        contentSlot={
-          <AppsTabs
-            table={finalTable}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            appsEmpty={finalAppsEmpty}
-            modulesEmpty={finalModulesEmpty}
-            emptyAppsSlot={<EmptyNoApps />}
-            emptyModulesSlot={<EmptyNoApps />}
-            folders={folders}
-            currentFolder={currentFolder}
-            onFolderChange={folderChanged}
-            foldersLoading={foldersLoading}
-            isLoading={isLoading || adapterIsLoading}
-            onPlay={handlePlay}
-            onEdit={handleEdit}
-            onClone={handleClone}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            perms={computedPerms}
-            canDelete={canDelete}
-          />
-        }
-      />
-    );
-  } catch (error) {
-    // Error boundary - catch any unexpected errors
-    console.error('AppsPageAdapter error:', error);
+  // Use adapter hook with computed columns
+  const {
+    appRows: _finalAppRows,
+    perms: _hookPerms, // Use hook's perms for consistency (though we computed our own)
+    table: finalTable,
+    getSearch: finalGetSearch,
+    handleSearch: finalHandleSearch,
+    handlePaginationChange: _finalHandlePaginationChange,
+    appsEmpty: finalAppsEmpty,
+    modulesEmpty: finalModulesEmpty,
+    error: adapterError,
+    isLoading: adapterIsLoading,
+  } = useAppsPageAdapter({
+    apps,
+    isLoading,
+    error,
+    meta,
+    currentFolder,
+    appSearchKey,
+    appType,
+    canCreateApp,
+    canUpdateApp,
+    canDeleteApp,
+    pageChanged,
+    onSearch,
+    columns: finalColumns,
+  });
+
+  // Transform modules data
+  const modulesRows = useMemo(() => {
+    if (activeTab !== 'modules' || !modulesData.data || !Array.isArray(modulesData.data)) {
+      return [];
+    }
+    try {
+      return transformAppsToAppRow(modulesData.data);
+    } catch (err) {
+      console.error('Failed to transform modules:', err);
+      return [];
+    }
+  }, [modulesData.data, activeTab]);
+
+  // Create modules table (only when modules tab is active)
+  const modulesTableState = useAppsTableState({
+    data: modulesRows,
+    columns: finalColumns,
+    initial: {
+      globalFilter: appSearchKey || '',
+      pagination: {
+        pageIndex: Math.max(0, (modulesData.meta?.current_page || 1) - 1),
+        pageSize: modulesData.meta?.per_page || 10,
+      },
+    },
+  });
+
+  // Calculate modules empty state
+  const hasQuery = !!(appSearchKey?.trim() || currentFolder?.id);
+  const modulesEmpty = modulesData.data.length === 0 && !hasQuery && !modulesData.isLoading;
+
+  // Prop validation error rendering
+  if (!isValidApps) {
     return (
       <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
-        <div className="tw-text-red-500 tw-mb-2">An unexpected error occurred</div>
-        <div className="tw-text-sm tw-text-muted-foreground">{error.message}</div>
+        <div className="tw-text-red-500 tw-mb-2">Invalid data</div>
+        <div className="tw-text-sm tw-text-muted-foreground">Apps data is not in the expected format.</div>
+      </div>
+    );
+  }
+
+  // Error state rendering with accessibility
+  if (error || adapterError) {
+    const errorMessage = error?.message || adapterError?.message || 'An error occurred';
+    return (
+      <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite" aria-atomic="true">
+        <div className="tw-text-red-500 tw-mb-2" aria-label="Error message">
+          Failed to load apps
+        </div>
+        <div className="tw-text-sm tw-text-muted-foreground" id="error-description">
+          {errorMessage}
+        </div>
         <button
           type="button"
           onClick={() => window.location.reload()}
           className="tw-mt-4 tw-px-4 tw-py-2 tw-bg-primary tw-text-white tw-rounded hover:tw-bg-primary/90"
+          aria-label="Retry loading apps"
         >
-          Reload Page
+          Retry
         </button>
       </div>
     );
   }
+
+  // Pagination is now handled in useAppsPageAdapter hook via onPaginationChange callback
+  // No need for additional sync here
+
+  // Menu items based on permissions (use computedPerms since we computed it for columns)
+  const appsMenuItems = computedPerms.canImport
+    ? [
+        {
+          label: 'Create app from template',
+          onClick: () => console.log('Import template'),
+          icon: 'app-window',
+        },
+        {
+          label: 'Import from device',
+          onClick: () => console.log('Import template'),
+          icon: 'file-down',
+        },
+
+        {
+          label: 'Import app from Git repo',
+          onClick: () => console.log('Import template'),
+          icon: 'folder-git-2',
+        },
+      ]
+    : [];
+
+  const modulesMenuItems = computedPerms.canImport
+    ? [
+        {
+          label: 'Create from template',
+          onClick: () => console.log('Import template'),
+          icon: 'app-window',
+        },
+      ]
+    : [];
+
+  return (
+    <AppsShellView
+      searchValue={finalGetSearch()}
+      onSearch={finalHandleSearch}
+      workspaceName={workspaceName}
+      workspaces={workspaces}
+      onWorkspaceChange={onWorkspaceChange}
+      sidebarUser={sidebarUser}
+      sidebarTeams={sidebarTeams}
+      sidebarNavMain={sidebarNavMain}
+      sidebarProjects={sidebarProjects}
+      header={
+        activeTab === 'modules' ? (
+          <AppsPageHeader
+            title={'Modules'}
+            actionButtons={
+              <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={() => {}} className="">
+                Create new module
+              </Button>
+            }
+            createAppMenuItems={modulesMenuItems}
+          />
+        ) : (
+          <AppsPageHeader
+            title={'Applications'}
+            actionButtons={
+              <>
+                <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={() => {}} className="">
+                  Create blank app
+                </Button>
+
+                {/* Build with AI Button */}
+                <Button variant="outline" size="default" leadingIcon="tooljetai" onClick={() => {}}>
+                  Build with AI assistant
+                </Button>
+              </>
+            }
+            createAppMenuItems={appsMenuItems}
+          />
+        )
+      }
+      footer={
+        <TablePaginationFooter table={finalTable} isLoading={isLoading || adapterIsLoading || modulesData.isLoading} />
+      }
+      contentSlot={
+        <AppsTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          appsTable={finalTable}
+          modulesTable={modulesTableState.table}
+          appsLoading={isLoading || adapterIsLoading}
+          modulesLoading={modulesData.isLoading}
+          appsError={error || adapterError}
+          modulesError={modulesData.error}
+          appsCount={meta?.total_count || 0}
+          modulesCount={modulesData.meta?.total_count || 0}
+          appsEmpty={finalAppsEmpty}
+          modulesEmpty={modulesEmpty}
+          emptyAppsSlot={<EmptyNoApps />}
+          emptyModulesSlot={<EmptyNoApps />}
+          folders={folders}
+          currentFolder={currentFolder}
+          onFolderChange={folderChanged}
+          foldersLoading={foldersLoading}
+          onPlay={handlePlay}
+          onEdit={handleEdit}
+          onClone={handleClone}
+          onDelete={handleDelete}
+          onExport={handleExport}
+          perms={computedPerms}
+          canDelete={canDelete}
+        />
+      }
+    />
+  );
 }
 
 AppsPageAdapter.propTypes = {
@@ -413,8 +573,6 @@ AppsPageAdapter.propTypes = {
   sidebarTeams: PropTypes.array,
   sidebarNavMain: PropTypes.array,
   sidebarProjects: PropTypes.array,
-  activeTab: PropTypes.string,
-  onTabChange: PropTypes.func,
 };
 
 AppsPageAdapter.defaultProps = {
@@ -435,8 +593,6 @@ AppsPageAdapter.defaultProps = {
   sidebarTeams: undefined,
   sidebarNavMain: undefined,
   sidebarProjects: undefined,
-  activeTab: 'apps',
-  onTabChange: () => {},
 };
 
 export default React.memo(AppsPageAdapter);
