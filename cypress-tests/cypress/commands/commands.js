@@ -499,12 +499,12 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
   cy.visit(actualUrl);
-  cy.wait(1000);
+  cy.wait(2000);
 
   cy.url().then((currentUrl) => {
     if (currentUrl !== actualUrl) {
       cy.visit(actualUrl);
-      cy.wait(1000);
+      cy.wait(2000);
     }
   });
 });
