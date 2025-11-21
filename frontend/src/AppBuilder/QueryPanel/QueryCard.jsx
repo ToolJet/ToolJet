@@ -19,6 +19,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
+  const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
   const isDeletingQueryInProcess = useStore((state) => state.dataQuery.isDeletingQueryInProcess);
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
@@ -31,6 +32,13 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
   const isRenaming = renamingQueryId === dataQuery.id;
   const isDeleting = deletingQueryId === dataQuery.id;
+
+  const hasPermissions =
+    selectedDataSourceScope === 'global'
+      ? canUpdateDataSource(dataQuery?.data_source_id) ||
+      canReadDataSource(dataQuery?.data_source_id) ||
+      canDeleteDataSource()
+      : true;
 
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
