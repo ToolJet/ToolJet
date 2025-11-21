@@ -9,6 +9,8 @@ export type SourceOptions = {
   client_cert: string;
   client_key: string;
   tls_certificate: string;
+  connection_format: string;
+  use_ssl: boolean
 };
 export type QueryOptions = {
   operation: string;

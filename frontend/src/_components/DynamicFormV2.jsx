@@ -14,6 +14,139 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
+import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
+
+
+const validateMongoDBConnectionString = (connectionString) => {
+  if (!connectionString || connectionString.trim() === '') {
+    return { valid: false, error: 'Connection string is required' };
+  }
+
+  const trimmedString = connectionString.trim();
+
+  const hasValidProtocol = 
+    trimmedString.startsWith('mongodb://') || 
+    trimmedString.startsWith('mongodb+srv://');
+
+  if (!hasValidProtocol) {
+    return { 
+      valid: false, 
+      error: 'Invalid MongoDB connection string' 
+    };
+  }
+
+  const isSrv = trimmedString.startsWith('mongodb+srv://');
+  const isStandard = trimmedString.startsWith('mongodb://');
+
+  const mongodbStandardRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
+  const mongodbSrvRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
+
+  const regex = isStandard ? mongodbStandardRegex : mongodbSrvRegex;
+  const match = trimmedString.match(regex);
+  
+  if (!match) {
+    return { 
+      valid: false, 
+      error: 'Invalid MongoDB connection string' 
+    };
+  }
+
+  const [, username, password, hosts] = match;
+
+  if (!hosts || hosts.trim() === '') {
+    return { 
+      valid: false, 
+      error: 'Invalid MongoDB connection string' 
+    };
+  }
+
+  if (isSrv && hosts.includes(':')) {
+    return { 
+      valid: false, 
+      error: 'Invalid MongoDB connection string' 
+    };
+  }
+
+  if (isStandard) {
+    const hostList = hosts.split(',');
+    
+    for (const hostEntry of hostList) {
+      const hostEntry_trimmed = hostEntry.trim();
+      
+      if (hostEntry_trimmed.includes(':')) {
+        const [host, portStr] = hostEntry_trimmed.split(':');
+        
+        if (!host || !portStr || host.trim() === '' || portStr.trim() === '') {
+          return { 
+            valid: false, 
+            error: 'Invalid MongoDB connection string' 
+          };
+        }
+
+        const port = parseInt(portStr);
+        
+        if (isNaN(port) || port < 1 || port > 65535) {
+          return { 
+            valid: false, 
+            error: 'Invalid MongoDB connection string' 
+          };
+        }
+      }
+    }
+  }
+  return { valid: true, error: '' };
+};
+const parseMongoDBConnectionString = (connectionString) => {
+  if (!connectionString || connectionString.trim() === '') {
+    return null;
+  }
+
+  const trimmedString = connectionString.trim();
+  const isSrv = trimmedString.startsWith('mongodb+srv://');
+  const isStandard = trimmedString.startsWith('mongodb://');
+
+  if (!isSrv && !isStandard) {
+    return null;
+  }
+
+  const mongodbStandardRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
+  const mongodbSrvRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
+
+  const regex = isStandard ? mongodbStandardRegex : mongodbSrvRegex;
+  const match = trimmedString.match(regex);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, username, password, hosts, database] = match;
+
+  let host = '';
+  let port = '';
+
+  if (isSrv) {
+    host = hosts || '';
+    port = ''; 
+  } else if (isStandard) {
+    const firstHost = hosts.split(',')[0].trim();
+    if (firstHost.includes(':')) {
+      const [h, p] = firstHost.split(':');
+      host = h || '';
+      port = p || '';
+    } else {
+      host = firstHost || '';
+      port = ''; 
+    }
+  }
+  return {
+    host: host,
+    port: port, 
+    username: username || '',
+    password: password || '',
+    database: database || '',
+    connection_format: isSrv ? 'mongodb+srv' : 'mongodb',
+  };
+};
 
 const DynamicFormV2 = ({
   schema,
@@ -50,6 +183,67 @@ const DynamicFormV2 = ({
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
 
+const lastAutoFilledConnRef = React.useRef('');
+const autoFillTimeoutRef = React.useRef(null);
+
+React.useEffect(() => {
+  const connString = options?.connection_string?.value;
+  const connectionType = options?.connection_type?.value;
+
+  if (autoFillTimeoutRef.current) {
+    clearTimeout(autoFillTimeoutRef.current);
+    autoFillTimeoutRef.current = null;
+  }
+
+  if (!connString) {
+    lastAutoFilledConnRef.current = '';
+    return;
+  }
+
+  if (connectionType !== 'string') {
+    return;
+  }
+
+  if (lastAutoFilledConnRef.current === connString) {
+    return;
+  }
+
+  autoFillTimeoutRef.current = setTimeout(() => {
+    const parsed = parseMongoDBConnectionString(connString);
+    
+    if (!parsed) {
+      return;
+    }
+    
+    if (parsed.connection_format !== undefined) {
+      optionchanged('connection_format', parsed.connection_format, false);
+    }
+    if (parsed.host !== undefined) {
+      optionchanged('host', parsed.host, false);
+    }
+    if (parsed.port !== undefined) {
+      optionchanged('port', parsed.port, false);
+    }
+    if (parsed.username !== undefined) {
+      optionchanged('username', parsed.username, false);
+    }
+    if (parsed.password !== undefined) {
+      optionchanged('password', parsed.password, false);
+    }
+    if (parsed.database !== undefined) {
+      optionchanged('database', parsed.database, false);
+    }
+
+    lastAutoFilledConnRef.current = connString;
+  }, 100);
+
+  return () => {
+    if (autoFillTimeoutRef.current) {
+      clearTimeout(autoFillTimeoutRef.current);
+    }
+  };
+}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged]);
+
   React.useEffect(() => {
     if (isGDS) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
@@ -85,32 +279,45 @@ const DynamicFormV2 = ({
     return () => clearTimeout(timeout);
   }, [options, hasUserInteracted, validateOptions]);
 
-  const validateOptions = React.useCallback(async () => {
-    try {
-      const { valid, errors } = await dsm.validateData(options);
+const validateOptions = React.useCallback(async () => {
+  try {
+    const { valid, errors } = await dsm.validateData(options);
 
-      const conditionallyRequiredFields = processAllOfConditions(schema, options);
-      setConditionallyRequiredProperties(conditionallyRequiredFields);
+    const conditionallyRequiredFields = processAllOfConditions(schema, options);
+    setConditionallyRequiredProperties(conditionallyRequiredFields);
 
-      if (valid) {
-        clearValidationMessages();
-        clearValidationErrorBanner();
-      } else {
-        setValidationMessages(errors, schema, interactedFields);
+    const customErrors = { ...errors };
+    const isMongoDBDataSource = 
+      schema['tj:source']?.kind === 'mongodb' || 
+      schema['tj:source']?.name === 'MongoDB';
+    
+    if (isMongoDBDataSource && options.connection_string?.value) {
+      const validation = validateMongoDBConnectionString(options.connection_string.value);
+      if (!validation.valid) {
+        customErrors.connection_string = validation.error;
       }
-    } catch (error) {
-      console.error('Validation error:', error);
     }
-  }, [
-    dsm,
-    options,
-    processAllOfConditions,
-    schema,
-    clearValidationMessages,
-    clearValidationErrorBanner,
-    setValidationMessages,
-    interactedFields,
-  ]);
+
+    if (valid && Object.keys(customErrors).length === 0) {  
+      clearValidationMessages();
+      clearValidationErrorBanner();
+    } else {
+      setValidationMessages(errors, schema, interactedFields);  
+    }
+  } catch (error) {
+    console.error('Validation error:', error);
+  }
+}, [
+  dsm,
+  options,
+  processAllOfConditions,
+  schema,
+  clearValidationMessages,
+  clearValidationErrorBanner,
+  setValidationMessages,
+  interactedFields,
+]);
+
 
   const processAllOfConditions = React.useCallback((schema, options, path = []) => {
     let requiredFields = [];
@@ -291,6 +498,10 @@ const DynamicFormV2 = ({
         return Textarea;
       case 'toggle':
         return Toggle;
+      case 'checkbox':                    
+        return Checkbox;                  
+      case 'checkbox-group':              
+        return CheckboxGroup;            
       case 'react-component-headers':
         return Headers;
       // TODO: Move dropdown component flip logic to be handled here
@@ -346,6 +557,31 @@ const DynamicFormV2 = ({
       case 'password-v3':
       case 'password-v3-textarea':
       case 'text-v3': {
+        const isMongoDBDataSource = 
+          schema['tj:source']?.kind === 'mongodb' || 
+          schema['tj:source']?.name === 'MongoDB';
+  
+          let customValidation = { valid: null, message: '' };
+          
+          if (isMongoDBDataSource && key === 'connection_string' && currentValue && !skipValidation) {
+            const validation = validateMongoDBConnectionString(currentValue);
+            if (!validation.valid) {
+              customValidation = { valid: false, message: validation.error };
+            } else {
+              customValidation = { valid: true, message: '' };
+            }
+          }
+  
+        const validationStatus = 
+          (isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null)
+            ? customValidation  
+            : skipValidation
+              ? { valid: null, message: '' } 
+              : validationMessages[key]
+              ? { valid: false, message: validationMessages[key] }
+              : isRequired
+              ? { valid: true, message: '' }
+              : { valid: null, message: '' }; 
         return {
           propertyKey: key,
           widget,
@@ -362,13 +598,7 @@ const DynamicFormV2 = ({
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
-          isValidatedMessages: skipValidation
-            ? { valid: null, message: '' } // skip validation for initial render and untouched elements
-            : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' }, // handle optional && encrypted fields
+          isValidatedMessages: validationStatus,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
@@ -413,6 +643,25 @@ const DynamicFormV2 = ({
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
         };
+      case 'checkbox':                                          
+      return {
+        propertyKey: key,
+        widget,
+        label,
+        isChecked: currentValue || false,
+        onChange: (e) => handleOptionChange(key, e.target.checked, true),
+        helpText: helpText,
+        isRequired: isRequired,
+        isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+      };
+    case 'checkbox-group':  
+        return {
+          options: list,
+          values: options?.[key] ?? [],
+          onChange: (value) => {
+            optionchanged(key, [...value]);
+          },
+        };                                 
       default:
         return {};
     }
@@ -518,6 +767,8 @@ const DynamicFormV2 = ({
                     widget !== 'text-v3' &&
                     widget !== 'password-v3' &&
                     widget !== 'password-v3-textarea' &&
+                    widget !== 'checkbox' &&          
+                    widget !== 'checkbox-group' &&  
                     renderLabel(label, uiProperties[key].tooltip)}
                 </div>
               )}
