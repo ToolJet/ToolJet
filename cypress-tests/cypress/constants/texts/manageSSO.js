@@ -185,7 +185,7 @@ export const ssoText = {
   samlMetadataInput: 'Tooljet SAML test data',
   samlGroupAttributeInput: 'groups',
   groupMappingHelperText: 'Separate mappings with commas e.g., Marketing Team -> marketing, Sales Team -> sales',
-  clientSecretToast: "Client secret cannot be emtpy",
+  clientSecretToast: "Client secret cannot be empty",
 
 };
 

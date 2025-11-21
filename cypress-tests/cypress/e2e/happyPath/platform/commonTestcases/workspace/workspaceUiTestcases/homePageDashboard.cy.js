@@ -2,10 +2,12 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
+
     beforeEach(() => {
 
         data = {
@@ -14,13 +16,14 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
+        cleanAllUsers();
         cy.visit("/my-workspace");
 
     });
 
     it("Should verify elements on home page dashboard", () => {
 
-        cy.get(commonSelectors.homePageIcon).click();
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
         cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome

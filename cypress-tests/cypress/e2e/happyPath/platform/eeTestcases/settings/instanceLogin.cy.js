@@ -47,7 +47,7 @@ describe('Instance Login', () => {
         cy.url().should("eq", `${Cypress.config("baseUrl")}/${data.workspaceSlug}`);
         cy.apiLogout();
 
-        // Disable personal workspacw
+        // Disable personal workspace
         allowPersonalWorkspace(false);
 
         cy.apiLogin(data.email);

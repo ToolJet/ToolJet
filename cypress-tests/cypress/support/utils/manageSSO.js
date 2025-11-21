@@ -111,7 +111,6 @@ export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.passwordEnableToggle).check();
   cy.get(commonSelectors.confirmationButton).click();
   cy.get(ssoSelector.passwordEnableToggle).should("be.checked");
-  cy.get(commonSelectors.saveButton).click();
   cy.get(ssoSelector.autoSSOToggle).should("not.be.checked").and("be.disabled");
 
   if (pageName === "workspace") {
