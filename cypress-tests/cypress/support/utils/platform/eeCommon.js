@@ -504,6 +504,8 @@ export const openInstanceSettings = () => {
 };
 
 export const openUserActionMenu = (email) => {
+  cy.get(commonSelectors.inputUserSearch).should("be.visible");
+  cy.wait(1000);
   cy.clearAndType(commonSelectors.inputUserSearch, email);
   cy.wait(1000);
   cy.get('[data-cy="user-actions-button"]').eq(0).click();
