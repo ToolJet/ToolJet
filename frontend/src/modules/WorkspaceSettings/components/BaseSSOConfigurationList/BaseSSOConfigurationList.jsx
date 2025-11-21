@@ -46,6 +46,41 @@ class BaseSSOConfigurationList extends React.Component {
   handleUpdateSSOSettings = async (ssoType, newSettings) => {
     const isEnabledKey = `${ssoType}Enabled`;
     try {
+      // For multi-tenant OIDC, fetch fresh data from API instead of updating all configs with same state
+      if (ssoType === 'openid') {
+        const settings = await organizationService.getSSODetails();
+        const organizationSettings = settings?.organization_details;
+        const ssoConfigs = organizationSettings?.sso_configs || [];
+
+        // Check if any OIDC config is enabled
+        const oidcConfigs = ssoConfigs.filter((config) => config.sso === 'openid');
+        const anyOidcEnabled = oidcConfigs.some((config) => config.enabled);
+
+        this.setState(
+          {
+            ssoOptions: ssoConfigs,
+            [isEnabledKey]: anyOidcEnabled,
+          },
+          async () => {
+            try {
+              this.props.updateSSOOptions(this.state.ssoOptions, this.state.instanceSSO);
+              await this.props.onUpdateAnySSOEnabled(this.checkIfAnySSOEnabled());
+              this.props.handleAutomaticSSOLoginChange(
+                this.state.instanceSSO,
+                this.state.ssoOptions,
+                this.state.defaultSSO
+              );
+              const enabledSSOCount = this.getCountOfEnabledSSO();
+              this.setState({ inheritedInstanceSSO: enabledSSOCount });
+            } catch (error) {
+              toast.error('Error while updating SSO configuration', { position: 'top-center' });
+            }
+          }
+        );
+        return;
+      }
+
+      // For other SSO types (non-OIDC), use the original logic
       this.setState(
         (prevState) => {
           const exists = prevState.ssoOptions.some((option) => option.sso === ssoType);
@@ -198,6 +233,11 @@ class BaseSSOConfigurationList extends React.Component {
   };
 
   toggleSSOOption = async (key) => {
+    if (key === 'openid') {
+      this.setState({ currentSSO: key, showModal: true });
+      return;
+    }
+
     const isEnabledKey = `${key}Enabled`;
     const enabledStatus = !this.state[isEnabledKey];
 
@@ -225,6 +265,10 @@ class BaseSSOConfigurationList extends React.Component {
   };
 
   isOptionEnabled = (key) => {
+    if (key === 'openid') {
+      const oidcConfigs = this.state.ssoOptions.filter((option) => option.sso === 'openid');
+      return oidcConfigs.some((config) => config.enabled);
+    }
     const option = this.state.ssoOptions.find((option) => option.sso === key);
     return option ? option.enabled : false;
   };
@@ -298,6 +342,10 @@ class BaseSSOConfigurationList extends React.Component {
     const isEnabled = this.state[isEnabledKey] || false;
     const isFeatureAvailable = !this.protectedSSO.includes(key) || this.state.featureAccess?.[key];
 
+    // For OIDC, count the number of enabled configs
+    const oidcCount =
+      key === 'openid' ? this.state.ssoOptions.filter((option) => option.sso === 'openid' && option.enabled).length : 0;
+
     return (
       <LicenseTooltip
         key={key}
@@ -324,6 +372,11 @@ class BaseSSOConfigurationList extends React.Component {
                 <span style={{ marginLeft: 8 }} data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-label`}>
                   {name}
                 </span>
+                {key === 'openid' && oidcCount > 0 && (
+                  <span className="oidc-count-badge" data-cy="oidc-count-badge">
+                    {oidcCount}
+                  </span>
+                )}
                 {
                   <img
                     src="assets/images/EditIcon.png"
