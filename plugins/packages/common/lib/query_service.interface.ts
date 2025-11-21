@@ -8,7 +8,12 @@ export interface QueryService {
     queryOptions: object,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string,
-    context?: { user?: User; app?: App }
+    context?: { user?: User; app?: App },
+    abortSignalDetails?: {
+      signal: AbortSignal | null;
+      timeoutForQuery: number | null;
+      canAbortQuery: boolean;
+    }
   ): Promise<QueryResult>;
   getConnection?(queryOptions: object, options: any, checkCache: boolean, dataSourceId: string): Promise<object>;
   testConnection?(sourceOptions: object): Promise<ConnectionTestResult>;

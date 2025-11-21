@@ -36,7 +36,13 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    _context?: { user?: any; app?: any },
+    _abortSignalDetails?: {
+      signal: AbortSignal | null;
+      timeoutForQuery: number | null;
+      canAbortQuery: boolean;
+    }
   ): Promise<QueryResult> {
     let pgPool, pgConnection, checkCache, knexInstance;
 
@@ -62,21 +68,12 @@ export default class PostgresqlQueryService implements QueryService {
           if (this.isSqlParametersUsed(queryOptions)) {
             return await this.handleRawQuery(knexInstance, queryOptions);
           } else {
-            // Query level timeout :-
             pgPool = knexInstance.client.pool;
             pgConnection = await pgPool.acquire().promise;
-            const queryTimeout = this.getQueryTimeout(queryOptions);
             const query = queryOptions.query;
             let result = { rows: [] };
 
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(
-                () => reject(new Error(`Defined query timeout of ${queryTimeout}ms exceeded when running query.`)),
-                queryTimeout
-              );
-            });
-            const queryPromise = pgConnection.query(query);
-            result = await Promise.race([queryPromise, timeoutPromise]);
+            result = await pgConnection.query(query);
             return {
               status: 'ok',
               data: result.rows,
@@ -102,7 +99,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
-      if (pgPool && pgConnection) await pgPool.release(pgConnection);
+      if (pgPool && pgConnection) pgPool.release(pgConnection);
       if (!checkCache) await knexInstance.destroy();
     }
   }
@@ -119,8 +116,7 @@ export default class PostgresqlQueryService implements QueryService {
     }
 
     const query = this.buildBulkUpdateQuery(queryOptions);
-    const queryTimeout = this.getQueryTimeout(queryOptions);
-    return await this.executeQuery(knexInstance, query, queryTimeout);
+    return await this.executeQuery(knexInstance, query);
   }
 
   private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
@@ -134,23 +130,14 @@ export default class PostgresqlQueryService implements QueryService {
     const { query, query_params } = queryOptions;
     const queryParams = query_params || [];
     const sanitizedQueryParams: Record<string, any> = Object.fromEntries(queryParams.filter(([key]) => !isEmpty(key)));
-    const queryTimeout = this.getQueryTimeout(queryOptions);
-    const result = await this.executeQuery(knexInstance, query, queryTimeout, sanitizedQueryParams);
+    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams);
 
     return { status: 'ok', data: result };
   }
 
-  private async executeQuery(
-    knexInstance: Knex,
-    query: string,
-    queryTimeout: number | null,
-    sanitizedQueryParams: Record<string, any> = {}
-  ) {
+  private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
     if (isEmpty(query)) throw new Error('Query is empty');
-    const { rows } =
-      queryTimeout !== null
-        ? await knexInstance.raw(query, sanitizedQueryParams).timeout(queryTimeout)
-        : await knexInstance.raw(query, sanitizedQueryParams);
+    const { rows } = await knexInstance.raw(query, sanitizedQueryParams);
     return rows;
   }
 
@@ -173,10 +160,12 @@ export default class PostgresqlQueryService implements QueryService {
         password: sourceOptions.password,
         port: sourceOptions.port,
         ssl: this.getSslConfig(sourceOptions),
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     }
     const connectionOptions: Knex.Config = {
@@ -243,23 +232,5 @@ export default class PostgresqlQueryService implements QueryService {
     }
 
     return queryText.trim();
-  }
-
-  private getQueryTimeout(queryOptions: QueryOptions): number | null {
-    const queryTimeoutMs =
-      typeof queryOptions.query_timeout === 'string' && queryOptions.query_timeout.trim() === ''
-        ? NaN
-        : Number(queryOptions?.query_timeout);
-
-    const isValidQueryTimeout = !isNaN(queryTimeoutMs);
-
-    if (['ce', 'ee'].includes(this.tooljet_edition)) {
-      return isValidQueryTimeout ? queryTimeoutMs : this.STATEMENT_TIMEOUT;
-    }
-
-    if (this.tooljet_edition === 'cloud') {
-      return isValidQueryTimeout ? queryTimeoutMs : null;
-    }
-    return null;
   }
 }

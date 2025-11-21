@@ -19,6 +19,7 @@ import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import { checkIfSignalIsAborted } from '@helpers/utils.helper';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -73,6 +74,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     let result;
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
+    let canAbortQuery = false;
+    let abortController = null;
+    let querySetTimeoutRef: NodeJS.Timeout | null = null;
+    let queryTimeoutMs = NaN;
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
@@ -102,9 +107,27 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         opts
       );
 
+      // Determine whether query timeout is set, to initiate abort controller
+      queryTimeoutMs =
+        typeof parsedQueryOptions['query_timeout'] === 'string' && parsedQueryOptions['query_timeout'].trim() === ''
+          ? NaN
+          : Number(parsedQueryOptions['query_timeout']);
+      // Only if query timeout is set, abortController will be created
+      canAbortQuery = !isNaN(queryTimeoutMs) && queryTimeoutMs > 0;
+
+      if (canAbortQuery) {
+        abortController = new AbortController();
+
+        // Initialise the timeout to abort the query
+        querySetTimeoutRef = setTimeout(() => {
+          abortController.abort();
+        }, queryTimeoutMs);
+      }
+
       queryStatus.setOptions(parsedQueryOptions);
 
       try {
+        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
         // multi-auth will not work with public apps
         if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
@@ -140,9 +163,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
         queryStatus.setStart();
 
-        result = await service.run(
+        const promises = [];
+        const queryPromise = service.run(
           sourceOptions,
           parsedQueryOptions,
           `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -154,9 +179,47 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               isPublic: appToUse?.isPublic,
               ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
             },
+          },
+          {
+            signal: abortController ? abortController.signal : null,
+            timeoutForQuery: queryTimeoutMs,
+            canAbortQuery,
           }
         );
+        promises.push(queryPromise);
+
+        if (canAbortQuery) {
+          const abortPromise = new Promise((_, reject) => {
+            // Verifying once before adding listener;
+            if (abortController.signal.aborted) {
+              reject(
+                new QueryError(
+                  'Query timed out (Before event listener)',
+                  `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
+                  {}
+                )
+              );
+            }
+
+            abortController.signal.addEventListener('abort', () => {
+              reject(
+                new QueryError(
+                  'Query timed out (By event listener)',
+                  `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
+                  {}
+                )
+              );
+            });
+          });
+
+          promises.push(abortPromise);
+        }
+        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+        result = await Promise.race(promises);
+        if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
       } catch (api_error) {
+        // Clear timeout set for Queries, incase of error.
+        if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
         if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
           const currentUserToken = sourceOptions['refresh_token']
             ? sourceOptions
@@ -170,7 +233,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
             try {
-              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, appToUse?.isPublic);
+              accessTokenDetails = await service.refreshToken(
+                sourceOptions,
+                dataSource.id,
+                user?.id,
+                appToUse?.isPublic
+              );
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -232,7 +300,17 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               opts
             ));
             queryStatus.setOptions(parsedQueryOptions);
-            result = await service.run(
+
+            if (canAbortQuery) {
+              abortController = new AbortController();
+              // Set up timeout to abort the query
+              querySetTimeoutRef = setTimeout(() => {
+                abortController.abort();
+              }, queryTimeoutMs);
+            }
+
+            const promises = [];
+            const queryPromise = service.run(
               sourceOptions,
               parsedQueryOptions,
               `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -240,8 +318,43 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               {
                 user: { id: user?.id },
                 app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
+              },
+              {
+                signal: abortController ? abortController.signal : null,
+                timeoutForQuery: queryTimeoutMs,
+                canAbortQuery,
               }
             );
+            promises.push(queryPromise);
+
+            if (canAbortQuery) {
+              const abortPromise = new Promise((_, reject) => {
+                // Verifying once before adding listener;
+                if (abortController.signal.aborted) {
+                  reject(
+                    new QueryError(
+                      'Query timed out',
+                      `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
+                      {}
+                    )
+                  );
+                }
+
+                abortController.signal.addEventListener('abort', () => {
+                  reject(
+                    new QueryError(
+                      'Query timed out',
+                      `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
+                      {}
+                    )
+                  );
+                });
+              });
+              promises.push(abortPromise);
+            }
+            if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+            result = await Promise.race(promises);
+            if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
           } else if (
             dataSource.kind === 'restapi' ||
             dataSource.kind === 'openapi' ||
@@ -273,14 +386,18 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           throw api_error;
         }
       }
+      // Final timeout check before marking query success
+      if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
       queryStatus.setSuccess();
 
       //TODO: support workflow execute method().
       if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders) {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
+
       return result;
     } catch (queryError) {
+      if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -418,7 +535,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
       // Create an enhanced options object that includes bundle variables
       const enhancedOptions = { ...options };
-      
+
       // Get all template variables using the bundle-aware getQueryVariables
       const templateVariables = getQueryVariables(
         object,
@@ -431,7 +548,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Merge template variables back into options for resolution
       Object.assign(enhancedOptions, templateVariables);
-      
+
       // Use the standard parseQueryOptions logic but with enhanced options
       return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
     }
