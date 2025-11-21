@@ -811,7 +811,7 @@ export const addOIDCConfig = (
       name: "",
       clientId: Cypress.env("okta_client_id"),
       clientSecret: Cypress.env("okta_client_secret"),
-      codeVerifier: "",
+      codeVerifier: null,
       grantType: "authorization_code",
       wellKnownUrl: `https://${Cypress.env("okta_domain")}/.well-known/openid-configuration`,
       ...(level === "instance" ? { enableGroupSync: true } : {}),
