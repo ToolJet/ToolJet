@@ -32,6 +32,8 @@ export const launchApp = () => {
 
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
+    cy.waitForElement(commonEeSelectors.promoteButton);
+    cy.wait(200);
     cy.get(commonEeSelectors.promoteButton).click();
     cy.get(commonEeSelectors.promoteButton).eq(1).click();
     cy.waitForAppLoad();

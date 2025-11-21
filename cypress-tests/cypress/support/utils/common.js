@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -235,6 +235,7 @@ export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
   });
+  cy.waitForElement(commonSelectors.releaseButton);
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");

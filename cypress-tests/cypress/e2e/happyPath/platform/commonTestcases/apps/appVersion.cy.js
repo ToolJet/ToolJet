@@ -89,7 +89,9 @@ describe("App Version", () => {
 
     verifyComponentinrightpannel("table");
     cy.get(commonSelectors.rightSidebarPlusButton).click();
-    cy.dragAndDropWidget("text", 450, 300);
+    cy.dragAndDropWidget("Text", 450, 300);
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.waitForAutoSave();
 
     navigateToCreateNewVersionModal("v2");

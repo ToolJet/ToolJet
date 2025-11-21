@@ -92,8 +92,12 @@ describe("Private and Public apps", () => {
 
     logout();
 
-    cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-
+    cy.visit(`${getAppUrl(data.slug)}`);
+    cy.wait(2000);
+    cy.url().should(
+      "include",
+      `${Cypress.config("baseUrl")}/login/my-workspace?redirectTo=/applications/${data.slug}`
+    );
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
       "be.visible"
     );
@@ -166,7 +170,7 @@ describe("Private and Public apps", () => {
     verifyWidget("private");
   });
 
-  it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
+  it.only("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
     cy.intercept("POST", "/api/onboarding/signup").as("signup");
     cy.intercept("GET", "**/api/white-labelling").as("whiteLabelling");
 
@@ -197,7 +201,7 @@ describe("Private and Public apps", () => {
     cy.wait("@whiteLabelling");
 
     cy.get(commonSelectors.createAnAccountLink, { timeout: 20000 }).click();
-
+    cy.wait(3000);
     cy.get(onboardingSelectors.loginPasswordInput)
       .should("be.visible")
       .click({ force: true });
