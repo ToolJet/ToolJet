@@ -1,6 +1,6 @@
 import { smtpConfig } from "Constants/constants/whitelabel";
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { usersSelector } from "Selectors/manageUsers";
 import {
   confirmInviteElements,
@@ -172,7 +172,7 @@ describe("user invite flow cases", () => {
     cy.apiLogout();
     cy.visit("/");
     //cy.wait("@translations");
-    cy.wait(1000);
+    cy.wait(2000);
 
     cy.waitForElement(onboardingSelectors.loginPasswordInput);
     cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
@@ -182,10 +182,16 @@ describe("user invite flow cases", () => {
     cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
     cy.get(onboardingSelectors.signInButton).click();
 
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    cy.wait(4000);
+    cy.get(commonWidgetSelector.homePageLogo, { timeout: 50000 }).should(
+      "be.visible",
+      { timeout: 20000 }
+    );
     navigateToManageUsers();
     searchUser(data.email);
-    cy.wait(1000);
+    cy.wait(2000);
     cy.get(usersSelector.userActionButton).click();
     cy.get('[data-cy="archive-button"]').click();
     cy.verifyToastMessage(
@@ -201,6 +207,7 @@ describe("user invite flow cases", () => {
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     logout();
+    cy.wait(2000);
 
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();
