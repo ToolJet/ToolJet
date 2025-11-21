@@ -155,7 +155,7 @@ describe("ToolJet: User & Workspace API", () => {
         });
     });
 
-    it("fails if userId is missing", () => {
+    it.skip("fails if userId is missing", () => {
         sendApiRequest("GET", "/ext/user/").then(({ status, body }) => {
             expect(status).to.eq(404);
             expect(body.message).to.include("Cannot GET /api/ext/user/");

@@ -170,7 +170,7 @@ describe("Private and Public apps", () => {
     verifyWidget("private");
   });
 
-  it.only("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
+  it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
     cy.intercept("POST", "/api/onboarding/signup").as("signup");
     cy.intercept("GET", "**/api/white-labelling").as("whiteLabelling");
 
