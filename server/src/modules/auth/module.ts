@@ -18,6 +18,7 @@ import { SSOConfigsRepository } from '@modules/login-configs/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { SubModule } from '@modules/app/sub-module';
 import { OnboardingModule } from '@modules/onboarding/module';
+import { UserMfaRepository } from './mfa/repository';
 
 @Module({})
 export class AuthModule extends SubModule {
@@ -84,6 +85,7 @@ export class AuthModule extends SubModule {
         GroupPermissionsRepository,
         SSOConfigsRepository,
         WebsiteAuthService,
+        UserMfaRepository,
       ],
       exports: [AuthUtilService],
     };

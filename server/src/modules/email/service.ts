@@ -6,6 +6,7 @@ import {
   SendOrganizationUserWelcomeEmailPayload,
   SendCommentMentionEmailPayload,
   SendPasswordResetEmailPayload,
+  SendEmailOtpPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -166,6 +167,27 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to reset your password was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendOtpEmail(payload: SendEmailOtpPayload) {
+    const { email, otp } = payload;
+    await this.init();
+    const subject = 'OTP for Email Verification';
+    const templateData = {
+      otp,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const templatePath = 'otp_verify.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(email, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because a request to signUp was made',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
