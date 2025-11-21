@@ -21,6 +21,7 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
 const loginViaSamlSSO = (email, password) => {
     cy.intercept("GET", "/api/authorize").as("samlResponse");
+    cy.wait(2000);
     cy.get(ssoEeSelector.saml.ssoText).click();
     cy.wait(2000);
     uiOktaLogin(email, password);
@@ -161,7 +162,7 @@ describe("SAML SSO", () => {
 
         cy.apiLogout();
         cy.visit(`/login/${data.workspaceSlug}`);
-        cy.wait(2000);
+        cy.wait(4000);
         loginViaSamlSSO(Cypress.env("saml_signup"), Cypress.env("okta_password"));
         cy.wait("@samlResponse").then((interception) => {
             const userId = interception.response.body.id;
@@ -189,7 +190,7 @@ describe("SAML SSO", () => {
         fetchAndVisitInviteLink(invitedUserEmail);
 
         // Start SSO login process
-        cy.wait(2000);
+        cy.wait(4000);
         loginViaSamlSSO(invitedUserEmail, Cypress.env("okta_password"));
 
         cy.get(
