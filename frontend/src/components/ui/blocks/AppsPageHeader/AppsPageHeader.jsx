@@ -8,10 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
 const AppsPageHeader = forwardRef(
-  ({ className, title = 'Applications', onCreateBlankApp, onBuildWithAI, createAppMenuItems = [], ...props }, ref) => {
+  ({ className, title = 'Applications', actionButtons, createAppMenuItems = [], ...props }, ref) => {
     return (
       <div ref={ref} className={cn('tw-flex tw-items-center tw-justify-between tw-w-full', className)} {...props}>
         {/* Title Section */}
@@ -26,15 +26,7 @@ const AppsPageHeader = forwardRef(
         {/* Action Group */}
         <div className="tw-flex tw-items-center tw-gap-1">
           {/* Create Blank App Button */}
-          <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={onCreateBlankApp} className="">
-            Create blank app
-          </Button>
-
-          {/* Build with AI Button */}
-          <Button variant="outline" size="default" leadingIcon="tooljetai" onClick={onBuildWithAI}>
-            Build with AI assistant
-          </Button>
-
+          {actionButtons}
           {/* More Options Dropdown */}
           {createAppMenuItems.length > 0 && (
             <DropdownMenu>
@@ -44,7 +36,7 @@ const AppsPageHeader = forwardRef(
               <DropdownMenuContent align="end" className="tw-w-[200px]">
                 {createAppMenuItems.map((item) => (
                   <DropdownMenuItem key={item.label} onClick={item.onClick} className="tw-cursor-pointer">
-                    {item.icon && <SolidIcon name={item.icon} fill="var(--icon-default)" />}
+                    {item.icon && <DynamicIcon name={item.icon} size={16} className={'tw-text-icon-default'} />}
                     {item.label}
                   </DropdownMenuItem>
                 ))}

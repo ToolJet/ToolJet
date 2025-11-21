@@ -239,7 +239,6 @@ export const ResourceLoading = () => (
   <StoryWithWorkspace
     apps={[]}
     isLoading={true}
-
     meta={{ current_page: 1, total_pages: 1, total_count: 0, per_page: 9 }}
     appSearchKey=""
     appType="front-end"

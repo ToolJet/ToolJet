@@ -6,7 +6,6 @@ import { AppsTable } from './AppsTable';
 import { AppsGrid } from './AppsGrid';
 
 export function AppsTabs({
-  table,
   appsEmpty = false,
   modulesEmpty = false,
   emptyAppsSlot = null,
@@ -18,7 +17,17 @@ export function AppsTabs({
   foldersLoading = false,
   activeTab = 'apps',
   onTabChange,
-  isLoading = false,
+  // Table props
+  appsTable,
+  modulesTable,
+  // Loading and error states
+  appsLoading = false,
+  modulesLoading = false,
+  appsError = null,
+  modulesError = null,
+  // Count props for badges
+  appsCount = 0,
+  modulesCount = 0,
   // Action handlers
   onPlay,
   onEdit,
@@ -42,13 +51,16 @@ export function AppsTabs({
   }, [currentFolder]);
 
   return (
-    <Tabs defaultValue="apps" className="tw-w-full tw-flex-col tw-justify-start tw-gap-6">
+    <Tabs value={activeTab} onValueChange={onTabChange} className="tw-w-full tw-flex-col tw-justify-start tw-gap-6">
       {!hideHeader && (
         <div className="tw-flex tw-items-center tw-justify-between">
           <AppsPageViewHeader
-            isLoading={isLoading}
             activeTab={activeTab}
             onTabChange={onTabChange}
+            appsCount={appsCount}
+            modulesCount={modulesCount}
+            appsLoading={appsLoading}
+            modulesLoading={modulesLoading}
             breadcrumbItems={breadcrumbItems}
             viewAs={viewAs}
             onViewChange={(view) => setViewAs(view)}
@@ -59,52 +71,85 @@ export function AppsTabs({
           />
         </div>
       )}
-      <TabsContent value="apps" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
-        {appsEmpty ? (
-          emptyAppsSlot
-        ) : viewAs === 'list' ? (
-          <AppsTable table={table} isLoading={isLoading} />
-        ) : (
-          <AppsGrid
-            table={table}
-            onPlay={onPlay}
-            onEdit={onEdit}
-            onClone={onClone}
-            onDelete={onDelete}
-            onExport={onExport}
-            perms={perms}
-            canDelete={canDelete}
-          />
-        )}
-      </TabsContent>
-      <TabsContent value="modules" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
-        {modulesEmpty ? (
-          emptyModulesSlot
-        ) : viewAs === 'list' ? (
-          <AppsTable table={table} isLoading={isLoading} />
-        ) : (
-          <AppsGrid
-            table={table}
-            onPlay={onPlay}
-            onEdit={onEdit}
-            onClone={onClone}
-            onDelete={onDelete}
-            onExport={onExport}
-            perms={perms}
-            canDelete={canDelete}
-          />
-        )}
-      </TabsContent>
+      {/* Apps Tab Content - only render when active */}
+      {activeTab === 'apps' && (
+        <TabsContent value="apps" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
+          {appsError ? (
+            <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
+              <div className="tw-text-red-500 tw-mb-2">Failed to load apps</div>
+              <div className="tw-text-sm tw-text-muted-foreground">{appsError.message || 'An error occurred'}</div>
+            </div>
+          ) : appsEmpty ? (
+            emptyAppsSlot
+          ) : appsTable ? (
+            viewAs === 'list' ? (
+              <AppsTable table={appsTable} isLoading={appsLoading} />
+            ) : (
+              <AppsGrid
+                table={appsTable}
+                onPlay={onPlay}
+                onEdit={onEdit}
+                onClone={onClone}
+                onDelete={onDelete}
+                onExport={onExport}
+                perms={perms}
+                canDelete={canDelete}
+              />
+            )
+          ) : null}
+        </TabsContent>
+      )}
+      {/* Modules Tab Content - only render when active */}
+      {activeTab === 'modules' && (
+        <TabsContent value="modules" className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0">
+          {modulesError ? (
+            <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
+              <div className="tw-text-red-500 tw-mb-2">Failed to load modules</div>
+              <div className="tw-text-sm tw-text-muted-foreground">{modulesError.message || 'An error occurred'}</div>
+            </div>
+          ) : modulesEmpty ? (
+            emptyModulesSlot
+          ) : modulesTable ? (
+            viewAs === 'list' ? (
+              <AppsTable table={modulesTable} isLoading={modulesLoading} />
+            ) : (
+              <AppsGrid
+                table={modulesTable}
+                onPlay={onPlay}
+                onEdit={onEdit}
+                onClone={onClone}
+                onDelete={onDelete}
+                onExport={onExport}
+                perms={perms}
+                canDelete={canDelete}
+              />
+            )
+          ) : null}
+        </TabsContent>
+      )}
     </Tabs>
   );
 }
 
 AppsTabs.propTypes = {
-  table: PropTypes.object,
   appsEmpty: PropTypes.bool,
   modulesEmpty: PropTypes.bool,
   emptyAppsSlot: PropTypes.node,
   emptyModulesSlot: PropTypes.node,
+  // Tab control props
+  activeTab: PropTypes.oneOf(['apps', 'modules']),
+  onTabChange: PropTypes.func.isRequired,
+  // Table props
+  appsTable: PropTypes.object,
+  modulesTable: PropTypes.object,
+  // Loading and error states
+  appsLoading: PropTypes.bool,
+  modulesLoading: PropTypes.bool,
+  appsError: PropTypes.oneOfType([PropTypes.instanceOf(Error), PropTypes.string, PropTypes.object]),
+  modulesError: PropTypes.oneOfType([PropTypes.instanceOf(Error), PropTypes.string, PropTypes.object]),
+  // Count props
+  appsCount: PropTypes.number,
+  modulesCount: PropTypes.number,
   // Folder selection props
   folders: PropTypes.arrayOf(
     PropTypes.shape({
@@ -131,7 +176,16 @@ AppsTabs.propTypes = {
 };
 
 AppsTabs.defaultProps = {
-  table: null,
+  activeTab: 'apps',
+  onTabChange: null,
+  appsTable: null,
+  modulesTable: null,
+  appsLoading: false,
+  modulesLoading: false,
+  appsError: null,
+  modulesError: null,
+  appsCount: 0,
+  modulesCount: 0,
   appsEmpty: false,
   modulesEmpty: false,
   emptyAppsSlot: null,

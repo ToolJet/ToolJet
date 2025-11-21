@@ -27,23 +27,39 @@ export function AppsPageViewHeader({
   currentFolder = null,
   onFolderChange,
   foldersLoading = false,
-  isLoading = false,
+  // Count and loading props for badges
+  appsCount = 0,
+  modulesCount = 0,
+  appsLoading = false,
+  modulesLoading = false,
 }) {
   return (
     <div className="tw-border-b tw-border-border-weak tw-flex tw-items-center tw-justify-between tw-h-10 tw-w-full">
       {/* Left: Apps/Modules tabs */}
-      <TabsList variant="secondary" size="lg" className="hidden @4xl/main:tw-flex">
-        <TabsTrigger value="apps" variant="secondary">
-          Apps <Badge variant="secondary">3</Badge>
-        </TabsTrigger>
-        <TabsTrigger value="modules" variant="secondary">
-          Modules <Badge variant="secondary">3</Badge>
-        </TabsTrigger>
-      </TabsList>
+      <Tabs value={activeTab} onValueChange={onTabChange} className="hidden @4xl/main:tw-flex">
+        <TabsList variant="secondary" size="lg">
+          <TabsTrigger value="apps" variant="secondary">
+            Apps{' '}
+            {appsLoading ? (
+              <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
+            ) : (
+              <Badge variant="secondary">{appsCount}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="modules" variant="secondary">
+            Modules{' '}
+            {modulesLoading ? (
+              <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
+            ) : (
+              <Badge variant="secondary">{modulesCount}</Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Right: Breadcrumb + View toggle */}
       <div className="tw-flex tw-items-center tw-gap-3">
-        {isLoading ? (
+        {appsLoading ? (
           <div className="tw-flex tw-items-center tw-gap-1">
             <Skeleton className="tw-h-5 tw-w-16" />
             <Skeleton className="tw-h-3 tw-w-3" />
@@ -134,6 +150,11 @@ AppsPageViewHeader.propTypes = {
   }),
   onFolderChange: PropTypes.func,
   foldersLoading: PropTypes.bool,
+  // Count and loading props
+  appsCount: PropTypes.number,
+  modulesCount: PropTypes.number,
+  appsLoading: PropTypes.bool,
+  modulesLoading: PropTypes.bool,
 };
 
 AppsPageViewHeader.defaultProps = {
@@ -146,4 +167,8 @@ AppsPageViewHeader.defaultProps = {
   currentFolder: null,
   onFolderChange: null,
   foldersLoading: false,
+  appsCount: 0,
+  modulesCount: 0,
+  appsLoading: false,
+  modulesLoading: false,
 };
