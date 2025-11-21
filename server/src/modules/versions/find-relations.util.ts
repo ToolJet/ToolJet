@@ -12,7 +12,7 @@ import { User } from '@entities/user.entity';
 import { DataSourceScopes } from '@modules/data-sources/constants';
 
 export async function findAllRelationsForVersion(versionId: string, manager?: EntityManager): Promise<any> {
-// this.getUuidFieldsForExport()
+  // this.getUuidFieldsForExport()
   return await dbTransactionWrap(async (manager: EntityManager) => {}, manager);
 }
 async function getUuidFieldsForExport(
@@ -63,14 +63,14 @@ async function getUuidFieldsForExport(
     const versionIds = appVersions.map((v) => v.id);
 
     // Get Legacy Local Data Source IDs only
-    const legacyLocalDataSources = versionIds.length
-      ? await manager
-          .createQueryBuilder(DataSource, 'data_sources')
-          .select('data_sources.id')
-          .where('data_sources.appVersionId IN(:...versionId)', { versionId: versionIds })
-          .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
-          .getMany()
-      : [];
+    // const legacyLocalDataSources = versionIds.length
+    //   ? await manager
+    //       .createQueryBuilder(DataSource, 'data_sources')
+    //       .select('data_sources.id')
+    //       .where('data_sources.appVersionId IN(:...versionId)', { versionId: versionIds })
+    //       .andWhere('data_sources.scope != :scope', { scope: DataSourceScopes.GLOBAL })
+    //       .getMany()
+    //   : [];
 
     // Get Environment IDs only
     const appEnvironments = await manager
@@ -95,7 +95,8 @@ async function getUuidFieldsForExport(
     const globalDataSourceIds = [...new Set(globalQueries.map((gq) => gq.dataSourceId))];
 
     // Combine all data source IDs
-    const allDataSourceIds = [...legacyLocalDataSources.map((ds) => ds.id), ...globalDataSourceIds];
+    // const allDataSourceIds = [...legacyLocalDataSources.map((ds) => ds.id), ...globalDataSourceIds];
+    const allDataSourceIds = [...globalDataSourceIds];
 
     // Get Data Query IDs only
     const dataQueries = allDataSourceIds.length
@@ -138,13 +139,13 @@ async function getUuidFieldsForExport(
     const pageIds = pages.map((p) => p.id);
 
     // Get Page Permission IDs
-    const pagePermissions = pageIds.length
-      ? await manager
-          .createQueryBuilder(Permission, 'permission')
-          .select('permission.id')
-          .where('permission.pageId IN(:...pageId)', { pageId: pageIds })
-          .getMany()
-      : [];
+    // const pagePermissions = pageIds.length
+    //   ? await manager
+    //       .createQueryBuilder(Permissions, 'permission')
+    //       .select('permission.id')
+    //       .where('permission.pageId IN(:...pageId)', { pageId: pageIds })
+    //       .getMany()
+    //   : [];
 
     // Get Component IDs and Layout IDs
     const components = pageIds.length
@@ -161,22 +162,22 @@ async function getUuidFieldsForExport(
     const layoutIds = components.flatMap((c) => c.layouts?.map((l) => l.id) || []);
 
     // Get Component Permission IDs
-    const componentPermissions = componentIds.length
-      ? await manager
-          .createQueryBuilder(Permission, 'permission')
-          .select('permission.id')
-          .where('permission.componentId IN(:...componentId)', { componentId: componentIds })
-          .getMany()
-      : [];
+    // const componentPermissions = componentIds.length
+    //   ? await manager
+    //       .createQueryBuilder(Permissions, 'permission')
+    //       .select('permission.id')
+    //       .where('permission.componentId IN(:...componentId)', { componentId: componentIds })
+    //       .getMany()
+    //   : [];
 
-    // Get Data Query Permission IDs
-    const queryPermissions = dataQueryIds.length
-      ? await manager
-          .createQueryBuilder(Permission, 'permission')
-          .select('permission.id')
-          .where('permission.dataQueryId IN(:...dataQueryId)', { dataQueryId: dataQueryIds })
-          .getMany()
-      : [];
+    // // Get Data Query Permission IDs
+    // const queryPermissions = dataQueryIds.length
+    //   ? await manager
+    //       .createQueryBuilder(Permissions, 'permission')
+    //       .select('permission.id')
+    //       .where('permission.dataQueryId IN(:...dataQueryId)', { dataQueryId: dataQueryIds })
+    //       .getMany()
+    //   : [];
 
     // Get Event Handler IDs only
     const events = await manager
@@ -188,11 +189,11 @@ async function getUuidFieldsForExport(
     const eventHandlerIds = events.map((e) => e.id);
 
     // Combine all permission IDs
-    const allPermissionIds = [
-      ...pagePermissions.map((p) => p.id),
-      ...componentPermissions.map((p) => p.id),
-      ...queryPermissions.map((p) => p.id),
-    ];
+    // const allPermissionIds = [
+    //   ...pagePermissions.map((p) => p.id),
+    //   ...componentPermissions.map((p) => p.id),
+    //   ...queryPermissions.map((p) => p.id),
+    // ];
 
     return {
       appId: app.id,
@@ -205,7 +206,7 @@ async function getUuidFieldsForExport(
       layoutIds,
       eventHandlerIds,
       environmentIds,
-      permissionIds: allPermissionIds,
+      //   permissionIds: allPermissionIds,
     };
   });
 }
