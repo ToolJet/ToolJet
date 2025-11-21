@@ -8,8 +8,7 @@ import { Logger } from 'nestjs-pino';
 @Injectable()
 export class MfaCleanupScheduler {
   constructor(private readonly logger: Logger) {}
-  // Runs every day at midnight — you can change to EVERY_HOUR if needed
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async handleCron() {
     this.logger.log('starting job to clear expired MFA records at ', new Date().toISOString());
 
