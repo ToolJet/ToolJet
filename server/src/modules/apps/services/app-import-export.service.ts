@@ -367,6 +367,18 @@ export class AppImportExportService {
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
+      this.removeTimestamps(appVersions);
+      this.removeTimestamps(appEnvironments);
+      this.removeTimestamps(dataQueries);
+      this.removeTimestamps(dataSourceOptions);
+      this.removeTimestamps(dataSources);
+      this.removeTimestamps(pagesWithPermissionGroups);
+      this.removeTimestamps(queriesWithPermissionGroups);
+      this.removeTimestamps(componentsWithPermissionGroups);
+      this.removeTimestamps(events);
+      this.removeTimestamps(moduleApps);
+      // Ensure appToExport itself has no timestamps
+      this.removeTimestamps(appToExport);
 
       const files = {
         'app.json': {
@@ -472,6 +484,17 @@ export class AppImportExportService {
     return moduleResourceMappings;
   }
 
+  removeTimestamps = (entity: any) => {
+    if (Array.isArray(entity)) {
+      entity.forEach((item) => {
+        delete item.createdAt;
+        delete item.updatedAt;
+      });
+    } else if (entity && typeof entity === 'object') {
+      delete entity.createdAt;
+      delete entity.updatedAt;
+    }
+  };
   async import(
     user: User,
     appParamsObj: any,
