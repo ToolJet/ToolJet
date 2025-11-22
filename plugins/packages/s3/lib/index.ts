@@ -7,14 +7,14 @@ import {
   signedUrlForGet,
   signedUrlForPut,
   removeObject,
-} from './operations';
+} from './operations.js';
 import AWS from 'aws-sdk';
 import { S3Client } from '@aws-sdk/client-s3';
 
 import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, Operation, AssumeRoleCredentials } from './types';
+import { SourceOptions, QueryOptions, Operation, AssumeRoleCredentials } from './types.js';
 
 export default class S3QueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

@@ -1,7 +1,7 @@
 import { QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { Client } from '@notionhq/client';
-import { blockOperations, databaseOperations, pageOperations, userOperations } from './operations';
+import { blockOperations, databaseOperations, pageOperations, userOperations } from './operations.js';
 
 export default class Notion implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

@@ -1,8 +1,8 @@
-import { QueryError, OAuthUnauthorizedClientError } from './query.error';
-import { QueryResult } from './query_result.type';
-import { User } from './user.type';
-import { App } from './app.type';
-import { QueryService } from './query_service.interface';
+import { QueryError, OAuthUnauthorizedClientError } from './query.error.js';
+import { QueryResult } from './query_result.type.js';
+import { User } from './user.type.js';
+import { App } from './app.type.js';
+import { QueryService } from './query_service.interface.js';
 import {
   isEmpty,
   cacheConnection,
@@ -19,8 +19,8 @@ import {
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
   sanitizeSortPairs,
-} from './utils.helper';
-import { ConnectionTestResult } from './connection_test_result.type';
+} from './utils.helper.js';
+import { ConnectionTestResult } from './connection_test_result.type.js';
 import {
   getRefreshedToken,
   getAuthUrl,
@@ -29,7 +29,7 @@ import {
   checkIfContentTypeIsMultipartFormData,
   checkIfContentTypeIsJson,
   validateAndSetRequestOptionsBasedOnAuthType,
-} from './oauth';
+} from './oauth.js';
 
 export {
   QueryError,

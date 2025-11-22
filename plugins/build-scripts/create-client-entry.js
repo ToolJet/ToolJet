@@ -1,16 +1,7 @@
-const { readdirSync, writeFileSync } = require('fs');
+import { writeFileSync } from 'node:fs';
+import { getPackages } from './util.js';
 
-const isPrivatePackage = (name) => {
-  if (process.env.NODE_ENV === 'production') {
-    return false;
-  }
-  const pkg = require(`./packages/${name}/package.json`);
-  return pkg.private;
-};
-
-const packages = readdirSync('./packages', { withFileTypes: true }).filter(
-  (dirent) => dirent.isDirectory() && dirent.name !== 'common' && !isPrivatePackage(dirent.name)
-);
+const packages = await getPackages();
 
 const capitalize = (str) => str.replace(/^./, (str) => str.toUpperCase());
 
@@ -41,4 +32,4 @@ ${operationsOuts}\n
 ${svgOuts}\n
 `;
 
-writeFileSync('client.js', clientContent);
+writeFileSync('./client.js', clientContent);

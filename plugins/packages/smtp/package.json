@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/smtp",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,8 +19,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "nodemailer": "^6.9.1",
-    "react": "^17.0.2"
+    "nodemailer": "^6.9.1"
   },
   "devDependencies": {
     "@types/nodemailer": "^6.4.7"

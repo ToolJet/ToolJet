@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';

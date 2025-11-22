@@ -9,9 +9,9 @@ import {
   updateItem,
   createTable,
   putItem,
-} from './operations';
-const AWS = require('aws-sdk');
-import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
+} from './operations.js';
+import AWS from 'aws-sdk';
+import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types.js';
 
 export default class DynamodbQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

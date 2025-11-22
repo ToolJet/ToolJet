@@ -1,7 +1,7 @@
-import { QueryError } from './query.error';
-import * as tls from 'tls';
-import { readFileSync } from 'fs';
-import crypto from 'crypto';
+import { QueryError } from './query.error.js';
+import * as tls from 'node:tls';
+import { readFileSync } from 'node:fs';
+import crypto from 'node:crypto';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -92,8 +92,8 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
     return !isAppPublic
       ? tokenData.find((token: any) => token.user_id === userId)
       : userId
-      ? tokenData.find((token: any) => token.user_id === userId)
-      : tokenData[0];
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
   } else {
     return tokenData;
   }

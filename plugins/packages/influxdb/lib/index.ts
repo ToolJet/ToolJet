@@ -1,7 +1,8 @@
 import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import got, { Headers } from 'got';
-const JSON5 = require('json5');
+import JSON5 from 'json5';
+
 export default class influxdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};

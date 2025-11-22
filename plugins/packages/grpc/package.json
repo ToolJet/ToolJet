@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/grpc",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,10 +20,6 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.8.14",
     "@grpc/proto-loader": "^0.7.6",
-    "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2"
-  },
-  "overrides": {
-    "minimist": "^1.2.6"
+    "@tooljet-plugins/common": "file:../common"
   }
 }

@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/mongodb",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,9 +18,8 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
+    "bson": "^7.0.0",
     "json5": "^2.2.3",
-    "mongodb": "^4.13.0",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2"
+    "mongodb": "^4.13.0"
   }
 }

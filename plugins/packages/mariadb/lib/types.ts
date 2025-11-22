@@ -7,6 +7,8 @@ export type SourceOptions = {
   database: string;
   ssl_certificate: string;
   ssl_enabled: boolean;
+  connectTimeout: string;
+  minConnections: string;
   ca: string;
   cert: string;
   key: string;

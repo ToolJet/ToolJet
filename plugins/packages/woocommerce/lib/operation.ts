@@ -1,6 +1,6 @@
-import { QueryOptions } from './types';
-const JSON5 = require('json5');
-const querystring = require('querystring');
+import { QueryOptions } from './types.js';
+import JSON5 from 'json5';
+import querystring from 'node:querystring';
 
 function parseJSON(json: any) {
   if (!json) {

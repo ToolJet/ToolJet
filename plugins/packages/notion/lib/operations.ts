@@ -1,6 +1,6 @@
-import { QueryOptions } from './types';
+import { QueryOptions } from './types.js';
 import { Client } from '@notionhq/client';
-const JSON5 = require('json5');
+import JSON5 from 'json5';
 
 function returnObject(data: any) {
   if (!data) {

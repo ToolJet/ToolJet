@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, Operation } from './types';
-import { listContainers, listBlobs, uploadBlob, readBlob, deleteBlob, createContainer } from './operations';
-const { BlobServiceClient } = require('@azure/storage-blob');
+import { SourceOptions, QueryOptions, Operation } from './types.js';
+import { listContainers, listBlobs, uploadBlob, readBlob, deleteBlob, createContainer } from './operations.js';
+import { BlobServiceClient } from '@azure/storage-blob';
 
 export default class Azureblobstorage implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

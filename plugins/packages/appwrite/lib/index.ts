@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, ReturnObject } from './types';
-import sdk from 'node-appwrite';
-import { createDocument, deleteDocument, getDocument, queryCollection, updateDocument } from './operations';
-const JSON5 = require('json5');
+import { SourceOptions, QueryOptions, ReturnObject } from './types.js';
+import * as sdk from 'node-appwrite';
+import { createDocument, deleteDocument, getDocument, queryCollection, updateDocument } from './operations.js';
+import JSON5 from 'json5';
 
 export default class Appwrite implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

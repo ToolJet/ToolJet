@@ -1,10 +1,10 @@
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
-import urrl from 'url';
-import { QueryError, OAuthUnauthorizedClientError } from './query.error';
-import { getCurrentToken } from './utils.helper';
-import { QueryResult } from './query_result.type';
-import { App } from './app.type';
-import { User } from './user.type';
+import urrl from 'node:url';
+import { QueryError, OAuthUnauthorizedClientError } from './query.error.js';
+import { getCurrentToken } from './utils.helper.js';
+import { QueryResult } from './query_result.type.js';
+import { App } from './app.type.js';
+import { User } from './user.type.js';
 import { CookieJar } from 'tough-cookie';
 import { isEmpty } from 'lodash';
 
@@ -323,7 +323,7 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
         requestObject: {
           requestUrl: error.request?.requestUrl,
           requestHeaders: error.request?.options?.headers,
-          requestParams: urrl.parse(error.request?.requestUrl, true).query,
+          requestParams: urrl.parse(error.request?.requestUrl.toString(), true).query,
         },
         responseObject: {
           statusCode: error.response?.statusCode,

@@ -1,7 +1,7 @@
 import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common';
-import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
+import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations.js';
 import { Client } from 'typesense';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class TypeSenseService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { sanitizeSortPairs } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
 

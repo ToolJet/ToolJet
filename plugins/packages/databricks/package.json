@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/databricks",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,12 +18,11 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@types/node-int64": "^0.4.32",
     "@databricks/sql": "^1.8.2",
-    "@tooljet-plugins/common": "file:../common"
+    "@tooljet-plugins/common": "file:../common",
+    "node-int64": "^0.4.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.34.0",
-    "typescript": "^4.7.4"
+    "@types/node-int64": "^0.4.32"
   }
 }

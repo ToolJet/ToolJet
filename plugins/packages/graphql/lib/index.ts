@@ -1,4 +1,4 @@
-const urrl = require('url');
+import urrl from 'node:url';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import {
   App,
@@ -15,7 +15,7 @@ import {
   getAuthUrl,
   redactHeaders,
 } from '@tooljet-plugins/common';
-import { QueryOptions, SourceOptions } from './types';
+import { QueryOptions, SourceOptions } from './types.js';
 
 export default class GraphqlQueryService implements QueryService {
   constructor(private sendRequest = got) {}
@@ -34,7 +34,7 @@ export default class GraphqlQueryService implements QueryService {
       variables: variables ? JSON.parse(variables) : {},
     };
 
-    const paramsFromUrl = urrl.parse(url, true).query;
+    const paramsFromUrl = urrl.parse(url.toString(), true).query;
     const searchParams = new URLSearchParams();
 
     // Append parameters individually to preserve duplicates
@@ -77,7 +77,7 @@ export default class GraphqlQueryService implements QueryService {
         url: response.requestUrl,
         method: response.request.options.method,
         headers: redactHeaders(response.request.options.headers),
-        params: urrl.parse(response.request.requestUrl, true).query,
+        params: urrl.parse(response.request.requestUrl.toString(), true).query,
       };
 
       responseObject = {
@@ -93,10 +93,10 @@ export default class GraphqlQueryService implements QueryService {
         result = {
           requestObject: {
             requestUrl: sourceOptions.password // Remove password from error object
-              ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
+              ? error.request.requestUrl?.toString()?.replace(`${sourceOptions.password}@`, '<password>@')
               : error.request.requestUrl,
             requestHeaders: error.request.options.headers,
-            requestParams: urrl.parse(error.request.requestUrl, true).query,
+            requestParams: urrl.parse(error.request.requestUrl.toString(), true).query,
           },
           responseObject: {
             statusCode: error.response.statusCode,

@@ -1,5 +1,5 @@
 import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { DBSQLClient } from '@databricks/sql';
 import IDBSQLSession from '@databricks/sql/dist/contracts/IDBSQLSession';
 import IOperation from '@databricks/sql/dist/contracts/IOperation';

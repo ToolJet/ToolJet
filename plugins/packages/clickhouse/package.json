@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/clickhouse",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,8 +18,6 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@tooljet-plugins/common": "file:../common",
-    "clickhouse": "^2.6.0",
-    "react": "^17.0.2"
+    "@tooljet-plugins/common": "file:../common"
   }
 }

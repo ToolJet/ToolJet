@@ -9,10 +9,10 @@ import {
 } from '@aws-sdk/client-s3';
 // https://aws.amazon.com/blogs/developer/generate-presigned-url-modular-aws-sdk-javascript/
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { QueryOptions } from './types';
+import { QueryOptions } from './types.js';
 
 export async function listBuckets(client: S3Client, options: QueryOptions): Promise<object> {
-  const command = new ListBucketsCommand(options);
+  const command = new ListBucketsCommand();
   return client.send(command);
 }
 
@@ -67,20 +67,28 @@ export async function getObject(client: S3Client, options: QueryOptions): Promis
 
 export async function uploadObject(client: S3Client, options: QueryOptions): Promise<object> {
   const encoding = options.encoding || 'utf8';
+
   const uploadData = (data: any, contentType: string) => {
     if (!data) {
-      return;
+      return ''; // Changed from undefined to '' to prevent crash in Buffer.from
     }
     return typeof data === 'object' && contentType.includes('application/json') ? JSON.stringify(data) : data;
   };
-  const body = new Buffer(uploadData(options.data, options.contentType), encoding);
+
+  // FIX: Use Buffer.from() instead of new Buffer()
+  const payload = uploadData(options.data, options.contentType);
+  const body = Buffer.isBuffer(payload) ? payload : Buffer.from(String(payload), encoding);
+
   const command = new PutObjectCommand({
     Bucket: options.bucket,
     Key: options.key,
     Body: body,
     ContentType: options.contentType,
+    // Note: 'utf8' is a charset, usually goes in ContentType (e.g. 'application/json; charset=utf-8')
+    // ContentEncoding is for compression like 'gzip'. You might want to check if this is needed.
     ContentEncoding: encoding,
   });
+
   return await client.send(command);
 }
 

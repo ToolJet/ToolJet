@@ -1,23 +1,27 @@
 {
   "name": "@tooljet/plugins",
   "version": "0.0.1",
+  "type": "module",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
   "scripts": {
-    "create:client": "node create-client-entry",
-    "create:server": "node create-server-entry",
-    "create:operations": "node create-operations-file",
+    "create:client": "node build-scripts/create-client-entry",
+    "create:server": "node build-scripts/create-server-entry",
+    "create:operations": "node build-scripts/create-operations-file",
     "build:server": "rimraf dist/ && tsc -b",
     "start": "tsc -b --watch",
     "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server && npm run create:operations",
     "prebuild:packages": "npm run clean:packages",
-    "build:packages": "node build-packages.js",
-    "clean:packages": "node clean-packages.js",
+    "build:packages": "node build-scripts/build-packages.js",
+    "clean:packages": "node build-scripts/clean-packages.js",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'",
     "test": "NODE_ENV=test jest"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/amazonses": "file:packages/amazonses",
@@ -68,25 +72,19 @@
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
     "@tooljet-plugins/zendesk": "file:packages/zendesk"
   },
-  "peerDependencies": {
-    "form-data": "^4.0.0",
-    "typescript": "^4.9.5"
-  },
   "devDependencies": {
-    "@types/jest": "^27.5.2",
-    "@types/node-int64": "^0.4.32",
-    "@types/nodemailer": "^6.4.7",
-    "@types/oracledb": "^5.2.2",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-jest": "^24.7.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "jest": "^27.5.1",
-    "lerna": "^5.5.2",
-    "prettier": "^2.8.3",
-    "rimraf": "^3.0.2",
-    "ts-jest": "^27.1.5"
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jest": "^29.1.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "lerna": "^9.0.1",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.1.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
   }
 }

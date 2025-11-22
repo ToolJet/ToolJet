@@ -8,9 +8,9 @@ import {
   setDocument,
   updateDocument,
   deleteDocument,
-} from './operations';
-const { Firestore } = require('@google-cloud/firestore');
-import { SourceOptions, QueryOptions } from './types';
+} from './operations.js';
+import { Firestore } from '@google-cloud/firestore';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class FirestoreQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

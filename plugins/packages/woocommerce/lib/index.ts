@@ -1,6 +1,6 @@
 import { QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-import { customerOpeations, productOperations, orderOperations, couponOperations } from './operation';
+import { SourceOptions, QueryOptions } from './types.js';
+import { customerOpeations, productOperations, orderOperations, couponOperations } from './operation.js';
 import WooCommerceRestApi from 'woocommerce-rest-ts-api';
 export default class Woocommerce implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

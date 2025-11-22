@@ -1,7 +1,6 @@
 import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-
-const hana = require('@sap/hana-client');
+import { SourceOptions, QueryOptions } from './types.js';
+import * as hana from '@sap/hana-client';
 
 export default class PostgresqlQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

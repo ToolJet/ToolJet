@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/minio",
+  "type": "module",
   "version": "1.0.0",
   "directories": {
     "lib": "lib",
@@ -15,10 +16,6 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "minio": "^7.0.32",
-    "react": "^17.0.2"
-  },
-  "overrides": {
-    "minimist": "^1.2.6"
+    "minio": "^7.0.32"
   }
 }

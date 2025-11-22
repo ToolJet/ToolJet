@@ -1,9 +1,9 @@
 import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common';
-const { MongoClient } = require('mongodb');
-const JSON5 = require('json5');
+import { MongoClient } from 'mongodb';
 import { EJSON } from 'bson';
-import { SourceOptions, QueryOptions } from './types';
-import tls from 'tls';
+import JSON5 from 'json5';
+import { SourceOptions, QueryOptions } from './types.js';
+import tls from 'node:tls';
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -16,7 +16,7 @@ export default class MongodbService implements QueryService {
         case 'list_collections':
           result = await db.listCollections().toArray();
           break;
-         case 'create_collection':
+        case 'create_collection':
           const collection = await db.createCollection(queryOptions.collection, this.parseEJSON(queryOptions.options));
           result = {
             collectionName: collection.collectionName,
@@ -231,7 +231,7 @@ export default class MongodbService implements QueryService {
 
       const encodedConnectionString = connectionString.replace(password, encodedPassword);
 
-      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+      client = new MongoClient(encodedConnectionString);
       await client.connect();
       db = client.db();
     }

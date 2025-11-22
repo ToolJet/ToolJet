@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import got, { Headers } from 'got';
-const JSON5 = require('json5');
+import JSON5 from 'json5';
 
 export default class Baserow implements QueryService {
   private authHeader(token: string): Headers {

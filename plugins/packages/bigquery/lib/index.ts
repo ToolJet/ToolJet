@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { BigQuery } from '@google-cloud/bigquery';
-const JSON5 = require('json5');
-const _ = require('lodash');
+import JSON5 from 'json5';
+import _ from 'lodash';
 
 export default class Bigquery implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -219,7 +219,7 @@ export default class Bigquery implements QueryService {
     const pickedKeyValue = pickFields.map((field) => _.result(response, field));
 
     if (pickedKeyValue.length === 1) {
-      return pickedKeyValue[0];
+      return pickedKeyValue[0] as object | [];
     }
 
     return pickedKeyValue;

@@ -13,9 +13,9 @@ import {
   clearScroll,
   getCatIndices,
   getClusterHealth,
-} from './operations';
+} from './operations.js';
 import { Client, ClientOptions } from '@opensearch-project/opensearch';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class ElasticsearchService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

@@ -8,8 +8,8 @@ import {
   signedUrlForGet,
   signedUrlForPut,
   removeObject,
-} from './operations';
-import { SourceOptions, QueryOptions } from './types';
+} from './operations.js';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class MinioService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, _dataSourceId: string): Promise<QueryResult> {

@@ -1,7 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uploadFile } from './operations';
-import { SourceOptions, QueryOptions } from './types';
+import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uploadFile } from './operations.js';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class GcsQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

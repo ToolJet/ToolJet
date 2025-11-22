@@ -1,4 +1,4 @@
-const { readdirSync, writeFileSync, existsSync } = require('fs');
+import { readdirSync, writeFileSync, existsSync } from 'node:fs';
 
 const packages = readdirSync('./packages', { withFileTypes: true }).filter(
   (dirent) => dirent.isDirectory() && dirent.name !== 'common'
@@ -7,9 +7,9 @@ const packages = readdirSync('./packages', { withFileTypes: true }).filter(
 packages.forEach((dirent) => {
   if (existsSync(`./packages/${dirent.name}/dist/operations/index.js`)) {
     console.log(`Building operations.json for : ${dirent.name}`);
-    import(`./packages/${dirent.name}/dist/operations/index.js`)
+    import(`../packages/${dirent.name}/dist/operations/index.js`)
       .then((module) => {
-        writeFileSync(`./packages/${dirent.name}/lib/operations.json`, JSON.stringify(module.default.default), {
+        writeFileSync(`./packages/${dirent.name}/lib/operations.json`, JSON.stringify(module.default), {
           encoding: 'utf8',
         });
       })

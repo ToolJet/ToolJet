@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/athena",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,10 +18,8 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/credential-providers": "^3.267.0",
     "@tooljet-plugins/common": "file:../common",
     "athena-express": "^7.1.5",
-    "aws-sdk": "^2.1309.0",
-    "react": "^17.0.2"
+    "aws-sdk": "^2.1309.0"
   }
 }

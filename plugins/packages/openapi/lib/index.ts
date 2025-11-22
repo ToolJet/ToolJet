@@ -9,9 +9,9 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   getAuthUrl,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, RestAPIResult } from './types';
+import { SourceOptions, QueryOptions, RestAPIResult } from './types.js';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
-import urrl from 'url';
+import urrl from 'node:url';
 
 export default class Openapi implements QueryService {
   private resolvePathParams(params: any, path: string) {

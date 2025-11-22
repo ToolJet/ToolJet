@@ -1,5 +1,5 @@
 import { Client as MinioClient } from 'minio';
-import { Stream } from 'stream';
+import { Stream } from 'node:stream';
 
 export async function listBuckets(minioClient: MinioClient, _queryOptions: object): Promise<object> {
   return await minioClient.listBuckets();
@@ -46,7 +46,7 @@ export async function getObject(minioClient: MinioClient, queryOptions: object):
 
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
   let data = queryOptions['data'];
-  if(isBase64(data)){
+  if (isBase64(data)) {
     data = Buffer.from(data, 'base64');
   }
 

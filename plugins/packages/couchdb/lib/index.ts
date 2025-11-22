@@ -1,7 +1,8 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import got from 'got';
-const JSON5 = require('json5');
+import JSON5 from 'json5';
+
 export default class Couchdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};

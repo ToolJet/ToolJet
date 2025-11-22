@@ -1,4 +1,4 @@
-import { QueryOptions } from './types';
+import { QueryOptions } from './types.js';
 
 export async function createContainer(blobServiceClient, options: QueryOptions): Promise<any> {
   const { containerName } = options;

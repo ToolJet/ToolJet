@@ -8,7 +8,7 @@ import {
   QueryService,
   QueryResult,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 
 export default class OracledbQueryService implements QueryService {
   private static _instance: OracledbQueryService;

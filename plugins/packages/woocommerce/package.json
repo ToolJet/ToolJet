@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/woocommerce",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +19,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2",
     "woocommerce-rest-ts-api": "^7.0.0"
   }
 }

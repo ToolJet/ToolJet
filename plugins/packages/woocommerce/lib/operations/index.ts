@@ -1,4 +1,4 @@
-import properties from './properties';
+import properties from './properties.js';
 
 export default {
   title: 'Woocommerce datasource',

@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/snowflake",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,8 +19,10 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "@types/snowflake-sdk": "^1.6.17",
-    "react": "^17.0.2",
+    "got": "^14.6.4",
     "snowflake-sdk": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/snowflake-sdk": "^1.6.17"
   }
 }

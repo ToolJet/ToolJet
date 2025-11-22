@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import nodemailer from 'nodemailer';
 
 export default class Smtp implements QueryService {

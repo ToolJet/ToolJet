@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/mssql",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,9 +19,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "knex": "^3.1.0",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2",
-    "tedious": "^18.2.1"
+    "knex": "^3.1.0"
   }
 }

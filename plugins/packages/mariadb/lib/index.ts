@@ -7,8 +7,8 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-const mariadb = require('mariadb');
+import { SourceOptions, QueryOptions } from './types.js';
+import mariadb from 'mariadb';
 
 export default class Mariadb implements QueryService {
   private defaultConnectionLimit = '10';
@@ -63,7 +63,7 @@ export default class Mariadb implements QueryService {
     }
   }
 
-  private buildConnectionPool(sourceOptions: SourceOptions): Promise<any> {
+  private buildConnectionPool(sourceOptions: SourceOptions): any {
     const connectionLimit =
       sourceOptions.connectionLimit && sourceOptions.connectionLimit !== ''
         ? sourceOptions.connectionLimit
@@ -71,15 +71,21 @@ export default class Mariadb implements QueryService {
 
     // Timeout to get a new connection from pool in ms. - acquireTimeout : Default is 10000ms
     const poolConfig = {
+      // Required string parameters. Use defaults if undefined/null.
       host: sourceOptions.host,
       user: sourceOptions.user,
       password: sourceOptions.password,
-      port: sourceOptions.port,
       database: sourceOptions.database,
+
+      // Number parameters MUST be explicitly cast or defaulted to a number.
+      // The nullish coalescing operator (??) checks if the value is null or undefined.
+      port: Number(sourceOptions.port) || 3306,
+      connectionLimit: Number(connectionLimit) || 10,
+      connectTimeout: Number(sourceOptions.connectTimeout) || 60000,
+      minConnections: Number(sourceOptions.minConnections) ?? 0, 
+
+      // Boolean/other parameters.
       multipleStatements: true,
-      connectionLimit: connectionLimit, // Maximum number of connections in the pool - Updated to 10 from 5
-      connectTimeout: 60000, // 60 seconds - Sets the connection timeout in milliseconds.
-      minConnections: 0, // Minimum idle connections in the pool
     };
 
     const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
@@ -96,10 +102,7 @@ export default class Mariadb implements QueryService {
 
     try {
       const mariadbPool = mariadb.createPool(poolConfig);
-      mariadbPool.on('error', (error) => {
-        console.error(error);
-      });
-
+      // Remove the error event listener - MariaDB pools handle errors differently
       return mariadbPool;
     } catch (error) {
       console.error('Error while creating database connection pool:', error.message);
@@ -112,7 +115,7 @@ export default class Mariadb implements QueryService {
       host: sourceOptions.host,
       user: sourceOptions.user,
       password: sourceOptions.password,
-      port: sourceOptions.port,
+      port: Number(sourceOptions.port) || 3306, // Convert to number
       database: sourceOptions.database,
       connectTimeout: 60000, // 60 seconds - Sets the connection timeout in milliseconds.
     };

@@ -6,9 +6,9 @@ import {
   isEmpty,
   ConnectionTestResult,
 } from '@tooljet-plugins/common';
-import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets } from './operations';
+import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets } from './operations.js';
 import got, { Headers } from 'got';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { google } from 'googleapis';
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {

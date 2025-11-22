@@ -37,7 +37,7 @@ import {
   product,
   dp,
   code,
-} from './definitions';
+} from './definitions.js';
 
 export default {
   resource: {

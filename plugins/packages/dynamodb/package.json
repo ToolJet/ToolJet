@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/dynamodb",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,8 +18,6 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "aws-sdk": "^2.1309.0",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2"
+    "aws-sdk": "^2.1309.0"
   }
 }

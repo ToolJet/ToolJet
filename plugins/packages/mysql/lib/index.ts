@@ -8,7 +8,7 @@ import {
   QueryResult,
   QueryError,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { isEmpty } from '@tooljet-plugins/common';
 
 export default class MysqlQueryService implements QueryService {

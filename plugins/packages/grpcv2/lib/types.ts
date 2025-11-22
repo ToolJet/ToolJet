@@ -21,8 +21,8 @@ export type { UnaryCallback } from '@grpc/grpc-js/build/src/client';
 export { toError, isRecord, hasProperty };
 
 export type { ServiceError as GrpcServiceError } from '@grpc/grpc-js/build/src/call';
-export { Status as GrpcStatus } from '@grpc/grpc-js/build/src/constants';
-export { ReflectionException, ReflectionRequestException } from 'grpc-js-reflection-client/dist/Exceptions';
+export { Status as GrpcStatus } from '@grpc/grpc-js/build/src/constants.js';
+export { ReflectionException, ReflectionRequestException } from 'grpc-js-reflection-client/dist/Exceptions/index.js';
 
 // Helper type for standardized error details structure
 export interface GrpcErrorDetails extends Record<string, unknown> {

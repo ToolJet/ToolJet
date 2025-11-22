@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/appwrite",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +19,8 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "node-appwrite": "^13.0.0",
-    "react": "^17.0.2"
+    "json5": "^2.2.3",
+    "lodash": "^4.17.21",
+    "node-appwrite": "^13.0.0"
   }
 }

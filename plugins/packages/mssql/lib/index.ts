@@ -8,7 +8,7 @@ import {
   generateSourceOptionsHash,
   getCachedConnection,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { isEmpty } from '@tooljet-plugins/common';
 
 const recognizedBooleans = {

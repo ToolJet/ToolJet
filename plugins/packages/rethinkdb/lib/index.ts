@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-const JSON5 = require('json5');
-const r = require('rethinkdb');
+import { SourceOptions, QueryOptions } from './types.js';
+import JSON5 from 'json5';
+import r from 'rethinkdb';
 
 export default class Rethinkdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

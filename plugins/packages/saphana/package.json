@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/saphana",
+  "type": "module",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
@@ -19,7 +20,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@sap/hana-client": "^2.12.22",
-    "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2"
+    "@tooljet-plugins/common": "file:../common"
   }
 }

@@ -12,7 +12,7 @@ import {
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import * as snowflake from 'snowflake-sdk';
 import got from 'got';
 

@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/bigquery",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,9 +21,6 @@
     "@google-cloud/bigquery": "^5.12.0",
     "@tooljet-plugins/common": "file:../common",
     "json5": "^2.2.3",
-    "react": "^17.0.2"
-  },
-  "overrides": {
-    "minimist": "^1.2.6"
+    "lodash": "^4.17.21"
   }
 }

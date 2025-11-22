@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SendEmailCommand, SendEmailCommandInput, SESv2Client } from '@aws-sdk/client-sesv2';
 import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
-import { SourceOptions, QueryOptions, AssumeRoleCredentials } from './types';
-const AWS = require('aws-sdk');
+import { SourceOptions, QueryOptions, AssumeRoleCredentials } from './types.js';
+import AWS from 'aws-sdk';
 
 export default class AmazonSES implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/zendesk",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,6 +19,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2"
+    "got": "^14.6.4"
   }
 }

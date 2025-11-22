@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/twilio",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,11 +18,6 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2",
     "twilio": "^5.2.0"
-  },
-  "overrides": {
-    "url-parse": ">=1.5.9"
   }
 }

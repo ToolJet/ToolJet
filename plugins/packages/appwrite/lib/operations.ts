@@ -1,5 +1,5 @@
 import { Databases, Query } from 'node-appwrite';
-import { ParsedObject, AwModelDocument, AwModelDocumentList, AwQueryTypes } from './types';
+import { ParsedObject, AwModelDocument, AwModelDocumentList, AwQueryTypes } from './types.js';
 import { isEmpty } from 'lodash';
 
 function parseValue(value: ParsedObject) {

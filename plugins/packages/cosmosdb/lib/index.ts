@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import { CosmosClient } from '@azure/cosmos';
-import { deleteItem, getItem, insertItems, listContainers, listDatabases, queryDatabase } from './operations';
+import { deleteItem, getItem, insertItems, listContainers, listDatabases, queryDatabase } from './operations.js';
 
 export default class Cosmosdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

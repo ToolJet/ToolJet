@@ -1,5 +1,5 @@
 import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl, getRefreshedToken } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
+import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types.js';
 import * as grpc from '@grpc/grpc-js';
 import JSON5 from 'json5';
 import { isEmpty } from 'lodash';
@@ -15,7 +15,7 @@ import {
   extractServicesFromGrpcPackage,
   executeGrpcMethod,
   getDefaultProtoDirectory
-} from './operations';
+} from './operations.js';
 import { PackageDefinition } from '@grpc/proto-loader';
 
 export default class Grpcv2QueryService implements QueryService {

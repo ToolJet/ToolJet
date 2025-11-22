@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/notion",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,6 +20,6 @@
   "dependencies": {
     "@notionhq/client": "^1.0.4",
     "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2"
+    "json5": "^2.2.3"
   }
 }

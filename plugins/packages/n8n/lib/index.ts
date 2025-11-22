@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { QueryOptions, SourceOptions } from './types';
+import { QueryOptions, SourceOptions } from './types.js';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 
 const constructHeaders = (sourceOptions: SourceOptions) => {

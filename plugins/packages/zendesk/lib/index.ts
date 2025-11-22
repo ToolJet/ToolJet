@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { SourceOptions, QueryOptions } from './types.js';
 import got, { Headers } from 'got';
 
 interface ISanitizeObject {

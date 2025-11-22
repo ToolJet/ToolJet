@@ -1,5 +1,6 @@
 {
   "name": "@tooljet-plugins/restapi",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,10 +18,8 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "form-data": "^4.0.0",
-    "got": "^11.8.6",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2",
-    "url": "^0.11.0"
+    "form-data": "^4.0.5",
+    "got": "^14.6.4",
+    "json5": "^2.2.3"
   }
 }
