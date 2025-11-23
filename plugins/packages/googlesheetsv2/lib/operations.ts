@@ -1,4 +1,5 @@
 import got from 'got';
+import {QueryError} from '@tooljet-plugins/common';
 
 type SpreadsheetResponseBody = {
   spreadsheetId?: string;
@@ -328,7 +329,6 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
 };
 
 
-// delete by filter data ------->new
 export async function deleteFromSpreadsheetByFilter(
   spreadsheetId: string,
   filters: any[],
@@ -345,12 +345,12 @@ export async function deleteFromSpreadsheetByFilter(
 
     return response;
   } catch (error: any) {
+    console.log("Error deleting from spreadsheet using data filters:", error);
     console.error("Error deleting from spreadsheet using data filters:", error);
     throw new Error(`Error deleting from spreadsheet using data filters: ${error.message}`);
   }
 }
 
-// bulk update using Primmary Key --->new--->checked 
 export async function bulkUpdateByPrimaryKey(
   spreadsheetId: string,
   sheet: string,
@@ -365,6 +365,12 @@ export async function bulkUpdateByPrimaryKey(
 
   if (!sheet || sheet.trim() === '') sheet = 'Sheet1';
   const range = 'A1:Z1000';
+  console.log('Bulk update by primary key - Reading existing values from sheet',{
+    spreadsheetId,
+    sheet,
+    range,
+    data
+  });
 
   const readResponse = (await makeRequestToReadValues(
     spreadsheetId,
@@ -469,7 +475,6 @@ function columnLetter(index: number): string {
   return letter;
 }
 
-// copy one spreadsheet into another --->new
 export async function copySpreadsheetData(
   sourceSpreadsheetId: string,
   destinationSpreadsheetId: string,
@@ -527,7 +532,6 @@ export async function copySpreadsheetData(
     result: writeResponse,
   };
 }
-// list all spreadsheet ---> new
 export async function listAllSpreadsheets(
   authHeader: any,
   pageSize?: string,
@@ -559,7 +563,6 @@ export async function listAllSpreadsheets(
   }
 }
 
-// Delete cells within a specified range and shift remaining cells. --------> new
 export async function deleteByRange(
   spreadsheetId: string,
   sheet: string,
@@ -624,7 +627,6 @@ function letterToColumn(letters: string): number {
 }
 
 
-// update spreadsheet values ---> new ---> checked 1
 export async function updateSpreadsheet(
   spreadsheetId: string,
   sheet: string,
@@ -668,44 +670,3 @@ export async function updateSpreadsheet(
     throw new Error(`Failed to update spreadsheet: ${error.message}`);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -22,7 +22,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
   const oauth_type = source_options?.oauth_type?.value;
 
   const userScopes =
-      source_options?.access_type?.vale === 'write'
+      source_options?.access_type?.value === 'write'
         ? 'https://www.googleapis.com/auth/spreadsheets'
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
@@ -43,7 +43,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
   );
 
   const scope = Array.from(allScopes).join(' ');
-
   if (!clientId || !clientSecret) {
     throw Error('You need to define Google OAuth environment variables');
   }
@@ -295,7 +294,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
         case 'list_all':
           result = await listAllSheets(queryOptions.spreadsheet_id, this.authHeader(accessToken));
           break;
-//new
         case 'list_all_spreadsheets':
             result = await listAllSpreadsheets(
               this.authHeader(accessToken),
@@ -304,8 +302,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
               queryOptions.filter
             );
             break;
-
-//new
        case "delete_by_filter":
             {
               const filters = queryOptions.filter ? JSON.parse(queryOptions.filter) : [];
@@ -316,7 +312,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
               );
             }
             break;
-//new
         case 'bulk_update_by_primary_key': {
         const { sheet, primary_key, rows } = queryOptions;
         if (!primary_key || !rows)
@@ -333,7 +328,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
         );
       }
       break;
- //new
        case 'copy_spreadsheet':
         result = await copySpreadsheetData(
           queryOptions.source_spreadsheet_id,
@@ -343,7 +337,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
           queryOptions.destination_range
         );
         break;
- //new 
         case 'delete_by_range':
         result = await deleteByRange(
           queryOptions.spreadsheet_id,
@@ -353,7 +346,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
           this.authHeader(accessToken)
         );
         break;
-  // new 
         case 'update_spreadsheet':
         result = await updateSpreadsheet(
           queryOptions.spreadsheet_id,

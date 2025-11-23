@@ -80,7 +80,8 @@
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter spreadsheet_id"
+        "placeholder": "Enter spreadsheet_id",
+        "required": true
       },
       "spreadsheet_range": {
         "label": "Range",
@@ -91,7 +92,8 @@
         "description": "Enter range",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-plugins"
+        "className": "codehinter-plugins",
+        "required": true
       },
       "sheet": {
         "label": "Sheet",
@@ -102,7 +104,8 @@
         "description": "Enter sheet",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-plugins"
+        "className": "codehinter-plugins",
+        "required": true
       },
       "majorDimension": {
       "label": "Major Dimensions",
@@ -132,7 +135,7 @@
         },
         {
           "value": "UNFORMATTED_VALUE",
-          "name": "FORMATTED_VALUE"
+          "name": "UNFORMATTED_VALUE"
         },
         {
           "value": "FORMULA",
