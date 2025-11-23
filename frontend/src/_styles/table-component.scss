@@ -770,6 +770,7 @@
   border-radius: 6px;
   overflow-y: auto !important;
   scrollbar-color: var(--interactive-overlays-border-hover) transparent;
+  max-width: none;
 
   .popover-body {
     width: 100%;
@@ -782,10 +783,6 @@
 
   &.download-popup {
     width: 171px;
-  }
-
-  &.hide-column-popup {
-    width: 204px;
   }
 
   &.pagination-popup {
