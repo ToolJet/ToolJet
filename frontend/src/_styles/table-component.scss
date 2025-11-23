@@ -127,7 +127,8 @@
 
         &:focus-within {
           border-radius: 6px;
-          border: 2px solid var(--cc-primary-brand) !important;
+          border: 1px solid var(--cc-primary-brand) !important;
+          outline: 1px solid var(--cc-primary-brand);
           /* Selected ring/Indigo/light */
           // box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
         }
