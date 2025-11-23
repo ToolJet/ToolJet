@@ -669,14 +669,14 @@ export const tableConfig = {
     styles: {
       textColor: { value: '#000' },
       columnHeaderWrap: { value: 'fixed' },
-      headerCasing: { value: 'uppercase' },
+      headerCasing: { value: 'none' },
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
       borderRadius: { value: '8' },
       tableType: { value: 'table-classic' },
       maxRowHeight: { value: 'auto' },
       maxRowHeightValue: { value: '{{0}}' }, // Setting it here as 0 since TableRowHeightInput component will set the value
-      contentWrap: { value: '{{true}}' },
+      contentWrap: { value: '{{false}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
     },
