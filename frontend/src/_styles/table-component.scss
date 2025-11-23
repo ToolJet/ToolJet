@@ -1555,11 +1555,6 @@
   ;
 }
 
-.table.table-striped> :not(caption)>*>* {
-  border-bottom: 0;
-  /* Remove border bottom if .table-striped class is present */
-}
-
 .th:has(.resizer:hover) {
   border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
 }
