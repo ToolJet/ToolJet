@@ -73,10 +73,12 @@ export const ControlButtons = memo(
             label="Selects All"
             data-cy={`options-select-all-coloumn`}
             onClick={table.getToggleAllColumnsVisibilityHandler()}
-            icon={table.getIsAllColumnsVisible() ? 'IconCheck' : 'IconSquare'}
-            fill={table.getIsAllColumnsVisible() ? 'var(--cc-primary-brand)' : ''}
+            icon={table.getIsAllColumnsVisible() ? 'IconCheck' : ''}
+            fill="var(--cc-primary-brand)"
             variant="ghostBlack"
-            className="tw-w-full justify-content-start tw-pr-[6px] tw-pl-[12px]"
+            className={`tw-w-full justify-content-start tw-pr-[6px] ${
+              table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+            }`}
           />
           {table.getAllLeafColumns().map((column) => {
             const header = column?.columnDef?.header;
@@ -87,10 +89,12 @@ export const ControlButtons = memo(
                   label={header}
                   data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
                   onClick={column.getToggleVisibilityHandler()}
-                  icon={column.getIsVisible() ? 'IconCheck' : 'IconSquare'}
-                  fill={column.getIsVisible() ? 'var(--cc-primary-brand)' : ''}
+                  icon={column.getIsVisible() ? 'IconCheck' : ''}
+                  fill="var(--cc-primary-brand)"
                   variant="ghostBlack"
-                  className="tw-w-full justify-content-start tw-pr-[6px] tw-pl-[12px]"
+                  className={`tw-w-full justify-content-start tw-pr-[6px] ${
+                    column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+                  }`}
                 />
               )
             );
