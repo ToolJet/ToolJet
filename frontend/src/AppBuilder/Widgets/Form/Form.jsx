@@ -54,7 +54,15 @@ const FormComponent = (props) => {
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
   const themeChanged = useStore((state) => state.themeChanged);
 
-  const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
+  const {
+    borderRadius,
+    borderColor,
+    boxShadow,
+    footerBackgroundColor,
+    headerBackgroundColor,
+    headerDividerColor,
+    footerDividerColor,
+  } = styles;
 
   const {
     buttonToSubmit,
@@ -99,6 +107,8 @@ const FormComponent = (props) => {
     flexDirection: 'column',
     clipPath: `inset(0 round ${computedBorderRadius})`,
     '--cc-form-scroll-bar-color': activeColor,
+    '--cc-form-header-divider-color': headerDividerColor,
+    '--cc-form-footer-divider-color': footerDividerColor,
   };
 
   const formContent = {

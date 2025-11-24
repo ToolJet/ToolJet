@@ -175,7 +175,25 @@ export const modalV2Config = {
   styles: {
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'header',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
+    bodyBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
@@ -184,39 +202,39 @@ export const modalV2Config = {
     },
     footerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
-    bodyBackgroundColor: {
+    footerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Body background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
     triggerButtonBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'button',
     },
     triggerButtonTextColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button text color',
+      displayName: 'Text',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'button',
     },
   },
   exposedVariables: {
@@ -285,6 +303,8 @@ export const modalV2Config = {
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
+      footerDividerColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

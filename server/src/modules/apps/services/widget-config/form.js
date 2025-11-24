@@ -208,26 +208,56 @@ export const formConfig = {
   styles: {
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'header',
     },
-    footerBackgroundColor: {
+    headerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
+      accordian: 'header',
     },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
       },
+      accordian: 'container',
+    },
+    footerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'footer',
+    },
+    footerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'footer',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'container',
     },
     borderRadius: {
       type: 'code',
@@ -239,14 +269,7 @@ export const formConfig = {
         },
         defaultValue: 6,
       },
-    },
-    borderColor: {
-      type: 'colorSwatches',
-      displayName: 'Border color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'var(--cc-weak-border)',
-      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -320,6 +343,8 @@ export const formConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
+      footerDividerColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

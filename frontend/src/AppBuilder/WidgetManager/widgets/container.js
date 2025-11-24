@@ -82,6 +82,16 @@ export const containerConfig = {
   ],
   events: {},
   styles: {
+    headerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'header',
+    },
+
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -91,12 +101,12 @@ export const containerConfig = {
       },
       accordian: 'container',
     },
-    headerBackgroundColor: {
+    headerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Background',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
       accordian: 'header',
     },
@@ -167,6 +177,7 @@ export const containerConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
