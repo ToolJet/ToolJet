@@ -7,11 +7,12 @@ ToolJet can connect to **Cloud Firestore** databases to read and write data.
 
 <div style={{paddingTop:'24px'}}>
 
-## Connection 
+## Connection
 
 To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
 
 ToolJet requires the following to connect to your BigQuery:
+
 - **Private key**
 
 For generating a private key check out **[Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console)**.
@@ -22,7 +23,7 @@ For generating a private key check out **[Firestore's official documentation](ht
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying Firestore 
+## Querying Firestore
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **Cloud Firestore** datasource added in previous step.
@@ -32,7 +33,7 @@ For generating a private key check out **[Firestore's official documentation](ht
 <img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query-v2.png" alt="firestore QUERY" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/beta/app-builder/custom-code/transform-data)**
 :::
 
 </div>
@@ -40,10 +41,11 @@ Query results can be transformed using transformations. Read our transformations
 <div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
+
 - **[Get Document](#get-document)**
 - **[Query collection](#query-collection)**
-- **[Add Document to Collection](#add-document-to-collection)** 
-- **[Update Document](#update-document)** 
+- **[Add Document to Collection](#add-document-to-collection)**
+- **[Update Document](#update-document)**
 - **[Set Document](#set-document)**
 - **[Bulk update using document ID](#bulk-update-using-document-id)**
 - **[Delete Document](#delete-document)**
@@ -83,13 +85,14 @@ Use this operation for creating a new document in a collection.
 #### Required Parameters
 
 - **Collection**
-- **Body**. 
+- **Body**.
 
 #### Example
+
 ```json
 {
-"Author": "Shubh",
-"id": 5
+  "Author": "Shubh",
+  "id": 5
 }
 ```
 
@@ -105,10 +108,11 @@ Use this operation for updating the existing document in a collection. Also, it 
 - **Body**
 
 #### Example
+
 ```json
 {
-"Author": "Shubhendra",
-"id": 3
+  "Author": "Shubhendra",
+  "id": 3
 }
 ```
 
@@ -121,13 +125,14 @@ This operation replaces your chosen object with the value that you provide. So i
 #### Required Parameters
 
 - **Path**
-- **Body** 
+- **Body**
 
 #### Example
+
 ```json
 {
-"Author": "Shefewfbh",
-"id": 9
+  "Author": "Shefewfbh",
+  "id": 9
 }
 ```
 
@@ -164,7 +169,7 @@ Use this operation for deleting a document in a collection.
 The Firestore query result is in the form of object so we’ll need to transform it into array.
 
 ```js
-return data = Array(data)
+return (data = Array(data));
 ```
 
 </div>

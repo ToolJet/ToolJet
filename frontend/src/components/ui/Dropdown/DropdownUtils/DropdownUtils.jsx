@@ -21,23 +21,36 @@ export const dropdownVariants = cva('', {
   },
 });
 
-export const LeadingIcon = (props) => (
-  <div
-    className={cn(
-      `tw-flex tw-h-[18px] ${props.avatarSrc ? 'tw-w-[20px]' : 'tw-w-[16px]'} tw-items-center tw-justify-center`,
-      props.className
-    )}
-  >
-    {props.avatarSrc ? (
-      <Avatar>
-        <AvatarImage src={props.avatarSrc} alt={props.avatarAlt} />
-        <AvatarFallback>{props.avatarFall}</AvatarFallback>
-      </Avatar>
-    ) : (
-      <SolidIcon name="user" height="16px" width="16px" fill="var(--icon-default)" />
-    )}
-  </div>
-);
+export const LeadingIcon = (props) => {
+  const { icon, className } = props;
+  if (icon) {
+    // If icon is already a React element, render it directly
+    if (React.isValidElement(icon)) {
+      return React.cloneElement(icon, { className });
+    }
+    // If icon is a component reference
+    const Icon = icon;
+    return <Icon className={className} />;
+  }
+
+  return (
+    <div
+      className={cn(
+        `tw-flex tw-h-[18px] ${props.avatarSrc ? 'tw-w-[20px]' : 'tw-w-[16px]'} tw-items-center tw-justify-center`,
+        props.className
+      )}
+    >
+      {props.avatarSrc ? (
+        <Avatar>
+          <AvatarImage src={props.avatarSrc} alt={props.avatarAlt} />
+          <AvatarFallback>{props.avatarFall}</AvatarFallback>
+        </Avatar>
+      ) : (
+        <SolidIcon name="user" height="16px" width="16px" fill="var(--icon-default)" />
+      )}
+    </div>
+  );
+};
 
 export const TrailingAction = ({ trailingAction }) => (
   <div className="tw-absolute tw-right-[8px] tw-flex tw-h-[18px] tw-w-[16px] tw-items-center tw-justify-center">

@@ -22,7 +22,7 @@ export const kanbanConfig = {
         text: '{{cardData.title}}',
         fontWeight: 'bold',
         textSize: 16,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
     {
@@ -38,7 +38,7 @@ export const kanbanConfig = {
       defaultValue: {
         text: '{{cardData.description}}',
         textSize: 14,
-        textColor: '#000',
+        textColor: 'var(--cc-primary-text)',
       },
     },
   ],
@@ -77,7 +77,7 @@ export const kanbanConfig = {
   styles: {
     disabledState: { type: 'toggle', displayName: 'Disable' },
     visibility: { type: 'toggle', displayName: 'Visibility' },
-    accentColor: { type: 'color', displayName: 'Accent color' },
+    accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
   },
   actions: [
     {
@@ -157,7 +157,7 @@ export const kanbanConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      accentColor: { value: '#4d72fa' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
     },
   },
 };

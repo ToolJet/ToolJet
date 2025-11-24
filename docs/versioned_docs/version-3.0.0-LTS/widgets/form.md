@@ -73,7 +73,7 @@ To provide the form schema in JSON format, we'll pass a JavaScript object with *
 | properties | The **properties** key holds an object that defines the properties of the components that will be inside the form. | 
 | submitButton | The **submitButton** key holds an object that defines the properties of the Submit Button of the form. | 
 
-This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of Custom Schema for all components that can be used in a Form component.  
+This list provides examples of Custom Schema for all components that can be used in a Form component.  
 
 ```json
 {{{

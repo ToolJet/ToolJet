@@ -1,13 +1,14 @@
 .tj-datepicker-widget {
-    &.react-datepicker-popper {
-        z-index: 3;
-    }
 
     border-radius: 6px !important;
     border: 1px solid var(--slate5) !important;
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
     width: 250px;
     padding: 0px;
+
+    &.react-datepicker-popper {
+        z-index: 3;
+    }
 }
 
 .tj-timepicker-widget {
@@ -52,6 +53,14 @@
     }
 }
 
+.inspector-validation-date-picker {
+    .tj-table-datepicker {
+        .react-datepicker__time-container {
+            right: 0px;
+        }
+    }
+}
+
 // Changes for react date picker in table
 .tj-table-datepicker {
     .react-datepicker__header {
@@ -77,7 +86,7 @@
         align-items: center;
         justify-content: center;
         padding: 4px;
-        background-color: var(--surfaces-surface-01) !important;
+        background-color: var(--cc-surface1-surface) !important;
     }
 
     .react-datepicker__navigation-icon--previous {
@@ -129,7 +138,7 @@
 
     .react-datepicker__day--selected {
         border-radius: 8px;
-        background-color: var(--primary-brand) !important;
+        background-color: var(--cc-primary-brand) !important;
         color: var(--surfaces-surface-01) !important
     }
 
@@ -151,7 +160,7 @@
     }
 
     .react-datepicker__day--today {
-        border: 1px solid var(--primary-brand);
+        border: 1px solid var(--cc-primary-brand);
         border-radius: 8px;
         background-color: var(--surfaces-surface-01);
     }

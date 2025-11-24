@@ -151,7 +151,12 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   return (
     <div
       className="card"
-      style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
+      style={{
+        height,
+        display: styles.visibility ? '' : 'none',
+        boxShadow: styles.boxShadow,
+        backgroundColor: 'var(--cc-surface1-surface)',
+      }}
       data-cy={dataCy}
     >
       <div className="timer-wrapper">
@@ -164,23 +169,33 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
             <a
-              className={`btn btn-primary${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
+              className={`btn btn-primary timer-btn${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
               onClick={() => onStart()}
             >
               Start
             </a>
           )}
           {state === 'running' && (
-            <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onPause}>
+            <a
+              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
+              onClick={onPause}
+            >
               Pause
             </a>
           )}
           {state === 'paused' && (
-            <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onResume}>
+            <a
+              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
+              onClick={onResume}
+            >
               Resume
             </a>
           )}
-          <a className={`btn${styles.disabledState ? ' disabled' : ''}`} onClick={onReset}>
+          <a
+            className={`btn${styles.disabledState ? ' disabled' : ''}`}
+            style={{ color: 'var(--cc-primary-text)' }}
+            onClick={onReset}
+          >
             Reset
           </a>
         </div>

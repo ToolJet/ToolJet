@@ -1,10 +1,10 @@
 export enum OrganizationConstantType {
   GLOBAL = 'Global',
   SECRET = 'Secret',
+  SERVER = 'Server',
 }
 
 export enum FEATURE_KEY {
-  GET = 'get', // For fetching organization constants
   GET_DECRYPTED_CONSTANTS = 'get_decrypted', // For fetching organization constants with decrypted secret values
   GET_PUBLIC = 'get_public', // For fetching public constants
   GET_FROM_APP = 'get_from_app', // Fetch constants by app slug

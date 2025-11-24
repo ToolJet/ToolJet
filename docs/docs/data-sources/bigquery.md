@@ -12,10 +12,12 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
 
 ToolJet requires the following to connect to your BigQuery:
+
 - **Private key**
 
 How to get a Private key?
-1. You need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from **[Google Cloud](https://cloud.google.com/bigquery/docs/bigquery-web-ui)**. 
+
+1. You need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from **[Google Cloud](https://cloud.google.com/bigquery/docs/bigquery-web-ui)**.
 2. You need to create a service account and generate a key for the same. You can follow the steps to create a service account from **[Google Cloud](https://cloud.google.com/iam/docs/creating-managing-service-accounts)**.
 3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
 4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
@@ -58,7 +60,7 @@ How to get a Private key?
 </div>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
 :::
 
 </div>
@@ -67,19 +69,19 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Supported Operations
 
--  **[Query](#query)**
--  **[List Datasets](#list-datasets)**
--  **[List Tables](#list-tables)**
--  **[Insert Record ](#insert-record)**
--  **[Delete Record ](#delete-record)**
--  **[Update Record](#update-record)**
--  **[Create View](#create-view)**
--  **[Create Table](#create-table)**
--  **[Delete Table](#create-table)**
+- **[Query](#query)**
+- **[List Datasets](#list-datasets)**
+- **[List Tables](#list-tables)**
+- **[Insert Record ](#insert-record)**
+- **[Delete Record ](#delete-record)**
+- **[Update Record](#update-record)**
+- **[Create View](#create-view)**
+- **[Create Table](#create-table)**
+- **[Delete Table](#create-table)**
 
 ### Query
 
-This operation returns the data based on the **Query**. 
+This operation returns the data based on the **Query**.
 
 **Note**: Follow the reference given in **Google Cloud** about the operations: **[Query options](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)** and **[Query results options](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)**.
 
@@ -105,13 +107,13 @@ This operation returns the list of tables within a dataset.
 
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png"  alt="BQ list tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
 
 ### Create Table
 
 This operation is used to create a table.
 
-#### Required Parameters 
+#### Required Parameters
 
 - **Table ID**
 - **Dataset ID**
@@ -125,18 +127,18 @@ This operation is used to create a table.
 
 This operation is used to delete a table.
 
-#### Required Parameters 
+#### Required Parameters
 
 - **Table ID**
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png"  alt="BQ delete tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
 
 ### Create View
 
 This operation is used to create a view.
 
-#### Required Parameters 
+#### Required Parameters
 
 - **Table ID**
 - **Dataset ID**
@@ -146,24 +148,25 @@ This operation is used to create a view.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png"  alt="BQ create view" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
 
 ### Insert Record
 
 This operation is used to insert a record.
 
-#### Required parameters: 
+#### Required parameters:
 
 - **Table ID**
 - **Dataset ID**
 - **Rows**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert"  style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
 
-### Delete Record 
+### Delete Record
+
 Use this operation to delete a record.
 
-#### Required parameters: 
+#### Required parameters:
 
 - **Table ID**
 - **Dataset ID**
@@ -178,9 +181,10 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 :::
 
 ### Update Record
+
 Use this operation to update a record.
 
-#### Required parameters: 
+#### Required parameters:
 
 - **Table ID**
 - **Dataset ID**

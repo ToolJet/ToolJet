@@ -11,7 +11,7 @@ Metadata is additional information about the data returned by the REST API. This
 While accessing the properties of the metadata object, which contains a hyphen, you can use the bracket notation. For example, to access the `user-agent` property, you can use `{{queries.restapi1.metadata.request.headers["user-agent"]}}` or `{{queries.restapi1.metadata.request.headers."user-agent"}}`.
 :::
 
-<details id="tj-dropdown">
+<details>
 <summary>**Example Metadata**</summary>
 
 ```json
@@ -56,6 +56,33 @@ While accessing the properties of the metadata object, which contains a hyphen, 
 }
 ```
 </details>
+
+### Valid and Invalid Headers
+
+#### Valid Headers
+
+| Header Key | Header Value | Notes |
+|------------|--------------|-------|
+| Content-Type | 'application/json' | String values are valid and commonly used for specifying content type. |
+| X-Number | 42 | Numeric values are valid (e.g., 42, 3.14, -7). |
+| X-Boolean | true | Boolean values are valid (true or false). |
+| X-Trim-Me | <div style={{ width:"130px"}}> ' needs trimming ' </div>  | Valid after trimming. |
+| X-Empty-String	 | '' | Empty string values are valid. |
+
+#### Invalid Headers
+
+| Header Key             | Header Value                | Reason Invalid                                |
+|------------------------|-----------------------------|-----------------------------------------------|
+| X-Null                 | null                        | null is not a valid header value.             |
+| X-Undefined            | undefined                   | undefined is not a valid header value.        |
+| X-NaN                  | NaN                         | Special numeric values like NaN are invalid.  |
+| X-Infinity             | Infinity                    | Infinity is not a valid primitive.            |
+| X-NegativeInfinity     | -Infinity                   | -Infinity is also invalid.                    |
+| X-Object               | `{ key: 'value' }  `        | Objects are not allowed as header values.     |
+| X-Array                | [1, 2, 3]                   | Arrays are not valid as header values.        |
+| X-Function             | ( ) => console.log('test')  | Functions cannot be serialized into headers.  |
+| X-Symbol               | Symbol('sym')               | Symbols are non-serializable and invalid.     |
+| *(empty key)*          | 'Empty key'                 | Header keys must not be empty.                |
 
 ## Cookies
 

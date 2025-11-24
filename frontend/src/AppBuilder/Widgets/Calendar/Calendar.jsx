@@ -3,6 +3,7 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
+import './Calendar.scss';
 import _ from 'lodash';
 
 const localizer = momentLocalizer(moment);
@@ -57,14 +58,14 @@ export const Calendar = function ({
   const isInitialRender = useRef(true);
 
   const eventPropGetter = (event) => {
-    const backgroundColor = event.color;
+    const backgroundColor = event.color ?? 'var(--cc-primary-brand)';
     const textStyle =
       event.textOrientation === 'vertical' && currentView != 'month'
         ? { writingMode: 'vertical-rl', textOrientation: 'mixed' }
         : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
-
+    
     return { style };
   };
 
@@ -130,6 +131,7 @@ export const Calendar = function ({
       id={id}
       style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
       data-cy={dataCy}
+      className="scrollbar-container"
     >
       <ReactCalendar
         className={`calendar-widget

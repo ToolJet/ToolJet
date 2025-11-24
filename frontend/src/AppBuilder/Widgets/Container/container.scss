@@ -4,10 +4,22 @@
       content: '';
       position: absolute;
       bottom: 0;
-      left: -7px;
-      right: -7px;
+      left: 0px;
+      right: 0px;
       height: 1px;
-      background-color: var(--border-weak);
+      background-color: var(--cc-default-border);
     }
   }
+
+//[Container-widget]Show scrollbar only on hover
+.widget-type-container {
+  .sub-canvas {
+    overflow: hidden auto;
+    scrollbar-width: none;
+    &:hover {
+      scrollbar-width: auto;
+   }
+  }
+
+}
   

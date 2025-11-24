@@ -1,15 +1,16 @@
 import { FoldersModule } from '@modules/folders/module';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
-import { getImportPath } from '@modules/app/constants';
+import { SubModule } from '@modules/app/sub-module';
 
-export class FolderAppsModule {
+export class FolderAppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+    const { FolderAppsController, FolderAppsService, FolderAppsUtilService } = await this.getProviders(
+      configs,
+      'folder-apps',
+      ['controller', 'service', 'util.service']
+    );
 
-    const { FolderAppsController } = await import(`${importPath}/folder-apps/controller`);
-    const { FolderAppsService } = await import(`${importPath}/folder-apps/service`);
-    const { FolderAppsUtilService } = await import(`${importPath}/folder-apps/util.service`);
     return {
       module: FolderAppsModule,
       controllers: [FolderAppsController],

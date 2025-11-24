@@ -1,18 +1,24 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty, noop } from 'lodash';
+import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { autocompletion, completionKeymap, completionStatus, acceptCompletion } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  completionKeymap,
+  completionStatus,
+  acceptCompletion,
+  startCompletion,
+} from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { resolveReferences } from './utils';
+import { isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion } from './autocompleteExtensionConfig';
@@ -22,31 +28,63 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getCssVarValue } from '@/Editor/Components/utils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
+import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
+import Icon from '@/_ui/Icon/solidIcons/index';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
-  const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
+  const { moduleId } = useModuleContext();
+  const { initialValue, onChange, enablePreview = true, portalProps, paramName } = restProps;
   const { validation = {} } = fieldMeta;
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
-  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow);
+  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
 
   const customVariables = customResolvables?.[parentId]?.[0] || {};
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 1) {
+          setShowPreview(false);
+          setShowSuggestions(false);
+        } else {
+          setShowSuggestions(true);
+        }
+      },
+      { root: null, threshold: [1] } // Fires when any part of the element is out of view
+    );
+
+    if (wrapperRef.current) {
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => {
+      if (wrapperRef.current) {
+        observer.unobserve(wrapperRef.current);
+      }
+    };
+  }, []);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
+
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   // const { variablesExposedForPreview } = useContext(EditorContext) || {};
@@ -94,6 +132,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
   const previewRef = useRef(null);
+  const fullScreenPreviewRef = useRef(null);
 
   return (
     <div
@@ -108,22 +147,30 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
+        setIsFocused={setIsFocused}
         setCursorInsidePreview={setCursorInsidePreview}
         componentName={componentName}
         validationSchema={validation}
         setErrorStateActive={setErrorStateActive}
         ignoreValidation={restProps?.ignoreValidation || isEmpty(validation)}
-        componentId={restProps?.componentId ?? null}
+        componentId={componentId ?? null}
+        fieldMeta={fieldMeta}
+        paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
+        onAiSuggestionAccept={(newValue) => {
+          setCurrentValue(newValue);
+          onChange(newValue);
+        }}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
             <SingleLineCodeEditor.Editor
               previewRef={previewRef}
+              fullScreenPreviewRef={fullScreenPreviewRef}
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
               isFocused={isFocused}
@@ -136,6 +183,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               componentName={componentName}
               setShowPreview={setShowPreview}
               showPreview={showPreview}
+              wrapperRef={wrapperRef}
+              showSuggestions={showSuggestions}
+              cursorInsidePreview={cursorInsidePreview}
               {...restProps}
             />
           </div>
@@ -166,13 +216,42 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
   previewRef,
+  fullScreenPreviewRef,
   setShowPreview,
   onInputChange,
+  wrapperRef,
+  showSuggestions,
+  setCodeEditorView = null, // Function to set the CodeMirror view
+  cursorInsidePreview = false,
 }) => {
+  const codeHinterContext = useContext(CodeHinterContext);
+  const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
+  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const [codeMirrorView, setCodeMirrorView] = useState(undefined);
+
+  const getServerSideGlobalResolveSuggestions = useStore(
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
+  );
+
+  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
+
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef.current]
+  );
   function autoCompleteExtensionConfig(context) {
-    const hints = getSuggestions();
+    const hintsWithoutParamHints = getSuggestions();
+    const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
+
     let word = context.matchBefore(/\w*/);
+
+    const hints = {
+      ...hintsWithoutParamHints,
+      appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
+    };
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
@@ -208,11 +287,15 @@ const EditorInput = ({
       from: word.from,
       options: completions,
       validFor: /^\{\{.*\}\}$/,
+      filter: false,
     };
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback(
+    (context) => autoCompleteExtensionConfig(context),
+    [isInsideQueryManager, paramHints]
+  );
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
@@ -223,13 +306,17 @@ const EditorInput = ({
     defaultKeymap: true,
     positionInfo: () => {
       return {
-        class: 'cm-completionInfo-top cm-custom-completion-info',
+        class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
       };
     },
     maxRenderedOptions: 10,
   });
 
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
+  const customKeyMaps = [
+    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+    ...completionKeymap,
+  ];
+
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -251,6 +338,7 @@ const EditorInput = ({
         }
       },
     },
+    ...queryPanelKeybindings,
   ]);
 
   const handleOnChange = React.useCallback((val) => {
@@ -259,7 +347,8 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
-    setShowPreview(false);
+    !cursorInsidePreview && setShowPreview(false);
+
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);
@@ -273,7 +362,7 @@ const EditorInput = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
 
-  const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+
   // when full screen editor is closed, show the preview box
   useEffect(() => {
     if (isFocused && !isOpen) {
@@ -286,7 +375,7 @@ const EditorInput = ({
   const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
 
-  const customClassNames = cx('codehinter-input', {
+  const customClassNames = cx('codehinter-input single-line-codehinter-input', {
     'border-danger': error,
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
@@ -336,18 +425,9 @@ const EditorInput = ({
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
-      data-cy={`${cyLabel}-input-field`}
+      data-cy={`${cyLabel.replace(/_/g, '-')}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          zIndex: 1000,
-        }}
-        ref={previewRef}
-      ></div>
       {usePortalEditor && (
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
@@ -372,39 +452,67 @@ const EditorInput = ({
         callgpt={null}
       >
         <ErrorBoundary>
-          <CodeMirror
-            value={currentValue}
-            placeholder={placeholder}
-            height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
-            width="100%"
-            extensions={[
-              javascript({ jsx: lang === 'jsx' }),
-              autoCompleteConfig,
-              keymap.of([...customKeyMaps]),
-              customTabKeymap,
-            ]}
-            onChange={(val) => {
-              setFirstTimeFocus(false);
-              handleOnChange(val);
-              onInputChange && onInputChange(val);
+          <div
+            style={{
+              position: 'relative',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
             }}
-            basicSetup={{
-              lineNumbers: showLineNumbers,
-              syntaxHighlighting: true,
-              bracketMatching: true,
-              foldGutter: false,
-              highlightActiveLine: false,
-              autocompletion: true,
-              completionKeymap: true,
-              searchKeymap: false,
-            }}
-            onMouseDown={() => handleFocus()}
-            onBlur={() => handleOnBlur()}
-            className={customClassNames}
-            theme={theme}
-            indentWithTab={false}
-            readOnly={disabled}
-          />
+            className="check-here"
+            ref={isOpen ? fullScreenPreviewRef : previewRef}
+          >
+            <CodeMirror
+              onCreateEditor={(view) => {
+                setCodeMirrorView(view);
+                if (setCodeEditorView) {
+                  setCodeEditorView(view);
+                }
+              }}
+              value={currentValue}
+              placeholder={placeholder}
+              height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
+              width="100%"
+              extensions={
+                showSuggestions
+                  ? [
+                    javascript({ jsx: lang === 'jsx' }),
+                    autoCompleteConfig,
+                    keymap.of([...customKeyMaps]),
+                    customTabKeymap,
+                  ]
+                  : [javascript({ jsx: lang === 'jsx' })]
+              }
+              onChange={(val) => {
+                setFirstTimeFocus(false);
+                handleOnChange(val);
+                onInputChange && onInputChange(val);
+              }}
+              basicSetup={{
+                lineNumbers: showLineNumbers,
+                syntaxHighlighting: true,
+                bracketMatching: true,
+                foldGutter: false,
+                highlightActiveLine: false,
+                autocompletion: true,
+                defaultKeymap: false,
+                completionKeymap: true,
+                searchKeymap: false,
+              }}
+              onMouseDown={() => handleFocus()}
+              onBlur={() => handleOnBlur()}
+              className={customClassNames}
+              theme={theme}
+              indentWithTab={false}
+              readOnly={disabled}
+              onKeyDown={(event) => {
+                if (event.key === 'Backspace') {
+                  startCompletion(codeMirrorView);
+                }
+              }}
+            />
+          </div>
         </ErrorBoundary>
       </CodeHinter.Portal>
     </div>
@@ -432,80 +540,132 @@ const DynamicEditorBridge = (props) => {
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
-  const { isFxNotRequired } = fieldMeta;
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
+  const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
+  const isDeprecated = section === 'deprecated';
   const { t } = useTranslation();
-  const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  let newInitialValue = initialValue,
+    shouldResolve = true;
+
+  // This is to handle the case when the initial value is a string and contains components or queries
+  // and we need to replace the ids with names
+  // but we don't want to resolve the references as it needs to be displayed as it is
+  if (paramName === 'generateFormFrom') {
+    if (
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
+    ) {
+      newInitialValue = replaceIdsWithName(initialValue);
+      shouldResolve = false;
+    }
+  }
+  const [_, error, value] =
+    type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  let modifiedValue = initialValue;
+  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
+    modifiedValue = getCssVarValue(document.documentElement, initialValue);
+  }
+
+  const renderFx = () => {
+    if (paramType === 'query' || !(paramLabel !== 'Type' && isFxNotRequired === undefined)) {
+      return null;
+    }
+
+    return (
+      <div
+        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
+          }`}
+      >
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+              if (paramType === 'colorSwatches') {
+                onChange(modifiedValue);
+              }
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      </div>
+    );
+  };
+
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
-  return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+
+  const renderedLabel = () => {
+    return (
+      <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
-                darkMode && 'color-whitish-darkmode'
-              }`}
-            />
-          </div>
-        )}
-        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
-          <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
-            {paramLabel !== 'Type' && isFxNotRequired === undefined && (
-              <div
-                className={`col-auto pt-0 fx-common fx-button-container ${
-                  (isEventManagerParam || codeShow) && 'show-fx-button-container'
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
                 }`}
-              >
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              </div>
+            />
+            {isDeprecated && (
+              <span className={'list-item-deprecated-column-type'}>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
             )}
           </div>
-        </div>
-        {!codeShow && (
-          <DynamicFxTypeRenderer
-            value={!error ? value : ''}
-            onChange={onChange}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            paramType={paramType}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-            styleDefinition={styleDefinition}
-            component={component}
-            onVisibilityChange={onVisibilityChange}
-          />
         )}
+      </>
+    );
+  };
+
+  const renderDynamicFx = () => {
+    if (codeShow) return null;
+    return (
+      <DynamicFxTypeRenderer
+        value={!error ? value : ''}
+        onChange={onChange}
+        paramName={paramName}
+        paramLabel={paramLabel}
+        paramType={paramType}
+        forceCodeBox={() => {
+          setForceCodeBox(true);
+          onFxPress(true);
+        }}
+        meta={fieldMeta}
+        cyLabel={cyLabel}
+        styleDefinition={styleDefinition}
+        component={component}
+        onVisibilityChange={onVisibilityChange}
+      />
+    );
+  };
+
+  return (
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+        {renderedLabel()}
+        <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
+          <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
+            {renderFx()}
+          </div>
+        </div>
+        {!newLine && renderDynamicFx()}
       </div>
+      {newLine && renderDynamicFx()}
       {codeShow && (
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor initialValue {...props} />
+              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
             </div>
           </div>
         </div>

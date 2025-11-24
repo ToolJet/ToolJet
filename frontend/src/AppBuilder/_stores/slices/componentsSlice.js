@@ -6,6 +6,7 @@ import {
   checkSubstringRegex,
   hasArrayNotation,
   parsePropertyPath,
+  resolveCode,
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -24,31 +25,44 @@ import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/re
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
     canvas: {
+      currentPageId: null,
+      currentPageIndex: 0,
       pages: [],
       componentNameIdMapping: {},
       queryNameIdMapping: {},
       queryIdNameMapping: {},
+      currentPageHandle: null,
     },
   },
-  currentPageId: null,
-  currentPageIndex: 0,
   containerChildrenMapping: {
     canvas: [],
   },
   selectedComponents: [],
-  currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
+  showComponentPermissionModal: false,
 };
 
 export const createComponentsSlice = (set, get) => ({
   ...initialState,
+
+  initializeComponentsSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.modules[moduleId] = { ...initialState.modules.canvas };
+        state.containerChildrenMapping[moduleId] = [];
+      },
+      false,
+      'initializeComponentsSlice'
+    );
+  },
 
   setPages: (pages = [], moduleId = 'canvas') => {
     set(
@@ -70,29 +84,31 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
 
-  setCurrentPageId: (id, moduleId) =>
+  setCurrentPageId: (id, moduleId = 'canvas') =>
     set(
       (state) => {
-        const currentPageIndex = state.modules.canvas.pages.findIndex((page) => page.id === id);
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === id);
         const currentPageComponents = state.modules[moduleId].pages[currentPageIndex]?.components || {};
-        state.currentPageIndex = currentPageIndex;
-        state.currentPageId = id;
-        state.containerChildrenMapping = { canvas: [] };
+        state.modules[moduleId].currentPageIndex = currentPageIndex;
+        state.modules[moduleId].currentPageId = id;
+        state.containerChildrenMapping[moduleId] = [];
         Object.entries(currentPageComponents).forEach(([componentId, component]) => {
-          const parentId = component.component.parent || 'canvas';
+          const parentId = component.component.parent || moduleId;
           if (!state.containerChildrenMapping[parentId]) {
             state.containerChildrenMapping[parentId] = [];
           }
-          state.containerChildrenMapping[parentId].push(componentId);
+          if (!state.containerChildrenMapping[parentId].includes(componentId)) {
+            state.containerChildrenMapping[parentId].push(componentId);
+          }
         });
       },
       false,
       'setCurrentPageId'
     ),
-  setCurrentPageHandle: (handle) => {
+  setCurrentPageHandle: (handle, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.currentPageHandle = handle;
+        state.modules[moduleId].currentPageHandle = handle;
       },
       false,
       'setCurrentPageHandle'
@@ -149,7 +165,7 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   setComponentNameIdMapping: (moduleId = 'canvas') => {
-    const components = get().getCurrentPageComponents();
+    const components = get().getCurrentPageComponents(moduleId);
     set(
       (state) => {
         Object.entries(components).forEach(([componentId, component]) => {
@@ -162,12 +178,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   setComponentName: (componentId, newName, moduleId = 'canvas') => {
-    const { renameComponentNameIdMapping, saveComponentChanges } = get();
+    const { renameComponentNameIdMapping, saveComponentChanges, getCurrentPageIndex } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     let oldName = '';
     set(
       (state) => {
-        oldName = state.modules[moduleId].pages[state.currentPageIndex].components[componentId].component.name;
-        state.modules[moduleId].pages[state.currentPageIndex].components[componentId].component.name = newName;
+        oldName = state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name;
+        state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name = newName;
       },
       false,
       'setComponentName'
@@ -177,7 +194,7 @@ export const createComponentsSlice = (set, get) => ({
       [componentId]: { component: { name: newName } },
     };
 
-    saveComponentChanges(diff, 'components', 'update');
+    saveComponentChanges(diff, 'components', 'update', moduleId);
     renameComponentNameIdMapping(oldName, newName, moduleId);
   },
 
@@ -227,7 +244,15 @@ export const createComponentsSlice = (set, get) => ({
     get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
-  generateDependencyGraphForRefs: (allRefs, key, paramType, property, unResolvedValue, isUpdate = false) => {
+  generateDependencyGraphForRefs: (
+    allRefs,
+    key,
+    paramType,
+    property,
+    unResolvedValue,
+    isUpdate = false,
+    moduleId = 'canvas'
+  ) => {
     const { addDependency, updateDependency } = get();
     if (allRefs.length !== 0) {
       allRefs.forEach(({ entityType, entityNameOrId, entityKey }, index) => {
@@ -236,9 +261,9 @@ export const createComponentsSlice = (set, get) => ({
           : `${entityType}.${entityKey}`;
         const propertyPath = paramType === undefined ? `others.${key}` : `components.${key}.${paramType}.${property}`;
         if (isUpdate && index === 0) {
-          updateDependency(propertyValue, propertyPath, unResolvedValue);
+          updateDependency(propertyValue, propertyPath, unResolvedValue, moduleId);
         } else {
-          addDependency(propertyValue, propertyPath, unResolvedValue);
+          addDependency(propertyValue, propertyPath, unResolvedValue, moduleId);
         }
       });
     }
@@ -330,7 +355,7 @@ export const createComponentsSlice = (set, get) => ({
     const length = Object.keys(customResolvables).length;
     if (length === 0) {
       const resolvedValue = shouldResolve
-        ? resolveDynamicValues(value, getAllExposedValues(), customResolvables, false, [])
+        ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables, false, [])
         : value;
       if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
         componentResolvedValues[componentId] = index === null ? deepClone(DEFAULT_COMPONENT_STRUCTURE) : [];
@@ -372,7 +397,7 @@ export const createComponentsSlice = (set, get) => ({
       // Loop all the index and set the resolved value
       for (let i = 0; i < length; i++) {
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(value, getAllExposedValues(), customResolvables[i], false, [])
+          ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables[i], false, [])
           : value;
         if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
           componentResolvedValues[componentId] = [];
@@ -425,21 +450,21 @@ export const createComponentsSlice = (set, get) => ({
     const length = Object.keys(customResolvables).length;
     if (length === 0) {
       const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(), customResolvables, false, [])
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables, false, [])
         : value;
       setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, index, moduleId);
     } else {
       // Loop all the index and set the resolved value
       for (let i = 0; i < length; i++) {
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(unResolvedValue, getAllExposedValues(), customResolvables[i], false, [])
+          ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables[i], false, [])
           : value;
         setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, i, moduleId);
       }
     }
   },
 
-  validateWidget: ({ validationObject, widgetValue, customResolveObjects }) => {
+  validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
     const { getResolvedValue } = get();
     let isValid = true;
     let validationError = null;
@@ -454,6 +479,17 @@ export const createComponentsSlice = (set, get) => ({
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
     const re = new RegExp(validationRegex, 'g');
+
+    if (componentType === 'EmailInput' && widgetValue) {
+      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
+      const emailRegex = new RegExp(validationRegex, 'g');
+      if (!emailRegex.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'Input should be a valid email',
+        };
+      }
+    }
 
     if (!re.test(widgetValue)) {
       return {
@@ -507,7 +543,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
 
-    if (resolvedMandatory == true && !widgetValue) {
+    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
@@ -627,7 +663,15 @@ export const createComponentsSlice = (set, get) => ({
             );
             lodashSet(updatedPropertyValue, [index, ...keys], updatedValue);
             if (allRefs.length) {
-              generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
+              generateDependencyGraphForRefs(
+                allRefs,
+                componentId,
+                paramType,
+                propertyWithArrayValue,
+                unResolvedValue,
+                false,
+                moduleId
+              );
             }
           });
         } else {
@@ -643,9 +687,16 @@ export const createComponentsSlice = (set, get) => ({
             moduleId
           );
           updatedPropertyValue[index] = updatedValue;
-          console.log('updatedPropertyValue', updatedPropertyValue);
           if (allRefs.length) {
-            generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
+            generateDependencyGraphForRefs(
+              allRefs,
+              componentId,
+              paramType,
+              propertyWithArrayValue,
+              unResolvedValue,
+              false,
+              moduleId
+            );
           }
         }
       });
@@ -662,7 +713,7 @@ export const createComponentsSlice = (set, get) => ({
         moduleId
       );
       if (allRefs.length) {
-        generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue);
+        generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue, false, moduleId);
       }
       return { allRefs, unResolvedValue, updatedValue };
     }
@@ -700,7 +751,7 @@ export const createComponentsSlice = (set, get) => ({
   addToDependencyGraph: (moduleId = 'canvas', componentId, component) => {
     const { updateDependencyGraphAndResolvedValues, getResolvedComponent } = get();
     //TODO: Replace with object of component types
-    let resolvedComponentValues = { [componentId]: deepClone(getResolvedComponent(componentId) ?? {}) };
+    let resolvedComponentValues = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
     const componentType = componentTypes.find((comp) => component.component === comp.component);
     ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((key) => {
       updateDependencyGraphAndResolvedValues(
@@ -717,7 +768,7 @@ export const createComponentsSlice = (set, get) => ({
 
   initDependencyGraph: (moduleId) => {
     const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
-    const components = getCurrentPageComponents();
+    const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
     let resolvedComponentValues = {};
@@ -734,7 +785,43 @@ export const createComponentsSlice = (set, get) => ({
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
       isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
+      pages: get().modules[moduleId].pages.reduce((accumulator, currentObject) => {
+        if (currentObject && currentObject.id) {
+          accumulator[currentObject.id] = { hidden: currentObject.hidden };
+        }
+        return accumulator;
+      }, {}),
     };
+  },
+
+  // TODO: This function is used to resolve the page hidden value, needs to be refactored to use the same logic as resolveOthers
+  resolvePageHiddenValue: (moduleId, isUpdate = false, pageId, item) => {
+    const { getAllExposedValues, generateDependencyGraphForRefs } = get();
+    let resolvedValue = item;
+    if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+        item,
+        get().modules[moduleId].componentNameIdMapping,
+        get().modules[moduleId].queryNameIdMapping
+      );
+      resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+      generateDependencyGraphForRefs(
+        allRefs,
+        `pages.${pageId}.hidden`,
+        undefined,
+        undefined,
+        valueWithBrackets,
+        isUpdate,
+        moduleId
+      );
+    }
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].others.pages[pageId] = { hidden: resolvedValue };
+      },
+      false,
+      'resolvePageHiddenValue'
+    );
   },
 
   resolveOthers: (moduleId, isUpdate = false, otherObj) => {
@@ -747,15 +834,44 @@ export const createComponentsSlice = (set, get) => ({
     const items = otherObj || getOtherFieldsToBeResolved(moduleId);
     const resolvedValues = {};
     Object.entries(items).forEach(([key, item]) => {
-      if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
+      if (key === 'pages') {
+        Object.entries(item).forEach(([pageId, page]) => {
+          const { hidden = null } = page;
+          if (!resolvedValues[key]) {
+            resolvedValues[key] = {};
+          }
+
+          if (typeof hidden?.value === 'string' && hidden?.value?.includes('{{') && hidden?.value?.includes('}}')) {
+            const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
+              hidden.value,
+              get().modules[moduleId].componentNameIdMapping,
+              get().modules[moduleId].queryNameIdMapping
+            );
+
+            const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
+            resolvedValues[key][pageId] = { hidden: resolvedValue };
+            generateDependencyGraphForRefs(
+              allRefs,
+              `pages.${pageId}.hidden`,
+              undefined,
+              undefined,
+              valueWithBrackets,
+              isUpdate,
+              moduleId
+            );
+          } else {
+            resolvedValues[key][pageId] = { hidden };
+          }
+        });
+      } else if (typeof item === 'string' && item?.includes('{{') && item?.includes('}}')) {
         const { allRefs, valueWithBrackets } = extractAndReplaceReferencesFromString(
           item,
           get().modules[moduleId].componentNameIdMapping,
           get().modules[moduleId].queryNameIdMapping
         );
-        const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(), {}, false, []);
+        const resolvedValue = resolveDynamicValues(valueWithBrackets, getAllExposedValues(moduleId), {}, false, []);
         resolvedValues[key] = resolvedValue;
-        generateDependencyGraphForRefs(allRefs, key, undefined, undefined, valueWithBrackets, isUpdate);
+        generateDependencyGraphForRefs(allRefs, key, undefined, undefined, valueWithBrackets, isUpdate, moduleId);
       } else {
         resolvedValues[key] = item;
       }
@@ -776,7 +892,7 @@ export const createComponentsSlice = (set, get) => ({
   addComponentToCurrentPage: (
     componentDefinitions,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, saveAfterAction = true, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -786,7 +902,11 @@ export const createComponentsSlice = (set, get) => ({
       canAddToParent,
       getComponentNameFromId,
       deleteComponentNameIdMapping,
+      checkIfParentIsFormAndAddField,
+      buildComponentDefinition,
+      getCurrentPageId,
     } = get();
+    const currentPageId = getCurrentPageId(moduleId);
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
     return new Promise((resolve) => {
       if (
@@ -798,34 +918,7 @@ export const createComponentsSlice = (set, get) => ({
       ) {
         return false;
       }
-      const newComponents = componentDefinitions.reduce((acc, componentDefinition) => {
-        const currentComponents = {
-          ...getCurrentPageComponents(),
-          ...Object.fromEntries(acc.map((component) => [component.id, component])),
-        };
-        const componentName =
-          componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
-        const newComponent = {
-          id: componentDefinition.id,
-          name: componentName,
-          component: {
-            component: componentDefinition.component.component,
-            definition: {
-              general: componentDefinition.component.definition?.general,
-              generalStyles: componentDefinition.component.definition?.generalStyles,
-              others: componentDefinition.component.definition?.others,
-              properties: componentDefinition.component.definition?.properties,
-              styles: componentDefinition.component.definition?.styles,
-              validation: componentDefinition.component.definition?.validation,
-            },
-            name: componentName,
-            parent: componentDefinition.component.parent,
-          },
-          layouts: componentDefinition.layouts,
-        };
-
-        return [...acc, newComponent];
-      }, []);
+      const newComponents = buildComponentDefinition(componentDefinitions, moduleId);
 
       const diff = newComponents.reduce((acc, newComponent) => {
         acc[newComponent.id] = {
@@ -846,6 +939,8 @@ export const createComponentsSlice = (set, get) => ({
         }
         updateComponentDependencyGraph(moduleId, newComponent);
         const parentId = newComponent.component.parent || 'canvas';
+        // Check if parent is a Form and add the component to form fields if needed
+        !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
         set(
           withUndoRedo((state) => {
             if (!state.containerChildrenMapping[parentId]) {
@@ -854,18 +949,21 @@ export const createComponentsSlice = (set, get) => ({
             if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
               state.containerChildrenMapping[parentId].push(newComponent.id);
             }
-            const page = state.modules[moduleId].pages.find((page) => page.id === state.currentPageId);
+            const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
             page.components[newComponent.id] = newComponent;
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
         );
       });
-      const selectedComponents = findHighestLevelofSelection(newComponents);
-      get().setSelectedComponents(selectedComponents.map((component) => component.id));
+
+      if (!skipFormUpdate) {
+        const selectedComponents = findHighestLevelofSelection(newComponents);
+        get().setSelectedComponents(selectedComponents.map((component) => component.id));
+      }
 
       if (saveAfterAction) {
-        saveComponentChanges(diff, 'components', 'create')
+        saveComponentChanges(diff, 'components', 'create', moduleId)
           .then(() => {
             resolve(); // Resolve the promise after all operations are complete
           })
@@ -875,13 +973,14 @@ export const createComponentsSlice = (set, get) => ({
           });
         get().multiplayer.broadcastUpdates(newComponents, 'components', 'create');
       }
+      if (skipFormUpdate) resolve(diff);
     });
   },
 
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -889,64 +988,95 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
+      getResolvedComponent,
       removeNode,
+      checkIfParentIsFormAndDeleteField,
+      deleteTemporaryLayouts,
+      currentLayout,
+      adjustComponentPositions,
+      getCurrentPageId,
+      checkIfComponentIsModule,
+      clearModuleFromStore,
     } = get();
+    const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
+    const componentIds = [];
+    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
+
+    const toDeleteComponents = [];
+    const toDeleteEvents = [];
+    const allComponents = getCurrentPageComponents(moduleId);
+
+    const findAllChildComponents = (componentId) => {
+      if (!toDeleteComponents.includes(componentId)) {
+        toDeleteComponents.push(componentId);
+
+        // Find the children of this component
+        const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
+        if (children.length > 0) {
+          // Recursively find children of children
+          children.forEach((child) => {
+            findAllChildComponents(child);
+          });
+        }
+      }
+    };
+
+    _selectedComponents.forEach((componentId) => {
+      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      findAllChildComponents(componentId);
+    });
+
+    toDeleteComponents.forEach((componentId) => {
+      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamicHeightEnabled) {
+        adjustComponentPositions(componentId, currentLayout, true);
+      }
+    });
+
     set(
       withUndoRedo((state) => {
-        const toDeleteComponents = [];
-        const toDeleteEvents = [];
-        const allComponents = getCurrentPageComponents();
-
-        const findAllChildComponents = (componentId) => {
-          if (!toDeleteComponents.includes(componentId)) {
-            toDeleteComponents.push(componentId);
-
-            // Find the children of this component
-            const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
-            if (children.length > 0) {
-              // Recursively find children of children
-              children.forEach((child) => {
-                findAllChildComponents(child);
-              });
-            }
-          }
-        };
-
-        _selectedComponents.forEach((componentId) => {
-          findAllChildComponents(componentId);
-        });
-
-        const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
+        const page = state.modules?.[moduleId]?.pages.find((page) => page.id === currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
-
         toDeleteComponents.forEach((id) => {
           // Remove from containerChildrenMapping
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
-              (componentId) => componentId !== id
+              (componentId) => {
+                if (componentId === id) {
+                  childParentMapping[id] = containerId;
+                }
+                return componentId !== id;
+              }
             );
           });
+
+          if (checkIfComponentIsModule(id, moduleId)) {
+            clearModuleFromStore(id);
+          }
 
           // Remove the container itself if it's a container
           if (state.containerChildrenMapping[id]) {
             delete state.containerChildrenMapping[id];
           }
-          if (state.containerChildrenMapping?.canvas?.includes(id)) {
-            state.containerChildrenMapping.canvas = state.containerChildrenMapping.canvas.filter((wid) => wid !== id);
+          if (state.containerChildrenMapping?.[moduleId]?.includes(id)) {
+            state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
+              (wid) => wid !== id
+            );
           }
           componentNames.push(page.components[id]?.component?.name);
+          componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
-          state.selectedComponents = []; // Empty the selected components
-          removeNode(`components.${id}`);
+          if (!skipFormUpdate) state.selectedComponents = []; // Empty the selected components
+          removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
 
@@ -954,7 +1084,7 @@ export const createComponentsSlice = (set, get) => ({
         state.eventsSlice.module[moduleId].events = filteredEvents;
 
         if (saveAfterAction) {
-          saveComponentChanges(toDeleteComponents, 'components', 'delete')
+          saveComponentChanges(toDeleteComponents, 'components', 'delete', moduleId)
             .then(() => {
               get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
               // Show delete toast message
@@ -979,8 +1109,15 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
     componentNames.forEach((componentName) => {
-      deleteComponentNameIdMapping(componentName);
+      deleteComponentNameIdMapping(componentName, moduleId);
+    });
+    componentIds.forEach((componentId) => {
+      if (childParentMapping[componentId]) {
+        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
+      }
+      deleteTemporaryLayouts(componentId);
     });
   },
 
@@ -1002,7 +1139,7 @@ export const createComponentsSlice = (set, get) => ({
           attachedTo: component.id,
           index: event?.index,
         };
-        await eventsSlice.createAppVersionEventHandlers(newEvent);
+        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
       }
     }
   },
@@ -1026,15 +1163,22 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
+      getResolvedComponent,
+      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      checkParentAndUpdateFormFields,
+      deleteTemporaryLayouts,
+      getCurrentPageIndex,
     } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+    updateParent && checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
     set(
       withUndoRedo((state) => {
-        const page = state.modules[moduleId].pages[state.currentPageIndex];
+        const page = state.modules[moduleId].pages[currentPageIndex];
         if (page) {
           // ============ Component layout update logic ============
           Object.entries(componentLayouts).forEach(([componentId, layout]) => {
@@ -1058,8 +1202,8 @@ export const createComponentsSlice = (set, get) => ({
                 state.containerChildrenMapping[oldParentId] = state.containerChildrenMapping[oldParentId].filter(
                   (id) => id !== componentId
                 );
-              } else if (state.containerChildrenMapping.canvas.includes(componentId)) {
-                state.containerChildrenMapping.canvas = state.containerChildrenMapping.canvas.filter(
+              } else if (state.containerChildrenMapping[moduleId].includes(componentId)) {
+                state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
                   (id) => id !== componentId
                 );
               }
@@ -1069,11 +1213,16 @@ export const createComponentsSlice = (set, get) => ({
                 if (!state.containerChildrenMapping[newParentId]) {
                   state.containerChildrenMapping[newParentId] = [];
                 }
-                state.containerChildrenMapping[newParentId].push(componentId);
+                if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+                  state.containerChildrenMapping[newParentId].push(componentId);
+                }
               } else {
-                state.containerChildrenMapping.canvas.push(componentId);
+                if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+                  state.containerChildrenMapping[moduleId].push(componentId);
+                }
               }
             }
+
             // ============ Parent update logic ends ============
           });
         }
@@ -1086,6 +1235,23 @@ export const createComponentsSlice = (set, get) => ({
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
+
+      // Adjust component positions
+
+      //If new parent is dynamic, adjust the parent positions
+      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
+      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
+      if (isParentDynamic) {
+        adjustComponentPositions(transformedParentId, currentLayout, false, true);
+      }
+
+      // If the parent is changed, adjust the old parent positions
+      if (oldParentId !== newParentId) {
+        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
+        if (isParentDynamic) {
+          adjustComponentPositions(oldParentId, currentLayout, false, true);
+        }
+      }
 
       if (
         newParentComponentType === 'Listview' ||
@@ -1123,10 +1289,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1137,10 +1303,39 @@ export const createComponentsSlice = (set, get) => ({
       return acc;
     }, {});
 
+    Object.keys(componentLayouts).forEach((componentId) => {
+      deleteTemporaryLayouts(componentId);
+      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
+      if (isDynamic) {
+        adjustComponentPositions(componentId, currentLayout, false, false);
+      }
+    });
+
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components/layout', 'update');
+      saveComponentChanges(diff, 'components/layout', 'update', moduleId);
       get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
     }
+  },
+
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
+    const currentMode = getCurrentMode(moduleId);
+    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
+    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
+
+    const diff = {
+      [componentId]: {
+        component: {
+          ...oldComponent,
+          definition: filteredDefinition,
+        },
+      },
+    };
+
+    if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+
+    get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
   },
 
   setComponentProperty: (
@@ -1154,7 +1349,7 @@ export const createComponentsSlice = (set, get) => ({
     { skipUndoRedo = false, saveAfterAction = true } = {}
   ) => {
     const {
-      currentPageIndex,
+      getCurrentPageIndex,
       saveComponentChanges,
       withUndoRedo,
       updateResolvedValues,
@@ -1165,12 +1360,15 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       getResolvedComponent,
       setResolvedComponent,
+      saveComponentPropertyChanges,
+      getCurrentMode,
     } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     const { component } = getComponentDefinition(componentId, moduleId);
     const oldValue = component.definition[paramType][property];
 
     if (Array.isArray(oldValue?.value)) {
-      const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId) ?? {}) };
+      const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
       resolvedComponent[componentId][paramType][property] = [];
 
       const { updatedValue } = checkValueAndResolve(
@@ -1197,23 +1395,8 @@ export const createComponentsSlice = (set, get) => ({
         'setComponentProperty'
       );
 
-      const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-      const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-      const diff = {
-        [componentId]: {
-          component: {
-            ...oldComponent,
-            definition: filteredDefinition,
-          },
-        },
-      };
-
       if (saveAfterAction) {
-        const currentMode = get().currentMode;
-        if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-        get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
       }
       return;
     }
@@ -1249,31 +1432,16 @@ export const createComponentsSlice = (set, get) => ({
       );
     }
 
-    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
-    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
-
-    const diff = {
-      [componentId]: {
-        component: {
-          ...oldComponent,
-          definition: filteredDefinition,
-        },
-      },
-    };
-
     if (saveAfterAction) {
-      const currentMode = get().currentMode;
-      if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
-
-      get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
     }
 
     if (attr !== 'value' || skipResolve) return;
     if (allRefs.length) {
-      generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue, true);
+      generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue, true, moduleId);
     } else {
       const propertyPath = `components.${componentId}.${paramType}.${property}`;
-      removeDependency(propertyPath, true);
+      removeDependency(propertyPath, true, moduleId);
     }
   },
 
@@ -1306,8 +1474,8 @@ export const createComponentsSlice = (set, get) => ({
           state.containerChildrenMapping[oldParentId] = state.containerChildrenMapping[oldParentId].filter(
             (id) => id !== componentId
           );
-        } else if (state.containerChildrenMapping.canvas.includes(componentId)) {
-          state.containerChildrenMapping.canvas = state.containerChildrenMapping.canvas.filter(
+        } else if (state.containerChildrenMapping[moduleId].includes(componentId)) {
+          state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
             (id) => id !== componentId
           );
         }
@@ -1317,9 +1485,13 @@ export const createComponentsSlice = (set, get) => ({
           if (!state.containerChildrenMapping[newParentId]) {
             state.containerChildrenMapping[newParentId] = [];
           }
-          state.containerChildrenMapping[newParentId].push(componentId);
+          if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
+            state.containerChildrenMapping[newParentId].push(componentId);
+          }
         } else {
-          state.containerChildrenMapping.canvas.push(componentId);
+          if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
+            state.containerChildrenMapping[moduleId].push(componentId);
+          }
         }
       }, skipUndoRedo),
       false,
@@ -1370,17 +1542,18 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components', 'update');
+      saveComponentChanges(diff, 'components', 'update', moduleId);
       get().multiplayer.broadcastUpdates({ componentId, newParentId }, 'components', 'parent');
     }
   },
   setSelectedComponents: (components) => {
-    get().togglePageSettingMenu(false);
     set(
       (state) => {
         state.selectedComponents = components;
         if (components.length === 1) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          if (state.isRightSidebarOpen) {
+            state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          }
         }
       },
       false,
@@ -1391,7 +1564,9 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [componentId];
-        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+        }
       },
       false,
       { type: 'setSelectedComponentAsModal', payload: { componentId } }
@@ -1400,21 +1575,21 @@ export const createComponentsSlice = (set, get) => ({
   setFocusedParentId: (parentId) => {
     set((state) => {
       state.focusedParentId = parentId;
-    });
+    }),
+      false,
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
-  saveComponentChanges: (diff, type, operation) => {
+  saveComponentChanges: (diff, type, operation, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.app.isSaving = true;
+        state.appStore.modules[moduleId].app.isSaving = true;
       },
       false,
       'setAppSavingChanges'
     );
-    const {
-      app: { appId },
-      currentVersionId,
-      currentPageId,
-    } = get();
+    const { getAppId, currentVersionId, getCurrentPageId } = get();
+    const appId = getAppId(moduleId);
+    const currentPageId = getCurrentPageId(moduleId);
 
     return new Promise((resolve) => {
       appVersionService
@@ -1438,7 +1613,7 @@ export const createComponentsSlice = (set, get) => ({
         .finally(() => {
           set(
             (state) => {
-              state.app.isSaving = false;
+              state.appStore.modules[moduleId].app.isSaving = false;
             },
             false,
             'setAppSavingChanges'
@@ -1448,7 +1623,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   handleCanvasContainerMouseUp: (e) => {
-    const { selectedComponents, clearSelectedComponents, setActiveRightSideBarTab } = get();
+    const {
+      selectedComponents,
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      setRightSidebarOpen,
+      isRightSidebarPinned,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -1459,15 +1640,20 @@ export const createComponentsSlice = (set, get) => ({
       !selectedText
     ) {
       clearSelectedComponents();
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      // if (!isRightSidebarPinned) {
+      //   setRightSidebarOpen(false);
+      // }
     }
   },
 
   turnOffAutoComputeLayout: async (moduleId = 'canvas') => {
-    const { app, currentPageId, currentVersionId } = get();
+    const { appStore, getCurrentPageId, currentVersionId } = get();
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
     set(
       (state) => {
-        state.modules[moduleId].pages[state.currentPageIndex].autoComputeLayout = false;
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = false;
       },
       false,
       'turnOffAutoComputeLayout'
@@ -1481,65 +1667,73 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
 
-  getCurrentPageId: () => get().currentPageId,
+  getCurrentPageId: (moduleId = 'canvas') => get().modules[moduleId].currentPageId,
+  getCurrentPageIndex: (moduleId = 'canvas') => get().modules[moduleId].currentPageIndex,
 
-  getComponentsFromAllPages: () => {
+  getComponentsFromAllPages: (moduleId = 'canvas') => {
     const { modules } = get();
     return Object.fromEntries(
-      modules.canvas.pages.flatMap((page) =>
+      modules[moduleId].pages.flatMap((page) =>
         Object.entries(page.components).map(([id, { component }]) => [id, component.name])
       )
     );
   },
 
-  getCurrentPageComponents: () => {
-    const { modules, currentPageId } = get();
-    const currentPageIndex = modules.canvas.pages.findIndex((page) => page.id === currentPageId);
-    return modules.canvas.pages[currentPageIndex]?.components || [];
+  getCurrentPageComponents: (moduleId = 'canvas') => {
+    const { modules, getCurrentPageId } = get();
+    const currentPageId = getCurrentPageId(moduleId);
+    const currentPageIndex = modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+    return modules[moduleId].pages[currentPageIndex]?.components || [];
   },
 
-  getCurrentPageComponentIds: () => {
-    const { pages, currentPageId, modules } = get();
-    const currentPageIndex = modules.canvas.pages.findIndex((page) => page.id === currentPageId);
+  getCurrentPageComponentIds: (moduleId = 'canvas') => {
+    const { pages, getCurrentPageId, modules } = get();
+    const currentPageId = getCurrentPageId(moduleId);
+    const currentPageIndex = modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
     return Object.keys(pages[currentPageIndex]?.components || {});
   },
 
   getCurrentPage: (moduleId = 'canvas') => {
-    const { modules, currentPageId } = get();
+    const { modules, getCurrentPageId } = get();
+    const currentPageId = getCurrentPageId(moduleId);
     const currentPage = modules[moduleId].pages.find((page) => page.id === currentPageId);
     return currentPage;
   },
 
   // Get the component definition from the component id
   getComponentDefinition: (componentId, moduleId = 'canvas') => {
-    const currentPage = get().modules[moduleId].pages.find((page) => page.id === get().currentPageId);
+    const currentPage = get().modules[moduleId].pages.find((page) => page.id === get().getCurrentPageId(moduleId));
+    // if (componentId === 'd78554b8-2af0-4add-9d7d-0032bb4c90ce')
+    // console.trace('here--- getComponentDefinition--- ', componentId, moduleId, currentPage?.components[componentId]);
     return currentPage?.components[componentId];
   },
 
   getComponentIdFromName: (componentName, moduleId = 'canvas') => {
     const { modules } = get();
-    return modules[moduleId].componentNameIdMapping[componentName];
+    return modules?.[moduleId]?.componentNameIdMapping?.[componentName];
   },
   // Get the component name from the component id
   getComponentNameFromId: (componentId, moduleId = 'canvas') => {
-    const { modules, currentPageIndex } = get();
+    const { modules, getCurrentPageIndex } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     return modules[moduleId].pages[currentPageIndex]?.components[componentId]?.component.name;
   },
   getComponentTypeFromId: (componentId, moduleId = 'canvas') => {
-    const { modules, currentPageIndex } = get();
+    const { modules, getCurrentPageIndex } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     return modules[moduleId].pages[currentPageIndex]?.components[componentId]?.component.component;
   },
   getComponentNameIdMapping: (moduleId = 'canvas') => {
     const { modules } = get();
     return modules[moduleId].componentNameIdMapping;
   },
-  getComponentIdNameMapping: () => {
+  getComponentIdNameMapping: (moduleId = 'canvas') => {
     const { getComponentNameIdMapping } = get();
-    return Object.fromEntries(Object.entries(getComponentNameIdMapping()).map(([name, id]) => [id, name]));
+    return Object.fromEntries(Object.entries(getComponentNameIdMapping(moduleId)).map(([name, id]) => [id, name]));
   },
-  getSelectedComponentsDefinition: () => {
+  getSelectedComponentsDefinition: (moduleId = 'canvas') => {
     const { selectedComponents, getCurrentPageComponents } = get();
-    const allComponents = getCurrentPageComponents();
+    const allComponents = getCurrentPageComponents(moduleId);
     const _selected = [];
     for (let componentId of selectedComponents) {
       const component = {
@@ -1563,13 +1757,17 @@ export const createComponentsSlice = (set, get) => ({
     const { modules } = get();
     return modules[moduleId].queryIdNameMapping;
   },
+  getQueryIdFromName: (queryName, moduleId = 'canvas') => {
+    const { modules } = get();
+    return modules[moduleId].queryNameIdMapping[queryName];
+  },
   getContainerChildrenMapping: (id) => {
     const { containerChildrenMapping } = get();
     return containerChildrenMapping[id] || [];
   },
   getChildComponents: (parentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents } = get();
-    const allComponents = getCurrentPageComponents();
+    const allComponents = getCurrentPageComponents(moduleId);
     const childComponents = Object.entries(allComponents)
       .filter(([_, component]) => component.component.parent === parentId)
       .reduce((acc, [id, component]) => {
@@ -1598,8 +1796,8 @@ export const createComponentsSlice = (set, get) => ({
         } else {
           const [entityType, entityId, type, ...keys] = dependency.split('.');
           const key = keys.join('.');
-          const unResolvedValue = getNodeData(dependency);
-          const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(), {}, false, []);
+          const unResolvedValue = getNodeData(dependency, moduleId);
+          const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, []);
 
           if (type === undefined) {
             set(
@@ -1613,7 +1811,7 @@ export const createComponentsSlice = (set, get) => ({
           } else {
             const shouldValidate = entityType === 'components' && entityId;
             const validatedValue = shouldValidate
-              ? get().debugger.validateProperty(entityId, type, key, resolvedValue)
+              ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
               : resolvedValue;
 
             // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
@@ -1628,7 +1826,7 @@ export const createComponentsSlice = (set, get) => ({
                     lodashSet(
                       state.resolvedStore.modules[moduleId][entityType][entityId],
                       ['properties', 'shouldRender'],
-                      (getResolvedComponent(entityId)?.['properties']?.['shouldRender'] ?? 0) + 1
+                      (getResolvedComponent(entityId, null, moduleId)?.['properties']?.['shouldRender'] ?? 0) + 1
                     );
                   },
                   false,
@@ -1677,24 +1875,24 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  getParentIdFromDependency: (dependency) => {
+  getParentIdFromDependency: (dependency, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentId = dependency.split('.')[1];
-    const component = getComponentDefinition(componentId);
+    const component = getComponentDefinition(componentId, moduleId);
     return component?.component?.parent;
   },
 
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas') => {
     const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
-    const parentId = getParentIdFromDependency(dependency);
-    const unResolvedValue = getNodeData(dependency);
+    const parentId = getParentIdFromDependency(dependency, moduleId);
+    const unResolvedValue = getNodeData(dependency, moduleId);
 
     // Loop through the customResolvables and update the resolved value
     for (let i = 0; i < length; i++) {
       const resolvedValue = resolveDynamicValues(
         unResolvedValue,
-        getAllExposedValues(),
+        getAllExposedValues(moduleId),
         getCustomResolvables(parentId, i, moduleId), // passing the parent ID and index to get the custom resolvables of the child
         false,
         []
@@ -1702,7 +1900,7 @@ export const createComponentsSlice = (set, get) => ({
       // If the index is not in the resolved store then add it with first index data
       const shouldValidate = entityType === 'components' && entityId;
       const validatedValue = shouldValidate
-        ? get().debugger.validateProperty(entityId, type, key, resolvedValue)
+        ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
 
       set(
@@ -1725,7 +1923,8 @@ export const createComponentsSlice = (set, get) => ({
 
   getParentComponentType: (parentId, moduleId) => {
     if (!parentId) return null;
-    const { modules, currentPageIndex } = get();
+    const { modules, getCurrentPageIndex } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
     // Remove the tab id or any other details from the parent id (ie, -modal, -calendar, -0 from parentId)
     const parentUUID = parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
     const component = modules[moduleId].pages[currentPageIndex].components[parentUUID];
@@ -1822,33 +2021,20 @@ export const createComponentsSlice = (set, get) => ({
       return match; // Return the original match if no mapping is found
     });
   },
-  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition) => {
-    const componentDefinition = get().getComponentDefinition(componentId);
+  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
+    const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (
-      ![
-        'TextInput',
-        'PasswordInput',
-        'NumberInput',
-        'DropdownV2',
-        'MultiselectV2',
-        'RadioButtonV2',
-        'DatetimePickerV2',
-        'DaterangePicker',
-        'DatePickerV2',
-        'TimePicker',
-      ].includes(componentType)
-    ) {
+    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
     const resolvedLabel = label?.value?.length ?? 0;
-    const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues()) ?? 0;
-    const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues()) ?? false;
+    const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
+    const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
 
     const resolvedAlignment =
       alignment.value === 'top' || alignment.value === 'side'
@@ -1880,5 +2066,107 @@ export const createComponentsSlice = (set, get) => ({
     set((state) => {
       state.modalsOpenOnCanvas = newModalOpenOnCanvas;
     });
+  },
+  checkIfComponentIsModule: (componentId, moduleId = 'canvas') =>
+    get().getComponentDefinition(componentId, moduleId)?.component?.component === 'ModuleViewer',
+  updateContainerAutoHeight: (componentId) => {
+    if (
+      !componentId ||
+      componentId === 'canvas' ||
+      componentId.includes('-header') ||
+      componentId.includes('-footer')
+    ) {
+      return;
+    }
+    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const allComponents = getCurrentPageComponents();
+
+    const childComponents = getAllChildComponents(allComponents, componentId);
+    const maxHeight = Object.values(childComponents).reduce((max, component) => {
+      // Added this logic to handle the top alignment for the component
+      const top = component?.component?.definition?.styles?.alignment?.value === 'top' ? 20 : 0;
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + layout.height + top;
+      return Math.max(max, sum);
+    }, 0);
+
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+  },
+
+  /**
+   * Generates a unique component name from the base name by appending a number if necessary.
+   * @param {string} baseName - The base name for the component
+   * @returns {string} Unique component name
+   */
+  generateUniqueComponentNameFromBaseName: (baseName, moduleId = 'canvas') => {
+    const { getComponentNameIdMapping } = get();
+    const componentNameIdMapping = getComponentNameIdMapping(moduleId);
+
+    let uniqueName = baseName;
+    let counter = 1;
+
+    while (Object.keys(componentNameIdMapping).includes(uniqueName)) {
+      uniqueName = `${baseName}${counter}`;
+      counter++;
+    }
+
+    return uniqueName;
+  },
+  buildComponentDefinition: (componentDefinitions, moduleId = 'canvas') => {
+    const { getCurrentPageComponents } = get();
+    return componentDefinitions.reduce((acc, componentDefinition) => {
+      const currentComponents = {
+        ...getCurrentPageComponents(moduleId),
+        ...Object.fromEntries(acc.map((component) => [component.id, component])),
+      };
+
+      const componentName =
+        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      const newComponent = {
+        id: componentDefinition.id,
+        name: componentName,
+        component: {
+          component: componentDefinition.component.component,
+          definition: {
+            general: componentDefinition.component.definition?.general,
+            generalStyles: componentDefinition.component.definition?.generalStyles,
+            others: componentDefinition.component.definition?.others,
+            properties: componentDefinition.component.definition?.properties,
+            styles: componentDefinition.component.definition?.styles,
+            validation: componentDefinition.component.definition?.validation,
+          },
+          name: componentName,
+          displayName: componentDefinition.component.displayName,
+          parent: componentDefinition.component.parent,
+        },
+        layouts: componentDefinition.layouts,
+      };
+
+      return [...acc, newComponent];
+    }, []);
+  },
+  toggleComponentPermissionModal: (show) => {
+    set((state) => {
+      state.showComponentPermissionModal = show;
+    });
+  },
+  setComponentPermission: (componentId, data) => {
+    const { modules } = get();
+    const currentPageIndex = modules.canvas.currentPageIndex;
+    const component = modules.canvas.pages[currentPageIndex]?.components?.[componentId];
+
+    if (component) {
+      const updatedComponent = {
+        ...component,
+        permissions: data.length === 0 || data.length === undefined ? [] : [data[0]],
+      };
+
+      set((state) => {
+        state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
+      });
+    }
   },
 });

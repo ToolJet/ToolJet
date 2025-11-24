@@ -548,7 +548,7 @@
   }
 
   .empty-foreignkey-container {
-    border: 1px dashed #d7dbdf;
+    border: 1px dashed var(--border-default);
     height: 40px;
     width: 270px !important;
     border-radius: 100px !important;

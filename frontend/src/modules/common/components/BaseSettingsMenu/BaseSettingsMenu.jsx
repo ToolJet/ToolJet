@@ -10,6 +10,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 function BaseSettingsMenu({
   darkMode,
@@ -21,6 +22,7 @@ function BaseSettingsMenu({
     hideMarketPlaceMenuItem: false,
   },
 }) {
+  const edition = fetchEdition();
   const [showOverlay, setShowOverlay] = useState(false);
   const { tooljetVersion } = useAppDataStore(
     (state) => ({
@@ -77,7 +79,6 @@ function BaseSettingsMenu({
       featureAccess,
       checkForUnsavedChanges,
     });
-
     return (
       <div className={`settings-card tj-text card ${darkMode ? 'dark-theme' : ''}`}>
         {/* Marketplace section */}
@@ -100,6 +101,9 @@ function BaseSettingsMenu({
 
         {/* Super Admin Settings */}
         {superAdmin && midMenuContent}
+
+        {/* Specifically for Cloud Edition */}
+        {edition === 'cloud' && admin && !superAdmin && midMenuContent}
 
         {/* Admin section - Workspace settings */}
         {admin && (

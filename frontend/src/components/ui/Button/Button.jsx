@@ -126,6 +126,7 @@ const Button = forwardRef(
       asChild = false,
       fill = '',
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
+      loaderText = null,
       ...props
     },
     ref
@@ -133,11 +134,38 @@ const Button = forwardRef(
     const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
     const Comp = asChild ? Slot : 'Button';
     const leadingIconElement = leadingIcon && (
-      <SolidIcon name={leadingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
+      <div
+        className="tw-flex tw-justify-center tw-items-center"
+        style={{ width: getIconSize(size), height: getIconSize(size) }}
+      >
+        <SolidIcon name={leadingIcon} fill={iconFillColor} />
+      </div>
     );
     const trailingIconElement = trailingIcon && (
-      <SolidIcon name={trailingIcon} height={getIconSize(size)} width={getIconSize(size)} fill={iconFillColor} />
+      <div
+        className="tw-flex tw-justify-center tw-items-center"
+        style={{ width: getIconSize(size), height: getIconSize(size) }}
+      >
+        <SolidIcon name={trailingIcon} fill={iconFillColor} />
+      </div>
     );
+
+    const renderLoader = () => {
+      if (loaderText) {
+        return (
+          <div className="tw-flex tw-justify-center tw-items-center tw-gap-1.5">
+            <Loader color={iconFillColor} width={getIconSize(size)} position="relative" />
+            <span>{loaderText}</span>
+          </div>
+        );
+      }
+      return (
+        <div className="tw-flex tw-justify-center tw-items-center">
+          <Loader color={iconFillColor} width={getIconSize(size)} />
+          <a className="tw-invisible">{props.children}</a>
+        </div>
+      );
+    };
 
     return (
       <Comp
@@ -147,10 +175,7 @@ const Button = forwardRef(
         {...props}
       >
         {isLoading ? (
-          <div className="tw-flex tw-justify-center tw-items-center">
-            <Loader color={iconFillColor} width={getIconSize(size)} />
-            <a className="tw-invisible">{props.children}</a>
-          </div>
+          renderLoader()
         ) : (
           <>
             {leadingIconElement}

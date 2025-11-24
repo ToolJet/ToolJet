@@ -64,7 +64,6 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
     migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-    keepConnectionAlive: true,
   };
 }
 
@@ -93,7 +92,6 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     migrationsRun: false,
     migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
-    keepConnectionAlive: true,
   };
 }
 

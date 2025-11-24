@@ -71,4 +71,4 @@ Let's take a look at an example of triggering a webhook using **Postman**.
 
 This was a basic example of how you can trigger workflows using webhooks. You can use webhooks to connect ToolJet to external applications and services for advanced use-cases and event-driven automation. 
 
-If you want to learn how to trigger workflows withing ToolJet, refer to **[this guide](/docs/workflows/trigger-workflow-from-app)**.
+If you want to learn how to trigger workflows withing ToolJet, refer to **[this guide](/docs/workflows/how-to/trigger-workflow-from-app/)**.

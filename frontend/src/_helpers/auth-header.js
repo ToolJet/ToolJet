@@ -1,8 +1,8 @@
 import { authenticationService } from '@/_services';
 import { handleUnSubscription } from './utils';
+import { getPatToken } from '@/AppBuilder/EmbedApp';
 
 export function authHeader(isMultipartData = false, current_organization_id) {
-  // return authorization header with jwt token
   let session = authenticationService.currentSessionValue;
 
   let subsciption;
@@ -13,9 +13,9 @@ export function authHeader(isMultipartData = false, current_organization_id) {
     handleUnSubscription(subsciption);
   }
 
-  const wid = current_organization_id || session.current_organization_id;
+  const wid = current_organization_id || session?.current_organization_id;
 
-  return {
+  const headers = {
     ...(!isMultipartData && {
       'Content-Type': 'application/json',
     }),
@@ -23,4 +23,17 @@ export function authHeader(isMultipartData = false, current_organization_id) {
       'tj-workspace-id': wid,
     }),
   };
+
+  // ✅ Explicitly remove PAT on login or logout routes
+  const path = window.location.pathname;
+  const isLoginOrLogout = path.includes('/login') || path.includes('/logout');
+
+  if (!isLoginOrLogout) {
+    const pat = getPatToken();
+    if (pat) {
+      headers['tj_auth_token'] = pat;
+    }
+  }
+
+  return headers;
 }

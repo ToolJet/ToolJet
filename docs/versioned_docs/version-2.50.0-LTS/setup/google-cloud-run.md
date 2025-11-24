@@ -12,6 +12,7 @@ You should setup a PostgreSQL database manually to be used by ToolJet.
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ## Deploying ToolJet application
+
 1. Create a new Google Cloud Run Service:
 
 <div style={{textAlign: 'left'}}>
@@ -30,7 +31,6 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
   </div>
 
-
 - If the command mentioned above is not compatible, please use the following command structure instead:
 
  <div style={{textAlign: 'center'}}>
@@ -43,9 +43,9 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
   </div>
 
-4. Under environmental variable please add the below ToolJet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
+4. Under environmental variable please add the below ToolJet application variables. You can also refer env variable [**here**](/docs/setup/env-vars).
 
-  Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
+Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/env-variable-tooljet.png" alt="env-variable-tooljet" />
@@ -55,25 +55,23 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::
 
-
 5. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
   </div>
 
-
-Click on deploy once the above parameters are set. 
+Click on deploy once the above parameters are set.
 
 :::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
-## Deploying ToolJet Database 
+## Deploying ToolJet Database
 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
-#### PostgREST server 
+#### PostgREST server
 
 1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry.
 
@@ -83,29 +81,26 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
    docker tag postgrest/postgrest:v10.1.1.20221215 gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
    docker push gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
    ```
-  
-  Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry. 
+
+Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
   </div>
 
-
 2. Once the PostgREST image is pushed. Click on create service.
 
-  Select and add the pushed PostgREST image as shown in below.
+Select and add the pushed PostgREST image as shown in below.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/create-service-cloud-run-postgrest.png" alt="create-service-cloud-run-postgrest" />
-  </div>  
-
+  </div>
 
 3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
-
 
 4. Under containers tab, please make sure the port is set 3000 and CPU capacity is set to 1GiB.
 
@@ -117,27 +112,21 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 
 6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
 
-
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
   </div>
-  
 
-Click on deploy once the above parameters are set. 
+Click on deploy once the above parameters are set.
 
 :::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+Once the Service is created and live, to make the Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
-
-
 7. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars)
-
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
   </div>
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -151,4 +140,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._

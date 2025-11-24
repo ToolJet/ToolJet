@@ -17,7 +17,7 @@ import { OrganizationAuthGuard } from '@modules/session/guards/organization-auth
 @Controller('organizations')
 @InitModule(MODULES.ORGANIZATIONS)
 export class OrganizationsController implements IOrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(protected organizationsService: OrganizationsService) {}
 
   @InitFeature(FEATURE_KEY.GET)
   // TODO: Change to jwt auth guard - check why we need OrganizationAuthGuard here
@@ -38,15 +38,15 @@ export class OrganizationsController implements IOrganizationsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch()
   async updateOrganizationNameAndSlug(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user: UserEntity) {
-    await this.organizationsService.updateOrganizationNameAndSlug(user.organizationId, organizationUpdateDto);
+    await this.organizationsService.updateOrganizationNameAndSlug(user, organizationUpdateDto);
     return;
   }
-  // Note : This endpoint is used for archive/unarchive workspaces.
-  @InitFeature(FEATURE_KEY.WORKSPACE_STATUS_UPDATE)
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async updateById(@Body() organizationUpdateDto: OrganizationStatusUpdateDto, @Param('id') organizationId: string) {
-    await this.organizationsService.updateOrganizationStatus(organizationId, organizationUpdateDto);
+
+  @InitFeature(FEATURE_KEY.SET_DEFAULT)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch(':id/set-default')
+  async setDefaultWorkspace(@Param('id') id: string) {
+    await this.organizationsService.setDefaultWorkspace(id);
     return;
   }
 
@@ -62,5 +62,27 @@ export class OrganizationsController implements IOrganizationsController {
   @UseGuards(FeatureAbilityGuard)
   async checkUniqueWorkspaceName(@Query('name') name: string) {
     return this.organizationsService.checkWorkspaceNameUniqueness(name);
+  }
+
+  @InitFeature(FEATURE_KEY.WORKSPACE_ARCHIVE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/archive/:id')
+  async archiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    throw new Error('Not implemented');
+  }
+
+  @InitFeature(FEATURE_KEY.WORKSPACE_UNARCHIVE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/unarchive/:id')
+  async unarchiveOrganization(
+    @Body() organizationUpdateDto: OrganizationStatusUpdateDto,
+    @Param('id') organizationId: string,
+    @User() user: UserEntity
+  ) {
+    throw new Error('Not implemented');
   }
 }

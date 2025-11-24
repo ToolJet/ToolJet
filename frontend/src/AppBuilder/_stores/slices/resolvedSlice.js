@@ -3,15 +3,6 @@ import { resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import _ from 'lodash';
-import {
-  reservedKeyword,
-  resolveString,
-  removeNestedDoubleCurlyBraces,
-  getDynamicVariables,
-  resolveCode,
-} from '@/_helpers/utils';
-
-import { validateMultilineCode } from '@/_helpers/utility';
 
 const initialState = {
   resolvedStore: {
@@ -19,13 +10,14 @@ const initialState = {
       canvas: {
         others: {
           canvasBackgroundColor: null,
-          isPagesSidebarHidden: false,
+          isPagesSidebarHidden: true,
+          pages: {},
         },
         components: {},
         secrets: {},
         customResolvables: {},
         exposedValues: {
-          queries: {},
+          queries: {} /* IMPORTANT: Query is subscribed by the moduleContainer component */,
           components: {},
           variables: {},
           constants: {},
@@ -50,6 +42,17 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
 
 export const createResolvedSlice = (set, get) => ({
   ...initialState,
+  initializeResolvedSlice: (moduleId) => {
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId] = {
+          ...initialState.resolvedStore.modules.canvas,
+        };
+      },
+      false,
+      'initializeResolvedSlice'
+    );
+  },
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -71,7 +74,7 @@ export const createResolvedSlice = (set, get) => ({
       'setResolvedGlobals'
     );
     Object.entries(values).forEach(() => {
-      get().updateDependencyValues(`globals.${objKey}`);
+      get().updateDependencyValues(`globals.${objKey}`, moduleId);
     });
   },
   setResolvedConstants: (constants = {}, moduleId = 'canvas') => {
@@ -85,7 +88,7 @@ export const createResolvedSlice = (set, get) => ({
       'setResolvedConstants'
     );
     Object.entries(constants).forEach(([key, value]) => {
-      get().updateDependencyValues(`constants.${key}`);
+      get().updateDependencyValues(`constants.${key}`, moduleId);
     });
   },
 
@@ -108,7 +111,7 @@ export const createResolvedSlice = (set, get) => ({
       'setResolvedPageConstants'
     );
     Object.entries(constants).forEach(([key, value]) => {
-      get().updateDependencyValues(`page.${key}`);
+      get().updateDependencyValues(`page.${key}`, moduleId);
     });
   },
 
@@ -121,7 +124,8 @@ export const createResolvedSlice = (set, get) => ({
       false,
       'setVariables'
     );
-    get().updateDependencyValues(`variables.${key}`);
+    get().updateDependencyValues(`variables.${key}`, moduleId);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getVariable: (key, moduleId = 'canvas') => {
@@ -136,8 +140,23 @@ export const createResolvedSlice = (set, get) => ({
       false,
       'unsetVariable'
     );
-    get().removeNode(`variables.${key}`);
-    get().updateDependencyValues(`variables.${key}`);
+    get().removeNode(`variables.${key}`, moduleId);
+    get().updateDependencyValues(`variables.${key}`, moduleId);
+  },
+
+  unsetAllVariables: (moduleId = 'canvas') => {
+    const variables = get().resolvedStore.modules[moduleId].exposedValues.variables;
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].exposedValues.variables = {};
+      },
+      false,
+      'unsetAllVariables'
+    );
+    Object.keys(variables).forEach((key) => {
+      get().removeNode(`variables.${key}`);
+      get().updateDependencyValues(`variables.${key}`);
+    });
   },
 
   // page.variables
@@ -149,7 +168,8 @@ export const createResolvedSlice = (set, get) => ({
       false,
       'setPageVariable'
     );
-    get().updateDependencyValues(`page.variables.${key}`);
+    get().updateDependencyValues(`page.variables.${key}`, moduleId);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getPageVariable: (key, moduleId = 'canvas') => {
@@ -163,8 +183,23 @@ export const createResolvedSlice = (set, get) => ({
       false,
       'unsetPageVariable'
     );
-    get().removeNode(`page.variables.${key}`);
-    get().updateDependencyValues(`page.variables.${key}`);
+    get().removeNode(`page.variables.${key}`, moduleId);
+    get().updateDependencyValues(`page.variables.${key}`, moduleId);
+  },
+
+  unsetAllPageVariables: (moduleId = 'canvas') => {
+    const pageVariables = get().resolvedStore.modules[moduleId].exposedValues.page.variables;
+    set(
+      (state) => {
+        state.resolvedStore.modules[moduleId].exposedValues.page.variables = {};
+      },
+      false,
+      'unsetAllPageVariables'
+    );
+    Object.keys(pageVariables).forEach((key) => {
+      get().removeNode(`page.variables.${key}`);
+      get().updateDependencyValues(`page.variables.${key}`);
+    });
   },
 
   setResolvedQuery: (queryId, details, moduleId = 'canvas') => {
@@ -181,13 +216,13 @@ export const createResolvedSlice = (set, get) => ({
 
     Object.entries(details).forEach(([key, value]) => {
       if (['isLoading', 'data', 'rawData', 'request', 'response', 'responseHeaders', 'metadata'].includes(key)) {
-        if (typeof value !== 'function') get().updateDependencyValues(`queries.${queryId}.${key}`);
+        if (typeof value !== 'function') get().updateDependencyValues(`queries.${queryId}.${key}`, moduleId);
       }
     });
     // Flag to update the codehinter suggestions
     get().checkAndSetTrueBuildSuggestionsFlag();
   },
-  initialiseResolvedQuery(querIds, moduleId = 'canvas') {
+  initialiseResolvedQuery: (querIds, moduleId = 'canvas') => {
     const defaultObject = {};
     querIds.forEach((queryId) => {
       defaultObject[queryId] = {
@@ -216,7 +251,7 @@ export const createResolvedSlice = (set, get) => ({
   setResolvedComponents: (components, moduleId = 'canvas') => {
     const validateComponents = get().debugger.validateComponents;
 
-    const validatedComponents = validateComponents(components);
+    const validatedComponents = validateComponents(components, moduleId);
 
     set(
       (state) => {
@@ -245,7 +280,7 @@ export const createResolvedSlice = (set, get) => ({
           }
   */
   setResolvedComponentByProperty: (componentId, type, property, value, index = null, moduleId = 'canvas') => {
-    value = get().debugger.validateProperty(componentId, type, property, value);
+    value = get().debugger.validateProperty(componentId, type, property, value, moduleId);
 
     set(
       (state) => {
@@ -306,10 +341,11 @@ export const createResolvedSlice = (set, get) => ({
         payload: { componentId, property, value, moduleId },
       }
     );
-    get().updateDependencyValues(`components.${componentId}.${property}`);
+    get().updateDependencyValues(`components.${componentId}.${property}`, moduleId);
   },
 
   setExposedValues: (id, type, values, moduleId = 'canvas') => {
+    const skipKeys = new Set();
     set(
       (state) => {
         Object.entries(values).forEach(([key, value]) => {
@@ -317,7 +353,13 @@ export const createResolvedSlice = (set, get) => ({
             state.resolvedStore.modules[moduleId].exposedValues[type][id] = {
               [key]: value,
             };
-          else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          else {
+            // If the value is equal to the existing value, add the key to the skipKeys set and do not update it
+            // using lodash's isEqual as the state is immer proxy and cannot be compared directly
+            if (_.isEqual(value, state.resolvedStore.modules[moduleId].exposedValues[type][id][key])) {
+              skipKeys.add(key);
+            } else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+          }
         });
       },
       false,
@@ -327,7 +369,8 @@ export const createResolvedSlice = (set, get) => ({
       }
     );
     Object.entries(values).forEach(([key, value]) => {
-      if (typeof value !== 'function') get().updateDependencyValues(`components.${id}.${key}`);
+      if (typeof value !== 'function' && !skipKeys.has(key))
+        get().updateDependencyValues(`components.${id}.${key}`, moduleId);
     });
   },
 
@@ -336,7 +379,7 @@ export const createResolvedSlice = (set, get) => ({
     if (val && Object.keys(val).length > 0) return;
     const component = componentTypeDefinitionMap[componentType];
     if (!component) return;
-    const parentComponentType = get().getComponentDefinition(parentId)?.component?.component;
+    const parentComponentType = get().getComponentDefinition(parentId, moduleId)?.component?.component;
     if (['Form', 'Listview'].includes(parentComponentType)) return;
     const exposedVariables = component.exposedVariables || {};
     get().setExposedValues(id, 'components', exposedVariables, moduleId);
@@ -392,7 +435,7 @@ export const createResolvedSlice = (set, get) => ({
   },
   getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
     try {
-      const components = get().getCurrentPageComponents();
+      const components = get().getCurrentPageComponents(moduleId);
       const {
         component: { parent: parentId, name: componentName },
       } = components[componentId];
@@ -407,6 +450,9 @@ export const createResolvedSlice = (set, get) => ({
     } catch (error) {
       return {};
     }
+  },
+  getExposedValueOfQuery: (queryId, moduleId = 'canvas') => {
+    return get().resolvedStore.modules[moduleId].exposedValues.queries[queryId] || {};
   },
   getAllExposedValues: (moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].exposedValues;
@@ -437,11 +483,11 @@ export const createResolvedSlice = (set, get) => ({
     const canvasBgColor = get().globalSettings.backgroundFxQuery
       ? get().resolvedStore.modules[moduleId].others.canvasBackgroundColor || globalSettingsBackgroundColor
       : globalSettingsBackgroundColor;
-    const canvasBackgroundColor = canvasBgColor ? canvasBgColor : '#edeff5';
+    const canvasBackgroundColor = canvasBgColor ? canvasBgColor : 'var(--cc-appBackground-surface)';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return darkMode ? '#2f3c4c' : '#edeff5';
     }
-    return canvasBgColor;
+    return canvasBackgroundColor;
   },
 
   getSecrets: (moduleId = 'canvas') => {
@@ -450,6 +496,10 @@ export const createResolvedSlice = (set, get) => ({
 
   getPagesSidebarVisibility: (moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].others.isPagesSidebarHidden;
+  },
+
+  getPagesVisibility: (moduleId = 'canvas', id) => {
+    return get().resolvedStore.modules[moduleId].others.pages[id]?.hidden ?? false;
   },
 
   setResolvedValueForOthers: (values, moduleId = 'canvas') => {
@@ -469,6 +519,9 @@ export const createResolvedSlice = (set, get) => ({
       state.resolvedStore.modules[moduleId].exposedValues.components = {};
       state.resolvedStore.modules[moduleId].exposedValues.variables = {};
       state.resolvedStore.modules[moduleId].exposedValues.globals = {};
+      if (state.resolvedStore.modules[moduleId].exposedValues.input) {
+        state.resolvedStore.modules[moduleId].exposedValues.input = {};
+      }
       if (state.resolvedStore.modules[moduleId].exposedValues.page?.variables) {
         state.resolvedStore.modules[moduleId].exposedValues.page.variables = {};
       }
@@ -498,7 +551,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   // this function simply replaces the id with name for queries and components inside resolvedStore
-  getResolvedState: (key, moduleId = 'canvas') => {
+  getResolvedState: (moduleId = 'canvas', key) => {
     const state = {
       components: {},
       queries: {},
@@ -542,7 +595,7 @@ export const createResolvedSlice = (set, get) => ({
     const objectType = typeof object;
     let error;
 
-    const state = _state ?? get().getAllExposedValues();
+    const state = _state ?? get().getAllExposedValues(moduleId);
 
     if (_state?.parameters) {
       state.parameters = { ..._state.parameters };
@@ -580,5 +633,42 @@ export const createResolvedSlice = (set, get) => ({
         return object;
       }
     }
+  },
+
+  setModuleInputs: (key, value, moduleId = 'canvas') => {
+    set(
+      (state) => {
+        if (!state.resolvedStore.modules[moduleId].exposedValues.input) {
+          state.resolvedStore.modules[moduleId].exposedValues.input = {};
+        }
+        state.resolvedStore.modules[moduleId].exposedValues.input[key] = value;
+      },
+      false,
+      'setModuleInputs'
+    );
+    get().updateDependencyValues(`input.${key}`, moduleId);
+  },
+  setModuleOutputs: (key, value, moduleId = 'canvas') => {
+    set(
+      (state) => {
+        if (!state.resolvedStore.modules[moduleId].exposedValues.output) {
+          state.resolvedStore.modules[moduleId].exposedValues.output = {};
+        }
+        state.resolvedStore.modules[moduleId].exposedValues.output[key] = value;
+      },
+      false,
+      'setModuleOutputs'
+    );
+    get().updateDependencyValues(`output.${key}`, moduleId);
+  },
+  clearModuleInputs: (moduleId = 'canvas') => {
+    set((state) => {
+      state.resolvedStore.modules[moduleId].exposedValues.input = {};
+    });
+  },
+  clearModuleOutputs: (moduleId = 'canvas') => {
+    set((state) => {
+      state.resolvedStore.modules[moduleId].exposedValues.output = {};
+    });
   },
 });

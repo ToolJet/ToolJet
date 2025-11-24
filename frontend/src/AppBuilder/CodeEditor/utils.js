@@ -30,6 +30,17 @@ function traverseAST(node, callback) {
   }
 }
 
+export const isInsideParent = (element, className) => {
+  while (element) {
+    if (element.classList?.contains(className)) {
+      console.log('element.classList', element.classList);
+      return true;
+    }
+    element = element.parentElement;
+  }
+  return false;
+};
+
 function getMethods(type) {
   const arrayMethods = Object.getOwnPropertyNames(Array.prototype).filter(
     (p) => typeof Array.prototype[p] === 'function'
@@ -143,6 +154,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
           'queries',
           'globals',
           'page',
+          'input',
           'constants',
           'moment',
           '_',
@@ -157,6 +169,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
         isJsCode ? state?.page : undefined,
+        isJsCode ? state?.input : undefined,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
         moment,
         _,
@@ -337,6 +350,7 @@ export const FxParamTypeMapping = Object.freeze({
   color: 'Color',
   json: 'Json',
   code: 'Code',
+  colorSwatches: 'ColorSwatches',
   toggle: 'Toggle',
   select: 'Select',
   alignButtons: 'AlignButtons',
@@ -353,6 +367,8 @@ export const FxParamTypeMapping = Object.freeze({
   visibility: 'Visibility',
   numberInput: 'NumberInput',
   tableRowHeightInput: 'TableRowHeightInput',
+  dropdownMenu: 'DropdownMenu',
+  query: 'Query',
 });
 
 export function computeCoercion(oldValue, newValue) {

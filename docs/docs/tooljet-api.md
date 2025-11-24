@@ -3,6 +3,7 @@ id: tooljet-api
 title: ToolJet API
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
 <div className="badge badge--primary heading-badge">   
   <img 
     src="/img/badge-icons/premium.svg" 
@@ -12,6 +13,13 @@ title: ToolJet API
   />
  <span>Paid feature</span>
 </div>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
@@ -929,6 +937,8 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
 :::info
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
 `MAX_JSON_SIZE`
+
+**Example**: `MAX_JSON_SIZE = "250mb"`
 :::
 
 <details id="tj-dropdown">

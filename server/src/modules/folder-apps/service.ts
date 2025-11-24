@@ -8,6 +8,9 @@ import { FolderAppsUtilService } from './util.service';
 import { IFolderAppsService } from './interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { User } from '@entities/user.entity';
+import { USER_ROLE } from '@modules/group-permissions/constants';
+import { APP_TYPES } from '@modules/apps/constants';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -47,16 +50,32 @@ export class FolderAppsService implements IFolderAppsService {
       return await manager.delete(FolderApp, { folderId, appId });
     });
   }
-  async getFolders(user, query) {
+
+  private getResourceTypefromAppType(type: APP_TYPES) {
+    switch (type) {
+      case APP_TYPES.FRONT_END:
+        return MODULES.APP;
+      case APP_TYPES.WORKFLOW:
+        return MODULES.WORKFLOWS;
+      case APP_TYPES.MODULE:
+        return MODULES.MODULES;
+      default:
+        throw new BadRequestException('Invalid resource type');
+    }
+  }
+
+  async getFolders(user: User, query) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const type = query.type;
       const searchKey = query.searchKey;
+      const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
       const userAppPermissions = (
         await this.abilityService.resourceActionsPermission(user, {
-          resources: [{ resource: MODULES.APP }],
+          resources: [{ resource: resourceType }],
           organizationId: user.organizationId,
         })
-      )?.[MODULES.APP];
+      )?.[resourceType];
+
       const allFolderList = await this.foldersUtilService.allFolders(user, manager, type);
       if (allFolderList.length === 0) {
         return { folders: [] };
@@ -78,7 +97,12 @@ export class FolderAppsService implements IFolderAppsService {
           allFolderList[index].generateCount();
         }
       });
-      return decamelizeKeys({ folders: allFolderList });
+      return decamelizeKeys({
+        folders:
+          user.roleGroup === USER_ROLE.END_USER
+            ? allFolderList.filter((folder) => folder.folderApps.length > 0)
+            : allFolderList,
+      });
     });
   }
 }

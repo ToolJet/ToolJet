@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get } from '@nestjs/common';
+import { Controller, UseGuards, Get, Req } from '@nestjs/common';
 import { LicenseAppsService } from '../services/apps.service';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -16,7 +16,11 @@ export class LicenseAppsController implements ILicenseAppsController {
 
   @InitFeature(FEATURE_KEY.GET_APP_LIMITS)
   @Get('limits')
-  getLimits() {
-    return this.licenseAppsService.getAppsLimit();
+  getLimits(@Req() req: Request) {
+    const organizationId =
+      typeof req.headers['tj-workspace-id'] === 'object'
+        ? req.headers['tj-workspace-id'][0]
+        : req.headers['tj-workspace-id'];
+    return this.licenseAppsService.getAppsLimit(organizationId);
   }
 }

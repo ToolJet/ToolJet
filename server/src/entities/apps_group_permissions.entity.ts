@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { GranularPermissions } from './granular_permissions.entity';
 import { GroupApps } from './group_apps.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Entity({ name: 'apps_group_permissions' })
 export class AppsGroupPermissions extends BaseEntity {
@@ -21,6 +22,13 @@ export class AppsGroupPermissions extends BaseEntity {
   @Index()
   @Column({ name: 'granular_permission_id', unique: true })
   granularPermissionId: string;
+
+  @Column({
+    name: 'app_type',
+    type: 'enum',
+    enum: APP_TYPES,
+  })
+  appType: APP_TYPES;
 
   @Column({ name: 'can_edit', nullable: false, default: false })
   canEdit: boolean;

@@ -6,11 +6,12 @@ import { getPrivateRoute, redirectToDashboard, redirectToWorkflows } from '@/_he
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
 import { hasBuilderRole } from '@/_helpers/utils';
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' }) => {
   const { admin } = authenticationService?.currentSessionValue ?? {};
   const isWorkflows = type === 'workflows';
-  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+  const workflowsEnabled = admin && isWorkflowsFeatureEnabled();
 
   const handleBackClick = (e) => {
     e.preventDefault();
@@ -44,22 +45,16 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' })
           <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
         </Link>
         <div className="divider"></div>
-        {isWorkflows || !showWorkflows ? (
-          <Link target="_blank" to={getPrivateRoute('dashboard')} className="dropdown-item tj-text tj-text-xsm">
-            <SolidIcon name={'apps'} width="20" fill="#C1C8CD" />
-            <span>{'Apps'}</span>
-          </Link>
-        ) : (
-          workflowsEnabled &&
-          showWorkflows &&
-          admin && (
-            <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
-              <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
-              <span>{'Workflows'}</span>
-            </Link>
-          )
-        )}
-
+        {isWorkflows || !showWorkflows
+          ? null
+          : workflowsEnabled &&
+            showWorkflows &&
+            admin && (
+              <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
+                <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
+                <span>{'Workflows'}</span>
+              </Link>
+            )}
         {(admin || isBuilder) && (
           <Link
             target="_blank"

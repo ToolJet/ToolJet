@@ -37,9 +37,9 @@ export const customComponentConfig = {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
       code: {
-        value: `import React from 'https://cdn.skypack.dev/react';
-  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+        value: `import React from 'https://esm.sh/react@17.0.2';
+  import ReactDOM from 'https://esm.sh/react-dom@17.0.2';
+  import { Button, Container } from 'https://esm.sh/@material-ui/core@4.12.4?deps=react@17.0.2';
   const MyCustomComponent = ({data, updateData, runQuery}) => (
     <Container>
         <h1>{data.title}</h1>

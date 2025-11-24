@@ -1,7 +1,6 @@
 ---
 id: upgrade-to-lts
 title: Upgrading ToolJet to the LTS Version
-
 ---
 
 ToolJet has released its first Long Term Support (LTS) version, which provides extended support and stability for your environments. Upgrading to this LTS version ensures you benefit from the latest features and security updates while maintaining a stable and supported environment.
@@ -22,7 +21,7 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 
 - [Upgrade ToolJet on DigitalOcean](/docs/setup/digitalocean#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Docker](/docs/setup/docker#upgrading-to-the-latest-lts-version)
-- [Upgrade ToolJet on AWS EC2](/docs/setup/ec2#upgrading-to-the-latest-lts-version)
+- [Upgrade ToolJet on AWS AMI](/docs/setup/ami#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on AWS ECS](/docs/setup/ecs#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on OpenShift](/docs/setup/openshift#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Helm](/docs/setup/helm#upgrading-to-the-latest-lts-version)
@@ -31,4 +30,3 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 - [Upgrade ToolJet on Kubernetes(AKS)](/docs/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Azure Container Apps](/docs/setup/azure-container#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Google Cloud Run](/docs/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
-

@@ -17,7 +17,7 @@ Requires:
 - PostgREST server
 - Additional configuration for ToolJet server
 
-This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database-required) is set to `true`.
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#tooljet-database) is set to `true`.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

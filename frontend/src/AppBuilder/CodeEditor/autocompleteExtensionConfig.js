@@ -67,7 +67,8 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     originalQueryInput,
     searchInput
   );
-  return orderSuggestions(suggestions, fieldType);
+
+  return suggestions;
 };
 
 function orderSuggestions(suggestions, validationType) {
@@ -90,10 +91,18 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
     const hasDepth = currentWord.includes('.');
     const lastDepth = getLastSubstring(currentWord);
 
-    const displayLabel = getLastDepth(displayedHint);
+    let displayLabel = getLastDepth(displayedHint);
+
+    if (type != 'js_method') {
+      const currentWordDepth = currentWord.split('.').length;
+      displayLabel = hint
+        .split('.')
+        .slice(currentWordDepth - 1)
+        .join('.');
+    }
 
     return {
-      displayLabel: lastDepth === '' ? displayedHint : displayLabel,
+      displayLabel,
       label: displayedHint,
       info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
@@ -154,40 +163,24 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
 };
 
 function filterHintsByDepth(input, hints) {
-  if (input === '') return hints;
+  const inputParts = input.split('.');
+  const inputDepth = inputParts.length + 1;
 
-  const inputDepth = input.includes('.') ? input.split('.').length : 0;
-
-  const filteredHints = hints.filter((cm) => {
-    const hintParts = cm.hint.split('.');
-
-    let shouldInclude =
-      (cm.hint.startsWith(input) && hintParts.length === inputDepth + 1) ||
-      (cm.hint.startsWith(input) && hintParts.length === inputDepth);
-
-    const shouldFuzzyMatch = !shouldInclude ? hintParts.length > inputDepth : false;
-
-    if (shouldFuzzyMatch) {
-      // fuzzy match
-      let matchedDepth = -1;
-      for (let i = 0; i < hintParts.length; i++) {
-        if (hintParts[i].includes(input)) {
-          matchedDepth = i;
-          break;
-        }
-      }
-
-      if (matchedDepth !== -1) {
-        shouldInclude = hintParts.length === matchedDepth + 1;
-      }
-    } else if (input.endsWith('.')) {
-      shouldInclude = cm.hint.startsWith(input) && hintParts.length === inputDepth;
-    }
-
-    return shouldInclude;
+  const hintsWithDepth = hints.map((hint) => {
+    const hintParts = hint.hint.split('.');
+    return {
+      ...hint,
+      depth: hintParts.length,
+    };
   });
 
-  return filteredHints;
+  const filteredHints = hintsWithDepth.filter((hint) => {
+    return hint.depth <= inputDepth;
+  });
+
+  const sortedHints = filteredHints.sort((hint1, hint2) => hint1.depth - hint2.depth);
+
+  return sortedHints;
 }
 
 export function findNearestSubstring(inputStr, currentCurosorPos) {

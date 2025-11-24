@@ -65,9 +65,13 @@ export default class Pocketbase implements QueryService {
 
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<PocketBase> {
     const { host, email, password } = sourceOptions;
-    const pb = new PocketBase(host);
-    await pb.admins.authWithPassword(email, password);
-    return pb;
+    try {
+      const pb = new PocketBase(host);
+      await pb.collection('_superusers').authWithPassword(email, password);
+      return pb;
+    } catch (error) {
+      throw new Error(`Failed to establish connection with error: ${error}`);
+    }
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {

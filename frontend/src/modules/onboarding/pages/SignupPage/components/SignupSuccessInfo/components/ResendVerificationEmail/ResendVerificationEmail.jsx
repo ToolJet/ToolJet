@@ -32,11 +32,12 @@ const ResendVerificationEmail = ({ email, organizationId, redirectTo }) => {
     return () => clearTimeout(timer);
   }, [countdown]);
   return (
-    <div className="back-to-signup-button" data-cy={'resend-verification'}>
+    <div className="back-to-signup-button">
       <button
         onClick={handleResend}
         className={cx('button-parent', { disabled: isResendDisabled })}
         disabled={isResendDisabled}
+        data-cy={'resend-verification-email-button'}
       >
         <span className="button-text">
           {isResendDisabled ? `Resend verification email in ${countdown}s` : 'Resend verification email'}

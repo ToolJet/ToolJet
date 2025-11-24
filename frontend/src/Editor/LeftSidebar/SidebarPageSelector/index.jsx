@@ -12,6 +12,9 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -52,6 +55,12 @@ const LeftSidebarPageSelector = ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
       isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
     }),
     shallow
   );
@@ -109,6 +118,12 @@ const LeftSidebarPageSelector = ({
                     enableReleasedVersionPopupState();
                     return;
                   }
+                  posthogHelper.captureEvent('click_add_page_plus_icon', {
+                    workspace_id:
+                      authenticationService?.currentUserValue?.organization_id ||
+                      authenticationService?.currentSessionValue?.current_organization_id,
+                    appId,
+                  });
                   setNewPageBeingCreated(true);
                 }}
                 className="left-sidebar-header-btn"

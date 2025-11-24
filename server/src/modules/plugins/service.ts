@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { PluginsUtilService } from './util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -10,17 +10,25 @@ import { FilesRepository } from '@modules/files/repository';
 import { IPluginsService } from './interfaces/IService';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 const fs = require('fs');
 
 @Injectable()
 export class PluginsService implements IPluginsService {
   constructor(
     protected readonly pluginsUtilService: PluginsUtilService,
-    protected readonly fileRepository: FilesRepository
+    protected readonly fileRepository: FilesRepository,
+    protected readonly dataSourcesRepository: DataSourcesRepository
   ) {}
 
   async install(body: CreatePluginDto) {
-    const { id, repo } = body;
+    const { id, repo, name } = body;
+    
+    const existingPlugin = await dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOne(Plugin, { where: { pluginId: id } });
+    });
+    if (existingPlugin) throw new BadRequestException(`Plugin '${name}' is already installed.`);
+
     const [index, operations, icon, manifest, version] = await this.pluginsUtilService.fetchPluginFiles(id, repo);
     let shouldCreate = false;
 
@@ -47,7 +55,7 @@ export class PluginsService implements IPluginsService {
 
   async findOne(id: string) {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(Plugin, { where: { id } });
+      return manager.findOne(Plugin, { where: { id } });
     });
   }
 
@@ -57,7 +65,18 @@ export class PluginsService implements IPluginsService {
     return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(id);
+    if (dataSourcesByMarketplacePlugin.length) {
+      const queries = [];
+      dataSourcesByMarketplacePlugin?.forEach((datasource) => {
+        if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+      });
+      if (queries.length) {
+        throw new InternalServerErrorException(`Plugin can't be removed, queries of plugin are in use`);
+      }
+    }
+
     return dbTransactionWrap((manager: EntityManager) => {
       return manager.delete(Plugin, id);
     });
@@ -136,7 +155,7 @@ export class PluginsService implements IPluginsService {
     return Array.from(marketplacePluginsUsed);
   }
 
-  private async arePluginsInstalled(pluginsId: Array<string>): Promise<{ pluginsToBeInstalled: Array<string> }> {
+  private async findPluginsToBeInstalled(pluginsId: Array<string>): Promise<{ pluginsToBeInstalled: Array<string> }> {
     const pluginsToBeInstalled = [];
     if (!pluginsId.length) return { pluginsToBeInstalled };
 
@@ -154,30 +173,62 @@ export class PluginsService implements IPluginsService {
   async checkIfPluginsToBeInstalled(
     dataSources
   ): Promise<{ pluginsToBeInstalled: Array<string>; pluginsListIdToDetailsMap: any }> {
-    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-    const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap);
-    const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
-    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(
+        dataSources,
+        pluginsListIdToDetailsMap
+      );
+      const { pluginsToBeInstalled } = await this.findPluginsToBeInstalled(marketplacePluginsUsed);
+      return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error,
+        'An error occurred while checking whether plugins need to be installed.'
+      );
+    }
   }
 
   async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
-    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-    if (shouldAutoInstall && pluginsToBeInstalled.length) {
-      const installedPluginsName = [];
-      for (const pluginId of pluginsToBeInstalled) {
-        const pluginDetails = pluginsListIdToDetailsMap[pluginId];
-        const installedPlugin = await this.install(pluginDetails);
-        installedPluginsName.push(installedPlugin.name);
+    const installedPluginsList = [];
+    const installedPluginsInfo = [];
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      if (shouldAutoInstall && pluginsToBeInstalled.length) {
+        for (const pluginId of pluginsToBeInstalled) {
+          const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          const installedPluginInfo = await this.install(pluginDetails);
+          installedPluginsList.push(installedPluginInfo.name);
+          installedPluginsInfo.push(installedPluginInfo);
+        }
+        return { installedPluginsList, installedPluginsInfo };
       }
-      return installedPluginsName;
-    }
 
-    if (!shouldAutoInstall && pluginsToBeInstalled.length) {
-      throw new NotFoundException(
-        `Plugins ( ${pluginsToBeInstalled
-          .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
-          .join(', ')} ) is not installed yet!`
-      );
+      if (!shouldAutoInstall && pluginsToBeInstalled.length) {
+        throw new NotFoundException(
+          `Plugins ( ${pluginsToBeInstalled
+            .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
+            .join(', ')} ) is not installed yet!`
+        );
+      }
+    } catch (error) {
+      if (installedPluginsInfo.length) {
+        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        await this.uninstallPlugins(pluginsId);
+      }
+      throw new InternalServerErrorException(error, 'Error while installing marketplace plugins');
+    }
+  }
+
+  async uninstallPlugins(pluginsId: Array<string>) {
+    try {
+      if (!pluginsId.length) return;
+      for (const pluginId of pluginsId) {
+        await this.remove(pluginId);
+      }
+      return;
+    } catch (error) {
+      throw new InternalServerErrorException(error, 'Error while uninstalling marketplace plugins');
     }
   }
 }

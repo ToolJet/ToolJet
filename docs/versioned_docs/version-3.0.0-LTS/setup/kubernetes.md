@@ -6,34 +6,28 @@ title: Kubernetes
 # Deploying ToolJet on Kubernetes
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. 
-
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
+You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
 Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
-1. **Setup a PostgreSQL database**
+1. **Setup a PostgreSQL database** <br/>
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
-
-2. **Create a Kubernetes secret with name `server`.**
+2. **Create a Kubernetes secret with name `server`.** <br/>
    For the setup, ToolJet requires:
 
-```
-TOOLJET_HOST=<Endpoint url>
-LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
-SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+   - **TOOLJET_DB**
+   - **TOOLJET_DB_HOST**
+   - **TOOLJET_DB_USER**
+   - **TOOLJET_DB_PASS**
+   - **PG_HOST**
+   - **PG_DB**
+   - **PG_USER**
+   - **PG_PASS**
+   - **SECRET_KEY_BASE**
+   - **LOCKBOX_KEY**
 
-PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
-PG_PASS=<password>
-PG_DB=tooljet_production
-```
-Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
+   Read **[environment variables reference](/docs/setup/env-vars)**
 
 3. Create a Kubernetes deployment
 
@@ -68,51 +62,19 @@ If you want to serve ToolJet client from services such as Firebase or Netlify, p
 
 ## ToolJet Database
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
 
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
-#### Setting Up ToolJet Database
+1. Setup PostgREST server
 
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
 
-```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
-```
-
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
-
-:::tip
-If you have openssl installed, you can run the 
-command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
-```env
-PGRST_HOST=localhost:3001
-PGRST_LOG_LEVEL=info
-PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
-PGRST_DB_URI=
-PGRST_JWT_SECRET=
-```
-
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-#### Format:
-
-```env
-PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
-
-**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet deployment.**
-
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
 
 ## Upgrading to the Latest LTS Version
 
@@ -126,5 +88,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._

@@ -57,7 +57,7 @@ This query lists all the records in a database.
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/listing-v2.png" alt="Couch listing"/>
 
-<details id="tj-dropdown">
+<details>
   <summary>**Response Example**</summary>
   ```json
 {
@@ -101,7 +101,7 @@ This operation fetches a single record by its record ID.
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving-v2.png" alt="Couch retrieve view" />
 
-<details id="tj-dropdown">
+<details>
   <summary> **Response Example** </summary>
 ```json
 {
@@ -131,7 +131,7 @@ Inserts a new record into the database.
   [{"name":"tooljet"}]
 ```
 
-<details id="tj-dropdown">
+<details>
   <summary>**Response Example**</summary>
     ```json
     {
@@ -161,7 +161,7 @@ You get the document as JSON in the response. For each update to the document, t
 [{"name":"tooljet"}]
 ```
 
-<details id="tj-dropdown">
+<details>
   <summary>**Response Example**</summary>
   ```json
   {
@@ -183,7 +183,7 @@ Removes a record from the database by its record ID.
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/deleteRecord.png" alt="Couch delete view"/>
 
-<details id="tj-dropdown">
+<details>
   <summary>**Response Example**</summary>
     ```json
     {
@@ -241,7 +241,7 @@ Views are the primary tool used for querying and reporting on CouchDB documents.
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view-v2.png" alt="Couch get view" />
 
-<details id="tj-dropdown">
+<details>
   <summary>**Response Example**</summary>
   ```json
     {

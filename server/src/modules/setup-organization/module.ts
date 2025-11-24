@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
@@ -10,14 +9,15 @@ import { ThemesModule } from '@modules/organization-themes/module';
 import { SessionModule } from '@modules/session/module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { SubModule } from '@modules/app/sub-module';
 
-export class SetupOrganizationsModule {
+export class SetupOrganizationsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { SetupOrganizationsService } = await import(`${importPath}/setup-organization/service`);
-    const { SetupOrganizationsUtilService } = await import(`${importPath}/setup-organization/util.service`);
-    const { SetupOrganizationsController } = await import(`${importPath}/setup-organization/controller`);
-    const { FeatureAbilityFactory } = await import(`${importPath}/organizations/ability`);
+    const { SetupOrganizationsService, SetupOrganizationsUtilService, SetupOrganizationsController } =
+      await this.getProviders(configs, 'setup-organization', ['service', 'util.service', 'controller']);
+
+    const { FeatureAbilityFactory } = await this.getProviders(configs, 'organizations', ['ability']);
 
     return {
       module: SetupOrganizationsModule,
@@ -38,7 +38,7 @@ export class SetupOrganizationsModule {
         OrganizationRepository,
         OrganizationUsersRepository,
         FeatureAbilityFactory,
-        TooljetDbModule,
+        DataSourcesRepository,
       ],
       exports: [SetupOrganizationsUtilService],
     };

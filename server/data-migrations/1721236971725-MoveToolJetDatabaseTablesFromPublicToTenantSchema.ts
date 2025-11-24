@@ -5,6 +5,7 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { EncryptionService } from '@modules/encryption/service';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   createNewTjdbRole,
   createAndGrantSchemaPrivilege,
@@ -15,11 +16,17 @@ import {
   revokeAccessToPublicSchema,
   grantTenantRoleToTjdbAdminRole,
 } from '@helpers/tooljet_db.helper';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const envData = getEnvVars();
+    const isSqlModeDisabled = envData.TJDB_SQL_MODE_DISABLE == 'true';
+    const isCloud = envData.TOOLJET_EDITION == TOOLJET_EDITIONS.Cloud;
+    if (isSqlModeDisabled || isCloud) {
+      console.log('Skipping TJDB schema migration for SQL mode');
+      return;
+    }
     const batchSize = 100;
     const entityManager = queryRunner.manager;
     const tooljetDbConnection = new DataSource({

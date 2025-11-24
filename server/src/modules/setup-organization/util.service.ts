@@ -15,6 +15,10 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { SampleDataSourceService } from '@modules/data-sources/services/sample-ds.service';
 import { ISetupOrganizationsUtilService } from './interfaces/IUtilService';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import { DataSourcesUtilService } from '@modules/data-sources/util.service';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
+import { OrganizationInputs } from './types/organization-inputs';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
@@ -28,12 +32,14 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
     protected readonly sampleDBService: SampleDataSourceService,
     protected readonly licenseOrganizationService: LicenseOrganizationService,
     protected readonly licenseUserService: LicenseUserService,
-    protected readonly organizationUserRepository: OrganizationUsersRepository
+    protected readonly organizationUserRepository: OrganizationUsersRepository,
+    protected readonly dataSourceUtilService: DataSourcesUtilService,
+    protected readonly dataSourcesRepository: DataSourcesRepository
   ) {}
 
-  async create(name: string, slug: string, user?: User, manager?: EntityManager): Promise<Organization> {
+  async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization = await this.organizationRepository.createOne(name, slug, manager);
+      const organization = await this.organizationRepository.createOne(organizationInputs, manager);
       await this.appEnvironmentUtilService.createDefaultEnvironments(organization.id, manager);
       await this.groupPermissionUtilService.createDefaultGroups(organization.id, manager);
 
@@ -42,11 +48,22 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
         await this.rolesUtilService.addUserRole(organization.id, { role: USER_ROLE.ADMIN, userId: user.id }, manager);
       }
       await this.sampleDBService.createSampleDB(organization.id, manager);
-      await this.licenseOrganizationService.validateOrganization(manager);
-      await this.licenseUserService.validateUser(manager);
+      await this.licenseOrganizationService.validateOrganization(manager, organization.id);
+      await this.licenseUserService.validateUser(manager, organization.id);
       //create default theme for this organization
       await this.organizationThemesUtilService.createDefaultTheme(manager, organization.id);
       await this.tooljetDbTableOperationsService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
+
+      // Create static data sources for the organization
+      for (const defaultSource of DefaultDataSourceKinds) {
+        const dataSource = await this.dataSourcesRepository.createDefaultDataSource(
+          defaultSource,
+          organization.id,
+          manager
+        );
+        await this.dataSourceUtilService.createDataSourceInAllEnvironments(organization.id, dataSource.id, manager);
+      }
+
       return organization;
     }, manager);
   }

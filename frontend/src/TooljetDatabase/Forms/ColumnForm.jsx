@@ -342,8 +342,39 @@ const ColumnForm = ({
           </div>
         )}
         <div className="mb-3 tj-app-input">
-          <div className="form-label" data-cy="default-value-input-field-label">
-            Default value
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="form-label" data-cy="default-value-input-field-label">
+              Default value
+            </div>
+            {foreignKeyDetails?.length > 0 && isForeignKey && (
+              <ToolTip
+                message={'Set the default value for the column to Null'}
+                placement="top"
+                tooltipClassName="tootip-table"
+                show={foreignKeyDetails?.length > 0 && isForeignKey}
+              >
+                <div className="d-flex align-items-center custom-gap-4">
+                  <span className="form-label">Set default value to Null</span>
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={defaultValue === null}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setForeignKeyDefaultValue({ label: null, value: null });
+                          setDefaultValue(null);
+                        } else {
+                          setForeignKeyDefaultValue({ label: '', value: '' });
+                          setDefaultValue('');
+                        }
+                      }}
+                      disabled={isNotNull}
+                    />
+                  </label>
+                </div>
+              </ToolTip>
+            )}
           </div>
           <ToolTip
             message={dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
@@ -351,7 +382,7 @@ const ColumnForm = ({
             tooltipClassName="tootip-table"
             show={dataType === 'serial'}
           >
-            <div>
+            <div style={{ position: 'relative' }}>
               {isTimestamp ? (
                 <DateTimePicker
                   timestamp={defaultValue}
@@ -380,46 +411,65 @@ const ColumnForm = ({
                   disabled={dataType?.value === 'serial'}
                 />
               ) : (
-                <DropDownSelect
-                  buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
-                  showPlaceHolder={true}
-                  options={referenceTableDetails}
-                  darkMode={darkMode}
-                  emptyError={
-                    <div className="dd-select-alert-error m-2 d-flex align-items-center">
-                      <Information />
-                      No data found
-                    </div>
-                  }
-                  loader={
-                    <>
-                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
-                      <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
-                      <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                    </>
-                  }
-                  isLoading={true}
-                  value={foreignKeyDefaultValue}
-                  foreignKeyAccessInRowForm={true}
-                  disabled={dataType === 'serial'}
-                  topPlaceHolder={dataType === 'serial' ? 'Auto-generated' : 'Enter a value'}
-                  onChange={(value) => {
-                    setForeignKeyDefaultValue(value);
-                    setDefaultValue(value?.value);
-                  }}
-                  onAdd={true}
-                  addBtnLabel={'Open referenced table'}
-                  foreignKeys={foreignKeyDetails}
-                  setReferencedColumnDetails={setReferencedColumnDetails}
-                  scrollEventForColumnValues={true}
-                  cellColumnName={columnName}
-                  columnDataType={dataType?.value}
-                  isCreateColumn={true}
-                />
+                <>
+                  <DropDownSelect
+                    buttonClasses="border border-end-1 foreignKeyAcces-container-drawer mb-2"
+                    showPlaceHolder={true}
+                    options={referenceTableDetails}
+                    darkMode={darkMode}
+                    emptyError={
+                      <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                        <Information />
+                        No data found
+                      </div>
+                    }
+                    loader={
+                      <>
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '15px 50px 7px 7px' }}
+                        />
+                        <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
+                        <Skeleton
+                          height={22}
+                          width={396}
+                          className="skeleton"
+                          style={{ margin: '7px 50px 15px 7px' }}
+                        />
+                      </>
+                    }
+                    isLoading={true}
+                    value={foreignKeyDefaultValue}
+                    foreignKeyAccessInRowForm={true}
+                    disabled={dataType === 'serial'}
+                    topPlaceHolder={
+                      dataType === 'serial'
+                        ? 'Auto-generated'
+                        : foreignKeyDefaultValue?.value === null
+                        ? 'Null'
+                        : 'Enter a value'
+                    }
+                    onChange={(value) => {
+                      setForeignKeyDefaultValue(value);
+                      setDefaultValue(value?.value);
+                    }}
+                    onAdd={true}
+                    addBtnLabel={'Open referenced table'}
+                    foreignKeys={foreignKeyDetails}
+                    setReferencedColumnDetails={setReferencedColumnDetails}
+                    scrollEventForColumnValues={true}
+                    cellColumnName={columnName}
+                    columnDataType={dataType?.value}
+                    isCreateColumn={true}
+                  />
+                  {defaultValue === null && <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>}
+                </>
               )}
             </div>
           </ToolTip>
-          {isNotNull === true && dataType?.value !== 'serial' && rows.length > 0 && defaultValue.length <= 0 ? (
+          {isNotNull === true && dataType?.value !== 'serial' && defaultValue?.length <= 0 ? (
             <span className="form-error-message">
               Default value is required to populate this field in existing rows as NOT NULL constraint is added
             </span>
@@ -546,6 +596,10 @@ const ColumnForm = ({
                 checked={isNotNull}
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
+                  if (e.target.checked && defaultValue === null) {
+                    setForeignKeyDefaultValue({ label: '', value: '' });
+                    setDefaultValue('');
+                  }
                 }}
                 disabled={dataType?.value === 'serial'}
               />
@@ -602,7 +656,7 @@ const ColumnForm = ({
         shouldDisableCreateBtn={
           isEmpty(columnName) ||
           isEmpty(dataType) ||
-          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial') ||
+          (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue)) ||
           disabledSaveButton
         }
         showToolTipForFkOnReadDocsSection={true}

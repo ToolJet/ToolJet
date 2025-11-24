@@ -23,8 +23,17 @@ export const Image = function Image({
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
-  const { imageFit, imageShape, backgroundColor, padding, customPadding, boxShadow, borderRadius, borderColor } =
-    styles;
+  const {
+    imageFit,
+    borderType,
+    backgroundColor,
+    padding,
+    customPadding,
+    boxShadow,
+    borderRadius,
+    borderColor,
+    alignment,
+  } = styles;
 
   const isInitialRender = useRef(true);
 
@@ -119,16 +128,16 @@ export const Image = function Image({
         setExposedVariable('imageURL', '');
       },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        setVisibility(value);
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
       },
       setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        setIsLoading(value);
+        setExposedVariable('isLoading', !!value);
+        setIsLoading(!!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        setIsDisabled(value);
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
       },
     };
     setExposedVariables(exposedVariables);
@@ -157,7 +166,7 @@ export const Image = function Image({
       src={sourceURL}
       className={`zoom-image-wrap`}
       style={{
-        backgroundColor,
+        backgroundColor: backgroundColor || (borderType === 'img-thumbnail' ? '#f4f6fa' : ''),
         padding: padding === 'default' ? '0px' : Number.parseInt(customPadding),
         objectFit: imageFit ? imageFit : 'contain',
         cursor: hasOnClickEvent ? 'pointer' : 'inherit',
@@ -166,11 +175,17 @@ export const Image = function Image({
         height,
         transform: `rotate(${rotation}deg)`,
         border: '1px solid',
-        borderRadius: imageShape === 'circle' ? '50%' : `${borderRadius}px`,
-        borderColor: borderColor ? borderColor : 'transparent',
+        borderRadius:
+          borderType === 'rounded-circle'
+            ? '50%'
+            : borderType === 'rounded' || borderType === 'img-thumbnail'
+            ? '4px'
+            : `${borderRadius}px`,
+        borderColor: borderColor || (borderType === 'img-thumbnail' ? '#e7eaef' : 'transparent'),
+        objectPosition: alignment,
       }}
       height={height}
-      onClick={() => fireEvent('onClick')}
+      onClick={() => !isDisabled && fireEvent('onClick')}
       alt={alternativeText}
       width={width}
       onError={() => setIsError(true)}
@@ -184,16 +199,16 @@ export const Image = function Image({
 
   const FallbackState = () => {
     return (
-      <div className="broken-url-placeholder" onClick={() => fireEvent('onClick')}>
+      <div className="broken-url-placeholder" onClick={() => !isDisabled && fireEvent('onClick')}>
         {isLoading && (
           <center>
             <Loader width="16" absolute={false} />
           </center>
         )}
-        {!isLoading && alternativeText && (
+        {!isLoading && (
           <>
             <BrokenImage />
-            <p>{alternativeText}</p>
+            {alternativeText && <p>{alternativeText}</p>}
           </>
         )}
       </div>

@@ -23,6 +23,9 @@ export class AuditLog extends BaseEntity {
   @Column({ name: 'resource_type', type: 'enum', enum: MODULES })
   resourceType: MODULES;
 
+  @Column('simple-json', { name: 'resource_data' })
+  resourceData;
+
   @Column({ name: 'action_type' })
   actionType: string;
 

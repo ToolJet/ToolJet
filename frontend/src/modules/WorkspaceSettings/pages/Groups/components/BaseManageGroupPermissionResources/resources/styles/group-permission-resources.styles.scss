@@ -141,7 +141,21 @@
 }
 
 
-.permission-body {
+.permissions-body-one {
+  overflow-y: auto;
+  max-height: calc(100vh - 320px - 100px);
+  min-height: calc(100vh - 320px - 100px);
+
+  .tj-text-xxsm {
+    color: var(--slate11)
+  }
+}
+
+.permissions-body-two {
+  overflow-y: auto;
+  max-height: calc(100vh - 260px - 100px);
+  min-height: calc(100vh - 260px - 100px);
+
   .tj-text-xxsm {
     color: var(--slate11)
   }

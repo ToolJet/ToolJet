@@ -10,7 +10,10 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
   const queryIcons = Object.keys(exposedQueries).map((queryId) => {
     const query = dataQueries.find((dataQuery) => dataQuery.id === queryId);
     if (!isEmpty(query)) {
-      return { iconName: query?.name, jsx: () => <DataSourceIcon source={query} height={16} /> };
+      return {
+        iconName: query?.name,
+        jsx: ({ height = 16, width = 16 }) => <DataSourceIcon source={query} height={height} width={width} />,
+      };
     }
   });
 
@@ -37,7 +40,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.disable) {
           icons.push({
             iconName: 'disable',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
             isInfoIcon: true,
@@ -47,7 +52,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.visibility) {
           icons.push({
             iconName: 'visibility',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
             isInfoIcon: true,
@@ -62,7 +69,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.setChecked) {
           icons.push({
             iconName: 'setChecked',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
             isInfoIcon: true,
@@ -78,7 +87,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.disable) {
           icons.push({
             iconName: 'disable',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
             isInfoIcon: true,
@@ -88,7 +99,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.visibility) {
           icons.push({
             iconName: 'visibility',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
             isInfoIcon: true,
@@ -98,7 +111,9 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         if (componentExposedVariables.loading) {
           icons.push({
             iconName: 'loading',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
             isInfoIcon: true,
@@ -112,9 +127,25 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         return [
           {
             iconName: 'visibility',
-            jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
             className: 'component-icon',
             tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+            isInfoIcon: true,
+          },
+        ];
+      }
+
+      if (!isEmpty(component) && component.component === 'FilePicker' && componentExposedVariables?.file) {
+        return [
+          {
+            iconName: 'file',
+            jsx: ({ height = 16, width = 16 }) => (
+              <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+            ),
+            className: 'component-icon',
+            tooltipMessage: 'This file attribute will be deprecated soon, You can use files as an alternative',
             isInfoIcon: true,
           },
         ];
@@ -124,7 +155,6 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
     })
     .flat()
     .filter((value) => value !== undefined); // Remove undefined values
-
   const iconsList = useMemo(
     () => [...queryIcons, ...componentIcons, ...deprecatedIcons],
     [queryIcons, componentIcons, deprecatedIcons]

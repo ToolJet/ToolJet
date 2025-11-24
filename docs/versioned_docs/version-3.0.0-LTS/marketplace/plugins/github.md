@@ -12,7 +12,9 @@ To connect to GitHub, you need the following credential:
 
 You'll need a Personal Access Token to access data from private repositories. Public repository data remains accessible without a Personal Access Token.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/connection-v2.png" alt="Marketplace: GitHub" />
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/github/connection-v2.png" alt="Marketplace: GitHub" />
+</div>
 
 ## Supported Queries
 
@@ -25,53 +27,39 @@ You'll need a Personal Access Token to access data from private repositories. Pu
 
 This operation fetches details for a specified user.
 
-#### Required Parameter
+#### Required Parameters: 
 
 - **Username**: Specify the GitHub username or organization to retrieve their details.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo-v3.png" alt="Marketplace: GitHub" />
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo-v2.png" alt="Marketplace: GitHub" />
+</div>
 
 ### Get Repository
 
 Fetches detailed information about a specific repository.
 
-#### Required Parameters
+#### Required Parameters: 
 
 - **Owner**: Name of the repository's owner, which can be either a GitHub user or an organization.
 - **Repository**: The exact name of the repository.
-
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-repo.png" alt="Marketplace: GitHub" />
 
 ### Get Repository Issues
 
 Generates a list of issues associated with a repository, with options to filter them by their status.
 
-#### Required Parameters
+#### Required Parameters:
 
 - **Owner**: The name of the repository's owner. The owner can either be a GitHub organization or a user.
 - **Repository**: The repository name for which the issues are to be retrieved.
 - **State**: Filter the issues by their status: All, Open, or Closed.
 
-#### Optional Parameters
-
-- **Page size**: Desired number of issues per page. Default is 30.
-- **Page number**: Desired page number to fetch issues from. Default is 1.
-
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-issue.png" alt="Marketplace: GitHub" />
-
 ### Get Repository Pull Requests
 
 Generates a list of pull requests from a repository, with options to filter them by their status.
 
-#### Required Parameters
+#### Required Parameters:
 
 - **Owner**: The name of the repository's owner. The owner can either be a GitHub organization or a user.
 - **Repository**: The repository name for which the pull requests are to be retrieved.
 - **State**: Filter the pull requests by their status: All, Open, or Closed.
-
-#### Optional Parameters
-
-- **Page size**: Desired number of issues per page. Default is 30.
-- **Page number**: Desired page number to fetch pull requests from. Default is 1.
-
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-pull.png" alt="Marketplace: GitHub" />

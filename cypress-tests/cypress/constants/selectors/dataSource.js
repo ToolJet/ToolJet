@@ -14,7 +14,7 @@ export const dataSourceSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
-  dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dataSourceNameInputField: '[data-cy="added-ds-search-bar"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
   labelSsl: '[data-cy="label-ssl"]',
@@ -28,7 +28,7 @@ export const dataSourceSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
-  dangerAlertNotSupportSSL: '.go3958317564',
+  dangerAlertNotSupportSSL: ".go3958317564",
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -97,11 +97,52 @@ export const dataSourceSelector = {
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   addedDsSearchIcon: '[data-cy="added-ds-search-icon"]',
   AddedDsSearchBar: '[data-cy="added-ds-search-bar"]',
-  dsNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dsNameInputField: '[data-cy="data-source-name-input-field"]',
   unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
+  requiredIndicator: '[data-cy="required-indicator"]',
+  informationIcon: '[data-cy="information-icon"]',
   deleteDSButton: (datasourceName) => {
-    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
+  },
+  labelFieldName: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-field-label"]`;
+  },
+  dataSourceNameButton: (dataSourceName) => {
+    return `[data-cy="${cyParamName(dataSourceName)}-button"]`;
+  },
+  dropdownLabel: (label) => {
+    return `[data-cy="${cyParamName(label)}-dropdown-label"]`;
+  },
+  textField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
+  },
+  subSection: (header) => {
+    return `[data-cy="${cyParamName(header)}-section"]`;
+  },
+  toggleInput: (toggleName) => {
+    return `[data-cy="${cyParamName(toggleName)}-toggle-input"]`;
+  },
+  button: (buttonName) => {
+    return `[data-cy="button-${cyParamName(buttonName)}"]`;
+  },
+  keyInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
+  },
+  valueInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
+  },
+  deleteButton: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
+  },
+  addMoreButton: (header) => {
+    return `[data-cy="${cyParamName(header)}-add-button"]`;
+  },
+  dropdownField: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-select-dropdown"]`;
+  },
+  labelFieldValidation: (fieldName) => {
+    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
   },
 };

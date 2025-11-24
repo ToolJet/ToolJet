@@ -275,7 +275,7 @@ export const tableConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   defaultSize: {
-    width: 35,
+    width: 25,
     height: 456,
   },
   events: {

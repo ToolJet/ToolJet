@@ -61,7 +61,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background',
       validation: {
         schema: { type: 'string' },
@@ -74,7 +74,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -83,7 +83,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -92,7 +92,7 @@ export const buttonConfig = {
       accordian: 'button',
     },
     loaderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Loader color',
       validation: {
         schema: { type: 'string' },
@@ -110,7 +110,7 @@ export const buttonConfig = {
       visibility: false,
     },
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Icon color',
       validation: { schema: { type: 'string' } },
       accordian: 'button',
@@ -132,10 +132,7 @@ export const buttonConfig = {
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
-      validation: {
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        defaultValue: false,
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
       accordian: 'button',
     },
     boxShadow: {
@@ -222,11 +219,11 @@ export const buttonConfig = {
     events: [],
     styles: {
       textColor: { value: '#FFFFFF' },
-      borderColor: { value: '#4368E3' },
-      loaderColor: { value: '#FFFFFF' },
+      borderColor: { value: 'var(--cc-primary-brand)' },
+      loaderColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '{{6}}' },
-      backgroundColor: { value: '#4368E3' },
-      iconColor: { value: '#FFFFFF' },
+      backgroundColor: { value: 'var(--cc-primary-brand)' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },

@@ -1,11 +1,11 @@
 export const datepickerConfig = {
-  name: 'DatetimePickerLegacy',
-  displayName: 'Datetime Picker (Legacy)',
+  name: 'DatePickerLegacy',
+  displayName: 'Date Picker (Legacy)',
   description: 'Choose date and time',
   component: 'Datepicker',
   defaultSize: {
     width: 5,
-    height: 30,
+    height: 40,
   },
   validation: {
     customRule: { type: 'code', displayName: 'Custom validation' },

@@ -18,6 +18,7 @@ You'll need to register your application in Azure Active Directory to get the re
 :::
 
 To connect to Sharepoint, you need the following details:
+
 - **Client ID**
 - **Client Secret**
 - **Tenant ID**
@@ -32,7 +33,7 @@ To connect to Sharepoint, you need the following details:
 2. Choose the operation you want to perform on your Sharepoint instance.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/beta/app-builder/custom-code/transform-data)**
 :::
 
 ## Supported Operations
@@ -56,6 +57,7 @@ ToolJet supports the following Sharepoint operations:
 This operation retrieves all available Sharepoint sites. For more details, see the Microsoft Graph API documentation **[here](https://learn.microsoft.com/en-us/graph/api/site-search)**.
 
 #### Optional Parameters
+
 - **Top**: The number of sites to retrieve
 - **Page**: The page number to retrieve
 
@@ -85,6 +87,7 @@ This operation retrieves all available Sharepoint sites. For more details, see t
   ]
 }
 ```
+
 </details>
 
 ### Get Site
@@ -92,6 +95,7 @@ This operation retrieves all available Sharepoint sites. For more details, see t
 This operation retrieves information about a specific site.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site to retrieve
 
 <div style={{textAlign: 'center'}}>
@@ -99,6 +103,7 @@ This operation retrieves information about a specific site.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 ```
@@ -122,6 +127,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
   }
 }
 ```
+
 </details>
 
 ### Get Analytics
@@ -129,6 +135,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 This operation retrieves analytics for a specific site.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **Time Interval**:
   - **Last 7 Days**
@@ -139,6 +146,7 @@ This operation retrieves analytics for a specific site.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 Time Interval: Last 7 Days
@@ -166,6 +174,7 @@ Time Interval: Last 7 Days
   }
 }
 ```
+
 </details>
 
 ### Get Pages Of a Site
@@ -173,9 +182,11 @@ Time Interval: Last 7 Days
 This operation retrieves all pages from a specific site.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 
 #### Optional Parameters
+
 - **Top**: The number of sites to retrieve
 - **Page**: The page number to retrieve
 
@@ -184,6 +195,7 @@ This operation retrieves all pages from a specific site.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 ```
@@ -239,6 +251,7 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
   ]
 }
 ```
+
 </details>
 
 ### Get All Lists
@@ -246,9 +259,11 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 This operation retrieves all lists from a specific site.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 
 #### Optional Parameters
+
 - **Page**: The page number to retrieve
 
 <div style={{textAlign: 'center'}}>
@@ -256,6 +271,7 @@ This operation retrieves all lists from a specific site.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 Page: 1
@@ -304,6 +320,7 @@ Page: 1
   ]
 }
 ```
+
 </details>
 
 ### Get Metadata Of a List
@@ -311,6 +328,7 @@ Page: 1
 This operation retrieves metadata for a specific list.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **List Name**: The name of the list, only used if List ID is not provided
 - **List ID**: The ID of the list, required if List Name is not provided
@@ -320,6 +338,7 @@ This operation retrieves metadata for a specific list.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
@@ -437,6 +456,7 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
   ]
 }
 ```
+
 </details>
 
 ### Create a List
@@ -444,6 +464,7 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 This operation creates a new list in a Sharepoint site.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **Body**: The list configuration in JSON format
 
@@ -452,6 +473,7 @@ This operation creates a new list in a Sharepoint site.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 Body:
@@ -510,6 +532,7 @@ Body:
   }
 }
 ```
+
 </details>
 
 ### Get Items Of a List
@@ -517,10 +540,12 @@ Body:
 This operation retrieves items from a specific list.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **List ID**: The ID of the list
 
 #### Optional Parameters
+
 - **Top**: The number of sites to retrieve
 - **Page**: The page number to retrieve
 
@@ -529,6 +554,7 @@ This operation retrieves items from a specific list.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
@@ -602,6 +628,7 @@ Page: 1
   ]
 }
 ```
+
 </details>
 
 ### Update Item Of a List
@@ -609,6 +636,7 @@ Page: 1
 This operation updates an existing item in a list.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **List ID**: The ID of the list
 - **Item ID**: The ID of the item to update
@@ -619,6 +647,7 @@ This operation updates an existing item in a list.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 List ID: 1a64ae23-9cb6-4521-b489-61d558dde9f7
@@ -644,6 +673,7 @@ Body:
   }
 }
 ```
+
 </details>
 
 ### Delete Item Of a List
@@ -651,6 +681,7 @@ Body:
 This operation removes an item from a list.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **List ID**: The ID of the list
 - **Item ID**: The ID of the item to delete
@@ -660,6 +691,7 @@ This operation removes an item from a list.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
@@ -676,6 +708,7 @@ Item ID: 1
   "message": "Item having id '1' in List '1a64ae23-9cb6-4521-b489-61d558dde9f7' has been deleted."
 }
 ```
+
 </details>
 
 ### Add Item To a List
@@ -683,6 +716,7 @@ Item ID: 1
 This operation adds a new item to a list.
 
 #### Required Parameters
+
 - **Site ID**: The ID of the site
 - **List ID**: The ID of the list
 - **Body**: The new item's data in JSON format
@@ -692,6 +726,7 @@ This operation adds a new item to a list.
 </div>
 
 #### Example:
+
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
@@ -767,4 +802,5 @@ Body:
   }
 }
 ```
+
 </details>

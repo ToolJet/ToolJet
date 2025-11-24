@@ -13,24 +13,6 @@ ToolJet Marketplace allows users to enhance their workspaces by adding custom pl
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Enabling Marketplace 
-
-To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
-
-```bash
-ENABLE_MARKETPLACE_FEATURE=true
-```
-
-When running ToolJet locally, ensure that all the plugins are available by building marketplace before starting the server.
-
-:::info Note
-The logged-in user should be an **Administrator** to access the marketplace page.
-:::
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Installing a Plugin
 
 To navigate to the Marketplace page, click on the settings icon on the bottom left of the dashboard, and click on **Marketplace** from the selection menu.

@@ -1,8 +1,8 @@
-ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
+ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for building and deploying internal tools, workflows and AI agents. The community edition provides a powerful visual builder, drag-and-drop UI, and integrations with databases, APIs, SaaS apps, and object storage. For AI-powered UI generation, query building, debugging, and enterprise features, see ToolJet AI.
 
  :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
+![Docker Cloud Build Status](https://img.shields.io/docker/automated/tooljet/tooljet-ce)
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
 [![Number of GitHub issues that are open](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
 [![Number of GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
@@ -14,34 +14,40 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="Tooljet dashboard showing inventory and orders"/>
+    <img src="docs/static/img/readme/banner.png" alt="Tooljet dashboard showing inventory and orders"/>
 </p>
 
 <p align="center">
-    <img src="https://github.com/ToolJet/ToolJet/assets/25361949/0e711f3a-edb7-496b-8833-107de3826933"/>
+    <img src="docs/static/img/readme/flowchart.png"/>
 </p>
 
-## All features
+## Features  
 
-- **Visual App Builder:** 45+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
-- **ToolJet Database:** Built-in no-code database.
-- **Multi-Page:** Build an application with multiple pages.
-- **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
-- **Desktop & mobile:** Customize layout widths to fit various screen sizes.
-- **Self-host:** Supports Docker, Kubernetes, AWS EC2, Google Cloud Run, and more.
-- **Collaborate:** Add comments anywhere on the canvas and tag your team members.
-- **Extend with plugins:** Use our [command-line tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
-- **Version control:** Manage multiple application versions with a structured release cycle.
-- **Run JS & Python code:** Execute custom JavaScript and Python snippets.
-- **Granular access control:** Set permissions at both group and app levels.
-- **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with 
-`status === 'success' ? 'green' : 'red'`.
-- **No-code query editors:** Query Editors are available for all supported data sources.
-- **Join and transform data:** Transform query results using JavaScript or Python code.
-- **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
-- **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
-- **SSO:** Supports multiple Single Sign-On providers.
+### Community Edition (CE)  
+- **Visual App Builder:** 60+ responsive components (Tables, Charts, Forms, Lists, Progress Bars, and more).  
+- **ToolJet Database:** Built-in no-code database.  
+- **Multi-page Apps & Multiplayer Editing:** Build complex apps collaboratively.  
+- **75+ Data Sources:** Connect to databases, APIs, cloud storage, and SaaS tools.  
+- **Flexible Deployment:** Self-host with Docker, Kubernetes, AWS, GCP, Azure, and more.  
+- **Collaboration Tools:** Inline comments, mentions, and granular access control.  
+- **Extensibility:** Create plugins and connectors with the [ToolJet CLI](https://www.npmjs.com/package/@tooljet/cli).  
+- **Code Anywhere:** Run JavaScript and Python inside your apps.  
+- **Secure by Design:** AES-256-GCM encryption, proxy-only data flow, SSO support.  
+
+### ToolJet AI (Enterprise)  
+Everything in CE, plus:  
+- **AI App Generation:** Create apps instantly from natural language prompts.  
+- **AI Query Builder:** Generate and transform queries with AI assistance.  
+- **AI Debugging:** Identify and fix issues with one click.  
+- **Agent Builder:** Create intelligent agents to automate workflows and orchestrate processes.  
+- **Enterprise-grade Security & Compliance:** SOC 2 and GDPR readiness, audit logs, and advanced access control.
+- **User Management:** Role-based access (RBAC), custom groups, and granular app/data permissions.  
+- **Multi-environment Management:** Seamless dev/stage/prod environments.  
+- **GitSync & CI/CD:** Integrate with GitHub/GitLab for version control and streamlined deployments.  
+- **Branding & Customization:** White-labeling, and custom theming for organizational branding.  
+- **Fine-Grained Access Control:** Secure data and actions at the row, component, page, and query levels.  
+- **Embedded Apps:** Embed ToolJet apps securely within other applications or portals.  
+- **Enterprise Support:** SLAs, priority bug fixes, and onboarding assistance.  
 
 <hr>
 

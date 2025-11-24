@@ -13,12 +13,8 @@ The **Text Editor** component is used to enter and edit text in HTML format. It 
 
 | **Property**  | **Description** | **Expected Value** |
 |:-----------|:-----------|:-----------|
-| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `John Doe`) <br/>HTML(e.g., `<h1>John Doe</h1>`) |
-| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`) <br/>HTML (e,g., `<p>Hello, ToolJet!</p>`).|
-
-### HTML Support
-The Placeholder and Default Value property also supports HTML content allowing the use of headings, paragraphs, bold text, and other HTML elements within the text editor.
-
+| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `John Doe`). |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
 </div>
 
@@ -26,14 +22,7 @@ The Placeholder and Default Value property also supports HTML content allowing t
 
 ## Component Specific Actions (CSA)
 
-Following actions of Button component can be controlled using the component specific actions(CSA):
-
-| <div style={{ width:"100px"}}> Action  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:---------|
-| setValue() | Sets the value of the text editor. | Employ a RunJS query (for e.g., <br/> `await components.richtexteditor1.setValue(<p> Hello ToolJet! </p>)`) or trigger it using an event.|
-| setVisibility() | Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.richtexteditor1.setVisibility(false)`) or trigger it using an event. |
-| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.richtexteditor1.setLoading(true)`) or trigger it using an event. |
-| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.richtexteditor1.setDisable(true)`) or trigger it using an event. |
+There are currently no Component-Specific Actions (CSA) implemented to regulate or control the component.
 
 </div>
 
@@ -44,19 +33,6 @@ Following actions of Button component can be controlled using the component spec
 | **Variable** | **Description** | **How To Access** |
 |:-----------|:-----------|:-----------|
 | value | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g.,`{{components.richtexteditor1.value}}`). |
-| isLoading    | Indicates if the component is loading. | Accessible dynamically with JS (e.g., `{{components.richtexteditor1.isLoading}}`). |
-| isVisible    | Indicates if the component is visible. | Accessible dynamically with JS (e.g., `{{components.richtexteditor1.isVisible}}`). |
-| isDisabled   | Indicates if the component is disabled. | Accessible dynamically with JS (e.g., `{{components.richtexteditor1.isDisabled}}`). |
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Additional Actions
-
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
-|:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 

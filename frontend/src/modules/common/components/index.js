@@ -25,6 +25,8 @@ import EditRoleErrorModal from './ErrorModal';
 import BaseOnboardingQuestions from './BaseOnboardingQuestions';
 import BaseSetupAdminPage from './BaseSetupAdminPage';
 import UsersTable from './UsersTable';
+import BaseColorSwatches from './BaseColorSwatches';
+import BaseComponentModuleTab from './BaseComponentModuleTab';
 
 export {
   FormTextInput,
@@ -32,6 +34,7 @@ export {
   GeneralFeatureImage,
   SubmitButton,
   FormHeader,
+  BaseColorSwatches,
   EmailComponent,
   FormDescription,
   SSOAuthModule,
@@ -54,4 +57,5 @@ export {
   BaseOnboardingQuestions,
   BaseSetupAdminPage,
   UsersTable,
+  BaseComponentModuleTab,
 };

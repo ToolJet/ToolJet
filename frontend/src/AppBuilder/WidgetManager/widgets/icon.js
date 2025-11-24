@@ -61,7 +61,7 @@ export const iconConfig = {
   },
   styles: {
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
@@ -75,6 +75,29 @@ export const iconConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: 'center',
+      },
+      accordian: 'Icon',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Icon',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'Icon',
     },
@@ -116,6 +139,8 @@ export const iconConfig = {
     styles: {
       iconColor: { value: '#000' },
       iconAlign: { value: 'center' },
+      padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
