@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.ai',
+  url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -60,21 +60,21 @@ module.exports = {
           position: 'right',
         },
         {
-          href: 'https://www.tooljet.ai/',
+          href: 'https://www.tooljet.com/',
           position: 'right',
           label: 'Website',
           className: 'navbar-signin',
           'aria-label': 'Visit ToolJet Website',
         },
         {
-          href: 'https://www.tooljet.ai/login',
+          href: 'https://www.tooljet.com/login',
           position: 'right',
           label: 'Sign in',
           className: 'navbar-signin',
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://www.tooljet.ai/create-account',
+          href: 'https://www.tooljet.com/create-account',
           position: 'right',
           label: 'Try for free',
           className: 'navbar-website',
@@ -93,35 +93,35 @@ module.exports = {
         {
           title: 'Platform',
           items: [
-            { label: 'App builder', to: 'https://www.tooljet.ai/visual-app-builder' },
-            { label: 'AI Agent builder', to: 'https://www.tooljet.ai/ai-agent-builder' },
-            { label: 'ToolJet Database', to: 'https://www.tooljet.ai/database' },
+            { label: 'App builder', to: 'https://www.tooljet.com/visual-app-builder' },
+            { label: 'AI Agent builder', to: 'https://www.tooljet.com/ai-agent-builder' },
+            { label: 'ToolJet Database', to: 'https://www.tooljet.com/database' },
           ],
         },
         {
           title: 'Solutions',
           items: [
-            { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
-            { label: 'Business applications', to: 'https://www.tooljet.ai/business-applications' },
+            { label: 'Back office tools', to: 'https://www.tooljet.com/building-back-office-apps' },
+            { label: 'Business applications', to: 'https://www.tooljet.com/business-applications' },
           ],
         },
         {
           title: 'Developers',
           items: [
-            { label: 'Blogs', to: 'https://blog.tooljet.ai/' },
-            { label: 'Events', to: 'https://www.tooljet.ai/events' },
+            { label: 'Blogs', to: 'https://blog.tooljet.com/' },
+            { label: 'Events', to: 'https://www.tooljet.com/events' },
             { label: 'GitHub', href: 'https://github.com/ToolJet/ToolJet' },
-            { label: 'Slack', href: 'https://tooljet.ai/slack' },
+            { label: 'Slack', href: 'https://tooljet.com/slack' },
           ],
         },
         {
           title: 'Templates',
           items: [
-            { label: 'Lead management', to: 'https://www.tooljet.ai/templates/lead-management-system' },
-            { label: 'KPI management', to: 'https://www.tooljet.ai/templates/kpi-management-dashboard' },
-            { label: 'Inventory management', to: 'https://www.tooljet.ai/templates/inventory-management-system' },
-            { label: 'Leave management', to: 'https://www.tooljet.ai/templates/leave-management-portal' },
-            { label: 'Applicant tracking', to: 'https://www.tooljet.ai/templates/applicant-tracking-system' },
+            { label: 'Lead management', to: 'https://www.tooljet.com/templates/lead-management-system' },
+            { label: 'KPI management', to: 'https://www.tooljet.com/templates/kpi-management-dashboard' },
+            { label: 'Inventory management', to: 'https://www.tooljet.com/templates/inventory-management-system' },
+            { label: 'Leave management', to: 'https://www.tooljet.com/templates/leave-management-portal' },
+            { label: 'Applicant tracking', to: 'https://www.tooljet.com/templates/applicant-tracking-system' },
           ],
         },
         {

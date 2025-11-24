@@ -1,7 +1,6 @@
 ---
 id: tooljet-mcp
 title: ToolJet MCP
-
 ---
 
 <div className="badge badge--self-hosted">   
@@ -42,7 +41,7 @@ Before you begin, you'll need:
 
 ### Step 1: Get an Access Token
 
-Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](https://docs.tooljet.ai/docs/tooljet-api#enabling-tooljet-api) documentation for more details on how to generate an API token.
+Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](https://docs.tooljet.com/docs/tooljet-api#enabling-tooljet-api) documentation for more details on how to generate an API token.
 
 ### Step 2: Configure Your AI Tool
 
@@ -59,10 +58,7 @@ Follow the instructions below to configure your preferred AI tool to connect wit
   "mcpServers": {
     "tooljet": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -88,10 +84,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
   "mcpServers": {
     "tooljet": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -157,10 +150,7 @@ For more info on using MCP in VS Code, see the [Copilot documentation](https://c
   "mcpServers": {
     "tooljet": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -186,10 +176,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
   "mcpServers": {
     "tooljet": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -214,10 +201,7 @@ Replace `<your-access-token>` with your ToolJet access token and update the host
   "mcpServers": {
     "tooljet": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -243,12 +227,7 @@ If you're using Windows, prefix the command with `cmd /c`:
   "mcpServers": {
     "tooljet": {
       "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "-y",
-        "@tooljet/mcp",
-      ],
+      "args": ["/c", "npx", "-y", "@tooljet/mcp"],
       "env": {
         "TOOLJET_ACCESS_TOKEN": "<your-access-token>",
         "TOOLJET_HOST": "https://your-tooljet-instance.com"
@@ -264,24 +243,24 @@ ToolJet MCP provides several tools that AI assistants can use to interact with y
 
 ### User Management
 
-| Tool | Description |
-| --- | --- |
-| `get-all-users` | Retrieve a list of all users in your ToolJet instance |
-| `get-user` | Get detailed information about a specific user |
-| `create-user` | Create a new user in a specified workspace |
-| `update-user` | Update a user's profile information |
-| `update-user-role` | Change a user's role within a workspace |
+| Tool               | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| `get-all-users`    | Retrieve a list of all users in your ToolJet instance |
+| `get-user`         | Get detailed information about a specific user        |
+| `create-user`      | Create a new user in a specified workspace            |
+| `update-user`      | Update a user's profile information                   |
+| `update-user-role` | Change a user's role within a workspace               |
 
 ### Workspace Management
 
-| Tool | Description |
-| --- | --- |
+| Tool                 | Description                                  |
+| -------------------- | -------------------------------------------- |
 | `get-all-workspaces` | List all workspaces in your ToolJet instance |
 
 ### Application Management
 
-| Tool | Description |
-| --- | --- |
+| Tool           | Description                                       |
+| -------------- | ------------------------------------------------- |
 | `get-all-apps` | List all applications within a specific workspace |
 
 ## Example Usage
@@ -293,8 +272,4 @@ Once connected, your AI assistant can perform tasks like:
 - "List all the apps in the Development workspace"
 - "Update the role of user@example.com to Admin in the Sales workspace"
 
-
 For a full list of tools available, see the [GitHub README](https://github.com/ToolJet/tooljet-mcp). If you experience any issues, [submit a bug report](https://github.com/ToolJet/tooljet-mcp/issues/new).
-
-
-

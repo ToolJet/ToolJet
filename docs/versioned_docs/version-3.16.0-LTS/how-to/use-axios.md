@@ -2,6 +2,7 @@
 id: use-axios-in-runjs
 title: Use Axios in RunJS
 ---
+
 <div style={{paddingBottom:'24px'}}>
 
 ToolJet supports three libraries: **Moment.js**, **Lodash**, and **Axios**. This guide focuses on using the Axios library with RunJS queries. **[Axios](https://axios-http.com/docs/intro)** is a promise-based HTTP client for making requests to your own or external servers. It supports various request types like `GET`, `POST`, `PUT/PATCH`, and `DELETE`.
@@ -21,10 +22,10 @@ var url = "https://jsonplaceholder.typicode.com/users/1";
 
 var data = (await axios.get(url)).data;
 
-return data
+return data;
 ```
 
-*This code sets up a URL variable, makes a GET request to the API, and returns the data. Preview the query to see the API's response.*
+_This code sets up a URL variable, makes a GET request to the API, and returns the data. Preview the query to see the API's response._
 
 <div style={{textAlign: 'center'}}>
 
@@ -43,17 +44,17 @@ return data
 ```javascript
 var url = "https://jsonplaceholder.typicode.com/users";
 
-var data = axios.post(url,{
+var data = axios.post(url, {
   id: 11,
   name: "Shubhendra",
   username: "camelcaseguy",
-  email: "shubhendra@tooljet.com",})
+  email: "shubhendra@tooljet.com",
+});
 
-return data
+return data;
 ```
 
 This POST request sends user details to the server. The server's response, as shown below, includes **Status: 201** indicating successful resource creation.
-
 
 <div style={{textAlign: 'center'}}>
 
@@ -62,7 +63,6 @@ This POST request sends user details to the server. The server's response, as sh
 </div>
 
 To see Axios in action in a project, check out this tutorial:
-**[Build GitHub star history tracker](https://blog.tooljet.ai/build-github-stars-history-app-in-5-minutes-using-low-code/)**.
-
+**[Build GitHub star history tracker](https://blog.tooljet.com/build-github-stars-history-app-in-5-minutes-using-low-code/)**.
 
 </div>

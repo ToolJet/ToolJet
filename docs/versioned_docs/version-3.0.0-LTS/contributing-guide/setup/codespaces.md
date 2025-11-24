@@ -3,13 +3,13 @@ id: codespaces
 title: GitHub Codespaces
 ---
 
-Follow the steps below to set up ToolJet on GitHub Codespaces. We recommend reading our guide on [architecture](https://docs.tooljet.ai/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
+Follow the steps below to set up ToolJet on GitHub Codespaces. We recommend reading our guide on [architecture](https://docs.tooljet.com/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
 
 Open the terminal and run the commands below.
 
 ## Setting up
 
-### 1. Set up the environment 
+### 1. Set up the environment
 
 1. Install Node.js ( version: v18.18.2 ) and npm (version: v9.8.1)
 
@@ -31,7 +31,7 @@ sudo apt-get update
 sudo apt-get install postgresql-13 postgresql-contrib-13
 ```
 
-To start the postgresql service run the below command: 
+To start the postgresql service run the below command:
 
 ```
 sudo service postgresql start
@@ -44,14 +44,14 @@ sudo su
 
 sudo -u postgres psql
 
-\password postgres  
+\password postgres
 
 \q
 ```
 
 ### 2. Set up environment variables
 
-Create a `.env` file by running the command `touch .env`. More information on the variables that can be set is given in the [environment variables reference](https://docs.tooljet.ai/docs/setup/env-vars)
+Create a `.env` file by running the command `touch .env`. More information on the variables that can be set is given in the [environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)
 
 **For basic set-up you add the below env variables:**
 
@@ -81,7 +81,7 @@ SERVE_CLIENT=true
 >
 > `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
 
-### 3.  Install and build dependencies
+### 3. Install and build dependencies
 
 Make sure node version is set to 18.18.2 before running the below command:
 
@@ -91,7 +91,6 @@ npm install --prefix server
 npm install --prefix frontend
 npm run build:plugins
 ```
-
 
 ### 4. Set up database
 
