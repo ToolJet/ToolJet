@@ -44,6 +44,7 @@ describe("Private and Public apps", () => {
 
   beforeEach(() => {
     data = generateTestData();
+    cy.visit("/my-workspace");
     cy.defaultWorkspaceLogin();
     cy.apiDeleteAllApps();
     cy.skipWalkthrough();
