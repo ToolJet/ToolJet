@@ -615,7 +615,7 @@ Cypress.Commands.add(
               `https://${oktaDomain}/oauth2/v1/authorize` +
               `?client_id=${clientId}` +
               `&response_type=code` +
-              `&scope=openid email profile` +
+              `&scope=openid email profile groups` +
               `&redirect_uri=${encodeURIComponent(redirectUri)}` +
               `&state=teststate1` +
               `&nonce=randomvalue` +

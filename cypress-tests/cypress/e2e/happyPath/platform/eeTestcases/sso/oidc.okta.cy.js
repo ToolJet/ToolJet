@@ -28,6 +28,7 @@ describe("Okta OIDC", () => {
         data.groupName = `oidc-${sanitize(fake.companyName)}-group`;
 
         cy.visit("/my-workspace");
+        cy.wait(3000);
         cy.apiLogin();
 
         deleteOrganisationSSO("My workspace", ["openid"]);
@@ -76,7 +77,7 @@ describe("Okta OIDC", () => {
             id: "1",
         });
         cy.apiLogout();
-        cy.wait(1000);
+        cy.wait(3000);
 
         loginWithOIDC({
             username: Cypress.env("okta_inst_user"),
@@ -102,7 +103,7 @@ describe("Okta OIDC", () => {
 
         addOIDCConfig({ Everyone: "Admin" });
         cy.apiLogout();
-        cy.wait(4000);
+        cy.wait(3000);
 
         loginWithOIDC({
             username: Cypress.env("okta_user"),
@@ -120,7 +121,7 @@ describe("Okta OIDC", () => {
         cy.apiLogin();
         addOIDCConfig({ Everyone: "Builder" });
         cy.apiLogout();
-        cy.wait(1000);
+        cy.wait(3000);
 
         loginWithOIDC({
             username: Cypress.env("okta_user"),
@@ -141,7 +142,7 @@ describe("Okta OIDC", () => {
 
         addOIDCConfig({ Everyone: "End-user" });
         cy.apiLogout();
-        cy.wait(1000);
+        cy.wait(3000);
 
         loginWithOIDC({
             username: Cypress.env("okta_user"),
