@@ -17803,7 +17803,7 @@ section.ai-message-prompt-input-wrapper {
 
 .table-component-footer,
 .table-card-header {
-  .tj-ghost-black-btn:hover {
+  .tj-ghost-black-btn:hover:not(:disabled) {
     background-color: var(--cc-table-footer-action-hover, #eceef0) !important;
   }
 }

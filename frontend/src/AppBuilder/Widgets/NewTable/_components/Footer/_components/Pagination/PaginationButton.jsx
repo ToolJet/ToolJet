@@ -11,9 +11,6 @@ export const PaginationButton = memo(({ pageIndex, onClick, disabled, icon, data
         pageIndex === currentPageIndex &&
         '!tw-bg-[var(--interactive-overlays-fill-hover)]'
       } ${className}`}
-      style={{
-        cursor: disabled ? 'not-allowed' : 'pointer',
-      }}
       leftIcon={icon}
       fill={disabled ? 'var(--slate8)' : 'var(--cc-primary-icon, var(--cc-default-icon))'}
       iconWidth="16"
