@@ -41,7 +41,7 @@ export const RadioButtonV2 = ({
 
   const isInitialRender = useRef(true);
 
-  const [checkedValue, setCheckedValue] = useState(findDefaultItem(schema));
+  const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -74,7 +74,9 @@ export const RadioButtonV2 = ({
     if (!Array.isArray(optionSchema)) {
       return undefined;
     }
+    console.log('optionSchema', optionSchema);
     const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
+    console.log('foundItem', foundItem);
     return foundItem?.value;
   }
 
@@ -88,6 +90,7 @@ export const RadioButtonV2 = ({
   }
 
   useEffect(() => {
+    console.log('advanced', advanced);
     onSelect(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
