@@ -5,8 +5,6 @@ title: BigQuery
 
 ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
@@ -14,6 +12,13 @@ To establish a connection with the **BigQuery** data source, you can either clic
 ToolJet requires the following to connect to your BigQuery:
 
 - **Private key**
+- **Scope**
+
+:::warning
+When entering multiple scopes, separate them using spaces. Using any other character may cause errors.
+
+Example: `https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/drive`
+:::
 
 How to get a Private key?
 
@@ -22,7 +27,7 @@ How to get a Private key?
 3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
 4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create-v2.png" alt="BQ create" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-v3.png" alt="BQ create" />
 
 **The JSON file should look like this:**
 
@@ -42,10 +47,6 @@ How to get a Private key?
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying BigQuery
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -53,19 +54,11 @@ How to get a Private key?
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query-v2.png" alt="BQ query" />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-query-v2.png" alt="BQ query" />
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -91,13 +84,13 @@ This operation returns the data based on the **Query**.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query" style={{marginBottom:'15px'}}/>
 
 ### List Datasets
 
 This operation returns the list of datasets.
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
 
 ### List Tables
 
@@ -107,7 +100,7 @@ This operation returns the list of tables within a dataset.
 
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/listtables-v2.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
 
 ### Create Table
 
@@ -119,7 +112,7 @@ This operation is used to create a table.
 - **Dataset ID**
 - **Options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
 
 **NOTE:** Visit https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
 
@@ -132,7 +125,7 @@ This operation is used to delete a table.
 - **Table ID**
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/delete-table.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
 
 ### Create View
 
@@ -148,7 +141,7 @@ This operation is used to create a view.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/create-view-v2.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
 
 ### Insert Record
 
@@ -160,7 +153,7 @@ This operation is used to insert a record.
 - **Dataset ID**
 - **Rows**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
 
 ### Delete Record
 
@@ -174,7 +167,7 @@ Use this operation to delete a record.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete-v2.png"  alt="BQ delete" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-v2.png"  alt="BQ delete" />
 
 :::warning
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
@@ -192,6 +185,4 @@ Use this operation to update a record.
 - **Condition**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update-v2.png" alt="BQ update" />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-update-v2.png" alt="BQ update" />
