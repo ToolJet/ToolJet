@@ -4,7 +4,7 @@ import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
-import { EventHandler } from '@entities/event_handler.entity';
+import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
@@ -101,6 +101,43 @@ export class NameResolverRepository {
         componentName: component?.name || 'Unnamed Component',
         pageName: component?.page?.name || 'Unnamed Page',
       };
+    });
+  }
+
+  /**
+   * Resolve name for an entity that could be a component, query, or page
+   * This is used when events are attached to different entity types
+   */
+  async resolveEntityName(entityId: string, entityType: Target | string): Promise<string> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // For component-like entities, lookup component
+      if (entityType === Target.component || entityType === Target.tableColumn || entityType === Target.tableAction) {
+        const component = await manager.findOne(Component, {
+          where: { id: entityId },
+          select: ['id', 'name'],
+        });
+        return component?.name || 'Unknown Component';
+      }
+
+      // For data query entities, lookup query
+      if (entityType === Target.dataQuery) {
+        const query = await manager.findOne(DataQuery, {
+          where: { id: entityId },
+          select: ['id', 'name'],
+        });
+        return query?.name || 'Unknown Query';
+      }
+
+      // For page entities, lookup page
+      if (entityType === Target.page) {
+        const page = await manager.findOne(Page, {
+          where: { id: entityId },
+          select: ['id', 'name'],
+        });
+        return page?.name || 'Unknown Page';
+      }
+
+      return 'Unknown Entity';
     });
   }
 }

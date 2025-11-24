@@ -42,6 +42,10 @@ export class AppHistoryUtilService {
     return this.nameResolverRepository.getComponentWithPage(componentId);
   }
 
+  async resolveEntityName(entityId: string, entityType: string): Promise<string> {
+    return this.nameResolverRepository.resolveEntityName(entityId, entityType);
+  }
+
   async batchResolveNames(entityIds: {
     componentIds?: string[];
     pageIds?: string[];
