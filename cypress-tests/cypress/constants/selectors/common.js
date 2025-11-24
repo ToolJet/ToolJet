@@ -178,7 +178,9 @@ export const commonSelectors = {
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
   // breadcrumbTitle: '[data-cy="app-header-label"]>>',
-  breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbHeaderTitle: (headerTitle) => {
+    return `[data-cy="breadcrumb-header-${cyParamName(headerTitle)}"]>>`
+  },
   breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
@@ -194,6 +196,8 @@ export const commonSelectors = {
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
   editorAppNameInput: '[data-cy="editor-app-name-input"]',
+  enablePasswordLoginTitle: '[data-cy="enable-password-login-title"]',
+  enablePasswordLoginModal: '[data-cy="modal-message"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },

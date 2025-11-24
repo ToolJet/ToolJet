@@ -192,14 +192,10 @@ describe("Workspace", () => {
         cy.get(
             `[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`
         )
-            .parents('[class*="align-items-center"]')
+            .closest('.align-items-center')
             .realHover()
-            .trigger("hover")
-            .then(() => {
-                cy.wait(500);
-                cy.hideTooltip();
-                cy.wait(500);
-                cy.get('[data-cy="current-org-indicator"]').eq(0).click();
+            .within(() => {
+                cy.get('[data-cy="current-org-indicator"]').click({ force: true });
             });
 
         cy.get(dashboardSelector.editWorkspaceTitle).verifyVisibleElement(

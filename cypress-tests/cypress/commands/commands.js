@@ -34,6 +34,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.get(selector)
+    .scrollIntoView()
     .should("be.visible", { timeout: 10000 })
     .click({ force: true })
     .type(`{selectall}{backspace}`)

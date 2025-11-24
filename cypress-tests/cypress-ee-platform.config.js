@@ -34,7 +34,7 @@ module.exports = defineConfig({
   projectId: "sk3oji",
 
   e2e: {
-    setupNodeEvents (on, config) {
+    setupNodeEvents(on, config) {
       config.baseUrl = environment.baseUrl;
 
       require("./cypress/config/tasks")(on);
@@ -51,6 +51,7 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/settings/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
