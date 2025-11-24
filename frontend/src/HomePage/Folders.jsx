@@ -411,6 +411,9 @@ export const Folders = function Folders({
               onClick={showUpdateForm ? executeEditFolder : saveFolder}
               data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               isLoading={isCreating || isUpdating}
+              disabled={!!errorText || // Disabled if there's a validation error
+              (showUpdateForm && newFolderName.trim() === updatingFolder?.name) ||
+              (!showUpdateForm && newFolderName.trim() === '')}
             >
               {showUpdateForm
                 ? t('homePage.foldersSection.editFolder', 'Edit Folder')
