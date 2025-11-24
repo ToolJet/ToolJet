@@ -141,6 +141,6 @@ ENV TOOLJET_HOST=http://localhost \
     TERM=xterm
 
 
-RUN chmod +x ./server/scripts/preview.sh
+RUN chmod +x ./server/scripts/ce-preview.sh
 # Set the entrypoint
-ENTRYPOINT ["./server/scripts/preview.sh"]
+ENTRYPOINT ["./server/scripts/ce-preview.sh"]
