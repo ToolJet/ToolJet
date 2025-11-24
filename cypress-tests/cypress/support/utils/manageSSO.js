@@ -846,16 +846,20 @@ export const addOIDCConfig = (
 };
 
 export const uiOktaLogin = (email, password) => {
+  cy.log('Starting Okta login for:', email);
   cy.origin(
     "https://integrator-8815821.okta.com",
     { args: { email, password } },
     ({ email, password }) => {
-      cy.get('input[name="identifier"]').type(email);
+      cy.log('Inside Okta origin');
+      cy.get('input[name="identifier"]', { timeout: 10000 }).should('be.visible').type(email);
       cy.get(".button-primary").click();
-      cy.get('input[name="credentials.passcode"]').type(password);
+      cy.get('input[name="credentials.passcode"]', { timeout: 10000 }).should('be.visible').type(password);
       cy.get(".button-primary").click();
+      cy.log('Okta login submitted');
     }
   );
+  cy.log('Okta login completed');
 };
 
 export const toggleSsoViaUI = (

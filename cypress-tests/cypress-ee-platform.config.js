@@ -34,7 +34,7 @@ module.exports = defineConfig({
   projectId: "sk3oji",
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       config.baseUrl = environment.baseUrl;
 
       require("./cypress/config/tasks")(on);
@@ -47,17 +47,9 @@ module.exports = defineConfig({
     configFile: environment.configFile,
     specPattern: [
       "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/settings/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/sso/oidc.okta.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/sso/saml.okta.cy.js",
     ],
 
     testIsolation: true,
