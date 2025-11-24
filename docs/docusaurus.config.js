@@ -508,10 +508,10 @@ module.exports = {
             to: '/docs/widgets/table/',
             from: '/docs/widgets/table/table-properties',
           },
-          {
-            to: '/docs/workflows/how-to/trigger-workflow-from-app',
-            from: '/docs/workflows/trigger-workflow-from-app',
-          }
+          // {
+          //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
+          //   from: '/docs/workflows/trigger-workflow-from-app',
+          // }
         ],
       },
     ],

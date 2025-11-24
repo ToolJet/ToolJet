@@ -565,17 +565,33 @@
       "collapsible": false,
       "items": [
         "workflows/overview",
-        "workflows/nodes",
-        "workflows/workflow-triggers",
-        "workflows/results",
-        "workflows/permissions",
         {
           "type": "category",
-          "label": "How-to",
+          "label": "Nodes",
           "items": [
-            "workflows/how-to/trigger-using-webhook",
-            "workflows/how-to/trigger-workflow-from-app",
-            "workflows/how-to/trigger-workflow-using-scheduler"
+            "workflows/nodes/start-trigger",
+            {
+              "type": "category",
+              "label": "Logic Nodes",
+              "items": [
+                "workflows/nodes/logic/js",
+                "workflows/nodes/logic/if-else",
+                "workflows/nodes/logic/loop"
+              ]
+            },
+            "workflows/nodes/ds",
+            "workflows/nodes/wf",
+            "workflows/nodes/response",
+            "workflows/nodes/operations"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Triggers",
+          "items": [
+            "workflows/triggers/app",
+            "workflows/triggers/webhook",
+            "workflows/triggers/scheduler"
           ]
         }
       ]
