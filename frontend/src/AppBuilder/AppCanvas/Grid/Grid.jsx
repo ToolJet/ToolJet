@@ -4,7 +4,6 @@ import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
 import _, { isArray, isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
-import { cn } from '@/lib/utils';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
@@ -582,7 +581,6 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
   if (mode !== 'edit') return null;
-
   return (
     <>
       <Moveable
@@ -853,7 +851,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         checkInput
         onDragStart={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
-            return true;
+            return;
           }
 
           // This is to prevent parent component from being dragged and the stop the propagation of the event
@@ -947,6 +945,11 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragEnd={(e) => {
           handleDeactivateTargets();
+          setCanvasBounds({ ...CANVAS_BOUNDS });
+          hideGridLines();
+          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+
+          /* if the drag end is on the virtual ghost element(component drop), return */
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -955,7 +958,6 @@ export default function Grid({ gridWidth, currentLayout }) {
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
-            // Reset per-drag-session flag
 
             const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
@@ -977,12 +979,12 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
+            // Special case for Modal; If source widget is modal, prevent drops to canvas
             const isModalToCanvas = source.isModal && source.id !== target.id;
 
             let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
             if (isParentChangeAllowed && !isModalToCanvas && !isParentModuleContainer) {
-              // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
               handleDragEnd([{ id: e.target.id, x: left, y: top + scrollDelta, parent }]);
             } else {
@@ -1008,9 +1010,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error in onDragEnd:', error);
           }
-          setCanvasBounds({ ...CANVAS_BOUNDS });
-          hideGridLines();
-          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+
           toggleCanvasUpdater();
           // Move this to common function
           const canvas = document.querySelector('.canvas-container');
@@ -1166,7 +1166,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
-        bounds={canvasBounds}
+        bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{
