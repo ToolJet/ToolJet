@@ -61,7 +61,7 @@ module.exports = defineConfig({
 
     testIsolation: true,
     retries: {
-      runMode: 0,
+      runMode: 1,
       openMode: 0,
     },
     redirectionLimit: 10,
