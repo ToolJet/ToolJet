@@ -6,6 +6,10 @@
         .cm-editor  {
             border: none;
         }
+
+        .cm-content {
+            background-color: var(--cc-code-editor-background-color);
+        }
    }
 
    .code-editor-widget {

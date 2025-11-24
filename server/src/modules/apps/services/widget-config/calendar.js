@@ -53,6 +53,22 @@ export const calendarConfig = {
       type: 'code',
       displayName: 'Header date format on week view',
     },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#00000000',
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 0,
+      },
+    },
   },
   exposedVariables: {
     selectedEvent: {},
@@ -106,6 +122,8 @@ export const calendarConfig = {
       visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
+      borderColor: { value: '#00000000' },
+      borderRadius: { value: 0 },
     },
   },
 };

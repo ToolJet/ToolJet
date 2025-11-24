@@ -43,6 +43,22 @@ export const pdfConfig = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#00000000',
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 0,
+      },
+    },
   },
   exposedVariables: {},
   definition: {
@@ -68,6 +84,8 @@ export const pdfConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      borderColor: { value: '#00000000' },
+      borderRadius: { value: 0 },
     },
   },
 };

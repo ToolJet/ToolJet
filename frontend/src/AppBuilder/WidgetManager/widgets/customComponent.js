@@ -38,6 +38,12 @@ export const customComponentConfig = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
       accordian: 'container',
     },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'string' }, defaultValue: '0px 0px 0px 0px #00000040' },
+      accordian: 'container',
+    },
   },
   exposedVariables: {
     data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
@@ -78,6 +84,7 @@ export const customComponentConfig = {
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-default-border)' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
