@@ -3,11 +3,11 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self-Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self-Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
 
 ## Types of Licenses
 
-ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. These can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. These can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 
@@ -19,7 +19,7 @@ ToolJet offers a trial license which is valid for 14 days, where users can acces
 
 ### Paid License
 
-ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
 
 ## Updating License Key
 

@@ -6,13 +6,13 @@ title: Azure Container Apps
 # Deploying ToolJet on Azure Container Apps
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info
 Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet.
 
-ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 ## Deploying ToolJet Application
@@ -29,9 +29,10 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    :::
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step3-2.png" alt="Deploying ToolJet on Azure container apps" />
 5. Click on the **Create** button at the bottom of the page.
-6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
+6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/ee-entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
    <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
 7. Under "Environmental variables", please add the below ToolJet application variables:
+
    ```env
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
@@ -83,6 +84,7 @@ ToolJet comes with a **built-in Redis setup**, which is used for multiplayer edi
    **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
 
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
+
 8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 9. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.
@@ -129,6 +131,44 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
+
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
+### Enabling Workflow Scheduling
+
+To activate workflow scheduling, set the following environment variables:
+
+```bash
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
+```
+
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
+- `REDIS_HOST=localhost` - Default: localhost
+- `REDIS_PORT=6379` - Default: 6379
+- `REDIS_USERNAME=` - Optional: Redis username (ACL)
+- `REDIS_PASSWORD=` - Optional: Redis password
+- `REDIS_DB=0` - Optional: Redis database number (default: 0)
+- `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
+:::
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -140,4 +180,4 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._

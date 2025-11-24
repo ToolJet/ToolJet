@@ -17,7 +17,7 @@ You can toggle on **Authentication required for all users** in the configuration
 
 Note: After completing the OAuth flow, the query must be triggered again to load the data.
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/gmail/connection.png" alt="Gmail Configuration" />
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/gmail/connection-v2.png" alt="Gmail Configuration" />
 
 ## Supported Operations
 

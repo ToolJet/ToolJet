@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       branch_name:
-        description: 'Git branch to build from'
+        description: "Git branch to build from"
         required: true
-        default: 'main'
+        default: "main"
       dockerfile_path:
-        description: 'Path to Dockerfile'
+        description: "Path to Dockerfile"
         required: true
         type: choice
         options:
@@ -16,7 +16,7 @@ on:
           - ./docker/pre-release/ee/ee-production.Dockerfile
           - ./docker/LTS/cloud/cloud-server.Dockerfile
       docker_tag:
-        description: 'Docker tag suffix (e.g., pre-release-14)'
+        description: "Docker tag suffix (e.g., pre-release-14)"
         required: true
 
 jobs:
@@ -24,6 +24,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          df -h
+
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
@@ -57,6 +67,8 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}

@@ -37,22 +37,22 @@ spec:
   template:
     spec:
       containers:
-      - name: tooljet
-        env:
-        - name: PG_HOST
-          value: "your-rds-endpoint.region.rds.amazonaws.com"
-        - name: PGSSLMODE
-          value: "require"
-        - name: NODE_EXTRA_CA_CERTS
-          value: "/certs/global-bundle.pem"
-        volumeMounts:
-        - name: ssl-certs
-          mountPath: /certs
-          readOnly: true
+        - name: tooljet
+          env:
+            - name: PG_HOST
+              value: "your-rds-endpoint.region.rds.amazonaws.com"
+            - name: PGSSLMODE
+              value: "require"
+            - name: NODE_EXTRA_CA_CERTS
+              value: "/certs/global-bundle.pem"
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /certs
+              readOnly: true
       volumes:
-      - name: ssl-certs
-        configMap:
-          name: rds-ssl-cert
+        - name: ssl-certs
+          configMap:
+            name: rds-ssl-cert
 ```
 
 ### 3. Alternative: Using Kubernetes Secret
@@ -67,9 +67,9 @@ kubectl create secret generic rds-ssl-cert \
 ```yaml
 # In deployment.yaml
 volumes:
-- name: ssl-certs
-  secret:
-    secretName: rds-ssl-cert
+  - name: ssl-certs
+    secret:
+      secretName: rds-ssl-cert
 ```
 
 ### 4. Apply Configuration
@@ -99,4 +99,4 @@ extraVolumeMounts:
     readOnly: true
 ```
 
-**Reference**: [ToolJet Kubernetes EKS Setup Documentation](https://docs.tooljet.ai/docs/setup/kubernetes-eks)
+**Reference**: [ToolJet Kubernetes EKS Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-eks)

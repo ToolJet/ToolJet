@@ -48,19 +48,11 @@ By default, the ToolJet API is disabled. To enable the API, add these variables 
 
 The ToolJet API is secured with an access token created by you in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be sent in the format `Basic <access_token>`.
 
-<details id="tj-dropdown">
-
-<summary>cURL Request Example</summary>
-
-```bash
-
-curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
+```bash title="cURL Request Example"
+curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 -H 'Authorization: Basic <access_token>' \
 -H 'Content-Type: application/json'
-
 ```
-
-</details>
 
 ## API Endpoints
 
@@ -73,72 +65,108 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Content-Type:** `application/json`
     - **Response:** Array of User objects.
 
+
+    ```bash title="cURL Request"
+    curl -X GET https://{your-domain}/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
+
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 [
-    {
-      "id": "5b1608df-5e14-474b-b304-919623a9be57",
-      "name": "Sam Oliver",
-      "email": "sam@example.com",
-      "status": "active",
-      "workspaces": [
-        {
-          "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
-          "name": "demo-workspace",
-          "status": "active",
-          "groups": [
-            {
-              "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
-              "name": "all_users"
-            },
-            {
-              "id": "1830a113-24e5-4e33-8af2-e6502d477239",
-              "name": "admin"
-            }
-          ]
+  {
+    "id":"1034fd65-7b40-474c-ab79-42d32780b299",
+    "name":"John Doe",
+    "email":"john@example.com",
+    "status":"active",
+    "workspaces":
+    [
+      {
+        "id":"22056424-6e01-41d9-b090-62a321388433",
+        "name":"Nexus Corps",
+        "status":"active",
+        "userPermission":{
+          "id":"325dac2e-fb34-47a3-bc8f-0653aa38c465",
+          "organizationId":"22056424-6e01-41d9-b090-62a321388433",
+          "name":"admin",
+          "type":"default",
+          "appCreate":true,
+          "appDelete":true,
+          "workflowCreate":true,
+          "workflowDelete":true,
+          "folderCRUD":true,
+          "orgConstantCRUD":true,
+          "dataSourceCreate":true,
+          "dataSourceDelete":true,
+          "appPromote":true,
+          "appRelease":true,
+          "createdAt":"2025-09-23T13:33:43.196Z",
+          "updatedAt":"2025-09-23T13:33:43.196Z"
         }
-      ]
-    },
-    {
-        "id": "919623a-5e14-4v4b-63b4-3343a9be57",
-        "name": "David Smith",
-        "email": "david@example.com",
-        "status": "active",
-        "workspaces": [
-          {
-            "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
-            "name": "demo-workspace",
-            "status": "active",
-            "groups": [
-              {
-                "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
-                "name": "all_users"
-              },
-              {
-                "id": "1830a113-24e5-4e33-8af2-e6502d477239",
-                "name": "admin"
-              }
-            ]
-          },
-          {
-              "id": "b8a0c07d-2430-46fd-ba71-2a71e48fde30",
-              "name": "team-spac",
-              "status": "active",
-              "groups": [
-                  {
-                      "id": "7f7af977-a7e7-49e3-a08a-2dffce6f5942",
-                      "name": "all_users"
-                  },
-                  {
-                      "id": "eda68cf3-b70d-455f-8a2a-8cd4bbff77a6",
-                      "name": "admin"
-                  }
-              ]
-          }
-        ]
       }
-  ]
+    ],
+    "userGroups":
+    [
+      {
+        "id":"c8865750-f5cb-4af5-addd-dd56f51f9bcd",
+        "name":"admin"
+      }
+    ],
+    "userDetails":[]
+  },
+  {
+    "id":"8778588d-972f-4fe1-bd6c-7432e64d6632",
+    "name":"James Smith",
+    "email":"james@example.com",
+    "status":"invited",
+    "workspaces":
+    [
+      {
+        "id":"22056424-6e01-41d9-b090-62a321388433",
+        "name":"Nexus Corps",
+        "status":"active",
+        "userPermission":{
+          "id":"a5af486e-28e6-468c-b92c-eac5d7583d00",
+          "organizationId":"22056424-6e01-41d9-b090-62a321388433",
+          "name":"end-user",
+          "type":"default",
+          "appCreate":false,
+          "appDelete":false,
+          "workflowCreate":false,
+          "workflowDelete":false,
+          "folderCRUD":false,
+          "orgConstantCRUD":false,
+          "dataSourceCreate":false,
+          "dataSourceDelete":false,
+          "appPromote":false,
+          "appRelease":false,
+          "createdAt":"2025-09-23T13:33:43.196Z",
+          "updatedAt":"2025-09-23T13:33:43.196Z"
+        }
+      }
+    ],
+    "userGroups":
+    [
+      {
+        "id":"e27ca96f-c8a9-4cdc-aa9d-a435cab1358b",
+        "name":"end-user"
+      }
+    ],
+    "userDetails":
+    [
+      {
+        "organizationId":"22056424-6e01-41d9-b090-62a321388433",
+        "ssoUserInfo":null,
+        "userMetadata":
+        {
+          "user_api_key":"123xxfjnf489njf589o53njfv0935n0953"
+        }
+      }
+    ]
+  }
+]
 ```
 </details>
 
@@ -150,6 +178,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Response:** Array of Workspace objects.
+
+    ```bash title="cURL Request"
+    curl -X GET https://{your-domain}/api/ext/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
 <details id="tj-dropdown">
 <summary>Response Example</summary>
@@ -201,6 +235,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
       - **workspace_id**: The ID of the workspace.
     - **Response:** Array of app details for all the applications in the workspace.
+
+    ```bash title="cURL Request"
+    curl -X GET https://{your-domain}/api/ext/workspace/:workspace_id/apps \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -258,6 +298,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
         - id (string): The ID of the user.
     - **Response:** User object.
+
+    ```bash title="cURL Request"
+    curl -X GET https://{your-domain}/api/ext/user/:id \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
   <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -322,7 +368,31 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
           - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
             - `id` (string, optional): The unique identifier of the group.
             - `name` (string, optional): The name of the group.
-            - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
+
+    ```bash title="cURL Request"
+    curl -X POST https://{your-domain}/api/ext/users \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>",
+        "workspaces": [
+          {
+            "id": "<workspace_id>",
+            "name": "<workspace_name>",
+            "status": "<active|archived>",
+            "groups": [
+              {
+                "id": "<group_id>",
+                "name": "<group_name>"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
 
   <details id="tj-dropdown">
   <summary>**Request Body Example**</summary>
@@ -363,6 +433,17 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
 
+    ```bash title="cURL Request"
+    curl -X PATCH https://{your-domain}/api/ext/user/:id \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "<name>",
+        "email": "<email>",
+        "password": "<password>",
+        "status": "<active|archived>"
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -394,6 +475,15 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `newRole` (string, required): The updated user role of the user.
         - `userId` (string, required): The unique identifier of the user.
 
+    ```bash title="cURL Request"
+    curl -X PUT https://{your-domain}/api/ext/update-user-role/workspace/:workspaceId \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "newRole": "<new_role>",
+        "userId": "<user_id>"
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -426,16 +516,50 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The unique identifier of the group.
           - `name` (string, optional): The name of the group.
-          - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
+
+    ```bash title="cURL Request"
+    curl -X PUT https://{your-domain}/api/ext/user/:id/workspaces \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '[
+        {
+          "id": "<workspace_id>",
+          "name": "<workspace_name>",
+          "status": "<active|archived>",
+          "groups": [
+            {
+              "id": "<group_id>",
+              "name": "<group_name>"
+            }
+          ]
+        }
+      ]'
+    ```
+    
+<details id="tj-dropdown">
+
+<summary>Request Body Example</summary>
+
+```json
+{
+  "status": "archived",
+  "groups": [
+    {
+      "name": "all_users"
+    }
+  ]
+}
+```
+
+</details>
     - **Note:** If the array is empty, it will remove all existing workspace relations.
     - **Response:** `200 OK`
-
 
 
 ### Replace User Workspace
 
     - **Description:** Updates a specific workspace relation associated with a user.
-    - **URL:** `/api/ext/user/:id/workspaces/:workspaceId`
+    - **URL:** `/api/ext/user/:id/workspace/:workspaceId`
     - **Method:** PATCH
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
@@ -449,6 +573,23 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The ID of the group.
           - `name` (string, optional): The name of the group.
+
+    ```bash title="cURL Request"
+    curl -X PATCH https://{your-domain}/api/ext/user/:id/workspace/:workspaceId \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "id": "<workspace_id>",
+        "name": "<workspace_name>",
+        "status": "<active|archived>",
+        "groups": [
+          {
+            "id": "<group_id>",
+            "name": "<group_name>"
+          }
+        ]
+      }'
+    ```
 
 <details id="tj-dropdown">
 
@@ -471,8 +612,6 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ### Export Application
 
-From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
-
     - **Description:** Export a ToolJet Application from a specified workspace.
     - **URL:** `/api/ext/export/workspace/:workspace_id/apps/:app_id`
     - **Method:** POST
@@ -486,6 +625,12 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
       - **appVersion** (string): Accepts a specific version of the application that is to be exported.
       - **exportAllVersions** (boolean): Defines whether to export all the available versions. By default it exports the latest version of the app.
     - **Response:** Exported application json.
+
+    ```bash title="cURL Request"
+    curl -X POST "https://{your-domain}/api/ext/export/workspace/:workspace_id/apps/:app_id?exportTJDB=<true|false>&appVersion=<version>&exportAllVersions=<true|false>" \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json"
+    ```
 
 <details id="tj-dropdown">
 <summary>Response Example</summary>
@@ -921,8 +1066,6 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
 
 ### Import Application
 
-From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
-
     - **Description:** Import a Application in ToolJet Workspace.
     - **URL:** `/api/ext/import/workspace/:workspace_id/apps`
     - **Method:** POST
@@ -933,6 +1076,16 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
     - **Body:** The body object will contain following fields:
       - Application JSON
       - `appName` (string, optional): Defines the application name. If not defined then the app will be imported with the existing app name.
+
+    ```bash title="cURL Request"
+    curl -X POST https://{your-domain}/api/ext/import/workspace/:workspace_id/apps \
+      -H "Authorization: Basic <access_token>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "appName": "<app_name>",
+        <application_json>
+      }'
+    ```
 
 :::info
 By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:

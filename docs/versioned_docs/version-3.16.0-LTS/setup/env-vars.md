@@ -11,23 +11,26 @@ ToolJet requires several environment variables to function properly. Below is a 
 
 #### ToolJet Host
 
-- `TOOLJET_HOST`: Public URL of ToolJet (e.g., `https://app.tooljet.ai`)
+- `TOOLJET_HOST`: Public URL of ToolJet (e.g., `https://app.tooljet.com`)
 
 #### Lockbox Configuration
+
 - `LOCKBOX_MASTER_KEY`: 32-byte hex string for encrypting datasource credentials
   - Generate using: `openssl rand -hex 32`
 
 #### Application Secret
+
 - `SECRET_KEY_BASE`: 64-byte hex string for encrypting session cookies
   - Generate using: `openssl rand -hex 64`
 
 #### Database Configuration
+
 - `PG_HOST`: PostgreSQL database host
 - `PG_DB`: Database name
 - `PG_USER`: Username
 - `PG_PASS`: Password
 - `PG_PORT`: Port
-  
+
 **Docker Compose Setup:** If you are using a Docker Compose setup with an in-built PostgreSQL instance, set `PG_HOST` to `postgres`. This ensures that Docker's internal DNS resolves the hostname correctly, allowing the ToolJet server to connect to the database seamlessly.
 
 **Database Connection URL:** If you intend to use the database connection URL and your database does not support SSL, use the following format when setting the `DATABASE_URL` variable:
@@ -39,9 +42,11 @@ DATABASE_URL=postgres://PG_USER:PG_PASS@PG_HOST:5432/PG_DB?sslmode=disable
 Replace `username`, `password`, `hostname`, `port`, and `database_name` with your actual database details.
 
 #### Disabling Automatic Database & Extension Creation (Optional)
+
 - `PG_DB_OWNER=false`: ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have `CREATEDB` permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
 
 #### ToolJet Database
+
 - `TOOLJET_DB`: Default database name (`tooljet_db`)
 - `TOOLJET_DB_HOST`: Database host
 - `TOOLJET_DB_USER`: Database username
@@ -52,10 +57,10 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 
 ToolJet requires two separate databases for optimal functionality. **TOOLJET_DB** is used to store the platform's internal metadata, including tables created within ToolJet. On the other hand, **PG_DB** acts as the primary database for application data, handling end-user data managed by the apps built on ToolJet.
 
-
 **Automatic Database Creation:** The database name specified in `TOOLJET_DB` will be automatically created during the server boot process in all production deployment setups.
 
 #### PostgREST
+
 ToolJet uses **PostgREST (v12.2.0)** for API access. The following environment variables are required for PostgREST:
 
 - `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
@@ -84,14 +89,45 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.2)** for a multi-service or multi-pod setup and have followed the necessary steps to create Redis.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.x or higher, v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
+
+**Required Variables:**
 
 ```
 REDIS_HOST=
 REDIS_PORT=
+```
+
+**Optional Variables:**
+
+```
 REDIS_USER=
 REDIS_PASSWORD=
+REDIS_DB=0                   # Redis database number (default: 0)
+REDIS_TLS=false              # Enable TLS/SSL connection (set to 'true')
 ```
+
+:::info
+**For Workflows:** When running separate worker containers or multiple instances for workflow scheduling, an external Redis instance is **required** for job queue coordination. The built-in Redis only works for single instance deployments.
+:::
+
+#### Workflow Scheduling
+
+ToolJet Workflows allows you to design and execute complex, data-centric automations using a visual, node-based interface. Configure the following environment variables to enable workflow scheduling:
+
+**Required Variables:**
+
+- `WORKER`: Set to `true` to enable job processing for workflow scheduling. Set to `false` or leave unset for HTTP-only mode (default: `false`)
+
+**Optional Variables:**
+
+- `TOOLJET_WORKFLOW_CONCURRENCY`: Number of workflow jobs processed concurrently per worker instance (default: `5`)
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
 
 ### Optional Configurations
 
@@ -100,25 +136,29 @@ REDIS_PASSWORD=
 - `COMMENT_FEATURE_ENABLE=true/false`: Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
 
 #### User Session Expiry
+
 - `USER_SESSION_EXPIRY`: Controls session expiry time (in minutes). Default: **10 days**.
 
 Note: The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours
 
 #### Password Retry Limit
-By default, an account is locked after 5 failed login attempts. You can control this with:  
 
-- `DISABLE_PASSWORD_RETRY_LIMIT=true`: Disables the retry limit.  
+By default, an account is locked after 5 failed login attempts. You can control this with:
+
+- `DISABLE_PASSWORD_RETRY_LIMIT=true`: Disables the retry limit.
 - `PASSWORD_RETRY_LIMIT=<number>`: Sets a custom retry limit (default is 5).
 
 #### Hide Account Setup Link
 
 - `HIDE_ACCOUNT_SETUP_LINK`: Set to `true` to hide the account setup link from the admin in the manage user page. Ensure SMTP is configured to send welcome emails.
 
-#### Restrict Signups  
+#### Restrict Signups
+
 Set `DISABLE_SIGNUPS=true` to allow only invited users to sign up. The signup page will still be visible but unusable.
 
 #### SMTP Configuration
-ToolJet sends emails via SMTP. 
+
+ToolJet sends emails via SMTP.
 
 :::info
 If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI. For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
@@ -135,13 +175,14 @@ For **Community Edition**, use these environment variables:
 - `SMTP_PORT`: SMTP port
 
 #### Custom CA Certificate
+
 If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path of the CA certificate file.
 
 - `NODE_EXTRA_CA_CERTS=/path/to/cert.pem`: Absolute path to the PEM file (can contain multiple certificates).
 
 #### ToolJet API Import Application
 
-By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable: 
+By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
 
 - `MAX_JSON_SIZE = "150mb"`
 
@@ -158,53 +199,65 @@ You can control workflow execution behavior using the following environment vari
 ### Third-Party Integrations
 
 #### Slack
+
 To use Slack as a data source in ToolJet, create a Slack app and set:
 
 - `SLACK_CLIENT_ID`: Slack app client ID
 - `SLACK_CLIENT_SECRET`: Slack app client secret
 
 #### Google OAuth
+
 To connect ToolJet with Google services like Google Sheets, create OAuth credentials in Google Cloud Console.
 
 - `GOOGLE_CLIENT_ID`: Google OAuth client ID
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 
 #### Google Maps API
+
 To use the Maps widget in ToolJet, create a Google Maps API key and set:
 
 - `GOOGLE_MAPS_API_KEY`: Google Maps API key
 
 #### Application Monitoring (APM)
+
 - `APM_VENDOR=sentry`: Set APM vendor.
 - `SENTRY_DNS`: Sentry project DSN.
 - `SENTRY_DEBUG=true/false`: Enable/disable Sentry debugging.
 
 #### Security & Authentication
+
 By default, ToolJet sends user count updates every 24 hours. To disable this, use:
 
 - `DISABLE_TOOLJET_TELEMETRY=true`: Disables telemetry.(Enabled by default)
 
 #### Single Sign-On (SSO)
+
 Enable Google or GitHub SSO with these environment variables:
 
 **Google SSO:**
+
 - `SSO_GOOGLE_OAUTH2_CLIENT_ID`: Google OAuth client ID
 
 **GitHub SSO:**
+
 - `SSO_GIT_OAUTH2_CLIENT_ID`: GitHub OAuth client ID
 - `SSO_GIT_OAUTH2_CLIENT_SECRET`: GitHub OAuth client secret
 - `SSO_GIT_OAUTH2_HOST`: GitHub host if self-hosted
 
 **General SSO Settings:**
+
 - `SSO_ACCEPTED_DOMAINS`: Comma-separated list of allowed email domains
 - `SSO_DISABLE_SIGNUPS=true`: Restricts signups to existing users
 
 #### Group Synchronization
+
 If any of the following environment variables are set to true, group synchronization will be skipped during the login process for the respective SSO provider:
+
 - `DISABLE_LDAP_GROUP_SYNC=true` – Disables group sync for LDAP during login.
 - `DISABLE_SAML_GROUP_SYNC=true` – Disables group sync for SAML during login.
 
 #### REST API Cookie Forwarding
+
 By default, ToolJet does not forward cookies with REST API requests. To enable this (self-hosted only), set:
 
 - `FORWARD_RESTAPI_COOKIES=true`: Allows forwarding cookies with REST API requests.
@@ -213,14 +266,16 @@ By default, ToolJet does not forward cookies with REST API requests. To enable t
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN). This can be an absolute path, or relative to main HTML file.
 
-- `ASSET_PATH`: Path for loading frontend assets (e.g., `https://app.tooljet.ai/`)
+- `ASSET_PATH`: Path for loading frontend assets (e.g., `https://app.tooljet.com/`)
 
 ## Additional Configurations
 
 #### Log File Path
+
 - `LOG_FILE_PATH`: Path to store audit logs (e.g., `tooljet/log/tooljet-audit.log`)
 
 #### Embedding Private Apps
+
 By default, only public apps can be embedded. To allow embedding of private ToolJet apps, set:
 
 - `ENABLE_PRIVATE_APP_EMBED=true/false`: Allows embedding of private ToolJet apps.
@@ -228,19 +283,19 @@ By default, only public apps can be embedded. To allow embedding of private Tool
 **Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.**
 
 #### Default Language
-Set the default language using the `LANGUAGE` variable. Supported options:
 
+Set the default language using the `LANGUAGE` variable. Supported options:
 
 <div style={{ display: 'flex' }} >
 
 <div style = {{ width:'40%' }} >
 
-| Language    | Code | Native Name       |
-|-------------|------|-------------------|
-| English     | en   | English           |
-| French      | fr   | Français          |
-| Spanish     | es   | Español           |
-| Italian     | it   | Italiano          |
+| Language | Code | Native Name |
+| -------- | ---- | ----------- |
+| English  | en   | English     |
+| French   | fr   | Français    |
+| Spanish  | es   | Español     |
+| Italian  | it   | Italiano    |
 
 </div>
 
@@ -248,12 +303,12 @@ Set the default language using the `LANGUAGE` variable. Supported options:
 
 <div style = {{ width:'50%' }} >
 
-| Language    | Code | Native Name       |
-|-------------|------|-------------------|
-| Indonesian  | id   | Bahasa Indonesia  |
-| Ukrainian   | uk   | Українська        |
-| Russian     | ru   | Русский           |
-| German      | de   | Deutsch           |
+| Language   | Code | Native Name      |
+| ---------- | ---- | ---------------- |
+| Indonesian | id   | Bahasa Indonesia |
+| Ukrainian  | uk   | Українська       |
+| Russian    | ru   | Русский          |
+| German     | de   | Deutsch          |
 
 </div>
 
@@ -262,3 +317,28 @@ Set the default language using the `LANGUAGE` variable. Supported options:
 Example: `LANGUAGE=fr` (for French).
 
 **Note:** This setting is not available in ToolJet Cloud.
+
+#### Observability
+
+ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monitoring. Enable metrics collection to monitor application performance, query executions, and system health.
+
+**Basic Configuration:**
+
+- `ENABLE_OTEL`: Set to `true` to enable OpenTelemetry metrics collection (default: `false`)
+- `OTEL_EXPORTER_OTLP_TRACES`: OTLP traces endpoint URL (default: `http://localhost:4318/v1/traces`)
+- `OTEL_EXPORTER_OTLP_METRICS`: OTLP metrics endpoint URL (default: `http://localhost:4318/v1/metrics`)
+- `OTEL_SERVICE_NAME`: Service identifier for metrics (default: `tooljet`)
+- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers for OTLP endpoint (optional, format: `key1=value1,key2=value2`)
+
+**Advanced Configuration:**
+
+- `OTEL_LOG_LEVEL`: Debug logging level for OTEL (use `debug` for detailed logs)
+- `OTEL_ACTIVE_USER_WINDOW_MINUTES`: Activity window for concurrent user tracking in minutes (default: `5`)
+- `OTEL_MAX_TRACKED_USERS`: Maximum number of tracked users/sessions (default: `10000`)
+- `OTEL_INCLUDE_QUERY_TEXT`: Include actual query text in metrics - **WARNING:** Creates high cardinality (default: `false`)
+
+:::warning High Cardinality
+Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
+:::
+
+For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.

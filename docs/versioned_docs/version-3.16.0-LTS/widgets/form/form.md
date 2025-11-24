@@ -6,7 +6,7 @@ title: Generate Form
 The **Form** component in ToolJet allows you to group multiple input fields together and manage them as a single unit. It simplifies data collection, validation, and submission workflows by bundling all form-related components and logic in one place. 
 
 :::caution Restricted components
-Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**, **Tabs**, **Table**, and **Form** can't be dropped inside the **Form** component.
+Components like **Kanban**, **Calendar**, **Container**, **ListView**, **Tabs**, and **Form** can't be dropped inside the **Form** component.
 :::
 
 This guide covers the different ways to generate a form in ToolJet. For detailed information on properties, CSAs, and schema customization, refer to the following guides:

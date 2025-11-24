@@ -8,11 +8,13 @@ title: AWS AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements).
+
+ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
 ## Deploy using CloudFormation
@@ -72,6 +74,7 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    :::
 
    For AWS RDS PostgreSQL connections, first download the certificate bundle:
+
    ```bash
    # Create directory and download certificate
    sudo mkdir -p /home/ubuntu/certs/
@@ -81,6 +84,7 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    ```
 
    Then add these variables to your `.env` file:
+
    ```bash
    PG_HOST=your-rds-endpoint.region.rds.amazonaws.com
    PGSSLMODE=require
@@ -124,30 +128,41 @@ You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
 ### Enabling Workflow Scheduling
 
-To activate workflows scheduling, set the following environment variables:
+To activate workflow scheduling, set the following environment variables:
 
 ```bash
-WORKFLOW_WORKER=true
-ENABLE_WORKFLOW_SCHEDULING=true
-TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
-TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>
+# Worker Mode (required)
+# Set to 'true' to enable job processing
+# Set to 'false' or unset for HTTP-only mode (scaled deployments)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+# Number of workflow jobs processed concurrently per worker
+# Default: 5
+TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
-**Note**: Workflows scheduling requires a Temporal server to be deployed. Restarting the server using `./setup_app`.
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
-### Deploying Temporal with Docker Compose
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
+- `REDIS_HOST=localhost` - Default: localhost
+- `REDIS_PORT=6379` - Default: 6379
+- `REDIS_USERNAME=` - Optional: Redis username (ACL)
+- `REDIS_PASSWORD=` - Optional: Redis password
+- `REDIS_DB=0` - Optional: Redis database number (default: 0)
+- `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
+:::
 
-Below is a `docker-compose` template to set up Temporal.
-
-```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/ec2-temporal/docker-compose.yml
-```
-
-This setup can be deployed on a different EC2 instance. To enable seamless communication, ensure that both the application server and the Temporal server are in the same VPC.
-
-**Note**: Ensure that port 7233 is configured for gRPC in the security group.
+**Note**: After updating the `.env` file, restart the server using `./setup_app`.
 
 ## Upgrading to the Latest LTS Version
 
@@ -183,4 +198,4 @@ Since ToolJet is deployed using an AMI (Amazon Machine Image), upgrading to a ne
 7. **Terminate the Old EC2 Instance** <br/>
    After verifying that ToolJet is running correctly on the new instance, terminate the old EC2 instance to avoid unnecessary costs.
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._

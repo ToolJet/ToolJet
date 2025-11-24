@@ -14,7 +14,7 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 ::::
@@ -167,6 +167,119 @@ iv. Setup docker to run without root privileges by following the instructions wr
 </TabItem>
 </Tabs>
 
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
+
+:::info
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+:::
+
+### Enabling Workflow Scheduling
+
+To activate workflow scheduling, set the following environment variables:
+
+```bash
+# Worker Mode (required)
+WORKER=true
+
+# Workflow Processor Concurrency (optional)
+TOOLJET_WORKFLOW_CONCURRENCY=5
+```
+
+**Environment Variable Details:**
+- **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
+- **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
+
+:::warning
+**External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
+:::
+
+### Running Multiple Workers with External Redis
+
+<details id="tj-dropdown">
+
+<summary>Docker Compose Example with Multiple Workers and External Redis</summary>
+
+This example shows how to run ToolJet with multiple workers and external Redis for scalable workflow processing:
+
+```yaml
+services:
+  tooljet:
+    tty: true
+    stdin_open: true
+    container_name: Tooljet-app
+    image: tooljet/tooljet:ee-lts-latest
+    platform: linux/amd64
+    restart: always
+    env_file: .env
+    ports:
+      - 80:80
+    environment:
+      SERVE_CLIENT: "true"
+      PORT: "80"
+    command: npm run start:prod
+
+  tooljet-worker-1:
+    container_name: tooljet-worker-1
+    image: tooljet/tooljet:ee-lts-latest
+    env_file: .env
+    environment:
+      WORKER: "true"
+      TOOLJET_WORKFLOW_CONCURRENCY: 10
+    command: npm run start:prod
+    depends_on:
+      - redis
+
+  tooljet-worker-2:
+    container_name: tooljet-worker-2
+    image: tooljet/tooljet:ee-lts-latest
+    env_file: .env
+    environment:
+      WORKER: "true"
+      TOOLJET_WORKFLOW_CONCURRENCY: 10
+    command: npm run start:prod
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory-policy noeviction
+
+volumes:
+  redis-data:
+```
+
+**Architecture:**
+- **tooljet**: Web server that handles HTTP requests and processes jobs (WORKER=true, Port 80)
+- **tooljet-worker-1 & tooljet-worker-2**: Dedicated workers that only process workflow jobs (WORKER=true, no ports)
+- **redis**: External stateful Redis with persistence for the job queue
+
+**Redis Environment Variables:**
+
+Add these to your **.env** file to connect to the external Redis:
+
+```bash
+# Redis - Note: Only REDIS_HOST and REDIS_PORT are required. Authentication and TLS are optional.
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_USER=default
+REDIS_PASSWORD=
+# REDIS_DB=0                   # Optional: Redis database number (default: 0)
+# REDIS_TLS=false              # Optional: Enable TLS/SSL (set to 'true')
+```
+
+**Critical Redis Configuration:**
+- **--appendonly yes**: Enables AOF (Append Only File) persistence
+- **--maxmemory-policy noeviction**: Required by BullMQ to prevent job loss
+
+</details>
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -179,4 +292,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._

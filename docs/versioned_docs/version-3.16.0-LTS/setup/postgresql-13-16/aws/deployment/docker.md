@@ -10,8 +10,8 @@ Add volume mount only
 ```yaml
 services:
 tooljet:
-    # ... other configuration
-    volumes:
+  # ... other configuration
+  volumes:
     - /path/to/global-bundle.pem:/certs/global-bundle.pem
 ```
 
@@ -43,4 +43,4 @@ docker-compose up -d
 docker-compose logs tooljet | grep "TOOLJET APPLICATION STARTED SUCCESSFULLY"
 ```
 
-**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.ai/docs/setup/docker)
+**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.com/docs/setup/docker)

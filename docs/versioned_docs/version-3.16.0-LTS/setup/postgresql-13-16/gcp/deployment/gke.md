@@ -5,7 +5,7 @@ title: Google Kubernetes Engine
 
 ### Step 1: Create ConfigMap for Database Configuration
 
-:::note 
+:::note
 SSL certificate secrets are not required for standard GCP Cloud SQL connections as SSL is handled automatically.
 :::
 
@@ -41,34 +41,34 @@ spec:
   template:
     spec:
       containers:
-      - name: tooljet
-        image: tooljet/tooljet:latest
-        envFrom:
-        - configMapRef:
-            name: tooljet-db-config
-        - secretRef:
-            name: tooljet-secrets  # Your existing secrets
-        env:
-        - name: PG_PASS
-          valueFrom:
-            secretKeyRef:
-              name: tooljet-db-secrets
-              key: postgres-password
-        ports:
-        - containerPort: 3000
-          name: http
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+        - name: tooljet
+          image: tooljet/tooljet:latest
+          envFrom:
+            - configMapRef:
+                name: tooljet-db-config
+            - secretRef:
+                name: tooljet-secrets # Your existing secrets
+          env:
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: tooljet-db-secrets
+                  key: postgres-password
+          ports:
+            - containerPort: 3000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
 ```
 
-**Reference**: [ToolJet Kubernetes GKE Setup Documentation](https://docs.tooljet.ai/docs/setup/kubernetes-gke)
+**Reference**: [ToolJet Kubernetes GKE Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-gke)

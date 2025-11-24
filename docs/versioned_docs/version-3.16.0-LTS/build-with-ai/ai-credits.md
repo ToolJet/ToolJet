@@ -7,7 +7,7 @@ title: Understanding AI Credits
 This implementation of AI credits will be available from 22nd September 2025.
 :::
 
-A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to creating custom code or modifying layouts, consumes a varied amount of credits based on the complexity and type of task. This approach provides transparent cost visibility while enabling you to scale your AI usage on-demand. 
+A credit is a standardized unit of AI processing power consumed on every AI operation performed in ToolJet. Each operation, from [generating complete applications](/docs/build-with-ai/generate-applications) to creating custom code or modifying layouts, consumes a varied amount of credits based on the complexity and type of task. This approach provides transparent cost visibility while enabling you to scale your AI usage on-demand.
 
 In this guide you will learn about types of credits, credit usage, getting more credits, and more.
 
@@ -15,16 +15,16 @@ In this guide you will learn about types of credits, credit usage, getting more 
 
 Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. The table below provides an average range of credits utilized for different operations to help you estimate usage.
 
-| Operation | Avg. Credits Utilised |
-|:----------|:---------------------:|
-| [App Generation](/docs/build-with-ai/generate-applications) | 100 |
-| Adding New Feature in the Application | 100 |
-| Modifying Layout/UI | 50 |
-| Modifying Queries/Database | 30 |
-| [Debug Components Auto Fix](/docs/build-with-ai/debug-components) | 10 |
-| [AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant) | 6 |
-| SQL Query Generation | 5 |
-| Custom Code Generation | 2 |
+| Operation                                                         | Avg. Credits Utilised |
+| :---------------------------------------------------------------- | :-------------------: |
+| [App Generation](/docs/build-with-ai/generate-applications)       |          100          |
+| Adding New Feature in the Application                             |          100          |
+| Modifying Layout/UI                                               |          50           |
+| Modifying Queries/Database                                        |          30           |
+| [Debug Components Auto Fix](/docs/build-with-ai/debug-components) |          10           |
+| [AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant)        |           6           |
+| SQL Query Generation                                              |           5           |
+| Custom Code Generation                                            |           2           |
 
 :::warning
 These values are only average estimates to help plan your operations. **Actual credit consumption will vary depending on the complexity of the operation**.
@@ -38,7 +38,7 @@ Monthly credits are recurring credits included with your purchased license. They
 
 ### Add-on Credits
 
-Add-on credits can be purchased in addition to your monthly credits and are a one-time purchase that do not renew monthly. These credits can only be purchased in multiples of 100 and are valid for one year from the date of purchase. If you buy additional credits after an initial purchase, the validity of the entire pool of credits is extended based on the latest purchase date. Checkout the [pricing](https://www.tooljet.ai/pricing) page for more information.
+Add-on credits can be purchased in addition to your monthly credits and are a one-time purchase that do not renew monthly. These credits can only be purchased in multiples of 100 and are valid for one year from the date of purchase. If you buy additional credits after an initial purchase, the validity of the entire pool of credits is extended based on the latest purchase date. Checkout the [pricing](https://www.tooljet.com/pricing) page for more information.
 
 ## Buy Add-on Credits
 
@@ -49,9 +49,9 @@ Follow these steps to buy add-on credits on your self-hosted deployment of ToolJ
 1. Go to the Settings > License. <br/>
    (Example URL - https://app.nexuscorp.com/settings/license)
 2. Click on the **Get AI credits** button in the top-right corner. <br/>
-    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-button.png" alt="AI Credits" />
+   <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-button.png" alt="AI Credits" />
 3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the **Get AI credits** button at the bottom. <br/>
-    <img className="screenshot-full img-s" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-modal.png" alt="AI Credits" />
+   <img className="screenshot-full img-s" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/sh-modal.png" alt="AI Credits" />
 4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your instance.
 
 ### Cloud Deployment
@@ -59,16 +59,17 @@ Follow these steps to buy add-on credits on your self-hosted deployment of ToolJ
 Follow these steps to buy add-on credits on ToolJet Cloud:
 
 1. Go to the Settings > Subscription. <br/>
-   (Example URL - https://app.tooljet.ai/nexuscorp/settings/subscription)
+   (Example URL - https://app.tooljet.com/nexuscorp/settings/subscription)
 2. Click the **Get AI credits** button. <br/>
-    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-button.jpg" alt="AI Credits" />
+   <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-button.jpg" alt="AI Credits" />
 3. A payment modal will open where you can enter details such as the number of credits you want to purchase and any promo codes. After filling out the details, click the Get AI credits button at the bottom. <br/>
-    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-modal.png" alt="AI Credits" />
+   <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-modal.png" alt="AI Credits" />
 4. You’ll then be redirected to the payment gateway. On successful payment, the credits will be added to your workspace.
 
 ## Credit Allocation
 
 ToolJet AI credits are allocated on a per builder per month basis according to the purchased license. The total credits from all builders, along with any add-on credits purchased, are pooled together and made available collectively.
+
 - At **Instance Level** for [Self-Hosted](/docs/tj-setup/tj-deployment#self-hosted-tooljet) deployments.
 - At **Workspace Level** for [Cloud](/docs/tj-setup/tj-deployment#tooljet-cloud) deployments.
 
@@ -97,11 +98,11 @@ Starting September 22, 2025, we’re updating the AI credits system to introduce
 
 ### What's Changing
 
-|   | Before | After |
-|---|--------|-------|
-| Denomination | Minimum credit = 0.1 | Minimum credit = 1 |
+|              | Before                                                                             | After                                                                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Denomination | Minimum credit = 0.1                                                               | Minimum credit = 1                                                                                                                      |
 | Credit Usage | Fixed credits per operation. <br/> Eg. Every app generation would cost 10 credits. | Variable credits based on complexity of operation. <br/> Eg. A small app could take 70 credits, and a large app could take 120 credits. |
-| Credit Types | Monthly recurring credits included in your plan. | - Monthly recurring credits included in your plan. <br/> - Optional purchase of additional credits which are valid for 1 year. |
+| Credit Types | Monthly recurring credits included in your plan.                                   | - Monthly recurring credits included in your plan. <br/> - Optional purchase of additional credits which are valid for 1 year.          |
 
 ### Updated Credit Allocation
 

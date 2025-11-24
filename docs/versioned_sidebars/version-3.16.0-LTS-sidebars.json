@@ -57,63 +57,63 @@
               "type": "category",
               "label": "PostgreSQL 13 → 16 Upgrade",
               "items": [
-                  {
-                    "type": "category",
-                    "label": "AWS",
-                    "items": [
-                      "setup/postgresql-13-16/aws/overview",
-                      "setup/postgresql-13-16/aws/db-upgrade",
-                      {
-                          "type": "category",
-                          "label": "Deployment Specific",
-                          "items": [
-                              "setup/postgresql-13-16/aws/deployment/docker",
-                              "setup/postgresql-13-16/aws/deployment/ami",
-                              "setup/postgresql-13-16/aws/deployment/ecs",
-                              "setup/postgresql-13-16/aws/deployment/eks"
-                          ]
-                      },
-                      "setup/postgresql-13-16/aws/verification",
-                      "setup/postgresql-13-16/aws/best-practices"
-                    ]
-                  },
-                  {
-                    "type": "category",
-                    "label": "Azure",
-                    "items": [
-                      "setup/postgresql-13-16/azure/overview",
-                      "setup/postgresql-13-16/azure/db-upgrade",
-                      {
-                          "type": "category",
-                          "label": "Deployment Specific",
-                          "items": [
-                              "setup/postgresql-13-16/azure/deployment/aks",
-                              "setup/postgresql-13-16/azure/deployment/container"
-                          ]
-                      },
-                      "setup/postgresql-13-16/azure/verification",
-                      "setup/postgresql-13-16/azure/best-practices"
-                    ]
-                  },
-                  {
-                    "type": "category",
-                    "label": "GCP",
-                    "items": [
-                      "setup/postgresql-13-16/gcp/overview",
-                      "setup/postgresql-13-16/gcp/db-upgrade",
-                      {
-                          "type": "category",
-                          "label": "Deployment Specific",
-                          "items": [
-                              "setup/postgresql-13-16/gcp/deployment/docker",
-                              "setup/postgresql-13-16/gcp/deployment/gke",
-                              "setup/postgresql-13-16/gcp/deployment/cloud-run"
-                          ]
-                      },
-                      "setup/postgresql-13-16/gcp/verification",
-                      "setup/postgresql-13-16/gcp/best-practices"
-                    ]
-                  }
+                {
+                  "type": "category",
+                  "label": "AWS",
+                  "items": [
+                    "setup/postgresql-13-16/aws/overview",
+                    "setup/postgresql-13-16/aws/db-upgrade",
+                    {
+                      "type": "category",
+                      "label": "Deployment Specific",
+                      "items": [
+                        "setup/postgresql-13-16/aws/deployment/docker",
+                        "setup/postgresql-13-16/aws/deployment/ami",
+                        "setup/postgresql-13-16/aws/deployment/ecs",
+                        "setup/postgresql-13-16/aws/deployment/eks"
+                      ]
+                    },
+                    "setup/postgresql-13-16/aws/verification",
+                    "setup/postgresql-13-16/aws/best-practices"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Azure",
+                  "items": [
+                    "setup/postgresql-13-16/azure/overview",
+                    "setup/postgresql-13-16/azure/db-upgrade",
+                    {
+                      "type": "category",
+                      "label": "Deployment Specific",
+                      "items": [
+                        "setup/postgresql-13-16/azure/deployment/aks",
+                        "setup/postgresql-13-16/azure/deployment/container"
+                      ]
+                    },
+                    "setup/postgresql-13-16/azure/verification",
+                    "setup/postgresql-13-16/azure/best-practices"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "GCP",
+                  "items": [
+                    "setup/postgresql-13-16/gcp/overview",
+                    "setup/postgresql-13-16/gcp/db-upgrade",
+                    {
+                      "type": "category",
+                      "label": "Deployment Specific",
+                      "items": [
+                        "setup/postgresql-13-16/gcp/deployment/docker",
+                        "setup/postgresql-13-16/gcp/deployment/gke",
+                        "setup/postgresql-13-16/gcp/deployment/cloud-run"
+                      ]
+                    },
+                    "setup/postgresql-13-16/gcp/verification",
+                    "setup/postgresql-13-16/gcp/best-practices"
+                  ]
+                }
               ]
             },
             "setup/try-tooljet",
@@ -138,7 +138,9 @@
             "setup/upgrade-to-lts",
             "setup/upgrade-to-v3",
             "setup/cloud-v3-migration",
-            "setup/upgrade-to-v3.16"
+            "setup/upgrade-to-v3.16",
+            "setup/workflow-temporal-to-bullmq-migration",
+            "setup/tooljet-domain-change"
           ]
         }
       ]
@@ -152,6 +154,7 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
         "build-with-ai/ai-credits",
@@ -183,17 +186,7 @@
               ]
             },
             "app-builder/custom-theme",
-            {
-              "type": "category",
-              "label": "Modules",
-              "items": [
-                "app-builder/modules/overview",
-                "app-builder/modules/create-module",
-                "app-builder/modules/input-output",
-                "app-builder/modules/data-flow",
-                "app-builder/modules/import-export-modules"
-              ]
-            }
+            "app-builder/customstyles"
           ]
         },
         {
@@ -242,7 +235,7 @@
             },
             {
               "type": "category",
-              "label": "Role Based Applications",
+              "label": "Dynamic Access Rules",
               "items": [
                 "app-builder/walkthrough/row-level-security",
                 "app-builder/walkthrough/permissions"
@@ -261,12 +254,15 @@
         },
         {
           "type": "category",
-          "label": "Share Application",
+          "label": "Modules",
           "items": [
-            "app-builder/importing-exporting-applications",
-            "app-builder/embed-application"
+            "app-builder/modules/overview",
+            "app-builder/modules/create-module",
+            "app-builder/modules/input-output",
+            "app-builder/modules/data-flow"
           ]
         },
+        "app-builder/embed-application",
         {
           "type": "category",
           "label": "References",
@@ -524,6 +520,7 @@
                 "marketplace/plugins/marketplace-plugin-pocketbase",
                 "marketplace/plugins/marketplace-plugin-portkey",
                 "marketplace/plugins/marketplace-plugin-Presto",
+                "marketplace/plugins/marketplace-plugin-prometheus",
                 "marketplace/plugins/marketplace-plugin-qdrant",
                 "marketplace/plugins/marketplace-plugin-salesforce",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
@@ -638,7 +635,8 @@
             "tj-setup/smtp-setup/email-providers"
           ]
         },
-        "tj-setup/whitelist-cdn-domains"
+        "tj-setup/whitelist-cdn-domains",
+        "tj-setup/observability-otel"
       ]
     },
     {
@@ -671,8 +669,7 @@
               "items": [
                 "user-management/authentication/self-hosted/overview",
                 "user-management/authentication/self-hosted/instance-login",
-                "user-management/authentication/self-hosted/workspace-login",
-                "user-management/authentication/self-hosted/pat"
+                "user-management/authentication/self-hosted/workspace-login"
               ]
             },
             "user-management/authentication/cloud-login"
@@ -725,6 +722,22 @@
               "items": [
                 "user-management/sso/saml/setup",
                 "user-management/sso/saml/okta"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "SCIM",
+              "link": {
+                "type": "doc",
+                "id": "user-management/sso/scim/overview"
+              },
+              "items": [
+                "user-management/sso/scim/overview",
+                {
+                  "type": "link",
+                  "label": "API References",
+                  "href": "/api/scim"
+                }
               ]
             }
           ]
@@ -850,6 +863,15 @@
           "items": [
             "development-lifecycle/backup/gitsync-backup"
           ]
+        },
+        {
+          "type": "category",
+          "label": "Import Export",
+          "items": [
+            "development-lifecycle/import-export/importing-exporting-applications",
+            "development-lifecycle/import-export/import-export-workflows",
+            "development-lifecycle/import-export/import-export-modules"
+          ]
         }
       ]
     },
@@ -868,7 +890,14 @@
             "security/constants/variables"
           ]
         },
-        "security/audit-logs",
+        {
+          "type": "category",
+          "label": "Audit Logs",
+          "items": [
+            "security/audit-logs/audit-logs",
+            "security/audit-logs/stream-audit-to-datadog"
+          ]
+        },
         "security/compliance"
       ]
     },
@@ -879,7 +908,8 @@
       "collapsible": false,
       "collapsed": true,
       "items": [
-        "tooljet-api"
+        "tooljet-api",
+        "user-management/authentication/self-hosted/pat"
       ]
     },
     {

@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.ai',
+  url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -60,21 +60,21 @@ module.exports = {
           position: 'right',
         },
         {
-          href: 'https://www.tooljet.ai/',
+          href: 'https://www.tooljet.com/',
           position: 'right',
           label: 'Website',
           className: 'navbar-signin',
           'aria-label': 'Visit ToolJet Website',
         },
         {
-          href: 'https://www.tooljet.ai/login',
+          href: 'https://www.tooljet.com/login',
           position: 'right',
           label: 'Sign in',
           className: 'navbar-signin',
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://www.tooljet.ai/create-account',
+          href: 'https://www.tooljet.com/create-account',
           position: 'right',
           label: 'Try for free',
           className: 'navbar-website',
@@ -83,7 +83,7 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'light', 
+      style: 'light',
       logo: {
         alt: 'ToolJet Logo',
         src: '/img/docs_logo.svg',
@@ -93,35 +93,35 @@ module.exports = {
         {
           title: 'Platform',
           items: [
-            { label: 'App builder', to: 'https://www.tooljet.ai/visual-app-builder' },
-            { label: 'AI Agent builder', to: 'https://www.tooljet.ai/ai-agent-builder' },
-            { label: 'ToolJet Database', to: 'https://www.tooljet.ai/database' },
+            { label: 'App builder', to: 'https://www.tooljet.com/visual-app-builder' },
+            { label: 'AI Agent builder', to: 'https://www.tooljet.com/ai-agent-builder' },
+            { label: 'ToolJet Database', to: 'https://www.tooljet.com/database' },
           ],
         },
         {
           title: 'Solutions',
           items: [
-            { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
-            { label: 'Business applications', to: 'https://www.tooljet.ai/business-applications' },
+            { label: 'Back office tools', to: 'https://www.tooljet.com/building-back-office-apps' },
+            { label: 'Business applications', to: 'https://www.tooljet.com/business-applications' },
           ],
         },
         {
           title: 'Developers',
           items: [
-            { label: 'Blogs', to: 'https://blog.tooljet.ai/' },
-            { label: 'Events', to: 'https://www.tooljet.ai/events' },
+            { label: 'Blogs', to: 'https://blog.tooljet.com/' },
+            { label: 'Events', to: 'https://www.tooljet.com/events' },
             { label: 'GitHub', href: 'https://github.com/ToolJet/ToolJet' },
-            { label: 'Slack', href: 'https://tooljet.ai/slack' },
+            { label: 'Slack', href: 'https://tooljet.com/slack' },
           ],
         },
         {
           title: 'Templates',
           items: [
-            { label: 'Lead management', to: 'https://www.tooljet.ai/templates/lead-management-system' },
-            { label: 'KPI management', to: 'https://www.tooljet.ai/templates/kpi-management-dashboard' },
-            { label: 'Inventory management', to: 'https://www.tooljet.ai/templates/inventory-management-system' },
-            { label: 'Leave management', to: 'https://www.tooljet.ai/templates/leave-management-portal' },
-            { label: 'Applicant tracking', to: 'https://www.tooljet.ai/templates/applicant-tracking-system' },
+            { label: 'Lead management', to: 'https://www.tooljet.com/templates/lead-management-system' },
+            { label: 'KPI management', to: 'https://www.tooljet.com/templates/kpi-management-dashboard' },
+            { label: 'Inventory management', to: 'https://www.tooljet.com/templates/inventory-management-system' },
+            { label: 'Leave management', to: 'https://www.tooljet.com/templates/leave-management-portal' },
+            { label: 'Applicant tracking', to: 'https://www.tooljet.com/templates/applicant-tracking-system' },
           ],
         },
         {
@@ -242,8 +242,41 @@ module.exports = {
           window.buildUrlWithStoredParams = buildUrlWithStoredParams; // NEW: Build URLs with UTM params
       })();
       </script>
+      <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          console.log("Script for cookie called");
+          var cookieName = "source_page";
+          var domain = ".tooljet.ai";
+          var maxAge = 7 * 24 * 60 * 60; // 7 days
+          var currentHost = window.location.hostname;
+          var fullUrl = window.location.href;
+          // Helper: read cookie
+          function getCookie(name) {
+              var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+              return match ? decodeURIComponent(match[2]) : null;
+          }
+          // Helper: set cookie
+          function setCookie(name, value, maxAgeSeconds, domain) {
+              document.cookie =
+                  name + "=" + encodeURIComponent(value) +
+                  "; path=/; domain=" + domain +
+                  "; max-age=" + maxAgeSeconds + ";";
+          }
+          // If user is on blog.tooljet.ai → always update cookie with latest blog URL
+          // Else → do not overwrite, just keep existing one
+          if (currentHost.includes("blog.tooljet.ai")) {
+              setCookie(cookieName, fullUrl, maxAge, domain);
+              console.log("Updated source_page cookie with latest blog URL: " + fullUrl);
+          } else {
+              console.log("Not on blog domain — keeping existing source_page: " + getCookie(cookieName));
+          }
+      });
+      </script>
+      <!-- Start of HubSpot Embed Code -->
+      <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/39494431.js"></script>
+      <!-- End of HubSpot Embed Code -->
       `,
-    },    
+    },
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
@@ -298,6 +331,7 @@ module.exports = {
           ignorePatterns: ['/docs/1.x.x/**'],
           filename: 'sitemap.xml',
         },
+
         googleTagManager: isProd
           ? {
             containerId: process.env.GTM || 'development',
@@ -305,6 +339,18 @@ module.exports = {
           : undefined,
       },
     ],
+    [
+    'redocusaurus',
+    {
+      openapi: {
+        path: 'openapi',       // scans all folders inside openapi/, e.g., scim, tj-api
+        routeBasePath: '/api', // pages will be /api/scim, /api/tj-api
+      },
+      theme: {
+        primaryColor: '#1890ff', // customize the color
+      },
+    },
+  ],
   ],
   plugins: [
     devServerPlugin,

@@ -46,4 +46,4 @@ cd /app/tooljet
 sudo ./setup_app
 ```
 
-**Reference**: [ToolJet AMI Setup Documentation](https://docs.tooljet.ai/docs/setup/ami)
+**Reference**: [ToolJet AMI Setup Documentation](https://docs.tooljet.com/docs/setup/ami)

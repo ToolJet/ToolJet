@@ -5,6 +5,10 @@ title: Try ToolJet
 
 # Try ToolJet
 
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+:::
+
 ## On local with Docker
 
 You can run the command below to have ToolJet up and running right away.
@@ -46,4 +50,4 @@ docker run \
 
 By following these instructions, you can easily run the ToolJet server on the port of your choice, ensuring flexibility in your setup.
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com._
+_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._

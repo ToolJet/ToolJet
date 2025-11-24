@@ -5,6 +5,10 @@ title: DigitalOcean
 
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+:::
+
 **1. Navigate to the Droplets section in DigitalOcean.**
 
   <div style={{textAlign: 'center'}}>
@@ -21,7 +25,7 @@ Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
   <div style={{textAlign: 'center'}}>
      <img className="screenshot-full" src="/img/setup/digitalocean/droplet_plan.png" alt="use a droplet plan" />
   </div>
-  
+
   - **Auth**: For authentication, use password or ssh
   - Click **Create Droplet** and note the assigned public IP
 
@@ -82,4 +86,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com.
+If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com.

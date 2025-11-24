@@ -86,7 +86,7 @@ const sidebars = {
             'setup/upgrade-to-v3',
             'setup/cloud-v3-migration',
             'setup/upgrade-to-v3.16',
-
+            'setup/tooljet-domain-change'
           ]
         }
       ],
