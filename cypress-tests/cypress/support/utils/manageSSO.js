@@ -11,7 +11,6 @@ import {
 } from "Support/utils/platform/eeCommon";
 
 export const verifyLoginSettings = (pageName) => {
-
   cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
   cy.get(ssoSelector.allowedDomainInput).should("be.visible");
   cy.get(ssoSelector.workspaceLoginUrl).should("be.visible");
@@ -42,7 +41,10 @@ export const verifyLoginSettings = (pageName) => {
 
   cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
   cy.get(ssoSelector.saveButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, ssoText[`${pageName}SsoToast`]);
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText[`${pageName}SsoToast`]
+  );
 
   cy.get(ssoSelector.passwordEnableToggle).uncheck();
   cy.get(commonSelectors.modalComponent).should("be.visible");
@@ -72,9 +74,9 @@ export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.passwordEnableToggle).check();
   cy.get(commonSelectors.saveButton).click();
 
-
   cy.get(ssoSelector.autoSSOToggle).should("be.disabled");
-  verifyTooltipDisabled(ssoSelector.autoSSOToggle,
+  verifyTooltipDisabled(
+    ssoSelector.autoSSOToggle,
     ssoText.autoSSOToggleMessage
   );
 
@@ -89,8 +91,7 @@ export const verifyLoginSettings = (pageName) => {
   if (pageName === "instance") {
     openInstanceSettings();
     cy.get(ssoSelector.instanceLoginListItem).click();
-  }
-  else common.navigateToManageSSO();
+  } else common.navigateToManageSSO();
 
   cy.get(ssoSelector.autoSSOToggle).should("not.be.disabled").check();
   cy.get(ssoSelector.modalMessage).should("be.visible");
@@ -98,10 +99,9 @@ export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.autoSSOToggle).should("be.checked");
 
   cy.get(ssoSelector.passwordEnableToggle).check();
-  cy.get(commonSelectors.enablePasswordLoginTitle).should("be.visible").verifyVisibleElement(
-    "have.text",
-    commonText.enablePasswordLoginTitle
-  );
+  cy.get(commonSelectors.enablePasswordLoginTitle)
+    .should("be.visible")
+    .verifyVisibleElement("have.text", commonText.enablePasswordLoginTitle);
   cy.get(commonSelectors.enablePasswordLoginModal).verifyVisibleElement(
     "have.text",
     commonText.enablePasswordLoginModal
@@ -116,13 +116,17 @@ export const verifyLoginSettings = (pageName) => {
   if (pageName === "workspace") {
     cy.get(ssoSelector.allowDefaultSSOToggle).click();
     cy.wait(200);
-    cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.defaultSsoToast);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      ssoText.defaultSsoToast
+    );
     cy.get(ssoSelector.allowDefaultSSOToggle).should("not.be.checked");
     cy.get(ssoSelector.allowDefaultSSOToggle).click();
   }
 
   if (pageName === "instance") {
-    cy.get(ssoSelector.linkReadDocumentation).should("be.visible")
+    cy.get(ssoSelector.linkReadDocumentation)
+      .should("be.visible")
       .and("have.attr", "href")
       .and("include", "/enterprise/superadmin/#instance-login");
   }
@@ -149,17 +153,18 @@ export const loginSettingPageElements = (pageName) => {
   }
 
   Object.entries(selectors).forEach(([key, selector]) => {
-    cy.get(selector).verifyVisibleElement('have.text', texts[key]);
+    cy.get(selector).verifyVisibleElement("have.text", texts[key]);
   });
 };
 
 export const googleSSOPageElements = (pageName) => {
-
   cy.get(ssoSelector.google).should("be.visible").click();
   cy.get(ssoSelector.cardTitle)
     .eq(1)
     .verifyVisibleElement("have.text", ssoText.googleTitle);
-  cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text", "Disabled");
+  cy.get(ssoSelector.statusLabel)
+    .should("be.visible")
+    .and("have.text", "Disabled");
   cy.get(ssoSelector.googleEnableToggle).should("be.visible").click();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
@@ -189,7 +194,10 @@ export const googleSSOPageElements = (pageName) => {
   cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleSSOToast);
   cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
 
-  verifyLabelAndInput(ssoSelector.googleSSOPageElements, ssoText.googleSSOPageElements);
+  verifyLabelAndInput(
+    ssoSelector.googleSSOPageElements,
+    ssoText.googleSSOPageElements
+  );
   cy.get(ssoSelector.redirectUrl).should("be.visible");
   cy.get(ssoSelector.copyIcon).should("be.visible");
 
@@ -204,7 +212,11 @@ export const googleSSOPageElements = (pageName) => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
+  if (
+    pageName === "workspace"
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      : cy.visit(`${Cypress.config("baseUrl")}/login`)
+  );
   cy.get(ssoSelector.googleIcon).should("be.visible");
   cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
     "have.text",
@@ -217,7 +229,9 @@ export const gitSSOPageElements = (pageName) => {
   cy.get(ssoSelector.cardTitle)
     .eq(1)
     .verifyVisibleElement("have.text", ssoText.gitTitle);
-  cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text", "Disabled");
+  cy.get(ssoSelector.statusLabel)
+    .should("be.visible")
+    .and("have.text", "Disabled");
   cy.get(ssoSelector.gitEnableToggle).should("be.visible").click();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
@@ -249,21 +263,31 @@ export const gitSSOPageElements = (pageName) => {
 
   cy.get(ssoSelector.hostNameInput).should("have.value", ssoText.hostName);
   cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
-  cy.get(ssoSelector.clientSecretInput).should("have.value", ssoText.testClientId);
+  cy.get(ssoSelector.clientSecretInput).should(
+    "have.value",
+    ssoText.testClientId
+  );
 
-  verifyLabelAndInput(ssoSelector.githubSSOPageElements, ssoText.githubSSOPageElements);
-  cy.get(ssoSelector.hostNameHelpText).should("have.text", ssoText.hostNameHelpText);
-  cy.get(ssoSelector.clientSecretLabel)
-    .should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq(
-        ssoText.clientSecretLabel
-      );
-    });
-  cy.get(ssoSelector.encriptedLabel).should("have.text", ssoText.encriptedLabel);
+  verifyLabelAndInput(
+    ssoSelector.githubSSOPageElements,
+    ssoText.githubSSOPageElements
+  );
+  cy.get(ssoSelector.hostNameHelpText).should(
+    "have.text",
+    ssoText.hostNameHelpText
+  );
+  cy.get(ssoSelector.clientSecretLabel).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      ssoText.clientSecretLabel
+    );
+  });
+  cy.get(ssoSelector.encriptedLabel).should(
+    "have.text",
+    ssoText.encriptedLabel
+  );
   cy.get(ssoSelector.clientSecretInput).should("be.visible");
   cy.get(ssoSelector.redirectUrl).should("be.visible");
   cy.get(ssoSelector.copyIcon).should("be.visible");
-
 
   cy.get(ssoSelector.cancelButton)
     .eq(1)
@@ -276,7 +300,11 @@ export const gitSSOPageElements = (pageName) => {
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
+  if (
+    pageName === "workspace"
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      : cy.visit(`${Cypress.config("baseUrl")}/login`)
+  );
   cy.get(ssoSelector.gitIcon).should("be.visible");
   cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
     "have.text",
@@ -287,8 +315,14 @@ export const gitSSOPageElements = (pageName) => {
 export const oidcSSOPageElements = (pageName) => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", ssoText.oidcTitle);
-  cy.get(ssoSelector.statusLabel).eq(0).should("be.visible").and("have.text", "Disabled");
+  cy.get(ssoSelector.oidcTitle).verifyVisibleElement(
+    "have.text",
+    ssoText.oidcTitle
+  );
+  cy.get(ssoSelector.statusLabel)
+    .eq(0)
+    .should("be.visible")
+    .and("have.text", "Disabled");
   cy.get(ssoSelector.oidcEnableToggle).should("be.visible").click();
 
   if (pageName === "workspace") {
@@ -301,10 +335,9 @@ export const oidcSSOPageElements = (pageName) => {
       .verifyVisibleElement("have.text", "Cancel");
     cy.get(ssoSelector.enableButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.oidcSSOToast);
-    cy.get(ssoSelector.statusLabel).eq(0).verifyVisibleElement(
-      "have.text",
-      ssoText.enabledLabel
-    );
+    cy.get(ssoSelector.statusLabel)
+      .eq(0)
+      .verifyVisibleElement("have.text", ssoText.enabledLabel);
   }
 
   cy.clearAndType(ssoSelector.nameInput, ssoText.testName);
@@ -318,7 +351,10 @@ export const oidcSSOPageElements = (pageName) => {
   if (pageName === "workspace") {
     cy.get(ssoSelector.nameInput).should("have.value", "");
     cy.get(ssoSelector.clientIdInput).should("have.value", "");
-    cy.get(ssoSelector.clientSecretInput).should("have.value", ssoText.testclientSecret);
+    cy.get(ssoSelector.clientSecretInput).should(
+      "have.value",
+      ssoText.testclientSecret
+    );
     cy.get(ssoSelector.wellKnownUrlInput).should("have.value", "");
   }
 
@@ -332,28 +368,51 @@ export const oidcSSOPageElements = (pageName) => {
 
   cy.get(ssoSelector.nameInput).should("have.value", ssoText.testName);
   cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.testclientId);
-  cy.get(ssoSelector.clientSecretInput).should("have.value", ssoText.testclientSecret);
-  cy.get(ssoSelector.wellKnownUrlInput).should("have.value", ssoText.testWellknownUrl);
+  cy.get(ssoSelector.clientSecretInput).should(
+    "have.value",
+    ssoText.testclientSecret
+  );
+  cy.get(ssoSelector.wellKnownUrlInput).should(
+    "have.value",
+    ssoText.testWellknownUrl
+  );
 
-  verifyLabelAndInput(ssoSelector.oidcSSOPageElements, ssoText.oidcSSOPageElements);
-  cy.get(ssoSelector.clientSecretLabel)
-    .should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq(
-        ssoText.clientSecretLabel
-      );
-    });
-  cy.get(ssoSelector.encriptedLabel).should("have.text", ssoText.encriptedLabel);
+  verifyLabelAndInput(
+    ssoSelector.oidcSSOPageElements,
+    ssoText.oidcSSOPageElements
+  );
+  cy.get(ssoSelector.clientSecretLabel).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      ssoText.clientSecretLabel
+    );
+  });
+  cy.get(ssoSelector.encriptedLabel).should(
+    "have.text",
+    ssoText.encriptedLabel
+  );
   cy.get(ssoSelector.clientSecretInput).scrollIntoView().should("be.visible");
   cy.get(ssoSelector.redirectUrl).should("be.visible");
   cy.get(ssoSelector.copyIcon).should("be.visible");
 
   //Groups Sync section
   cy.get(ssoSelector.groupsyncTitle).should("have.text", " GROUP SYNC ");
-  cy.get(ssoSelector.groupsyncToggleLabel).should("have.text", "Enable group sync");
-  cy.get(ssoSelector.groupsyncHelperText).should("have.text", "Sync user groups from your IdP");
+  cy.get(ssoSelector.groupsyncToggleLabel).should(
+    "have.text",
+    "Enable group sync"
+  );
+  cy.get(ssoSelector.groupsyncHelperText).should(
+    "have.text",
+    "Sync user groups from your IdP"
+  );
   if (pageName === "workspace") {
-    verifyLabelAndInput(ssoSelector.groupsyncElements, ssoText.groupsyncElements);
-    cy.get(ssoSelector.groupsyncMappingHelperText).should("have.text", ssoText.groupMappingHelperText);
+    verifyLabelAndInput(
+      ssoSelector.groupsyncElements,
+      ssoText.groupsyncElements
+    );
+    cy.get(ssoSelector.groupsyncMappingHelperText).should(
+      "have.text",
+      ssoText.groupMappingHelperText
+    );
   }
 
   cy.get(ssoSelector.cancelButton)
@@ -364,9 +423,12 @@ export const oidcSSOPageElements = (pageName) => {
     .eq(1)
     .verifyVisibleElement("have.text", ssoText.saveButton);
 
-
   cy.apiLogout();
-  if (pageName === "workspace" ? cy.visit(`${Cypress.config('baseUrl')}/login/my-workspace`) : cy.visit(`${Cypress.config('baseUrl')}/login`));
+  if (
+    pageName === "workspace"
+      ? cy.visit(`${Cypress.config("baseUrl")}/login/my-workspace`)
+      : cy.visit(`${Cypress.config("baseUrl")}/login`)
+  );
   cy.get(ssoSelector.oidcIcon).should("be.visible");
   cy.get(ssoSelector.oidcSSOText).verifyVisibleElement(
     "have.text",
@@ -377,8 +439,14 @@ export const oidcSSOPageElements = (pageName) => {
 export const ldapSSOPageElements = () => {
   cy.wait(1000);
   cy.get(ssoSelector.ldap).click();
-  cy.get(ssoSelector.ldapTitle).verifyVisibleElement("have.text", ssoText.ldapTitle);
-  cy.get(ssoSelector.statusLabel).eq(0).should("be.visible").and("have.text", "Disabled");
+  cy.get(ssoSelector.ldapTitle).verifyVisibleElement(
+    "have.text",
+    ssoText.ldapTitle
+  );
+  cy.get(ssoSelector.statusLabel)
+    .eq(0)
+    .should("be.visible")
+    .and("have.text", "Disabled");
   cy.get(ssoSelector.ldapEnableToggle).should("be.visible").click();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
@@ -409,8 +477,14 @@ export const ldapSSOPageElements = () => {
   cy.get(ssoSelector.portInput).should("have.value", ssoText.ldapPort);
   cy.get(ssoSelector.baseDnInput).should("have.value", ssoText.ldapBaseDn);
 
-  verifyLabelAndInput(ssoSelector.ldapSSOPageElements, ssoText.ldapSSOPageElements);
-  cy.get(ssoSelector.baseDnHelperText).should("have.text", ssoText.ldapBaseDNHelperText);
+  verifyLabelAndInput(
+    ssoSelector.ldapSSOPageElements,
+    ssoText.ldapSSOPageElements
+  );
+  cy.get(ssoSelector.baseDnHelperText).should(
+    "have.text",
+    ssoText.ldapBaseDNHelperText
+  );
   cy.get(ssoSelector.sslToggle).should("be.visible");
 
   cy.get(ssoSelector.cancelButton)
@@ -435,14 +509,23 @@ export const ldapSSOPageElements = () => {
 export const samlSSOPageElements = () => {
   cy.wait(1000);
   cy.get(ssoSelector.saml).click();
-  cy.get(ssoSelector.samlTitle).verifyVisibleElement("have.text", ssoText.samlTitle);
-  cy.get(ssoSelector.statusLabel).eq(0).should("be.visible").and("have.text", "Disabled");
+  cy.get(ssoSelector.samlTitle).verifyVisibleElement(
+    "have.text",
+    ssoText.samlTitle
+  );
+  cy.get(ssoSelector.statusLabel)
+    .eq(0)
+    .should("be.visible")
+    .and("have.text", "Disabled");
   cy.get(ssoSelector.samlEnableToggle).should("be.visible").click();
   cy.get(ssoSelector.saveButton).eq(1).click();
 
   cy.clearAndType(ssoSelector.nameInput, ssoText.samlName);
   cy.clearAndType(ssoSelector.samlMetadataInput, ssoText.samlMetadataInput);
-  cy.clearAndType(ssoSelector.samlGroupAttributeInput, ssoText.samlGroupAttributeInput);
+  cy.clearAndType(
+    ssoSelector.samlGroupAttributeInput,
+    ssoText.samlGroupAttributeInput
+  );
 
   cy.get(ssoSelector.cancelButton).eq(1).click();
   cy.get(ssoSelector.saml).click();
@@ -454,18 +537,36 @@ export const samlSSOPageElements = () => {
 
   cy.clearAndType(ssoSelector.nameInput, ssoText.samlName);
   cy.clearAndType(ssoSelector.samlMetadataInput, ssoText.samlMetadataInput);
-  cy.clearAndType(ssoSelector.samlGroupAttributeInput, ssoText.samlGroupAttributeInput);
+  cy.clearAndType(
+    ssoSelector.samlGroupAttributeInput,
+    ssoText.samlGroupAttributeInput
+  );
 
   cy.get(ssoSelector.saveButton).eq(1).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.samlSSOToast);
 
   cy.get(ssoSelector.nameInput).should("have.value", ssoText.samlName);
-  cy.get(ssoSelector.samlMetadataInput).should("have.value", ssoText.samlMetadataInput);
-  cy.get(ssoSelector.samlGroupAttributeInput).should("have.value", ssoText.samlGroupAttributeInput);
+  cy.get(ssoSelector.samlMetadataInput).should(
+    "have.value",
+    ssoText.samlMetadataInput
+  );
+  cy.get(ssoSelector.samlGroupAttributeInput).should(
+    "have.value",
+    ssoText.samlGroupAttributeInput
+  );
 
-  verifyLabelAndInput(ssoSelector.samlSSOPageElements, ssoText.samlSSOPageElements);
-  cy.get(ssoSelector.baseDnHelperText).should("have.text", ssoText.baseDNHelperText);
-  cy.get(ssoSelector.groupAttributeHelperText).should("have.text", ssoText.groupAttributeHelperText);
+  verifyLabelAndInput(
+    ssoSelector.samlSSOPageElements,
+    ssoText.samlSSOPageElements
+  );
+  cy.get(ssoSelector.baseDnHelperText).should(
+    "have.text",
+    ssoText.baseDNHelperText
+  );
+  cy.get(ssoSelector.groupAttributeHelperText).should(
+    "have.text",
+    ssoText.groupAttributeHelperText
+  );
   cy.get(ssoSelector.copyIcon).eq(1).click();
 
   cy.get(ssoSelector.cancelButton)
@@ -560,8 +661,6 @@ export const enableSignUp = () => {
   });
 };
 
-
-
 export const disableSignUp = () => {
   common.navigateToManageSSO();
   cy.get("body").then(($el) => {
@@ -650,8 +749,9 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
       if (ssoConfigResp.rows.length > 0) {
         cy.task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
-          sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
-            } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
+          sql: `UPDATE sso_configs SET enabled = ${
+            enabled ? "true" : "false"
+          } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
         });
       }
     });
@@ -846,16 +946,24 @@ export const addOIDCConfig = (
 };
 
 export const uiOktaLogin = (email, password) => {
+  cy.log("Starting Okta login for:", email);
   cy.origin(
     "https://integrator-8815821.okta.com",
     { args: { email, password } },
     ({ email, password }) => {
-      cy.get('input[name="identifier"]').type(email);
+      cy.log("Inside Okta origin");
+      cy.get('input[name="identifier"]', { timeout: 10000 })
+        .should("be.visible")
+        .type(email);
       cy.get(".button-primary").click();
-      cy.get('input[name="credentials.passcode"]').type(password);
+      cy.get('input[name="credentials.passcode"]', { timeout: 10000 })
+        .should("be.visible")
+        .type(password);
       cy.get(".button-primary").click();
+      cy.log("Okta login submitted");
     }
   );
+  cy.log("Okta login completed");
 };
 
 export const toggleSsoViaUI = (
@@ -933,20 +1041,20 @@ export const cleanupTestUser = (email) => {
 export const verifyLabelAndInput = (selectors, texts) => {
   Object.entries(texts).forEach(([key, expectedText]) => {
     const labelSelector = selectors[key];
-    const inputSelector = selectors[key.replace('Label', 'Input')];
+    const inputSelector = selectors[key.replace("Label", "Input")];
 
     //Verify label text
     cy.get(labelSelector)
       .scrollIntoView()
-      .should('be.visible')
-      .and('have.text', expectedText);
+      .should("be.visible")
+      .and("have.text", expectedText);
 
     //Verify corresponding input is enabled (if exists)
     if (inputSelector) {
       cy.get(inputSelector)
         .scrollIntoView()
-        .should('be.visible')
-        .and('be.enabled');
+        .should("be.visible")
+        .and("be.enabled");
     }
   });
 };
@@ -957,8 +1065,7 @@ export const verifyElementText = (selectors, texts) => {
 
     cy.get(selector)
       .scrollIntoView()
-      .should('be.visible')
-      .and('have.text', expectedText);
+      .should("be.visible")
+      .and("have.text", expectedText);
   });
 };
-

@@ -63,7 +63,6 @@ describe("SAML SSO", () => {
     data.workspaceSlug = `${sanitize(fake.firstName)}-saml`;
 
     cy.apiLogin();
-    cy.apiDeleteAllWorkspaces();
 
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then(
       (res) => {

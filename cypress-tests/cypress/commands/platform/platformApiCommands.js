@@ -1061,7 +1061,7 @@ Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
 Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
   cy.apiGetWorkspaceIDs().then((ids) => {
     ids.forEach((org) => {
-      cy.log(`Cleaning up workspace: ${org.slug}`);
+      cy.log(`Getting workspace: ${org.slug}`);
       if (org.slug !== "my-workspace") {
         cy.apiArchiveWorkspace(org.id);
       } else {
