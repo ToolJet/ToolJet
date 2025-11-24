@@ -42,4 +42,4 @@ The syntax for using constants is straightforward:
 
 </div>
 
-For a deep-dive into workspace constants and secrets, including how to create and manage them, go through **[this](/docs/org-management/workspaces/workspace_constants/)** documentation.
+For a deep-dive into workspace constants and secrets, including how to create and manage them, go through **[this](/docs/security/constants/)** documentation.

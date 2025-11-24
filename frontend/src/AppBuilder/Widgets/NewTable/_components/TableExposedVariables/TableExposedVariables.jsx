@@ -20,6 +20,7 @@ export const TableExposedVariables = ({
   pageIndex = 1,
   lastClickedRowRef,
   hasDataChanged,
+  paginationBtnClicked,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -30,6 +31,7 @@ export const TableExposedVariables = ({
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
+  const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
@@ -77,11 +79,25 @@ export const TableExposedVariables = ({
     [table]
   );
 
+  const getColumnKey = useCallback(
+    (columnId) => {
+      const column = table.getColumn(columnId);
+      return column.columnDef.accessorKey;
+    },
+    [table]
+  );
+
   useEffect(() => {
     setExposedVariables({
       currentData: data,
     });
   }, [data, setExposedVariables]);
+
+  useEffect(() => {
+    if (editedRows.size > 0) {
+      fireEvent('onCellValueChanged');
+    }
+  }, [editedRows, editedFields, fireEvent]);
 
   useEffect(() => {
     let updatedData = [...data];
@@ -94,10 +110,7 @@ export const TableExposedVariables = ({
       dataUpdates: Object.fromEntries(editedRows),
       updatedData: updatedData,
     });
-    if (editedRows.size > 0) {
-      fireEvent('onCellValueChanged');
-    }
-  }, [editedRows, editedFields, data, setExposedVariables, fireEvent]);
+  }, [data, editedRows, editedFields, setExposedVariables]);
 
   useEffect(() => {
     if (addNewRowDetails) {
@@ -123,13 +136,6 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
-    } else if (!allowSelection) {
-      setExposedVariables({
-        selectedRow: {},
-        selectedRowId: null,
-        selectedRows: [],
-        selectedRowsId: [],
-      });
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -142,14 +148,27 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
-    mounted && fireEvent('onPageChanged');
+
+    // Fire onPageChanged event only when the page was changed using pagination buttons and input in table footer,
+    // not when using setPage CSA to maintain backward compatibility
+    if (paginationBtnClicked.current) {
+      mounted && fireEvent('onPageChanged');
+    }
+    paginationBtnClicked.current = false; // reset the flag
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
     if (sorting.length > 0) {
-      const sortApplied = [{ column: getColumnName(sorting[0].id), direction: sorting[0].desc ? 'desc' : 'asc' }];
+      const sortApplied = [
+        {
+          column: getColumnName(sorting[0].id),
+          columnKey: getColumnKey(sorting[0].id),
+          direction: sorting[0].desc ? 'desc' : 'asc',
+        },
+      ];
       setExposedVariables({ sortApplied });
       fireEvent('onSort');
       prevSortingLength.current = sorting.length;
@@ -158,7 +177,7 @@ export const TableExposedVariables = ({
       prevSortingLength.current && fireEvent('onSort');
       prevSortingLength.current = null;
     }
-  }, [sorting, getColumnName, setExposedVariables, fireEvent]);
+  }, [sorting, getColumnName, getColumnKey, setExposedVariables, fireEvent]);
 
   //   // Expose current page data
   useEffect(() => {
@@ -206,10 +225,10 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
       setExposedVariables({ pageIndex: targetPageIndex });
-      if (clientSidePagination) setPageIndex(targetPageIndex - 1);
+      setPageIndex(targetPageIndex - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables, clientSidePagination]);
+  }, [setPageIndex, setExposedVariables]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
@@ -243,7 +262,7 @@ export const TableExposedVariables = ({
       lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
-      if (key && value) {
+      if (key && (value !== undefined || value !== null)) {
         selectRow(key, value);
       }
     } else {
@@ -295,8 +314,41 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-    setExposedVariables({ selectRow, deselectRow });
-  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection]);
+
+    function selectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = true;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    function deselectRows(key, values) {
+      const valueArray = Array.isArray(values) ? values : [values];
+
+      const currentSelection = table.getState().rowSelection || {};
+      const newSelection = { ...currentSelection };
+
+      valueArray.forEach((value) => {
+        const index = data.findIndex((item) => item[key] == value);
+        if (index !== -1) {
+          newSelection[index] = false;
+        }
+      });
+
+      setRowSelection(newSelection);
+    }
+
+    setExposedVariables({ selectRow, deselectRow, selectRows, deselectRows });
+  }, [data, lastClickedRowRef, setExposedVariables, setRowSelection, fireEvent, table]);
 
   // CSA to set & clear filters
   useEffect(() => {
@@ -353,6 +405,14 @@ export const TableExposedVariables = ({
       debouncedSetProperty.cancel();
     };
   }, [columnSizing, columnSizes, debouncedSetProperty, id]);
+
+  useEffect(() => {
+    function discardChanges() {
+      setExposedVariables({ dataUpdates: [], changeSet: {} });
+      clearEditedRows(id);
+    }
+    setExposedVariables({ discardChanges });
+  }, [clearEditedRows, id, setExposedVariables]);
 
   return null;
 };

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
+import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
+
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
@@ -22,6 +24,7 @@ export const QueryPanel = ({ darkMode }) => {
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -109,7 +112,7 @@ export const QueryPanel = ({ darkMode }) => {
         const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
         const clientY = e.clientY;
 
-        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 5;
+        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 2;
         if (withinDraggableArea !== isTopOfQueryPanel) {
           setTopOfQueryPanel(withinDraggableArea);
         }
@@ -152,10 +155,13 @@ export const QueryPanel = ({ darkMode }) => {
         className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
         style={{
           height: 40,
+          ...(isRightSidebarOpen && {
+            width: 'calc(100% - 396px)',
+          }),
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          zIndex: 12,
+          zIndex: 2,
         }}
       >
         <div
@@ -167,15 +173,14 @@ export const QueryPanel = ({ darkMode }) => {
               height: '100%',
               paddingTop: isQueryPaneExpanded ? '2px' : '4px',
               borderTop: isQueryPaneExpanded && '2px solid #4368E3',
-              width: '77px',
             }}
           >
             <button
               data-cy="query-manager-toggle-button"
-              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
+              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
+              <span>{isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}</span>
               <span>Queries</span>
             </button>
           </div>
@@ -189,10 +194,14 @@ export const QueryPanel = ({ darkMode }) => {
         style={{
           height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
           maxHeight: '93.5%',
+          ...(isRightSidebarOpen && {
+            width: 'calc(100% - 396px)',
+          }),
           cursor: isDraggingQueryPane || isTopOfQueryPanel ? 'row-resize' : 'default',
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),

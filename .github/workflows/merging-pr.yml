@@ -62,7 +62,7 @@ jobs:
       - name: Wait for merge completion
         run: |
           echo "Waiting for submodule merges to complete..."
-          sleep 30
+          sleep 60
 
       - name: Update submodules to latest ${{ github.event.pull_request.base.ref }}
         run: |
@@ -86,13 +86,27 @@ jobs:
           
           # Update submodule pointers to specific commit SHAs
           cd frontend/ee
-          git fetch origin
-          git checkout "$FRONTEND_SHA"
+          git fetch origin $BASE_BRANCH
+          if git cat-file -e "$FRONTEND_SHA" 2>/dev/null; then
+            git checkout "$FRONTEND_SHA"
+            echo "Successfully checked out frontend SHA: $FRONTEND_SHA"
+          else
+            echo "Error: Frontend SHA $FRONTEND_SHA not found. Fetching all refs..."
+            git fetch origin
+            git checkout "$FRONTEND_SHA"
+          fi
           cd ../..
-          
-          cd server/ee  
-          git fetch origin
-          git checkout "$SERVER_SHA"
+
+          cd server/ee
+          git fetch origin $BASE_BRANCH
+          if git cat-file -e "$SERVER_SHA" 2>/dev/null; then
+            git checkout "$SERVER_SHA"
+            echo "Successfully checked out server SHA: $SERVER_SHA"
+          else
+            echo "Error: Server SHA $SERVER_SHA not found. Fetching all refs..."
+            git fetch origin
+            git checkout "$SERVER_SHA"
+          fi
           cd ../..
 
           git add frontend/ee server/ee

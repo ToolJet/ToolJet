@@ -1,8 +1,7 @@
-import { OnModuleInit, RequestMethod, MiddlewareConsumer, DynamicModule } from '@nestjs/common';
+import { OnModuleInit, DynamicModule } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
-import * as Sentry from '@sentry/node';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
@@ -57,7 +56,24 @@ import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from '@modules/tooljet-db/helper';
+import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
+import { EntityManager } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { MetricsModule } from '@modules/metrices/module';
+import { ScimModule } from '@modules/scim/module';
+import { BullBoardModule } from "@bull-board/nestjs";
+import { ExpressAdapter } from "@bull-board/express";
+import * as basicAuth from 'express-basic-auth';
+
 export class AppModule implements OnModuleInit {
+  constructor(
+    private configService: ConfigService,
+    @InjectEntityManager('tooljetDb')
+    private readonly tooljetDbManager: EntityManager
+  ) { }
+
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
     const modules = await AppModuleLoader.loadModules(configs);
@@ -74,55 +90,73 @@ export class AppModule implements OnModuleInit {
     const baseImports = [
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
-      await FilesModule.register(configs),
+      await FilesModule.register(configs, true),
       await EncryptionModule.register(configs),
-      await InstanceSettingsModule.register(configs),
-      await FoldersModule.register(configs),
-      await FolderAppsModule.register(configs),
-      await SMTPModule.register(configs),
-      await RolesModule.register(configs),
-      await GroupPermissionsModule.register(configs),
-      await AppConfigModule.register(configs),
-      await SessionModule.register(configs),
-      await MetaModule.register(configs),
-      await OrganizationsModule.register(configs),
-      await ProfileModule.register(configs),
-      await UsersModule.register(configs),
-      await OrganizationUsersModule.register(configs),
-      await OnboardingModule.register(configs),
-      await AppEnvironmentsModule.register(configs),
-      await OrganizationConstantModule.register(configs),
-      await DataSourcesModule.register(configs),
-      await LoginConfigsModule.register(configs),
-      await AuthModule.register(configs),
-      await ThemesModule.register(configs),
-      await SetupOrganizationsModule.register(configs),
-      await WhiteLabellingModule.register(configs),
+      await InstanceSettingsModule.register(configs, true),
+      await FoldersModule.register(configs, true),
+      await FolderAppsModule.register(configs, true),
+      await SMTPModule.register(configs, true),
+      await RolesModule.register(configs, true),
+      await GroupPermissionsModule.register(configs, true),
+      await AppConfigModule.register(configs, true),
+      await SessionModule.register(configs, true),
+      await MetaModule.register(configs, true),
+      await OrganizationsModule.register(configs, true),
+      await ProfileModule.register(configs, true),
+      await UsersModule.register(configs, true),
+      await OrganizationUsersModule.register(configs, true),
+      await OnboardingModule.register(configs, true),
+      await AppEnvironmentsModule.register(configs, true),
+      await OrganizationConstantModule.register(configs, true),
+      await DataSourcesModule.register(configs, true),
+      await LoginConfigsModule.register(configs, true),
+      await AuthModule.register(configs, true),
+      await ThemesModule.register(configs, true),
+      await SetupOrganizationsModule.register(configs, true),
+      await WhiteLabellingModule.register(configs, true),
       await EmailModule.register(configs),
-      await AppsModule.register(configs),
-      await VersionModule.register(configs),
-      await DataQueriesModule.register(configs),
-      await PluginsModule.register(configs),
-      await ImportExportResourcesModule.register(configs),
-      await TemplatesModule.register(configs),
-      await TooljetDbModule.register(configs),
-      await ModulesModule.register(configs),
-      await AiModule.register(configs),
-      await CustomStylesModule.register(configs),
-      await AppPermissionsModule.register(configs),
+      await AppsModule.register(configs, true),
+      await VersionModule.register(configs, true),
+      await DataQueriesModule.register(configs, true),
+      await PluginsModule.register(configs, true),
+      await ImportExportResourcesModule.register(configs, true),
+      await TemplatesModule.register(configs, true),
+      await TooljetDbModule.register(configs, true),
+      await ModulesModule.register(configs, true),
+      await AiModule.register(configs, true),
+      await CustomStylesModule.register(configs, true),
+      await AppPermissionsModule.register(configs, true),
       await EventsModule.register(configs),
-      await ExternalApiModule.register(configs),
-      await GitSyncModule.register(configs),
-      await AppGitModule.register(configs),
-      await CrmModule.register(configs),
-      await OrganizationPaymentModule.register(configs),
+      await ExternalApiModule.register(configs, true),
+      await GitSyncModule.register(configs, true),
+      await AppGitModule.register(configs, true),
+      await CrmModule.register(configs, true),
+      await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await ScimModule.register(configs, true),
     ];
 
     const conditionalImports = [];
+
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs));
+      conditionalImports.push(
+        await WorkflowsModule.register(configs, true)
+      )
+      conditionalImports.push(
+        BullBoardModule.forRoot({
+          route: '/jobs',
+          adapter: ExpressAdapter,
+          middleware: basicAuth({
+            challenge: true,
+            users: { admin: process.env.TOOLJET_QUEUE_DASH_PASSWORD },
+          }),
+        })
+      )
+    }
+
+    if (process.env.ENABLE_METRICS === 'true') {
+      conditionalImports.push(MetricsModule);
     }
 
     const imports = [...baseImports, ...conditionalImports];
@@ -142,15 +176,30 @@ export class AppModule implements OnModuleInit {
     };
   }
 
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL,
-    });
-  }
-
-  onModuleInit(): void {
+  async onModuleInit() {
     console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
     console.log(`Initializing server modules 📡 `);
+
+    if (!process.env.WORKER) {
+      const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
+      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
+
+      if (isSQLModeDisabled()) {
+        await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      } else {
+        await reconfigurePostgrest(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      }
+
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    }
   }
 }

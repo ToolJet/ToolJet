@@ -39,6 +39,11 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Link',
   'FilePicker',
   'Listview',
+  'Statistics',
+  'StarRating',
+  'CircularProgressBar',
+  'Kanban',
+  'Html',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -57,6 +62,11 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Tabs: 'Data',
   RangeSlider: 'Data',
   Link: 'Data',
+  PopoverMenu: 'Data',
+  Statistics: 'Data',
+  StarRating: 'Data',
+  CircularProgressBar: 'Data',
+  Kanban: 'Board configuration',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -160,6 +170,10 @@ export const baseComponentProperties = (
       'Link',
       'FilePicker',
       'Tabs',
+      'Statistics',
+      'StarRating',
+      'CircularProgressBar',
+      'Kanban',
     ],
     Layout: [],
   };

@@ -4,6 +4,7 @@ import { datasourceService, pluginsService, globalDatasourceService, libraryAppS
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
@@ -38,6 +39,7 @@ import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import SampleDataSourceBody from './SampleDataSourceBody';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -253,7 +255,16 @@ class DataSourceManagerComponent extends React.Component {
       }
     }
 
-    const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce', 'googlecalendar', 'microsoft_graph'];
+    const OAuthDs = [
+      'slack',
+      'zendesk',
+      'googlesheets',
+      'salesforce',
+      'googlecalendar',
+      'microsoft_graph',
+      'hubspot',
+      'gmail',
+    ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -393,6 +404,16 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
+  checkShouldRenderFooterComponent = (datasourceKind, datasourceOptions) => {
+    switch (datasourceKind) {
+      case 'googlesheets': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      default:
+        return true;
+    }
+  };
+
   setValidationMessages = (errors, schema, interactedFields) => {
     const errorMap = errors.reduce((acc, error) => {
       // Get property name from either required error or dataPath
@@ -445,6 +466,7 @@ class DataSourceManagerComponent extends React.Component {
         setDefaultOptions={this.setDefaultOptions}
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
+        elementsProps={this.props.formProps?.[kind]}
       />
     );
   };
@@ -672,44 +694,16 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   renderSampleDBModal = () => {
-    const { dataSourceMeta, selectedDataSourceIcon, creatingApp } = this.state;
+    const { creatingApp } = this.state;
+
     return (
-      <div className="sample-db-modal-body">
-        <div className="row sample-db-title" data-cy="sample-db-postgres-title">
-          <div className="col-md-1">
-            {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-          </div>
-          <div className="col-md-1">PostgreSQL</div>
-        </div>
-        <div className={'sample-db-description'} data-cy="sample-db-description">
-          <p className={`p ${this.props.darkMode ? 'dark' : ''}`}>
-            This PostgreSQL data source is a shared resource and may show varying data
-            <br /> due to real-time updates. It&apos;s reset daily for some consistency, but please note <br />
-            it&apos;s designed for user exploration, not production use.
-          </p>
-        </div>
-        <div className="create-btn-cont">
-          <ButtonSolid
-            className={`create-app-btn`}
-            data-cy="create-sample-app-button"
-            isLoading={creatingApp}
-            // disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-            variant="primary"
-            onClick={this.createSampleApp}
-            fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-          >
-            Create sample application
-          </ButtonSolid>
-        </div>
-        <div className="image-container">
-          <img
-            src="assets/images/Sample data source.png"
-            className="img-sample-db"
-            alt="Sample data source"
-            data-cy="sample-db-image"
-          />
-        </div>
-      </div>
+      <SampleDataSourceBody
+        darkMode={this.props.darkMode}
+        isCreatingSampleApp={creatingApp}
+        isVersionReleased={this.props.isVersionReleased}
+        onCreateSampleApp={this.createSampleApp}
+        showCreateSampleAppBtn={this.props.showCreateSampleAppBtn}
+      />
     );
   };
 
@@ -931,6 +925,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   render() {
+    const { classes } = this.props;
+
     const {
       dataSourceMeta,
       selectedDataSource,
@@ -952,7 +948,9 @@ class DataSourceManagerComponent extends React.Component {
       this.selectDataSource(dataSource, category);
     };
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
-    const sampleDBmodalBodyStyle = isSampleDb ? { paddingBottom: '0px', borderBottom: '1px solid #E6E8EB' } : {};
+    const sampleDBmodalBodyStyle = isSampleDb
+      ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
+      : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
     const isSaveDisabled = selectedDataSource
       ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
@@ -973,7 +971,11 @@ class DataSourceManagerComponent extends React.Component {
       'googlecalendar',
       'snowflake',
       'microsoft_graph',
+      'hubspot',
+      'gmail',
     ];
+
+    const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
     return (
       pluginsLoaded && (
         <div>
@@ -986,9 +988,10 @@ class DataSourceManagerComponent extends React.Component {
             animation={false}
             onExit={this.onExit}
             container={this.props.container}
+            autoFocus={false}
             {...this.props.modalProps}
           >
-            <Modal.Header className={'d-block'}>
+            <Modal.Header className={cn('d-block', classes?.modalHeader)}>
               <div className="d-flex align-items-center justify-content-between">
                 <div className="d-flex">
                   {selectedDataSource && this.props.showBackButton && (
@@ -1006,7 +1009,7 @@ class DataSourceManagerComponent extends React.Component {
                       />
                     </div>
                   )}
-                  <Modal.Title className="mt-3">
+                  <Modal.Title className={cn('mt-3', classes?.modalTitleContainer)}>
                     {selectedDataSource && !isSampleDb ? (
                       <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
@@ -1046,7 +1049,7 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     )}
                   </Modal.Title>
-                  {!this.props.isEditing && (
+                  {!this.props.isEditing && !this.props.hideCloseIcon && (
                     <span
                       data-cy="button-close-ds-connection-modal"
                       className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
@@ -1094,8 +1097,7 @@ class DataSourceManagerComponent extends React.Component {
                       {this.renderSourceComponent(selectedDataSource.kind, isPlugin)}
                     </div>
                   ) : (
-                    selectedDataSource &&
-                    isSampleDb && <div className="dataSourceWrapper">{this.renderSampleDBModal()}</div>
+                    selectedDataSource && isSampleDb && this.renderSampleDBModal()
                   )}
                   {!selectedDataSource &&
                     this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
@@ -1103,11 +1105,10 @@ class DataSourceManagerComponent extends React.Component {
 
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
+                  shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1218,7 +1219,9 @@ class DataSourceManagerComponent extends React.Component {
                           <ButtonSolid
                             className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                             isLoading={isSaving}
-                            disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                            disabled={
+                              isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                            }
                             variant="primary"
                             onClick={this.createDataSource}
                             leftIcon="floppydisk"
@@ -1236,9 +1239,7 @@ class DataSourceManagerComponent extends React.Component {
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
                     )) && (
                     <Modal.Footer>
                       <div className="col">
@@ -1262,7 +1263,9 @@ class DataSourceManagerComponent extends React.Component {
                           leftIcon="floppydisk"
                           fill={'#FDFDFE'}
                           className="m-2"
-                          disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                          disabled={
+                            isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+                          }
                           variant="primary"
                           onClick={this.createDataSource}
                         >

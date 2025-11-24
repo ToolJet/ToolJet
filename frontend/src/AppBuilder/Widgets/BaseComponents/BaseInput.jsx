@@ -3,7 +3,7 @@ import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { getModifiedColor } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 const RenderInput = forwardRef((props, ref) => {
   return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
@@ -38,6 +38,8 @@ export const BaseInput = ({
   additionalInputProps = {},
   rightIcon,
   getCustomStyles,
+  isDynamicHeightEnabled,
+  id,
 }) => {
   const {
     padding,
@@ -56,13 +58,15 @@ export const BaseInput = ({
     accentColor,
     iconVisibility: showLeftIcon,
     icon,
+    widthType,
   } = styles;
 
   const { label, placeholder } = properties;
-  const _width = (width / 100) * 70;
+  const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
@@ -89,7 +93,7 @@ export const BaseInput = ({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow,
-    padding: showLeftIcon ? '8px 10px 8px 29px' : '8px 10px',
+    padding: showLeftIcon ? '8px 10px 8px 30px' : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -165,6 +169,8 @@ export const BaseInput = ({
           _width={_width}
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
+          widthType={widthType}
+          inputId={`component-${id}`}
         />
 
         {showLeftIcon && (
@@ -196,7 +202,7 @@ export const BaseInput = ({
               color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
-            stroke={1.5}
+            stroke={2}
           />
         )}
         <RenderInput
@@ -212,10 +218,19 @@ export const BaseInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           onKeyUp={handleKeyUp}
-          // disabled={disable || loading}
           placeholder={placeholder}
-          style={finalStyles}
+          style={{
+            ...finalStyles,
+            ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
+          }}
           {...additionalInputProps}
+          id={`component-${id}`}
+          aria-disabled={disable || loading}
+          aria-busy={loading}
+          aria-required={isMandatory}
+          aria-hidden={!visibility}
+          aria-invalid={!isValid && showValidationError}
+          aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
         />
 
         {rightIcon}

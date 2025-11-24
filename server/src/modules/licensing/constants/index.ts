@@ -122,7 +122,16 @@ export enum LICENSE_FIELD {
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
   EXTERNAL_API = 'externalApiEnabled',
+  SCIM = 'scimEnabled',
   PLAN = 'plan',
+  MODULES = 'modulesEnabled',
+  CUSTOM_GROUPS = 'customGroupsEnabled',
+  APP_PAGES_ENABLED = 'appPagesEnabled',
+  APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
+  APP_PAGES_NAV_GROUP = 'appPagesAddNavGroupEnabled',
+  APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
+  APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
+  APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -170,6 +179,7 @@ export enum FEATURE_KEY {
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
   GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
   GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
+  GET_SELFHOST_CUSTOMER = 'getSelfhostCustomer',
 }
 
 export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

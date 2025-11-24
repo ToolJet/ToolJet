@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select, { components } from 'react-select';
-import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
+import { IconX } from '@tabler/icons-react';
+
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -16,6 +17,10 @@ import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/Editor/Components/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -40,7 +45,7 @@ export const CustomDropdownIndicator = (props) => {
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </ClearIndicator>
   );
 };
@@ -90,6 +95,7 @@ export const DropdownV2 = ({
     iconColor,
     accentColor,
     padding,
+    widthType,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -427,7 +433,7 @@ export const DropdownV2 = ({
       margin: 0,
     }),
   };
-  const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
   return (
     <>
       <div
@@ -466,13 +472,17 @@ export const DropdownV2 = ({
           auto={labelAutoWidth}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
+          widthType={widthType}
+          id={`${id}-label`}
         />
         <div
-          className="w-100 px-0 h-100 dropdownV2-widget"
+          className="px-0 h-100 dropdownV2-widget"
           ref={ref}
           onClick={handleClickInsideSelect}
           onTouchEnd={handleClickInsideSelect}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          }}
         >
           <Select
             ref={selectRef}
@@ -495,6 +505,14 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             styles={customStyles}
+            aria-hidden={!visibility}
+            aria-disabled={isDropdownDisabled}
+            aria-busy={isDropdownLoading}
+            aria-required={isMandatory}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
+            aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
             onInputChange={onSearchTextChange}

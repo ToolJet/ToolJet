@@ -14,7 +14,10 @@ import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { useTransition, animated } from 'react-spring';
+import './styles/tabs.scss';
 const tinycolor = require('tinycolor2');
+const TAB_HEADER_HEIGHT = 49.5;
 
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
@@ -62,6 +65,8 @@ export const Tabs = function Tabs({
   darkMode,
   dataCy,
   properties,
+  currentMode,
+  subContainerIndex,
 }) {
   const { tabWidth, boxShadow } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -71,11 +76,13 @@ export const Tabs = function Tabs({
     setExposedVariables,
     setExposedVariable
   );
-  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions, dynamicHeight } = properties;
+  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   // config for tabs. Includes title
   const tabs = isExpectedDataType(properties.tabs, 'array');
   let parsedTabs = tabs;
@@ -143,7 +150,7 @@ export const Tabs = function Tabs({
   const [bgColor, setBgColor] = useState('#fff');
 
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     adjustComponentPositions,
@@ -152,6 +159,7 @@ export const Tabs = function Tabs({
     value: currentTab,
     componentCount,
     visibility: widgetVisibility,
+    subContainerIndex,
   });
 
   useEffect(() => {
@@ -321,18 +329,40 @@ export const Tabs = function Tabs({
 
   const equalSplitWidth = 100 / tabItems?.length || 1;
   const someTabsVisible = tabItems?.filter((tab) => tab?.visible !== false);
+
+  // React Spring transitions for tab switching
+  const transitions = useTransition(currentTab, {
+    from: {
+      opacity: 0,
+      transform: transition !== 'none' ? 'translateX(100%)' : 'translateX(0%)',
+    },
+    enter: {
+      opacity: 1,
+      transform: 'translateX(0%)',
+    },
+    leave: {
+      opacity: 0,
+      transform: transition !== 'none' ? 'translateX(-100%)' : 'translateX(0%)',
+    },
+    config: {
+      tension: 300,
+      friction: 30,
+      clamp: true,
+    },
+  });
   return (
     <div
       data-disabled={isDisabled}
       className="card tabs-component scrollbar-container"
       style={{
-        height: dynamicHeight ? '100%' : padding === 'default' ? height : height + 4,
+        height: isDynamicHeightEnabled ? '100%' : padding === 'default' ? height : height + 4,
+        ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
+        '--cc-tabs-border-color': border,
       }}
       data-cy={dataCy}
       ref={containerRef}
@@ -346,7 +376,6 @@ export const Tabs = function Tabs({
             alignItems: 'center',
             width: '100%',
             backgroundColor: headerBackground,
-            height: '50px',
             display: parsedHideTabs ? 'none' : 'flex',
           }}
         >
@@ -377,7 +406,7 @@ export const Tabs = function Tabs({
               flexGrow: 1,
               paddingLeft: '10px',
               paddingRight: '10px',
-              height: '100%',
+              height: `${TAB_HEADER_HEIGHT}px`,
             }}
           >
             {tabItems
@@ -487,8 +516,9 @@ export const Tabs = function Tabs({
         <div
           style={{
             overflow: 'hidden',
+
             width: '100%',
-            height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+            height: '100%',
             position: 'relative',
           }}
         >
@@ -514,7 +544,7 @@ export const Tabs = function Tabs({
                     parsedHideTabs={parsedHideTabs}
                     bgColor={bgColor}
                     darkMode={darkMode}
-                    dynamicHeight={dynamicHeight}
+                    isDynamicHeightEnabled={isDynamicHeightEnabled}
                     currentTab={currentTab}
                     isTransitioning={isTransitioning}
                   />
@@ -522,48 +552,44 @@ export const Tabs = function Tabs({
               </div>
             ))
           ) : (
-            // Sliding animation when transition is enabled
-            <div
-              style={{
-                display: 'flex',
-                width: `${tabItems.length * 100}%`,
-                transform: `translateX(-${findTabIndex(currentTab) * (100 / tabItems.length)}%)`,
-                transition: 'transform 0.3s ease-in-out',
-                height: '100%',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              {tabItems.map((tab) => (
-                <div
-                  key={tab.id}
-                  style={{
-                    width: `${100 / tabItems.length}%`,
-                    flexShrink: 0,
-                    height: '100%',
-                    overflow: 'hidden',
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    contain: 'layout style size',
-                  }}
-                >
-                  {shouldRenderTabContent(tab) && (
-                    <TabContent
-                      id={id}
-                      tab={tab}
-                      height={height}
-                      width={width}
-                      parsedHideTabs={parsedHideTabs}
-                      bgColor={bgColor}
-                      darkMode={darkMode}
-                      dynamicHeight={dynamicHeight}
-                      currentTab={currentTab}
-                      isTransitioning={isTransitioning}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            // React Spring transitions - each tab content positioned absolutely
+            <>
+              {transitions((style, activeTabId) => {
+                const tab = tabItems.find((t) => t.id === activeTabId);
+                if (!tab) return null;
+
+                return (
+                  <animated.div
+                    key={activeTabId}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      overflow: 'hidden',
+                      boxSizing: 'border-box',
+                      ...style, // Apply React Spring animation styles
+                    }}
+                  >
+                    {shouldRenderTabContent(tab) && (
+                      <TabContent
+                        id={id}
+                        tab={tab}
+                        height={height}
+                        width={width}
+                        parsedHideTabs={parsedHideTabs}
+                        bgColor={bgColor}
+                        darkMode={darkMode}
+                        isDynamicHeightEnabled={isDynamicHeightEnabled}
+                        currentTab={currentTab}
+                        isTransitioning={isTransitioning}
+                      />
+                    )}
+                  </animated.div>
+                );
+              })}
+            </>
           )}
         </div>
       )}
@@ -592,7 +618,7 @@ const TabContent = memo(function TabContent({
   parsedHideTabs,
   bgColor,
   darkMode,
-  dynamicHeight,
+  isDynamicHeightEnabled,
   currentTab,
   isTransitioning,
 }) {
@@ -607,10 +633,10 @@ const TabContent = memo(function TabContent({
     <div
       data-disabled={disable}
       activetab={currentTab}
-      className={`tab-pane active ${dynamicHeight && currentTab === tab.id && `dynamic-${id}`}`}
+      className={`tab-pane active ${isDynamicHeightEnabled && currentTab === tab.id && `dynamic-${id}`}`}
       style={{
         display: 'block',
-        height: dynamicHeight ? '100%' : parsedHideTabs ? height : height - 41,
+        height: '100%',
         position: 'relative',
         top: '0px',
         width: '100%',
@@ -619,6 +645,7 @@ const TabContent = memo(function TabContent({
         pointerEvents: disable ? 'none' : 'auto',
         overflow: 'hidden', // Ensure TabContent doesn't overflow
         boxSizing: 'border-box', // Include padding/border in size calculation
+        padding: `${TAB_CANVAS_PADDING}px`,
       }}
     >
       {loading ? (
@@ -635,11 +662,11 @@ const TabContent = memo(function TabContent({
       ) : (
         <SubContainer
           id={`${id}-${tab.id}`}
-          canvasHeight={dynamicHeight ? '100%' : '200'}
+          canvasHeight={isDynamicHeightEnabled ? '100%' : '200'}
           canvasWidth={width}
           allowContainerSelect={true}
           styles={{
-            overflow: isTransitioning ? 'hidden' : 'hidden auto',
+            overflow: isTransitioning || isDynamicHeightEnabled ? 'hidden' : 'hidden auto',
             backgroundColor: fieldBackgroundColor || bgColor,
             opacity: disable ? 0.5 : 1,
             width: '100%', // Ensure it doesn't exceed container width
@@ -648,6 +675,7 @@ const TabContent = memo(function TabContent({
             contain: 'layout style', // Add containment for better overflow control
           }}
           darkMode={darkMode}
+          componentType="Tabs"
         />
       )}
     </div>

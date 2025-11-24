@@ -131,7 +131,7 @@ export const TimePicker = ({
 
   const componentProps = {
     popperClassName: cx(
-      'cc-timepicker-widget tj-table-datepicker tj-datepicker-widget react-datepicker-time-component',
+      'cc-timepicker-widget tj-table-datepicker tj-datepicker-widget react-datepicker-time-component !tw-mt-0',
       {
         'theme-dark dark-theme': darkMode,
       }
@@ -187,6 +187,7 @@ export const TimePicker = ({
       componentProps={componentProps}
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
+      id={id}
     />
   );
 };

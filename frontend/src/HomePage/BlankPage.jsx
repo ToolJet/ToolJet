@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import TemplateLibraryModal from './TemplateLibraryModal';
 import { useTranslation } from 'react-i18next';
-import { appsService } from '@/_services';
+import { appsService, authenticationService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 export const BlankPage = function BlankPage({
   readAndImport,

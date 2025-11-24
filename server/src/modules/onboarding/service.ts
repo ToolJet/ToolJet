@@ -35,7 +35,6 @@ import {
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
 import { LicenseCountsService } from '@modules/licensing/services/count.service';
-import { uuid4 } from '@sentry/utils';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ActivateAccountWithTokenDto } from '@modules/onboarding/dto/activate-account-with-token.dto';
 import { AppSignupDto } from '@modules/auth/dto';
@@ -141,7 +140,7 @@ export class OnboardingService implements IOnboardingService {
             manager
           );
         }
-        return await this.onboardingUtilService.createUserOrPersonalWorkspace(
+        return await this.onboardingUtilService.createUserInWorkspace(
           userParams,
           existingUser,
           signingUpOrganization,
@@ -250,7 +249,7 @@ export class OnboardingService implements IOnboardingService {
 
       if (!password && source === URL_SSO_SOURCE) {
         /* For SSO we don't need password. let us set uuid as a password. */
-        password = uuid4();
+        password = uuid.v4();
       }
 
       if (user?.organizationUsers) {

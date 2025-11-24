@@ -12,7 +12,7 @@ Under the `Title` property, you can enter a title that displays at the top of th
 
 ## Plotly JSON Chart Schema
 
-To activate the Plotly JSON Schema, switch on the `Use Plotly JSON Schema` toggle. Additionally, for dynamic configuration, click on **fx** to input a logical expression that enables or disables it as needed.
+To activate the Plotly JSON Schema, switch on the `Use Plotly JSON Schema` toggle. Additionally, for dynamic configuration, click on `fx` to input a logical expression that enables or disables it as needed.
 
 ## Component specific actions (CSA)
 
@@ -31,7 +31,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 ## Properties
 
 #### Chart type
-You can select the type from the dropdown options or dynamically configure the value by clicking on **fx** and entering a logical expression that returns `line`, `pie` or `bar`.
+You can select the type from the dropdown options or dynamically configure the value by clicking on `fx` and entering a logical expression that returns `line`, `pie` or `bar`.
 
 ## Chart data
 The data needs to be in JSON format and should have `x` and `y` keys. The component supports string and object JSON data types. 
@@ -54,9 +54,9 @@ Available for line and bar charts, `Marker Color` defines the color of the line 
 ## Options
 | <div style={{ width:"100px"}}> Option </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show axis      | Hides or displays the axes on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show grid lines      | Hides or displays the grid lines on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show axis      | Hides or displays the axes on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Show grid lines      | Hides or displays the grid lines on the chart. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
 
 ## Events
 
@@ -80,9 +80,8 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background color       | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Border color       | Sets the border color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Background color       | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
 | Paddings       | Sets the padding of the component.                                                   | Enter a numeric value. (for e.g., `22`)    |
-| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.           |
-| Visibility   | Sets the visibility of the component.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
-| Disables   | Allows you to enable/disable a component. The component is not interactive when it is disabled.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
+| Visibility   | Sets the visibility of the component.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| Disables   | Allows you to enable/disable a component. The component is not interactive when it is disabled.                                                  | Enable/disable using the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|

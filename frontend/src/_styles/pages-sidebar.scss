@@ -252,7 +252,7 @@
             font-size: 16px;
             color: var(--text-default);
             margin-left: 0px;
-            align-items: baseline;
+            align-items: center;
             width: unset !important;
             margin-bottom: 20px;
             min-height: 28px;
@@ -330,7 +330,7 @@
         }
 
         &.icon-only {
-            width: 44px !important;
+            width: 45px !important;
             padding: 8px 6px 16px 6px;
 
             .page-handler-wrapper {
@@ -818,4 +818,30 @@
     & + .delete-page-modal {
         z-index: 9999;
     }
+}
+
+.navigation-tooltip-hover {
+    display: none;
+}
+
+.navigation-with-tooltip-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    
+    &:hover {
+        .navigation-area.navigation-hover-trigger {
+            box-shadow: 0 0 0 1px #3E63DD !important;
+        }
+        
+        // Only show hover tooltip if active tooltip is not present
+        .navigation-tooltip-hover {
+            display: flex !important;
+        }
+    }
+}
+
+// Hide hover tooltip when active tooltip is present (adjacent sibling)
+.navigation-tooltip + .navigation-tooltip-hover {
+    display: none !important;
 }

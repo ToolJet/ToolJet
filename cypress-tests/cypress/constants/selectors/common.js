@@ -38,8 +38,8 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
-  appCreateButton: "[data-cy=create-new-app-button]",
+  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
+  appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
   launchButton: "[data-cy=launch-button]",
@@ -89,6 +89,7 @@ export const commonSelectors = {
   invitedUserEmail: '[data-cy="email-input-value"]',
   invitedUseremail: '[data-cy="email-input-input-value"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  homePageIcon: '[data-cy="icon-home"]',
   databaseIcon: '[data-cy="icon-database"]',
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettings: '[data-cy="workspace-settings"]',
@@ -176,21 +177,23 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
-  breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  // breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
   confirmDuplicateButton: '[data-cy="confirm-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
-  labelEmailInput: '[data-cy="email-label"]',
-  inputFieldEmailAddress: '[data-cy="email-input"]',
+  labelEmailInput: '[data-cy="email-address-label"]',
+  inputFieldEmailAddress: '[data-cy="email-address-input"]',
   closeButton: '[data-cy="close-button"]',
-  emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
+  editorAppNameInput: '[data-cy="editor-app-name-input"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -236,7 +239,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
   inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
-  groupInputFieldLabel: '[data-cy="user-group-label"]',
+  groupInputFieldLabel: '[data-cy="select-group-label"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
   yesButton: '[data-cy="yes-button"]',
 
@@ -258,7 +261,7 @@ export const commonSelectors = {
   appNameLabel: '[data-cy="app-name-label"]',
   appNameInput: '[data-cy="app-name-input"]',
   appNameInfoLabel: '[data-cy="app-name-info-label"]',
-  createAppButton: '[data-cy="+-create-app"]',
+  createAppButton: '[data-cy="create-app"]',
   renameApptitle: '[data-cy="rename-app-title"]',
   renameAppButton: '[data-cy="rename-app"]',
   cloneAppTitle: '[data-cy="clone-app-title"]',
@@ -269,6 +272,7 @@ export const commonSelectors = {
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
+  previewSettings: '[data-cy="preview-settings"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
@@ -282,6 +286,8 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+  modalConfirmButton: '[data-cy="modal-confirm-button"]',
+  rightSidebarPlusButton: '[data-cy="right-sidebar-plus-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -293,6 +299,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
   pageLogo: '[data-cy="page-logo"]',
+  homePageIcon: '[data-cy="home-page-icon"]',
 };
 
 export const commonWidgetSelector = {
@@ -380,7 +387,7 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
+  sidebarinspector: "[data-cy='left-sidebar-inspector']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
@@ -418,4 +425,32 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+};
+
+export const commonQuerySelectors = {
+  queryNameList: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
+  },
+  queryActionButton: (action) => {
+    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+  },
+  queryEditInputField: '[data-cy="query-edit-input-field"]',
+};
+
+export const inspectorSelectors = {
+  inspectorNode: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-node"]`;
+  },
+  inspectorGlobalsExpandButton: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-expand-button"]`;
+  },
+  inspectorSubNode: (subNodeName) => {
+    return `[data-cy="inspector-${cyParamName(subNodeName)}-subnode-label"]`;
+  },
+  inspectorNodeLabel: (labelName) => {
+    return `[data-cy="inspector-${cyParamName(labelName)}-label"]`;
+  },
+  inspectorNodeValue: (nodeName) => {
+    return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
+  },
 };

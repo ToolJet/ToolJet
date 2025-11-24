@@ -17,6 +17,8 @@ import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { getQueryVariables } from 'lib/utils';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -64,20 +66,26 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     queryOptions: object,
     response: Response,
     envId?: string,
-    mode?: string
+    mode?: string,
+    app?: App,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
 
-    try {
-      const dataSource: DataSource = dataQuery?.dataSource;
+    // Hoist these variables to function scope for access in finally block
+    let dataSource: DataSource;
+    let appToUse: App;
 
-      const app: App = dataQuery?.app;
-      if (!(dataSource && app)) {
+    try {
+      dataSource = dataQuery?.dataSource;
+      // Use passed app parameter first, fallback to dataQuery.app (which may be undefined)
+      appToUse = app || dataQuery?.app;
+      if (!(dataSource && appToUse)) {
         throw new UnauthorizedException();
       }
-      const organizationId = user ? user.organizationId : app.organizationId;
+      const organizationId = user ? user.organizationId : appToUse.organizationId;
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
       const environmentId = dataSourceOptions.environmentId;
@@ -90,14 +98,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         queryOptions,
         organizationId,
         environmentId,
-        user
+        user,
+        opts
       );
 
       queryStatus.setOptions(parsedQueryOptions);
 
       try {
         // multi-auth will not work with public apps
-        if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
             'Authentication required for all users should be turned off since the app is public',
             '',
@@ -141,9 +150,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           {
             user: { id: user?.id },
             app: {
-              id: app?.id,
-              isPublic: app?.isPublic,
-              ...(dataSource.kind === 'tooljetdb' && { organization_id: app.organizationId }),
+              id: appToUse?.id,
+              isPublic: appToUse?.isPublic,
+              ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
             },
           }
         );
@@ -155,13 +164,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 sourceOptions['multiple_auth_enabled'],
                 sourceOptions['tokenData'],
                 user?.id,
-                app?.isPublic
+                appToUse?.isPublic
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
             try {
-              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, appToUse?.isPublic);
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -219,7 +228,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               queryOptions,
               organizationId,
               environmentId,
-              user
+              user,
+              opts
             ));
             queryStatus.setOptions(parsedQueryOptions);
             result = await service.run(
@@ -229,7 +239,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: app?.id, isPublic: app?.isPublic },
+                app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
               }
             );
           } else if (
@@ -280,13 +290,29 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       throw queryError;
     } finally {
       if (user) {
-        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        // Get metadata from queryStatus
+        const queryMetadata = queryStatus.getMetaData();
+
+        // Add app and datasource info to metadata for OTEL metrics
+        const enrichedMetadata = {
+          ...queryMetadata,
+          appId: appToUse?.id || 'unknown',
+          appName: appToUse?.name || 'unknown',
+          dataSourceType: dataSource?.kind || 'unknown',
+        };
+
+        const auditData = {
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: dataQuery?.id,
           resourceName: dataQuery?.name,
-          metadata: queryStatus.getMetaData(),
-        });
+          metadata: enrichedMetadata,
+          resourceData: {
+            dataSourceId: dataSource?.id,
+            dataSourceName: dataSource?.name,
+          },
+        };
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
       }
     }
   }
@@ -297,7 +323,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     queryOptions,
     organization_id,
     environmentId = undefined,
-    user = undefined
+    user = undefined,
+    opts?: DataQueryExecutionOptions
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
@@ -311,7 +338,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       queryOptions,
       organization_id,
       environmentId,
-      user
+      user,
+      opts
     );
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
@@ -379,6 +407,40 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
   }
 
   async parseQueryOptions(
+    object: any,
+    options: object,
+    organization_id: string,
+    environmentId?: string,
+    user?: User,
+    opts?: DataQueryExecutionOptions
+  ): Promise<object> {
+    // If workflow bundle context is available, use the enhanced template resolution
+    if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
+      // Create an enhanced options object that includes bundle variables
+      const enhancedOptions = { ...options };
+      
+      // Get all template variables using the bundle-aware getQueryVariables
+      const templateVariables = getQueryVariables(
+        object,
+        enhancedOptions,
+        () => {}, // addLog function - use empty for data queries
+        opts.workflow.bundleContent,
+        opts.workflow.isolate,
+        opts.workflow.context
+      );
+
+      // Merge template variables back into options for resolution
+      Object.assign(enhancedOptions, templateVariables);
+      
+      // Use the standard parseQueryOptions logic but with enhanced options
+      return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
+    }
+
+    // Fallback to original logic for non-bundle contexts
+    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user);
+  }
+
+  private async parseQueryOptionsInternal(
     object: any,
     options: object,
     organization_id: string,

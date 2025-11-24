@@ -50,7 +50,8 @@ export const addNewWidgetToTheEditor = (
     parentId === 'canvas' ? 'real-canvas' : parentId,
     parentCanvasType
   );
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
+  const scrollTop = realCanvasRef?.scrollTop;
+  let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
@@ -611,6 +612,12 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
 
+    if (targetParentId !== component.component?.parent) {
+      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
+      width = Math.round((width * oldContainerWidth) / containerWidth);
+    }
+
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,
@@ -797,6 +804,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   }
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+  }
+  if (componentType === 'Tabs') {
+    padding = 2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING;
   }
   return canvasWidth - padding;
 };

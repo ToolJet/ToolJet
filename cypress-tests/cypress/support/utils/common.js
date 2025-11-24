@@ -1,12 +1,13 @@
-import { commonText, path } from "Texts/common";
-import { usersSelector } from "Selectors/manageUsers";
-import { profileSelector } from "Selectors/profile";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
-import { dashboardSelector } from "Selectors/dashboard";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
+import {
+  commonSelectors,
+  commonWidgetSelector,
+  cyParamName,
+} from "Selectors/common";
+import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
+import { commonText, path } from "Texts/common";
+import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -23,7 +24,7 @@ export const logout = () => {
 export const navigateToManageUsers = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
-  cy.get(commonSelectors.manageUsersOption).click();
+  cy.get(commonSelectors.manageUsersOption).click({ force: true });
 };
 
 export const navigateToManageGroups = () => {
@@ -49,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -101,20 +102,17 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.wait(1000);
-  cy.get(commonSelectors.appCard(appName))
-    .realHover()
-    .find(commonSelectors.appCardOptionsButton)
-    .realHover();
-  cy.contains("div", appName)
-    .parent()
-    .within(() => {
-      cy.get(commonSelectors.appCardOptionsButton).click();
-    });
+  cy.contains('.homepage-app-card', appName).within(() => {
+    cy.get('.home-app-card-header .menu-ico')
+      .then(($el) => {
+        $el[0].style.setProperty('visibility', 'visible', 'important');
+      });
+
+    cy.get('[data-cy="app-card-menu-icon"]').click();
+  });
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
@@ -133,7 +131,7 @@ export const verifyModal = (title, buttonText, inputFiledSelector) => {
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
-  cy.get(commonSelectors.buttonSelector(buttonText))
+  cy.get(commonSelectors.buttonSelector(buttonText)).first()
     .should("be.visible")
     .and("have.text", buttonText);
 
@@ -189,7 +187,6 @@ export const searchUser = (email) => {
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {
-  cy.wait(1000);
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
 };
@@ -246,4 +243,19 @@ export const verifyTooltipDisabled = (selector, message) => {
     .then(() => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
+};
+
+export const fillInputField = (data) => {
+  Object.entries(data).forEach(([key, value]) => {
+    const labelSelector = `[data-cy="${cyParamName(key)}-label"]`;
+    const inputSelector = `[data-cy="${cyParamName(key)}-input"]`;
+    cy.get(labelSelector).should("contain", key);
+    cy.get(inputSelector).type(`{selectall}{backspace}${value}`);
+  });
+};
+
+export const navigateToSettingPage = () => {
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonEeSelectors.instanceSettingIcon).click();
+  cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };

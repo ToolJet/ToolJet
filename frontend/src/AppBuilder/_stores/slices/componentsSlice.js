@@ -10,7 +10,7 @@ import {
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { cloneDeep, merge, set as lodashSet } from 'lodash';
+import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import {
   computeComponentName,
   getAllChildComponents,
@@ -185,6 +185,10 @@ export const createComponentsSlice = (set, get) => ({
       (state) => {
         oldName = state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name;
         state.modules[moduleId].pages[currentPageIndex].components[componentId].component.name = newName;
+
+        if (state.modules[moduleId].pages[currentPageIndex].components[componentId].name) {
+          state.modules[moduleId].pages[currentPageIndex].components[componentId].name = newName;
+        }
       },
       false,
       'setComponentName'
@@ -988,12 +992,8 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       selectedComponents,
       deleteComponentNameIdMapping,
-      getResolvedComponent,
       removeNode,
       checkIfParentIsFormAndDeleteField,
-      deleteTemporaryLayouts,
-      currentLayout,
-      adjustComponentPositions,
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
@@ -1002,7 +1002,6 @@ export const createComponentsSlice = (set, get) => ({
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
-    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
 
@@ -1030,13 +1029,6 @@ export const createComponentsSlice = (set, get) => ({
       findAllChildComponents(componentId);
     });
 
-    toDeleteComponents.forEach((componentId) => {
-      const isDynamicHeightEnabled = getResolvedComponent(componentId)?.properties?.dynamicHeight;
-      if (isDynamicHeightEnabled) {
-        adjustComponentPositions(componentId, currentLayout, true);
-      }
-    });
-
     set(
       withUndoRedo((state) => {
         const page = state.modules?.[moduleId]?.pages.find((page) => page.id === currentPageId);
@@ -1047,9 +1039,6 @@ export const createComponentsSlice = (set, get) => ({
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
               (componentId) => {
-                if (componentId === id) {
-                  childParentMapping[id] = containerId;
-                }
                 return componentId !== id;
               }
             );
@@ -1075,7 +1064,13 @@ export const createComponentsSlice = (set, get) => ({
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
-          if (!skipFormUpdate) state.selectedComponents = []; // Empty the selected components
+          if (!skipFormUpdate) {
+            state.selectedComponents = []; // Empty the selected components
+            // Auto-switch to components tab when no components are selected after deletion
+            if (state.isRightSidebarOpen) {
+              state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.COMPONENTS;
+            }
+          }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
@@ -1112,12 +1107,6 @@ export const createComponentsSlice = (set, get) => ({
 
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName, moduleId);
-    });
-    componentIds.forEach((componentId) => {
-      if (childParentMapping[componentId]) {
-        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
-      }
-      deleteTemporaryLayouts(componentId);
     });
   },
 
@@ -1163,13 +1152,10 @@ export const createComponentsSlice = (set, get) => ({
       withUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
-      getResolvedComponent,
-      adjustComponentPositions,
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
       checkParentAndUpdateFormFields,
-      deleteTemporaryLayouts,
       getCurrentPageIndex,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -1236,23 +1222,6 @@ export const createComponentsSlice = (set, get) => ({
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
       const { component } = getComponentDefinition(componentId, moduleId);
 
-      // Adjust component positions
-
-      //If new parent is dynamic, adjust the parent positions
-      const transformedParentId = (newParentId || oldParentId)?.substring(0, 36);
-      const isParentDynamic = getResolvedComponent(transformedParentId)?.properties?.dynamicHeight;
-      if (isParentDynamic) {
-        adjustComponentPositions(transformedParentId, currentLayout, false, true);
-      }
-
-      // If the parent is changed, adjust the old parent positions
-      if (oldParentId !== newParentId) {
-        const isParentDynamic = getResolvedComponent(oldParentId)?.properties?.dynamicHeight;
-        if (isParentDynamic) {
-          adjustComponentPositions(oldParentId, currentLayout, false, true);
-        }
-      }
-
       if (
         newParentComponentType === 'Listview' ||
         newParentComponentType === 'Kanban' ||
@@ -1302,14 +1271,6 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
-
-    Object.keys(componentLayouts).forEach((componentId) => {
-      deleteTemporaryLayouts(componentId);
-      const isDynamic = getResolvedComponent(componentId)?.properties?.dynamicHeight;
-      if (isDynamic) {
-        adjustComponentPositions(componentId, currentLayout, false, false);
-      }
-    });
 
     if (saveAfterAction) {
       saveComponentChanges(diff, 'components/layout', 'update', moduleId);
@@ -1634,30 +1595,6 @@ export const createComponentsSlice = (set, get) => ({
           );
         });
     });
-  },
-
-  handleCanvasContainerMouseUp: (e) => {
-    const {
-      selectedComponents,
-      clearSelectedComponents,
-      setActiveRightSideBarTab,
-      setRightSidebarOpen,
-      isRightSidebarPinned,
-    } = get();
-    const selectedText = window.getSelection().toString();
-    const isClickedOnSubcontainer =
-      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
-    if (
-      !isClickedOnSubcontainer &&
-      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      selectedComponents.length &&
-      !selectedText
-    ) {
-      clearSelectedComponents();
-      // if (!isRightSidebarPinned) {
-      //   setRightSidebarOpen(false);
-      // }
-    }
   },
 
   turnOffAutoComputeLayout: async (moduleId = 'canvas') => {
@@ -1992,8 +1929,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
-
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
     return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
       if (mappings[category] && mappings[category][id]) {
         let name;
@@ -2137,8 +2073,36 @@ export const createComponentsSlice = (set, get) => ({
         ...Object.fromEntries(acc.map((component) => [component.id, component])),
       };
 
-      const componentName =
-        componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
+      // When component is dropped on canvas for the first time
+      // In default component definition, .name holds the correct computed name for eg. button1
+      // Whereas .component.name holds the default component name without any computation for eg. Button
+      // Also .name is undefined when we reload app and fetch components from the backend. Hence below mentioned OR condition
+      const initialComponentName = componentDefinition.name || componentDefinition.component.name;
+
+      // Check if there is any existing component with the same name
+      const isExistingName = Object.values(currentComponents).some(
+        (component) => component.component.name === initialComponentName
+      );
+
+      // If name is valid then use the same name but if not then fallback to old flow and compute component name
+      const componentName = !isExistingName
+        ? initialComponentName
+        : computeComponentName(componentDefinition.component.component, currentComponents);
+
+      const getComponentProperties = (componentDefinition) => {
+        const properties = componentDefinition.component.definition?.properties;
+        const componentType = componentDefinition.component.component;
+        if (componentType === 'CircularProgressBar') {
+          return {
+            ...properties,
+            text: {
+              value: `{{components.${componentDefinition.id}.value}}%`,
+            },
+          };
+        }
+        return properties;
+      };
+
       const newComponent = {
         id: componentDefinition.id,
         name: componentName,
@@ -2148,7 +2112,7 @@ export const createComponentsSlice = (set, get) => ({
             general: componentDefinition.component.definition?.general,
             generalStyles: componentDefinition.component.definition?.generalStyles,
             others: componentDefinition.component.definition?.others,
-            properties: componentDefinition.component.definition?.properties,
+            properties: getComponentProperties(componentDefinition),
             styles: componentDefinition.component.definition?.styles,
             validation: componentDefinition.component.definition?.validation,
           },
@@ -2181,6 +2145,111 @@ export const createComponentsSlice = (set, get) => ({
       set((state) => {
         state.modules.canvas.pages[currentPageIndex].components[componentId] = updatedComponent;
       });
+    }
+  },
+  computeColorForPopoverMenu: (value, meta, componentId) => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId);
+    const buttonType = component?.properties?.buttonType;
+    if (buttonType == 'primary') return value;
+    else {
+      if (meta.displayName == 'Text') {
+        return value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
+      } else if (meta.displayName == 'Border') {
+        return value == 'var(--cc-primary-brand)' ? 'var(--cc-default-border)' : value;
+      } else if (meta.displayName == 'Icon color') {
+        return value == '#FFFFFF' ? 'var(--cc-default-icon)' : value;
+      }
+    }
+    return value;
+  },
+  performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
+    const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
+
+    const currentPageId = getCurrentPageId(moduleId);
+
+    pagesInfo?.length &&
+      pagesInfo.forEach((page) => {
+        if (page.id === currentPageId) {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate =
+            page.components?.update?.reduce((acc, comp) => {
+              acc[comp.id] = comp;
+              return acc;
+            }, {}) ?? {};
+          // Convert create operations format to match addComponentToCurrentPage expectations
+          const componentsToCreate = (page.components?.create ?? []).map((component) => ({
+            id: component.id,
+            name: component.component?.name,
+            component: component.component,
+            layouts: component.layouts,
+          }));
+
+          // Delete Components
+          componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+
+          // Update Components
+          !isEmpty(componentsToUpdate) &&
+            setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+
+          // Create Components
+          componentsToCreate.length &&
+            addComponentToCurrentPage(componentsToCreate, moduleId, {
+              saveAfterAction: false,
+              skipFormUpdate: true,
+            });
+        } else {
+          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
+          const componentsToUpdate = page.components?.update ?? [];
+          const componentsToCreate = page.components?.create ?? [];
+
+          set(
+            (state) => {
+              const componentsInState = state.modules[moduleId].pages.find((p) => p.id === page.id)?.components;
+
+              // Delete components
+              componentIdsToDelete.forEach((id) => {
+                delete componentsInState[id];
+              });
+
+              // Update components
+              componentsToUpdate.forEach((componentToUpdate) => {
+                componentsInState[componentToUpdate.id] = componentToUpdate;
+              });
+
+              // Create/Add components
+              componentsToCreate.forEach((component) => {
+                componentsInState[component.id] = {
+                  component: component.component,
+                  layouts: component.layouts,
+                  id: component.id,
+                  name: component.component?.name,
+                };
+              });
+            },
+            undefined,
+            'performDeletionUpdationAndCreationOfComponentsInPages'
+          );
+        }
+      });
+  },
+  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+    const component = getComponentDefinition(componentId, moduleId)?.component;
+    const componentName = component?.name;
+    const parentId = component?.parent;
+    const parentType = getComponentTypeFromId(parentId);
+    if (parentType === 'Listview') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      return subcontainerParentComponent?.[componentName]?.[property];
+    } else if (parentType === 'Form') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[componentName];
+      return subcontainerParentComponent?.[property];
+    } else {
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      return componentExposedProperty;
     }
   },
 });

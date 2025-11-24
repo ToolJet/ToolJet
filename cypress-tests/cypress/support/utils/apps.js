@@ -1,4 +1,4 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonWidgetSelector } from "Selectors/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
 const slugValidations = [
@@ -76,16 +76,20 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-export const setupAppWithSlug = (appName, slug) => {
+export const setupAppWithSlug = (appName, slug, appType = 'private') => {
+  const defaultLayout = {
+    desktop: { top: 90, left: 9, width: 6, height: 40 },
+    mobile: { top: 90, left: 9, width: 6, height: 40 },
+  };
   cy.apiCreateApp(appName);
-  cy.apiAddComponentToApp(appName, "text1");
+  cy.apiAddComponentToApp(appName, appType, defaultLayout, "Text", appType);
 
   cy.ifEnv("Enterprise", () => {
     cy.openApp(
       "",
       Cypress.env("workspaceId"),
       Cypress.env("appId"),
-      commonWidgetSelector.draggableWidget("text1")
+      commonWidgetSelector.draggableWidget(appType)
     );
     appPromote("development", "production");
   });

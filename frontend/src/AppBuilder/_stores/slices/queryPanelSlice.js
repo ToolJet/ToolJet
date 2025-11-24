@@ -246,6 +246,8 @@ export const createQueryPanelSlice = (set, get) => ({
             return { status: 'COMPLETE', result: eventData.result, data: eventData };
           } else if (eventData.type === 'workflow_execution_error') {
             return { status: 'ERROR', data: eventData };
+          } else if (eventData.type === 'workflow_execution_cancelled') {
+            return { status: 'CANCELLED', data: eventData };
           } else {
             return { status: 'PROGRESS', data: eventData };
           }
@@ -263,21 +265,36 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            const processedResult = { data: result };
-            await processQueryResults(processedResult);
+            await processQueryResults(result);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
           },
           onError: (e) => {
+            const cleanData = typeof e?.error === 'object' ? { ...e.error } : e?.error;
+            if (cleanData?.metadata) delete cleanData.metadata; // Remove metadata from the data object if present
+
             handleFailure({
               status: 'failed',
               message: e?.error?.message || 'Error running workflow',
               description: e?.error?.description || null,
-              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
+              data: cleanData,
+              metadata: e?.error?.metadata,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+          onCancel: (data) => {
+            handleFailure({
+              status: 'cancelled',
+              message: 'Workflow execution cancelled',
+              description: data?.error?.message || 'User cancelled the workflow execution',
+              data: data?.error,
+            });
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on cancellation
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
@@ -472,11 +489,13 @@ export const createQueryPanelSlice = (set, get) => ({
             metadata: data?.metadata,
             request: data?.metadata?.request,
             response: data?.metadata?.response,
+            responseHeaders: data?.metadata?.responseHeaders,
+            error: undefined,
           },
           moduleId
         );
 
-        onEvent('onDataQuerySuccess', queryEvents, mode);
+        onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
         return { status: 'ok', data: finalData };
       };
 
@@ -521,6 +540,8 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
               : {}),
           },
           moduleId
@@ -597,7 +618,7 @@ export const createQueryPanelSlice = (set, get) => ({
         queryExecutionPromise
           .then(async (data) => {
             if (data.status === 'needs_oauth') {
-              localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+              localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
@@ -967,6 +988,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const { eventsSlice, dataQuery } = get();
       const { generateAppActions } = eventsSlice;
       const { query, mode, isPreview, code, currentState, queryResult } = options;
+      const appType = get().getAppType(moduleId);
       let pyodide;
       try {
         pyodide = await loadPyodide();
@@ -1022,6 +1044,7 @@ export const createQueryPanelSlice = (set, get) => ({
         await pyodide.globals.set('page', deepClone(resolvedState['page']));
         await pyodide.globals.set('parameters', currentState['parameters']);
         await pyodide.globals.set('variables', appStateVars);
+        if (appType === 'module') await pyodide.globals.set('input', resolvedState['input']);
         if (queryResult) await pyodide.globals.set('data', queryResult);
 
         await pyodide.loadPackagesFromImports(code);
@@ -1061,9 +1084,11 @@ export const createQueryPanelSlice = (set, get) => ({
       const {
         queryPanel: { runPythonTransformation },
         getResolvedState,
+        getAppType,
       } = get();
       let result = {};
       const currentState = getResolvedState(moduleId);
+      const appType = getAppType(moduleId);
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -1078,11 +1103,24 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedGlobals = currentState?.globals;
           const proxiedConstants = currentState?.constants;
           const proxiedVariables = currentState?.variables;
+          const proxiedInput = currentState?.input;
           const proxiedPage = deepClone(currentState?.page);
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
           const evalFunction = Function(
-            ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants', 'actions'],
+            [
+              'data',
+              'moment',
+              '_',
+              'components',
+              'queries',
+              'globals',
+              'variables',
+              'page',
+              'constants',
+              ...(appType === 'module' ? ['input'] : []),
+              'actions',
+            ],
             transformation
           );
 
@@ -1096,6 +1134,7 @@ export const createQueryPanelSlice = (set, get) => ({
             proxiedVariables,
             proxiedPage,
             proxiedConstants,
+            ...(appType === 'module' ? [proxiedInput] : []),
             {
               logError: function (log) {
                 return actions.logError.call(actions, log, true);
@@ -1229,7 +1268,12 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        const executionResponse = await workflowExecutionsService.trigger(
+          workflowAppId,
+          resolvedParams,
+          appEnvId,
+          query.id
+        );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
         return { data: e?.message, status: 'failed' };
@@ -1272,6 +1316,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
+      const appType = get().getAppType(moduleId);
 
       if (isValidCode.status === 'failed') {
         return isValidCode;
@@ -1377,6 +1422,7 @@ export const createQueryPanelSlice = (set, get) => ({
           'actions',
           'constants',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
           code,
         ];
         var evalFn = new AsyncFunction(...fnParams);
@@ -1393,6 +1439,7 @@ export const createQueryPanelSlice = (set, get) => ({
           actions,
           resolvedState?.constants,
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
         ];
         result = {
           status: 'ok',

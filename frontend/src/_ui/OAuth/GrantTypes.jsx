@@ -19,7 +19,7 @@ const CommonOAuthFields = ({
   isFieldAllowed,
 }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
-  const { client_id, client_secret } = clientConfig;
+  const { client_id, client_secret, client_auth } = clientConfig;
   const { scopes } = authConfig;
   const { optionchanged, optionsChanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -27,7 +27,7 @@ const CommonOAuthFields = ({
   const { oauthTypes } = oauth_configs || {};
   const { tooljetVersion } = useAppDataStore(
     (state) => ({
-      tooljetVersion: state?.metadata?.installed_version,
+      tooljetVersion: state?.metadata?.installed_version ?? localStorage.getItem('currentVersion'), // Added fallback because while loading app builder page, we reset & store so metadata value was getting back to null and we need this value in AI app building flow, where we show datasource connection form
     }),
     shallow
   );
@@ -167,6 +167,23 @@ const CommonOAuthFields = ({
           />
         </div>
       )}
+      {isFieldAllowed('client_auth', 'authorization_code', oauth_configs) && (
+        <div className="col-md-12">
+          <label className="form-label mt-3" data-cy="label-client-authentication">
+            Client authentication
+          </label>
+          <Select
+            options={[
+              { name: 'Send as basic auth header', value: 'header' },
+              { name: 'Send client credentials in body ', value: 'body' },
+            ]}
+            value={client_auth}
+            onChange={(value) => optionchanged('client_auth', value)}
+            width={'100%'}
+            useMenuPortal={false}
+          />
+        </div>
+      )}
     </>
   );
 };
@@ -198,19 +215,10 @@ const ClientCredentialsFields = ({ authConfig, workspaceConfig, handlers, oauth_
   );
 };
 
-const AuthorizationCode = ({
-  authConfig,
-  clientConfig,
-  tokenConfig,
-  workspaceConfig,
-  handlers,
-  oauth_configs,
-  isFieldAllowed,
-}) => {
+const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers, oauth_configs, isFieldAllowed }) => {
   const { optionchanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
   const { custom_query_params, add_token_to, header_prefix } = tokenConfig;
-  const { client_auth } = clientConfig;
   const { auth_url, custom_auth_params, multiple_auth_enabled } = authConfig;
   return (
     <>
@@ -277,23 +285,6 @@ const AuthorizationCode = ({
           />
         </>
       )}
-      {isFieldAllowed('client_auth', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12">
-          <label className="form-label mt-3" data-cy="label-client-authentication">
-            Client authentication
-          </label>
-          <Select
-            options={[
-              { name: 'Send as basic auth header', value: 'header' },
-              { name: 'Send client credentials in body ', value: 'body' },
-            ]}
-            value={client_auth}
-            onChange={(value) => optionchanged('client_auth', value)}
-            width={'100%'}
-            useMenuPortal={false}
-          />
-        </div>
-      )}
       {isFieldAllowed('custom_query_params', 'authorization_code', oauth_configs) && (
         <>
           <div className="row mt-3">
@@ -322,7 +313,7 @@ const AuthorizationCode = ({
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
             />
-            <span className="form-check-label" data-cy="label-authentication-requrired-for-all-users">
+            <span className="form-check-label" data-cy="label-authentication-required-for-all-users">
               Authentication required for all users
             </span>
           </label>

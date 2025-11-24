@@ -6,10 +6,10 @@ import * as Icons from '@tabler/icons-react';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { APP_HEADER_HEIGHT } from '../../../AppCanvas/appCanvasConstants';
+import { APP_HEADER_HEIGHT, LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
-import { DarkModeToggle, ToolTip } from '@/_components';
+import { DarkModeToggle } from '@/_components';
 import { RenderPage, RenderPageAndPageGroup } from './PageGroup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -17,6 +17,9 @@ import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { Overlay, Popover } from 'react-bootstrap';
 import { buildTree } from './Tree/utilities';
+import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+import ConfigHandleButton from '@/_components/ConfigHandleButton';
+import { PencilRuler } from 'lucide-react';
 // import useSidebarMargin from './useSidebarMargin';
 
 export const PagesSidebarNavigation = ({
@@ -41,7 +44,11 @@ export const PagesSidebarNavigation = ({
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const isPagesSidebarVisible = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
@@ -69,6 +76,8 @@ export const PagesSidebarNavigation = ({
   const [measuredHeaderWidth, setMeasuredHeaderWidth] = useState(0);
   const [measuredDarkModeToggleWidth, setMeasuredDarkModeToggleWidth] = useState(0);
   const [measuredMoreButtonWidth, setMeasuredMoreButtonWidth] = useState(0);
+
+  const navigationRef = useRef(null);
 
   const { disableMenu, hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
@@ -149,7 +158,7 @@ export const PagesSidebarNavigation = ({
   useEffect(() => {
     let headerObserver;
     if (headerRef.current) {
-      headerObserver = new ResizeObserver((entries) => {
+      headerObserver = new ResizeObserver((_entries) => {
         measureStaticElements();
       });
       headerObserver.observe(headerRef.current);
@@ -157,7 +166,7 @@ export const PagesSidebarNavigation = ({
 
     let darkModeToggleObserver;
     if (darkModeToggleRef.current) {
-      darkModeToggleObserver = new ResizeObserver((entries) => {
+      darkModeToggleObserver = new ResizeObserver((_entries) => {
         measureStaticElements();
       });
       darkModeToggleObserver.observe(darkModeToggleRef.current);
@@ -165,7 +174,7 @@ export const PagesSidebarNavigation = ({
 
     let measurementContainerObserver;
     if (measurementContainerRef.current) {
-      measurementContainerObserver = new ResizeObserver((entries) => {
+      measurementContainerObserver = new ResizeObserver((_entries) => {
         measureStaticElements();
       });
       measurementContainerObserver.observe(measurementContainerRef.current);
@@ -405,6 +414,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const switchToHomePage = () => {
+    if (currentPageId === homePageId) return;
+
     const page = pages.find((p) => p.id === homePageId);
 
     const queryParams = {
@@ -419,14 +430,37 @@ export const PagesSidebarNavigation = ({
     );
   };
 
+  const handleSidebarClick = (e) => {
+    // Only handle sidebar clicks in edit mode, as there's no right sidebar in view mode
+    if (currentMode !== 'edit') return;
+
+    // Check if click is on the navigation area but not on navigation items
+    const clickedElement = e.target;
+    const isNavigationItem = clickedElement.closest(
+      '.tj-list-item, .page-name, .more-btn-pages, .app-name, .page-dark-mode-btn-wrapper'
+    );
+
+    if (!isNavigationItem) {
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+      if (!isRightSidebarOpen) {
+        setRightSidebarOpen(true);
+      }
+    }
+  };
+
+  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+
   const isTopPositioned = position === 'top';
   const labelHidden = labelStyle?.label?.hidden;
-  const headerHidden = isLicensed ? hideHeader : true;
-  const logoHidden = isLicensed ? hideLogo : true;
+  const headerHidden = isLicensed ? hideHeader : false;
+  const logoHidden = isLicensed ? hideLogo : false;
 
   if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
   }
+
+  const rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_WIDTH : 0;
+  const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
 
   return (
     <div
@@ -437,12 +471,12 @@ export const PagesSidebarNavigation = ({
           justifyContent: 'center',
           width: '100%',
         }),
+        ...(currentMode !== 'view' &&
+          (position === 'top' || isPagesSidebarHidden) && {
+            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+          }),
+        position: 'relative', // Add relative positioning to the parent
       }}
-      className={cx({
-        'right-sidebar-open':
-          isRightSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
-        'left-sidebar-open': isSidebarOpen && currentMode !== 'view' && (position === 'top' || isPagesSidebarHidden),
-      })}
     >
       <button
         ref={measurementContainerRef}
@@ -485,126 +519,217 @@ export const PagesSidebarNavigation = ({
           <div style={{ marginLeft: '6px' }}>More</div>
         </button>
       </button>
-      <div
-        ref={navRef}
-        className={cx('navigation-area', {
-          close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
-          'icon-only':
-            (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
-            (style === 'texticon' &&
-              (collapsable ? !isSidebarPinned : false) &&
-              position === 'side' &&
-              !isPagesSidebarHidden),
-          'position-top': position === 'top' || isPagesSidebarHidden,
-          'text-only': style === 'text',
-          // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-          // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
-          'no-preview-settings': isReleasedVersionId,
-        })}
-        style={{
-          width: 226,
-          position: 'sticky',
-          height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
-          top: '4px',
-          bottom: '0px',
-          background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
-          border: `${styles?.pillRadius?.value}px`,
-          borderRight:
-            !styles?.borderColor?.isDefault && position === 'side' ? `1px solid ${styles?.borderColor?.value}` : '',
-          borderBottom:
-            !styles?.borderColor?.isDefault && position === 'top' ? `1px solid ${styles?.borderColor?.value}` : '',
-          overflow: 'scroll',
-          boxShadow: 'var(--elevation-100-box-shadow)',
-          maxWidth: (() => {
-            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
-              return canvasMaxWidth;
-            }
-          })(),
-        }}
-      >
-        <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
-          {(collapsable || !headerHidden || !logoHidden) && (
-            <div
-              ref={headerRef}
-              style={{
-                marginRight: headerHidden && logoHidden && position == 'top' && '0px',
-              }}
-              className="app-name"
-            >
-              {!logoHidden && (
-                <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
-                  <AppLogo isLoadingFromHeader={false} />
-                </div>
-              )}
-              {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
-                <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
-                  {name?.trim() ? name : appName}
-                </div>
-              )}
-              {collapsable &&
-                !isTopPositioned &&
-                style == 'texticon' &&
+      {/* Wrapper div to maintain hover state between navigation and tooltip */}
+      <div className="navigation-with-tooltip-wrapper" style={{ position: 'relative' }}>
+        <div
+          ref={(el) => {
+            navRef.current = el;
+            navigationRef.current = el;
+          }}
+          className={cx('navigation-area', {
+            'navigation-hover-trigger': currentMode === 'edit',
+            close: !isSidebarPinned && properties?.collapsable && style !== 'text' && position === 'side',
+            'icon-only':
+              (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
+              (style === 'texticon' &&
+                (collapsable ? !isSidebarPinned : false) &&
                 position === 'side' &&
-                !isPagesSidebarHidden && (
-                  <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
-                    <SolidIcon
-                      className="cursor-pointer"
-                      fill="var(--icon-strong)"
-                      width="14px"
-                      name={isSidebarPinned ? 'remove03' : 'menu'}
-                    />
+                !isPagesSidebarHidden),
+            'position-top': position === 'top' || isPagesSidebarHidden,
+            'text-only': style === 'text',
+            // 'right-sidebar-open': isRightSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+            // 'left-sidebar-open': isSidebarOpen && (position === 'top' || !isPagesSidebarVisible),
+            'no-preview-settings': isReleasedVersionId,
+          })}
+          style={{
+            width: 226,
+            position: 'sticky',
+            height: currentMode === 'edit' ? '100%' : `calc(100% - 32px)`,
+            top: '0px',
+            bottom: '0px',
+            background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
+            border: `${styles?.pillRadius?.value}px`,
+            borderRight:
+              !styles?.borderColor?.isDefault && position === 'side' && !shouldShowBlueBorder
+                ? `1px solid ${styles?.borderColor?.value}`
+                : '',
+            borderBottom:
+              !styles?.borderColor?.isDefault && position === 'top' && !shouldShowBlueBorder
+                ? `1px solid ${styles?.borderColor?.value}`
+                : '',
+            overflow: 'scroll',
+            boxShadow: shouldShowBlueBorder ? '0 0 0 1px #3E63DD' : 'var(--elevation-100-box-shadow)',
+            maxWidth: (() => {
+              if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
+                return canvasMaxWidth;
+              }
+            })(),
+          }}
+          onClick={handleSidebarClick}
+        >
+          <div style={{ overflow: 'hidden', flexGrow: '1' }} className="position-relative">
+            {(collapsable || !headerHidden || !logoHidden) && (
+              <div
+                ref={headerRef}
+                style={{
+                  marginRight: headerHidden && logoHidden && position == 'top' && '0px',
+                }}
+                className="app-name"
+              >
+                {!logoHidden && (
+                  <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+                    <AppLogo isLoadingFromHeader={false} />
                   </div>
                 )}
-            </div>
-          )}
-          {isLicensed && !isPagesSidebarHidden ? (
-            <RenderPageAndPageGroup
-              switchPageWrapper={switchPageWrapper}
-              pages={pages}
-              labelStyle={labelStyle}
-              computeStyles={computeStyles}
-              darkMode={darkMode}
-              switchPage={switchPage}
-              linkRefs={linkRefs}
-              visibleLinks={visibleLinks}
-              overflowLinks={overflowLinks}
-              moreBtnRef={moreRef}
-              navRef={navRef}
-              position={position}
-              isSidebarPinned={isSidebarPinned}
-              currentMode={currentMode}
-            />
-          ) : (
-            !isPagesSidebarHidden && (
-              <RenderPagesWithoutGroup
-                darkMode={darkMode}
-                homePageId={homePageId}
-                labelStyle={labelStyle}
-                isSidebarPinned={isSidebarPinned}
-                pages={pages}
-                currentPageId={currentPageId}
-                computeStyles={computeStyles}
+                {!headerHidden && (!labelHidden || isPagesSidebarHidden) && (
+                  <div className="app-text" style={{ wordWrap: 'break-word', overflow: 'hidden' }}>
+                    {name?.trim() ? name : appName}
+                  </div>
+                )}
+                {collapsable &&
+                  !isTopPositioned &&
+                  style == 'texticon' &&
+                  position === 'side' &&
+                  !isPagesSidebarHidden && (
+                    <div onClick={toggleSidebarPinned} className="icon-btn collapse-icon ">
+                      <SolidIcon
+                        className="cursor-pointer"
+                        fill="var(--icon-strong)"
+                        width="14px"
+                        viewBox="0 0 15 15"
+                        name={isSidebarPinned ? 'remove03' : 'menu'}
+                      />
+                    </div>
+                  )}
+              </div>
+            )}
+            {isLicensed && !isPagesSidebarHidden ? (
+              <RenderPageAndPageGroup
                 switchPageWrapper={switchPageWrapper}
-                moreBtnRef={moreRef}
+                pages={pages}
+                labelStyle={labelStyle}
+                computeStyles={computeStyles}
+                darkMode={darkMode}
+                switchPage={switchPage}
+                linkRefs={linkRefs}
                 visibleLinks={visibleLinks}
                 overflowLinks={overflowLinks}
+                moreBtnRef={moreRef}
+                navRef={navRef}
                 position={position}
+                isSidebarPinned={isSidebarPinned}
                 currentMode={currentMode}
               />
-            )
+            ) : (
+              !isPagesSidebarHidden && (
+                <RenderPagesWithoutGroup
+                  darkMode={darkMode}
+                  homePageId={homePageId}
+                  labelStyle={labelStyle}
+                  isSidebarPinned={isSidebarPinned}
+                  pages={pages}
+                  currentPageId={currentPageId}
+                  computeStyles={computeStyles}
+                  switchPageWrapper={switchPageWrapper}
+                  moreBtnRef={moreRef}
+                  visibleLinks={visibleLinks}
+                  overflowLinks={overflowLinks}
+                  position={position}
+                  currentMode={currentMode}
+                />
+              )
+            )}
+          </div>
+          {appMode === 'auto' && (
+            <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
+              <DarkModeToggle
+                toggleForCanvas={true}
+                switchDarkMode={switchDarkMode}
+                darkMode={darkMode}
+                tooltipPlacement={position === 'top' ? 'bottom' : 'right'}
+              />
+            </div>
           )}
         </div>
-        {appMode === 'auto' && (
-          <div ref={darkModeToggleRef} className="d-flex align-items-center page-dark-mode-btn-wrapper">
-            <DarkModeToggle
-              toggleForCanvas={true}
-              switchDarkMode={switchDarkMode}
-              darkMode={darkMode}
-              tooltipPlacement="right"
-            />
+        {/* Show tooltip when tab is active */}
+        {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
+          <div
+            className="navigation-tooltip"
+            style={{
+              position: 'absolute',
+              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
+              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
+              zIndex: 1000,
+              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
+              display: 'flex',
+              gap: '2px',
+            }}
+          >
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                alignItems: 'center',
+                gap: '6px',
+                padding: '2px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ cursor: 'default' }}>Page and nav</span>
+            </ConfigHandleButton>
+            <ConfigHandleButton>
+              <PencilRuler
+                size={12}
+                color="var(--icon-inverse)"
+                onClick={() => {
+                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+                  setRightSidebarOpen(true);
+                }}
+              />
+            </ConfigHandleButton>
+          </div>
+        )}
+
+        {/* Show tooltip on hover (only in edit mode, controlled by CSS) */}
+        {currentMode === 'edit' && (
+          <div
+            className="navigation-tooltip-hover"
+            style={{
+              position: 'absolute',
+              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
+              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
+              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
+              gap: '2px',
+              alignItems: 'center',
+              zIndex: 1000,
+              flexDirection: 'row',
+              display: 'none',
+            }}
+          >
+            <ConfigHandleButton
+              className="no-hover"
+              customStyles={{
+                padding: '2px 6px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ cursor: 'default' }}>Page and nav</span>
+            </ConfigHandleButton>
+            <ConfigHandleButton>
+              <PencilRuler
+                size={12}
+                color="var(--icon-inverse)"
+                onClick={() => {
+                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+                  setRightSidebarOpen(true);
+                }}
+              />
+            </ConfigHandleButton>
           </div>
         )}
       </div>
+      {/* Close navigation-with-tooltip-wrapper */}
     </div>
   );
 };
@@ -614,7 +739,7 @@ const RenderPagesWithoutGroup = ({
   homePageId,
   labelStyle,
   isSidebarPinned,
-  pages,
+  _pages,
   currentPageId,
   computeStyles,
   switchPageWrapper,
@@ -624,7 +749,7 @@ const RenderPagesWithoutGroup = ({
   handleToggle,
   position,
   moreBtnRef,
-  currentMode,
+  _currentMode,
 }) => {
   const [showPopover, setShowPopover] = useState(false);
 
@@ -668,7 +793,7 @@ const RenderPagesWithoutGroup = ({
           >
             <Popover id="more-nav-btns" className={`${darkMode && 'dark-theme'}`}>
               <Popover.Body>
-                {overflowLinks.map((page, index) => {
+                {overflowLinks.map((page, _index) => {
                   return (
                     <RenderPage
                       key={page.handle}

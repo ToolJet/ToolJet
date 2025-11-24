@@ -2,6 +2,8 @@ export const NO_OF_GRIDS = 43;
 
 export const GRID_HEIGHT = 10;
 
+export const HIDDEN_COMPONENT_HEIGHT = 10;
+
 export const CANVAS_WIDTHS = Object.freeze({
   deviceWindowWidth: 450,
   leftSideBarWidth: 48,
@@ -12,9 +14,14 @@ export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanba
 
 export const DEFAULT_CANVAS_WIDTH = 1292;
 
-export const APP_HEADER_HEIGHT = 47;
+export const APP_HEADER_HEIGHT = 48;
 
-export const LEFT_SIDEBAR_WIDTH = 350;
+export const QUERY_PANE_HEIGHT = 40; // This represents pane that contains trigger to toggle query panel
+
+export const LEFT_SIDEBAR_WIDTH = {
+  tooljetai: 440,
+  default: 350,
+};
 
 export const RIGHT_SIDEBAR_WIDTH = 300;
 
@@ -25,6 +32,8 @@ export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 44;
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
+
+export const WIDGET_BORDER_WIDTH = 1;
 
 export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
@@ -42,7 +51,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Table',
   'ModuleContainer',
 ]);
-export const TAB_CANVAS_PADDING = 7.5;
+export const TAB_CANVAS_PADDING = 8;
 
 export const MODAL_CANVAS_PADDING = 5;
 

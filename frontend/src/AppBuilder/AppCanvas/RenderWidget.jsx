@@ -36,7 +36,13 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Form',
   'FilePicker',
   'Tabs',
-  'RangeSliderV2'
+  'RangeSliderV2',
+  'Statistics',
+  'StarRating',
+  'PopoverMenu',
+  'Tags',
+  'CircularProgressBar',
+  'Kanban',
 ];
 
 const RenderWidget = ({
@@ -50,17 +56,23 @@ const RenderWidget = ({
   inCanvas = false,
   darkMode,
   moduleId,
+  currentMode,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
   const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
+  const getExposedPropertyForAdditionalActions = useStore(
+    (state) => state.getExposedPropertyForAdditionalActions,
+    shallow
+  );
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
     shallow
   );
+
   const resolvedStyles = useStore(
     (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
     shallow
@@ -95,18 +107,26 @@ const RenderWidget = ({
 
   const isDisabled = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
-    if (typeof componentExposedDisabled === 'boolean') return componentExposedDisabled;
-    if (component?.properties?.disabledState === true || component?.styles?.disabledState === true) return true;
-    return false;
+    const componentExposedDisabled = getExposedPropertyForAdditionalActions(
+      id,
+      subContainerIndex,
+      'isDisabled',
+      moduleId
+    );
+    if (componentExposedDisabled !== undefined) return componentExposedDisabled;
+    return component?.properties?.disabledState || component?.styles?.disabledState;
   });
 
   const isLoading = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
-    if (typeof componentExposedLoading === 'boolean') return componentExposedLoading;
-    if (component?.properties?.loadingState === true || component?.styles?.loadingState === true) return true;
-    return false;
+    const componentExposedLoading = getExposedPropertyForAdditionalActions(
+      id,
+      subContainerIndex,
+      'isLoading',
+      moduleId
+    );
+    if (componentExposedLoading !== undefined) return componentExposedLoading;
+    return component?.properties?.loadingState || component?.styles?.loadingState;
   });
 
   const obj = {
@@ -135,12 +155,12 @@ const RenderWidget = ({
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
     (key, value) => {
+      setExposedValue(id, key, value, moduleId);
+      // Trigger an update when the child components is directly linked to any component
+      updateDependencyValues(`components.${id}.${key}`, moduleId);
+
       // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
-      if (onOptionChange === null) {
-        setExposedValue(id, key, value, moduleId);
-        // Trigger an update when the child components is directly linked to any component
-        updateDependencyValues(`components.${id}.${key}`, moduleId);
-      } else {
+      if (onOptionChange !== null) {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
@@ -148,9 +168,9 @@ const RenderWidget = ({
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
-      if (onOptionsChange === null) {
-        setExposedValues(id, 'components', exposedValues, moduleId);
-      } else {
+      setExposedValues(id, 'components', exposedValues, moduleId);
+
+      if (onOptionsChange !== null) {
         onOptionsChange(exposedValues, id, subContainerIndex);
       }
     },
@@ -182,17 +202,18 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+              ? `${
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -202,9 +223,13 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          role={'Box'}
-          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-            } ${!['Modal', 'ModalV2'].includes(component.component) && (isDisabled || isLoading) ? 'disabled' : ''}`} //required for custom CSS
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${
+            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+              ? 'disabled'
+              : ''
+          }`} //required for custom CSS
         >
           <ComponentToRender
             id={id}
@@ -224,6 +249,8 @@ const RenderWidget = ({
             adjustComponentPositions={adjustComponentPositions}
             componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
+            currentMode={currentMode}
+            subContainerIndex={subContainerIndex}
           />
         </div>
       </OverlayTrigger>

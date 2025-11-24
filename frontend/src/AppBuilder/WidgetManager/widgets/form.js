@@ -73,6 +73,7 @@ export const formConfig = {
       section: 'data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
       newLine: true,
+      disableCreateQuery: true,
     },
     JSONData: {
       type: 'code',
@@ -133,15 +134,15 @@ export const formConfig = {
         defaultValue: false,
       },
     },
-    // dynamicHeight: {
-    //   type: 'toggle',
-    //   displayName: 'Dynamic height',
-    //   validation: {
-    //     schema: { type: 'boolean' },
-    //     defaultValue: false,
-    //   },
-    //   section: 'additionalActions',
-    // },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
@@ -287,7 +288,7 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
-      // dynamicHeight: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:

@@ -22,6 +22,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -137,7 +138,17 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSource?.id,
       resourceName: dataSource?.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environment_id,
+        pluginId: pluginId,
+      },
+      metadata: {
+        createdAt: dataSource?.createdAt,
+      },
     });
 
     return dataSource;
@@ -147,7 +158,10 @@ export class DataSourcesService implements IDataSourcesService {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
-    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, name, options, environmentId);
+        // Fetch datasource details for audit log
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
+
+    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -155,6 +169,14 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environmentId,
+        updatedFields: Object.keys(updateDataSourceDto),
+      },
       metadata: updateDataSourceDto,
     });
     return;
@@ -186,7 +208,15 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: dataSource.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+      },
+      metadata: {
+        deletedAt: new Date().toISOString(),
+      },
     });
     return;
   }
@@ -235,7 +265,11 @@ export class DataSourcesService implements IDataSourcesService {
   ) {
     const { code } = authorizeDataSourceOauthDto;
 
-    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(dataSourceId, environmentId);
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environmentId,
+      user.organizationId
+    );
 
     if (!dataSource) {
       throw new UnauthorizedException();
@@ -270,5 +304,46 @@ export class DataSourcesService implements IDataSourcesService {
     return {
       dependent_queries: queries.length,
     };
+  }
+
+  async invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string
+  ): Promise<QueryResult> {
+    const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
+
+    if (!service.invokeMethod) {
+      throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
+    }
+
+    const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+      dataSource.id,
+      user.organizationId,
+      environmentId
+    );
+
+    const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+      dataSourceOptions.options,
+      user.organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    try {
+      const result = await service.invokeMethod(methodName, sourceOptions);
+      return { status: 'ok', data: result };
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        return {
+          status: 'failed',
+          data: error.data,
+          errorMessage: error.message,
+          metadata: error.metadata,
+        };
+      }
+      throw error;
+    }
   }
 }

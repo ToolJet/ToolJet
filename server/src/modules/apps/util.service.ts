@@ -51,7 +51,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) {}
+  ) { }
   async create(
     name: string,
     user: User,
@@ -81,12 +81,31 @@ export class AppsUtilService implements IAppsUtilService {
                   {
                     name: 'Define specs',
                     id: 'define_specs',
-                    loadingStates: ['Generating app', 'App generated successfully'],
+                    loadingStates: ['Generating app specifications', 'Specifications generated successfully'],
+                  },
+                  {
+                    name: 'Design layout',
+                    id: 'design_layout',
+                    loadingStates: ['Designing app layout', 'Layout designed successfully'],
+                  },
+                  {
+                    name: 'Select datasource',
+                    id: 'select_datasource',
+                    loadingStates: ['Selecting datasource', 'Datasource selected successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
+                  },
+                  {
+                    name: 'Connect datasource',
+                    id: 'connect_datasource',
+                    loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
+                    hidden: true,
+                    parent_step_id: 'setup_database',
                   },
                   {
                     name: 'Setup database',
                     id: 'setup_database',
-                    loadingStates: ['Generating app', 'App generated successfully'],
+                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
                   },
                   {
                     name: 'Generate app',
@@ -96,7 +115,7 @@ export class AppsUtilService implements IAppsUtilService {
                 ],
                 activeStep: 'describe_app',
                 completedSteps: [],
-                version: 'v1',
+                version: 'v3',
               },
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
@@ -174,7 +193,7 @@ export class AppsUtilService implements IAppsUtilService {
         canvasMaxHeight: 2400,
         canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
-        appMode: 'auto',
+        appMode: 'light',
       };
       await manager.save(appVersion);
       return app;
@@ -248,6 +267,7 @@ export class AppsUtilService implements IAppsUtilService {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
+    const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
@@ -258,6 +278,7 @@ export class AppsUtilService implements IAppsUtilService {
       isMaintenanceOn,
       currentVersionId,
       icon,
+      appBuilderMode,
     };
 
     // removing keys with undefined values
@@ -501,14 +522,14 @@ export class AppsUtilService implements IAppsUtilService {
     return userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+          ])
+        ),
+      ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -578,7 +599,7 @@ export class AppsUtilService implements IAppsUtilService {
     }));
   }
 
-  protected buildComponentMetaDefinition(components = {}) {
+  public buildComponentMetaDefinition(components = {}) {
     for (const componentId in components) {
       const currentComponentData = components[componentId];
 
@@ -595,7 +616,7 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'Steps', 'Tabs', 'RadioButtonV2'].includes(
+              ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'Steps', 'Tabs', 'RadioButtonV2', 'Tags'].includes(
                 currentComponentData?.component?.component
               ) &&
               isArray(objValue)
@@ -661,10 +682,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
           : [];
       return modules;
     });

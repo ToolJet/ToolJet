@@ -15,7 +15,7 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = function ({ darkMode }) {
+export const AppVersionsManager = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
@@ -70,7 +70,7 @@ export const AppVersionsManager = function ({ darkMode }) {
     shallow
   );
 
-  let appCreationMode = creationMode;
+  const appCreationMode = creationMode;
   const isEditable = currentMode === 'edit';
 
   // useEffect(() => {
@@ -97,6 +97,9 @@ export const AppVersionsManager = function ({ darkMode }) {
         icon: '⚠️',
       });
     }
+
+    // Close menu when selecting a version
+    setForceMenuOpen(false);
 
     changeEditorVersionAction(
       appId,
@@ -194,7 +197,18 @@ export const AppVersionsManager = function ({ darkMode }) {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(!forceMenuOpen);
+
+  };
+
+  const handleToggleMenu = async () => {
+    if (!forceMenuOpen && !appVersionsLazyLoaded) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+      await lazyLoadAppVersions(appId);
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+    setForceMenuOpen(prev => {
+      return !prev;
+    });
   };
 
   const customSelectProps = {
@@ -212,7 +226,7 @@ export const AppVersionsManager = function ({ darkMode }) {
   useEffect(() => {
     function handleClickOutside(event) {
       if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
-        if (!forceMenuOpen) {
+        if (forceMenuOpen) {
           setForceMenuOpen(false);
         }
       }
@@ -221,12 +235,10 @@ export const AppVersionsManager = function ({ darkMode }) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedOutsideRef]);
+  }, [forceMenuOpen]);
   return (
     <div
       className="d-flex align-items-center p-0"
-      style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
       ref={clickedOutsideRef}
     >
       <div
@@ -247,7 +259,7 @@ export const AppVersionsManager = function ({ darkMode }) {
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
             onMenuOpen={onMenuOpen}
-            onMenuClose={() => setForceMenuOpen(false)}
+            onToggleMenu={handleToggleMenu}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
             isEditable={isEditable}

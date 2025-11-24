@@ -1,23 +1,29 @@
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
-import { cyParamName } from "Selectors/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
+import { postgreSqlSelector } from "Selectors/postgreSql";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
+import { postgreSqlText } from "Texts/postgreSql";
 
-export const verifyCouldnotConnectWithAlert = (dangerText) => {
+export const verifyCouldnotConnectWithAlert = (alertText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
     timeout: 10000,
   }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
     timeout: 5000,
   });
+  cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+    "contain",
+    alertText
+  );
 };
 
 export const resizeQueryPanel = (height = "90") => {
   cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
+};
+
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
 };
 
 export const query = (operation) => {
@@ -25,7 +31,7 @@ export const query = (operation) => {
 };
 
 export const verifypreview = (type, data) => {
-  cy.get(`[data-cy="preview-tab-${type}"]`, { timeout: 15000 }).click();
+  cy.get(`[data-cy="preview-tab-${type}"]`).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
     "contain.text",
     data,

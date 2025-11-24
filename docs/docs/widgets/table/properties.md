@@ -4,44 +4,51 @@ title: Table Properties
 slug: /widgets/table/
 ---
 
-The **Table** component displays and manages data, connecting seamlessly with databases and APIs. It allows users to view and edit data directly within the table. This document goes through all the properties related to the **Table** component.
+The Table component displays and manages data, connecting seamlessly with databases and APIs. It allows users to view and edit data directly within the table. This document goes through all the properties related to the Table component.
 
-<img className="screenshot-full img-full" src="/img/widgets/table/table-preview-v2.png" alt="ToolJet - Component Reference - Table Preview" />
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/table-preview-v2.png" alt="ToolJet - Component Reference - Table Preview" />
+
+</div>
 
 ## Data
+To populate the Table with data, you need to provide the data in the form of an array of objects under its `Data` property. You can utilize data from queries by referring query data to populate the Table. 
 
-To populate the **Table** component with data, you need to provide the data in the form of an array of objects under its **Data** property. You can utilize data from queries by referring query data to populate the **Table**. 
-
-The **Table** component will **automatically generate all the required columns** when the data is provided. The **Table** also loads one level of **nested data**. 
+The Table component will **automatically generate all the required columns** when the data is provided. The Table also loads one level of **nested data**. 
 
 Example - Passing an array:
-
 ```js
 {{[{ id: 1, name: 'Sarah', email: 'sarah@example.com', contact:{number: 8881212, address: '25, Huntley Road, Newark'} }]}}
 ```
 
 Example - Passing a query data:
-
 ```js
 {{queries.restapi1.data}}
 //replace restapi1 with your query name
 ```
 
+
+
 ## Columns
 
-Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know more about supported column types.
+Go to the **[columns](/docs/widgets/table/table-columns)** section to read more about columns.
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::
 
 ## Action Buttons
 
-<img className="screenshot-full img-full" src="/img/widgets/table/action-v2.png" alt="ToolJet - Component Reference - Actions" />
-
-<br/><br/>
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/table/action-v2.png" alt="ToolJet - Component Reference - Actions" />
+</div>
 
 Action buttons are positioned in the Table's final column. These buttons' appearance can be customized, and specific actions can be defined for when they are clicked using the `On click` action. Upon clicking an action button, the `selectedRow` exposed variable of the Table is updated to reflect the data of the selected row.
 
 Below are the button text properties that you can set. 
 
-| <div style={{ width:"170px"}}> Property </div> | Description |
+| Property | Description |
 | :------- | :----------- |
 | Button text | Sets the text that you want to be displayed on the action button. |
 | Button position | Sets the button position to left or right. |
@@ -50,35 +57,97 @@ Below are the button text properties that you can set.
 | Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the **fx** button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 | New event handler | The **New event handler** button lets you create an event handler to define behavior for action buttons based on the `On click` action. |
 
+
 ## Events
 
-| <div style={{ width:"150px"}}> Event </div> | Description |
-|:-------|:-------------|
-| Row hovered | This event is activated when the mouse pointer hovers over a row. The `hoveredRowId` variable captures the ID of the hovered row, and the `hoveredRow` variable stores the row's data in object format. |
-| Row clicked | This event is triggered when a Table row is clicked. The `selectedRowId` and `selectedRow` exposed variables of the Table store the ID and data of the selected row, respectively. |
-| Save changes | If any cell of the Table is edited, the **Save changes** button appears at the footer of the Table. Save changes event is triggered when this button is clicked. |
-| Page changed | If server-side pagination is enabled, this event is fired when the current page is changed. Page changed event is triggered after updating the `pageIndex` variable. |
-| Search | Search event is triggered when a text is entered to the search input box of the Table. `searchText` variable is updated before triggering this event. |
-| Cancel changes | If any cell of the Table is edited, the **Discard changes** button appears at the footer of the Table. Cancel changes event is triggered when this button is clicked.|
-| Sort applied | This event is triggered when the column name header is clicked to apply sorting. The `sortApplied` variable is updated with an object having `column` and `direction` values. |
-| Cell value changed | If any cell of the Table is edited, the cell value changed event is triggered. |
-| Filter changed | Triggeres when filter is added, removed, or updated. `filters` variable of the Table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. |
-| Add new rows | Triggeres when the **Save** button is clicked from the Add new row modal.  |
+You can trigger a range of events on the Table component.
+
+- **[Row hovered](#row-hovered)**
+- **[Row clicked](#row-clicked)**
+- **[Save changes](#save-changes)**
+- **[Page changed](#page-changed)**
+- **[Search](#search)**
+- **[Cancel changes](#cancel-changes)**
+- **[Sort applied](#sort-applied)**
+- **[Cell value changed](#cell-value-changed)**
+- **[Filter changed](#filter-changed)**
+- **[Add new rows](#add-new-rows)**
+
+### Row hovered
+
+This event is activated when the mouse pointer hovers over a row. The `hoveredRowId` variable captures the ID of the hovered row, and the `hoveredRow` variable stores the row's data in object format.
+
+### Row clicked
+
+This event is triggered when a Table row is clicked. The `selectedRowId` and `selectedRow` exposed variables of the Table store the ID and data of the selected row, respectively.
+
+### Save changes
+
+If any cell of the Table is edited, the **Save changes** button appears at the footer of the Table. Save changes event is triggered when this button is clicked.
+
+### Page changed
+
+If server-side pagination is enabled, this event is fired when the current page is changed. Page changed event is triggered after updating the `pageIndex` variable.
+
+### Search
+
+Search event is triggered when a text is entered to the search input box of the Table. `searchText` variable is updated before triggering this event.
+
+### Cancel changes
+
+If any cell of the Table is edited, the `Discard changes` button appears at the footer of the Table. Cancel changes event is triggered when this button is clicked.
+
+### Sort applied
+
+This event is triggered when the column name header is clicked to apply sorting in `asc` or `desc`. The `sortApplied` variable is updated with an object having `column` and `direction` values.
+
+### Cell value changed
+
+If any cell of the Table is edited, the cell value changed event is triggered.
+
+### Filter changed
+
+Filter event is triggered when filter is added, removed, or updated from the filter section of the Table. `filters` variable of the Table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. 
+
+### Add new rows
+
+This event is triggered when the **Save** button is clicked from the **Add new row** modal on the Table. 
 
 ## Row Selection
 
-| <div style={{ width:"170px"}}> Property </div> | Description |
-|:-------|:-------------|
-| Allow selection | Enables row selection using checkboxes. Disabling it removes row highlighting and bulk selection options. |
-| Highlight selected row | Highlights the last clicked row. Replaces checkbox selection with visual highlight. |
-| Bulk selection | Allows selecting multiple rows on the current page. Selected values are stored in the selectedRows variable. |
-| Default selected row | Pre-selects a row when Allow selection is enabled. Use a key-value object like `{"id": variables.x}` where x is a valid variable that returns ID. |
-| Select row on cell edit | Automatically selects the row being edited if column is editable. Disable to prevent auto-selection during editing. |
+### Allow selection
+
+This option is active by default. **Enabling** this functionality allows users to choose a row in the Table by utilizing `checkboxes` placed next to each row. If this option is disabled, the ability to highlight selected rows and perform bulk selection will not be accessible. 
+
+### Highlight selected row
+
+Enable this option to visually emphasize the last clicked row. **Enabling** this feature will alter the row selection appearance of the Table from a `checkbox`-based theme to a `highlight`-based theme.
+
+### Bulk selection
+
+To enable the selection of one or more rows from the current page of a table, you can activate the `Bulk selection` setting in the inspector. The values of the selected rows will be available in the `selectedRows` exposed variable.
+
+### Default selected row
+
+Default selected row will only be available when the `Allow selection` property is enabled. 
+
+To set a default selected row, you need to provide an object with a single key-value pair. For instance, you can use the `id` key and dynamically obtain the value from a variable, let's say `x`, to specify the default selected row in the Table. We assume that the variable `x` holds a valid numerical id.
+
+Example:
+```js
+{{{"id": variables.x}}} //assuming variables.x is already set
+```
+
+Please ensure that the value provided in the object corresponds to an id in the Table to ensure proper functionality.
+
+### Select row on cell edit
+Enabling the `Make editable` property for a column allows the app users to edit the column. While editing, the related row will be selected by default. To stop the row from getting selected by default, turn off `Select row on cell edit`.
 
 ## Search, Sort and Filter
 
-<img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Component Reference - Table" /> 
-
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Component Reference - Table" /> 
+</div>
 
 ### Show search
 
@@ -136,64 +205,67 @@ When Server-side pagination is enabled, you'll be able to set three other Table 
 Check this how-to guide to learn more about **[server-side pagination](/docs/how-to/use-server-side-pagination)**.
 :::
 
-## Additional Actions
+## Additional actions
 
-|  <div style={{ width:"190px"}}> Property </div>  |   Description    |
-| :-------------| :---------------- |
-| Show add new row button  | Shows a button to add new rows via a modal. New data is stored in `newRows`. Use the `Add new rows` event to save to a data source. |
-| Show download button | Enables download of Table data as CSV, Excel, or PDF. Filename format: `Tablename_DD-MM-YYYY_HH-mm.filetype`. |
-| Hide column selector button | Controls visibility of the column selector, which lets users choose visible columns. |
-| Loading state | Shows a loading skeleton while data is loading. Bind it to the query’s `isLoading` property. |
-| Show update buttons | Displays **Save changes** and **Discard changes** buttons when any cell is edited. |
-| Visibility | Controls whether the Table is visible on the canvas. Can be toggled dynamically. |
-| Disable  | Disables interactivity of the Table when toggled off. Still visible but not usable.   |
-| Dynamic height | Automatically adjusts the component's height based on its content. |
+### Show add new row button
+
+The **Add new row button** is located on the bottom-right of the Table is visible by default. You can choose to hide it by disabling this option.  
+
+Upon clicking this button, a pop-up modal will show, providing users with the ability to insert new rows. If users input data into this row, it will be stored within the `newRows` exposed variable associated with the Table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist. The Table incorporates an **Add new rows** event handler, which can be employed to execute queries that store the data into the data source upon clicking the **Save** button.
+
+
+### Show download button
+The download button in the Table footer is visible by default. You can choose to hide it by disabling this option. The download button allows users to download the Table data in three formats - CSV, Excel and PDF.
+
+The name of the downloaded file will be in the following format: <br/>
+`Tablename_DD-MM-YYYY_HH-mm.filetype` <br/><br/>
+Example: <i>Customers_25-03-2022_16-10.csv</i>
+
+### Hide column selector button
+
+The column selector button on the Table footer is visible by default. You can choose to hide it by disabling this option. The column selector allows you define which columns you want to view on the Table.
+
+### Loading state
+
+Loading state shows a loading skeleton for the Table. This property can be used to show a loading status on the Table while data is being loaded. `isLoading` property of a query can be used to get the status of a query.
+
+### Show update buttons
+
+The update button is enabled by default. Table footer will show two update buttons **Save changes** and **Discard changes** whenever a cell is edited. Disable this option to hide update buttons.
+
+### Visibility
+Visibility condition allows you to control whether the Table is visible or hidden on the canvas. It is enabled by default and can be turned off to hide the Table. 
+
+### Disable
+Disable condition allows you to control whether the Table is enabled or disabled on the canvas. It is enabled by default and can be turned off to hide the Table. When disabled, the Table will not be interactive.
 
 ## Devices
 
-|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
-|:---------- |:----------- |:----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Property  | Description | Expected value |
+|:----------- |:----------- |:----------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 ## Styles
-
-### Column Header
-
-| <div style={{ width:"105px"}}> Style Property </div>  | Description | Configuration Options  |
-|:----------------|:------------|:-----------------------|
-| Column title | Set the color for column title. | Select a theme or choose color from color picker. |
-| Overflow | Select the overflow type. | Choose from **None** or **Wrap**. |
-| Header casing | Select the header casing type. | Choose from **As typed** or **AA**. |
-| Background | Set the background color for column header. | Select a theme or choose color from color picker. |
-
-
 ### Data
+| Style Property  | Description | Configuration Options   |
+|-----------------|------------------|--------------------|
+| **Text color**  | Change the text color of the component.  | Provide a **hex color code**, choose from the picker, or set programmatically using **fx**.   |
+| **Column header** | Defines how the column header text is displayed. | Choose between **Fixed** or **Wrap**. You can also set it programmatically using **fx**. |
+| **Header casing** | Specifies the casing style for column headers. | Choose between **AA** or **As Typed**. You can also set it programmatically using **fx**. |
+| **Row style**   | Selects the style of the table rows. | Choose from dropdown: **Bordered**, **Regular**, or **Striped**. You can also set it programmatically using **fx**. |
+| **Cell height** | Determines the size of the table cells.  | Choose between **Condensed** or **Regular** size. You can also set it programmatically using **fx**.  |
+| **Max row height** | Controls the maximum height of rows when **Content wrap** is enabled. | Select **Auto** or define a **Custom** size. You can also set it programmatically using **fx**. |
 
-| <div style={{ width:"110px"}}> Style Property </div>  | Description | Configuration Options  |
-|:----------------|:------------|:-----------------------|
-| Text | Set the text color of the component.  | Select a theme or choose color from color picker.   |
-| Row style   | Selects the style of the table rows. | Choose from dropdown: **Bordered**, **Regular**, or **Striped**. |
-| Cell height | Determines the size of the table cells.  | Choose between **Condensed** or **Regular** size. |
-| Max row height | Controls the maximum height of rows when **Content wrap** is enabled. | Select **Auto** or define a **Custom** size. |
-| Action button radius  | Sets the radius for all action buttons. | Enter a value (default is **0**). |
+## Action Button
+| Action     | Description     | Configuration Options    |
+|:-------------------|:----------------|:-----------------------|
+| **Button radius**  | Sets the radius for all action buttons. | Enter a value (default is **0**) or dynamically configure using **fx**. |
 
-:::note
-For **Custom Max Row Height**, the minimum value depends on the Cell height setting:
-- When **Cell Height** is set to **Regular**, the minimum height is **45 px**.
-- When **Cell Height** is set to **Condensed**, the minimum height is **39 px**.
-:::
 
-### Container
-
-| <div style={{ width:"110px"}}> Style Property </div>  | Description | Configuration Options  |
-|:----------------|:------------|:-----------------------|
-| Background | Set the background color for the table. | Select a theme or choose color from color picker. | 
-| Border radius | Adds a radius to the borders of the table.  | Enter a value (default is **6**). |
-| Border | Defines the border color of the Table.  | Select a theme or choose color from color picker. |
-| Box shadow | Sets the box shadow properties of the component.  | Select the box shadow color, adjust related properties, or set programmatically using **fx**. |
-| Padding | Sets padding inside table. | Choose between **Default** or **None**. |
-
-:::info
-Any property having **fx** button next to its field can be **programmatically configured**.
-:::
+## Container
+| Style Property | Description  | Configuration Options |
+|:---------------|:-----------|:----------------------|
+| **Border radius** | Adds a radius to the borders of the Table.  | Enter a value (default is **8**) or dynamically configure using **fx**. |
+| **Border**        | Defines the border color of the Table.  | Change the color by providing a **hex color code**, choosing from the picker, or setting programmatically using **fx**. |
+| **Box shadow**    | Sets the box shadow properties of the component.  | Select the box shadow color, adjust related properties, or set programmatically using **fx**. |

@@ -12,6 +12,7 @@ export const dataqueryService = {
   updateStatus,
   bulkUpdateQueryOptions,
   createWorkflowQuery,
+  invoke,
 };
 
 function getAll(appVersionId, mode) {
@@ -133,4 +134,21 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}/data-source`, requestOptions).then(
     handleResponse
   );
+}
+
+function invoke(dataSourceId, methodName, environmentId) {
+  const body = {
+    method: methodName,
+    environmentId: environmentId
+  };
+
+  const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+
+  const requestOptions = { 
+    method: 'POST', 
+    headers: authHeader(), 
+    credentials: 'include', 
+    body: JSON.stringify(body) 
+  };
+  return fetch(url, requestOptions).then(handleResponse);
 }

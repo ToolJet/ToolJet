@@ -149,7 +149,7 @@ const QueryCardMenu = ({ darkMode }) => {
             {QUERY_MENU_OPTIONS.map((option) => {
               const optionBody = (
                 <div
-                  data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                  data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
                   className="list-item-popover-option"
                   key={option?.value}
                   onClick={(e) => {
@@ -173,7 +173,7 @@ const QueryCardMenu = ({ darkMode }) => {
               return option.value === 'permission' ? (
                 <ToolTip
                   key={option.value}
-                  message={'Component permissions are available only in paid plans'}
+                  message={'Query permissions are available only in paid plans'}
                   placement="left"
                   show={!licenseValid}
                 >

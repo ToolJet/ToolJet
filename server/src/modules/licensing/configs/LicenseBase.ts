@@ -42,7 +42,13 @@ export default class LicenseBase {
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
   private _plan: string;
+  private _isCustomGroups: boolean;
+  private _modules: object;
+  private _permissions: object;
+  private _app: object;
   private BASIC_PLAN_TERMS: Partial<Terms>;
+  private _isModulesEnabled: boolean;
+  private _isScimEnabled: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -104,6 +110,11 @@ export default class LicenseBase {
     this._workspaceId = licenseData?.workspaceId;
     this._features = licenseData?.features;
     this._ai = licenseData?.ai;
+    this._modules = licenseData?.modules;
+    this._isModulesEnabled = licenseData?.modules?.enabled;
+    this._permissions = licenseData?.permissions;
+    this._app = licenseData?.app;
+    this._isCustomGroups = this.getPermissionValue('customGroups');
 
     // Features
     this._isAuditLogs = this.getFeatureValue('auditLogs');
@@ -121,7 +132,8 @@ export default class LicenseBase {
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
-    this._isExternalApis = this.getFeatureValue('externalApis');
+    this._isExternalApis = this.getFeatureValue('externalApi');
+    this._isScimEnabled = this.getFeatureValue('scim');
   }
 
   private getFeatureValue(key: string) {
@@ -133,7 +145,107 @@ export default class LicenseBase {
     }
     return true;
   }
+  private getPermissionValue(key: string) {
+    if (!this._permissions) {
+      return true;
+    }
+    if (this._permissions[key] === false) {
+      return false;
+    }
+    if (this._isFlexiblePlan && !this._permissions[key]) {
+      return false;
+    }
+    return true;
+  }
 
+  public get customGroups(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.permissions?.customGroups;
+    }
+    return this._isCustomGroups;
+  }
+
+  public get modules(): object {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.modules;
+    }
+    if (!this._modules) {
+      return {
+        enabled: true,
+      }; //Not passed set to true for older licenses and trial
+    }
+    return this._modules;
+  }
+
+  public get appPermissionComponent(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.component;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['permissions']?.component;
+  }
+
+  public get appPermissionQuery(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.query;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['permissions']?.query;
+  }
+
+  public get appPermissionPages(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.permissions?.pages;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['permissions']?.pages;
+  }
+
+  public get appPagesEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.enabled;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['pages']?.enabled;
+  }
+
+  public get appPagesHeaderAndLogoEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.appHeaderAndLogo;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['pages']?.features?.appHeaderAndLogo;
+  }
+
+  public get appPagesAddNavGroupEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.addNavGroup;
+    }
+    if (!this._app) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._app['pages']?.features?.addNavGroup;
+  }
+
+  public get moduleEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.modules?.enabled;
+    }
+    if (!this._modules) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._isModulesEnabled;
+  }
   public get plan(): string {
     if (this.IsBasicPlan) {
       return;
@@ -312,6 +424,13 @@ export default class LicenseBase {
     return this._isExternalApis;
   }
 
+  public get scim(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.scim;
+    }
+    return this._isScimEnabled;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -342,6 +461,9 @@ export default class LicenseBase {
   }
 
   public get licenseType(): string {
+    if (!this.isValid || this.isExpired) {
+      return LICENSE_TYPE.BASIC;
+    }
     return this._type || LICENSE_TYPE.ENTERPRISE;
   }
 
@@ -361,6 +483,15 @@ export default class LicenseBase {
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
+      modulesEnabled: this.moduleEnabled,
+      customGroups: this.customGroups,
+      appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
+      appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      appPagesEnabled: this.appPagesEnabled,
+      appPermissionComponent: this.appPermissionComponent,
+      appPermissionQuery: this.appPermissionQuery,
+      appPermissionPages: this.appPermissionPages,
+      workflowsEnabled: this.getWorkflowsEnabled(),
     };
   }
 
@@ -412,5 +543,16 @@ export default class LicenseBase {
       return this.BASIC_PLAN_TERMS.workflows;
     }
     return this._workflows ?? WORKFLOW_TEAM_PLAN_TERMS.workflows;
+  }
+
+  public getWorkflowsEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.workflows?.enabled;
+    }
+    // If "enabled" is undefined or missing, return true
+    if (this._workflows?.['enabled'] === undefined) {
+      return true;
+    }
+    return !!this._workflows?.['enabled'];
   }
 }
