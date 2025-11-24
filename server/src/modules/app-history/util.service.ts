@@ -9,6 +9,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { NameResolverRepository } from './repositories/name-resolver.repository';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Injectable()
 export class AppHistoryUtilService {
@@ -125,6 +126,44 @@ export class AppHistoryUtilService {
     });
 
     this.logger.log(`[QueueHistory] Job ${job.id} added successfully for app ${appVersionId}`);
+  }
+
+  /**
+   * Capture history for app version settings updates (homePageId, globalSettings, pageSettings)
+   */
+  async captureSettingsUpdateHistory(
+    appVersion: AppVersion,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<void> {
+    try {
+      // Check if homePageId, globalSettings, or pageSettings are being updated
+      const hasSettingsUpdate =
+        appVersionUpdateDto.homePageId ||
+        appVersionUpdateDto.globalSettings ||
+        appVersionUpdateDto.pageSettings;
+
+      if (hasSettingsUpdate) {
+        const operationScope: any = {
+          operation: 'update_settings',
+          settings: appVersionUpdateDto.globalSettings || appVersionUpdateDto,
+          settingsType: 'global',
+        };
+
+        // If homePageId is being updated, include it in the operation scope for better description
+        if (appVersionUpdateDto.homePageId && appVersion.homePageId !== appVersionUpdateDto.homePageId) {
+          operationScope.homePageId = appVersionUpdateDto.homePageId;
+          operationScope.previousHomePageId = appVersion.homePageId;
+        }
+
+        await this.queueHistoryCapture(
+          appVersion.id,
+          ACTION_TYPE.GLOBAL_SETTINGS_UPDATE,
+          operationScope
+        );
+      }
+    } catch (error) {
+      console.error('Failed to queue history capture for settings update:', error);
+    }
   }
 
   async validateAppVersionAccess(appVersionId: string, userId: string): Promise<boolean> {
