@@ -211,7 +211,10 @@ const loginWithOIDC = (params, alias = "@userId") => {
     cy.intercept("GET", "/api/authorize").as("openidResponse");
     cy.oidcLogin(params);
     cy.wait("@openidResponse").then((interception) => {
-        cy.log('Authorization Response:', JSON.stringify(interception.response.body));
+        cy.log(
+            "Authorization Response:",
+            JSON.stringify(interception.response.body)
+        );
         const userId = interception.response.body.id;
         cy.wrap(userId).as(alias.replace("@", ""));
     });
