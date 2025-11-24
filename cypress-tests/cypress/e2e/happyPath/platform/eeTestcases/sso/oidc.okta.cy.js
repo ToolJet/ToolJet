@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { logout } from "Support/utils/common";
+import { logout, sanitize } from "Support/utils/common";
 import {
     apiCreateGroup,
     apiDeleteGroup,
@@ -20,18 +20,21 @@ describe("Okta OIDC", () => {
     let data;
 
     data = {
-        appName: `${fake.companyName}-IE-App`,
-        groupName: `oidc-${fake.companyName}-group`,
+        appName: `${sanitize(fake.companyName)}-oidc-App`,
+        groupName: `oidc-${sanitize(fake.companyName)}-group`,
     };
 
     beforeEach("", () => {
-        data.groupName = `oidc-${fake.companyName}-group`;
+        data.groupName = `oidc-${sanitize(fake.companyName)}-group`;
 
+        cy.visit("/my-workspace");
         cy.apiLogin();
 
         deleteOrganisationSSO("My workspace", ["openid"]);
         enableInstanceSignup();
         setSignupStatus(true);
+        cleanAllUsers();
+
     });
 
     afterEach("", () => {
@@ -84,8 +87,8 @@ describe("Okta OIDC", () => {
             oktaDomain: Cypress.env("okta_domain"),
             organizationId: orgId,
         });
-
         verifyUserRole("@userId", "admin", ["admin", data.groupName]);
+
         apiDeleteGroup(data.groupName);
     });
 

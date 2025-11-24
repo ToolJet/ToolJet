@@ -320,7 +320,12 @@ export const invitePageElements = () => {
 export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id='${workspaceId}';`,
+    sql: `DELETE FROM sso_configs WHERE id='${ssoId}';`,
+  }).then(() => {
+    cy.task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `UPDATE sso_configs SET id='${ssoId}' WHERE sso='${sso}' AND organization_id='${workspaceId}';`,
+    });
   });
 };
 
@@ -340,9 +345,8 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
       if (ssoConfigResp.rows.length > 0) {
         cy.task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
-          sql: `UPDATE sso_configs SET enabled = ${
-            enabled ? "true" : "false"
-          } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
+          sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
+            } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
         });
       }
     });
@@ -447,7 +451,15 @@ export const updateOIDCConfig = (orgId) => {
 
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `
+    sql: `DELETE FROM sso_config_oidc_group_sync WHERE id='${syncId}' OR sso_config_id='${ssoConfigId}';`,
+  }).then(() => {
+    cy.task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `DELETE FROM sso_configs WHERE id='${ssoConfigId}';`,
+    }).then(() => {
+      cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `
           INSERT INTO sso_configs (
             id,
             organization_id,
@@ -464,11 +476,10 @@ export const updateOIDCConfig = (orgId) => {
             ${configScope}
           );
         `,
-  });
-
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
+      }).then(() => {
+        cy.task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `
             INSERT INTO sso_config_oidc_group_sync (
               id,
               sso_config_id,
@@ -485,6 +496,9 @@ export const updateOIDCConfig = (orgId) => {
               true
             );
           `,
+        });
+      });
+    });
   });
 };
 
@@ -527,10 +541,16 @@ export const addOIDCConfig = (
 };
 
 export const uiOktaLogin = (email, password) => {
-  cy.get('input[name="identifier"]').type(email);
-  cy.get(".button-primary").click();
-  cy.get('input[name="credentials.passcode"]').type(password);
-  cy.get(".button-primary").click();
+  cy.origin(
+    "https://integrator-8815821.okta.com",
+    { args: { email, password } },
+    ({ email, password }) => {
+      cy.get('input[name="identifier"]').type(email);
+      cy.get(".button-primary").click();
+      cy.get('input[name="credentials.passcode"]').type(password);
+      cy.get(".button-primary").click();
+    }
+  );
 };
 
 export const toggleSsoViaUI = (
