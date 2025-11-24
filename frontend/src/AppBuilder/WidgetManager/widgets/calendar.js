@@ -4,8 +4,8 @@ export const calendarConfig = {
   description: 'Display calendar events',
   component: 'Calendar',
   defaultSize: {
-    width: 30,
-    height: 600,
+    width: 15,
+    height: 450,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

@@ -3,8 +3,8 @@ export const listviewConfig = {
   displayName: 'List View',
   description: 'List multiple items',
   defaultSize: {
-    width: 30,
-    height: 320,
+    width: 15,
+    height: 450,
   },
   defaultChildren: [
     {

@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 13,
-    height: 480,
+    width: 15,
+    height: 450,
   },
   component: 'Container',
   others: {

@@ -4,8 +4,8 @@ export const kanbanConfig = {
   description: 'Task management board',
   component: 'Kanban',
   defaultSize: {
-    width: 40,
-    height: 490,
+    width: 15,
+    height: 450,
   },
   defaultChildren: [
     {
