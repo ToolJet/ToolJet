@@ -10,6 +10,7 @@ SSL certificates are not required for Cloud Run with Cloud SQL as SSL connection
 :::
 
 **Method A: Using gcloud CLI**
+
 ```bash
 # Deploy to Cloud Run with direct database connection
 gcloud run deploy tooljet \
@@ -27,6 +28,7 @@ gcloud run deploy tooljet \
 **Method B: Using YAML configuration**
 
 Create `service.yaml`:
+
 ```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
@@ -41,39 +43,39 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-      - image: tooljet/tooljet:latest
-        resources:
-          limits:
-            memory: 2Gi
-            cpu: 2000m
-        env:
-        - name: PG_HOST
-          value: "your-cloud-sql-ip"
-        - name: PG_PORT
-          value: "5432"
-        - name: PG_DB
-          value: "your-database-name"
-        - name: PG_USER
-          value: "postgres"
-        - name: PG_PASS
-          valueFrom:
-            secretKeyRef:
-              name: db-password
-              key: password
-        ports:
-        - containerPort: 3000
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+        - image: tooljet/tooljet:latest
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 2000m
+          env:
+            - name: PG_HOST
+              value: "your-cloud-sql-ip"
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DB
+              value: "your-database-name"
+            - name: PG_USER
+              value: "postgres"
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: db-password
+                  key: password
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
 ```
 
 ```bash
@@ -81,4 +83,4 @@ spec:
 gcloud run services replace service.yaml --region=your-region
 ```
 
-**Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.ai/docs/setup/google-cloud-run)
+**Reference**: [ToolJet Google Cloud Run Setup Documentation](https://docs.tooljet.com/docs/setup/google-cloud-run)

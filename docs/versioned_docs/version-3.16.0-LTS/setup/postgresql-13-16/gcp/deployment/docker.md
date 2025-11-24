@@ -37,4 +37,4 @@ sudo docker-compose up -d
 sudo docker-compose logs tooljet | grep "TOOLJET APPLICATION STARTED SUCCESSFULLY"
 ```
 
-**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.ai/docs/setup/docker)
+**Reference**: [ToolJet Docker Setup Documentation](https://docs.tooljet.com/docs/setup/docker)

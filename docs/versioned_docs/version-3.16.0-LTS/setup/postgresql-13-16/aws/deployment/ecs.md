@@ -38,6 +38,7 @@ aws ssm send-command \
 #### Using AWS CLI
 
 Create a new task definition file `tooljet-task-updated.json`:
+
 ```json
 {
   "family": "tooljet-task",
@@ -81,6 +82,7 @@ Create a new task definition file `tooljet-task-updated.json`:
 ```
 
 Register the updated task definition:
+
 ```bash
 aws ecs register-task-definition --cli-input-json file://tooljet-task-updated.json
 ```
@@ -112,6 +114,7 @@ aws ecs register-task-definition --cli-input-json file://tooljet-task-updated.js
 #### Using AWS CLI
 
 Update your task definition to use EFS:
+
 ```json
 {
   "volumes": [
@@ -177,6 +180,7 @@ aws ecs describe-services --cluster your-cluster-name --services tooljet-service
 ```
 
 **Verify SSL certificate mount:**
+
 ```bash
 # Connect to running container and verify certificate
 aws ecs execute-command \
@@ -186,4 +190,4 @@ aws ecs execute-command \
   --command "ls -la /certs/"
 ```
 
-**Reference**: [ToolJet ECS Setup Documentation](https://docs.tooljet.ai/docs/setup/ecs)
+**Reference**: [ToolJet ECS Setup Documentation](https://docs.tooljet.com/docs/setup/ecs)

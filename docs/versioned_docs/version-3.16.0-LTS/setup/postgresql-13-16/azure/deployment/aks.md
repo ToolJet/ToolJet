@@ -1,6 +1,6 @@
 ---
 id: aks
-title: Azure Kubernetes Service (AKS) 
+title: Azure Kubernetes Service (AKS)
 ---
 
 For Azure Kubernetes Service (AKS) deployment, follow the comprehensive setup guide in the ToolJet documentation which includes detailed Kubernetes manifests, Helm charts, and configuration options.
@@ -13,7 +13,7 @@ When configuring your AKS deployment, ensure you include these critical environm
 # Required environment variables for Azure PostgreSQL connection
 PG_HOST=your-server.postgres.database.azure.com
 PG_PORT=5432
-PG_DB=your-database-name  
+PG_DB=your-database-name
 PG_USER=your-username
 PGSSLMODE=require  # MANDATORY for Azure PostgreSQL
 ```
@@ -40,4 +40,4 @@ kubectl exec -it deployment/tooljet -n tooljet -- \
   psql "postgresql://username:password@your-server.postgres.database.azure.com:5432/database?sslmode=require"
 ```
 
-**Reference**: [ToolJet Kubernetes AKS Setup Documentation](https://docs.tooljet.ai/docs/setup/kubernetes-aks)
+**Reference**: [ToolJet Kubernetes AKS Setup Documentation](https://docs.tooljet.com/docs/setup/kubernetes-aks)

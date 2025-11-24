@@ -3,11 +3,11 @@ id: tooljet-cloud
 title: ToolJet Cloud
 ---
 
-This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 ## Types of Subscriptions
 
-ToolJet provides three types of subscriptions - **Basic**, **Trial**, and **Paid**. These can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different plans.
+ToolJet provides three types of subscriptions - **Basic**, **Trial**, and **Paid**. These can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans.
 
 ### Basic Subscription
 
@@ -19,7 +19,7 @@ ToolJet offers a trial subscription which is valid for 14 days, where users can 
 
 ### Paid Subscription
 
-ToolJet offers various plans for paid subscription. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different plans. Once you have decided a suitable plan for your needs then you can upgrade to a paid subscription by simply clicking on the upgrade button.
+ToolJet offers various plans for paid subscription. Visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans. Once you have decided a suitable plan for your needs then you can upgrade to a paid subscription by simply clicking on the upgrade button.
 
 ## Upgrading Your Subscription
 
@@ -37,8 +37,8 @@ Role Required: **Admin**
 
 1. Click the gear icon (⚙️) at the bottom of the left sidebar and select **Settings** from the dropdown.
 
-2. In the Settings page, choose the **Subscription** tab. <br/> 
-    (Example URL - `https://app.corp.com/nexus/settings/subscription`)
+2. In the Settings page, choose the **Subscription** tab. <br/>
+   (Example URL - `https://app.corp.com/nexus/settings/subscription`)
 
 3. The subscription tab displays a subscription overview card summarizing your current plan. Locate the **Upgrade** button in the lower left corner and click on it.
 
@@ -47,7 +47,7 @@ Role Required: **Admin**
 5. You'll be directed to a payment gateway. Complete the payment process.
 
 6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
-    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
+   <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
 
 If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
