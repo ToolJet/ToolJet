@@ -620,7 +620,7 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "setup/observability-otel"
+        "tj-setup/observability-otel"
       ]
     },
     {
