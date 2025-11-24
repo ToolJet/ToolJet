@@ -130,7 +130,7 @@ This dashboard focuses on application-specific metrics and includes:
 
 The dashboard automatically extracts query text and environment names for immediate debugging without consulting logs.
 
-### Platform Ultimate Dashboard
+### Platform Metrics Dashboard
 
 Download the dashboard:
 ```bash
