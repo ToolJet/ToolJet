@@ -200,7 +200,8 @@ export const ssoEeText = {
     groupAttributeHelperText:
       "Define attribute for user-to-group mapping based on the IdP",
   },
-
+  enabledLabel: "Enabled",
+  testclientId: "test-client-id",
 
 };
 
