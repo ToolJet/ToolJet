@@ -576,7 +576,11 @@ export class AppImportExportService {
     }, manager);
   }
 
-  async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
+  async updateEntityReferencesForImportedApp(
+    manager: EntityManager,
+    resourceMapping: AppResourceMappings,
+    updateCoRelationIds = false
+  ) {
     const mappings = {
       ...resourceMapping.componentsMapping,
       ...resourceMapping.dataQueryMapping,
@@ -601,9 +605,23 @@ export class AppImportExportService {
         ])
         .getMany();
 
-      const toUpdateComponents = components.filter((component) => {
-        return updateEntityReferences(component, mappings);
-      });
+      let toUpdateComponents;
+      if (updateCoRelationIds) {
+        toUpdateComponents = components.map((component) => {
+          const co_relation_id = Object.keys(resourceMapping.componentsMapping).find(
+            (key) => resourceMapping.componentsMapping[key] === component.id
+          );
+          if (co_relation_id) {
+            component.co_relation_id = co_relation_id; // Set the coRelationId
+          }
+          updateEntityReferences(component, mappings);
+          return component;
+        });
+      } else {
+        toUpdateComponents = components.filter((component) => {
+          return updateEntityReferences(component, mappings);
+        });
+      }
 
       if (!isEmpty(toUpdateComponents)) {
         await manager.save(toUpdateComponents);
@@ -619,9 +637,22 @@ export class AppImportExportService {
         .select(['dataQueries.id', 'dataQueries.options'])
         .getMany();
 
-      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        return updateEntityReferences(dataQuery, mappings);
-      });
+      let toUpdateDataQueries;
+      if (updateCoRelationIds) {
+        toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+          const oldId = Object.keys(resourceMapping.dataQueryMapping).find(
+            (key) => resourceMapping.dataQueryMapping[key] === dataQuery.id
+          );
+          if (oldId) {
+            dataQuery.co_relation_id = oldId; // Set the coRelationId to the old ID
+          }
+          return updateEntityReferences(dataQuery, mappings);
+        });
+      } else {
+        toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+          return updateEntityReferences(dataQuery, mappings);
+        });
+      }
 
       if (!isEmpty(toUpdateDataQueries)) {
         await manager.save(toUpdateDataQueries);
@@ -1148,6 +1179,7 @@ export class AppImportExportService {
 
         isHomePage = importingAppVersion.homePageId === page.id;
 
+        // can comment this after testing --> can uncomment this to fix this issue
         if (isHomePage) {
           updateHomepageId = pageCreated.id;
         }
