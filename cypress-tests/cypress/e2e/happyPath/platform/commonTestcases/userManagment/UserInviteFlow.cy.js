@@ -151,6 +151,7 @@ describe("user invite flow cases", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     addNewUser(data.firstName, data.email);
     cy.apiLogout();
+    cy.wait(2000);
 
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();

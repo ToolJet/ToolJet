@@ -44,8 +44,10 @@ describe("Private and Public apps", () => {
 
   beforeEach(() => {
     data = generateTestData();
-    cy.visit("/my-workspace");
+
     cy.defaultWorkspaceLogin();
+    cy.apiDeleteAllWorkspaces();
+
     cy.apiDeleteAllApps();
     cy.skipWalkthrough();
     cy.apiConfigureSmtp(smtpConfig);

@@ -40,13 +40,7 @@ describe("License - Workspace Limits", () => {
     cy.apiLogin();
     cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
     cy.apiUpdateLicense("workspace");
-    cy.apiGetWorkspaceIDs().then((ids) => {
-      ids.forEach((org) => {
-        if (org.slug !== "my-workspace") {
-          cy.apiArchiveWorkspace(org.id);
-        }
-      });
-    });
+    cy.apiDeleteAllWorkspaces();
     cy.visit("/my-workspace");
     cy.wait("@getLicenseAccess");
     cy.wait(2000);

@@ -12,7 +12,7 @@ import { sanitize } from "Support/utils/common";
 
 const data = {
   userName: sanitize(fake.firstName),
-  get userEmail () {
+  get userEmail() {
     return `${this.userName}@example.com`;
   },
 };
@@ -20,14 +20,7 @@ const data = {
 describe("Instance Settings - All Users UI", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiGetWorkspaceIDs().then((ids) => {
-      ids.forEach((org) => {
-        cy.log(`Cleaning up workspace: ${org.slug}`);
-        if (org.slug !== "my-workspace") {
-          cy.apiArchiveWorkspace(org.id);
-        }
-      });
-    });
+    cy.apiDeleteAllWorkspaces();
     cy.visit("/my-workspace");
     cleanAllUsers();
     cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");

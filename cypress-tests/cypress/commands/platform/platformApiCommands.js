@@ -464,8 +464,8 @@ Cypress.Commands.add(
 
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-              typesToDelete.includes(perm.type)
-            )
+                typesToDelete.includes(perm.type)
+              )
             : granularPermissions;
 
           permissionsToDelete.forEach((permission) => {
@@ -529,7 +529,7 @@ Cypress.Commands.add(
         url: url,
         headers: headers,
         body: ssoConfig,
-        log: false
+        log: false,
       }).then((response) => {
         expect(response.status).to.equal(200);
         cy.log("SSO configuration updated successfully.");
@@ -984,17 +984,15 @@ Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
 });
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   return cy.getAuthHeaders().then((headers) => {
-    cy
-      .request({
-        method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/smtp/status`,
-        headers: headers,
-        body: { smtpEnabled: smtpBody.smtpEnabled },
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-      })
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/smtp/status`,
+      headers: headers,
+      body: { smtpEnabled: smtpBody.smtpEnabled },
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
     return cy
       .request({
         method: "PATCH",
@@ -1013,7 +1011,6 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
       });
   });
 });
-
 
 Cypress.Commands.add(
   "apiGetWorkspaceIDs",
@@ -1058,5 +1055,18 @@ Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
         });
         return response.body;
       });
+  });
+});
+
+Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
+  cy.apiGetWorkspaceIDs().then((ids) => {
+    ids.forEach((org) => {
+      cy.log(`Cleaning up workspace: ${org.slug}`);
+      if (org.slug !== "my-workspace") {
+        cy.apiArchiveWorkspace(org.id);
+      } else {
+        Cypress.env("workspaceId", org.id);
+      }
+    });
   });
 });
