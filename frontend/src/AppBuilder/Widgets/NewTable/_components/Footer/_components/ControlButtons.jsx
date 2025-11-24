@@ -73,8 +73,9 @@ export const ControlButtons = memo(
             label="Selects All"
             data-cy={`options-select-all-coloumn`}
             onClick={table.getToggleAllColumnsVisibilityHandler()}
-            icon={table.getIsAllColumnsVisible() ? 'IconCheck' : ''}
+            icon={table.getIsAllColumnsVisible() ? 'tickv3' : ''}
             fill="var(--cc-primary-brand)"
+            isTablerIcon={false}
             variant="ghostBlack"
             className={`tw-w-full justify-content-start tw-pr-[6px] ${
               table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
@@ -89,8 +90,9 @@ export const ControlButtons = memo(
                   label={header}
                   data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
                   onClick={column.getToggleVisibilityHandler()}
-                  icon={column.getIsVisible() ? 'IconCheck' : ''}
+                  icon={column.getIsVisible() ? 'tickv3' : ''}
                   fill="var(--cc-primary-brand)"
+                  isTablerIcon={false}
                   variant="ghostBlack"
                   className={`tw-w-full justify-content-start tw-pr-[6px] ${
                     column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
