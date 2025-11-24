@@ -295,8 +295,8 @@ export const createGridSlice = (set, get) => ({
         isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
           ? containerHeight
           : visibility
-            ? componentElement.offsetHeight
-            : HIDDEN_COMPONENT_HEIGHT;
+          ? componentElement.offsetHeight
+          : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
@@ -438,30 +438,51 @@ export const createGridSlice = (set, get) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
   },
-  handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
-      get();
+  handleCanvasContainerMouseDown: (e) => {
+    const {
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      isRightSidebarOpen,
+      isGroupResizing,
+      isGroupDragging,
+      activeRightSideBarTab,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
 
-    // Check if any codehinter preview popover is currently open
-    const isCodehinterPreviewOpen = () => {
-      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
-      return popovers.length > 0;
+    // Check if any inspector popover is currently open
+    const isInspectorPopoverOpen = () => {
+      const selector = [
+        '#codehinter-preview-box-popover',
+        '.inspector-select-options-popover',
+        '.inspector-event-manager-popover',
+        '.inspector-steps-options-popover',
+        '.table-column-popover',
+        '.codebuilder-color-swatches-popover',
+        '.boxshadow-picker-popover',
+        '.color-picker-popover',
+        '.dropdown-menu-container',
+        '.inspector-select.react-select__menu-list',
+        '.icon-widget-popover',
+      ].join(',');
+
+      return !!document.querySelector(selector);
     };
 
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
       !selectedText &&
-      !isCodehinterPreviewOpen() &&
+      !isInspectorPopoverOpen() &&
       !isGroupResizing &&
       !isGroupDragging
     ) {
       clearSelectedComponents();
       if (isRightSidebarOpen) {
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+        activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+          ? setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES)
+          : setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       }
     }
   },

@@ -33,7 +33,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const scrollTimeoutRef = useRef(null);
   const canvasContentRef = useRef(null);
   const [isScrolling, setIsScrolling] = useState(false);
-  const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
+  const handleCanvasContainerMouseDown = useStore((state) => state.handleCanvasContainerMouseDown, shallow);
   const resolveReferences = useStore((state) => state.resolveReferences);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -227,7 +227,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}
       id="main-editor-canvas"
-      onMouseUp={handleCanvasContainerMouseUp}
+      onMouseDown={handleCanvasContainerMouseDown}
     >
       <AppCanvasBanner appId={appId} />
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
