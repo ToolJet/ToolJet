@@ -36,7 +36,6 @@ describe("Instance settings - White labelling", () => {
   after(() => {
     cy.apiLogin();
     cy.apiUpdateWhiteLabeling(whiteLabelConfig);
-    enableInstanceSignup(false);
   });
 
   it("should verify all white labelling UI elements", () => {
@@ -159,6 +158,8 @@ describe("Instance settings - White labelling", () => {
 
     verifyLogoOnWorkspaceLoginPage("my-workspace");
 
+    cy.visit("/");
+    cy.wait(1000);
     cy.get(onboardingSelectors.createAnAccountLink).click();
     verifyCustomLogo(
       whiteLabelSelectors.tooljetHeaderImg,
