@@ -143,10 +143,22 @@ export class AppHistoryUtilService {
         appVersionUpdateDto.pageSettings;
 
       if (hasSettingsUpdate) {
+        // Determine the action type based on what's being updated
+        let actionType: ACTION_TYPE;
+        let settingsType: string;
+
+        if (appVersionUpdateDto.pageSettings) {
+          actionType = ACTION_TYPE.PAGE_SETTINGS_UPDATE;
+          settingsType = 'page';
+        } else {
+          actionType = ACTION_TYPE.GLOBAL_SETTINGS_UPDATE;
+          settingsType = 'global';
+        }
+
         const operationScope: any = {
           operation: 'update_settings',
-          settings: appVersionUpdateDto.globalSettings || appVersionUpdateDto,
-          settingsType: 'global',
+          settings: appVersionUpdateDto.pageSettings || appVersionUpdateDto.globalSettings || appVersionUpdateDto,
+          settingsType,
         };
 
         // If homePageId is being updated, include it in the operation scope for better description
@@ -157,7 +169,7 @@ export class AppHistoryUtilService {
 
         await this.queueHistoryCapture(
           appVersion.id,
-          ACTION_TYPE.GLOBAL_SETTINGS_UPDATE,
+          actionType,
           operationScope
         );
       }
