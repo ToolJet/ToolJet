@@ -161,7 +161,7 @@ describe("Self host onboarding", () => {
       cy.get(onboardingSelectors.onPremiseLink)
         .verifyVisibleElement("have.text", "Click here")
         .and("have.attr", "href")
-        .and("equal", "https://tooljet.ai/pricing?payment=onpremise");
+        .and("equal", "https://tooljet.com/pricing?payment=onpremise");
 
       const planTitles = [
         {
