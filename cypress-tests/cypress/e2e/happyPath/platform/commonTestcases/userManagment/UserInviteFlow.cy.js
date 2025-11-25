@@ -77,7 +77,7 @@ describe("user invite flow cases", () => {
     cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
     cy.get(onboardingSelectors.signInButton).click();
-    cy.get(commonSelectors.toastCloseButton).click();
+    cy.wait(3000);
 
     cy.apiLogin();
     cy.visit("/my-workspace");
