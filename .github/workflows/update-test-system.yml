@@ -3,16 +3,6 @@ name: Update test system (LTS and pre-release)
 on:
   workflow_dispatch:
     inputs:
-      operation_mode:
-        description: "What do you want to do?"
-        required: true
-        type: choice
-        options:
-          - view-env-vars          # Just view current .env
-          - manage-env-vars        # Add/Edit/Remove env vars
-          - deploy-docker-image    # Build & deploy new image
-          - deploy-with-env-update # Deploy image + update env vars
-      
       # Existing inputs for Docker deployment
       branch_name:
         description: "Git branch to build from (required for deploy operations)"
@@ -26,12 +16,13 @@ on:
           - ./docker/LTS/ee/ee-production.Dockerfile
           - ./docker/pre-release/ee/ee-production.Dockerfile
       docker_tag:
-        description: "Docker tag suffix (required for deploy operations)"
+        description: "Docker tag suffix (e.g., pre-release-14). Leave blank if only managing env vars."
         required: false
+        default: ""
       
       # Environment management inputs
       env_changes:
-        description: "Environment changes (required for manage-env-vars). Format: ADD KEY=value, EDIT KEY=value, REMOVE KEY (one per line)"
+        description: "Environment changes (Format: ADD KEY=value, EDIT KEY=value, REMOVE KEY) - one per line. Leave blank if only deploying."
         required: false
         default: ""
       
@@ -50,169 +41,13 @@ on:
           - ai-pre-release
 
 jobs:
-  # Job 1: View current environment variables
-  view-environment:
-    if: github.event.inputs.operation_mode == 'view-env-vars'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: ✅ Check user authorization
-        run: |
-          # Define allowed users
-          allowed_users=(
-            "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER3_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER4_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER5_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER6_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER7_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER8_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
-          )
-
-          current_user="${{ github.actor }}"
-          authorized=false
-
-          for user in "${allowed_users[@]}"; do
-            if [[ "$current_user" == "$user" ]]; then
-              authorized=true
-              break
-            fi
-          done
-
-          if [[ "$authorized" == "false" ]]; then
-            echo "❌ User '$current_user' is not authorized to trigger this workflow."
-            exit 1
-          else
-            echo "✅ User '$current_user' is authorized."
-          fi
-
-      - name: Install SSH and JQ
-        run: sudo apt-get install -y jq openssh-client
-
-      - name: Determine target host
-        id: vmhost
-        run: |
-          test_system="${{ github.event.inputs.test_system }}"
-          vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
-
-          if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
-            echo "VM mapping not found for $test_system"
-            exit 1
-          fi
-
-          echo "host=$vm_host" >> $GITHUB_OUTPUT
-
-      - name: View current .env file
-        run: |
-          echo "$SSH_KEY" > key.pem
-          chmod 600 key.pem
-
-          TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-
-          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
-          set -e
-
-          TARGET_SYSTEM="$TARGET_SYSTEM"
-          cd ~
-
-          # Navigate to correct directory
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "🔍 Detected LTS system, navigating to LTS directory..."
-            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
-            if [[ -z "$LTS_DIRS" ]]; then
-              echo "❌ No LTS directories found!"
-              exit 1
-            fi
-            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            cd "$SELECTED_LTS_DIR"
-            echo "📂 Working in LTS directory: $(pwd)"
-          else
-            echo "📂 Working in home directory: $(pwd)"
-          fi
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📋 Current .env file for: $TARGET_SYSTEM"
-          echo "📂 Location: $(pwd)/.env"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo ""
-          echo "🔒 PROTECTED VARIABLES (Hidden - Not Editable):"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          # Protected variables that cannot be viewed or edited
-          PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
-
-          # Show protected variable keys (values hidden)
-          while IFS= read -r line; do
-            # Skip empty lines and comments
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            
-            # Extract key
-            KEY=$(echo "$line" | cut -d'=' -f1)
-            
-            # Check if it's a protected variable
-            if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-              echo "$KEY=***HIDDEN***"
-            fi
-          done < .env
-
-          echo ""
-          echo "✏️  OPTIONAL VARIABLES (You Can View and Edit):"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          # Show all non-protected variables
-          while IFS= read -r line; do
-            # Skip empty lines and comments
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            
-            # Extract key
-            KEY=$(echo "$line" | cut -d'=' -f1)
-            
-            # Skip if it's a protected variable
-            if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-              continue
-            fi
-            
-            # Show the full line for optional variables
-            echo "$line"
-          done < .env
-
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          TOTAL_VARS=$(grep -c '^[^#]' .env 2>/dev/null || echo "0")
-          PROTECTED_COUNT=$(grep -E "^($PROTECTED_VARS)=" .env 2>/dev/null | wc -l)
-          EDITABLE_COUNT=$((TOTAL_VARS - PROTECTED_COUNT))
-          
-          echo "📊 Summary:"
-          echo "   Total variables: $TOTAL_VARS"
-          echo "   🔒 Protected: $PROTECTED_COUNT"
-          echo "   ✏️  Editable: $EDITABLE_COUNT"
-          echo ""
-          echo "💡 Usage Tips:"
-          echo "   - To edit variables: Use 'manage-env-vars' operation mode"
-          echo "   - Format: ADD KEY=value, EDIT KEY=value, REMOVE KEY"
-          echo "   - Protected variables cannot be modified for security"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          EOF
-        env:
-          SSH_USER: ${{ secrets.AZURE_VM_USER }}
-          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
-
-  # Job 2: Manage environment variables only
   manage-environment:
-    if: github.event.inputs.operation_mode == 'manage-env-vars'
+    if: ${{ github.event.inputs.env_changes != '' && github.event.inputs.docker_tag == '' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: ✅ Check user authorization
         run: |
-          # Define allowed users
           allowed_users=(
             "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
@@ -229,17 +64,14 @@ jobs:
             "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
           )
-
           current_user="${{ github.actor }}"
           authorized=false
-
           for user in "${allowed_users[@]}"; do
             if [[ "$current_user" == "$user" ]]; then
               authorized=true
               break
             fi
           done
-
           if [[ "$authorized" == "false" ]]; then
             echo "❌ User '$current_user' is not authorized to trigger this workflow."
             exit 1
@@ -247,52 +79,34 @@ jobs:
             echo "✅ User '$current_user' is authorized."
           fi
 
-      - name: Validate env_changes input
-        run: |
-          if [[ -z "${{ github.event.inputs.env_changes }}" ]]; then
-            echo "❌ Error: env_changes input is required for manage-env-vars operation"
-            echo "💡 Tip: Use format like:"
-            echo "   ADD NEW_VAR=value"
-            echo "   EDIT EXISTING_VAR=new_value"
-            echo "   REMOVE OLD_VAR"
-            exit 1
-          fi
-
       - name: Install SSH and JQ
-        run: sudo apt-get install -y jq openssh-client
+        run: sudo apt-get update && sudo apt-get install -y jq openssh-client
 
       - name: Determine target host
         id: vmhost
         run: |
           test_system="${{ github.event.inputs.test_system }}"
           vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
-
           if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
             echo "VM mapping not found for $test_system"
             exit 1
           fi
-
           echo "host=$vm_host" >> $GITHUB_OUTPUT
 
       - name: Update environment variables
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
           ENV_CHANGES="${{ github.event.inputs.env_changes }}"
 
           ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
           set -e
-
           TARGET_SYSTEM="$TARGET_SYSTEM"
           ENV_CHANGES="$ENV_CHANGES"
-
           cd ~
 
-          # Navigate to correct directory
           if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "🔍 Detected LTS system, navigating to LTS directory..."
             LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
             if [[ -z "$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
@@ -300,220 +114,162 @@ jobs:
             fi
             SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
             cd "$SELECTED_LTS_DIR"
-            echo "📂 Working in LTS directory: $(pwd)"
-          else
-            echo "📂 Working in home directory: $(pwd)"
+            echo "📂 Working in: $(pwd)"
           fi
 
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🔧 PROCESSING ENVIRONMENT VARIABLE CHANGES"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          # Backup .env before modifications
-          echo "💾 Creating .env backup"
           BACKUP_FILE=".env.backup.$(date +%s)"
           sudo cp .env "$BACKUP_FILE"
           echo "✅ Backup created: $BACKUP_FILE"
-          echo ""
 
-          # Define protected variables (cannot be modified)
           PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
 
-          echo "📝 Current .env snapshot (showing only editable variables):"
-          while IFS= read -r line; do
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            KEY=$(echo "$line" | cut -d'=' -f1)
-            
-            # Skip protected variables in display
-            if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-              continue
-            fi
-            
-            echo "$line"
-          done < .env | head -15
-          echo ""
+          ADD_SUCCESS=0
+          ADD_FAIL=0
+          EDIT_SUCCESS=0
+          EDIT_FAIL=0
+          REMOVE_SUCCESS=0
+          REMOVE_FAIL=0
 
-          # Process each line of env_changes
           while IFS= read -r line; do
-            # Trim whitespace
             line=$(echo "$line" | xargs)
-
-            # Skip empty lines and comments
             [[ -z "$line" || "$line" =~ ^# ]] && continue
 
-            # Process ADD command
             if [[ "$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
               KEY="${BASH_REMATCH[1]}"
               VALUE="${BASH_REMATCH[2]}"
-
-              # Check if trying to add a protected variable
               if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ ERROR: Cannot add/modify protected variable: $KEY"
-                echo "🔒 Protected variables are managed by the deployment system and cannot be changed"
-                echo "💡 Use 'view-env-vars' to see which variables you can edit"
-                exit 1
+                echo "❌ FAILED: Cannot add protected variable '$KEY'"
+                ADD_FAIL=$((ADD_FAIL + 1))
+                continue
               fi
-
               if grep -q "^${KEY}=" .env; then
-                echo "⚠️  Variable '$KEY' already exists, skipping ADD (use EDIT to modify)"
+                echo "⚠️  SKIPPED: Variable '$KEY' already exists (use EDIT)"
+                continue
               else
-                echo "➕ Adding: $KEY=$VALUE"
-                echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null
+                if echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null; then
+                  echo "✅ SUCCESS: Added '$KEY'"
+                  ADD_SUCCESS=$((ADD_SUCCESS + 1))
+                else
+                  echo "❌ FAILED: Could not add '$KEY'"
+                  ADD_FAIL=$((ADD_FAIL + 1))
+                fi
               fi
 
-            # Process EDIT command
             elif [[ "$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
               KEY="${BASH_REMATCH[1]}"
               VALUE="${BASH_REMATCH[2]}"
-
-              # Check if trying to edit a protected variable
               if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ ERROR: Cannot edit protected variable: $KEY"
-                echo "🔒 Protected variables are managed by the deployment system and cannot be changed"
-                echo "💡 Use 'view-env-vars' to see which variables you can edit"
-                exit 1
+                echo "❌ FAILED: Cannot edit protected variable '$KEY'"
+                EDIT_FAIL=$((EDIT_FAIL + 1))
+                continue
               fi
-
               if grep -q "^${KEY}=" .env; then
-                echo "✏️  Editing: $KEY=$VALUE"
-                sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env
+                if sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env; then
+                  echo "✅ SUCCESS: Edited '$KEY'"
+                  EDIT_SUCCESS=$((EDIT_SUCCESS + 1))
+                else
+                  echo "❌ FAILED: Could not edit '$KEY'"
+                  EDIT_FAIL=$((EDIT_FAIL + 1))
+                fi
               else
-                echo "⚠️  Variable '$KEY' not found, skipping EDIT (use ADD to create)"
+                echo "⚠️  SKIPPED: Variable '$KEY' not found (use ADD)"
+                continue
               fi
 
-            # Process REMOVE command
             elif [[ "$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
               KEY="${BASH_REMATCH[1]}"
-
-              # Check if variable is protected
               if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ ERROR: Cannot remove protected variable: $KEY"
-                echo "🔒 Protected variables are managed by the deployment system and cannot be removed"
-                echo "💡 Use 'view-env-vars' to see which variables you can edit"
-                exit 1
+                echo "❌ FAILED: Cannot remove protected variable '$KEY'"
+                REMOVE_FAIL=$((REMOVE_FAIL + 1))
+                continue
               fi
-
               if grep -q "^${KEY}=" .env; then
-                echo "➖ Removing: $KEY"
-                sudo sed -i "/^${KEY}=/d" .env
+                if sudo sed -i "/^${KEY}=/d" .env; then
+                  echo "✅ SUCCESS: Removed '$KEY'"
+                  REMOVE_SUCCESS=$((REMOVE_SUCCESS + 1))
+                else
+                  echo "❌ FAILED: Could not remove '$KEY'"
+                  REMOVE_FAIL=$((REMOVE_FAIL + 1))
+                fi
               else
-                echo "⚠️  Variable '$KEY' not found, skipping REMOVE"
+                echo "⚠️  SKIPPED: Variable '$KEY' not found"
+                continue
               fi
 
             else
-              echo "⚠️  Invalid format: $line"
-              echo "Valid formats: ADD KEY=value, EDIT KEY=value, REMOVE KEY"
+              echo "⚠️  INVALID FORMAT: $line"
             fi
-
           done <<< "$ENV_CHANGES"
 
           echo ""
-          echo "📄 Modified .env preview (showing only editable variables):"
-          while IFS= read -r line; do
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            KEY=$(echo "$line" | cut -d'=' -f1)
-            
-            if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-              continue
-            fi
-            
-            echo "$line"
-          done < .env | tail -20
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 SUMMARY"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "ADD:    ✅ $ADD_SUCCESS succeeded | ❌ $ADD_FAIL failed"
+          echo "EDIT:   ✅ $EDIT_SUCCESS succeeded | ❌ $EDIT_FAIL failed"
+          echo "REMOVE: ✅ $REMOVE_SUCCESS succeeded | ❌ $REMOVE_FAIL failed"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-          # Restart containers to apply changes
+          TOTAL_SUCCESS=$((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS))
+          TOTAL_FAIL=$((ADD_FAIL + EDIT_FAIL + REMOVE_FAIL))
+
+          if [ $TOTAL_SUCCESS -eq 0 ]; then
+            echo "⚠️  No changes were applied"
+            sudo cp "$BACKUP_FILE" .env
+            exit 1
+          fi
+
           echo ""
-          echo "🔄 Restarting containers to apply changes..."
+          echo "🔄 Restarting containers..."
           sudo docker-compose down
-          
-          echo "🚀 Starting containers..."
           sudo docker-compose up -d
 
-          # Wait for containers to be healthy
-          echo "⏳ Waiting for containers to start (timeout: 120 seconds)..."
+          echo "⏳ Waiting for containers (timeout: 120s)..."
           SUCCESS_FOUND=false
           TIMEOUT=120
           ELAPSED=0
-
           while [ $ELAPSED -lt $TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
-              echo "✅ Containers started successfully!"
               SUCCESS_FOUND=true
               break
             fi
-            
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
 
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Container startup failed or timed out"
-            echo "📄 Last 20 lines of logs:"
-            sudo docker-compose logs --tail=20
-            echo ""
-            
-            echo "🛑 Rolling back to previous .env state..."
+            echo "❌ Container startup failed"
+            echo "🔄 Rolling back..."
             sudo cp "$BACKUP_FILE" .env
-            echo "✅ .env restored from backup"
-            
-            echo "🔄 Restarting with previous configuration..."
             sudo docker-compose down
             sudo docker-compose up -d
-            
-            # Wait a bit for rollback to complete
-            echo "⏳ Waiting for rollback to complete..."
-            sleep 30
-            
-            echo "📄 Rollback logs:"
-            sudo docker-compose logs --tail=20
-            echo ""
-            echo "✅ Rollback completed - system restored to previous state"
+            echo "✅ Rollback completed"
             exit 1
           fi
 
-          echo ""
-          echo "📋 Container status:"
-          sudo docker-compose ps
-          echo ""
-          echo "📄 Application logs (last 20 lines):"
-          sudo docker-compose logs --tail=20
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ Environment variables updated successfully!"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          # Cleanup old backups (keep last 1)
-          echo ""
-          echo "🧹 Cleaning up old backups (keeping last 1)..."
+          echo "🧹 Cleaning up old backups..."
           ls -t .env.backup.* 2>/dev/null | tail -n +2 | xargs -r sudo rm -f
-          echo "✅ Cleanup complete"
-
           EOF
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
 
-  # Job 3: Deploy Docker image only (original workflow)
+
   build-and-deploy:
-    if: |
-      github.event.inputs.operation_mode == 'deploy-docker-image' || 
-      github.event.inputs.operation_mode == 'deploy-with-env-update'
+    if: ${{ github.event.inputs.env_changes == '' && github.event.inputs.docker_tag != '' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate required inputs for deployment
+      - name: Validate required inputs
         run: |
           if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
-            echo "❌ Error: branch_name is required for deploy operations"
+            echo "❌ Error: branch_name is required"
             exit 1
           fi
           if [[ -z "${{ github.event.inputs.dockerfile_path }}" ]]; then
-            echo "❌ Error: dockerfile_path is required for deploy operations"
-            exit 1
-          fi
-          if [[ -z "${{ github.event.inputs.docker_tag }}" ]]; then
-            echo "❌ Error: docker_tag is required for deploy operations"
+            echo "❌ Error: dockerfile_path is required"
             exit 1
           fi
 
@@ -529,7 +285,6 @@ jobs:
 
       - name: ✅ Check user authorization
         run: |
-          # Define allowed users
           allowed_users=(
             "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
@@ -546,17 +301,14 @@ jobs:
             "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
             "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
           )
-
           current_user="${{ github.actor }}"
           authorized=false
-
           for user in "${allowed_users[@]}"; do
             if [[ "$current_user" == "$user" ]]; then
               authorized=true
               break
             fi
           done
-
           if [[ "$authorized" == "false" ]]; then
             echo "❌ User '$current_user' is not authorized to trigger this workflow."
             exit 1
@@ -601,267 +353,348 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+            BRANCH_NAME: ${{ github.event.inputs.branch_name }}
 
       - name: Show the full Docker tag
         run: echo "✅ Docker image built and pushed:${{ steps.taggen.outputs.tag }}"
 
       - name: Install SSH and JQ
-        run: sudo apt-get install -y jq openssh-client
+        run: sudo apt-get update && sudo apt-get install -y jq openssh-client
 
       - name: Determine target host
         id: vmhost
         run: |
           test_system="${{ github.event.inputs.test_system }}"
           vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
-
           if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
             echo "VM mapping not found for $test_system"
             exit 1
           fi
-
           echo "host=$vm_host" >> $GITHUB_OUTPUT
 
       - name: Deploy to target environment
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-
           IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-          ENV_CHANGES="${{ github.event.inputs.env_changes }}"
-          OPERATION_MODE="${{ github.event.inputs.operation_mode }}"
-
-          # Debug: Show what we're deploying
-          echo "DEBUG: IMAGE_TAG=$IMAGE_TAG"
-          echo "DEBUG: TARGET_SYSTEM=$TARGET_SYSTEM"
-          echo "DEBUG: OPERATION_MODE=$OPERATION_MODE"
 
           ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
           set -e
-
           IMAGE_TAG="$IMAGE_TAG"
           TARGET_SYSTEM="$TARGET_SYSTEM"
-          ENV_CHANGES="$ENV_CHANGES"
-          OPERATION_MODE="$OPERATION_MODE"
-
           cd ~
-          echo "📁 Finding correct deployment directory"
-
-          # Debug: Show variables on remote host
-          echo "Debug on remote: IMAGE_TAG=$IMAGE_TAG"
-          echo "Debug on remote: TARGET_SYSTEM=$TARGET_SYSTEM"
 
           if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "Detected LTS system: $TARGET_SYSTEM"
-            echo "🔍 Searching for LTS directories..."
-            
-            # Find LTS directories dynamically
             LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \
                        ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
-            
             if [[ -z "$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
-              echo "Available directories:"
-              ls -la | grep "^d"
               exit 1
             fi
-            
-            echo "Available LTS directories:"
-            echo "$LTS_DIRS"
-            
-            # Choose the first available LTS directory
             SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            
-            echo "📂 Selected LTS directory: $SELECTED_LTS_DIR"
             cd "$SELECTED_LTS_DIR"
-            echo "✅ Now in directory: $(pwd)"
-          else
-            echo "Detected pre-release system: $TARGET_SYSTEM"
-            echo "📂 Moving to target directory: $TARGET_SYSTEM"
-            cd ~
-            echo "✅ Now in directory: $(pwd)"
-          fi
-
-          # Process environment variables if operation mode is deploy-with-env-update
-          if [[ "$OPERATION_MODE" == "deploy-with-env-update" && -n "$ENV_CHANGES" ]]; then
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔧 PROCESSING ENVIRONMENT VARIABLE CHANGES"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-            # Backup .env before modifications
-            echo "💾 Creating .env backup"
-            BACKUP_FILE=".env.backup.$(date +%s)"
-            sudo cp .env "$BACKUP_FILE"
-            echo "✅ Backup created: $BACKUP_FILE"
-            echo ""
-
-            # Define protected variables (cannot be modified via env_changes)
-            # Note: TOOLJET_IMAGE is excluded here as it's updated by the deployment process
-            PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
-
-            # Process each line of env_changes
-            while IFS= read -r line; do
-              # Trim whitespace
-              line=$(echo "$line" | xargs)
-
-              # Skip empty lines and comments
-              [[ -z "$line" || "$line" =~ ^# ]] && continue
-
-              # Process ADD command
-              if [[ "$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
-                KEY="${BASH_REMATCH[1]}"
-                VALUE="${BASH_REMATCH[2]}"
-
-                # Check if trying to add a protected variable
-                if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                  echo "❌ ERROR: Cannot add/modify protected variable: $KEY"
-                  exit 1
-                fi
-
-                if grep -q "^${KEY}=" .env; then
-                  echo "⚠️  Variable '$KEY' already exists, skipping ADD"
-                else
-                  echo "➕ Adding: $KEY=$VALUE"
-                  echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null
-                fi
-
-              # Process EDIT command
-              elif [[ "$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
-                KEY="${BASH_REMATCH[1]}"
-                VALUE="${BASH_REMATCH[2]}"
-
-                # Check if trying to edit a protected variable
-                if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                  echo "❌ ERROR: Cannot edit protected variable: $KEY"
-                  exit 1
-                fi
-
-                if grep -q "^${KEY}=" .env; then
-                  echo "✏️  Editing: $KEY=$VALUE"
-                  sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env
-                else
-                  echo "⚠️  Variable '$KEY' not found, skipping EDIT"
-                fi
-
-              # Process REMOVE command
-              elif [[ "$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
-                KEY="${BASH_REMATCH[1]}"
-
-                # Check if variable is protected
-                if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                  echo "❌ ERROR: Cannot remove protected variable: $KEY"
-                  exit 1
-                fi
-
-                if grep -q "^${KEY}=" .env; then
-                  echo "➖ Removing: $KEY"
-                  sudo sed -i "/^${KEY}=/d" .env
-                else
-                  echo "⚠️  Variable '$KEY' not found, skipping REMOVE"
-                fi
-
-              else
-                echo "⚠️  Invalid format: $line"
-              fi
-
-            done <<< "$ENV_CHANGES"
-
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
           fi
 
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-          echo "current image"
-          cat .env | grep TOOLJET_IMAGE
-
-          echo "📦 Reading current TOOLJET_IMAGE from .env"
           CURRENT_IMAGE=$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
-          echo "Found CURRENT_IMAGE: $CURRENT_IMAGE"
-
-          echo "🛑 Stopping containers"
           sudo docker-compose down
-
-          echo "📝 Updating .env with new image"
           sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$IMAGE_TAG|" .env
-
-          echo "📥 Pulling new image: $IMAGE_TAG"
-          if [ -z "$IMAGE_TAG" ]; then
-            echo "❌ IMAGE_TAG is empty!"
-            exit 1
-          fi
           sudo docker pull "$IMAGE_TAG"
-
-          echo "🚀 Starting container in background"
           sudo docker-compose up -d
 
-          # Wait for ToolJet to start and show success message
-          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
-
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
-              echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
 
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
-            echo "📄 Showing current logs for troubleshooting..."
             sudo docker-compose logs --tail=50
-            echo ""
-            echo "=== CONTAINER STATUS ==="
-            sudo docker-compose ps
-            echo ""
-            
-            echo "🛑 Starting rollback process..."
             sudo docker-compose down
-            
-            # If we have a backup from env changes, restore it
-            if [[ "$OPERATION_MODE" == "deploy-with-env-update" && -n "$BACKUP_FILE" ]]; then
-              echo "🔄 Restoring .env from backup: $BACKUP_FILE"
-              sudo cp "$BACKUP_FILE" .env
-            else
-              echo "🔄 Reverting TOOLJET_IMAGE to previous version"
-              sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$CURRENT_IMAGE|" .env
-            fi
-            
-            echo "🔄 Starting previous image..."
+            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$CURRENT_IMAGE|" .env
             sudo docker-compose up -d
-            echo "✅ Rollback completed!"
             exit 1
           fi
 
-          echo "✅ Deployment successful!"
-
-          echo "📌 Storing successful deployment info in .env"
           sudo sed -i "/^OLD_IMAGE=/d" .env
           echo "OLD_IMAGE=$CURRENT_IMAGE" | sudo tee -a .env
-          echo "📄 Final application logs:"
           sudo docker-compose logs --tail=50
-
-          echo "🧹 Pruning old Docker images"
           sudo docker image prune -a -f
-
-          # Cleanup old backups if any were created
-          if [[ "$OPERATION_MODE" == "deploy-with-env-update" ]]; then
-            echo "🧹 Cleaning up old .env backups (keeping last 1)"
-            ls -t .env.backup.* 2>/dev/null | tail -n +2 | xargs -r sudo rm -f
-          fi
-
           EOF
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
-          
+
+
+  build-and-deploy-with-env:
+    if: ${{ github.event.inputs.env_changes != '' && github.event.inputs.docker_tag != '' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate required inputs
+        run: |
+          if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
+            echo "❌ Error: branch_name is required"
+            exit 1
+          fi
+          if [[ -z "${{ github.event.inputs.dockerfile_path }}" ]]; then
+            echo "❌ Error: dockerfile_path is required"
+            exit 1
+          fi
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          df -h
+
+      - name: ✅ Check user authorization
+        run: |
+          allowed_users=(
+            "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER3_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER4_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER5_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER6_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER7_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER8_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
+            "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
+          )
+          current_user="${{ github.actor }}"
+          authorized=false
+          for user in "${allowed_users[@]}"; do
+            if [[ "$current_user" == "$user" ]]; then
+              authorized=true
+              break
+            fi
+          done
+          if [[ "$authorized" == "false" ]]; then
+            echo "❌ User '$current_user' is not authorized to trigger this workflow."
+            exit 1
+          else
+            echo "✅ User '$current_user' is authorized."
+          fi
+
+      - name: Install SSH and JQ
+        run: sudo apt-get update && sudo apt-get install -y jq openssh-client
+
+      - name: Determine target host
+        id: vmhost
+        run: |
+          test_system="${{ github.event.inputs.test_system }}"
+          vm_host=$(echo '${{ secrets.VM_HOST_MAP_JSON }}' | jq -r --arg sys "$test_system" '.[$sys]')
+          if [[ -z "$vm_host" || "$vm_host" == "null" ]]; then
+            echo "VM mapping not found for $test_system"
+            exit 1
+          fi
+          echo "host=$vm_host" >> $GITHUB_OUTPUT
+
+      - name: Apply environment changes first
+        run: |
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
+          ENV_CHANGES="${{ github.event.inputs.env_changes }}"
+
+          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          set -e
+          TARGET_SYSTEM="$TARGET_SYSTEM"
+          ENV_CHANGES="$ENV_CHANGES"
+          cd ~
+
+          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
+            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
+            cd "$SELECTED_LTS_DIR"
+          fi
+
+          echo "🔧 PROCESSING ENVIRONMENT CHANGES BEFORE DEPLOY"
+          BACKUP_FILE=".env.backup.$(date +%s)"
+          sudo cp .env "$BACKUP_FILE"
+
+          PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
+
+          ADD_SUCCESS=0
+          EDIT_SUCCESS=0
+          REMOVE_SUCCESS=0
+          TOTAL_FAIL=0
+
+          while IFS= read -r line; do
+            line=$(echo "$line" | xargs)
+            [[ -z "$line" || "$line" =~ ^# ]] && continue
+
+            if [[ "$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="${BASH_REMATCH[1]}"
+              VALUE="${BASH_REMATCH[2]}"
+              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot add '$KEY'"
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              elif grep -q "^${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '$KEY' exists"
+              elif echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null; then
+                echo "✅ SUCCESS: Added '$KEY'"
+                ADD_SUCCESS=$((ADD_SUCCESS + 1))
+              else
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              fi
+
+            elif [[ "$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="${BASH_REMATCH[1]}"
+              VALUE="${BASH_REMATCH[2]}"
+              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot edit '$KEY'"
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              elif ! grep -q "^${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '$KEY' not found"
+              elif sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env; then
+                echo "✅ SUCCESS: Edited '$KEY'"
+                EDIT_SUCCESS=$((EDIT_SUCCESS + 1))
+              else
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              fi
+
+            elif [[ "$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
+              KEY="${BASH_REMATCH[1]}"
+              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot remove '$KEY'"
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              elif ! grep -q "^${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '$KEY' not found"
+              elif sudo sed -i "/^${KEY}=/d" .env; then
+                echo "✅ SUCCESS: Removed '$KEY'"
+                REMOVE_SUCCESS=$((REMOVE_SUCCESS + 1))
+              else
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              fi
+            fi
+          done <<< "$ENV_CHANGES"
+
+          echo "📊 ENV CHANGES: ✅ $((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS)) | ❌ $TOTAL_FAIL"
+
+          sudo docker-compose down
+          sudo docker-compose up -d
+          sleep 30
+          EOF
+        env:
+          SSH_USER: ${{ secrets.AZURE_VM_USER }}
+          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate full Docker tag
+        id: taggen
+        run: |
+          input_tag="${{ github.event.inputs.docker_tag }}"
+          if [[ "$input_tag" == *"/"* ]]; then
+            echo "tag=$input_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ github.event.inputs.dockerfile_path }}
+          push: true
+          tags: ${{ steps.taggen.outputs.tag }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
+
+      - name: Deploy to target environment
+        run: |
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+          IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
+          TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
+
+          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          set -e
+          IMAGE_TAG="$IMAGE_TAG"
+          TARGET_SYSTEM="$TARGET_SYSTEM"
+          cd ~
+
+          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
+            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
+            cd "$SELECTED_LTS_DIR"
+          fi
+
+          echo "🔐 Docker login"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+          CURRENT_IMAGE=$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          sudo docker-compose down
+          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$IMAGE_TAG|" .env
+          sudo docker pull "$IMAGE_TAG"
+          sudo docker-compose up -d
+
+          SUCCESS_FOUND=false
+          TIMEOUT=300
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              SUCCESS_FOUND=true
+              break
+            fi
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            sudo docker-compose logs --tail=50
+            LATEST_BACKUP=$(ls -t .env.backup.* 2>/dev/null | head -n 1)
+            if [[ -n "$LATEST_BACKUP" ]]; then
+              sudo cp "$LATEST_BACKUP" .env
+            else
+              sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$CURRENT_IMAGE|" .env
+            fi
+            sudo docker-compose down
+            sudo docker-compose up -d
+            exit 1
+          fi
+
+          sudo sed -i "/^OLD_IMAGE=/d" .env
+          echo "OLD_IMAGE=$CURRENT_IMAGE" | sudo tee -a .env
+          sudo docker image prune -a -f
+          ls -t .env.backup.* 2>/dev/null | tail -n +2 | xargs -r sudo rm -f
+          EOF
+        env:
+          SSH_USER: ${{ secrets.AZURE_VM_USER }}
+          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
