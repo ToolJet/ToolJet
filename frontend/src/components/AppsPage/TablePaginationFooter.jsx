@@ -7,7 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
+} from '@/components/ui/Rocket/pagination';
 import { TablePaginationFooterSkeleton } from './TablePaginationFooterSkeleton';
 
 export function TablePaginationFooter({ table, isLoading }) {

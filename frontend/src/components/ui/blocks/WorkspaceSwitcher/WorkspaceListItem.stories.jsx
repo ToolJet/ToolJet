@@ -1,36 +1,32 @@
-import React, { useState } from "react";
-import { WorkspaceListItem } from "./WorkspaceListItem";
-import { GalleryVerticalEnd, AudioWaveform, Command } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/Button/Button";
+import React, { useState } from 'react';
+import { WorkspaceListItem } from './WorkspaceListItem';
+import { GalleryVerticalEnd, AudioWaveform, Command } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/Rocket/dropdown-menu';
+import { Button } from '@/components/ui/Button/Button';
 
 export default {
-  title: "UI/Blocks/WorkspaceSwitcher/WorkspaceListItem",
+  title: 'UI/Blocks/WorkspaceSwitcher/WorkspaceListItem',
   component: WorkspaceListItem,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
 const workspaces = [
   {
-    name: "Acme Inc",
+    name: 'Acme Inc',
     logo: GalleryVerticalEnd,
-    plan: "Enterprise",
+    plan: 'Enterprise',
   },
   {
-    name: "Acme Corp.",
+    name: 'Acme Corp.',
     logo: AudioWaveform,
-    plan: "Startup",
+    plan: 'Startup',
   },
   {
-    name: "Evil Corp.",
+    name: 'Evil Corp.',
     logo: Command,
-    plan: "Free",
+    plan: 'Free',
   },
 ];
 
@@ -43,7 +39,7 @@ export const Default = () => (
       <WorkspaceListItem
         workspace={workspaces[0]}
         index={0}
-        onClick={() => console.log("Workspace clicked:", workspaces[0].name)}
+        onClick={() => console.log('Workspace clicked:', workspaces[0].name)}
       />
     </DropdownMenuContent>
   </DropdownMenu>
@@ -60,7 +56,7 @@ export const MultipleItems = () => (
           key={workspace.name}
           workspace={workspace}
           index={index}
-          onClick={() => console.log("Workspace clicked:", workspace.name)}
+          onClick={() => console.log('Workspace clicked:', workspace.name)}
         />
       ))}
     </DropdownMenuContent>
@@ -78,9 +74,7 @@ export const WithKeyboardShortcuts = () => (
           key={workspace.name}
           workspace={workspace}
           index={index}
-          onClick={() =>
-            console.log(`Workspace ${index + 1} clicked:`, workspace.name)
-          }
+          onClick={() => console.log(`Workspace ${index + 1} clicked:`, workspace.name)}
         />
       ))}
     </DropdownMenuContent>
@@ -99,10 +93,8 @@ export const WithCheckedState = () => (
           workspace={workspace}
           index={index}
           checked={index === 0}
-          onClick={() => console.log("Workspace clicked:", workspace.name)}
-          onCheckedChange={(checked) =>
-            console.log(`Workspace ${workspace.name} checked:`, checked)
-          }
+          onClick={() => console.log('Workspace clicked:', workspace.name)}
+          onCheckedChange={(checked) => console.log(`Workspace ${workspace.name} checked:`, checked)}
         />
       ))}
     </DropdownMenuContent>
@@ -110,9 +102,7 @@ export const WithCheckedState = () => (
 );
 
 export const ControlledCheckbox = () => {
-  const [selectedWorkspace, setSelectedWorkspace] = useState(
-    workspaces[0].name
-  );
+  const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0].name);
 
   return (
     <div className="tw-space-y-4">
@@ -129,12 +119,12 @@ export const ControlledCheckbox = () => {
               checked={selectedWorkspace === workspace.name}
               onClick={() => {
                 setSelectedWorkspace(workspace.name);
-                console.log("Workspace selected:", workspace.name);
+                console.log('Workspace selected:', workspace.name);
               }}
               onCheckedChange={(checked) => {
                 if (checked) {
                   setSelectedWorkspace(workspace.name);
-                  console.log("Workspace checked:", workspace.name);
+                  console.log('Workspace checked:', workspace.name);
                 }
               }}
             />
@@ -143,8 +133,7 @@ export const ControlledCheckbox = () => {
       </DropdownMenu>
       <div className="tw-p-4 tw-bg-background-surface-layer-02 tw-rounded-lg">
         <p className="tw-text-sm tw-text-text-medium">
-          <span className="tw-font-medium">Selected workspace:</span>{" "}
-          {selectedWorkspace}
+          <span className="tw-font-medium">Selected workspace:</span> {selectedWorkspace}
         </p>
       </div>
     </div>

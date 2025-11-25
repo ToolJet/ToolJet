@@ -1,8 +1,8 @@
 import React from 'react';
 import AppListItem from './AppListItem';
 import { Button } from '@/components/ui/Button/Button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ItemContent, ItemTitle, ItemDescription } from '@/components/ui/item';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Rocket/avatar';
+import { ItemContent, ItemTitle, ItemDescription } from '@/components/ui/Rocket/item';
 
 export default {
   title: 'UI/AppListItem',

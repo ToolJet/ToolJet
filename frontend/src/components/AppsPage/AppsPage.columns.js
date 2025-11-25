@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui/Rocket/checkbox';
 import { MoreVertical, Play, Smile, SquarePen } from 'lucide-react';
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 
 function TableCellViewer({ item }) {
   return (

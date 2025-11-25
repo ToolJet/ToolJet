@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Rows3, Grid2x2 } from 'lucide-react';
 import PropTypes from 'prop-types';
 
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/Rocket/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Rocket/tabs';
 import { Button } from '@/components/ui/Button/Button';
 import {
   Breadcrumb,
@@ -11,10 +11,10 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+} from '@/components/ui/Rocket/breadcrumb';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/Rocket/dropdown-menu';
 import { FolderSelector } from '@/components/ui/blocks/FolderSelector';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/Rocket/skeleton';
 
 export function AppsPageViewHeader({
   activeTab = 'apps',

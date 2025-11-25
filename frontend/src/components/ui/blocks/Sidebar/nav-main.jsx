@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { ChevronRight } from 'lucide-react';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Rocket/collapsible';
 import {
   SidebarGroup,
   SidebarGroupLabel,

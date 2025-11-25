@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { TableBody, TableCell, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+import { TableBody, TableCell, TableRow } from '@/components/ui/Rocket/table';
+import { Skeleton } from '@/components/ui/Rocket/skeleton';
 
 export function AppsTableSkeleton({ rowCount = 5 }) {
   const rows = React.useMemo(
