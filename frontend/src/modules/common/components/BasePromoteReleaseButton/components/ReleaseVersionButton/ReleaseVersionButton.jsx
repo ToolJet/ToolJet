@@ -13,7 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default' }) {
+const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -83,7 +83,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
           show={true}
         >
           <button
-            className="btn btn-sm version-action-btn"
+            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
             disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
             onClick={onReleaseButtonClick}
           >

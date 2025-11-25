@@ -43,6 +43,7 @@
   resize: none;
   line-height: 24px;
   transition: height 0.2s;
+  background-color: var(--surfaces-surface-01) !important;
 }
 
 // Environment Toggle
@@ -63,7 +64,7 @@
     }
 
     &.selected {
-      box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1);
+      box-shadow: 0px 0px 1px var(--interactive-default), 0px 1px 1px var(--interactive-hover);
     }
 
     &:disabled {
@@ -116,13 +117,13 @@
     .tj-text-sm,
     .tj-text-xsm,
     * {
-      color: #acb2b9 !important;
+      color: var(--text-disabled) !important;
     }
 
     button {
-      background-color: #ffffff !important;
-      border-color: #e4e7eb !important;
-      color: #acb2b9 !important;
+      background-color: var(--button-secondary-disabled) !important;
+      border-color: var(--border-weak) !important;
+      color: var(--text-disabled) !important;
       cursor: not-allowed;
       pointer-events: none;
     }
@@ -136,13 +137,13 @@
     flex-shrink: 0;
 
     &.draft {
-      background-color: #faefe7;
-      color: #bf4f03;
+      background-color: var(--background-warning-weak);
+      color: var(--text-warning);
     }
 
     &.released {
-      background-color: #e6f4ea;
-      color: #1e823b;
+      background-color: var(--background-success-weak);
+      color: var(--text-success);
     }
   }
 
@@ -151,9 +152,9 @@
     font-family: 'IBM Plex Sans', sans-serif;
 
     &:hover {
-      background-color: var(--indigo7);
+      background-color: var(--button-primary-hover);
       transform: translateY(-1px);
-      box-shadow: 0px 2px 4px rgba(67, 97, 238, 0.3);
+      box-shadow: 0px 2px 4px var(--interactive-selected);
     }
 
     &:active {
@@ -189,6 +190,9 @@
     font-family: 'IBM Plex Sans', sans-serif;
     transition: all 0.2s ease;
     outline: none !important;
+    padding: 0px !important;
+    border: none;
+    box-shadow: none;
 
     &:hover:not(:disabled) {
       background-color: var(--slate3) !important;

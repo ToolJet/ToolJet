@@ -76,7 +76,11 @@ export class VersionUtilService implements IVersionUtilService {
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
     }
-    if (appVersionUpdateDto?.description && appVersion.description !== appVersionUpdateDto.description) {
+    if (
+      appVersionUpdateDto?.description !== undefined &&
+      appVersionUpdateDto?.description !== null &&
+      appVersion.description !== appVersionUpdateDto.description
+    ) {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 

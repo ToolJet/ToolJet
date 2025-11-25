@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
+import cx from 'classnames';
 import VersionSwitcherButton from './VersionSwitcherButton';
 import VersionSearchField from './VersionSearchField';
 import VersionDropdownItem from './VersionDropdownItem';
@@ -30,6 +31,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     releasedVersionId,
     selectedVersion,
     developmentVersions,
+    setSelectedVersion,
     fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
@@ -45,6 +47,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       selectedVersion: state.selectedVersion,
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+      setSelectedVersion: state.setSelectedVersion,
     }),
     shallow
   );
@@ -97,11 +100,26 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   }, [isDropdownOpen, currentEnvironment, appId, fetchVersionsForEnvironment]);
 
   // Current version data - use selectedVersion from global store as source of truth
-  const currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+  // Also check developmentVersions to ensure we have the status field for draft versions
+  let currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+
+  // If currentVersion doesn't have status field, try to get it from developmentVersions
+  if (currentVersion && !currentVersion.status && developmentVersions.length > 0) {
+    const versionWithStatus = developmentVersions.find((v) => v.id === currentVersion.id);
+    if (versionWithStatus) {
+      currentVersion = { ...currentVersion, status: versionWithStatus.status };
+    }
+  }
+
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
   const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
+
+  // Check if there's only one draft and no other saved versions
+  const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
+  const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
+  const shouldDisableCreateDraft = draftVersions.length > 0 && savedVersions.length === 0;
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -140,16 +158,16 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleVersionSelect = (version) => {
-    const isSameVersionSelected = currentVersionId === version.id;
+    const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
 
-    if (isSameVersionSelected) {
+    const isSameVersionSelected = currentVersionId === version.id;
+    const isSameEnvironment = !isDifferentEnvironment;
+
+    if (isSameVersionSelected && isSameEnvironment) {
       closeDropdown();
       return;
     }
     closeDropdown();
-
-    // Check if the selected environment filter is different from current global environment
-    const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
 
     if (isDifferentEnvironment) {
       // First switch environment, then switch version
@@ -161,6 +179,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           version.id,
           () => {
             setCurrentVersionId(version.id);
+            setSelectedVersion(version);
           },
           (error) => {
             toast.error(error.message || 'Failed to switch version');
@@ -174,6 +193,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         version.id,
         () => {
           setCurrentVersionId(version.id);
+          setSelectedVersion(version);
         },
         (error) => {
           toast.error(error.message || 'Failed to switch version');
@@ -231,7 +251,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const renderPopover = (overlayProps) => (
     <Popover
       id="version-manager-popover"
-      className="version-manager-popover"
+      className={cx('version-manager-popover', { 'dark-theme theme-dark': darkMode })}
       ref={popoverRef}
       {...overlayProps}
       style={{
@@ -239,7 +259,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         minWidth: '350px',
         borderRadius: '8px',
         border: '1px solid var(--border-weak)',
-        boxShadow: '0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1)',
+        boxShadow: '0px 0px 1px var(--interactive-default), 0px 1px 1px var(--interactive-hover)',
         padding: 0,
       }}
     >
@@ -291,33 +311,39 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               {searchQuery ? 'No versions found' : 'No versions available'}
             </div>
           ) : (
-            filteredVersions.map((version) => (
-              <VersionDropdownItem
-                key={version.id}
-                version={version}
-                isSelected={version.id === currentVersionId}
-                currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
-                environments={environments}
-                onSelect={() => handleVersionSelect(version)}
-                onPromote={() => handlePromoteDraft(version)}
-                onCreateVersion={() => handleCreateVersion(version)}
-                onEdit={(v) => {
-                  setVersionToEdit(v);
-                  setShowEditVersionModal(true);
-                  closeDropdown();
-                }}
-                onDelete={(v) => openDeleteModal(v)}
-                appId={appId}
-              />
-            ))
+            filteredVersions.map((version) => {
+              const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
+              const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
+
+              return (
+                <VersionDropdownItem
+                  key={version.id}
+                  version={version}
+                  isSelected={isVersionSelected}
+                  isViewingCurrentEnvironment={isViewingCurrentEnvironment}
+                  currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
+                  environments={environments}
+                  onSelect={() => handleVersionSelect(version)}
+                  onPromote={() => handlePromoteDraft(version)}
+                  onCreateVersion={() => handleCreateVersion(version)}
+                  onEdit={(v) => {
+                    setVersionToEdit(v);
+                    setShowEditVersionModal(true);
+                    closeDropdown();
+                  }}
+                  onDelete={(v) => openDeleteModal(v)}
+                  appId={appId}
+                  darkMode={darkMode}
+                />
+              );
+            })
           )}
         </div>
 
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        {/* Create Draft Button - disabled if draft already exists or no published versions */}
-        <CreateDraftButton onClick={handleCreateDraft} />
+        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} darkMode={darkMode} />
       </Popover.Body>
     </Popover>
   );

@@ -65,6 +65,9 @@ const CreateDraftVersionModal = ({
   }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
+    if (selectedVersionForCreation) {
+      return;
+    }
     // If savedVersions is empty but we have a selectedVersion that is not DRAFT, use it
     if (!savedVersions?.length) {
       if (selectedVersion && selectedVersion.status !== 'DRAFT') {
@@ -86,7 +89,7 @@ const CreateDraftVersionModal = ({
     if (savedVersions.length > 0) {
       setSelectedVersionForCreation(savedVersions[0]);
     }
-  }, [savedVersions, selectedVersion]);
+  }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
   // Update version name when selectedVersionForCreation changes or when modal opens
   useEffect(() => {
@@ -100,9 +103,9 @@ const CreateDraftVersionModal = ({
   // Create options from savedVersions (all non-draft versions)
   const options =
     savedVersions.length > 0
-      ? savedVersions.map((version) => ({ label: version.name, value: version }))
+      ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-      ? [{ label: selectedVersion.name, value: selectedVersion }]
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
       : [];
 
   const createVersion = () => {
@@ -214,8 +217,9 @@ const CreateDraftVersionModal = ({
                 <div className="ts-control" data-cy="create-draft-version-from-input-field">
                   <Select
                     options={options}
-                    value={selectedVersionForCreation}
-                    onChange={(version) => {
+                    value={selectedVersionForCreation?.id}
+                    onChange={(versionId) => {
+                      const version = savedVersions.find((v) => v.id === versionId);
                       setSelectedVersionForCreation(version);
                     }}
                     useMenuPortal={false}

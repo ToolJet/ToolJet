@@ -252,12 +252,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             )}
             style={canvasContainerStyles}
           >
-            <AppCanvasBanner
-              appId={appId}
-              onVersionLockStatusChange={(isLocked) => {
-                setIsCurrentVersionLocked(isLocked);
-              }}
-            />
+            {currentMode === 'edit' && (
+              <AppCanvasBanner
+                appId={appId}
+                onVersionLockStatusChange={(isLocked) => {
+                  setIsCurrentVersionLocked(isLocked);
+                }}
+              />
+            )}
             {appType !== 'module' && (
               <PagesSidebarNavigation
                 showHeader={showHeader}

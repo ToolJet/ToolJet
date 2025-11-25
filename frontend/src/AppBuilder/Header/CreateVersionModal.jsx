@@ -138,10 +138,6 @@ const CreateVersionModal = ({
       toast.error('Version name should not be empty');
       return;
     }
-    if (versionDescription.trim() == '') {
-      toast.error('Version description should not be empty');
-      return;
-    }
 
     if (!selectedVersionForCreation) {
       toast.error('Please wait while versions are loading...');
@@ -201,6 +197,7 @@ const CreateVersionModal = ({
                   newVersionData.editing_version.id,
                   () => {
                     console.log('Successfully switched environment and version');
+                    handleCommitOnVersionCreation(newVersionData);
                   },
                   (error) => {
                     console.error('Error switching to newly created version:', error);
@@ -214,7 +211,9 @@ const CreateVersionModal = ({
             await changeEditorVersionAction(
               appId,
               newVersionData.editing_version.id,
-              () => {},
+              () => {
+                handleCommitOnVersionCreation(newVersionData);
+              },
               (error) => {
                 console.error('Error switching to newly created version:', error);
                 toast.error('Version created but failed to switch to it');

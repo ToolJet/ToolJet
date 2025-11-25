@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import './version-switcher-button.scss';
 
-const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen }) => {
+const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen, darkMode }) => {
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
 
@@ -26,6 +26,7 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
     <button
       className={cx('btn version-switcher-button', {
         opened: isOpen,
+        'theme-dark': darkMode,
       })}
       onClick={onClick}
     >

@@ -25,12 +25,12 @@
       outline: none !important;
 
       &:hover:not(.disabled) {
-        background-color: rgba(255, 255, 255, 0.9);
+        background-color: var(--interactive-hover);
         color: var(--text-default);
       }
 
       &.selected {
-        background-color: #ffffff;
+        background-color: var(--background-surface-layer-01);
         color: var(--text-default);
         font-weight: 500;
         box-shadow: var(--elevation-100-box-shadow);
@@ -38,7 +38,7 @@
 
       &.disabled {
         cursor: not-allowed;
-        color: #acb2b9;
+        color: var(--text-disabled);
         pointer-events: none;
       }
     }

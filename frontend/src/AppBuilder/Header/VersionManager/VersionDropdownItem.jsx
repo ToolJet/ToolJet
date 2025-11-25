@@ -9,10 +9,12 @@ import {
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { ToolTip } from '@/_components/ToolTip';
+import { Button } from '@/components/ui/Button/Button';
 
 const VersionDropdownItem = ({
   version,
   isSelected,
+  isViewingCurrentEnvironment = true, // Default to true for backward compatibility
   onSelect,
   onRelease,
   onEdit,
@@ -21,6 +23,7 @@ const VersionDropdownItem = ({
   currentEnvironment,
   environments = [],
   showActions = true,
+  darkMode = false,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
@@ -62,36 +65,32 @@ const VersionDropdownItem = ({
   const currentPriority = currentEnvData?.priority || 1;
   const isInProduction = currentPriority === 3; // Production has priority 3
 
-  // Only show promote button if version is in the current environment
   const isVersionInCurrentEnv = version.currentEnvironmentId === currentEnvironment?.id;
+  const shouldShowActionButtons = isViewingCurrentEnvironment && isSelected && isVersionInCurrentEnv;
 
   // In CE edition: show Release button for PUBLISHED versions that are not yet released
   // In EE edition: show Promote button for non-released versions in non-production environments
   const canPromote =
-    featureAccess?.multiEnvironment && isVersionInCurrentEnv && !isDraft && !isReleased && !isInProduction;
-  const canRelease = !isDraft && !isReleased && (featureAccess?.multiEnvironment ? isInProduction : isPublished);
+    shouldShowActionButtons && featureAccess?.multiEnvironment && !isDraft && !isReleased && !isInProduction;
+  const canRelease =
+    shouldShowActionButtons &&
+    !isDraft &&
+    !isReleased &&
+    (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
 
   const renderMenu = (
-    <Popover id={`popover-positioned-bottom-end`} style={{ minWidth: '160px' }}>
-      <Popover.Body className="d-flex flex-column p-0">
-        {canRelease && (
-          <div
-            className="dropdown-item cursor-pointer tj-text-xsm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRelease?.(version);
-              document.body.click(); // Close popover
-            }}
-          >
-            Release
-          </div>
-        )}
-
+    <Popover
+      id={cx(`popover-positioned-bottom-end`, { 'dark-theme theme-dark': darkMode })}
+      className={cx({ 'dark-theme theme-dark': darkMode })}
+      style={{ minWidth: '160px' }}
+    >
+      <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
         <div
           className={cx('dropdown-item tj-text-xsm', {
             'cursor-pointer': isDraft,
             disabled: !isDraft,
+            'dark-theme theme-dark': darkMode,
           })}
           onClick={(e) => {
             e.stopPropagation();
@@ -105,7 +104,9 @@ const VersionDropdownItem = ({
         </div>
         {!isReleased && (
           <div
-            className="dropdown-item cursor-pointer tj-text-xsm text-danger"
+            className={cx('dropdown-item cursor-pointer tj-text-xsm text-danger', {
+              'dark-theme theme-dark': darkMode,
+            })}
             onClick={(e) => {
               e.stopPropagation();
               onDelete?.(version);
@@ -201,8 +202,8 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: '#FAEFE7',
-                    color: '#BF4F03',
+                    backgroundColor: 'var(--background-warning-weak)',
+                    color: 'var(--text-warning)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 500,
@@ -219,8 +220,8 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: '#E8F3EB',
-                    color: '#1E823B',
+                    backgroundColor: 'var(--background-success-weak)',
+                    color: 'var(--text-success)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 500,
@@ -237,37 +238,36 @@ const VersionDropdownItem = ({
             {showActions && (
               <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
                 {/* Promote button - shown for versions that can be promoted */}
-                {canPromote && <PromoteVersionButton version={version} variant="inline" />}
+                {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
                 {/* Release button - shown in production environment */}
-                {canRelease && <ReleaseVersionButton version={version} variant="inline" />}
+                {canRelease && <ReleaseVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
                 {/* Create version button - shown for drafts */}
                 {canCreateVersion && (
-                  <button
-                    className="btn btn-sm version-action-btn"
+                  <Button
+                    variant="outline"
+                    size="small"
+                    className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => {
                       e.stopPropagation();
                       onCreateVersion?.(version);
                     }}
                   >
                     Save version
-                  </button>
+                  </Button>
                 )}
 
                 {/* More menu */}
                 <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
-                  <button
-                    className="btn btn-sm p-1"
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      borderRadius: '4px',
-                    }}
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    iconOnly
+                    leadingIcon="morevertical01"
+                    className={cx({ 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => e.stopPropagation()}
-                  >
-                    <SolidIcon name="morevertical01" />
-                  </button>
+                  />
                 </OverlayTrigger>
               </div>
             )}
@@ -303,7 +303,13 @@ const VersionDropdownItem = ({
   // Wrap with tooltip if there's overflow metadata
   if (showMetadataTooltip && tooltipContent) {
     return (
-      <ToolTip message={tooltipContent} placement="left" show={true} tooltipClassName="version-tooltip" width="300px">
+      <ToolTip
+        message={tooltipContent}
+        placement="left-start"
+        show={true}
+        tooltipClassName="version-tooltip"
+        width="300px"
+      >
         {versionItem}
       </ToolTip>
     );

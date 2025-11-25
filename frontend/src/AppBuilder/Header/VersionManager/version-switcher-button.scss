@@ -3,7 +3,7 @@
   gap: 6px;
   border: 1px solid var(--border-weak) !important;
   border-radius: 6px;
-  background-color: var(--bg-surface-layer-01, #FFFFFF) !important;
+  background-color: var(--background-surface-layer-01, #FFFFFF) !important;
   cursor: pointer;
   min-width: 139px;
   display: flex;
@@ -45,15 +45,15 @@
     flex-shrink: 0;
 
     &.draft {
-      background-color: #BF4F03;
+      background-color: var(--background-warning-strong);
     }
 
     &.released {
-      background-color: #1E823B;
+      background-color: var(--background-success-strong);
     }
 
     &.published {
-      background-color: #4368E3;
+      background-color: var(--background-accent-strong);
     }
   }
 

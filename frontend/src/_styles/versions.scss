@@ -304,7 +304,9 @@
 }
 
 .tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::before,
-.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after {
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::after {
 	border-left-color: #ffffff !important;
 }
 .tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::before,
