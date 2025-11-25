@@ -39,7 +39,7 @@ export function AppsTabs({
 }) {
   const [viewAs, setViewAs] = React.useState('list');
 
-  const hideHeader = (activeTab === 'apps' && appsEmpty) || (activeTab === 'modules' && modulesEmpty);
+  const hideHeader = false;
 
   // Build breadcrumb items dynamically based on current folder
   const breadcrumbItems = React.useMemo(() => {

@@ -22,7 +22,7 @@ import { TopBar } from '@/components/ui/blocks/TopBar';
  * @param {Array} [props.sidebarNavMain] - Navigation items for sidebar
  * @param {Array} [props.sidebarProjects] - Project/action items for sidebar
  */
-export function MainLayout({
+export function EndUserLayout({
   children,
   topbarLeftSlot,
   topbarRightSlot,
@@ -30,10 +30,6 @@ export function MainLayout({
   workspaceName,
   workspaces,
   onWorkspaceChange,
-  sidebarUser,
-  sidebarTeams,
-  sidebarNavMain,
-  sidebarProjects,
 }) {
   return (
     <SidebarProvider
@@ -52,23 +48,14 @@ export function MainLayout({
           topbarRightSlot={topbarRightSlot}
         />
         <div className="tw-flex tw-flex-1 tw-overflow-hidden">
-          <AppSidebar
-            className="tw-bg-background-surface-layer-01 !tw-sticky !tw-h-full"
-            user={sidebarUser}
-            teams={sidebarTeams}
-            navMain={sidebarNavMain}
-            projects={sidebarProjects}
-          />
-          <SidebarInset>
-            <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
-          </SidebarInset>
+          <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
         </div>
       </div>
     </SidebarProvider>
   );
 }
 
-MainLayout.propTypes = {
+EndUserLayout.propTypes = {
   children: PropTypes.node.isRequired,
   topbarLeftSlot: PropTypes.node,
   topbarRightSlot: PropTypes.node,
@@ -88,7 +75,7 @@ MainLayout.propTypes = {
   sidebarProjects: PropTypes.array,
 };
 
-MainLayout.defaultProps = {
+EndUserLayout.defaultProps = {
   topbarLeftSlot: null,
   topbarRightSlot: null,
   logo: null,
@@ -101,4 +88,4 @@ MainLayout.defaultProps = {
   sidebarProjects: undefined,
 };
 
-export default MainLayout;
+export default EndUserLayout;
