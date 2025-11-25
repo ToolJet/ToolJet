@@ -289,6 +289,7 @@ export const ConfigHandle = ({
         message="Delete component"
         show={true}
         dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+        shouldHide={shouldFreeze}
       >
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
