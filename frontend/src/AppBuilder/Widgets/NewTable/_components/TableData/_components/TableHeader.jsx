@@ -61,7 +61,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
-        className={cx('d-flex justify-content-between custom-gap-12', {
+        className={cx('d-flex justify-content-between custom-gap-4', {
           'd-flex justify-content-center w-100': header.column.columnDef.type === 'selector',
         })}
         onClick={header.column.getCanSort() ? () => header.column.toggleSorting() : undefined}
@@ -74,13 +74,13 @@ const DraggableHeader = ({ header, darkMode, id }) => {
               : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
           } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
-          <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
               <IconPencil size="16px" color="var(--cc-secondary-icon, var(--icon-default))" />
             )}
           </div>
           <div
-            className={cx('header-text', {
+            className={cx('header-text tw-w-full', {
               'selector-column': column.id === 'selection' && column.columnType === 'selector',
               'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
               'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
@@ -91,7 +91,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
           </div>
         </div>
         {header.column.getIsSorted() && (
-          <div>
+          <div className="tw-flex-shrink-0">
             {header.column.getIsSorted() === 'desc' ? (
               <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
             ) : (

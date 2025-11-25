@@ -55,9 +55,10 @@
   .tr {
     .th {
       .thead-editable-icon-header-text-wrapper {
-        max-width: 100%;
-        min-width: 70%;
-        width: 100%;
+        max-width: 100% !important;
+        min-width: 0;
+        width: 100% !important;
+        flex-shrink: 1;
       }
 
       .header-text {
