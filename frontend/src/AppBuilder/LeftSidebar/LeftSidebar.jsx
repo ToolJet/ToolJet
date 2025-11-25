@@ -269,7 +269,7 @@ export const BaseLeftSidebar = ({
         onInteractOutside={(e) => {
           // if tooljetai or inspector is open don't close
           if (['tooljetai', 'inspect', 'page', 'debugger', 'settings'].includes(selectedSidebarItem)) {
-            return
+            return;
           }
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');

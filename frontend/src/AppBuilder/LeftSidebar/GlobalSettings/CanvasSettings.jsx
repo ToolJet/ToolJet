@@ -121,7 +121,7 @@ const CanvasSettings = ({ darkMode }) => {
 
       <div className="d-flex" style={{ gap: '20px' }}>
         <span className="pt-2" data-cy={`label-bg-canvas`}>
-          {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
+          {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas background')}
         </span>
         <div className="canvas-codehinter-container">
           <div className={`fx-canvas `}>

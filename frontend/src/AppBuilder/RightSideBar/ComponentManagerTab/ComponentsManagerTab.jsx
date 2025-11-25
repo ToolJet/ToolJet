@@ -254,7 +254,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
       {/* Header Section - Always rendered */}
-      <div className={`components-header ${!false ? 'has-tabs' : ''}`}>
+      <div className={`components-header ${!(isModuleEditor || edition === 'ce') ? 'has-tabs' : ''}`}>
         {/* Row 1: Label + Close Button */}
         <div className="header-title-row">
           <p className="widgets-manager-header">Add new component</p>
@@ -262,7 +262,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         </div>
 
         {/* Row 2: Tabs (conditional) */}
-        {!false && (
+        {!(isModuleEditor || edition === 'ce') && (
           <Tabs
             activeKey={activeTab}
             onSelect={(key) => {

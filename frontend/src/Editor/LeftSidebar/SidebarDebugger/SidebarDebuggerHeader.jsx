@@ -1,7 +1,5 @@
 import React from 'react';
 import { HeaderSection } from '@/_ui/LeftSidebar';
-import _ from 'lodash';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
