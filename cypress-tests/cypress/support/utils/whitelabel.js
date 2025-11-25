@@ -94,6 +94,7 @@ export const verifyPageTitleAndFavicon = (
 export const verifyLogoOnLoginPage = () => {
   cy.apiLogout();
   cy.visit("/");
+  cy.wait(2000);
   verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg);
 };
 

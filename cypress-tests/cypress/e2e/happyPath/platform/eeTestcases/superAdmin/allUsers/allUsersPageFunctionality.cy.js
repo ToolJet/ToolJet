@@ -1,58 +1,37 @@
-import {
-    commonEeSelectors,
-    instanceSettingsSelector,
-} from "Constants/selectors/eeCommon";
+import { instanceSettingsSelector } from "Constants/selectors/eeCommon";
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { onboardingSelectors } from "Selectors/onboarding";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import {
-    openEditUserModal,
-    verifyArchiveUserModalUI,
-    verifyUnarchiveUserModal,
+  loginAndExpectToast,
+  verifyArchiveUserModalUI,
+  verifyUnarchiveUserModal,
+  visitAllUsersPage,
 } from "Support/utils/platform/allUsers";
-import { usersText } from "Texts/manageUsers";
+import { sanitize } from "Support/utils/common";
 
 const data = {
-    userName: fake.firstName.toLowerCase().replace(/[^a-z]/g, ""),
-    userEmail: fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, ""),
-};
-
-const loginAsUser = (email, password = usersText.password) => {
-    cy.visit("/my-workspace");
-    cy.clearAndType(onboardingSelectors.signupEmailInput, email);
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-    cy.get(onboardingSelectors.signInButton).click();
-};
-
-const loginAndExpectToast = (email, message, password = usersText.password) => {
-    loginAsUser(email, password);
-    cy.verifyToastMessage(commonSelectors.toastMessage, message);
-};
-
-const visitAllUsersPage = (loginEmail) => {
-    if (loginEmail) {
-        cy.apiLogin(loginEmail);
-    } else {
-        cy.apiLogin();
-    }
-    cy.visit("settings/all-users");
+  userName: sanitize(fake.firstName),
+  get userEmail() {
+    return `${this.userName}@example.com`;
+  },
 };
 
 describe("Instance Settings - All Users UI", () => {
-    beforeEach(() => {
-        cy.apiLogin();
-        cleanAllUsers();
-        cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
-        cy.apiLogout();
-        visitAllUsersPage();
-    });
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.apiDeleteAllWorkspaces();
+    cy.visit("/my-workspace");
+    cleanAllUsers();
+    cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
+    cy.apiLogout();
+    visitAllUsersPage();
+  });
 
-    it("verifies archive from instance and workspace functionality", () => {
-
-        //Instance level archive and login verification
-        verifyArchiveUserModalUI(data.userName, data.userEmail);
-        cy.apiLogout();
+  it("verifies archive from instance and workspace functionality", () => {
+    //Instance level archive and login verification
+    verifyArchiveUserModalUI(data.userName, data.userEmail);
+    cy.apiLogout();
 
         loginAndExpectToast(
             data.userEmail,
@@ -63,20 +42,22 @@ describe("Instance Settings - All Users UI", () => {
         verifyUnarchiveUserModal(data.userName, data.userEmail);
         cy.apiLogout();
 
-        loginAndExpectToast(
-            data.userEmail,
-            "You have been archived from this workspace. Sign in to another workspace or contact admin to know more."
-        );
-        //Workspace level unarchive and login verification
-        visitAllUsersPage();
-        cy.clearAndType(commonSelectors.inputUserSearch, data.userEmail);
-        cy.get(instanceSettingsSelector.viewButton(data.userName)).click();
-        cy.get(instanceSettingsSelector.userStatusChangeButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "The user has been unarchived"
-        );
-        cy.apiLogout();
+    loginAndExpectToast(
+      data.userEmail,
+      "You have been archived from this workspace. Sign in to another workspace or contact admin to know more."
+    );
+
+    //Workspace level unarchive and login verification
+    visitAllUsersPage();
+    cy.waitForElement(commonSelectors.inputUserSearch);
+    cy.clearAndType(commonSelectors.inputUserSearch, data.userEmail);
+    cy.get(instanceSettingsSelector.viewButton(data.userName)).click();
+    cy.get(instanceSettingsSelector.userStatusChangeButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "The user has been unarchived"
+    );
+    cy.apiLogout();
 
         loginAndExpectToast(data.userEmail, "Invalid credentials");
     });

@@ -43,7 +43,7 @@ jobs:
           df -h
 
           # Remove unnecessary packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
           sudo apt-get autoremove -y
           sudo apt-get clean
 
@@ -156,6 +156,13 @@ jobs:
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "ENABLE_EXTERNAL_API=true" >> .env
           echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -370,9 +377,13 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -496,6 +507,13 @@ jobs:
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_AI_FEATURES=true" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -700,6 +718,12 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -916,6 +940,12 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
 
       - name: clean up old docker containers
         run: |

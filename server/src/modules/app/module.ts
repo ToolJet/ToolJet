@@ -1,8 +1,7 @@
-import { OnModuleInit, RequestMethod, MiddlewareConsumer, DynamicModule } from '@nestjs/common';
+import { OnModuleInit, DynamicModule } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
-import * as Sentry from '@sentry/node';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
@@ -63,6 +62,7 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { ScimModule } from '@modules/scim/module';
 import { BullBoardModule } from "@bull-board/nestjs";
 import { ExpressAdapter } from "@bull-board/express";
 import * as basicAuth from 'express-basic-auth';
@@ -134,6 +134,7 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await ScimModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -173,13 +174,6 @@ export class AppModule implements OnModuleInit {
         AuditLogsClearScheduler,
       ],
     };
-  }
-
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL,
-    });
   }
 
   async onModuleInit() {

@@ -44,7 +44,7 @@ describe('Google SSO Tests', () => {
         cy.visit('/');
         cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
         cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
+            cy.contains('Authorization Error').should('be.visible');
         });
 
     });
@@ -57,7 +57,7 @@ describe('Google SSO Tests', () => {
         cy.visit(WORKSPACE_URL);
         cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
         cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
+            cy.contains('Authorization Error').should('be.visible');
         });
     });
 
@@ -90,7 +90,7 @@ describe('Google SSO Tests', () => {
 
     it('should verify signup via sso to workspace', () => {
         const orgId = Cypress.env("workspaceId");
-        updateSsoId(TEST_SSO_ID, 'google', `'${orgId}'`);
+        updateSsoId(TEST_SSO_ID, 'google', `${orgId}`);
 
         toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
         fillInputField(googleSsoConfig);

@@ -187,6 +187,8 @@ export const commonText = {
   enterAppName: "Enter app name",
   appNameInfoLabel: "App name must be unique and max 50 characters",
   renameApp: "Rename app",
+  enablePasswordLoginTitle: "Enable password login",
+  enablePasswordLoginModal: "Automatic login requires password login to be disabled. Enabling it will disable automatic login. Are you sure you want to continue?",
 };
 
 export const commonWidgetText = {

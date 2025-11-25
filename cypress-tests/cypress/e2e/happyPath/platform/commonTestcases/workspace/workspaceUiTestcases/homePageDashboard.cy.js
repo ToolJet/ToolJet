@@ -2,17 +2,12 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
-    const isEnterprise = Cypress.env("environment") === "Enterprise";
 
-    before(function () {
-        if (Cypress.env("environment") === "Community") {
-            this.skip();
-        }
-    });
     beforeEach(() => {
 
         data = {
@@ -21,13 +16,15 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
+        cleanAllUsers();
         cy.visit("/my-workspace");
+
     });
 
     it("Should verify elements on home page dashboard", () => {
 
-        cy.get(commonSelectors.homePageIcon).click();
-        cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
+        cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome
             );
@@ -90,17 +87,21 @@ describe("Home Page Dashboard Testcases", () => {
     });
 
     it("Should verify Home page accessibility for the specific role", () => {
+        cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
         //Invite End-user
         cy.apiFullUserOnboarding(data.firstName, data.email);
         cy.apiLogout();
 
         cy.apiLogin(data.email);
         cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
+
         cy.get(commonSelectors.homePageIcon).should("not.exist");
         cy.apiLogout();
 
         cy.apiLogin();
         cy.visit("/my-workspace");
+        cy.wait("@getLicenseAccess");
 
         //Update role to Builder
         cy.apiUpdateUserRole(data.email, "builder");
@@ -108,6 +109,8 @@ describe("Home Page Dashboard Testcases", () => {
 
         cy.apiLogin(data.email);
         cy.visit("/my-workspace");
-        cy.get(commonSelectors.homePageIcon).should("be.visible");
+        cy.wait("@getLicenseAccess");
+
+        cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).should("be.visible");
     });
 });

@@ -34,6 +34,9 @@ describe("License Page", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
+    cy.intercept("GET", "/api/v2/group-permissions/**").as(
+      "getGroupPermissions"
+    );
   });
 
   after(() => {
@@ -108,7 +111,10 @@ describe("License Page", () => {
     cy.reload();
 
     common.navigateToManageGroups();
-    cy.get(groupsSelector.createNewGroupButton).should("be.disabled");
+    cy.wait("@getGroupPermissions");
+    cy.get(groupsSelector.createNewGroupButton).should("be.disabled", {
+      timeout: 10000,
+    });
     verifyTooltip(
       groupsSelector.createNewGroupButton,
       "Custom groups are not available in your plan",

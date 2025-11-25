@@ -32,6 +32,8 @@ export const launchApp = () => {
 
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
+    cy.waitForElement(commonEeSelectors.promoteButton);
+    cy.wait(200);
     cy.get(commonEeSelectors.promoteButton).click();
     cy.get(commonEeSelectors.promoteButton).eq(1).click();
     cy.waitForAppLoad();
@@ -109,6 +111,7 @@ export const selectEnv = (envName) => {
 
   if (isValidEnvName(envName)) {
     cy.wait(1000);
+    cy.waitForElement('[data-cy="list-current-env-name"]');
     cy.get('[data-cy="list-current-env-name"]').click();
     cy.wait(500);
     const envSelector = `${appEditorSelector.editor.pages.envNameList}:eq(${envIndex})`;
@@ -202,6 +205,10 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
 
 export const selectEnvironment = (envName) => {
   cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
+  cy.forceClickOnCanvas();
+  cy.wait(1000);
+  cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
+
   cy.get(multiEnvSelector.envContainer).click({ timeout: 10000 });
   cy.get(multiEnvSelector.envNameList)
     .contains(envName)
