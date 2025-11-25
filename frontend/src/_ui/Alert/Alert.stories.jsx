@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, AlertTitle, AlertDescription } from '../../components/ui/Alert/Alert';
+import { Alert, AlertTitle, AlertDescription } from '../../components/ui/Rocket/alert';
 import { Info, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 
 // Storybook configuration
