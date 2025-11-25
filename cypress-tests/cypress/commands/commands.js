@@ -312,9 +312,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -494,6 +494,10 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     );
 
     cy.get(commonSelectors.homePageLogo, { timeout: 20000 });
+    cy.apiGetDefaultWorkspace().then((res) => {
+      Cypress.env("workspaceId", res.id);
+      cy.log(Cypress.env("workspaceId"));
+    });
   });
 });
 
@@ -622,7 +626,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin(pluginName) {
+  function installPlugin (pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 

@@ -27,8 +27,7 @@ describe("Okta OIDC", () => {
     beforeEach("", () => {
         data.groupName = `oidc-${sanitize(fake.companyName)}-group`;
 
-        cy.apiLogin();
-        cy.apiDeleteAllWorkspaces();
+        cy.defaultWorkspaceLogin();
 
         deleteOrganisationSSO("My workspace", ["openid"]);
         enableInstanceSignup();
@@ -37,7 +36,7 @@ describe("Okta OIDC", () => {
     });
 
     afterEach("", () => {
-        cy.apiLogin();
+        cy.defaultWorkspaceLogin();
         cleanAllUsers();
         cy.apiDeleteAllApps();
     });
@@ -161,8 +160,6 @@ describe("Okta OIDC", () => {
         const firstName = fake.firstName;
         apiCreateGroup(data.groupName);
 
-        cy.intercept("GET", "/api/authorize").as("openidResponse");
-
         cy.getSsoConfigId("openid").then((id) => {
             if (!id) {
                 updateOIDCConfig(orgId);
@@ -171,9 +168,12 @@ describe("Okta OIDC", () => {
 
         addOIDCConfig({ Everyone: "builder", OIDC: data.groupName });
 
+        cy.intercept("GET", "/api/authorize").as("openidResponse");
+
         // Create and setup invitation
         cy.apiUserInvite(firstName, invitedUserEmail);
         fetchAndVisitInviteLink(invitedUserEmail);
+
         // Start SSO login process
         cy.oidcLogin({
             username: invitedUserEmail,
@@ -184,20 +184,22 @@ describe("Okta OIDC", () => {
             oktaDomain: Cypress.env("okta_domain"),
             organizationId: orgId,
         });
-        cy.wait(4000);
-        cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
+
+        // Wait for page to stabilize after OIDC login
+        cy.url({ timeout: 15000 }).should("include", "localhost");
+        cy.log("OIDC login completed - page loaded");
+
+        cy.get(commonSelectors.invitePageHeader, { timeout: 10000 }).verifyVisibleElement(
             "have.text",
             "Join My workspace"
         );
         cy.get(commonSelectors.acceptInviteButton).click();
-        // Verify successful login and role
-        cy.wait(4000);
 
-        cy.wait("@openidResponse").then((interception) => {
+        // Verify successful login and role
+        cy.wait("@openidResponse", { timeout: 15000 }).then((interception) => {
             const userId = interception.response.body.id;
             cy.wrap(userId).as("userId");
         });
-        cy.wait(4000);
 
         verifyUserRole("@userId", "builder", ["builder", data.groupName]);
 
