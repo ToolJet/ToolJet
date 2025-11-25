@@ -37,6 +37,7 @@ describe("Okta OIDC", () => {
     afterEach("", () => {
         cy.apiLogin();
         cleanAllUsers();
+        cy.apiDeleteAllApps()
     });
 
     it("Instance level signup and group sync cases", () => {

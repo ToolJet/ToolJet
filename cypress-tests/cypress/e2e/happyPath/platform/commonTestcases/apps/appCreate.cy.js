@@ -183,7 +183,7 @@ describe("App creation", () => {
         cy.go("back");
         cy.visit("/my-workspace");
 
-        cy.get(commonSelectors.appCreateButton).click();
+        cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
         cy.get(commonSelectors.createAppButton).click();
         cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
@@ -254,8 +254,7 @@ describe("App creation", () => {
         cy.get(".go3958317564")
             .should("be.visible")
             .and("have.text", importText.appImportedToastMessage);
-        cy.go("back");
-        cy.visit("/my-workspace");
+
     });
     it("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;

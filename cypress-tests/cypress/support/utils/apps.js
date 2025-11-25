@@ -93,7 +93,7 @@ export const setupAppWithSlug = (appName, slug, appType = 'private') => {
     );
     appPromote("development", "production");
   });
-
+  cy.wait(2000);
   cy.apiReleaseApp(appName);
   cy.apiAddAppSlug(appName, slug);
 };

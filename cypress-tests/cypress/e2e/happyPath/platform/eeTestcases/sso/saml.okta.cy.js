@@ -43,6 +43,19 @@ describe("SAML SSO", () => {
         enabled: true,
     };
 
+    const deleteGroup = (orgId) => {
+        cy.runSqlQuery(
+            `SELECT id FROM permission_groups WHERE name = 'SAML' AND organization_id = '${orgId}';`
+        ).then(({ rows }) => {
+            const existingGroupId = rows?.[0]?.id;
+            if (existingGroupId) {
+                cy.runSqlQuery(
+                    `DELETE FROM permission_groups WHERE id = '${existingGroupId}'::uuid;`
+                );
+            }
+        });
+    };
+
     beforeEach("", () => {
         cy.apiLogin();
         deleteOrganisationSSO("My workspace", ["saml"]);
@@ -51,9 +64,10 @@ describe("SAML SSO", () => {
 
     });
 
-    afterEach("", () => {
+    after("", () => {
         cy.apiLogin();
         cleanAllUsers();
+        cy.apiDeleteAllApps()
     });
 
     it("Should verify SAML modal elements", () => {
@@ -123,6 +137,7 @@ describe("SAML SSO", () => {
     it("Should verify SAML sso signup and group sync", () => {
         const orgId = Cypress.env("workspaceId");
         const ssoConfigId = Cypress.env("saml_config_id");
+        deleteGroup(orgId);
 
         cy.apiUpdateSSOConfig(config);
 
@@ -141,7 +156,7 @@ describe("SAML SSO", () => {
 
         cy.apiLogout();
         cy.apiLogin();
-        apiDeleteGroup(data.groupName);
+        apiDeleteGroup('SAML');
     });
 
     it("Should verify the invited user onboarding using SAML SSO", () => {

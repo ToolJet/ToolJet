@@ -15,6 +15,8 @@ describe("Self host onboarding", () => {
 
   beforeEach(() => {
     cy.visit("/setup");
+    cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
+    cy.intercept('GET', '/assets/translations/en.json').as('translations');
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -105,7 +107,7 @@ describe("Self host onboarding", () => {
     cy.get(commonSelectors.nameInputField).type("The Developer");
     cy.get(onboardingSelectors.emailInput).type("dev@tooljet.io");
     cy.get(onboardingSelectors.passwordInput).type("password");
-    cy.get(commonSelectors.continueButton).click();
+    cy.get(commonSelectors.signUpButton).click();
 
     cy.ifEnv("Enterprise", () => {
       bannerElementsVerification();
@@ -255,11 +257,16 @@ describe("Self host onboarding", () => {
       onboardingStepThree();
     });
 
+    cy.wait("@getDataQueries");
     cy.wait(2000);
-    cy.get('[data-cy="button-release"]').should("be.visible");
-    cy.go("back");
+    cy.get('[data-cy="button-release"]', { timeout: 20000 }).should(
+      "be.visible", { timeout: 20000 }
+    );
 
-    logout();
+    cy.apiLogout();
+    cy.visit("/my-workspace");
+    cy.wait('@translations');
+    cy.wait(2000);
     cy.appUILogin();
 
     cy.get(commonSelectors.workspaceName)
