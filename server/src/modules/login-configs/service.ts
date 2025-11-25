@@ -167,13 +167,23 @@ export class LoginConfigsService implements ILoginConfigsService {
       Object.keys(result).forEach((ssoType) => {
         const ssoConfig = result[ssoType];
 
-        if (Object.values(SSOType).includes(ssoConfig?.sso) && ssoConfig?.enabled) {
-          // Check if the SSO is enabled
-          if (ssoType !== SSOType.FORM) {
-            enabledSSOCount += 1;
-          } else {
-            isFormLoginDisabled = false;
+        // Helper to process a single config object
+        const processConfig = (cfg: any) => {
+          if (Object.values(SSOType).includes(cfg?.sso) && cfg?.enabled) {
+            // Check if the SSO is enabled
+            if (cfg.sso !== SSOType.FORM) {
+              enabledSSOCount += 1;
+            } else {
+              isFormLoginDisabled = false;
+            }
           }
+        };
+
+        // ssoConfig can be a single object or an array (e.g., multi-tenant OPENID)
+        if (Array.isArray(ssoConfig)) {
+          ssoConfig.forEach(processConfig);
+        } else {
+          processConfig(ssoConfig);
         }
       });
       if (!(isFormLoginDisabled && enabledSSOCount == 1)) {
