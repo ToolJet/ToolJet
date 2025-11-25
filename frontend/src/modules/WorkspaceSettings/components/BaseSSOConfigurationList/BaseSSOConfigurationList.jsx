@@ -35,6 +35,16 @@ class BaseSSOConfigurationList extends React.Component {
 
   initializeOptionStates = (ssoOptions) => {
     const initialState = ssoOptions.reduce((acc, option) => {
+      // For multi-tenant OIDC, check if ANY OIDC config is enabled
+      if (option.sso === 'openid') {
+        const oidcConfigs = ssoOptions.filter((opt) => opt.sso === 'openid');
+        const anyOidcEnabled = oidcConfigs.some((config) => config.enabled);
+        return {
+          ...acc,
+          openidEnabled: anyOidcEnabled,
+        };
+      }
+
       return {
         ...acc,
         [`${option.sso}Enabled`]: option.enabled,
@@ -46,11 +56,10 @@ class BaseSSOConfigurationList extends React.Component {
   handleUpdateSSOSettings = async (ssoType, newSettings) => {
     const isEnabledKey = `${ssoType}Enabled`;
     try {
-      // For multi-tenant OIDC, fetch fresh data from API instead of updating all configs with same state
+      // For multi-tenant OIDC, use the passed data to avoid duplicate API call
       if (ssoType === 'openid') {
-        const settings = await organizationService.getSSODetails();
-        const organizationSettings = settings?.organization_details;
-        const ssoConfigs = organizationSettings?.sso_configs || [];
+        // Use the SSO configs passed from the child component
+        const ssoConfigs = newSettings?.ssoConfigs || [];
 
         // Check if any OIDC config is enabled
         const oidcConfigs = ssoConfigs.filter((config) => config.sso === 'openid');
@@ -502,7 +511,11 @@ class BaseSSOConfigurationList extends React.Component {
         <EnterpriseSSOModals
           showModal={this.state.showModal}
           currentSSO={this.state.currentSSO}
-          settings={this.state.ssoOptions.find((obj) => obj.sso === currentSSO)}
+          settings={
+            this.state.currentSSO === 'openid'
+              ? this.state.ssoOptions.filter((obj) => obj.sso === 'openid')
+              : this.state.ssoOptions.find((obj) => obj.sso === this.state.currentSSO)
+          }
           onClose={() => this.setState({ showModal: false })}
           onUpdateSSOSettings={this.handleUpdateSSOSettings}
           isInstanceOptionEnabled={this.isInstanceOptionEnabled}

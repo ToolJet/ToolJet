@@ -117,19 +117,21 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
+        const configScope = config['configScope'];
         delete config['id'];
         delete config['organizationId'];
         delete config['createdAt'];
         delete config['updatedAt'];
 
-        // Handle OIDC as array (multiple configs allowed)
-        if (config.sso === 'openid') {
+        // Handle OIDC as array only for organization-level (multi-tenant)
+        // Instance-level OIDC should be single object
+        if (config.sso === 'openid' && configScope === 'organization') {
           if (!configs['openid']) {
             configs['openid'] = [];
           }
           configs['openid'].push(this.buildConfigs(config, configId));
         } else {
-          // Other SSO types remain as single object
+          // Other SSO types and instance-level OIDC remain as single object
           configs[config.sso] = this.buildConfigs(config, configId);
         }
       }

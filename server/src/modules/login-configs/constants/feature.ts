@@ -8,7 +8,6 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.GET_ORGANIZATION_CONFIGS]: {},
-    [FEATURE_KEY.CREATE_ORGANIZATION_SSO]: {},
     [FEATURE_KEY.UPDATE_ORGANIZATION_SSO]: {
       auditLogsKey: 'SSO_UPDATE',
     },

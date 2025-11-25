@@ -16,7 +16,6 @@ export const organizationService = {
   setDefaultWorkspace,
   updateOrganizationStatus,
   updateInheritSSO,
-  createOIDCConfig,
   deleteOIDCConfig,
 };
 
@@ -129,17 +128,6 @@ function checkWorkspaceUniqueness(name, slug) {
 function setDefaultWorkspace(workspaceId) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organizations/${workspaceId}/default`, requestOptions).then(handleResponse);
-}
-
-// Multi-tenant OIDC functions
-function createOIDCConfig(params) {
-  const requestOptions = {
-    method: 'POST',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify(params),
-  };
-  return fetch(`${config.apiUrl}/login-configs/organization-sso`, requestOptions).then(handleResponse);
 }
 
 function deleteOIDCConfig(configId) {
