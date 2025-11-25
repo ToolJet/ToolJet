@@ -4,7 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function EmptyNoApps() {
   return (
-    <Empty>
+    <Empty className="tw-mt-24">
       <EmptyHeader>
         <EmptyMedia variant="default">
           <SolidIcon name="mobile-empty-state" width="200" height="140" fill="var(--icon-default)" />
@@ -18,7 +18,6 @@ export function EmptyNoApps() {
     </Empty>
   );
 }
-
 
 
 

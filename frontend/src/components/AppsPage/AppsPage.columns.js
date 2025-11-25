@@ -21,6 +21,17 @@ function TableCellViewer({ item }) {
   );
 }
 
+// Color variants for app icons (matching Figma design)
+const iconColors = [
+  'tw-text-blue-500',
+  'tw-text-green-500',
+  'tw-text-purple-500',
+  'tw-text-orange-500',
+  'tw-text-pink-500',
+  'tw-text-yellow-500',
+  'tw-text-indigo-500',
+  'tw-text-red-500',
+];
 // Factory to build columns with optional dependencies (permissions, formatters, handlers)
 // deps: { perms?, formatDate?, onPlay?, onEdit?, onClone?, onDelete?, onExport?, canDelete? }
 export const appsColumns = (deps = {}) => {
@@ -46,20 +57,23 @@ export const appsColumns = (deps = {}) => {
           />
         </div>
       ),
-      cell: ({ row }) => (
-        <div className="tw-flex tw-items-center tw-justify-center tw-size-10 tw-relative">
-          <div className="tw-opacity-100 group-hover:tw-opacity-0 group-data-[state=selected]:tw-opacity-0 tw-transition-opacity tw-absolute">
-            <Smile className="tw-size-4 tw-text-muted-foreground" />
+      cell: ({ row }) => {
+        const iconColor = iconColors[Math.floor(Math.random() * iconColors.length)];
+        return (
+          <div className="tw-flex tw-items-center tw-justify-center tw-size-10 tw-relative">
+            <div className="tw-opacity-100 group-hover:tw-opacity-0 group-data-[state=selected]:tw-opacity-0 tw-transition-opacity tw-absolute">
+              <Smile className={`tw-size-4 tw-text-muted-foreground ${iconColor}`} />
+            </div>
+            <div className="tw-opacity-0 group-hover:tw-opacity-100 group-data-[state=selected]:tw-opacity-100 tw-transition-opacity tw-z-10">
+              <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                aria-label="Select row"
+              />
+            </div>
           </div>
-          <div className="tw-opacity-0 group-hover:tw-opacity-100 group-data-[state=selected]:tw-opacity-100 tw-transition-opacity tw-z-10">
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
-            />
-          </div>
-        </div>
-      ),
+        );
+      },
       enableSorting: false,
       enableHiding: false,
     },

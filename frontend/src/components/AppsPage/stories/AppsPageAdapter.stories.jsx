@@ -154,10 +154,13 @@ function StoryWithWorkspace(props) {
   };
 
   // Handle search with state management
-  const handleSearch = React.useCallback((searchKey) => {
-    setAppSearchKey(searchKey);
-    props.onSearch?.(searchKey);
-  }, [props]);
+  const handleSearch = React.useCallback(
+    (searchKey) => {
+      setAppSearchKey(searchKey);
+      props.onSearch?.(searchKey);
+    },
+    [props]
+  );
 
   // Enhanced navigate that updates URL for Storybook
   const enhancedNavigate = React.useCallback((path) => {

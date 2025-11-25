@@ -76,10 +76,42 @@ function AppsPageAdapter({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
+  // Dark mode prop (optional, defaults to false)
+  darkMode: initialDarkMode,
 }) {
   // Use React Router's navigate if not provided
   const routerNavigate = useNavigate();
   const navigateToApp = navigate || routerNavigate;
+
+  // Dark mode state management (simple state, no localStorage)
+  const [isDarkMode, setIsDarkMode] = useState(initialDarkMode ?? false);
+
+  // Toggle dark mode function
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode((prev) => !prev);
+  }, []);
+
+  // Apply dark-theme class to body when dark mode changes
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const body = document.body;
+    const rootElement = document.documentElement;
+
+    if (isDarkMode) {
+      body.classList.add('dark-theme');
+      rootElement.classList.add('dark-theme');
+    } else {
+      body.classList.remove('dark-theme');
+      rootElement.classList.remove('dark-theme');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      body.classList.remove('dark-theme');
+      rootElement.classList.remove('dark-theme');
+    };
+  }, [isDarkMode]);
 
   // Tab state management - derive from appType prop
   const [activeTab, setActiveTab] = useState(() => {
@@ -463,6 +495,8 @@ function AppsPageAdapter({
       sidebarTeams={sidebarTeams}
       sidebarNavMain={sidebarNavMain}
       sidebarProjects={sidebarProjects}
+      darkMode={isDarkMode}
+      onToggleDarkMode={toggleDarkMode}
       header={
         activeTab === 'modules' ? (
           <AppsPageHeader
@@ -573,6 +607,8 @@ AppsPageAdapter.propTypes = {
   sidebarTeams: PropTypes.array,
   sidebarNavMain: PropTypes.array,
   sidebarProjects: PropTypes.array,
+  // Dark mode prop
+  darkMode: PropTypes.bool,
 };
 
 AppsPageAdapter.defaultProps = {
@@ -593,6 +629,7 @@ AppsPageAdapter.defaultProps = {
   sidebarTeams: undefined,
   sidebarNavMain: undefined,
   sidebarProjects: undefined,
+  darkMode: undefined,
 };
 
 export default React.memo(AppsPageAdapter);
