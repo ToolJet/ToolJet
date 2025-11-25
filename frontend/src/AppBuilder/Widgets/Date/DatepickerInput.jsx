@@ -32,7 +32,6 @@ export const DatepickerInput = forwardRef(
     labelWidth,
     label,
   }) => {
-    console.log(value)
     return (
       <>
         <input

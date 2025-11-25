@@ -168,7 +168,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
     <>
       {!selectedNodePath || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
         <div>
-          <div style={{ borderBottom: '1px solid var(--border-base,#E3E7EB)' }}>
+          <div style={{ borderBottom: '1px solid var(--border-weak)' }}>
             {/* <SearchBox
               dataCy={`inspector-search`}
               initialValue={searchValue}
