@@ -33,7 +33,12 @@ export function AppsTable({ table, isLoading }) {
                   className="tw-group tw-border-b-0"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell
+                      key={cell.id}
+                      className="first:tw-rounded-tl-[10px] first:tw-rounded-bl-[10px] last:tw-rounded-tr-[10px] last:tw-rounded-br-[10px]"
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
