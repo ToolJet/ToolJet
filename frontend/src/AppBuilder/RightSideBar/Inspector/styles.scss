@@ -1,0 +1,133 @@
+.inspector {
+  // ===== HEADER SECTION =====
+  .inspector-header {
+    padding: 16px 16px 0px 16px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border-weak);
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .flex-grow-1 {
+        flex: 1;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 4px;
+        justify-content: flex-end;
+        align-items: center;
+      }
+    }
+  }
+
+  // ===== TAB STYLES (Copy from PageSettings) =====
+  #inspector-tabs {
+    margin-left: 10px;
+    position: relative;
+    top: 1px;
+    border-bottom: 1px solid var(--border-weak) !important;
+    height: 40px;
+    margin-top: 0px !important;
+    align-items: flex-end;
+    gap: 4px;
+
+    .nav-item {
+      background-color: var(--base) !important;
+      flex-grow: 0;
+
+      button {
+        min-width: 0 !important;
+        padding: 2px 7px;
+      }
+
+      #inspector-tabs-tab-properties {
+        width: 84px;
+      }
+
+      #inspector-tabs-tab-styles {
+        width: 61px;
+      }
+
+      &:hover {
+        button.nav-link:not(.active) {
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 22px;
+            transform: translateY(-50%);
+            background-color: var(--interactive-hover);
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 6px;
+          }
+        }
+      }
+    }
+  }
+
+  #inspector-tabs-tab-properties,
+  #inspector-tabs-tab-styles {
+    border-radius: 0px !important;
+    background-color: transparent !important;
+  }
+
+  #inspector-tabs-tab-properties.nav-link.active,
+  #inspector-tabs-tab-styles.nav-link.active {
+    border-bottom: 2px solid rgb(77, 114, 250) !important;
+    color: var(--text-default) !important;
+  }
+
+  #inspector-tabs-tab-properties.nav-link,
+  #inspector-tabs-tab-styles.nav-link {
+    font-weight: 500 !important;
+  }
+
+  #inspector-tabs-tab-properties:hover,
+  #inspector-tabs-tab-styles:hover {
+    border: none !important;
+  }
+
+  // ===== CONTENT WRAPPER (Minimal styles) =====
+  .inspector-content {
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // Migrate CSS from #inspector-tabpane-properties
+    .accordion {
+      .accordion-item:last-child {
+        border-bottom: none !important;
+      }
+    }
+
+    .code-hinter textarea {
+      border: 0;
+      overflow: hidden;
+      max-height: 22.5px;
+    }
+  }
+
+  // ===== HIDE EMPTY BOOTSTRAP TAB-CONTENT =====
+  .inspector-header .tab-content {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+  }
+}

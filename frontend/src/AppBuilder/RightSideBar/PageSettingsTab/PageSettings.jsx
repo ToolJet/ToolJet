@@ -35,6 +35,7 @@ import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/To
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import './PageMenu/style.scss';
+import './styles.scss';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -53,6 +54,7 @@ export const PageSettings = () => {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
+  const [activeTab, setActiveTab] = useState('properties');
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
@@ -107,6 +109,21 @@ export const PageSettings = () => {
     },
     [handleStyleChange, pageSettings, darkMode]
   );
+
+  const closeIcon = () => {
+    return (
+      <Button
+        iconOnly
+        leadingIcon={'x'}
+        onClick={handleToggle}
+        variant="ghost"
+        fill="var(--icon-strong,#6A727C)"
+        size="medium"
+        data-cy="page-settings-close-button"
+        isLucid={true}
+      />
+    );
+  };
 
   const pagesAndMenuItems = [
     {
@@ -183,39 +200,52 @@ export const PageSettings = () => {
 
   return (
     <div className="inspector pages-settings">
-      <div>
-        <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div style={{ padding: '7px 6px' }} className={`col-9 ${isVersionReleased && 'disabled'}`}>
-            Pages and navigation
-          </div>
-          <div className="d-flex icon-holder">
-            <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleToggle}>
-              <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+      {/* Header Section - Always rendered */}
+      <div className="pages-settings-header">
+        {/* Row 1: Label + Close Button */}
+        <div className="header-title-row">
+          <p className="pages-settings-label">Pages and navigation</p>
+          {closeIcon()}
+        </div>
+
+        {/* Row 2: Tabs (always rendered) */}
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(key) => {
+            setActiveTab(key);
+          }}
+          id="page-settings-tabs"
+          darkMode={darkMode}
+        >
+          <Tab eventKey="properties" title="Properties" />
+          <Tab eventKey="styles" title="Styles" />
+        </Tabs>
+      </div>
+
+      {/* Content - Wrapped in tab-content container */}
+      <div className="pages-settings-content">
+        {activeTab === 'properties' && (
+          <div className="page-selector-panel-body">
+            <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
+              <div className="tj-text-xsm color-slate12 ">
+                <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                <Accordion items={appHeaderMenuItems} />
+                {/* <Accordion items={devices} /> */}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <Tabs defaultActiveKey={'properties'} id="page-settings">
-            <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 ">
-                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
-                  <Accordion items={appHeaderMenuItems} />
-                  {/* <Accordion items={devices} /> */}
-                </div>
-              </div>
-            </Tab>
-            <Tab eventKey="styles" title="Styles">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 settings-tab ">
-                  <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
-                </div>
-              </div>
-            </Tab>
-          </Tabs>
-          <DeletePageConfirmationModal darkMode={darkMode} />
-        </div>
+        )}
+
+        {activeTab === 'styles' && (
+          <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
+            <div className="tj-text-xsm color-slate12 settings-tab ">
+              <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
+            </div>
+          </div>
+        )}
       </div>
+
+      <DeletePageConfirmationModal darkMode={darkMode} />
     </div>
   );
 };

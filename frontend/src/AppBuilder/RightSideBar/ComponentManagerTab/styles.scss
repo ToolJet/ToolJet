@@ -1,10 +1,35 @@
 .components-container {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
    .component-manager-close-icon {
        position: absolute;
        top: 6px;
        right: 5px;
        z-index: 10;
    }
+
+  .components-header {
+    padding: 16px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border-weak);
+
+    &.has-tabs {
+      padding: 16px 16px 0px 16px;
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .widgets-manager-header{
+        margin: 0 !important;
+      }
+    }
+
+  }
 
   #components-manager-tabs {
      margin-left: 10px;

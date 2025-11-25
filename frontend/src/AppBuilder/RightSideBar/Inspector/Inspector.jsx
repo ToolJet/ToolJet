@@ -51,6 +51,8 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { Button } from '@/components/ui/Button/Button';
+import './styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -176,6 +178,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState('properties');
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
 
   const { t } = useTranslation();
@@ -541,110 +544,147 @@ export const Inspector = ({
     );
   };
 
-  const renderTabs = () => (
-    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
-      <Tab eventKey="properties" title="Properties">
-        {propertiesTab}
-      </Tab>
-      <Tab eventKey="styles" title="Styles">
-        {stylesTab}
-      </Tab>
-    </Tabs>
-  );
+  const closeIcon = () => {
+    return (
+      <Button
+        iconOnly
+        leadingIcon={'x'}
+        onClick={handleRightSidebarToggle}
+        variant="ghost"
+        fill="var(--icon-strong,#6A727C)"
+        size="medium"
+        data-cy="inspector-close-button"
+        isLucid={true}
+      />
+    );
+  };
+
+  const menuIcon = () => {
+    return (
+      <OverlayTrigger
+        trigger={'click'}
+        placement={'bottom-end'}
+        rootClose={false}
+        show={showHeaderActionsMenu}
+        overlay={
+          <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+            <Popover.Body bsPrefix="list-item-popover-body">
+              {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                const optionBody = (
+                  <div
+                    data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                    className="list-item-popover-option"
+                    key={option?.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleInspectorHeaderActions(option.value);
+                    }}
+                  >
+                    <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                    <div
+                      className={classNames('list-item-option-menu-label', {
+                        'color-tomato9': option.value === 'delete',
+                        'color-disabled': option.value === 'permission' && !licenseValid,
+                      })}
+                    >
+                      {option?.label}
+                    </div>
+                    {option.value === 'permission' && !licenseValid && option.trailingIcon && option.trailingIcon}
+                  </div>
+                );
+
+                return option.value === 'permission' ? (
+                  <ToolTip
+                    key={option.value}
+                    message={'Component permissions are available only in paid plans'}
+                    placement="left"
+                    show={!licenseValid}
+                  >
+                    {optionBody}
+                  </ToolTip>
+                ) : (
+                  optionBody
+                );
+              })}
+            </Popover.Body>
+          </Popover>
+        }
+      >
+        <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+          <Button
+            iconOnly
+            leadingIcon={'more-vertical'}
+            variant="ghost"
+            fill="var(--icon-strong,#6A727C)"
+            size="medium"
+            data-cy="menu-icon"
+            isLucid={true}
+          />
+        </span>
+      </OverlayTrigger>
+    );
+  };
 
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
-      <div>
-        <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
-            shouldFreeze && 'disabled'
-          }`}
-        >
-          <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          {!isModuleContainer && (
-            <>
-              <div className="width-unset" data-cy={'component-inspector-options'}>
-                <OverlayTrigger
-                  trigger={'click'}
-                  placement={'bottom-end'}
-                  rootClose={false}
-                  show={showHeaderActionsMenu}
-                  overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                      <Popover.Body bsPrefix="list-item-popover-body">
-                        {INSPECTOR_HEADER_OPTIONS.map((option) => {
-                          const optionBody = (
-                            <div
-                              data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                              className="list-item-popover-option"
-                              key={option?.value}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleInspectorHeaderActions(option.value);
-                              }}
-                            >
-                              <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                              <div
-                                className={classNames('list-item-option-menu-label', {
-                                  'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
-                                })}
-                              >
-                                {option?.label}
-                              </div>
-                              {option.value === 'permission' &&
-                                !licenseValid &&
-                                option.trailingIcon &&
-                                option.trailingIcon}
-                            </div>
-                          );
-
-                          return option.value === 'permission' ? (
-                            <ToolTip
-                              key={option.value}
-                              message={'Component permissions are available only in paid plans'}
-                              placement="left"
-                              show={!licenseValid}
-                            >
-                              {optionBody}
-                            </ToolTip>
-                          ) : (
-                            optionBody
-                          );
-                        })}
-                      </Popover.Body>
-                    </Popover>
-                  }
-                >
-                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                  </span>
-                </OverlayTrigger>
-              </div>
-              <AppPermissionsModal
-                modalType="component"
-                resourceId={selectedComponentId}
-                resourceName={allComponents[selectedComponentId]?.component?.name}
-                showModal={showComponentPermissionModal}
-                toggleModal={toggleComponentPermissionModal}
-                darkMode={darkMode}
-                fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
-                deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
-                onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
-              />
-            </>
-          )}
-          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleRightSidebarToggle}>
-            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+      {/* NEW: Inspector Header */}
+      <div className="inspector-header">
+        {/* Row 1: Component Name + Menu + Close */}
+        <div className="header-title-row">
+          <div className="flex-grow-1">{renderAppNameInput()}</div>
+          <div className="header-actions">
+            {!isModuleContainer && (
+              <>
+                {menuIcon()}
+                <AppPermissionsModal
+                  modalType="component"
+                  resourceId={selectedComponentId}
+                  resourceName={allComponents[selectedComponentId]?.component?.name}
+                  showModal={showComponentPermissionModal}
+                  toggleModal={toggleComponentPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
+                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                  deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                  onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+                />
+              </>
+            )}
+            {closeIcon()}
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
-          {renderTabs()}
-        </div>
+        {/* Row 2: Tabs */}
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(key) => {
+            setActiveTab(key);
+          }}
+          id="inspector-tabs"
+          darkMode={darkMode}
+          hidden={isModuleContainer}
+        >
+          <Tab eventKey="properties" title="Properties" />
+          <Tab eventKey="styles" title="Styles" />
+        </Tabs>
       </div>
+
+      {/* Content - conditionally rendered */}
+      <div className="inspector-content">
+        {activeTab === 'properties' && (
+          <div className={shouldFreeze && 'disabled'} key={selectedComponentId}>
+            {propertiesTab}
+          </div>
+        )}
+
+        {activeTab === 'styles' && (
+          <div className={shouldFreeze && 'disabled'} key={selectedComponentId}>
+            {stylesTab}
+          </div>
+        )}
+      </div>
+
       {renderDocumentationLink()}
     </div>
   );
