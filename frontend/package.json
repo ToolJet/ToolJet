@@ -267,6 +267,7 @@
     "analyze": "ANALYZE=true webpack --mode=production",
     "analyze:dev": "ANALYZE=true webpack --mode=development",
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
+    "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",
