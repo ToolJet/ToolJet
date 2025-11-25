@@ -1,8 +1,8 @@
-import { AddGroupUserDto, CreateGroupPermissionDto, UpdateGroupPermissionDto, DuplicateGroupDto } from '../dto';
+import { AddGroupUserDto, CreateGroupPermissionDto, UpdateGroupPermissionDto, DuplicateGroupDto, PaginationQueryDto } from '../dto';
 import { CreateGranularPermissionDto, UpdateGranularPermissionDto } from '../dto/granular-permissions';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { User as UserEntity } from '@entities/user.entity';
-import { GetUsersResponse } from '../types';
+import { GetUsersResponse, PaginatedGroupUsersResponse } from '../types';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 
@@ -14,7 +14,9 @@ export interface IGroupPermissionsControllerV2 {
   delete(user: UserEntity, id: string): Promise<void>;
   duplicateGroup(user: UserEntity, groupId: string, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;
   createGroupUsers(user: UserEntity, groupId: string, addGroupUserDto: AddGroupUserDto): Promise<void>;
-  getAllGroupUser(user: UserEntity, searchInput: string, group: GroupPermissions): Promise<GroupUsers[]>;
+  addSingleUserToGroup(user: UserEntity, groupId: string, userId: string): Promise<{ message: string; userId: string; groupId: string; groupUserId: string }>;
+  removeSingleUserFromGroup(user: UserEntity, groupId: string, userId: string): Promise<void>;
+  getAllGroupUser(user: UserEntity, searchInput: string, group: GroupPermissions, paginationQuery: PaginationQueryDto): Promise<GroupUsers[] | PaginatedGroupUsersResponse>;
   deleteGroupUser(user: UserEntity, id: string): Promise<void>;
   getAddableGroupUser(user: UserEntity, groupId: string, searchInput: string): Promise<UserEntity[]>;
 }

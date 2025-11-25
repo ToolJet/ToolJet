@@ -1,4 +1,5 @@
 import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
 import { FEATURE_KEY, GROUP_PERMISSIONS_TYPE, USER_ROLE } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
@@ -31,6 +32,16 @@ interface SearchParamItem {
 export interface GetUsersResponse {
   groupPermissions: GroupPermissions[];
   length: number;
+}
+
+export interface PaginatedGroupUsersResponse {
+  users: GroupUsers[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface UpdateGroupObject {

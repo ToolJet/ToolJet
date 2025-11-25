@@ -1,6 +1,6 @@
 import { User } from '@entities/user.entity';
-import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsArray } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsArray, IsInt, Min, Max } from 'class-validator';
 
 export class CreateGroupPermissionDto {
   @IsString()
@@ -93,4 +93,19 @@ export class DuplicateGroupDtoBase {
 export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   addDataSource: boolean;
+}
+
+export class PaginationQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }
