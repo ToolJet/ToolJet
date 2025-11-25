@@ -146,7 +146,6 @@ export const instanceSettingsSelector = {
 
 export const multiEnvSelector = {
   envContainer: '[data-cy="env-container"]',
-  currentEnvName: '[data-cy="list-current-env-name"]',
   envArrow: '[data-cy="env-arrow"]',
   selectedEnvName: '[data-cy="selected-current-env-name"]',
   envNameList: '[data-cy="env-name-list"]',

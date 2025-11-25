@@ -7,13 +7,7 @@ import { dashboardText } from "Texts/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
-    const isEnterprise = Cypress.env("environment") === "Enterprise";
 
-    before(function () {
-        if (Cypress.env("environment") === "Community") {
-            this.skip();
-        }
-    });
     beforeEach(() => {
 
         data = {
@@ -22,7 +16,7 @@ describe("Home Page Dashboard Testcases", () => {
         };
         cy.intercept("GET", "/api/library_apps").as("appLibrary");
         cy.apiLogin();
-        cleanAllUsers()
+        cleanAllUsers();
         cy.visit("/my-workspace");
 
     });
@@ -30,7 +24,7 @@ describe("Home Page Dashboard Testcases", () => {
     it("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
-        cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
+        cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq(
                 commonText.breadcrumbHome
             );

@@ -31,7 +31,7 @@ describe("Manage Groups", () => {
             appName: fake.companyName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
             workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
-            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceSlug: `${fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, "")}-permissions`,
             folderName: fake.companyName,
             dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
