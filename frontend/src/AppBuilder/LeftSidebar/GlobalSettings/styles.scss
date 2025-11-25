@@ -21,4 +21,14 @@
 			font-weight: 500 !important;
 		}
 	}
+
+	// Canvas Styles Accordion - remove bottom border from accordion body
+	.canvas-styles-accordion-wrapper {
+		.accordion-body {
+			border-bottom: none !important;
+		}
+	}
+	.border-weak{
+		border-bottom: 1px solid var(--border-weak) !important;
+	}
 }

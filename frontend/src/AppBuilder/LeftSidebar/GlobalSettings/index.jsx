@@ -12,6 +12,7 @@ import MaintenanceMode from './MaintenanceMode';
 import HideHeaderToggle from './HideHeaderToggle';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import Accordion from '@/_ui/Accordion';
 import './styles.scss'
 
 const GlobalSettings = ({ darkMode, toggleLeftSidebar }) => {
@@ -37,7 +38,7 @@ const GlobalSettings = ({ darkMode, toggleLeftSidebar }) => {
               </div>
             </HeaderSection.PanelHeader>
           </HeaderSection>
-          <div className="card-body d-flex flex-column" style={{  gap: '12px', padding: '16px' }}>
+          <div className="card-body d-flex flex-column border-weak" style={{  gap: '12px', padding: '16px' }}>
             <SlugInput />
             <div  className={cx({ disabled: shouldFreeze })}>
               <MaintenanceMode darkMode={darkMode} />
@@ -46,15 +47,25 @@ const GlobalSettings = ({ darkMode, toggleLeftSidebar }) => {
               <AppExport darkMode={darkMode} />
             </div>
           </div>
-          <div className={cx({ 'dark-theme': darkMode })}>
-            <span className="canvas-styles-header">Canvas Styles</span>
-          </div>
-          <div style={{ padding: '16px' }} className={cx({ disabled: shouldFreeze })}>
-            <div className="tj-text-xsm d-flex flex-column " style={{ gap: '8px',color: 'var(--text-default)' }}>
-              <CanvasSettings darkMode={darkMode} />
-              <AppModeToggle darkMode={darkMode} />
-              <ThemeSelect darkMode={darkMode} />
-            </div>
+          <div className="canvas-styles-accordion-wrapper">
+            <Accordion
+              items={[
+                {
+                  title: 'Canvas Styles',
+                  isOpen: true,
+                  children: (
+                    <div className={cx({ disabled: shouldFreeze })}>
+                      <div className="tj-text-xsm d-flex flex-column" style={{ gap: '8px', color: 'var(--text-default)' }}>
+                        <CanvasSettings darkMode={darkMode} />
+                        <AppModeToggle darkMode={darkMode} />
+                        <ThemeSelect darkMode={darkMode} />
+                      </div>
+                    </div>
+                  ),
+                },
+              ]}
+              isTitleCase={false}
+            />
           </div>
         </div>
       </div>
