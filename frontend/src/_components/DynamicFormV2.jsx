@@ -119,7 +119,7 @@ const parseMongoDBConnectionString = (connectionString) => {
     return null;
   }
 
-  const [, username, password, hosts, database] = match;
+  const [, username, password, hosts, database, queryString] = match;
 
   let host = '';
   let port = '';
@@ -138,6 +138,21 @@ const parseMongoDBConnectionString = (connectionString) => {
       port = ''; 
     }
   }
+
+  let use_ssl = false;
+  if (queryString) {
+    const params = new URLSearchParams(queryString.substring(1)); 
+    
+    const sslParam = params.get('ssl');
+    const tlsParam = params.get('tls');
+    
+    if (sslParam !== null) {
+      use_ssl = sslParam === '' || sslParam.toLowerCase() === 'true';
+    } else if (tlsParam !== null) {
+      use_ssl = tlsParam === '' || tlsParam.toLowerCase() === 'true';
+    }
+  }
+
   return {
     host: host,
     port: port, 
@@ -145,6 +160,7 @@ const parseMongoDBConnectionString = (connectionString) => {
     password: password || '',
     database: database || '',
     connection_format: isSrv ? 'mongodb+srv' : 'mongodb',
+    use_ssl: use_ssl,
   };
 };
 
@@ -232,6 +248,9 @@ React.useEffect(() => {
     }
     if (parsed.database !== undefined) {
       optionchanged('database', parsed.database, false);
+    }
+    if (parsed.use_ssl !== undefined) {
+      optionchanged('use_ssl', parsed.use_ssl, false);
     }
 
     lastAutoFilledConnRef.current = connString;

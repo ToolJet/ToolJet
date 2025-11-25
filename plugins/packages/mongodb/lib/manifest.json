@@ -176,7 +176,7 @@
           "key": "port",
           "label": "Port",
           "description": "Enter port",
-          "widget": "text-v3",
+          "widget": "text",
           "required": true
         }
       },
@@ -206,7 +206,7 @@
             "key": "host",
             "label": "Host",
             "description": "Enter host",
-            "widget": "text-v3",
+            "widget": "text",
             "required": true
           },
           "database": {
@@ -214,21 +214,21 @@
             "$ref": "#/properties/database",
             "key": "database",
             "description": "Name of the database",
-            "widget": "text-v3"
+            "widget": "text"
           },
           "username": {
             "$ref": "#/properties/username",
             "key": "username",
             "label": "Username",
             "description": "Enter username",
-            "widget": "text-v3"
+            "widget": "text"
           },
           "password": {
             "$ref": "#/properties/password",
             "key": "password",
             "label": "Password",
             "description": "Enter password",
-            "widget": "password-v3",
+            "widget": "password",
             "required": false
           }
         }
@@ -300,7 +300,7 @@
           "key": "host",
           "label": "Host",
           "description": "prod-db-1.company.com",
-          "widget": "text-v3",
+          "widget": "text",
           "required": true
         },
         "port": {
@@ -308,7 +308,7 @@
           "key": "port",
           "label": "Port",
           "description": "27017",
-          "widget": "text-v3",
+          "widget": "text",
           "required": true
         },
         "database": {
@@ -316,21 +316,21 @@
           "$ref": "#/properties/database",
           "key": "database",
           "description": "customer_data",
-          "widget": "text-v3"
+          "widget": "text"
         },
         "username": {
           "$ref": "#/properties/username",
           "key": "username",
           "label": "Username",
           "description": "admin",
-          "widget": "text-v3"
+          "widget": "text"
         },
         "password": {
           "$ref": "#/properties/password",
           "key": "password",
           "label": "Password",
           "description": "Enter password",
-          "widget": "password-v3",
+          "widget": "password",
           "required": false
         },
         "use_ssl": {
@@ -347,7 +347,7 @@
           "key": "host",
           "label": "Host",
           "description": "prod-db-1.company.com",
-          "widget": "text-v3",
+          "widget": "text",
           "required": true
         },
         "database": {
@@ -355,21 +355,21 @@
           "$ref": "#/properties/database",
           "key": "database",
           "description": "customer_data",
-          "widget": "text-v3"
+          "widget": "text"
         },
         "username": {
           "$ref": "#/properties/username",
           "key": "username",
           "label": "Username",
           "description": "admin",
-          "widget": "text-v3"
+          "widget": "text"
         },
         "password": {
           "$ref": "#/properties/password",
           "key": "password",
           "label": "Password",
           "description": "Enter password",
-          "widget": "password-v3",
+          "widget": "password",
           "required": false
         },
         "use_ssl": {
