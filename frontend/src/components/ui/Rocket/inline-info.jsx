@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Alert, AlertTitle, AlertDescription } from '../Alert/Alert';
+import { Alert, AlertTitle, AlertDescription } from './alert';
 
 // Icon color variants based on type
 const getIconColor = (type) => {

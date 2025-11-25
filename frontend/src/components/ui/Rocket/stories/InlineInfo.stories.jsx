@@ -1,10 +1,10 @@
 import React from 'react';
-import { InlineInfoCompound } from './InlineInfo';
+import { InlineInfoCompound } from '../inline-info';
 import { Info, AlertTriangle, AlertCircle } from 'lucide-react';
-import { Button } from '../Button/Button';
+import { Button } from '@/components/ui/Button/Button';
 
 export default {
-  title: 'UI/InlineInfo',
+  title: 'UI/Rocket/InlineInfo',
   component: InlineInfoCompound,
   parameters: {
     layout: 'padded',
@@ -198,3 +198,4 @@ Playground.args = {
     </Button>
   ),
 };
+
