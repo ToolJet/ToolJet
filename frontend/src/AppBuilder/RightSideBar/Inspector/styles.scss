@@ -35,22 +35,24 @@
     margin-top: 0px !important;
     align-items: flex-end;
     gap: 4px;
+    width: 100%;
 
     .nav-item {
       background-color: var(--base) !important;
-      flex-grow: 0;
+      flex: 1;
 
       button {
         min-width: 0 !important;
         padding: 2px 7px;
+        width: 100%;
       }
 
       #inspector-tabs-tab-properties {
-        width: 84px;
+        width: 100%;
       }
 
       #inspector-tabs-tab-styles {
-        width: 61px;
+        width: 100%;
       }
 
       &:hover {
