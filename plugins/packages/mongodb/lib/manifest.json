@@ -81,7 +81,7 @@
     }
   },
   "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert", "connection_string"],
-  "required": ["connection_type","host"],
+  "required": ["connection_type","host","port"],
   "allOf": [
     {
       "if": {
@@ -176,7 +176,7 @@
           "key": "port",
           "label": "Port",
           "description": "Enter port",
-          "widget": "text",
+          "widget": "text-v3",
           "required": true
         }
       },
@@ -206,7 +206,7 @@
             "key": "host",
             "label": "Host",
             "description": "Enter host",
-            "widget": "text",
+            "widget": "text-v3",
             "required": true
           },
           "database": {
@@ -300,7 +300,7 @@
           "key": "host",
           "label": "Host",
           "description": "prod-db-1.company.com",
-          "widget": "text",
+          "widget": "text-v3",
           "required": true
         },
         "port": {
@@ -308,7 +308,7 @@
           "key": "port",
           "label": "Port",
           "description": "27017",
-          "widget": "text",
+          "widget": "text-v3",
           "required": true
         },
         "database": {
@@ -347,7 +347,7 @@
           "key": "host",
           "label": "Host",
           "description": "prod-db-1.company.com",
-          "widget": "text",
+          "widget": "text-v3",
           "required": true
         },
         "database": {
