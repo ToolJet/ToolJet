@@ -88,7 +88,7 @@ const SlugInput = () => {
   const delayedSlugChange = _.debounce((value, field) => handleInputChange(value, field), 500);
 
   return (
-    <div className="app-slug-container">
+    <div className="app-slug-container d-flex flex-column" style={{ gap: '12px' }}>
       <div className="row">
         <div className="col">
           <InputComponent
@@ -118,7 +118,7 @@ const SlugInput = () => {
           )}
         </div>
       </div>
-      <div className="col modal-main tj-app-input mt-2">
+      <div className="col modal-main tj-app-input">
         <label className="field-name" data-cy="app-link-label">
           App link
         </label>

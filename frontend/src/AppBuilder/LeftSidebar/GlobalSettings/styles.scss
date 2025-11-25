@@ -6,4 +6,19 @@
 	// .panel-header-container {
 	// 	height: 32px;
 	// }
+	.field-name{
+		color: var(--text-default);
+		margin-bottom:  0px !important;
+	}
+	.tj-text-input{
+		background: var(--controls-switch-tag, #CCD1D54D) !important;
+		padding: 7px 8px !important;
+		margin-bottom: 0px !important;
+		border : none !important;
+	}
+	.maintenance-mode-container {
+		label{
+			font-weight: 500 !important;
+		}
+	}
 }

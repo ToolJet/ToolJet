@@ -72,7 +72,7 @@ const CanvasSettings = ({ darkMode }) => {
 
   return (
     <>
-      <div className="d-flex mb-3">
+      <div className="d-flex" style={{marginBottom: '0px'}}>
         <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
           {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
         </span>
@@ -119,7 +119,7 @@ const CanvasSettings = ({ darkMode }) => {
         </div>
       </div>
 
-      <div className="d-flex mb-3" style={{ height: '42px', gap: '20px' }}>
+      <div className="d-flex" style={{ gap: '20px' }}>
         <span className="pt-2" data-cy={`label-bg-canvas`}>
           {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
         </span>

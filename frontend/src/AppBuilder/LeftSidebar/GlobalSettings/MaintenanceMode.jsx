@@ -17,7 +17,7 @@ const MaintenanceMode = ({ darkMode }) => {
   );
 
   return (
-    <>
+    <div className="maintenance-mode-container">
       <Confirm
         show={showConfirmation}
         message={
@@ -29,7 +29,7 @@ const MaintenanceMode = ({ darkMode }) => {
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <div className="tw-flex tw-mb-3">
+      <div className="tw-flex">
         <SwitchComponent
           align="right"
           label="Maintenance mode"
@@ -40,7 +40,7 @@ const MaintenanceMode = ({ darkMode }) => {
           className="tw-w-full"
         />
       </div>
-    </>
+    </div>
   );
 };
 

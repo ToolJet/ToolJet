@@ -17418,13 +17418,14 @@ section.ai-message-prompt-input-wrapper {
   text-align: left;
   text-underline-position: from-font;
   text-decoration-skip-ink: none;
-  background: var(--Background-surface-layer-02, #f6f8fa);
-  color: #6a727c;
+  // background: var(--Background-surface-layer-02, #f6f8fa);
+  // color: #6a727c;
+  color: var(--text-default, #1b1f24);
 }
 
 .app-export-btn {
   background-color: #ffffff;
-  border: 1px solid var(--Border-default, #ccd1d5);
+  border: 1px solid var(--border-weak, #ccd1d5);
   box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
 }
 

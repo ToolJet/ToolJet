@@ -37,20 +37,20 @@ const GlobalSettings = ({ darkMode, toggleLeftSidebar }) => {
               </div>
             </HeaderSection.PanelHeader>
           </HeaderSection>
-          <div className="card-body" style={{ paddingBottom: '0px' }}>
+          <div className="card-body d-flex flex-column" style={{  gap: '12px', padding: '16px' }}>
             <SlugInput />
-          </div>
-          <div style={{ padding: '16px' }} className={cx({ disabled: shouldFreeze })}>
-            <MaintenanceMode darkMode={darkMode} />
-          </div>
-          <div className="d-flex w-100" style={{ padding: '16px' }}>
-            <AppExport darkMode={darkMode} />
+            <div  className={cx({ disabled: shouldFreeze })}>
+              <MaintenanceMode darkMode={darkMode} />
+            </div>
+            <div className="d-flex w-100" >
+              <AppExport darkMode={darkMode} />
+            </div>
           </div>
           <div className={cx({ 'dark-theme': darkMode })}>
             <span className="canvas-styles-header">Canvas Styles</span>
           </div>
           <div style={{ padding: '16px' }} className={cx({ disabled: shouldFreeze })}>
-            <div className="tj-text-xsm color-slate12 ">
+            <div className="tj-text-xsm d-flex flex-column " style={{ gap: '8px',color: 'var(--text-default)' }}>
               <CanvasSettings darkMode={darkMode} />
               <AppModeToggle darkMode={darkMode} />
               <ThemeSelect darkMode={darkMode} />
