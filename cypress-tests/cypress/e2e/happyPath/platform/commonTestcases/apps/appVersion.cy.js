@@ -52,7 +52,7 @@ describe("App Version", () => {
     cy.viewport(1400, 1400);
   });
 
-  it.skip("should verify basic version management operations", () => {
+  it("should verify basic version management operations", () => {
     cy.get('[data-cy="query-manager-toggle-button"]').click();
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     navigateToCreateNewVersionModal("v1");
@@ -99,7 +99,7 @@ describe("App Version", () => {
     cy.waitForAutoSave();
     verifyComponentinrightpannel("table");
 
-    deleteComponentAndVerify("text1");
+    // deleteComponentAndVerify("text1");
     cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("not.exist");
 
@@ -122,12 +122,7 @@ describe("App Version", () => {
       cy.url().should("include", "/home?env=development&version=v2");
     });
 
-    cy.openApp(
-      "",
-      Cypress.env("workspaceId"),
-      Cypress.env("appId"),
-      commonWidgetSelector.draggableWidget("text1")
-    );
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"));
     releasedVersionAndVerify("v2");
   });
 
