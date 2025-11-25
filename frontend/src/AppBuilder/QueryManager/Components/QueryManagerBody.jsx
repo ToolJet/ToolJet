@@ -261,7 +261,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     );
   };
 
-  const datasourceKindsWithTimeout = ['postgresql'];
   const renderTimeout = () => {
     return (
       <div className="d-flex">
@@ -320,7 +319,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           />
         </div>
         {renderEventManager()}
-        {datasourceKindsWithTimeout.includes(selectedDataSource?.kind) && renderTimeout()}
+        {renderTimeout()}
       </div>
     );
   };
