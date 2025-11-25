@@ -159,6 +159,7 @@ describe("Instance settings - White labelling", () => {
 
     verifyLogoOnWorkspaceLoginPage("my-workspace");
 
+    cy.visit("/");
     cy.get(onboardingSelectors.createAnAccountLink).click();
     verifyCustomLogo(
       whiteLabelSelectors.tooljetHeaderImg,
