@@ -12,7 +12,11 @@ const ConfigHandleButton = ({
   dataCy = '',
   onMouseEnter = () => {},
   onMouseLeave = () => {},
+  shouldHide = false,
 }) => {
+  if (shouldHide) {
+    return null;
+  }
   return (
     <span className={`config-handle-button ${className}`}>
       <ToolTip message={message} show={show}>
