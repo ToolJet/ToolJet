@@ -3,7 +3,6 @@ name: Update test system (LTS and pre-release)
 on:
   workflow_dispatch:
     inputs:
-      # Existing inputs for Docker deployment
       branch_name:
         description: "Git branch to build from (required for deploy operations)"
         required: false
@@ -353,7 +352,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            BRANCH_NAME: ${{ github.event.inputs.branch_name }}
+            BRANCH_NAME=${{ github.event.inputs.branch_name }}
 
       - name: Show the full Docker tag
         run: echo "✅ Docker image built and pushed:${{ steps.taggen.outputs.tag }}"
