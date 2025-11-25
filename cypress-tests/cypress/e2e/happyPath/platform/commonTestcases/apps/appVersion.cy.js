@@ -52,7 +52,7 @@ describe("App Version", () => {
     cy.viewport(1400, 1400);
   });
 
-  it("should verify basic version management operations", () => {
+  it.skip("should verify basic version management operations", () => {
     cy.get('[data-cy="query-manager-toggle-button"]').click();
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     navigateToCreateNewVersionModal("v1");

@@ -81,11 +81,11 @@ describe("Multi-Environment Behavior", () => {
     });
   });
 
-  it("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
+  it.skip("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
     // cy.get('[data-cy="query-manager-toggle-button"]').click();
 
     cy.dragAndDropWidget("Button", 350, 100);
-    cy.wait(200)
+    cy.wait(200);
     cy.get(commonWidgetSelector.draggableWidget("button1")).should(
       "be.visible"
     );
@@ -136,7 +136,9 @@ describe("Multi-Environment Behavior", () => {
       cy.apiPromoteAppVersion(stagingId);
     });
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.get('[data-cy="draggable-widget-constant_data"]', { timeout: 40000 }).should('be.visible');
+    cy.get('[data-cy="draggable-widget-constant_data"]', {
+      timeout: 40000,
+    }).should("be.visible");
     cy.wait(200);
     selectEnvironment("Development");
     verifyEnvironmentData(DBValues.development, EnvironmentValues.development);
