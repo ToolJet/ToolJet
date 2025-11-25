@@ -17,7 +17,7 @@ export const BasicPlanMigrationBanner = ({ closeBanner, darkMode }) => {
           impact any SSO configured.{' '}
           <a
             className="banner-link"
-            href="https://docs.tooljet.ai/docs/setup/tooljet-domain-change"
+            href="https://docs.tooljet.com/docs/setup/tooljet-domain-change"
             target="_blank"
             rel="noreferrer"
           >
