@@ -32,9 +32,10 @@ const LoginForm = ({
     email: setisDefaultFormEmail,
     password: setisDefaultFormPassword,
   };
-  // For OIDC, check if the array has any enabled configs
-  const oidcConfigs = Array.isArray(configs?.openid) ? configs.openid : [];
-  const hasEnabledOidc = oidcConfigs.some((config) => config.enabled);
+  // For OIDC, handle both array (multi-tenant) and single object (legacy) formats
+  const hasEnabledOidc = Array.isArray(configs?.openid)
+    ? configs.openid.some((config) => config.enabled)
+    : configs?.openid?.enabled;
 
   const isAnySSOEnabled =
     configs?.google?.enabled ||
