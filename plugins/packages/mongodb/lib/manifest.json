@@ -80,7 +80,7 @@
       "default": false
     }
   },
-  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert", "connection_string"],
+  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert"],
   "required": ["connection_type","host","port"],
   "allOf": [
     {
@@ -214,21 +214,21 @@
             "$ref": "#/properties/database",
             "key": "database",
             "description": "Name of the database",
-            "widget": "text"
+            "widget": "text-v3"
           },
           "username": {
             "$ref": "#/properties/username",
             "key": "username",
             "label": "Username",
             "description": "Enter username",
-            "widget": "text"
+            "widget": "text-v3"
           },
           "password": {
             "$ref": "#/properties/password",
             "key": "password",
             "label": "Password",
             "description": "Enter password",
-            "widget": "password",
+            "widget": "password-v3",
             "required": false
           }
         }
@@ -316,21 +316,21 @@
           "$ref": "#/properties/database",
           "key": "database",
           "description": "customer_data",
-          "widget": "text"
+          "widget": "text-v3"
         },
         "username": {
           "$ref": "#/properties/username",
           "key": "username",
           "label": "Username",
           "description": "admin",
-          "widget": "text"
+          "widget": "text-v3"
         },
         "password": {
           "$ref": "#/properties/password",
           "key": "password",
           "label": "Password",
           "description": "Enter password",
-          "widget": "password",
+          "widget": "password-v3",
           "required": false
         },
         "use_ssl": {
@@ -355,21 +355,21 @@
           "$ref": "#/properties/database",
           "key": "database",
           "description": "customer_data",
-          "widget": "text"
+          "widget": "text-v3"
         },
         "username": {
           "$ref": "#/properties/username",
           "key": "username",
           "label": "Username",
           "description": "admin",
-          "widget": "text"
+          "widget": "text-v3"
         },
         "password": {
           "$ref": "#/properties/password",
           "key": "password",
           "label": "Password",
           "description": "Enter password",
-          "widget": "password",
+          "widget": "password-v3",
           "required": false
         },
         "use_ssl": {
