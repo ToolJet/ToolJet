@@ -120,13 +120,7 @@ const MOCK_SIDEBAR_DATA = {
 function StoryWithWorkspace(props) {
   const [currentWorkspace, setCurrentWorkspace] = React.useState(DUMMY_WORKSPACES[0].name);
   const [currentFolder, setCurrentFolder] = React.useState(props.currentFolder || {});
-  const [activeTab, setActiveTab] = React.useState(props.activeTab || 'apps');
   const [appSearchKey, setAppSearchKey] = React.useState(props.appSearchKey || '');
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    console.log('Tab changed to:', tab);
-  };
 
   // Update currentFolder when prop changes
   React.useEffect(() => {
@@ -185,21 +179,48 @@ function StoryWithWorkspace(props) {
 
   return (
     <AppsPageAdapter
-      workspaceName={currentWorkspace}
-      workspaces={DUMMY_WORKSPACES}
-      onWorkspaceChange={handleWorkspaceChange}
-      currentFolder={currentFolder}
-      folderChanged={handleFolderChange}
-      sidebarUser={MOCK_SIDEBAR_DATA.user}
-      sidebarTeams={MOCK_SIDEBAR_DATA.teams}
-      sidebarNavMain={MOCK_SIDEBAR_DATA.navMain}
-      sidebarProjects={MOCK_SIDEBAR_DATA.projects}
-      navigate={enhancedNavigate}
-      activeTab={activeTab}
-      onTabChange={handleTabChange}
-      appSearchKey={appSearchKey}
-      onSearch={handleSearch}
-      {...restProps}
+      data={{
+        apps: restProps.apps || [],
+        isLoading: restProps.isLoading || false,
+        error: restProps.error || null,
+        meta: restProps.meta || {},
+      }}
+      filters={{
+        appSearchKey: appSearchKey,
+        currentFolder: currentFolder,
+        folders: restProps.folders || MOCK_FOLDERS,
+        foldersLoading: restProps.foldersLoading || false,
+      }}
+      actions={{
+        pageChanged: restProps.pageChanged || mockPageChanged,
+        folderChanged: handleFolderChange,
+        onSearch: handleSearch,
+        deleteApp: restProps.deleteApp || mockDeleteApp,
+        cloneApp: restProps.cloneApp || mockCloneApp,
+        exportApp: restProps.exportApp || mockExportApp,
+      }}
+      permissions={{
+        canCreateApp: restProps.canCreateApp || mockCanCreateApp,
+        canDeleteApp: restProps.canDeleteApp || mockCanDeleteApp,
+        canUpdateApp: restProps.canUpdateApp || mockCanUpdateApp,
+      }}
+      navigation={{
+        navigate: enhancedNavigate,
+        workspaceId: restProps.workspaceId,
+        appType: restProps.appType || 'front-end',
+      }}
+      layout={{
+        workspaceName: currentWorkspace,
+        workspaces: DUMMY_WORKSPACES,
+        onWorkspaceChange: handleWorkspaceChange,
+        sidebarUser: MOCK_SIDEBAR_DATA.user,
+        sidebarTeams: MOCK_SIDEBAR_DATA.teams,
+        sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
+        sidebarProjects: MOCK_SIDEBAR_DATA.projects,
+      }}
+      ui={{
+        darkMode: restProps.darkMode,
+      }}
     />
   );
 }

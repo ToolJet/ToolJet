@@ -164,17 +164,46 @@ function StoryWithWorkspace(props) {
 
   return (
     <EndUserAppsPageAdapter
-      workspaceName={currentWorkspace}
-      workspaces={DUMMY_WORKSPACES}
-      onWorkspaceChange={handleWorkspaceChange}
-      currentFolder={currentFolder}
-      folderChanged={handleFolderChange}
-      sidebarUser={MOCK_SIDEBAR_DATA.user}
-      sidebarTeams={MOCK_SIDEBAR_DATA.teams}
-      sidebarNavMain={MOCK_SIDEBAR_DATA.navMain}
-      sidebarProjects={MOCK_SIDEBAR_DATA.projects}
-      navigate={enhancedNavigate}
-      {...restProps}
+      data={{
+        apps: restProps.apps || [],
+        isLoading: restProps.isLoading || false,
+        error: restProps.error || null,
+        meta: restProps.meta || {},
+      }}
+      filters={{
+        appSearchKey: restProps.appSearchKey || '',
+        currentFolder: currentFolder,
+        folders: restProps.folders || MOCK_FOLDERS,
+        foldersLoading: restProps.foldersLoading || false,
+      }}
+      actions={{
+        pageChanged: restProps.pageChanged || mockPageChanged,
+        folderChanged: handleFolderChange,
+        onSearch: restProps.onSearch || mockOnSearch,
+        deleteApp: restProps.deleteApp || mockDeleteApp,
+        cloneApp: restProps.cloneApp || mockCloneApp,
+        exportApp: restProps.exportApp || mockExportApp,
+      }}
+      permissions={{
+        canCreateApp: restProps.canCreateApp || mockCanCreateApp,
+        canDeleteApp: restProps.canDeleteApp || mockCanDeleteApp,
+        canUpdateApp: restProps.canUpdateApp || mockCanUpdateApp,
+      }}
+      navigation={{
+        navigate: enhancedNavigate,
+        workspaceId: restProps.workspaceId,
+        appType: restProps.appType || 'front-end',
+      }}
+      layout={{
+        workspaceName: currentWorkspace,
+        workspaces: DUMMY_WORKSPACES,
+        onWorkspaceChange: handleWorkspaceChange,
+        sidebarUser: MOCK_SIDEBAR_DATA.user,
+        sidebarTeams: MOCK_SIDEBAR_DATA.teams,
+        sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
+        sidebarProjects: MOCK_SIDEBAR_DATA.projects,
+      }}
+      ui={{}}
     />
   );
 }

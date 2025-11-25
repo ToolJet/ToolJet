@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import { AppsShellView } from './AppsShellView';
 import { AppsTabs } from './AppsTabs';
 import { appsColumns } from './AppsPage.columns';
 import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
+import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
+import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { TablePaginationFooter } from './TablePaginationFooter';
 import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
@@ -47,41 +48,36 @@ import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
  * @component
  */
 function AppsPageAdapter({
-  apps,
-  isLoading,
-  error,
-  meta,
-  currentFolder,
-  appSearchKey,
-  appType,
-  pageChanged,
-  folderChanged,
-  onSearch,
-  canCreateApp,
-  canDeleteApp,
-  canUpdateApp,
-  deleteApp,
-  cloneApp,
-  exportApp,
-  navigate,
-  workspaceId,
-  folders,
-  foldersLoading,
-  // Workspace switcher props (for Storybook and layouts)
-  workspaceName,
-  workspaces,
-  onWorkspaceChange,
-  // Sidebar props (for Storybook and layouts)
-  sidebarUser,
-  sidebarTeams,
-  sidebarNavMain,
-  sidebarProjects,
-  // Dark mode prop (optional, defaults to false)
-  darkMode: initialDarkMode,
+  data = {},
+  filters = {},
+  actions = {},
+  permissions = {},
+  navigation = {},
+  layout = {},
+  ui = {},
 }) {
-  // Use React Router's navigate if not provided
-  const routerNavigate = useNavigate();
-  const navigateToApp = navigate || routerNavigate;
+  // Destructure grouped props with defaults
+  const { apps = [], isLoading = false, error = null, meta = {} } = data;
+
+  const { appSearchKey = '', currentFolder = {}, folders = [], foldersLoading = false } = filters;
+
+  const { pageChanged, folderChanged, onSearch, deleteApp, cloneApp, exportApp } = actions;
+
+  const { canCreateApp, canDeleteApp, canUpdateApp } = permissions;
+
+  const { navigate, workspaceId, appType = 'front-end' } = navigation;
+
+  const {
+    workspaceName,
+    workspaces = [],
+    onWorkspaceChange,
+    sidebarUser,
+    sidebarTeams = [],
+    sidebarNavMain = [],
+    sidebarProjects = [],
+  } = layout;
+
+  const { darkMode: initialDarkMode } = ui;
 
   // Dark mode state management (simple state, no localStorage)
   const [isDarkMode, setIsDarkMode] = useState(initialDarkMode ?? false);
@@ -207,182 +203,47 @@ function AppsPageAdapter({
   // This allows Storybook to pass workspaceId without importing heavy utils
   const resolvedWorkspaceId = workspaceId || '32434r';
 
-  // folderChanged handler is stored for future use
-  // Note: Folder filtering UI is not yet implemented in the new components
-  // This handler is ready to be passed to a future FolderFilter component
-  // eslint-disable-next-line no-unused-vars
-  const folderChangedHandler = folderChanged;
+  // Use resource actions hook
+  const actionsHandlers = useResourceActions({
+    navigate,
+    workspaceId: resolvedWorkspaceId,
+    handlers: { deleteApp, cloneApp, exportApp },
+  });
 
-  // Row action handlers with error handling
-  const handlePlay = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp) {
-          console.warn('Missing _originalApp in appRow for play action');
-          return;
-        }
-
-        if (navigateToApp && typeof navigateToApp === 'function') {
-          navigateToApp(`/${resolvedWorkspaceId}/applications/${originalApp.slug}`);
-        } else {
-          window.location.href = `/${resolvedWorkspaceId}/applications/${originalApp.slug}`;
-        }
-      } catch (err) {
-        console.error('Failed to navigate to app (play):', err);
-      }
-    },
-    [navigateToApp, resolvedWorkspaceId]
-  );
-
-  const handleEdit = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp) {
-          console.warn('Missing _originalApp in appRow for edit action');
-          return;
-        }
-
-        if (navigateToApp && typeof navigateToApp === 'function') {
-          navigateToApp(`/${resolvedWorkspaceId}/apps/${originalApp.slug}`);
-        } else {
-          window.location.href = `/${resolvedWorkspaceId}/apps/${originalApp.slug}`;
-        }
-      } catch (err) {
-        console.error('Failed to navigate to app (edit):', err);
-      }
-    },
-    [navigateToApp, resolvedWorkspaceId]
-  );
-
-  const handleDelete = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp || !deleteApp) {
-          console.warn('Missing _originalApp or deleteApp handler');
-          return;
-        }
-
-        // Confirm before deleting (HomePage might handle this, but we'll add a safety check)
-        if (window.confirm(`Are you sure you want to delete "${originalApp.name}"?`)) {
-          deleteApp(originalApp);
-        }
-      } catch (err) {
-        console.error('Failed to delete app:', err);
-      }
-    },
-    [deleteApp]
-  );
-
-  const handleClone = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp || !cloneApp) {
-          console.warn('Missing _originalApp or cloneApp handler');
-          return;
-        }
-        // HomePage.cloneApp expects (appName, appId)
-        cloneApp(originalApp.name, originalApp.id);
-      } catch (err) {
-        console.error('Failed to clone app:', err);
-      }
-    },
-    [cloneApp]
-  );
-
-  const handleExport = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp || !exportApp) {
-          console.warn('Missing _originalApp or exportApp handler');
-          return;
-        }
-        exportApp(originalApp);
-      } catch (err) {
-        console.error('Failed to export app:', err);
-      }
-    },
-    [exportApp]
-  );
-
-  // Compute permissions first (needed for columns) - we need this before hook call
-  const computedPerms = useMemo(() => {
-    try {
-      const canImport = typeof canCreateApp === 'function' ? canCreateApp() : canCreateApp ?? false;
-      const canEdit = (appRow) => {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp) return false;
-        try {
-          return typeof canUpdateApp === 'function' ? canUpdateApp(originalApp) : false;
-        } catch (err) {
-          console.error('Permission check failed:', err);
-          return false;
-        }
-      };
-      return { canImport, canEdit, canPlay: canEdit };
-    } catch (err) {
-      console.error('Failed to compute permissions:', err);
-      return { canImport: false, canEdit: () => false, canPlay: () => false };
-    }
-  }, [canCreateApp, canUpdateApp]);
-
-  // Create canDelete function for permission checking
-  const canDelete = useCallback(
-    (appRow) => {
-      try {
-        const originalApp = appRow?._originalApp;
-        if (!originalApp || !canDeleteApp) return false;
-        return typeof canDeleteApp === 'function' ? canDeleteApp(originalApp) : false;
-      } catch (err) {
-        console.error('Delete permission check failed:', err);
-        return false;
-      }
-    },
-    [canDeleteApp]
-  );
+  // Use resource permissions hook
+  const { permissions: computedPerms, canDelete } = useResourcePermissions({
+    canCreateApp,
+    canUpdateApp,
+    canDeleteApp,
+  });
 
   // Create columns with permissions and handlers
   const finalColumns = useMemo(() => {
     return appsColumns({
       perms: computedPerms,
-      onPlay: handlePlay,
-      onEdit: handleEdit,
-      onClone: handleClone,
-      onDelete: handleDelete,
-      onExport: handleExport,
+      onPlay: actionsHandlers.handlePlay,
+      onEdit: actionsHandlers.handleEdit,
+      onClone: actionsHandlers.handleClone,
+      onDelete: actionsHandlers.handleDelete,
+      onExport: actionsHandlers.handleExport,
       canDelete: canDelete,
     });
-  }, [computedPerms, handlePlay, handleEdit, handleClone, handleDelete, handleExport, canDelete]);
+  }, [computedPerms, actionsHandlers, canDelete]);
 
   // Use adapter hook with computed columns
   const {
     appRows: _finalAppRows,
-    perms: _hookPerms, // Use hook's perms for consistency (though we computed our own)
     table: finalTable,
     getSearch: finalGetSearch,
     handleSearch: finalHandleSearch,
     handlePaginationChange: _finalHandlePaginationChange,
     appsEmpty: finalAppsEmpty,
-    modulesEmpty: finalModulesEmpty,
     error: adapterError,
     isLoading: adapterIsLoading,
   } = useAppsPageAdapter({
-    apps,
-    isLoading,
-    error,
-    meta,
-    currentFolder,
-    appSearchKey,
-    appType,
-    canCreateApp,
-    canUpdateApp,
-    canDeleteApp,
-    pageChanged,
-    onSearch,
+    data: { apps, isLoading, error, meta },
+    filters: { appSearchKey, currentFolder },
+    actions: { pageChanged, onSearch },
     columns: finalColumns,
   });
 
@@ -550,11 +411,11 @@ function AppsPageAdapter({
           currentFolder={currentFolder}
           onFolderChange={folderChanged}
           foldersLoading={foldersLoading}
-          onPlay={handlePlay}
-          onEdit={handleEdit}
-          onClone={handleClone}
-          onDelete={handleDelete}
-          onExport={handleExport}
+          onPlay={actionsHandlers.handlePlay}
+          onEdit={actionsHandlers.handleEdit}
+          onClone={actionsHandlers.handleClone}
+          onDelete={actionsHandlers.handleDelete}
+          onExport={actionsHandlers.handleExport}
           perms={computedPerms}
           canDelete={canDelete}
         />
@@ -564,72 +425,84 @@ function AppsPageAdapter({
 }
 
 AppsPageAdapter.propTypes = {
-  apps: PropTypes.arrayOf(PropTypes.object).isRequired,
-  isLoading: PropTypes.bool,
-  error: PropTypes.oneOfType([PropTypes.instanceOf(Error), PropTypes.string, PropTypes.object]),
-  meta: PropTypes.shape({
-    current_page: PropTypes.number,
-    total_pages: PropTypes.number,
-    total_count: PropTypes.number,
-    per_page: PropTypes.number,
+  data: PropTypes.shape({
+    apps: PropTypes.arrayOf(PropTypes.object).isRequired,
+    isLoading: PropTypes.bool,
+    error: PropTypes.oneOfType([PropTypes.instanceOf(Error), PropTypes.string, PropTypes.object]),
+    meta: PropTypes.shape({
+      current_page: PropTypes.number,
+      total_pages: PropTypes.number,
+      total_count: PropTypes.number,
+      per_page: PropTypes.number,
+    }),
+  }).isRequired,
+  filters: PropTypes.shape({
+    appSearchKey: PropTypes.string,
+    currentFolder: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+    }),
+    folders: PropTypes.arrayOf(PropTypes.object),
+    foldersLoading: PropTypes.bool,
   }),
-  currentFolder: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
+  actions: PropTypes.shape({
+    pageChanged: PropTypes.func,
+    folderChanged: PropTypes.func,
+    onSearch: PropTypes.func,
+    deleteApp: PropTypes.func,
+    cloneApp: PropTypes.func,
+    exportApp: PropTypes.func,
   }),
-  appSearchKey: PropTypes.string,
-  appType: PropTypes.oneOf(['front-end', 'module', 'workflow']),
-  pageChanged: PropTypes.func,
-  folderChanged: PropTypes.func,
-  onSearch: PropTypes.func,
-  canCreateApp: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
-  canDeleteApp: PropTypes.func,
-  canUpdateApp: PropTypes.func,
-  deleteApp: PropTypes.func,
-  cloneApp: PropTypes.func,
-  exportApp: PropTypes.func,
-  navigate: PropTypes.func,
-  workspaceId: PropTypes.string,
-  folders: PropTypes.arrayOf(PropTypes.object),
-  foldersLoading: PropTypes.bool,
-  // Workspace switcher props
-  workspaceName: PropTypes.string,
-  workspaces: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      logo: PropTypes.oneOfType([PropTypes.elementType, PropTypes.node]),
-      plan: PropTypes.string,
-    })
-  ),
-  onWorkspaceChange: PropTypes.func,
-  // Sidebar props
-  sidebarUser: PropTypes.object,
-  sidebarTeams: PropTypes.array,
-  sidebarNavMain: PropTypes.array,
-  sidebarProjects: PropTypes.array,
-  // Dark mode prop
-  darkMode: PropTypes.bool,
+  permissions: PropTypes.shape({
+    canCreateApp: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
+    canDeleteApp: PropTypes.func,
+    canUpdateApp: PropTypes.func,
+  }),
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func,
+    workspaceId: PropTypes.string,
+    appType: PropTypes.oneOf(['front-end', 'module', 'workflow']),
+  }),
+  layout: PropTypes.shape({
+    workspaceName: PropTypes.string,
+    workspaces: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        logo: PropTypes.oneOfType([PropTypes.elementType, PropTypes.node]),
+        plan: PropTypes.string,
+      })
+    ),
+    onWorkspaceChange: PropTypes.func,
+    sidebarUser: PropTypes.object,
+    sidebarTeams: PropTypes.array,
+    sidebarNavMain: PropTypes.array,
+    sidebarProjects: PropTypes.array,
+  }),
+  ui: PropTypes.shape({
+    darkMode: PropTypes.bool,
+  }),
 };
 
 AppsPageAdapter.defaultProps = {
-  apps: [],
-  isLoading: false,
-  error: null,
-  meta: {},
-  currentFolder: {},
-  appSearchKey: '',
-  appType: 'front-end',
-  workspaceId: undefined,
-  folders: [],
-  foldersLoading: false,
-  workspaceName: undefined,
-  workspaces: [],
-  onWorkspaceChange: undefined,
-  sidebarUser: undefined,
-  sidebarTeams: undefined,
-  sidebarNavMain: undefined,
-  sidebarProjects: undefined,
-  darkMode: undefined,
+  data: {
+    apps: [],
+    isLoading: false,
+    error: null,
+    meta: {},
+  },
+  filters: {
+    appSearchKey: '',
+    currentFolder: {},
+    folders: [],
+    foldersLoading: false,
+  },
+  actions: {},
+  permissions: {},
+  navigation: {
+    appType: 'front-end',
+  },
+  layout: {},
+  ui: {},
 };
 
 export default React.memo(AppsPageAdapter);
