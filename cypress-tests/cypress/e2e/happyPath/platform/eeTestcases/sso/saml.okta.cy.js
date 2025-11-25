@@ -21,11 +21,35 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
 const loginViaSamlSSO = (email, password) => {
   cy.intercept("GET", "/api/authorize").as("samlResponse");
+  cy.intercept("GET", "**/sso/saml/**").as("samlRedirect");
+  cy.intercept("GET", "https://integrator-8815821.okta.com/**").as("oktaPage");
+
+  cy.url().then((url) => cy.log("URL before SAML click:", url));
   cy.wait(2000);
+
+  cy.get(ssoEeSelector.saml.ssoText).then(($btn) => {
+    cy.log("SAML button href:", $btn.attr("href"));
+  });
+
   cy.get(ssoEeSelector.saml.ssoText).click();
+  cy.log("SAML button clicked");
+
+  // Wait for redirect to Okta
   cy.wait(2000);
+  cy.url().then((url) => {
+    cy.log("URL after SAML click:", url);
+    if (!url.includes("okta.com")) {
+      cy.log("ERROR: Did not navigate to Okta! Still at:", url);
+    }
+  });
+
   uiOktaLogin(email, password);
-  cy.wait(3000);
+  cy.log("uiOktaLogin completed - waiting for redirect back");
+
+  // Wait for redirect back to localhost
+  cy.url({ timeout: 15000 }).should("include", "localhost:3000");
+  cy.log("Successfully redirected back to ToolJet");
+  cy.url().then((url) => cy.log("Final URL:", url));
 };
 
 describe("SAML SSO", () => {
