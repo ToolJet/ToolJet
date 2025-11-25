@@ -173,6 +173,7 @@ export const BaseLeftSidebar = ({
             // globalSettings={appDefinition.globalSettings}
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
+            toggleLeftSidebar={toggleLeftSidebar}
           // toggleAppMaintenance={toggleAppMaintenance}
           // isMaintenanceOn={isMaintenanceOn}
           // app={app}
@@ -267,7 +268,7 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai or inspector is open don't close
-          if (['tooljetai', 'inspect', 'page', 'debugger'].includes(selectedSidebarItem)) {
+          if (['tooljetai', 'inspect', 'page', 'debugger', 'settings'].includes(selectedSidebarItem)) {
             return
           }
           const isWithinSidebar = e.target.closest('.left-sidebar');

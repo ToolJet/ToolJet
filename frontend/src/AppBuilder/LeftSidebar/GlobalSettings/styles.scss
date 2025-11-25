@@ -1,5 +1,9 @@
 .global-settings-panel {
-	.panel-header-container {
-		height: 32px;
+	.leftsidebar-panel-header{
+	padding: 16px;
+	border-bottom: 1px solid var(--border-weak);
 	}
+	// .panel-header-container {
+	// 	height: 32px;
+	// }
 }

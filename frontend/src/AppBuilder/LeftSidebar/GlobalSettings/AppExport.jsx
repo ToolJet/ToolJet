@@ -31,12 +31,12 @@ const AppExport = ({ darkMode }) => {
           darkMode={darkMode}
         />
       )}
-      <div className={cx({ 'dark-theme': darkMode })}>
+      <div className={cx({ 'dark-theme': darkMode } , 'w-100')}>
         <Button
           fill="rgb(172, 178, 185)"
           leadingIcon="fileupload"
           variant="tertiary"
-          className={cx('app-export-btn')}
+          className={cx('app-export-btn w-full')}
           onClick={() => {
             setIsExportingApp(true);
             document.getElementById('maintenance-app-modal').click();
