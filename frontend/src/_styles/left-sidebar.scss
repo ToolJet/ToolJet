@@ -343,8 +343,7 @@
 }
 .debugger {
   .leftsidebar-panel-header {
-    border-bottom: none;
-    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-weak);
   }
   .text-slate-12 {
     color: var(--slate12);

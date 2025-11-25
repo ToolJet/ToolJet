@@ -3,11 +3,14 @@ import { HeaderSection } from '@/_ui/LeftSidebar';
 import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import cx from 'classnames';
 
 
-export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, toggleLeftSidebar }) => {
+export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, toggleLeftSidebar, activeTab, setActiveTab }) => {
   return (
-    <HeaderSection darkMode={darkMode}>
+    <HeaderSection darkMode={darkMode} className="">
       <HeaderSection.PanelHeader title="Debugger">
         <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
           <ButtonComponent
@@ -31,6 +34,19 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, toggleLeftSide
           />
         </div>
       </HeaderSection.PanelHeader>
+      <Tabs
+        defaultActiveKey="allLog"
+        activeKey={activeTab}
+        onSelect={setActiveTab}
+        id="sidebar-debugger"
+        className={cx('sidebar-debugger', {
+          'dark-theme': darkMode,
+        })}
+        justify
+      >
+        <Tab eventKey="allLog" title="All Log" className='debugger-tab' />
+        <Tab eventKey="errors" title="Errors" />
+      </Tabs>
     </HeaderSection>
   );
 };

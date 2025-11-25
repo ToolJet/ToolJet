@@ -1,6 +1,4 @@
 import React from 'react';
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
 import Logs from './Logs';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
@@ -30,23 +28,16 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
   );
 };
 
-const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
+const SidebarDebuggerTabs = ({ darkMode, errors, allLog, activeTab }) => {
   return (
-    <Tabs
-      defaultActiveKey="allLog"
-      id="sidebar-debugger"
-      className={cx('sidebar-debugger', {
-        'dark-theme': darkMode,
-      })}
-      justify
-    >
-      <Tab eventKey="allLog" title="All Log" className='debugger-tab'>
+    <>
+      {activeTab === 'allLog' && (
         <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} />
-      </Tab>
-      <Tab eventKey="errors" title="Errors">
+      )}
+      {activeTab === 'errors' && (
         <DebuggerTabContent logs={errors} darkMode={darkMode} tabName={'errors'} />
-      </Tab>
-    </Tabs>
+      )}
+    </>
   );
 };
 
