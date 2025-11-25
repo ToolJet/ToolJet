@@ -34,6 +34,9 @@ export function MainLayout({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
+  // Dark mode props
+  darkMode,
+  onToggleDarkMode,
 }) {
   return (
     <SidebarProvider
@@ -58,6 +61,8 @@ export function MainLayout({
             teams={sidebarTeams}
             navMain={sidebarNavMain}
             projects={sidebarProjects}
+            darkMode={darkMode}
+            onToggleDarkMode={onToggleDarkMode}
           />
           <SidebarInset>
             <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
@@ -86,6 +91,8 @@ MainLayout.propTypes = {
   sidebarTeams: PropTypes.array,
   sidebarNavMain: PropTypes.array,
   sidebarProjects: PropTypes.array,
+  darkMode: PropTypes.bool,
+  onToggleDarkMode: PropTypes.func,
 };
 
 MainLayout.defaultProps = {

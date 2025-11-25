@@ -22,6 +22,9 @@ export function AppsShellView({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
+  // Dark mode props
+  darkMode,
+  onToggleDarkMode,
 }) {
   // Search component for topbar
   const searchSlot = onSearch ? (
@@ -40,6 +43,8 @@ export function AppsShellView({
         sidebarTeams={sidebarTeams}
         sidebarNavMain={sidebarNavMain}
         sidebarProjects={sidebarProjects}
+        darkMode={darkMode}
+        onToggleDarkMode={onToggleDarkMode}
       >
         <PageContainer footer={footer}>
           <div className="tw-space-y-4">

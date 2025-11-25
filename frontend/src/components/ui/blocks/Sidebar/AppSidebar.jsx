@@ -5,12 +5,14 @@ import { NavActions } from './nav-actions';
 import { NavUser } from './nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from '@/components/ui/Rocket/sidebar';
 
-export function AppSidebar({ 
+export function AppSidebar({
   user = {},
-  teams = [],
+  teams: _teams = [],
   navMain = [],
   projects = [],
-  ...props 
+  darkMode,
+  onToggleDarkMode,
+  ...props
 }) {
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -18,11 +20,10 @@ export function AppSidebar({
         <NavMenu items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavActions actions={projects} />
+        <NavActions actions={projects} darkMode={darkMode} onToggleDarkMode={onToggleDarkMode} />
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
-
