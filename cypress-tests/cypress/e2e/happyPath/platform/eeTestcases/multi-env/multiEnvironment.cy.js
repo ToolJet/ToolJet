@@ -81,10 +81,10 @@ describe("Multi-Environment Behavior", () => {
     });
   });
 
-  it.skip("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
+  it("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {
     // cy.get('[data-cy="query-manager-toggle-button"]').click();
 
-    cy.dragAndDropWidget("Button", 350, 100);
+    //cy.dragAndDropWidget("Button", 350, 100);
     cy.wait(200);
     cy.get(commonWidgetSelector.draggableWidget("button1")).should(
       "be.visible"
