@@ -17,7 +17,9 @@ import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { IOtelListener } from './otel/listener.interface';
 
 // Import helper functions
 import {
@@ -32,6 +34,21 @@ import {
   logShutdownInfo,
   initSentry,
 } from '@helpers/bootstrap.helper';
+
+
+async function loadOtelListener(): Promise<IOtelListener> {
+  const edition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+  if (edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud) {
+    // Load EE listener (actual implementation)
+    const { otelListener } = await import('../ee/otel/listener');
+    return otelListener;
+  } else {
+    // Load CE listener (no-op implementation)
+    const { otelListener } = await import('./otel/listener');
+    return otelListener;
+  }
+}
 
 async function bootstrap() {
   const logger = createLogger('Bootstrap');
@@ -76,6 +93,14 @@ async function bootstrap() {
     appLogger.log('Initializing licensing...');
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
+
+    // Initialize OTEL listener (edition-aware)
+    appLogger.log('Initializing OpenTelemetry listener...');
+    const otelListener = await loadOtelListener();
+    await otelListener.initialize(app);
+    appLogger.log('✅ OpenTelemetry listener initialized');
+    // Store listener for graceful shutdown
+    app.set('otelListener', otelListener);
 
     // Configure OIDC timeout
     appLogger.log('Configuring OIDC connection timeout...');
@@ -147,6 +172,13 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
     try {
+      // Shutdown OTEL listener if initialized
+      const otelListener = app.get('otelListener') as IOtelListener;
+      if (otelListener) {
+        logger.log('Shutting down OpenTelemetry listener...');
+        await otelListener.shutdown();
+      }
+
       await app.close();
       logger.log('✅ Application closed successfully');
       process.exit(0);
@@ -166,11 +198,6 @@ async function setupApplicationMiddleware(app: NestExpressApplication, appLogger
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-
-  if (process.env.ENABLE_OTEL === 'true') {
-    await startOpenTelemetry();
-    app.use(otelMiddleware);
-  }
 }
 
 function configureUrlPrefix() {
