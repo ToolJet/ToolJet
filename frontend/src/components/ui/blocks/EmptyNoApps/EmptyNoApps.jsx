@@ -1,5 +1,5 @@
 import React from 'react';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/Rocket/empty';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function EmptyNoApps() {
@@ -18,6 +18,3 @@ export function EmptyNoApps() {
     </Empty>
   );
 }
-
-
-

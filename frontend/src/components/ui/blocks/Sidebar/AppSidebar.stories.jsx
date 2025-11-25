@@ -8,8 +8,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Separator } from '@/components/ui/separator';
+} from '@/components/ui/Rocket/breadcrumb';
+import { Separator } from '@/components/ui/Rocket/separator';
 import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Bell, Zap, GalleryVerticalEnd } from 'lucide-react';
 
 // Mock sidebar data

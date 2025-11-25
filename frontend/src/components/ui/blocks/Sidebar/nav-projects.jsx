@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 import {
   SidebarGroup,
   SidebarGroupLabel,

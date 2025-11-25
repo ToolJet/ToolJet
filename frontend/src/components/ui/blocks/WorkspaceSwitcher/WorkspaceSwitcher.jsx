@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuGroup,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 import { WorkspaceListItem } from './WorkspaceListItem';
 
 export function WorkspaceSwitcher({ workspaces, activeWorkspace, onWorkspaceChange }) {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuCheckboxItem } from '@/components/ui/Rocket/dropdown-menu';
 
 import { Avatar, AvatarFallback } from '@/components/ui/Rocket/avatar';
 import { Badge } from '@/components/ui/Rocket/badge';

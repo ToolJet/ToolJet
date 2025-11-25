@@ -8,13 +8,13 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@/components/ui/Rocket/breadcrumb';
 import { Button } from '@/components/ui/Button/Button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Rocket/tabs';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/Rocket/dropdown-menu';
 import { FolderSelector } from '@/components/ui/blocks/FolderSelector';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/Rocket/skeleton';
 
 import { cn } from '@/lib/utils';
 

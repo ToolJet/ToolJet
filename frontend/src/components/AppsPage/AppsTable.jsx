@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { flexRender } from '@tanstack/react-table';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Rocket/table';
 import { AppsTableSkeleton } from './AppsTableSkeleton';
 
 export function AppsTable({ table, isLoading }) {

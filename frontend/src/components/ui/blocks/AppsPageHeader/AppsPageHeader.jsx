@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/Rocket/dropdown-menu';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
 const AppsPageHeader = forwardRef(

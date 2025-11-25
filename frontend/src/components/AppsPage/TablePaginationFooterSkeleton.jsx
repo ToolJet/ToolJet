@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/Rocket/skeleton';
 
 export function TablePaginationFooterSkeleton() {
   return (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppsTableSkeleton } from '../AppsTableSkeleton';
-import { Table, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { Table, TableHeader, TableHead, TableRow } from '@/components/ui/Rocket/table';
 
 export default {
   title: 'AppsPage/AppsTableSkeleton',

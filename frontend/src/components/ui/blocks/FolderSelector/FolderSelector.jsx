@@ -1,9 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Search, Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Rocket/input';
 import { Button } from '@/components/ui/Button/Button';
-import { DropdownMenuGroup, DropdownMenuCheckboxItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenuGroup,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/Rocket/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 export function FolderSelector({

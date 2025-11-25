@@ -1,5 +1,5 @@
 import React from 'react';
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/Rocket/item';
 
 const AppListItem = ({ icon, title, description, actions, ...props }) => {
   return (

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { AppsPageViewHeader } from './AppsPageViewHeader';
+import { Tabs, TabsContent } from '@/components/ui/Rocket/tabs';
 import { AppsTable } from './AppsTable';
 import { AppsGrid } from './AppsGrid';
 
