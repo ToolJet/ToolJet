@@ -499,6 +499,11 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
       cy.log(Cypress.env("workspaceId"));
     });
   });
+  cy.apiGetDefaultWorkspace().then((res) => {
+    Cypress.env("workspaceId", res.id);
+    cy.log(Cypress.env("workspaceId"));
+  });
+
 });
 
 Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
