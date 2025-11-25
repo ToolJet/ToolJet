@@ -66,9 +66,9 @@ export const Table = memo(
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
     const scrollColor = getModifiedColor(containerBackgroundColor, 12);
     const editableColumnColor = getModifiedColor(containerBackgroundColor, 12);
-    const stripedBackgroundColor = getModifiedColor(containerBackgroundColor, 5);
-    const stripedHoverColor = getModifiedColor(containerBackgroundColor, 11);
-    const stripedEditableColumnColor = getModifiedColor(containerBackgroundColor, 17);
+    const stripedBackgroundColor = getModifiedColor(containerBackgroundColor, 3);
+    const stripedHoverColor = getModifiedColor(containerBackgroundColor, 9);
+    const stripedEditableColumnColor = getModifiedColor(containerBackgroundColor, 15);
 
     const {
       columns,

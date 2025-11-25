@@ -78,6 +78,12 @@
       border-bottom: none !important;
     }
   }
+  
+  .table-striped {
+    .table-row {
+      padding-bottom: 1px; // to account for existing bottom border in regular row style since box sizing is set to border box
+    }
+  }
 
   .table-bordered> :not(caption)>*>* {
     border-width: 0 1px 0 0;
