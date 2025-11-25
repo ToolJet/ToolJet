@@ -951,11 +951,11 @@ export const uiOktaLogin = (email, password) => {
     { args: { email, password } },
     ({ email, password }) => {
       cy.log("Inside Okta origin");
-      cy.get('input[name="identifier"]', { timeout: 10000 })
+      cy.get('input[name="identifier"]', { timeout: 20000 })
         .should("be.visible")
         .type(email);
       cy.get(".button-primary").click();
-      cy.get('input[name="credentials.passcode"]', { timeout: 10000 })
+      cy.get('input[name="credentials.passcode"]', { timeout: 20000 })
         .should("be.visible")
         .type(password);
       cy.get(".button-primary").click();
