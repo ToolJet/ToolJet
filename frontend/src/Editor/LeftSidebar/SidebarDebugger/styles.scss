@@ -1,0 +1,77 @@
+.debugger {
+  // Fix overflow to show border-bottom properly
+  .leftsidebar-panel-header {
+    overflow: visible !important;
+    padding-bottom: 2px; // Space for the border
+  }
+}
+
+#sidebar-debugger {
+  // Make tabs full width and equally divided - Same as right sidebar
+  margin-left: 10px;
+  position: relative;
+  top: 1px;
+  border-bottom: none !important;
+  height: 40px;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+
+  .nav-item {
+    background-color: var(--base) !important;
+    flex: 1;
+
+    button {
+      min-width: 0 !important;
+      width: 100%;
+      font-size: 12px !important;
+    }
+
+    &:hover {
+      button.nav-link:not(.active) {
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 0;
+          right: 0;
+          height: 22px;
+          transform: translateY(-50%);
+          background-color: var(--interactive-hover);
+          pointer-events: none;
+          z-index: 1;
+          border-radius: 6px;
+        }
+      }
+    }
+  }
+}
+
+#sidebar-debugger-tab-allLog,
+#sidebar-debugger-tab-errors {
+  border-radius: 0px !important;
+  background-color: transparent !important;
+}
+
+#sidebar-debugger-tab-allLog.nav-link.active,
+#sidebar-debugger-tab-errors.nav-link.active {
+  border-bottom: 2px solid rgb(77, 114, 250) !important;
+  color: var(--text-default) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+
+#sidebar-debugger-tab-allLog.nav-link,
+#sidebar-debugger-tab-errors.nav-link {
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+
+#sidebar-debugger-tab-allLog:hover,
+#sidebar-debugger-tab-errors:hover {
+  border: none !important;
+}

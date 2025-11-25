@@ -6,6 +6,7 @@ import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import cx from 'classnames';
+import './styles.scss';
 
 
 export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, toggleLeftSidebar, activeTab, setActiveTab }) => {
