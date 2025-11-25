@@ -263,6 +263,7 @@
           ]
         },
         "app-builder/embed-application",
+        "app-builder/pat-integration",
         {
           "type": "category",
           "label": "References",
