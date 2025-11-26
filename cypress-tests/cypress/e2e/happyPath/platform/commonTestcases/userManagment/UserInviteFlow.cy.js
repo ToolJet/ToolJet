@@ -28,14 +28,7 @@ import { verifyUserInGroups } from "Support/utils/externalApi";
 import { apiCreateGroup } from "Support/utils/manageGroups";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 
-let invitationToken,
-  organizationToken,
-  workspaceId,
-  userId,
-  url = "";
-
 const data = {};
-const envVar = Cypress.env("environment");
 
 describe("user invite flow cases", () => {
   beforeEach(() => {
@@ -44,6 +37,85 @@ describe("user invite flow cases", () => {
       enableInstanceSignup();
     });
     cy.apiConfigureSmtp(smtpConfig);
+  });
+
+  it("Should verify the user archive functionality", () => {
+    cy.intercept("GET", "/assets/translations/en.json").as("translations");
+
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    addNewUser(data.firstName, data.email);
+    cy.apiLogout();
+    cy.wait(2000);
+
+    cy.defaultWorkspaceLogin();
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.wait(1000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.archivedToast
+    );
+
+    cy.contains("td", data.email)
+      .parent()
+      .within(() => {
+        cy.get("td small").should("have.text", usersText.archivedStatus);
+      });
+
+    cy.apiLogout();
+    cy.visit("/");
+    //cy.wait("@translations");
+    cy.wait(4000);
+
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
+      .should("be.visible")
+      .click();
+    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.wait(3000);
+
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    cy.wait(4000);
+    cy.get(commonWidgetSelector.homePageLogo, { timeout: 50000 }).should(
+      "be.visible",
+      { timeout: 20000 }
+    );
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.wait(2000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.unarchivedToast
+    );
+
+    visitWorkspaceInvitation(data.email, "My workspace");
+
+    cy.wait(3000);
+    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.get(usersSelector.acceptInvite).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
+    logout();
+    cy.wait(2000);
+
+    cy.defaultWorkspaceLogin();
+    cy.wait(2000);
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.contains("td", data.email)
+      .parent()
+      .within(() => {
+        cy.get("td small").should("have.text", usersText.activeStatus);
+      });
   });
 
   it("Should verify the Manage users page", () => {
@@ -134,82 +206,6 @@ describe("user invite flow cases", () => {
     );
 
     logout();
-    cy.defaultWorkspaceLogin();
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.activeStatus);
-      });
-  });
-
-  it("Should verify the user archive functionality", () => {
-    cy.intercept("GET", "/assets/translations/en.json").as("translations");
-
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-    addNewUser(data.firstName, data.email);
-    cy.apiLogout();
-    cy.wait(2000);
-
-    cy.defaultWorkspaceLogin();
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.wait(1000);
-    cy.get(usersSelector.userActionButton).click();
-    cy.get('[data-cy="archive-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.archivedToast
-    );
-
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.archivedStatus);
-      });
-
-    cy.apiLogout();
-    cy.visit("/");
-    //cy.wait("@translations");
-    cy.wait(2000);
-
-    cy.waitForElement(onboardingSelectors.loginPasswordInput);
-    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
-      .should("be.visible")
-      .click();
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
-    cy.get(onboardingSelectors.signInButton).click();
-
-    cy.apiLogin();
-    cy.visit("/my-workspace");
-    cy.wait(4000);
-    cy.get(commonWidgetSelector.homePageLogo, { timeout: 50000 }).should(
-      "be.visible",
-      { timeout: 20000 }
-    );
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.wait(2000);
-    cy.get(usersSelector.userActionButton).click();
-    cy.get('[data-cy="archive-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.unarchivedToast
-    );
-
-    visitWorkspaceInvitation(data.email, "My workspace");
-
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-    cy.get(onboardingSelectors.signInButton).click();
-    cy.get(usersSelector.acceptInvite).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
-    logout();
-    cy.wait(2000);
-
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();
     searchUser(data.email);

@@ -20,7 +20,6 @@ const data = {
 describe("Instance Settings - All Users UI", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiDeleteAllWorkspaces();
     cy.visit("/my-workspace");
     cleanAllUsers();
     cy.apiFullUserOnboarding(data.userName, data.userEmail, "admin");
@@ -33,6 +32,7 @@ describe("Instance Settings - All Users UI", () => {
     verifyArchiveUserModalUI(data.userName, data.userEmail);
     cy.apiLogout();
 
+    cy.wait(2000);
     loginAndExpectToast(
       data.userEmail,
       "You have been archived from this instance. Contact super admin to know more."
@@ -43,6 +43,7 @@ describe("Instance Settings - All Users UI", () => {
     verifyUnarchiveUserModal(data.userName, data.userEmail);
     cy.apiLogout();
 
+    cy.wait(2000);
     loginAndExpectToast(
       data.userEmail,
       "You have been archived from this workspace. Sign in to another workspace or contact admin to know more."
@@ -60,6 +61,7 @@ describe("Instance Settings - All Users UI", () => {
     );
     cy.apiLogout();
 
+    cy.wait(2000);
     loginAndExpectToast(data.userEmail, "Invalid credentials");
   });
 });

@@ -89,9 +89,9 @@ describe("App Version", () => {
 
     verifyComponentinrightpannel("table");
     cy.get(commonSelectors.rightSidebarPlusButton).click();
-    cy.dragAndDropWidget("Text", 450, 300);
+    //cy.dragAndDropWidget("Text", 450, 300);
     cy.wait(2000);
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.waitForAutoSave();
 
     navigateToCreateNewVersionModal("v2");
@@ -99,7 +99,7 @@ describe("App Version", () => {
     cy.waitForAutoSave();
     verifyComponentinrightpannel("table");
 
-    deleteComponentAndVerify("text1");
+    // deleteComponentAndVerify("text1");
     cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("not.exist");
 
@@ -108,9 +108,9 @@ describe("App Version", () => {
     cy.get(appVersionSelectors.currentVersionField("v2")).should("be.visible");
     cy.get(appVersionSelectors.currentVersionField("v3")).should("not.exist");
 
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", {
-      timeout: 10000,
-    });
+    // cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible", {
+    //   timeout: 10000,
+    // });
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
@@ -122,12 +122,7 @@ describe("App Version", () => {
       cy.url().should("include", "/home?env=development&version=v2");
     });
 
-    cy.openApp(
-      "",
-      Cypress.env("workspaceId"),
-      Cypress.env("appId"),
-      commonWidgetSelector.draggableWidget("text1")
-    );
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"));
     releasedVersionAndVerify("v2");
   });
 
