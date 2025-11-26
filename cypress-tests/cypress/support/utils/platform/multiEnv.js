@@ -1,12 +1,7 @@
 import { commonEeSelectors } from "Selectors/eeCommon";
-import { commonEeSelectors } from "Selectors/eeCommon";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { appVersionSelectors } from "Selectors/exportImport";
 import { appVersionText } from "Texts/exportImport";
-import { multiEnvText } from "Texts/eeCommon";
-import { appEditorSelector } from "Selectors/multiEnv";
-import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
-import { multiEnvSelector } from "Selectors/eeCommon";
 import { multiEnvText } from "Texts/eeCommon";
 import { appEditorSelector } from "Selectors/multiEnv";
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
