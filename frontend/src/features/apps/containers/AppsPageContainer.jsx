@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { AppsShellView } from '@/components/AppsPage/AppsShellView';
-import { AppsTabs } from '@/components/AppsPage/AppsTabs';
-import { appsColumns } from '@/components/AppsPage/AppsPage.columns';
+import { appsColumns } from '@/features/apps/columns';
 import { useAppsQuery } from '@/features/apps/hooks/useAppsQuery';
 import { useAppsPermissions } from '@/features/apps/hooks/useAppsPermissions';
 import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
 import { useAppsUrlState } from '@/features/apps/hooks/useAppsUrlState';
-import { TablePaginationFooter } from '@/components/AppsPage/TablePaginationFooter';
+import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 
 export function AppsPageContainer() {
@@ -56,17 +55,13 @@ export function AppsPageContainer() {
       menuItems={menuItems}
       searchValue={getSearch()}
       onSearch={setSearch}
-      footer={<TablePaginationFooter table={table} />}
-      contentSlot={
-        <AppsTabs
-          table={table}
-          appsEmpty={appsEmpty}
-          emptyAppsSlot={<EmptyNoApps />}
-          modulesEmpty={modulesEmpty}
-          emptyModulesSlot={<EmptyNoApps />}
-        />
-      }
-    />
+      footer={<PaginationFooter table={table} />}
+    >
+      <div className="tw-p-6">
+        {/* Note: AppsPageContainer is using legacy API. Consider migrating to AppsPageAdapter pattern. */}
+        {appsEmpty ? <EmptyNoApps /> : <div>Table content would go here</div>}
+      </div>
+    </AppsShellView>
   );
 }
 

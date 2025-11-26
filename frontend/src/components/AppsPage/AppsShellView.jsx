@@ -3,7 +3,7 @@ import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { PageContainer } from '@/components/AppsPage/PageContainer';
 
-// Thin layout shell for Apps: header, search, footer, and content slot
+// Thin layout shell for Apps: header, search, footer, and children (content)
 export function AppsShellView({
   searchValue,
   onSearch,
@@ -11,7 +11,7 @@ export function AppsShellView({
   toolbarSlot = null,
   breadcrumbsSlot = null,
   header = null,
-  contentSlot,
+  children, // Renamed from contentSlot to align with React conventions
   topbarRightSlot = null,
   // Workspace switcher props (passed to MainLayout)
   workspaceName,
@@ -22,7 +22,7 @@ export function AppsShellView({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
-  // Dark mode props
+  // Dark mode props (passed to MainLayout)
   darkMode,
   onToggleDarkMode,
 }) {
@@ -51,7 +51,7 @@ export function AppsShellView({
             {breadcrumbsSlot}
             {header}
             {toolbarSlot}
-            {contentSlot}
+            {children}
           </div>
         </PageContainer>
       </MainLayout>

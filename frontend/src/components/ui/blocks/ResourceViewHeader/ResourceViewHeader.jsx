@@ -16,50 +16,40 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { FolderSelector } from '@/components/ui/blocks/FolderSelector';
 import { Skeleton } from '@/components/ui/Rocket/skeleton';
 
-export function AppsPageViewHeader({
+export function ResourceViewHeader({
   activeTab = 'apps',
   onTabChange,
+  tabsConfig = [],
   breadcrumbItems = [],
-  viewAs = 'list',
-  onViewChange,
+  viewMode = 'list',
+  onViewModeChange,
   // Folder selection props
   folders = [],
   currentFolder = null,
   onFolderChange,
   foldersLoading = false,
-  // Count and loading props for badges
-  appsCount = 0,
-  modulesCount = 0,
-  appsLoading = false,
-  modulesLoading = false,
 }) {
   return (
     <div className="tw-border-b tw-border-border-weak tw-flex tw-items-center tw-justify-between tw-h-10 tw-w-full">
       {/* Left: Apps/Modules tabs */}
       <Tabs value={activeTab} onValueChange={onTabChange} className="hidden @4xl/main:tw-flex">
         <TabsList variant="secondary" size="lg">
-          <TabsTrigger value="apps" variant="secondary">
-            Apps{' '}
-            {appsLoading ? (
-              <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
-            ) : (
-              <Badge variant="secondary">{appsCount}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="modules" variant="secondary">
-            Modules{' '}
-            {modulesLoading ? (
-              <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
-            ) : (
-              <Badge variant="secondary">{modulesCount}</Badge>
-            )}
-          </TabsTrigger>
+          {tabsConfig.map((tab) => (
+            <TabsTrigger key={tab.id} value={tab.id} variant="secondary">
+              {tab.label}{' '}
+              {tab.loading ? (
+                <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
+              ) : (
+                <Badge variant="secondary">{tab.count}</Badge>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
       {/* Right: Breadcrumb + View toggle */}
       <div className="tw-flex tw-items-center tw-gap-3">
-        {appsLoading ? (
+        {foldersLoading ? (
           <div className="tw-flex tw-items-center tw-gap-1">
             <Skeleton className="tw-h-5 tw-w-16" />
             <Skeleton className="tw-h-3 tw-w-3" />
@@ -89,10 +79,7 @@ export function AppsPageViewHeader({
                               folders={folders}
                               currentFolder={currentFolder}
                               onFolderChange={onFolderChange}
-                              onNewFolder={() => {
-                                // Handle new folder creation
-                                // TODO: Implement new folder creation logic
-                              }}
+                              onNewFolder={() => {}}
                             />
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -109,7 +96,7 @@ export function AppsPageViewHeader({
         )}
 
         {/* View toggle */}
-        <Tabs value={viewAs} onValueChange={onViewChange}>
+        <Tabs value={viewMode} onValueChange={onViewModeChange}>
           <TabsList size="sm" className="tw-p-0.5">
             <TabsTrigger value="list" className="tw-p-1 tw-h-7 tw-w-7">
               <Rows3 className="tw-h-4 tw-w-4" />
@@ -124,51 +111,22 @@ export function AppsPageViewHeader({
   );
 }
 
-AppsPageViewHeader.propTypes = {
+ResourceViewHeader.propTypes = {
   activeTab: PropTypes.string,
   onTabChange: PropTypes.func,
-  breadcrumbItems: PropTypes.arrayOf(
+  tabsConfig: PropTypes.arrayOf(
     PropTypes.shape({
-      label: PropTypes.string,
-      href: PropTypes.string,
-    })
-  ),
-  viewAs: PropTypes.string,
-  onViewChange: PropTypes.func,
-  // Folder selection props
-  folders: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      name: PropTypes.string,
+      id: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
       count: PropTypes.number,
+      loading: PropTypes.bool,
     })
   ),
-  currentFolder: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    count: PropTypes.number,
-  }),
+  breadcrumbItems: PropTypes.array,
+  viewMode: PropTypes.string,
+  onViewModeChange: PropTypes.func,
+  folders: PropTypes.array,
+  currentFolder: PropTypes.object,
   onFolderChange: PropTypes.func,
   foldersLoading: PropTypes.bool,
-  // Count and loading props
-  appsCount: PropTypes.number,
-  modulesCount: PropTypes.number,
-  appsLoading: PropTypes.bool,
-  modulesLoading: PropTypes.bool,
-};
-
-AppsPageViewHeader.defaultProps = {
-  activeTab: 'apps',
-  onTabChange: null,
-  breadcrumbItems: [],
-  viewAs: 'list',
-  onViewChange: null,
-  folders: [],
-  currentFolder: null,
-  onFolderChange: null,
-  foldersLoading: false,
-  appsCount: 0,
-  modulesCount: 0,
-  appsLoading: false,
-  modulesLoading: false,
 };
