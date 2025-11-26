@@ -25,7 +25,6 @@ const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
 
-
 describe("Datasource Manager", () => {
   const host = resolveHost();
   const workspaceName = fake.firstName;
@@ -47,8 +46,12 @@ describe("Datasource Manager", () => {
     data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    const allDataSources = host.includes("8082") ? "All data sources (45)" : "All data sources (45)";
-    const allDatabase = host.includes("8082") ? "Databases (20)" : "Databases (20)";
+    const allDataSources = host.includes("8082")
+      ? "All data sources (44)"
+      : "All data sources (46)";
+    const allDatabase = host.includes("8082")
+      ? "Databases (18)"
+      : "Databases (20)";
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
@@ -59,9 +62,9 @@ describe("Datasource Manager", () => {
       "have.text",
       allDataSources
     );
-    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq("Data sources");
-    });
+    cy.get('[data-cy="breadcrumb-header-data-sources"]')
+      .find("span")
+      .should("have.text", "Data sources");
 
     const categories = [
       {
@@ -256,7 +259,6 @@ describe("Datasource Manager", () => {
     cy.waitForAutoSave();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "postgresql");
-
   });
 
   it.skip("Should verify the query creation and scope changing functionality.", () => {
