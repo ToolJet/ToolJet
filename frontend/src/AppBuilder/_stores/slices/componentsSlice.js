@@ -997,13 +997,15 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
+      getShouldFreeze,
     } = get();
+    const shouldFreeze = getShouldFreeze();
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
-    if (!_selectedComponents.length) return;
+    if (!_selectedComponents.length || shouldFreeze) return;
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
