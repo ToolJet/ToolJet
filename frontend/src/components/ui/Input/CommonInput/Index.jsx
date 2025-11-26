@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
-import { Button } from '@/components/ui/button';
+import { ButtonSolid } from '../../../../_components/AppButton';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
@@ -16,14 +16,13 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
     isEditing,
     handleEncryptedFieldsToggle,
     labelDisabled,
-    showEncryption = true,
   } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
 
-  const isEncrypted = showEncryption && (type === 'password' || encrypted);
+  const isEncrypted = type === 'password' || encrypted;
   const isWorkspaceConstant =
     restProps.placeholder &&
     (restProps.placeholder.includes('{{constants') || restProps.placeholder.includes('{{secrets'));
@@ -60,10 +59,11 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
             <InputLabel disabled={labelDisabled ?? disabled} label={label} required={required} />
           </div>
         )}
-        {showEncryption && type === 'password' && (
+        {type === 'password' && (
           <div className="d-flex justify-content-between w-100">
             <div className="mx-1 col">
-              <Button
+              <ButtonSolid
+                className="datasource-edit-btn mb-2"
                 type="a"
                 variant="tertiary"
                 target="_blank"
@@ -73,7 +73,7 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
                 data-cy={`button-${generateCypressDataCy(isEditing ? 'Cancel' : 'Edit')}`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
+              </ButtonSolid>
             </div>
 
             <div className="col-auto mb-2">
