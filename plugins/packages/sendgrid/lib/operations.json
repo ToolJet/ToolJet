@@ -51,7 +51,7 @@
         "className": "codehinter-plugins"
       },
       "send_mail_from_name": {
-        "label": "Send mail from name",
+        "label": "Sender name",
         "key": "send_mail_from_name",
         "type": "codehinter",
         "lineNumbers": false,
