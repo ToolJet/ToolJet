@@ -16,9 +16,10 @@ Please find the latest LTS version here: <br/>
 Starting from **`v3.5.0-ee-lts`** all releases are AI releases. Checkout the **[Build with AI](/docs/build-with-ai/overview)** section for more information. If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at hello@tooljet.com.
 :::
 
-| Version                                                                                                                                                                       | Release Date      | Docker Pull Command                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | -------------------------------------------- |
-| Latest EE-LTS                                                                                                                                                                 | N/A               | `docker pull tooljet/tooljet:ee-lts-latest`  |
+| Version  | Release Date  | Docker Pull Command   |
+| ---------| ------------- | ----------------------|
+| Latest EE-LTS     | N/A      | `docker pull tooljet/tooljet:ee-lts-latest`  |
+| [v3.16.0-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.16.0-lts/images/sha256-626a6463504f74659e1468a69edbdacc264eded5867ae159a18358fc43d47b48) | August 4, 2025 | `docker pull tooljet/tooljet:v3.16.0-lts` |
 | [v3.5.0-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.0-ee-lts/images/sha256-9580d2377d17ce0c26fca0535eca51bce899015f26bfc81769d032b4b15a5da5)                   | February 12, 2025 | `docker pull tooljet/tooljet:v3.5.0-ee-lts`  |
 | [v3.0.24-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.24-ee-lts/images/sha256-33494c8ee72c440ce0ded925cdeb15507cd87f2b7c3fe172dd1cbee790e3b96f?context=explore) | January 3, 2025   | `docker pull tooljet/tooljet:v3.0.24-ee-lts` |
 | [v3.0.23-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.23-ee-lts/images/sha256-1ca2bcb5dac66b1d3d089bd8300b7077c0dcd27bb2cfe6665bf388b680294467?context=explore) | January 2, 2025   | `docker pull tooljet/tooljet:v3.0.23-ee-lts` |

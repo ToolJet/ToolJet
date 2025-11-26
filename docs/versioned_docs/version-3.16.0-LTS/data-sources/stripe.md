@@ -37,7 +37,7 @@ You can get the Stripe API key from the dashboard of your Stripe account. Go to 
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/beta/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
 
 </div>

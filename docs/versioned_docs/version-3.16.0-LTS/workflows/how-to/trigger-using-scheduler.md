@@ -3,6 +3,14 @@ id: trigger-workflow-using-scheduler
 title: Trigger Workflows Using Scheduler
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 ToolJet allows workflows to be triggered automatically at regular intervals or at specific scheduled times. Users can also specify the timezone to ensure that schedules align with local time.
 
 ## Running Workflow at Schedule Intervals

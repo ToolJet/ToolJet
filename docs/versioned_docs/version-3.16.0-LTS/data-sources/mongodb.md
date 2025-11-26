@@ -70,7 +70,7 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 <img className="screenshot-full" src="/img/datasource-reference/mongo-db/mo-query.png" alt="ToolJet - Mongo query"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
 <div style={{paddingTop:'24px'}}>

@@ -59,7 +59,7 @@ You will be able to access your ToolJet installation once the pods and services 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/2.50.0-LTS/setup/env-vars#enable-tooljet-database--optional-).
 
 1. Setup PostgREST server
 

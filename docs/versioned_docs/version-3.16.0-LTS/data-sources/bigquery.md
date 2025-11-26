@@ -60,7 +60,7 @@ How to get a Private key?
 </div>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
 </div>

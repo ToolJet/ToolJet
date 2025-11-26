@@ -38,4 +38,4 @@ Here’s how it works:
 - **Test Input**: Use this to test your input configuration before importing the module into an app.
 <img className="screenshot-full img-full" style={{ marginBottom:'15px' }}   src="/img/app-builder/modules/module-test.png" alt="Test Input" />  -->
 
-Please refer to the **[Input and Output](/docs/beta/app-builder/modules/input-output)** documentation for detailed information on how to manage the inputs and outputs of a module.
+Please refer to the **[Input and Output](/docs/app-builder/modules/input-output)** documentation for detailed information on how to manage the inputs and outputs of a module.

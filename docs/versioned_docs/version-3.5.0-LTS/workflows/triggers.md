@@ -3,6 +3,14 @@ id: workflow-triggers
 title: Triggers
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Triggers can be used to execute a workflow. Currently, ToolJet supports three types of triggers: webhooks, scheduled triggers, and manual triggers.
 
 <img className="screenshot-full img-full" src="/img/workflows/triggers/triggers.png" alt="Triggers" />
@@ -47,8 +55,12 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
     "age": 30
   }
   ```
-  These parameters can be accessed in the workflow using the `startTrigger.params`.
-    <img className="screenshot-full img-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
+  
+### Accessing Webhook Parameters
+
+These parameters can be accessed in the workflow using the `startTrigger.params.<parameter-name>`.
+
+<img className="screenshot-full img-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
 
 ### Async Workflow Query Execution
 

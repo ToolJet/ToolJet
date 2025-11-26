@@ -3,6 +3,14 @@ id: nodes
 title: Types of Nodes
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Nodes are graphical representations of each process in a workflow. Each node can access the data from the nodes that were executed earlier. Every workflow contains key node types that help orchestrate the flow of data and logic.
 
 ## Start Trigger Node
@@ -72,7 +80,7 @@ The **Workflow** node is used to trigger another workflow from within a workflow
 
 :::note
 1. A workflow can call itself recursively. It’s recommended to define an exit condition to avoid an infinite loop.
-2. The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable, for more information checkout [Customizing Workflow Configuration](/docs/workflows/overview#customizing-workflow-configuration).
+2. The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECONDS` environment variable, for more information checkout [Customizing Workflow Configuration](/docs/3.5.0-LTS/workflows/overview#customizing-workflow-configuration).
 :::
 
 <img className="screenshot-full" src="/img/workflows/nodes/workflow.png" alt="Data Sources Node" />

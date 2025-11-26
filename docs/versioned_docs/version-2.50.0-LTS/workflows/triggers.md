@@ -3,6 +3,14 @@ id: workflow-triggers
 title: Triggers
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Triggers can be used to execute a workflow. Currently, ToolJet supports two types of triggers: [Webhooks](#webhooks) and [Manual](#manual).
 
 <div style={{textAlign: 'center'}}>

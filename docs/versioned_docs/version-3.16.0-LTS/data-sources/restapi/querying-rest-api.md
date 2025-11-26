@@ -13,7 +13,7 @@ Once you have connected to the REST API data source, you can easily write querie
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/beta/app-builder/custom-code/transform-data)** feature.
+You can also transform the query results using the **[Transformations](/docs/app-builder/custom-code/transform-data)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods:

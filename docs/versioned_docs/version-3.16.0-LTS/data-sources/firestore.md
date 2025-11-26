@@ -33,7 +33,7 @@ For generating a private key check out **[Firestore's official documentation](ht
 <img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query-v2.png" alt="firestore QUERY" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/beta/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
 
 </div>

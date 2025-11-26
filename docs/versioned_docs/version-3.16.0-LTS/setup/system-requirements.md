@@ -3,7 +3,7 @@ id: system-requirements
 title: System Requirements 
 ---
 
-This document covers all the system requirements for self-hosting ToolJet. 
+This document covers all the system requirements for self-hosting ToolJet.
 
 :::info
 The official Docker tag for the Enterprise Edition is tooljet/tooljet:ee-lts-latest.
@@ -33,10 +33,10 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
 
-:::info
-To enable multiplayer editing and background jobs in ToolJet, you need to configure Redis. It is recommended to use Redis version 6.x.
-:::
-
 ## Database software:
 
-- It is recommended that your PostgreSQL database is of version 13.x.
+- It is recommended that your PostgreSQL database is of version 16.x.
+
+:::info
+If you are currently on PostgreSQL 13.x, you may continue using it; however, upgrading to version 16.x is advised for improved performance and features. Additionally, PostgreSQL 13.x officially reached end-of-life in November 2023.
+:::

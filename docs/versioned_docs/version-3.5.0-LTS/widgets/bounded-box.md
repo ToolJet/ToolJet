@@ -25,25 +25,25 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 
 <br/>
 
-| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
-| :----------- | :----------- | :----------------- |
-| Image URL | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/).|
-| Default value | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties. |
-| Selector | The bounded box support selection using rectangle or point. | Click **fx** to set the value `RECTANGLE` or `POINT`. |
-| List of labels | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}`. |
+| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div>                                        | <div style={{ width:"150px"}}> **Expected Value** </div>                                                                                                |
+| :------------------------------------------------- | :------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Image URL                                          | The URL or image data to show it on the component.                                           | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/). |
+| Default value                                      | The data that will load the default bounded boxes over the image when the app is loaded.     | Array of objects. Check the [Default value](#default-value) data properties.                                                                            |
+| Selector                                           | The bounded box support selection using rectangle or point.                                  | Click **fx** to set the value `RECTANGLE` or `POINT`.                                                                                                   |
+| List of labels                                     | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}`.                                                                                           |
 
 #### Default value
 
 Provide the data that will load the default bounding boxes over the image when the app is loaded. The data is expected to be an array of objects format.
 
-| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
-| :-------- | :------ | :-------- |
-| type | Sets the type of the Bounded Box. | `RECTANGLE` or `POINT`. |
-| width | Sets the width of the Bounded Box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0`. |
-| height | Sets the height of the Bounded Box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0`. |
-| x | Sets the x-coordinate(horizontal) position of the Bounded Box in the image. | Numerical value ex: `41`. |
-| y | Sets the y-coordinate(vertical) position of the Bounded Box in the image. | Numerical value ex: `22`. |
-| text | Sets the text value of the Bounded Box. | It should be one of the labels provided in the **[List of labels](#properties)** property. |
+| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div>                       | <div style={{ width:"150px"}}> **Expected Value** </div>                                   |
+| :------------------------------------------------- | :-------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| type                                               | Sets the type of the Bounded Box.                                           | `RECTANGLE` or `POINT`.                                                                    |
+| width                                              | Sets the width of the Bounded Box in pixels.                                | Numeric value. If the `type` value is `POINT`, set it to `0`.                              |
+| height                                             | Sets the height of the Bounded Box in pixels.                               | Numeric value. If the `type` value is `POINT`, set it to `0`.                              |
+| x                                                  | Sets the x-coordinate(horizontal) position of the Bounded Box in the image. | Numerical value ex: `41`.                                                                  |
+| y                                                  | Sets the y-coordinate(vertical) position of the Bounded Box in the image.   | Numerical value ex: `22`.                                                                  |
+| text                                               | Sets the text value of the Bounded Box.                                     | It should be one of the labels provided in the **[List of labels](#properties)** property. |
 
 **Example of default values:**
 
@@ -65,7 +65,7 @@ Provide the data that will load the default bounding boxes over the image when t
         y: 81.14,
         text: 'Car'
     }
-]
+];
 ```
 
 </div>
@@ -78,12 +78,12 @@ Events are actions that can be triggered programmatically when the user interact
 
 <br/>
 
-| <div style={{ width:"100px"}}> **Event** </div> | <div style={{ width:"100px"}}> **Description** </div> |
-| :----------- | :----------- |
-| On change | Triggered when the label from the dropdown in the selector is changed in the Bounded Box. |
+| <div style={{ width:"100px"}}> **Event** </div> | <div style={{ width:"100px"}}> **Description** </div>                                     |
+| :---------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| On change                                       | Triggered when the label from the dropdown in the selector is changed in the Bounded Box. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.5.0-LTS/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>
@@ -100,16 +100,16 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-| Variable    | Description |
-| :----------- | :----------- | 
-| annotations | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id. |
-| annotations.`type` | There are two types of annotations: `RECTANGLE` and `POINT`. |
-| annotations.`x` | coordinates on the x axis.  |
-| annotations.`y` | coordinates on the y axis. |
-| annotations.`width` | width of the annotation. |
-| annotations.`height` | height of the annotation. |
-| annotations.`text` | label selected for the annotation. |
-| annotations.`id` | unique ID of the annotation (system generated). |
+| Variable             | Description                                                                                                                                                                          |
+| :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| annotations          | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id. |
+| annotations.`type`   | There are two types of annotations: `RECTANGLE` and `POINT`.                                                                                                                         |
+| annotations.`x`      | coordinates on the x axis.                                                                                                                                                           |
+| annotations.`y`      | coordinates on the y axis.                                                                                                                                                           |
+| annotations.`width`  | width of the annotation.                                                                                                                                                             |
+| annotations.`height` | height of the annotation.                                                                                                                                                            |
+| annotations.`text`   | label selected for the annotation.                                                                                                                                                   |
+| annotations.`id`     | unique ID of the annotation (system generated).                                                                                                                                      |
 
 The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`.
 
@@ -135,10 +135,10 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"150px"}}> Expected Value </div> |
-| :----------- | :----------- | :----------------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"150px"}}> Expected Value </div>                                                                              |
+| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
@@ -148,10 +148,10 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
-| :----------- | :----------- | :----------- |
-| Visibility | Toggle on or off to control the visibility of the component when the app is loaded. |  `{{true}}` or `{{false}}`, By default, it's set to `{{true}}`. |
-| Disable | Toggle on to disable the component. | `{{true}}` or `{{false}}`, By default, it's set to `{{false}}`. |
-| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040`. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                       | <div style={{ width:"100px"}}> Expected Value </div>                                  |
+| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| Visibility                                  | Toggle on or off to control the visibility of the component when the app is loaded.                                                                                                     | `{{true}}` or `{{false}}`, By default, it's set to `{{true}}`.                        |
+| Disable                                     | Toggle on to disable the component.                                                                                                                                                     | `{{true}}` or `{{false}}`, By default, it's set to `{{false}}`.                       |
+| Box shadow                                  | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040`. |
 
 </div>

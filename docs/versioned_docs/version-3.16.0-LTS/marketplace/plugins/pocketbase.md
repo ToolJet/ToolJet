@@ -17,7 +17,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 - Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
 - Enter your Host URL, email and password into their designated fields.
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
 
 ## Querying PocketBase
 
@@ -28,7 +28,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/add_query.gif" alt="PocketBase query" />
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
 :::
 
 ## Supported Operations
@@ -52,7 +52,7 @@ You can create query for PocketBase data source to perform several operations su
 - **Limit** - Number of records to be fetched.
 - **Sort** - Sort the records based on a sort rule. Add `-` / `+`(default) in front of the attribute for DESC / ASC order.
 - **Where** - Filter the records based on a filter conditions.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
 
 ### Get Record
 
@@ -60,7 +60,7 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be fetched.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
 
 ### Add Record to Collection
 
@@ -68,7 +68,7 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Body** - Data to be added to the collection. It should be in valid JSON format.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
 
 ### Update Record to Collection
 
@@ -77,7 +77,7 @@ You can create query for PocketBase data source to perform several operations su
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be updated.
 - **Body** - Data to be updated in the collection. It should be in valid JSON format.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
 
 ### Delete Record
 
@@ -85,4 +85,4 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be deleted.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />

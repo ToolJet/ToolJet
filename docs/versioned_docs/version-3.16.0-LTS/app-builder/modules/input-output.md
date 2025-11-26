@@ -96,5 +96,5 @@ In this case, use the following reference to access the form data.
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/output-in-app.png" alt="Output Consumption" />
 
-To explore more on how data flows between modules and apps, check out [Data Flow](/docs/beta/app-builder/modules/data-flow) guide.
+To explore more on how data flows between modules and apps, check out [Data Flow](/docs/app-builder/modules/data-flow) guide.
 

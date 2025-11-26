@@ -33,9 +33,10 @@ ToolJet requires the following to connect to your PostgreSQL database.
 You can add optional configurations in **key-value pairs** for the MS SQL data source connection.
 
 #### Example:
-| Key                     | Value   |
-|:------------------------|:--------|
-| trustServerCertificate  | true    |
+
+| Key                    | Value |
+| :--------------------- | :---- |
+| trustServerCertificate | true  |
 
 These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
 
@@ -95,7 +96,9 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
+
 SQL Parameters:
+
 - Key: username
 - Value: oliver // or `{{ components.username.value }}`
 
@@ -132,8 +135,8 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 1. Create a new query and select the MS SQL data source.
 2. Select **GUI mode** from the dropdown.
 3. Choose the operation **Bulk update using the primary key**.
-4. Enter the **Table** name and **Primary key** column name. 
-5. In the editor, enter the records in the form of an array of objects. 
+4. Enter the **Table** name and **Primary key** column name.
+5. In the editor, enter the records in the form of an array of objects.
 6. Click on the **Run** button to run the query.
 
 #### Example
@@ -145,7 +148,7 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 <img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
 </div>

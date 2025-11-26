@@ -41,7 +41,7 @@ Once you have connected to the MariaDB datasource, follow these steps to write q
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/beta/app-builder/custom-code/transform-data)**.
+Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/app-builder/custom-code/transform-data)**.
 :::
 
 <div style={{textAlign: 'center'}}>

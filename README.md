@@ -2,7 +2,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
  :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
+![Docker Cloud Build Status](https://img.shields.io/docker/automated/tooljet/tooljet-ce)
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
 [![Number of GitHub issues that are open](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
 [![Number of GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
@@ -14,20 +14,20 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="Tooljet dashboard showing inventory and orders"/>
+    <img src="docs/static/img/readme/banner.png" alt="Tooljet dashboard showing inventory and orders"/>
 </p>
 
 <p align="center">
-    <img src="https://github.com/ToolJet/ToolJet/assets/25361949/0e711f3a-edb7-496b-8833-107de3826933"/>
+    <img src="docs/static/img/readme/flowchart.png"/>
 </p>
 
 ## All features
 
-- **Visual App Builder:** 45+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
+- **Visual App Builder:** 60+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
 - **ToolJet Database:** Built-in no-code database.
 - **Multi-Page:** Build an application with multiple pages.
 - **Multiplayer editing:** Allows simultaneous app building by multiple developers.
-- **50+ data sources:** Integrate with external databases, cloud storage, and APIs.
+- **75+ data sources:** Integrate with external databases, cloud storage, and APIs.
 - **Desktop & mobile:** Customize layout widths to fit various screen sizes.
 - **Self-host:** Supports Docker, Kubernetes, AWS EC2, Google Cloud Run, and more.
 - **Collaborate:** Add comments anywhere on the canvas and tag your team members.

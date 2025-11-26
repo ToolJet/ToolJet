@@ -34,7 +34,7 @@ ToolJet requires the following to connect to your DynamoDB:
 <img className="screenshot-full" src="/img/datasource-reference/minio/minio-query.png" alt="miniIo query" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
 </div>

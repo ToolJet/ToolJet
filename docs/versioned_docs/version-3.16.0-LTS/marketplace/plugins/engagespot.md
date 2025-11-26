@@ -46,7 +46,7 @@ Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#que
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
 :::
 
 </div>

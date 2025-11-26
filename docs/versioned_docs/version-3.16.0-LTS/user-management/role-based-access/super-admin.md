@@ -12,7 +12,7 @@ On a self-hosted ToolJet, a Super Admin is the user who has full access to all t
 | Privilege | Admin | Super Admin | 
 | --------- |:-----:|:-----------:|
 | Manage Users in their workspace ([Invite](/docs/user-management/onboard-users/invite-user)/[Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/user-management/onboard-users/archive-user#steps-to-unarchive-user)) | ✅ | ✅ |
-| [Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/beta/user-management/onboard-users/archive-user#steps-to-unarchive-user) any user from all the workspaces in the instance | ❌ | ✅ |
+| [Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/user-management/onboard-users/archive-user#steps-to-unarchive-user) any user from all the workspaces in the instance | ❌ | ✅ |
 | [Reset password of any user](/docs/user-management/profile-management/reset-password#super-admin-reset-password) | ❌ | ✅ |
 | [Edit name of any user](/docs/user-management/profile-management/user-details) | ❌ | ✅ |
 | [Make any user Super Admin](#promote-a-user-to-super-admin) | ❌ | ✅ |
