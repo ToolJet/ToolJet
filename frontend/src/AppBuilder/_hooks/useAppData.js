@@ -300,9 +300,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
+                  slug,
+                  viewerEnvironment?.environment?.id
+                )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -354,8 +354,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -632,8 +632,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -649,6 +649,9 @@ const useAppData = (
         );
 
         setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
+        );
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );

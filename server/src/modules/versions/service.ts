@@ -218,6 +218,9 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    // Queue history capture if homepage or settings are being updated
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -234,15 +237,7 @@ export class VersionService implements IVersionService {
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
     // Queue history capture for settings changes AFTER successful update
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(appVersion.id, ACTION_TYPE.GLOBAL_SETTINGS_UPDATE, {
-        operation: 'update_settings',
-        settings: appVersionUpdateDto.globalSettings || appVersionUpdateDto,
-        settingsType: 'global',
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for settings update:', error);
-    }
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,

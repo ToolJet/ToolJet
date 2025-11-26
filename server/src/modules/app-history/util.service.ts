@@ -9,6 +9,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { NameResolverRepository } from './repositories/name-resolver.repository';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Injectable()
 export class AppHistoryUtilService {
@@ -40,6 +41,10 @@ export class AppHistoryUtilService {
 
   async resolveComponentWithPage(componentId: string): Promise<{ componentName: string; pageName: string }> {
     return this.nameResolverRepository.getComponentWithPage(componentId);
+  }
+
+  async resolveEntityName(entityId: string, entityType: string): Promise<string> {
+    return this.nameResolverRepository.resolveEntityName(entityId, entityType);
   }
 
   async batchResolveNames(entityIds: {
@@ -121,6 +126,56 @@ export class AppHistoryUtilService {
     });
 
     this.logger.log(`[QueueHistory] Job ${job.id} added successfully for app ${appVersionId}`);
+  }
+
+  /**
+   * Capture history for app version settings updates (homePageId, globalSettings, pageSettings)
+   */
+  async captureSettingsUpdateHistory(
+    appVersion: AppVersion,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<void> {
+    try {
+      // Check if homePageId, globalSettings, or pageSettings are being updated
+      const hasSettingsUpdate =
+        appVersionUpdateDto.homePageId ||
+        appVersionUpdateDto.globalSettings ||
+        appVersionUpdateDto.pageSettings;
+
+      if (hasSettingsUpdate) {
+        // Determine the action type based on what's being updated
+        let actionType: ACTION_TYPE;
+        let settingsType: string;
+
+        if (appVersionUpdateDto.pageSettings) {
+          actionType = ACTION_TYPE.PAGE_SETTINGS_UPDATE;
+          settingsType = 'page';
+        } else {
+          actionType = ACTION_TYPE.GLOBAL_SETTINGS_UPDATE;
+          settingsType = 'global';
+        }
+
+        const operationScope: any = {
+          operation: 'update_settings',
+          settings: appVersionUpdateDto.pageSettings || appVersionUpdateDto.globalSettings || appVersionUpdateDto,
+          settingsType,
+        };
+
+        // If homePageId is being updated, include it in the operation scope for better description
+        if (appVersionUpdateDto.homePageId && appVersion.homePageId !== appVersionUpdateDto.homePageId) {
+          operationScope.homePageId = appVersionUpdateDto.homePageId;
+          operationScope.previousHomePageId = appVersion.homePageId;
+        }
+
+        await this.queueHistoryCapture(
+          appVersion.id,
+          actionType,
+          operationScope
+        );
+      }
+    } catch (error) {
+      console.error('Failed to queue history capture for settings update:', error);
+    }
   }
 
   async validateAppVersionAccess(appVersionId: string, userId: string): Promise<boolean> {

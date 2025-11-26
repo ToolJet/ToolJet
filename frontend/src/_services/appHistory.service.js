@@ -63,8 +63,19 @@ async function streamHistoryUpdates(appVersionId, onMessage, onError = () => {})
     onmessage: (event) => {
       if (onMessage) onMessage(event);
     },
+    onerror: (error) => {
+      // Don't retry if aborted
+      if (controller.signal.aborted) {
+        throw error; // This stops fetchEventSource from retrying
+      }
+      if (onError) onError(error);
+    },
   }).catch((error) => {
-    if (onError) onError(error);
+    // Only log if not aborted (expected behavior)
+    if (!controller.signal.aborted) {
+      console.error('[AppHistory] SSE connection error:', error);
+      if (onError) onError(error);
+    }
   });
 
   return controller;

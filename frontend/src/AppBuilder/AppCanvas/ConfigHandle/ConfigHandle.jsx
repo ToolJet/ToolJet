@@ -111,21 +111,21 @@ export const ConfigHandle = ({
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-        background: 'var(--interactive-selected)',
-        color: 'var(--text-default)',
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      }
+      background: 'var(--interactive-selected)',
+      color: 'var(--text-default)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    }
     : {
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      };
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    };
   if (isDynamicHeightEnabled) {
     getConfigHandleButtonStyle.background = '#9747FF';
     getConfigHandleButtonStyle.color = 'var(--text-inverse)';
@@ -179,8 +179,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-22px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-22px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -264,7 +264,7 @@ export const ConfigHandle = ({
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
-          deleteComponents();
+          !shouldFreeze && deleteComponents();
         }}
         message="Delete component"
         show={true}

@@ -2042,6 +2042,11 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
+    const currentCanvasHeight = getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
+    if (currentCanvasHeight === maxHeight) {
+      return;
+    }
+
     setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
   },
 

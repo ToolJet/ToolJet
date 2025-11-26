@@ -156,6 +156,9 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const handleResizeStop = useCallback(
     (boxList) => {
+      // Batch all layout updates into a single object
+      const batchedLayouts = {};
+
       boxList.forEach(({ id, height, width, x, y, gw }) => {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
@@ -182,15 +185,20 @@ export default function Grid({ gridWidth, currentLayout }) {
             newWidth = 43 - posX;
           }
         }
-        setComponentLayout({
-          [id]: {
-            height: height ? height : GRID_HEIGHT,
-            width: newWidth ? newWidth : 1,
-            top: y,
-            left: Math.round(x / gw),
-          },
-        });
+
+        // Add to batched layouts instead of calling setComponentLayout immediately
+        batchedLayouts[id] = {
+          height: height ? height : GRID_HEIGHT,
+          width: newWidth ? newWidth : 1,
+          top: y,
+          left: Math.round(x / gw),
+        };
       });
+
+      // Call setComponentLayout once with all updates
+      if (Object.keys(batchedLayouts).length > 0) {
+        setComponentLayout(batchedLayouts);
+      }
     },
     [canvasWidth, gridWidth, setComponentLayout]
   );
