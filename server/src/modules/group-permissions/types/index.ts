@@ -56,9 +56,11 @@ export interface AddUserRoleObject {
 
 interface Features {
   [FEATURE_KEY.ADD_GROUP_USER]: FeatureConfig;
+  [FEATURE_KEY.ADD_SINGLE_USER]: FeatureConfig;
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.DELETE]: FeatureConfig;
   [FEATURE_KEY.DELETE_GROUP_USER]: FeatureConfig;
+  [FEATURE_KEY.DELETE_USER_FROM_GROUP]: FeatureConfig;
   [FEATURE_KEY.DUPLICATE]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_USERS]: FeatureConfig;
   [FEATURE_KEY.GET_ONE]: FeatureConfig;

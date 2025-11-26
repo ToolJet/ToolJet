@@ -1,6 +1,6 @@
 import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto, PaginationQueryDto } from './dto';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, Res, HttpStatus, HttpCode, ParseUUIDPipe } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiOperation, ApiTags, ApiParam, ApiSecurity } from '@nestjs/swagger';
 import { Response } from 'express';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { GroupPermissionsService } from './service';
@@ -21,6 +21,7 @@ import { Group } from './decorators/group.decorator';
   path: 'group-permissions',
   version: '2',
 })
+@ApiTags('Group Permissions')
 @InitModule(MODULES.GROUP_PERMISSIONS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class GroupPermissionsControllerV2 implements IGroupPermissionsControllerV2 {
@@ -101,6 +102,67 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @InitFeature(FEATURE_KEY.ADD_SINGLE_USER)
   @UseGuards(GroupExistenceGuard)
   @Post(':groupId/users/:userId')
+  @ApiOperation({
+    summary: 'Add single user to group',
+    description: 'Adds a single user to a group. This operation is idempotent - if the user is already a member, returns success without error. Use this endpoint for individual user assignments. For bulk operations, use POST /v2/group-permissions/:id/users with userIds array.'
+  })
+  @ApiParam({
+    name: 'groupId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the group to add the user to',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the user to add to the group',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User added to group successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'User added to group successfully' },
+        userId: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
+        groupId: { type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000' },
+        groupUserId: { type: 'string', format: 'uuid', example: '7c9e6679-7425-40de-944b-e07fc1f90ae7' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User already exists in group (idempotent operation)',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'User already exists in group' },
+        userId: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
+        groupId: { type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000' },
+        groupUserId: { type: 'string', format: 'uuid', example: '7c9e6679-7425-40de-944b-e07fc1f90ae7' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format for groupId or userId'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required - provide valid JWT token in Authorization header'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User lacks permissions to add users to this group OR group does not belong to your organization'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Group or user not found in organization'
+  })
+  @ApiSecurity('bearer')
   async addSingleUserToGroup(
     @User() user: UserEntity,
     @Param('groupId') groupId: string,
@@ -116,6 +178,45 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @UseGuards(GroupExistenceGuard)
   @Delete(':groupId/users/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove user from group',
+    description: 'Removes a user from a group. This operation is idempotent - if the user is not a member, returns success (204 No Content) without error. Use this for automated offboarding workflows.'
+  })
+  @ApiParam({
+    name: 'groupId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the group to remove the user from',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the user to remove from the group',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'User successfully removed from group (or was not a member)'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format for groupId or userId'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required - provide valid JWT token in Authorization header'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User lacks permissions to remove users from this group OR group does not belong to your organization'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Group not found in organization'
+  })
+  @ApiSecurity('bearer')
   async removeSingleUserFromGroup(
     @User() user: UserEntity,
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -188,6 +289,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @ApiResponse({ status: 401, description: 'Unauthorized - JWT token required' })
   @ApiResponse({ status: 403, description: 'Forbidden - User lacks required permissions' })
   @ApiResponse({ status: 404, description: 'Group not found or does not belong to organization' })
+  @ApiSecurity('bearer')
   async getAllGroupUser(
     @User() user: UserEntity,
     @Query('input') searchInput: string,

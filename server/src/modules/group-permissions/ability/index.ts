@@ -21,9 +21,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(
         [
           FEATURE_KEY.ADD_GROUP_USER,
+          FEATURE_KEY.ADD_SINGLE_USER,
           FEATURE_KEY.CREATE,
           FEATURE_KEY.DELETE,
           FEATURE_KEY.DELETE_GROUP_USER,
+          FEATURE_KEY.DELETE_USER_FROM_GROUP,
           FEATURE_KEY.DUPLICATE,
           FEATURE_KEY.GET_ADDABLE_USERS,
           FEATURE_KEY.GET_ONE,

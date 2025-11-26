@@ -272,6 +272,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
         const addGroupUserDto: AddGroupUserDto = {
           userIds: [userId],
           groupId,
+          allowRoleChange: false,
         };
         await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
       }
@@ -315,7 +316,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   ): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Fetch group entity to validate existence and get group details for audit logging
-      const group = await this.groupPermissionsRepository.getGroupById(groupId, manager);
+      const group = await this.groupPermissionsRepository.getGroup({ id: groupId }, manager);
 
       // Validate deletion is allowed (prevents deleting from default groups)
       this.groupPermissionsUtilService.validateDeleteGroupUserOperation(group, organizationId);
