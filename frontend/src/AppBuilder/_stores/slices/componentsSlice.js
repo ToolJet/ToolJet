@@ -996,13 +996,15 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
+      getShouldFreeze,
     } = get();
+    const shouldFreeze = getShouldFreeze();
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
-    if (!_selectedComponents.length) return;
+    if (!_selectedComponents.length || shouldFreeze) return;
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
@@ -2236,5 +2238,24 @@ export const createComponentsSlice = (set, get) => ({
           );
         }
       });
+  },
+  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+    const component = getComponentDefinition(componentId, moduleId)?.component;
+    const componentName = component?.name;
+    const parentId = component?.parent;
+    const parentType = getComponentTypeFromId(parentId);
+    if (parentType === 'Listview') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      return subcontainerParentComponent?.[componentName]?.[property];
+    } else if (parentType === 'Form') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[componentName];
+      return subcontainerParentComponent?.[property];
+    } else {
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      return componentExposedProperty;
+    }
   },
 });
