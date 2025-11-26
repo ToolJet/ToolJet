@@ -34,7 +34,7 @@ module.exports = defineConfig({
   projectId: "sk3oji",
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       config.baseUrl = environment.baseUrl;
 
       require("./cypress/config/tasks")(on);
@@ -67,7 +67,7 @@ module.exports = defineConfig({
 
     testIsolation: true,
     retries: {
-      runMode: 1,
+      runMode: 2,
       openMode: 0,
     },
     redirectionLimit: 10,

@@ -14,11 +14,7 @@ describe("Profile Settings", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     common.navigateToProfile();
-    cy.getUserIdByEmail('dev@tooljet.io').then((userId) => { Cypress.env('userIdDev', userId); });
   });
-  // after(() => {
-  //   profile.extApiUpdateUser('dev@tooljet.io');
-  // });
 
   // neeed to reset and seed db after 1 run (as password changes will get 401 error )
   it("Should verify the elements on profile settings page and name reset functionality", () => {
@@ -63,9 +59,6 @@ describe("Profile Settings", () => {
   });
 
   it("Should verify the password reset functionality", () => {
-    cy.waitForElement(profileSelector.newPasswordField)
-    cy.wait(500)
-
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
     cy.get(profileSelector.newPasswordField).should("have.value", "");
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
@@ -192,11 +185,8 @@ describe("Profile Settings", () => {
     );
 
     common.logout();
-    cy.waitForElement(onboardingSelectors.loginPasswordInput)
-    cy.wait(500);
-
-    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 }).should("be.visible").click();
     cy.clearAndType(onboardingSelectors.loginEmailInput, commonText.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
@@ -204,6 +194,7 @@ describe("Profile Settings", () => {
       profileText.loginErrorToast
     );
 
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, profileText.newPassword);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, profileText.newPassword);
     cy.get(onboardingSelectors.signInButton).click();
     common.navigateToProfile();
@@ -222,10 +213,6 @@ describe("Profile Settings", () => {
 
 
     common.logout();
-
-
-    cy.waitForElement(onboardingSelectors.loginPasswordInput)
-    cy.wait(500); //wait for toast to disappear if any
 
     cy.appUILogin(commonText.email, profileText.password);
     common.logout();
