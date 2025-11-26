@@ -8,7 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { isTrueValue, isPropertyFxControlled, getComponentIcon } from '../utils/utils';
 
-export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, darkMode = false }) => {
+export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave}) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
@@ -33,6 +33,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
 
   const isCurrentlyMandatory = isTrueValue(fieldData.mandatory?.value);
 
+  const darkMode = localStorage.getItem('darkMode') === 'true' ?? false;
 
   const mainPopover = (
     <Popover id="popover-basic" className={`shadow form-fields-column-popover ${darkMode ? 'dark-theme' : ''}`}>
