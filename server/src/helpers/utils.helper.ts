@@ -526,7 +526,7 @@ export function isAzureEntraIdIssuer(issuer?: string): boolean {
   return microsoftDomains.some((domain) => issuer.includes(domain));
 }
 
-export function checkIfSignalIsAborted(signal: AbortSignal, timeout: number) {
+export function throwIfSignalAborted(signal: AbortSignal, timeout: number) {
   if (signal.aborted) {
     throw new QueryError(`Defined query timeout of ${timeout}ms exceeded when running query.`, 'Query timed out', {});
   }

@@ -19,7 +19,7 @@ import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
-import { checkIfSignalIsAborted } from '@helpers/utils.helper';
+import { throwIfSignalAborted } from '@helpers/utils.helper';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -127,7 +127,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       queryStatus.setOptions(parsedQueryOptions);
 
       try {
-        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+        if (canAbortQuery) throwIfSignalAborted(abortController.signal, queryTimeoutMs);
         // multi-auth will not work with public apps
         if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
@@ -163,7 +163,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
-        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+        if (canAbortQuery) throwIfSignalAborted(abortController.signal, queryTimeoutMs);
         queryStatus.setStart();
 
         const promises = [];
@@ -214,7 +214,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
           promises.push(abortPromise);
         }
-        if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+        if (canAbortQuery) throwIfSignalAborted(abortController.signal, queryTimeoutMs);
         result = await Promise.race(promises);
         if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
       } catch (api_error) {
@@ -352,7 +352,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               });
               promises.push(abortPromise);
             }
-            if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+            if (canAbortQuery) throwIfSignalAborted(abortController.signal, queryTimeoutMs);
             result = await Promise.race(promises);
             if (querySetTimeoutRef) clearTimeout(querySetTimeoutRef);
           } else if (
@@ -387,7 +387,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         }
       }
       // Final timeout check before marking query success
-      if (canAbortQuery) checkIfSignalIsAborted(abortController.signal, queryTimeoutMs);
+      if (canAbortQuery) throwIfSignalAborted(abortController.signal, queryTimeoutMs);
       queryStatus.setSuccess();
 
       //TODO: support workflow execute method().
