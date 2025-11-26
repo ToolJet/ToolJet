@@ -17,13 +17,33 @@
 
 
                         <p class="padding-t-20">
-                        <p>Your verification code: <strong>{{otp}}</strong></p>
+                            Your verification code:
+
+                            <span style="
+    display: inline-block;
+    margin-left: 4px;
+    padding: 6px 14px;
+    background: #F5F7FA;
+    border-radius: 8px;
+    line-height: 1;
+  ">
+                                <span style="
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 6px;
+      color: #111827;
+    ">
+                                    {{otp}}
+                                </span>
+                            </span>
                         </p>
+
+
 
                         <p class="padding-t-20">
                             This code expires in <strong>5 minutes</strong>.
-                            Enter this code to complete your registration. Never share this code with anyone. If you
-                            didn't request this, you can safely ignore this email.
+                            Enter this code to complete your registration. Never share this code with anyone. <br>If you
+                            didn't request this, ignore this email.
                         </p>
 
                         {{#if (and (eq whiteLabelText "ToolJet") (eq tooljetEdition "cloud"))}}
@@ -41,9 +61,9 @@
                 <tr>
                     <td class="padding-y-10 footer-note">
                         {{#if (eq whiteLabelText "ToolJet")}}
-                        <span>Thanks,</span>
+                        <span>Thank you,</span>
                         <br />
-                        <span>The ToolJet Team</span>
+                        <span>ToolJet Team</span>
                         {{else}}
                         <span>Thanks!</span>
                         {{/if}}

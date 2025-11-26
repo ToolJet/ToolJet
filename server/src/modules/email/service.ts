@@ -173,10 +173,11 @@ export class EmailService implements IEmailService {
   }
 
   async sendOtpEmail(payload: SendEmailOtpPayload) {
-    const { email, otp } = payload;
+    const { name, otp, email } = payload;
     await this.init();
-    const subject = 'OTP for Email Verification';
+    const subject = 'ToolJet | OTP to Verify Email';
     const templateData = {
+      name,
       otp,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
