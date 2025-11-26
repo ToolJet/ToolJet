@@ -3,6 +3,8 @@ const webpack = require('webpack');
 const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
@@ -10,10 +12,12 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
 const isDevEnv = process.env.NODE_ENV === 'development';
+const isProductionMode = environment === 'production';
 
 // Create path to empty module
 const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
@@ -40,7 +44,7 @@ const plugins = [
     hash: environment === 'production',
   }),
   new CompressionPlugin({
-    test: /\.js(\?.*)?$/i,
+    test: /\.(js|css)(\?.*)?$/i,
     algorithm: 'gzip',
   }),
   new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
@@ -82,6 +86,19 @@ if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
 }
 
+if (isProductionMode) {
+  plugins.push(
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
+      chunkFilename: '[name].[contenthash].chunk.css',
+    })
+  );
+}
+
+if (process.env.ANALYZE === 'true') {
+  plugins.push(new BundleAnalyzerPlugin());
+}
+
 module.exports = {
   mode: environment,
   optimization: {
@@ -99,6 +116,16 @@ module.exports = {
           },
         },
         parallel: environment === 'production',
+      }),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            'default',
+            {
+              discardComments: { removeAll: true },
+            },
+          ],
+        },
       }),
     ],
     splitChunks: {
@@ -260,9 +287,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
+          environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
           },
@@ -271,9 +296,7 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
+          environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
           },
