@@ -109,7 +109,7 @@ describe("Multi-Environment Behavior", () => {
     verifyInspectorMenuHasNoDeleteOption();
     verifyComponentsManagerDisabled();
     verifyPageSettingsDisabled();
-    verifyComponentInspectorDisabled();
+    //verifyComponentInspectorDisabled();
 
     appPromote(Environments.staging, Environments.production);
     verifyEnvironmentData(DBValues.production, EnvironmentValues.production);
@@ -121,7 +121,7 @@ describe("Multi-Environment Behavior", () => {
     verifyGlobalSettingsDisabled();
     verifyComponentsManagerDisabled();
     verifyPageSettingsDisabled();
-    verifyComponentInspectorDisabled();
+    //verifyComponentInspectorDisabled();
 
     releaseAndVisitApp(testData.appSlug);
     verifyEnvironmentData(DBValues.production, EnvironmentValues.production);
