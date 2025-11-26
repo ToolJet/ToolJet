@@ -523,6 +523,7 @@ export const archiveWorkspace = (workspaceName) => {
 export const archiveUserFromInstancesettings = (userName) => {
     openInstanceSettings();
     cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.wait(1000);
     cy.get(commonEeSelectors.userActionButton).click();
     cy.get(commonEeSelectors.archiveButton).click();
     cy.get(commonEeSelectors.confirmButton).click();
@@ -531,6 +532,7 @@ export const archiveUserFromInstancesettings = (userName) => {
 export const unarchiveUserFromInstancesettings = (userName) => {
     openInstanceSettings();
     cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.wait(1000);
     cy.get(commonEeSelectors.userActionButton).click();
     cy.get(commonEeSelectors.archiveButton).click();
     cy.get(commonEeSelectors.confirmButton).click();
@@ -544,6 +546,7 @@ export const unarchiveUserFromInstancesettings = (userName) => {
 export const resetUserpasswordFromInstanceSettings = (userName, password) => {
     openInstanceSettings();
     cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.wait(1000);
     cy.get(commonEeSelectors.userActionButton).click();
     cy.get(commonEeSelectors.passwordResetButton).click();
     cy.get(commonEeSelectors.createNewPasswordButton).click();
@@ -554,6 +557,7 @@ export const resetUserpasswordFromInstanceSettings = (userName, password) => {
 export const resetUserpasswordAutomaticallyFromInstanceSettings = (userName) => {
     openInstanceSettings();
     cy.clearAndType(commonEeSelectors.userSearchBar, userName);
+    cy.wait(1000);
     cy.get(commonEeSelectors.userActionButton).click();
     cy.get(commonEeSelectors.passwordResetButton).click();
     cy.get(commonEeSelectors.resetButton).click();

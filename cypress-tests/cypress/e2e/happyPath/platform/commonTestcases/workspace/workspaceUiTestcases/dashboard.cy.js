@@ -10,6 +10,7 @@ import {
   closeModal,
   cancelModal,
   verifyTooltip,
+  deleteDownloadsFolder
 } from "Support/utils/common";
 import {
   modifyAndVerifyAppCardIcon,
@@ -20,6 +21,7 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { logout } from "Support/utils/common";
+
 
 describe("dashboard", () => {
   let data = {};
@@ -34,7 +36,9 @@ describe("dashboard", () => {
     };
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+    deleteDownloadsFolder();
     cy.apiLogin();
+    cy.viewport(1440, 1200);
   });
 
   it("should verify the elements on empty dashboard", () => {
@@ -49,7 +53,7 @@ describe("dashboard", () => {
       },
     }).as("version");
 
-    cy.visit("/");
+    cy.visit("/my-workspace");
 
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -124,7 +128,7 @@ describe("dashboard", () => {
       commonText.logoutLink
     );
 
-    cy.get(commonSelectors.breadcrumbHeaderTitle).should(($el) => {
+    cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
         commonText.breadcrumbApplications
       );
@@ -181,12 +185,14 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
     cy.apiCreateApp(data.appName);
+    cy.visit("/my-workspace");
+
 
     // cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     // cy.wait(2000);
     cy.get(commonSelectors.appCreationDetails).should("be.visible");
+    cy.wait(2000);
     cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
     cy.get(commonSelectors.appTitle(data.appName)).verifyVisibleElement(
       "have.text",
@@ -281,10 +287,14 @@ describe("dashboard", () => {
 
     cy.wait(1000);
     viewAppCardOptions(data.appName);
-    cy.wait(2000);
     cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
     cy.get(commonSelectors.exportAllButton).click();
-    cy.wait(2000)
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      'App has been exported successfully!',
+      false
+    );
+    cy.wait(3000)
 
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
@@ -349,7 +359,7 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
+    cy.visit("/my-workspace");
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
@@ -376,7 +386,7 @@ describe("dashboard", () => {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
     };
-    cy.visit("/");
+    cy.visit("/my-workspace");
     cy.createApp(data.appName);
     cy.apiAddComponentToApp(data.appName, "text1", customLayout);
     cy.backToApps();

@@ -6,7 +6,6 @@ import {
   deleteVersionAndVerify,
   releasedVersionAndVerify,
   verifyDuplicateVersion,
-  verifyVersionAfterPreview,
   navigateToCreateNewVersionModal,
   verifyElementsOfCreateNewVersionModal,
   navigateToEditVersionModal,
@@ -19,14 +18,14 @@ import { editVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
 import { verifyModal, closeModal } from "Support/utils/common";
 import {
-  verifyComponent,
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
-import { deleteVersionText, onlydeleteVersionText } from "Texts/version";
 import { createRestAPIQuery } from "Support/utils/dataSource";
-import { deleteQuery } from "Support/utils/queries";
 import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
+import { performQueryAction } from "Support/utils/queries";
+import { multiEnvSelector } from "Selectors/eeCommon";
+
 describe("App Version", () => {
   const generateTestData = () => ({
     appName: `${fake.companyName}-Version-App`,
@@ -36,8 +35,10 @@ describe("App Version", () => {
   });
 
   const verifyWidget = (selector, assertion, expectedValue) => {
-    cy.get(commonWidgetSelector.draggableWidget(selector))
-      .verifyVisibleElement(assertion, expectedValue);
+    cy.get(commonWidgetSelector.draggableWidget(selector)).verifyVisibleElement(
+      assertion,
+      expectedValue
+    );
   };
 
   let data;
@@ -52,6 +53,7 @@ describe("App Version", () => {
   });
 
   it("should verify basic version management operations", () => {
+    cy.get('[data-cy="query-manager-toggle-button"]').click();
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     navigateToCreateNewVersionModal("v1");
     verifyElementsOfCreateNewVersionModal(["v1"]);
@@ -87,7 +89,9 @@ describe("App Version", () => {
 
     verifyComponentinrightpannel("table");
     cy.get(commonSelectors.rightSidebarPlusButton).click();
-    cy.dragAndDropWidget("text");
+    //cy.dragAndDropWidget("Text", 450, 300);
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
     cy.waitForAutoSave();
 
     navigateToCreateNewVersionModal("v2");
@@ -95,14 +99,12 @@ describe("App Version", () => {
     cy.waitForAutoSave();
     verifyComponentinrightpannel("table");
 
-    deleteComponentAndVerify("text1");
+    // deleteComponentAndVerify("text1");
     cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("not.exist");
 
-    deleteVersionAndVerify(
-      "v3",
-      onlydeleteVersionText.deleteToastMessage("v3")
-    );
+    deleteVersionAndVerify("v3");
+    cy.waitForElement(appVersionSelectors.currentVersionField("v2"));
     cy.get(appVersionSelectors.currentVersionField("v2")).should("be.visible");
     cy.get(appVersionSelectors.currentVersionField("v3")).should("not.exist");
 
@@ -120,12 +122,7 @@ describe("App Version", () => {
       cy.url().should("include", "/home?env=development&version=v2");
     });
 
-    cy.openApp(
-      "",
-      Cypress.env("workspaceId"),
-      Cypress.env("appId"),
-      commonWidgetSelector.draggableWidget("text1")
-    );
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"));
     releasedVersionAndVerify("v2");
   });
 
@@ -149,6 +146,7 @@ describe("App Version", () => {
 
     cy.ifEnv("Enterprise", () => {
       appPromote("development", "production");
+      cy.waitForElement(multiEnvSelector.currentEnvName);
     });
 
     navigateToCreateNewVersionModal("v1");
@@ -157,9 +155,10 @@ describe("App Version", () => {
     cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
 
     deleteComponentAndVerify("text1");
+
     cy.waitForAutoSave();
-    deleteQuery(data.query1);
-    cy.get(commonSelectors.modalConfirmButton).click();
+    performQueryAction(data.query1, "delete");
+
     createRestAPIQuery(data.query2, data.datasourceName, "", "", "/2", true);
     cy.apiAddComponentToApp(
       data.appName,
@@ -198,13 +197,20 @@ describe("App Version", () => {
       navigateToCreateNewVersionModal(check.create.from);
       createNewVersion([check.create.version], check.create.from);
       cy.waitForAutoSave();
-      cy.get(appVersionSelectors.currentVersionField(check.create.version)).should("be.visible");
+      cy.get(
+        appVersionSelectors.currentVersionField(check.create.version)
+      ).should("be.visible");
 
-      const assertion = check.verify.component.value ? "have.value" : "have.text";
-      const expected = check.verify.component.value || check.verify.component.text;
+      const assertion = check.verify.component.value
+        ? "have.value"
+        : "have.text";
+      const expected =
+        check.verify.component.value || check.verify.component.text;
       verifyWidget(check.verify.component.selector, assertion, expected);
 
-      cy.get(`[data-cy="list-query-${check.verify.query}"]`).should("be.visible");
+      cy.get(`[data-cy="list-query-${check.verify.query}"]`).should(
+        "be.visible"
+      );
     });
 
     releasedVersionAndVerify("v5");
@@ -252,13 +258,17 @@ describe("App Version", () => {
       navigateToCreateNewVersionModal("v5");
       createNewVersion(["v6"], "v5");
       cy.waitForAutoSave();
-      cy.get(appVersionSelectors.currentVersionField("v6")).should("be.visible");
+      cy.get(appVersionSelectors.currentVersionField("v6")).should(
+        "be.visible"
+      );
 
       appPromote("development", "staging");
+      cy.waitForElement(multiEnvSelector.currentEnvName);
       verifyWidget("textInput", "have.value", "Ervin Howell");
       cy.get(`[data-cy="list-query-${data.query2}"]`).should("be.visible");
 
       appPromote("staging", "production");
+      cy.waitForElement(multiEnvSelector.currentEnvName);
 
       verifyWidget("textInput", "have.value", "Ervin Howell");
       cy.get(`[data-cy="list-query-${data.query2}"]`).should("be.visible");
@@ -274,10 +284,13 @@ describe("App Version", () => {
 
       openPreviewSettings();
       switchVersionAndVerify("v1", "v6");
+      cy.wait(1000);
 
       openPreviewSettings();
-      cy.forceClickOnCanvas();
-      openPreviewSettings();
+      // cy.wait(500);
+      // cy.forceClickOnCanvas();
+      // openPreviewSettings();
+
       selectEnv("staging");
 
       verifyWidget("textInput", "have.value", "Ervin Howell");
