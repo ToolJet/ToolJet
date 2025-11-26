@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { Smile } from 'lucide-react';
 import { AppCard } from '@/components/ui/blocks/AppCard';
+import { ResourceGrid } from '@/components/ui/blocks/ResourceGrid/ResourceGrid';
+
+// Note: AppsGrid is a thin wrapper that provides app-specific formatting logic.
+// The generic ResourceGrid handles the grid layout, while AppsGrid handles app-specific rendering.
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString) => {
@@ -31,40 +35,34 @@ const iconColors = [
   'tw-bg-red-500',
 ];
 
-export function AppsGrid({ table, onPlay, onEdit, onClone, onDelete, onExport, perms, canDelete }) {
+export const AppsGrid = ({ table, actions, perms, canDelete }) => {
   const rows = table.getRowModel().rows;
+  const items = rows.map((row) => row.original);
 
-  return (
-    <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 xl:tw-grid-cols-4 tw-gap-6 tw-mt-6">
-      {rows.map((row, index) => {
-        const app = row.original;
-        const timeAgo = formatTimeAgo(app.lastEdited);
-        const iconColor = iconColors[index % iconColors.length];
+  const renderAppCard = (app, index) => {
+    const timeAgo = formatTimeAgo(app.lastEdited);
+    const iconColor = iconColors[index % iconColors.length];
 
-        return (
-          <AppCard
-            key={row.id}
-            icon={
-              <div className={`tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center ${iconColor}`}>
-                <Smile className="tw-w-3 tw-h-3 tw-text-white" />
-              </div>
-            }
-            title={app.name}
-            description={`Edited ${timeAgo} by ${app.editedBy}`}
-            variant="outline"
-            className="tw-p-4 tw-flex-col tw-items-start"
-            app={app}
-            onPlay={onPlay}
-            onEdit={onEdit}
-            onClone={onClone}
-            onDelete={onDelete}
-            onExport={onExport}
-            canPlay={perms?.canPlay?.(app) ?? true}
-            canEdit={perms?.canEdit?.(app) ?? true}
-            canDelete={canDelete}
-          />
-        );
-      })}
-    </div>
-  );
-}
+    return (
+      <AppCard
+        key={app.id}
+        icon={
+          <div className={`tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center ${iconColor}`}>
+            <Smile className="tw-w-3 tw-h-3 tw-text-white" />
+          </div>
+        }
+        title={app.name}
+        description={`Edited ${timeAgo} by ${app.editedBy}`}
+        variant="outline"
+        className="tw-p-4 tw-flex-col tw-items-start"
+        app={app}
+        actions={actions}
+        canPlay={perms?.canPlay?.(app) ?? true}
+        canEdit={perms?.canEdit?.(app) ?? true}
+        canDelete={canDelete}
+      />
+    );
+  };
+
+  return <ResourceGrid items={items} renderItem={renderAppCard} />;
+};

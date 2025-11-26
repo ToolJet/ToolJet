@@ -65,11 +65,9 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspace, onWorkspaceChan
 }
 
 WorkspaceSwitcher.propTypes = {
-  workspaces: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      logo: PropTypes.elementType.isRequired,
-      plan: PropTypes.string,
-    })
-  ).isRequired,
+  workspaces: PropTypes.array,
+  activeWorkspace: PropTypes.object,
+  onWorkspaceChange: PropTypes.func,
 };
+
+export default WorkspaceSwitcher;

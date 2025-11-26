@@ -1,6 +1,6 @@
-import React from "react";
-import EndUserAppsPageAdapter from "../EndUserAppsPageAdapter";
-import data from "../data.json";
+import React from 'react';
+import EndUserAppsPageAdapter from '../EndUserAppsPageAdapter';
+import data from '../data.json';
 import {
   AudioWaveform,
   Command,
@@ -14,40 +14,42 @@ import {
   Moon,
   Bell,
   Zap,
-} from "lucide-react";
+} from 'lucide-react';
+import { MOCK_MODULES_DATA, MOCK_MODULES_META } from './mockData';
+import { generateMockApps, generateMockFolders } from './utils';
 
 // Mock HomePage methods
 const mockCanCreateApp = () => true;
 const mockCanUpdateApp = (_app) => true;
 const mockCanDeleteApp = (_app) => true;
-const mockPageChanged = (page) => console.log("Page changed:", page);
-const mockOnSearch = (key) => console.log("Search:", key);
-const mockDeleteApp = (app) => console.log("Delete:", app);
-const mockCloneApp = (app) => console.log("Clone:", app);
-const mockExportApp = (app) => console.log("Export:", app);
-const mockNavigate = (path) => console.log("Navigate:", path);
+const mockPageChanged = (page) => console.log('Page changed:', page);
+const mockOnSearch = (key) => console.log('Search:', key);
+const mockDeleteApp = (app) => console.log('Delete:', app);
+const mockCloneApp = (app) => console.log('Clone:', app);
+const mockExportApp = (app) => console.log('Export:', app);
+const mockNavigate = (path) => console.log('Navigate:', path);
 
 // Mock folder data
 const MOCK_FOLDERS = [
-  { id: 1, name: "Marketing", count: 5 },
-  { id: 2, name: "Sales", count: 3 },
-  { id: 3, name: "Engineering", count: 8 },
-  { id: 4, name: "Design", count: 2 },
+  { id: 1, name: 'Marketing', count: 5 },
+  { id: 2, name: 'Sales', count: 3 },
+  { id: 3, name: 'Engineering', count: 8 },
+  { id: 4, name: 'Design', count: 2 },
 ];
 
 // Dummy workspace data for Storybook
 const DUMMY_WORKSPACES = [
-  { name: "Acme Inc", logo: GalleryVerticalEnd, plan: "Enterprise" },
-  { name: "Acme Corp.", logo: AudioWaveform, plan: "Startup" },
-  { name: "Evil Corp.", logo: Command, plan: "Free" },
+  { name: 'Acme Inc', logo: GalleryVerticalEnd, plan: 'Enterprise' },
+  { name: 'Acme Corp.', logo: AudioWaveform, plan: 'Startup' },
+  { name: 'Evil Corp.', logo: Command, plan: 'Free' },
 ];
 
 // Mock sidebar data for Storybook
 const MOCK_SIDEBAR_DATA = {
   user: {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatar: '/avatars/shadcn.jpg',
   },
   teams: DUMMY_WORKSPACES.map((ws) => ({
     name: ws.name,
@@ -56,43 +58,43 @@ const MOCK_SIDEBAR_DATA = {
   })),
   navMain: [
     {
-      title: "Home",
-      url: "#",
+      title: 'Home',
+      url: '#',
       icon: Home,
       isActive: false,
       items: [],
     },
     {
-      title: "Apps",
-      url: "#",
+      title: 'Apps',
+      url: '#',
       icon: Blocks,
       isActive: true,
       items: [],
     },
     {
-      title: "Workflows",
-      url: "#",
+      title: 'Workflows',
+      url: '#',
       icon: Workflow,
       isActive: false,
       items: [],
     },
     {
-      title: "Database",
-      url: "#",
+      title: 'Database',
+      url: '#',
       icon: Table2,
       isActive: false,
       items: [],
     },
     {
-      title: "Plugins",
-      url: "#",
+      title: 'Plugins',
+      url: '#',
       icon: Puzzle,
       isActive: false,
       items: [],
     },
     {
-      title: "Resources",
-      url: "#",
+      title: 'Resources',
+      url: '#',
       icon: KeyRound,
       isActive: false,
       items: [],
@@ -100,30 +102,26 @@ const MOCK_SIDEBAR_DATA = {
   ],
   projects: [
     {
-      name: "Theme",
-      url: "#",
+      name: 'Theme',
+      url: '#',
       icon: Moon,
     },
     {
-      name: "Notifications",
-      url: "#",
+      name: 'Notifications',
+      url: '#',
       icon: Bell,
     },
     {
-      name: "Quick Actions",
-      url: "#",
+      name: 'Quick Actions',
+      url: '#',
       icon: Zap,
     },
   ],
 };
 
 function StoryWithWorkspace(props) {
-  const [currentWorkspace, setCurrentWorkspace] = React.useState(
-    DUMMY_WORKSPACES[0].name
-  );
-  const [currentFolder, setCurrentFolder] = React.useState(
-    props.currentFolder || {}
-  );
+  const [currentWorkspace, setCurrentWorkspace] = React.useState(DUMMY_WORKSPACES[0].name);
+  const [currentFolder, setCurrentFolder] = React.useState(props.currentFolder || {});
 
   // Update currentFolder when prop changes
   React.useEffect(() => {
@@ -134,12 +132,12 @@ function StoryWithWorkspace(props) {
 
   const handleWorkspaceChange = (workspace) => {
     setCurrentWorkspace(workspace.name);
-    console.log("Workspace changed to:", workspace);
+    console.log('Workspace changed to:', workspace);
   };
 
   const handleFolderChange = (folder) => {
     setCurrentFolder(folder || {});
-    console.log("Folder changed to:", folder);
+    console.log('Folder changed to:', folder);
     props.folderChanged?.(folder);
   };
 
@@ -147,10 +145,10 @@ function StoryWithWorkspace(props) {
   const enhancedNavigate = React.useCallback((path) => {
     mockNavigate(path);
     // Update browser URL for Storybook
-    if (typeof window !== "undefined") {
-      window.history.pushState({}, "", path);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', path);
       // Dispatch popstate to trigger any listeners
-      window.dispatchEvent(new PopStateEvent("popstate"));
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   }, []);
 
@@ -208,222 +206,94 @@ function StoryWithWorkspace(props) {
   );
 }
 
-export default {
-  title: "Flows/AppsPage/EndUserAdapter",
+const meta = {
   component: EndUserAppsPageAdapter,
-  parameters: { layout: "fullscreen" },
+  title: 'Features/Apps/EndUserAppsPageAdapter',
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component:
+          'Adapter for the end-user apps page, connecting legacy state to the new component architecture. This story demonstrates the component with mock modules data.',
+      },
+    },
+  },
+  argTypes: {
+    data: { control: 'object', description: 'Data for apps and loading states' },
+    filters: { control: 'object', description: 'Filters for search and folders' },
+    actions: { control: 'object', description: 'Action handlers' },
+    permissions: { control: 'object', description: 'Permission checks' },
+    navigation: { control: 'object', description: 'Navigation-related props' },
+    layout: { control: 'object', description: 'Layout-related props' },
+  },
 };
 
-export const Default = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    deleteApp={mockDeleteApp}
-    cloneApp={mockCloneApp}
-    exportApp={mockExportApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
+export default meta;
 
-export const EmptyState = () => (
-  <StoryWithWorkspace
-    apps={[]}
-    isLoading={false}
-    meta={{ current_page: 1, total_pages: 1, total_count: 0, per_page: 9 }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
+export const Default = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    data: {
+      apps: generateMockApps(10),
+      meta: { current_page: 1, total_pages: 5, total_count: 50 },
+    },
+    filters: {
+      folders: generateMockFolders(5),
+    },
+  },
+};
 
-export const ResourceLoading = () => (
-  <StoryWithWorkspace
-    apps={[]}
-    isLoading={true}
-    meta={{ current_page: 1, total_pages: 1, total_count: 0, per_page: 9 }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
+export const WithModules = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    ...Default.args,
+    // The component now internally loads mock modules,
+    // but we could pass them in via props if needed for more complex scenarios.
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstrates the component with the "Modules" tab active, showing mock module data.',
+      },
+    },
+  },
+};
 
-export const WithPagination = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{ current_page: 2, total_pages: 3, total_count: 25, per_page: 9 }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
+export const Empty = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    ...Default.args,
+    data: {
+      apps: [],
+      meta: { total_count: 0 },
+    },
+  },
+};
 
-export const Modules = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="module"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-    initialPath="/my-workspace-1706521439709/modules"
-  />
-);
+export const Loading = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    ...Default.args,
+    data: {
+      apps: [],
+      isLoading: true,
+      meta: {},
+    },
+    filters: {
+      ...Default.args.filters,
+      foldersLoading: true,
+    },
+  },
+};
 
-export const NoPermissions = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={false}
-    canUpdateApp={() => false}
-    canDeleteApp={() => false}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
-
-export const WithFolderSelected = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    deleteApp={mockDeleteApp}
-    cloneApp={mockCloneApp}
-    exportApp={mockExportApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    currentFolder={MOCK_FOLDERS[0]}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
-
-export const WithWorkflows = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="workflow"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    deleteApp={mockDeleteApp}
-    cloneApp={mockCloneApp}
-    exportApp={mockExportApp}
-    navigate={mockNavigate}
-    folders={MOCK_FOLDERS}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
-
-export const NoFolders = () => (
-  <StoryWithWorkspace
-    apps={data}
-    isLoading={false}
-    meta={{
-      current_page: 1,
-      total_pages: 1,
-      total_count: data.length,
-      per_page: 9,
-    }}
-    appSearchKey=""
-    appType="front-end"
-    pageChanged={mockPageChanged}
-    onSearch={mockOnSearch}
-    canCreateApp={mockCanCreateApp}
-    canUpdateApp={mockCanUpdateApp}
-    canDeleteApp={mockCanDeleteApp}
-    deleteApp={mockDeleteApp}
-    cloneApp={mockCloneApp}
-    exportApp={mockExportApp}
-    navigate={mockNavigate}
-    folders={[]}
-    foldersLoading={false}
-    folderChanged={(folder) => console.log("Folder changed:", folder)}
-  />
-);
+export const WithError = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    ...Default.args,
+    data: {
+      apps: [],
+      error: new Error('Failed to fetch applications'),
+      meta: {},
+    },
+  },
+};
