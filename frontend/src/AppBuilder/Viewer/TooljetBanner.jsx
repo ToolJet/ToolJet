@@ -12,6 +12,7 @@ const TooljetBanner = ({ isDarkMode }) => {
 
   return (
     <div
+      data-cy="powered-tj-banner"
       className={`powered-with-tj ${isDarkMode ? 'dark-theme' : ''}`}
       onClick={() => {
         const url = `https://tooljet.com`;

@@ -11,6 +11,15 @@ export const getAllConstants = () => {
     });
 };
 
+export const getAllConstantsWithCount = () => {
+    return getAllConstants().then((constants) => {
+        return {
+            constants,
+            count: constants.length,
+        };
+    });
+};
+
 
 export const findConstantByName = (constantName) => {
     return getAllConstants().then((constants) => {

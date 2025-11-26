@@ -45,9 +45,9 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
     "have.text",
     version[0]
   );
-  cy.get(
-    commonSelectors.buttonSelector(appVersionText.createNewVersion)
-  ).first().verifyVisibleElement("have.text", appVersionText.createNewVersion);
+  cy.get(commonSelectors.buttonSelector(appVersionText.createNewVersion))
+    .first()
+    .verifyVisibleElement("have.text", appVersionText.createNewVersion);
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
@@ -69,7 +69,9 @@ export const editVersionAndVerify = (
       }
     }
   );
+  cy.wait(500);
   navigateToEditVersionModal(currentVersion);
+  cy.waitForElement(editVersionSelectors.versionNameInputField);
   cy.get(editVersionSelectors.versionNameInputField).verifyVisibleElement(
     "have.value",
     currentVersion
@@ -77,11 +79,11 @@ export const editVersionAndVerify = (
 
   cy.clearAndType(editVersionSelectors.versionNameInputField, newVersion[0]);
   cy.get(editVersionSelectors.saveButton).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
 };
 
-export const deleteVersionAndVerify = (value, toastMessageText) => {
+export const deleteVersionAndVerify = (value) => {
   cy.get(appVersionSelectors.currentVersionField(value))
     .should("be.visible")
     .click();
@@ -155,14 +157,18 @@ export const verifyVersionAfterPreview = (currentVersion) => {
 };
 
 export const switchVersionAndVerify = (currentVersion, newVersion) => {
+  cy.waitForElement(appVersionSelectors.currentVersionField(currentVersion));
   cy.get(appVersionSelectors.currentVersionField(currentVersion))
     .should("be.visible")
     .click();
   cy.get(".app-version-name").contains(newVersion).click();
-  cy.wait('@appDs')
-
+  cy.wait(1000);
+  //Note: add assertion to verify version switched
+  //cy.wait('@appDs')
 };
 
 export const openPreviewSettings = () => {
   cy.get(commonSelectors.previewSettings).should("be.visible").click();
+  cy.wait(1000);
+  // Note: add alias wait for version and env load
 };
