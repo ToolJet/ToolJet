@@ -238,7 +238,7 @@ export const DaterangePicker = ({
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
-    popperClassName: cx('tj-daterange-widget', {
+    popperClassName: cx('tj-daterange-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',

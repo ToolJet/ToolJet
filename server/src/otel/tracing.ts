@@ -420,6 +420,9 @@ export const startOpenTelemetry = async (): Promise<void> => {
     await sdk.start();
     initializeCustomMetrics();
 
+    // Initialize audit log metrics
+    const { initializeAuditLogMetrics } = await import('./audit-metrics');
+    initializeAuditLogMetrics();
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
@@ -434,6 +437,8 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
+// Export audit metrics function for use in services
+export { recordAuditLogMetric } from './audit-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;

@@ -19,7 +19,7 @@ describe("Globals - Inspector", () => {
     const dataList = [
       ["email", `"dev@tooljet.io"`],
       ["firstName", `"The"`],
-      ["lastName", `"developer"`],
+      ["lastName", `"Developer"`],
       ["id", `"${Cypress.env("user_id").slice(0, 31)}...`],
       ["avatarId", `null`],
       ["groups", `[2]`],

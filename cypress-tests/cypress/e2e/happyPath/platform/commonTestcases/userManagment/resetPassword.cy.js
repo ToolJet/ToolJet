@@ -4,6 +4,7 @@ import { fake } from "Fixtures/fake";
 import { inviteUser } from "Support/utils/onboarding";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
+import { smtpConfig } from "Constants/constants/whitelabel";
 
 describe("Password reset functionality", () => {
   const data = {
@@ -15,10 +16,11 @@ describe("Password reset functionality", () => {
 
   beforeEach(() => {
     cy.visit("/");
+    cy.apiLogin();
+    cy.apiConfigureSmtp(smtpConfig);
   });
 
   it("Verify password reset flow and login with new password", () => {
-    cy.apiLogin();
     inviteUser(data.firstName, data.email);
     logout();
 
@@ -92,46 +94,53 @@ describe("Password reset functionality", () => {
 
     // Use the correct API for cypress-mh if you have customized endpoints
     cy.wait(5000);
-    cy.mhGetMailsByRecipient(data.email).mhFilterBySubject('Reset your password')
+    cy.mhGetMailsByRecipient(data.email)
+      .mhFilterBySubject("Reset your password")
       .then((mails) => {
         expect(mails).to.have.length.greaterThan(0);
         const lastMail = mails[mails.length - 1];
-        const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
-        const mailBody = mailContent.Body || mailContent.Html || '';
+        const mailContent =
+          lastMail && lastMail.Content ? lastMail.Content : {};
+        const mailBody = mailContent.Body || mailContent.Html || "";
 
         // Clean the email body by removing quoted-printable encoding and HTML entities
         let cleanedBody = mailBody
-          .replace(/=\r?\n/g, '') // Remove quoted-printable line breaks (= at end of line)
-          .replace(/=3D/g, '=')   // Decode =3D back to =
+          .replace(/=\r?\n/g, "") // Remove quoted-printable line breaks (= at end of line)
+          .replace(/=3D/g, "=") // Decode =3D back to =
           .replace(/&quot;/g, '"')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&');
-        cy.log('Cleaned Email body:', cleanedBody); // Log cleaned body for debugging
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&amp;/g, "&");
+        cy.log("Cleaned Email body:", cleanedBody); // Log cleaned body for debugging
         // Extract reset password URL from href attribute or plain text
-        let resetPasswordUrl = '';
+        let resetPasswordUrl = "";
 
         // Try to find URL in href attribute with quoted-printable encoding
-        const hrefMatch = cleanedBody.match(/href=3D(http[^"\s>]*reset-password[^"\s>]*)/i);
+        const hrefMatch = cleanedBody.match(
+          /href=3D(http[^"\s>]*reset-password[^"\s>]*)/i
+        );
         if (hrefMatch) {
           resetPasswordUrl = hrefMatch[1];
         } else {
           // Try standard href format
-          const standardHrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*reset-password[^"'\s>]*)/i);
+          const standardHrefMatch = cleanedBody.match(
+            /href=["']?(http[^"'\s>]*reset-password[^"'\s>]*)/i
+          );
           if (standardHrefMatch) {
             resetPasswordUrl = standardHrefMatch[1];
           } else {
             // Fallback: look for URL in plain text
-            const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*reset-password[^\s"'<>]*/i);
-            resetPasswordUrl = urlMatch ? urlMatch[0] : '';
+            const urlMatch = cleanedBody.match(
+              /https?:\/\/[^\s"'<>]*reset-password[^\s"'<>]*/i
+            );
+            resetPasswordUrl = urlMatch ? urlMatch[0] : "";
           }
         }
 
         // expect(resetPasswordUrl).to.not.be.empty;
-        cy.log('Found reset password URL: ' + resetPasswordUrl);
+        cy.log("Found reset password URL: " + resetPasswordUrl);
         cy.visit(resetPasswordUrl);
       });
-
 
     // Reset password page verification
     [
@@ -159,8 +168,14 @@ describe("Password reset functionality", () => {
       { new: "Password", confirm: "password", shouldShowError: true },
       { new: "Password", confirm: "Password", shouldBeEnabled: true },
     ].forEach(({ new: newPass, confirm, shouldBeEnabled, shouldShowError }) => {
-      cy.get(commonSelectors.newPasswordInputField).should('be.enabled', { timeout: 10000 }).click().type(`{selectAll}{backspace}${newPass}`);
-      cy.get(commonSelectors.confirmPasswordInputField).should('be.enabled', { timeout: 10000 }).click().type(`{selectAll}{backspace}${confirm}`);
+      cy.get(commonSelectors.newPasswordInputField)
+        .should("be.enabled", { timeout: 10000 })
+        .click()
+        .type(`{selectAll}{backspace}${newPass}`);
+      cy.get(commonSelectors.confirmPasswordInputField)
+        .should("be.enabled", { timeout: 10000 })
+        .click()
+        .type(`{selectAll}{backspace}${confirm}`);
 
       if (shouldShowError) {
         cy.get('[data-cy="confirm-password-input-error"]').verifyVisibleElement(
@@ -198,8 +213,12 @@ describe("Password reset functionality", () => {
 
     // Login with new password
     cy.get(commonSelectors.backToLoginButton).click();
-    cy.get(onboardingSelectors.signupEmailInput).click().type(`{selectAll}{backspace}${data.email}`);
-    cy.get(onboardingSelectors.loginPasswordInput).click().type(`{selectAll}{backspace}${data.password}`);
+    cy.get(onboardingSelectors.signupEmailInput)
+      .click()
+      .type(`{selectAll}{backspace}${data.email}`);
+    cy.get(onboardingSelectors.loginPasswordInput)
+      .click()
+      .type(`{selectAll}{backspace}${data.password}`);
     cy.get(onboardingSelectors.signInButton).click();
     cy.get(commonSelectors.workspaceName).should("be.visible");
   });

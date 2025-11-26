@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { ListFilter } from 'lucide-react';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
 import Filter from '@/_ui/Icon/solidIcons/Filter';
@@ -212,7 +213,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           data-tooltip-content="Show sort/filter"
           data-cy={`query-filter-button`}
         >
-          <Filter width="14" height="14" fill="var(--icons-default)" />
+          <ListFilter color="var(--icons-strong)" size={14} />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
         <Tooltip id="tooltip-for-open-filter" className="tooltip" />

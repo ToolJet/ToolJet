@@ -43,5 +43,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.NPM_PACKAGES]: {
       auditLogsKey: 'NPM_PACKAGES',
     },
+
+    [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: {},
+    [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: {},
   },
 };
