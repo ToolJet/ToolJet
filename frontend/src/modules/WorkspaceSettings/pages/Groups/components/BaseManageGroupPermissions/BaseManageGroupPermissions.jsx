@@ -92,8 +92,16 @@ class BaseManageGroupPermissions extends React.Component {
           creatingGroup: false,
           groupDuplicateOption: this.props.groupDuplicateOption,
         });
-        console.error('Error occured in duplicating: ', err);
-        toast.error('Could not duplicate group.\nPlease try again!');
+
+        console.error('Error occurred in duplicating:', err);
+
+        // Use the actual backend message if available
+        const message =
+          err?.data?.message ||
+          err?.error ||
+          'Could not duplicate group.\nPlease try again!';
+
+        toast.error(message);
       });
   };
 

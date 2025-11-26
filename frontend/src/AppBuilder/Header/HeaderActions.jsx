@@ -11,8 +11,6 @@ import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
-
-
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
@@ -63,7 +61,6 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-
         <ButtonComponent
           size="default"
           variant="outline"
@@ -86,12 +83,11 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
             Preview
           </Link>
         </ButtonComponent>
+      )}
 
-      )
-      }
-      < Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
+      <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
-    </div >
+    </div>
   );
 };
 
