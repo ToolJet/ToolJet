@@ -14,8 +14,10 @@ describe("Profile Settings", () => {
   const avatarImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
-    apiUpdateProfile("The", "Developer");
-    common.navigateToProfile();
+    cy.apiUpdateProfile({
+      firstName: "The",
+      lastName: "Developer",
+    });
     cy.getUserIdByEmail("dev@tooljet.io").then((userId) => {
       Cypress.env("userIdDev", userId);
     });
@@ -23,13 +25,18 @@ describe("Profile Settings", () => {
 
   afterEach(() => {
     cy.apiLogin();
-    apiUpdateProfile("The", "Developer");
+    cy.apiUpdateProfile({
+      firstName: "The",
+      lastName: "Developer",
+    });
   });
 
   // neeed to reset and seed db after 1 run (as password changes will get 401 error )
   it("Should verify the elements on profile settings page and name reset functionality", () => {
-    profile.profilePageElements();
+    cy.visit("/my-workspace/profile-settings");
+    cy.wait(2000);
 
+    profile.profilePageElements();
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -69,6 +76,7 @@ describe("Profile Settings", () => {
   });
 
   it("Should verify the password reset functionality", () => {
+    common.navigateToProfile();
     cy.waitForElement(profileSelector.newPasswordField);
     cy.wait(500);
 
@@ -198,6 +206,8 @@ describe("Profile Settings", () => {
     );
 
     common.logout();
+    cy.wait(2000);
+
     cy.waitForElement(onboardingSelectors.loginPasswordInput);
     cy.wait(500);
 
