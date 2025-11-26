@@ -50,6 +50,16 @@
         "height": "36px",
         "className": "codehinter-plugins"
       },
+      "send_mail_from_name": {
+        "label": "Send mail from name",
+        "key": "send_mail_from_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter email Sender Name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
       "subject": {
         "label": "Subject",
         "key": "subject",
