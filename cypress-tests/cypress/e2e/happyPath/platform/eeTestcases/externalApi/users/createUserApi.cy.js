@@ -155,12 +155,12 @@ describe("ToolJet: User & Workspace API", () => {
         });
     });
 
-    it.skip("fails if userId is missing", () => {
-        sendApiRequest("GET", "/ext/user/").then(({ status, body }) => {
-            expect(status).to.eq(404);
-            expect(body.message).to.include("Cannot GET /api/ext/user/");
-        });
-    });
+    // it.skip("fails if userId is missing", () => {
+    //     sendApiRequest("GET", "/ext/user/").then(({ status, body }) => {
+    //         expect(status).to.eq(404);
+    //         expect(body.message).to.include("Cannot GET /api/ext/user/");
+    //     });
+    // });
 
     it("updates user details", () => {
         sendApiRequest("PATCH", `/ext/user/${userId}`, {

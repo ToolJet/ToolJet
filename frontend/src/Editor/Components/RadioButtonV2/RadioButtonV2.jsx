@@ -41,7 +41,7 @@ export const RadioButtonV2 = ({
 
   const isInitialRender = useRef(true);
 
-  const [checkedValue, setCheckedValue] = useState(findDefaultItem(schema));
+  const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);

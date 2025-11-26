@@ -464,8 +464,8 @@ Cypress.Commands.add(
 
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-                typesToDelete.includes(perm.type)
-              )
+              typesToDelete.includes(perm.type)
+            )
             : granularPermissions;
 
           permissionsToDelete.forEach((permission) => {
@@ -723,7 +723,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding(email, password, orgToken) {
+    function performOnboarding (email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
@@ -1068,5 +1068,15 @@ Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
         Cypress.env("workspaceId", org.id);
       }
     });
+  });
+});
+
+Cypress.Commands.add("apiGetDefaultWorkspace", () => {
+  return cy.apiGetWorkspaceIDs().then(workspaces => {
+    const defaultWorkspace = workspaces.find(ws => ws.is_default);
+    if (!defaultWorkspace) {
+      throw new Error('No default workspace found');
+    }
+    return defaultWorkspace;
   });
 });

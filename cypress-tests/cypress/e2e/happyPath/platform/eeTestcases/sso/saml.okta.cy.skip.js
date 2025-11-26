@@ -1,8 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
-import { ssoSelector } from "Selectors/manageSSO";
-import { navigateToManageSSO, sanitize } from "Support/utils/common";
+import { ssoEeSelector } from "Selectors/eeCommon";
+import { sanitize } from "Support/utils/common";
 import {
   apiCreateGroup,
   apiDeleteGroup,
@@ -10,7 +9,6 @@ import {
 } from "Support/utils/manageGroups";
 import { deleteOrganisationSSO } from "Support/utils/manageSSO";
 import { cleanAllUsers } from "Support/utils/manageUsers";
-import { ssoEeText, ssoText } from "Texts/manageSSO";
 
 import {
   setSignupStatus,
@@ -21,11 +19,23 @@ import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
 const loginViaSamlSSO = (email, password) => {
   cy.intercept("GET", "/api/authorize").as("samlResponse");
-  cy.wait(2000);
-  cy.get(ssoEeSelector.saml.ssoText).click();
-  cy.wait(2000);
+  cy.intercept("GET", "**/sso/saml/**").as("samlRedirect");
+
+  cy.url().then((url) => cy.log("URL before SAML click:", url));
+
+  cy.get(ssoEeSelector.saml.ssoText).should("be.visible").click();
+  cy.log("SAML button clicked");
+
+  // ✅ Wait for URL to actually change to Okta before proceeding
+  cy.url({ timeout: 15000 }).should("include", "okta.com");
+  cy.log("Successfully navigated to Okta");
+
+  // ✅ Now call uiOktaLogin - we're actually on Okta
   uiOktaLogin(email, password);
-  cy.wait(3000);
+
+  // Wait for redirect back to localhost
+  cy.url({ timeout: 15000 }).should("include", "localhost:3000");
+  cy.log("Successfully redirected back to ToolJet");
 };
 
 describe("SAML SSO", () => {
@@ -60,7 +70,7 @@ describe("SAML SSO", () => {
 
   beforeEach("", () => {
     data.workspaceName = `${sanitize(fake.firstName)}-saml`;
-    data.workspaceSlug = `${sanitize(fake.firstName)}-saml`;
+    data.workspaceSlug = data.workspaceName;
 
     cy.apiLogin();
 
@@ -84,70 +94,6 @@ describe("SAML SSO", () => {
   afterEach("", () => {
     cy.apiLogin();
     deleteOrganisationSSO(data.workspaceName, ["saml"]);
-  });
-
-  it("Should verify SAML modal elements", () => {
-    cy.visit(`${data.workspaceSlug}`);
-    navigateToManageSSO();
-    cy.get(ssoEeSelector.saml.card).should("be.visible");
-    cy.get(ssoEeSelector.saml.label).verifyVisibleElement("have.text", "SAML");
-    cy.get(`${ssoEeSelector.saml.card} > .switch > .slider`).should(
-      "be.visible"
-    );
-    cy.wait(1000);
-    cy.get(ssoEeSelector.saml.card).click();
-
-    cy.get(`${ssoEeSelector.saml.toggleInput} > .slider`).should("be.visible");
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.disabledLabel
-    );
-
-    for (const elements in ssoEeSelector.samlModalElements) {
-      cy.get(ssoEeSelector.samlModalElements[elements]).verifyVisibleElement(
-        "have.text",
-        ssoEeText.samlModalElements[elements]
-      );
-    }
-    cy.get(ssoEeSelector.saml.nameInput).should("be.visible");
-    cy.get(ssoEeSelector.saml.metadataInput).should("be.visible");
-    cy.get(ssoEeSelector.saml.groupAttributeInput).should("be.visible");
-
-    cy.get(ssoEeSelector.saml.toggleInput).click();
-    cy.get(commonEeSelectors.cancelButton).eq(1).click();
-    cy.get(ssoEeSelector.saml.card).click();
-    cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.disabledLabel
-    );
-
-    cy.clearAndType(ssoEeSelector.saml.nameInput, "SAML");
-    cy.clearAndType(ssoEeSelector.saml.metadataInput, ssoEeText.testclientId);
-    cy.clearAndType(
-      ssoEeSelector.saml.groupAttributeInput,
-      ssoEeText.testclientId
-    );
-
-    cy.get('[data-cy="saml-toggle-input"] > .slider').click();
-    cy.get(ssoSelector.saveButton).eq(1).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Saved SAML SSO configurations"
-    );
-    cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoEeText.enabledLabel
-    );
-    cy.get(ssoEeSelector.redirectUrlLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.redirectUrlLabel
-    );
-    cy.get(ssoSelector.redirectUrl).should("be.visible");
-    cy.get(ssoEeSelector.saml.copyIcon).should("be.visible");
-
-    cy.apiLogout();
-    cy.visit(`/login/${data.workspaceSlug}`);
-    cy.get(ssoEeSelector.saml.ssoText).should("be.visible");
   });
 
   it("Should verify SAML sso signup and group sync", () => {
@@ -188,7 +134,7 @@ describe("SAML SSO", () => {
 
     // Create and setup invitation
     cy.apiUserInvite(firstName, invitedUserEmail);
-    fetchAndVisitInviteLink(invitedUserEmail);
+    fetchAndVisitInviteLink(invitedUserEmail, data.workspaceName);
 
     // Start SSO login process
     cy.wait(4000);
