@@ -36,13 +36,7 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string,
-    _context?: { user?: any; app?: any },
-    _abortSignalDetails?: {
-      signal: AbortSignal | null;
-      timeoutForQuery: number | null;
-      canAbortQuery: boolean;
-    }
+    dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     let pgPool, pgConnection, checkCache, knexInstance;
 
