@@ -194,7 +194,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             if (abortController.signal.aborted) {
               reject(
                 new QueryError(
-                  'Query timed out (Before event listener)',
+                  'Query timed out',
                   `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
                   {}
                 )
@@ -204,7 +204,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             abortController.signal.addEventListener('abort', () => {
               reject(
                 new QueryError(
-                  'Query timed out (By event listener)',
+                  'Query timed out',
                   `Defined query timeout of ${queryTimeoutMs}ms exceeded when running query.`,
                   {}
                 )
