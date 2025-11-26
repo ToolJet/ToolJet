@@ -8,6 +8,13 @@ const initialState = {};
 export const createFormComponentSlice = (set, get) => ({
   ...initialState,
 
+  // Extracts base parent ID from slot IDs (e.g., 'formId-header' -> 'formId')
+  // Returns the original parentId if it's not a slot ID
+  getBaseParentId: (parentId) => {
+    if (!parentId) return null;
+    return parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
+  },
+
   isJsonSchemaInGenerateFormFrom: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
@@ -53,8 +60,9 @@ export const createFormComponentSlice = (set, get) => ({
   },
   // Updates form data section in local state only (no API call)
   // Use this when the API call is handled by a batch operation
+  // Note: Does NOT call updateContainerAutoHeight - caller should handle auto-height if needed
   updateFormDataSectionDataLocally: (componentId, data, fields, moduleId = 'canvas') => {
-    const { getComponentDefinition, updateContainerAutoHeight, getCurrentPageIndex } = get();
+    const { getComponentDefinition, getCurrentPageIndex } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return;
 
@@ -69,8 +77,6 @@ export const createFormComponentSlice = (set, get) => ({
       false,
       'updateFormDataSectionDataLocally'
     );
-
-    updateContainerAutoHeight(componentId);
   },
   getFormFields: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
@@ -101,21 +107,36 @@ export const createFormComponentSlice = (set, get) => ({
   },
 
   // Check if the parent component is a Form and delete the form fields if it has the componentId
-  checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas', skipSettingProperty = false) => {
-    const { getParentComponentType, getComponentDefinition, saveFormFields, getFormFields } = get();
+  // skipSettingProperty: if true, returns the componentId without updating (used for batching)
+  // skipSave: if true, updates local state but skips API call (for batching with other operations)
+  checkIfParentIsFormAndDeleteField: (
+    componentId,
+    moduleId = 'canvas',
+    skipSettingProperty = false,
+    { skipSave = false } = {}
+  ) => {
+    const { getParentComponentType, getComponentDefinition, saveFormFields, getFormFields, getBaseParentId } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     const parentId = componentDefinition?.component?.parent;
     if (!parentId) return;
+
+    // Handle slot IDs (e.g., formId-header, formId-footer) - extract base Form ID
+    const baseParentId = getBaseParentId(parentId);
 
     if (getParentComponentType(parentId, moduleId) === 'Form') {
       if (skipSettingProperty) {
         return componentId;
       }
-      const fields = getFormFields(parentId, moduleId);
+      const fields = getFormFields(baseParentId, moduleId);
 
       const updatedFields = fields.filter((field) => field.componentId !== componentId);
 
-      saveFormFields(parentId, updatedFields, moduleId);
+      saveFormFields(baseParentId, updatedFields, moduleId, { skipSave });
+
+      // Return the parent Form ID for batching purposes
+      if (skipSave) {
+        return baseParentId;
+      }
     }
   },
   // Check if the parent component is a Form and add the form fields
@@ -159,13 +180,8 @@ export const createFormComponentSlice = (set, get) => ({
       checkIfParentIsFormAndDeleteField,
       saveFormFields,
       getCurrentPageIndex,
+      getBaseParentId,
     } = get();
-
-    // Helper to extract base UUID from parent ID (removes slot suffixes like -header, -footer)
-    const getBaseParentId = (parentId) => {
-      if (!parentId) return null;
-      return parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
-    };
 
     const newParentType = getParentComponentType(newParentId, moduleId);
     const firstComponentId = Object.keys(componentLayouts)[0];
@@ -385,6 +401,8 @@ export const createFormComponentSlice = (set, get) => ({
       deleteComponents,
       saveComponentChanges,
       buildComponentDefinition,
+      updateContainerAutoHeight,
+      getBaseParentId,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
 
@@ -442,6 +460,29 @@ export const createFormComponentSlice = (set, get) => ({
       handleDelete();
       handleUpdate();
       const diff = await handleCreate();
+
+      // After creating components, update container auto-heights for affected parents
+      // Collect unique parent IDs from created components
+      const affectedParentIds = new Set();
+      if (operations.added) {
+        Object.values(operations.added).forEach((component) => {
+          const parentId = component.component?.parent;
+          if (parentId) {
+            affectedParentIds.add(getBaseParentId(parentId));
+          }
+        });
+      }
+
+      // Compute auto-height diffs for affected containers (without saving)
+      affectedParentIds.forEach((parentId) => {
+        const heightDiff = updateContainerAutoHeight(parentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+        if (heightDiff) {
+          upatedDiff = { ...upatedDiff, ...heightDiff };
+        }
+      });
 
       // Save all changes together if requested
       if (saveAfterAction) {

@@ -997,6 +997,9 @@ export const createComponentsSlice = (set, get) => ({
       checkIfComponentIsModule,
       clearModuleFromStore,
       getShouldFreeze,
+      performBatchComponentOperations,
+      getComponentDefinition,
+      getCurrentPageIndex,
     } = get();
     const shouldFreeze = getShouldFreeze();
     const currentPageId = getCurrentPageId(moduleId);
@@ -1009,6 +1012,7 @@ export const createComponentsSlice = (set, get) => ({
     const toDeleteComponents = [];
     const toDeleteEvents = [];
     const allComponents = getCurrentPageComponents(moduleId);
+    const affectedFormIds = new Set(); // Track which Forms need their fields updated
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -1026,7 +1030,15 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     _selectedComponents.forEach((componentId) => {
-      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      // Update form fields locally but skip the API call - we'll batch it
+      if (!skipFormUpdate) {
+        const formId = checkIfParentIsFormAndDeleteField(componentId, moduleId, false, {
+          skipSave: saveAfterAction,
+        });
+        if (formId) {
+          affectedFormIds.add(formId);
+        }
+      }
       findAllChildComponents(componentId);
     });
 
@@ -1078,33 +1090,73 @@ export const createComponentsSlice = (set, get) => ({
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
         state.eventsSlice.module[moduleId].events = filteredEvents;
-
-        if (saveAfterAction) {
-          saveComponentChanges(toDeleteComponents, 'components', 'delete', moduleId)
-            .then(() => {
-              get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
-              // Show delete toast message
-              if (!isCut) {
-                const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
-                const isMac = platform.toLowerCase().indexOf('mac') > -1;
-                const deleteMsg =
-                  toDeleteComponents.length && toDeleteComponents.length > 1
-                    ? `Selected components deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`
-                    : `Component deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`;
-                toast(deleteMsg, {
-                  icon: '🗑️',
-                });
-              }
-            })
-            .catch((error) => {
-              toast.error('App could not be saved.');
-              console.error('Error saving component changes:', error);
-            });
-        }
       }, skipUndoRedo),
       false,
       'deleteComponents'
     );
+
+    // Handle save after state update
+    if (saveAfterAction) {
+      const showToast = () => {
+        if (!isCut) {
+          const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+          const isMac = platform.toLowerCase().indexOf('mac') > -1;
+          const deleteMsg =
+            toDeleteComponents.length && toDeleteComponents.length > 1
+              ? `Selected components deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`
+              : `Component deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`;
+          toast(deleteMsg, {
+            icon: '🗑️',
+          });
+        }
+      };
+
+      // If Forms were affected, use batch operation to combine delete + form update
+      if (affectedFormIds.size > 0) {
+        // Build the form update diff
+        const currentPageIndex = getCurrentPageIndex(moduleId);
+        const formUpdateDiff = {};
+        affectedFormIds.forEach((formId) => {
+          const formComponent = get().modules[moduleId].pages[currentPageIndex].components[formId]?.component;
+          if (formComponent) {
+            const { events, exposedVariables, ...filteredDefinition } = formComponent.definition || {};
+            formUpdateDiff[formId] = {
+              component: {
+                ...formComponent,
+                definition: filteredDefinition,
+              },
+            };
+          }
+        });
+
+        performBatchComponentOperations(
+          {
+            updated: Object.keys(formUpdateDiff).length > 0 ? formUpdateDiff : undefined,
+            deleted: toDeleteComponents,
+          },
+          moduleId
+        )
+          .then(() => {
+            get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
+            showToast();
+          })
+          .catch((error) => {
+            toast.error('App could not be saved.');
+            console.error('Error saving component changes:', error);
+          });
+      } else {
+        // No Forms affected, use regular delete endpoint
+        saveComponentChanges(toDeleteComponents, 'components', 'delete', moduleId)
+          .then(() => {
+            get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
+            showToast();
+          })
+          .catch((error) => {
+            toast.error('App could not be saved.');
+            console.error('Error saving component changes:', error);
+          });
+      }
+    }
 
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName, moduleId);
@@ -1916,10 +1968,10 @@ export const createComponentsSlice = (set, get) => ({
 
   getParentComponentType: (parentId, moduleId) => {
     if (!parentId) return null;
-    const { modules, getCurrentPageIndex } = get();
+    const { modules, getCurrentPageIndex, getBaseParentId } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     // Remove the tab id or any other details from the parent id (ie, -modal, -calendar, -0 from parentId)
-    const parentUUID = parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
+    const parentUUID = getBaseParentId(parentId);
     const component = modules[moduleId].pages[currentPageIndex].components[parentUUID];
     if (!component) return null;
 
