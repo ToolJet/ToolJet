@@ -1,0 +1,240 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Authorize.Net datasource",
+  "description": "A schema defining Authorize.Net datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "chargeCreditCard"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "chargeCreditCard", "name": "Charge a Credit Card" },
+        { "value": "authorizeCreditCard", "name": "Authorize a Credit Card" },
+        { "value": "captureAuthorizedAmount", "name": "Capture a Previously Authorized Amount" },
+        { "value": "refundTransaction", "name": "Refund a Transaction" },
+        { "value": "voidTransaction", "name": "Void a Transaction" },
+        { "value": "chargeCustomerProfile", "name": "Charge a Customer Profile" },
+        { "value": "createCustomerProfile", "name": "Create a Customer Profile" },
+        { "value": "getCustomerProfile", "name": "Get Customer Profile" },
+        { "value": "getCustomerProfileIds", "name": "Get Customer Profile IDs" },
+        { "value": "updateCustomerProfile", "name": "Update Customer Profile" },
+        { "value": "deleteCustomerProfile", "name": "Delete Customer Profile" },
+        { "value": "createCustomerPaymentProfile", "name": "Create Customer Payment Profile" },
+        { "value": "getCustomerPaymentProfile", "name": "Get Customer Payment Profile" },
+        { "value": "validateCustomerPaymentProfile", "name": "Validate Customer Payment Profile" },
+        { "value": "updateCustomerPaymentProfile", "name": "Update Customer Payment Profile" },
+        { "value": "deleteCustomerPaymentProfile", "name": "Delete Customer Payment Profile" },
+        { "value": "createCustomerProfileFromTransaction", "name": "Create Customer Profile from Transaction" }
+      ]
+    },
+    "chargeCreditCard": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for charging a credit card",
+        "placeholder": "{\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\",\n  \"cardCode\": \"123\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the transaction details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "authorizeCreditCard": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for authorizing a credit card",
+        "placeholder": "{\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\",\n  \"cardCode\": \"123\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the authorization details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "captureAuthorizedAmount": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for capturing a previously authorized amount",
+        "placeholder": "{\n  \"transactionId\": \"12345678\",\n  \"amount\": \"5.00\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the capture details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "refundTransaction": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for refunding a transaction",
+        "placeholder": "{\n  \"transactionId\": \"12345678\",\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"1111\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the refund details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "voidTransaction": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for voiding a transaction",
+        "placeholder": "{\n  \"transactionId\": \"12345678\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the transaction ID as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "chargeCustomerProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for charging a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\",\n  \"amount\": \"5.00\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile charge details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "createCustomerProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer profile",
+        "placeholder": "{\n  \"email\": \"customer@example.com\",\n  \"description\": \"Customer Name\",\n  \"merchantCustomerId\": \"12345\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "getCustomerProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile ID as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "getCustomerProfileIds": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting customer profile IDs (optional)",
+        "placeholder": "{}",
+        "height": "300px",
+        "mandatory": false,
+        "tooltip": "Optionally provide parameters as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "updateCustomerProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for updating a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"email\": \"newemail@example.com\",\n  \"description\": \"Updated Name\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the updated customer profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "deleteCustomerProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for deleting a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile ID as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "createCustomerPaymentProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the payment profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "getCustomerPaymentProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the profile IDs as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "validateCustomerPaymentProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for validating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\",\n  \"validationMode\": \"testMode\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the validation details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "updateCustomerPaymentProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for updating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2026-12\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the updated payment profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "deleteCustomerPaymentProfile": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for deleting a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the profile IDs as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "createCustomerProfileFromTransaction": {
+      "requestBody": {
+        "label": "Request Body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer profile from a transaction",
+        "placeholder": "{\n  \"transactionId\": \"12345678\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the transaction ID as JSON. See Authorize.Net documentation for complete request format."
+      }
+    }
+  }
+}
