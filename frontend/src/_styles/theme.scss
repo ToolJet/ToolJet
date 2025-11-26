@@ -304,11 +304,11 @@ button {
 }
 
 .rc-slider-track {
-  background-color: $primary;
+  background-color: $primary !important;
 }
 
 .rc-slider-handle {
-  border-color: $primary;
+  border-color: $primary !important;
 }
 
 .auth-main {
