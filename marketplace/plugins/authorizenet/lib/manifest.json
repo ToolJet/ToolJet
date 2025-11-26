@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Authorize.Net datasource",
+  "description": "A schema defining Authorize.Net datasource",
+  "type": "api",
+  "source": {
+    "name": "Authorize.Net",
+    "kind": "authorizenet",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiLoginId": {
+        "type": "string",
+        "encrypted": true
+      },
+      "transactionKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "environment": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "environment": {
+      "value": "sandbox"
+    }
+  },
+  "properties": {
+    "apiLoginId": {
+      "label": "API Login ID",
+      "key": "apiLoginId",
+      "type": "codehinter",
+      "description": "Your Authorize.Net API Login ID",
+      "hint": "Find your API Login ID in the Authorize.Net merchant interface under Account > Settings > API Credentials & Keys",
+      "validate": {
+        "required": true
+      }
+    },
+    "transactionKey": {
+      "label": "Transaction Key",
+      "key": "transactionKey",
+      "type": "codehinter",
+      "description": "Your Authorize.Net Transaction Key",
+      "hint": "Generate a Transaction Key in the Authorize.Net merchant interface under Account > Settings > API Credentials & Keys",
+      "validate": {
+        "required": true
+      }
+    },
+    "environment": {
+      "label": "Environment",
+      "key": "environment",
+      "type": "dropdown",
+      "description": "Select the API environment",
+      "list": [
+        {
+          "label": "Sandbox [https://apitest.authorize.net]",
+          "value": "sandbox"
+        },
+        {
+          "label": "Production [https://api.authorize.net]",
+          "value": "production"
+        }
+      ]
+    }
+  },
+  "required": ["apiLoginId", "transactionKey"]
+}
