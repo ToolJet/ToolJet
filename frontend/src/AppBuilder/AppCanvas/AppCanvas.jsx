@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
@@ -24,8 +24,11 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { DragResizeGhostWidget } from './GhostWidgets';
-import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
+
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -124,8 +127,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -229,7 +232,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       id="main-editor-canvas"
       onMouseUp={handleCanvasContainerMouseUp}
     >
-      <AppCanvasBanner appId={appId} />
+      {currentMode === 'edit' && (
+        <Suspense fallback={null}>
+          <AppCanvasBanner appId={appId} />
+        </Suspense>
+      )}
       <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
         <div
           ref={canvasContainerRef}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo, Suspense, lazy } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -36,8 +36,10 @@ import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanv
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
-import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const MentionComponentInChat = lazy(() => import('../ConfigHandle/MentionComponentInChat'));
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -230,7 +232,9 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
       >
         <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
-        <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+        <Suspense fallback={null}>
+          <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+        </Suspense>
         {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <img
@@ -537,9 +541,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             const _top = originalBox.top;
 
             // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
-              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
           }
         });
 
@@ -735,9 +738,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
-            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
-              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }

@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import { OverlayTrigger, Navbar, Offcanvas } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
-import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import HeaderActions from '@/AppBuilder/Header/HeaderActions';
-import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
+// import { AppEnvironments } from '@/modules/Appbuilder/components';
+// import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
+// Lazy load editor-only components to reduce viewer bundle size
+const AppVersionsManager = lazy(() =>
+  import('@/AppBuilder/Header/AppVersionsManager').then((m) => ({ default: m.AppVersionsManager }))
+);
+const AppEnvironments = lazy(() =>
+  import('@/modules/Appbuilder/components').then((m) => ({ default: m.AppEnvironments }))
+);
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
@@ -35,11 +42,11 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           Preview settings
         </span>
         {editingVersion && appType !== 'module' && (
-          <>
+          <Suspense fallback={null}>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} />
-          </>
+          </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
           <HeaderActions showToggleLayoutBtn darkMode={darkMode} showPreviewBtn={false} />
@@ -88,7 +95,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           {previewNavbar && (
             <Offcanvas.Body>
               {appType !== 'module' && (
-                <>
+                <Suspense fallback={null}>
                   <span style={{ marginTop: '4px' }}>
                     <AppEnvironments darkMode={darkMode} />
                   </span>
@@ -96,7 +103,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                   <span>
                     <AppVersionsManager darkMode={darkMode} />
                   </span>
-                </>
+                </Suspense>
               )}
 
               <div

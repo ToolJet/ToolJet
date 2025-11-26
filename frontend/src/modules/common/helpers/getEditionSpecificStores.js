@@ -1,39 +1,24 @@
 import { fetchEdition } from './utils';
+import * as ceStores from '@/modules/_store';
+import * as eeStores from '@ee/modules/_store';
 
-/**
- * Dynamically loads edition-specific stores.
- * Uses dynamic imports to avoid bundling all EE stores.
- *
- * @param {string} moduleName - The module name
- * @param {string} storeName - The store name to load
- * @returns {Promise<Object>} The store object
- */
+const storeRegistry = {
+  ee: eeStores,
+  cloud: eeStores,
+  ce: ceStores,
+};
+
 const getEditionSpecificStore = async (moduleName, storeName) => {
   const edition = fetchEdition();
 
   try {
-    // For CE, load from CE modules
-    if (edition === 'ce') {
-      const ceStores = await import('@/modules/_store');
-      return ceStores?.stores?.[storeName];
-    }
-
-    // For EE/Cloud, dynamically load EE stores
-    const editionPath = edition === 'ee' ? '@ee' : '@cloud';
-    const eeStores = await import(
-      /* webpackChunkName: "store-[request]" */
-      /* webpackMode: "lazy" */
-      `${editionPath}/modules/_store`
-    );
-
-    return eeStores?.stores?.[storeName];
+    let editionStores = storeRegistry[edition] || storeRegistry.ce;
+    return editionStores?.stores?.[storeName];
   } catch (error) {
     console.error(`Error loading store ${storeName} from ${edition} edition for module ${moduleName}:`, error);
-
-    // Fallback to CE store
+    // Fallback to module-specific common store if edition-specific store fails
     try {
-      const ceStores = await import('@/modules/_store');
-      return ceStores[moduleName]?.stores?.[storeName];
+      return storeRegistry.ce[moduleName]?.stores?.[storeName];
     } catch (fallbackError) {
       console.error('Fallback to module-specific common store failed:', fallbackError);
       throw error;

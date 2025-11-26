@@ -54,19 +54,28 @@ import { Steps } from '@/AppBuilder/Widgets/Steps';
 import { TreeSelect } from '@/AppBuilder/Widgets/TreeSelect';
 import { Icon } from '@/AppBuilder/Widgets/Icon';
 import { Link } from '@/AppBuilder/Widgets/Link/Link';
-// import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { BoundedBox } from '@/AppBuilder/Widgets/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
+
+import { Form } from '@/AppBuilder/Widgets/Form/Form';
+import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
 import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
-import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
-import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
-import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
+
 import { Chat } from '@/AppBuilder/Widgets/Chat';
+import { lazy } from 'react';
+
+// Lazy load module components to reduce viewer bundle size
+const ModuleContainer = lazy(() =>
+  import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainer }))
+);
+const ModuleViewer = lazy(() =>
+  import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer }))
+);
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -96,8 +105,6 @@ export const AllComponents = {
   NumberInput,
   Table,
   TextArea,
-  Container,
-  Tabs,
   RichTextEditor,
   DropDown,
   DropdownV2,
@@ -109,8 +116,6 @@ export const AllComponents = {
   TimePicker,
   Multiselect,
   MultiselectV2,
-  Modal,
-  ModalV2,
   Chart,
   Map: MapComponent,
   QrScanner,
@@ -124,10 +129,8 @@ export const AllComponents = {
   EmailInput,
   PhoneInput,
   CurrencyInput,
-  Calendar,
   IFrame,
   CodeEditor,
-  Listview,
   Timer,
   Statistics,
   Pagination,
@@ -144,18 +147,24 @@ export const AllComponents = {
   VerticalDivider,
   ColorPicker,
   KanbanBoard,
-  Kanban,
   Steps,
   TreeSelect,
   Link,
   Icon,
-  Form,
   BoundedBox,
   ToggleSwitchV2,
   Chat,
+  PopoverMenu,
+  Form,
+  Calendar,
+  Container,
+  Listview,
+  Tabs,
+  Kanban,
+  Modal,
+  ModalV2,
   ModuleContainer,
   ModuleViewer,
-  PopoverMenu,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);
@@ -351,7 +360,6 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${
-    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-  }px)`;
+  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+    }px)`;
 };

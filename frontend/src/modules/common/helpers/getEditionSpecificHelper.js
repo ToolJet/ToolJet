@@ -2,58 +2,64 @@
 // src/modules/common/helpers/getEditionSpecificHelper.js
 import { fetchEdition } from './utils';
 
-/**
- * Dynamically loads edition-specific helper modules.
- * Uses dynamic imports to avoid bundling all EE helpers.
- *
- * Note: For posthog and hubspot, EE uses CE implementation (no separate EE version).
- * Only Cloud edition has custom implementations.
- *
- */
+// Static imports for all possible modules
+// import * as commonWhiteLabelling from '@/modules/common/helpers/whiteLabelling';
+// import * as eeWhiteLabelling from '@ee/modules/helpers/whiteLabelling';
+// import * as cloudWhiteLabelling from '@cloud/modules/helpers/whiteLabelling';
+import * as posthog from '@/modules/common/helpers/posthog';
+import * as posthogCloud from '@ee/modules/common/helpers/posthog';
+import * as hubspot from '@/modules/common/helpers/hubspot';
+import * as hubspotCloud from '@ee/modules/common/helpers/hubspot';
+
+// Map of all helpers
+const helperModules = {
+  //Doesn't work..
+
+  // whiteLabelling: {
+  //   ce: commonWhiteLabelling,
+  //   ee: eeWhiteLabelling,
+  //   cloud: eeWhiteLabelling, // Treat cloud as enterprise edition for now
+  //   /* Can uncomment this once the cloud sub-module is ready */
+  //   // cloud: cloudWhiteLabelling,
+  // },
+  posthog: {
+    ce: posthog,
+    ee: posthog, //no posthog for ee
+    cloud: posthogCloud,
+  },
+  hubspot: {
+    ce: hubspot,
+    ee: hubspot, //no hubspot for ee
+    cloud: hubspotCloud,
+  },
+  // Add other helpers here in the same structure
+};
+
 export const getEditionSpecificHelper = async (helperName) => {
   const edition = fetchEdition();
 
   try {
-    // For posthog and hubspot, EE uses CE implementation
-    const usesCEForEE = ['posthog', 'hubspot'].includes(helperName);
-
-    if (edition === 'ce' || (edition === 'ee' && usesCEForEE)) {
-      // Load CE helper
-      const ceHelper = await import(
-        /* webpackChunkName: "helper-ce-[request]" */
-        /* webpackMode: "lazy" */
-        `@/modules/common/helpers/${helperName}`
-      );
-      return ceHelper;
+    // Get the specific helper module map
+    const helperMap = helperModules[helperName];
+    if (!helperMap) {
+      throw new Error(`No helper found for ${helperName}`);
     }
 
-    // For Cloud edition, try to load Cloud-specific helper
-    if (edition === 'cloud') {
-      try {
-        const cloudHelper = await import(
-          /* webpackChunkName: "helper-cloud-[request]" */
-          /* webpackMode: "lazy" */
-          `@ee/modules/common/helpers/${helperName}`
-        );
+    // Get the edition-specific implementation
+    const editionUtils = helperMap[edition];
 
-        // Check if we got the empty module (from webpack replacement)
-        if (cloudHelper?.name === 'Empty Module') {
-          console.log('Received empty module, falling back to common helper');
-          const ceHelper = await import(`@/modules/common/helpers/${helperName}`);
-          return ceHelper;
-        }
-
-        return cloudHelper;
-      } catch (error) {
-        console.warn(`Cloud helper ${helperName} not found, falling back to CE:`, error.message);
-        const ceHelper = await import(`@/modules/common/helpers/${helperName}`);
-        return ceHelper;
-      }
+    // Check if we got the empty module (from webpack replacement)
+    if (editionUtils?.name === 'Empty Module') {
+      console.log('Received empty module, falling back to common helper');
+      return helperMap.ce;
     }
 
-    // Default fallback to CE
-    const ceHelper = await import(`@/modules/common/helpers/${helperName}`);
-    return ceHelper;
+    if (editionUtils && typeof editionUtils === 'object') {
+      return editionUtils;
+    }
+
+    // Fallback to CE version if edition-specific not found
+    return helperMap.ce;
   } catch (error) {
     console.error(`Error loading helper ${helperName}:`, error);
     throw error;

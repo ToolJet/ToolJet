@@ -1,20 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense, lazy } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
-import SolidIcon from '@/_ui/Icon/solidIcons/index';
-import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
-import MentionComponentInChat from './MentionComponentInChat';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
-import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -111,21 +110,21 @@ export const ConfigHandle = ({
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-        background: 'var(--interactive-selected)',
-        color: 'var(--text-default)',
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      }
+      background: 'var(--interactive-selected)',
+      color: 'var(--text-default)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    }
     : {
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      };
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    };
   if (isDynamicHeightEnabled) {
     getConfigHandleButtonStyle.background = '#9747FF';
     getConfigHandleButtonStyle.color = 'var(--text-inverse)';
@@ -179,8 +178,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-22px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-22px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -227,7 +226,11 @@ export const ConfigHandle = ({
         )}
         <span>{componentName}</span>
       </ConfigHandleButton>
-      {!isMultipleComponentsSelected && !shouldFreeze && <MentionComponentInChat componentName={componentName} />}
+      {!isMultipleComponentsSelected && !shouldFreeze && (
+        <Suspense fallback={null}>
+          <MentionComponentInChat componentName={componentName} />
+        </Suspense>
+      )}
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => setComponentToInspect(componentName)}
