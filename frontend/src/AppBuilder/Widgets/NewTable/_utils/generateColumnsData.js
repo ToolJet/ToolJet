@@ -41,7 +41,7 @@ export default function generateColumnsData({
   t,
 }) {
   const getResolvedValue = useStore.getState().getResolvedValue;
-  const getEditedRowFromIndex = useTableStore.getState().getEditedRowFromIndex;
+  const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   if (!columnProperties) return [];
 
@@ -119,14 +119,12 @@ export default function generateColumnsData({
         cell: ({ cell, row }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
-            : getEditedRowFromIndex(id, row.index);
-
+            : getEditedFieldsOnIndex(id, row.index);
           let cellValue = changeSet
             ? changeSet[cell.column.columnDef?.accessorKey] ?? cell.getValue()
             : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
-
           switch (columnType) {
             case 'string':
             case undefined:

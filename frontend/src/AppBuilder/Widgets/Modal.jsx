@@ -373,6 +373,8 @@ const Component = ({ children, ...restProps }) => {
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {!hideTitleBar && (

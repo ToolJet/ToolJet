@@ -78,7 +78,7 @@ export const CurrencyInput = (props) => {
   const isInitialRender = useRef(true);
   const computedStyles = {
     height: '100%',
-    borderRadius: `${borderRadius}px`,
+    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -105,8 +105,6 @@ export const CurrencyInput = (props) => {
     padding: '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    borderBottomLeftRadius: '0px',
-    borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
 

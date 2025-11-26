@@ -1,25 +1,20 @@
 # Code owners for specific package.json and package-lock.json files
-/server/package.json @shah21 @gsmithun4 @adishm98
-/server/package-lock.json @shah21 @gsmithun4 @adishm98
+/server/* @gsmithun4 @shah21 @akshaysasidrn
 
-/frontend/package.json @shah21 @gsmithun4 @adishm98
-/frontend/package-lock.json @shah21 @gsmithun4 @adishm98
+/frontend/* @johnsoncherian @kavinvenkatachalam
 
-/marketplace/package.json @shah21 @gsmithun4 @adishm98
-/marketplace/package-lock.json @shah21 @gsmithun4 @adishm98
+/marketplace/* @ganesh8056 @gsmithun4
 
-/cypress/package.json @shah21 @gsmithun4 @adishm98
-/cypress/package-lock.json @shah21 @gsmithun4 @adishm98
+/cypress/* @emidhun @ajith-k-v @Mekhla-Asopa
+/plugins/* @ganesh8056 @gsmithun4
 
-/plugins/package.json @shah21 @gsmithun4 @adishm98
-/plugins/package-lock.json @shah21 @gsmithun4 @adishm98
+.github/workflows/ @adishm98 @slancerk
+/docker/* @adishm98 @slancerk
+/deploy/* @adishm98 @slancerk
 
-/package.json @shah21 @gsmithun4 @adishm98
-/package-lock.json @shah21 @gsmithun4 @adishm98
+# Code owners for specific files
+**/module.ts @gsmithun4
 
-# Code owners for all module.ts files
-**/module.ts @shah21 @gsmithun4
-
-# Server migration directories
-/server/migrations/* @shah21 @gsmithun4
-/server/data-migrations/* @shah21 @gsmithun4
+# Code owners for specific directories
+/server/migrations/* @gsmithun4
+/server/data-migrations/* @gsmithun4

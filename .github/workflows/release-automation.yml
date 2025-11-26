@@ -1,0 +1,395 @@
+name: Release Automation
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    # Uncomment the line below to also trigger on lts-3.16 branch
+    # branches: [main, lts-3.16]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+jobs:
+  release-automation:
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      contains(github.event.pull_request.title, '|') &&
+      contains(github.event.pull_request.title, '[') &&
+      contains(github.event.pull_request.title, ']')
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.extract-version.outputs.version }}
+      tag: ${{ steps.create-tag.outputs.tag }}
+      release_notes: ${{ steps.generate-notes.outputs.release_notes }}
+
+    steps:
+      - name: Extract Branch Name and Base Branch
+        run: |
+          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
+      - name: Merge PR in ee-server (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-server PR: #$PR targeting $BASE_BRANCH"
+            gh pr merge -R ToolJet/ee-server "$PR" --merge --admin
+          else
+            echo "No open ee-server PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR in ee-frontend (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --base "$BASE_BRANCH" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-frontend PR: #$PR targeting $BASE_BRANCH"
+            gh pr merge -R ToolJet/ee-frontend "$PR" --merge --admin
+          else
+            echo "No open ee-frontend PR for branch $BRANCH_NAME targeting $BASE_BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for submodule merges to complete
+        run: |
+          echo "Waiting for submodule merges to complete..."
+          sleep 30
+
+      - name: Extract Version from PR Title
+        id: extract-version
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $TITLE"
+          
+          # Extract the complete tag from text after | character
+          if [[ "$TITLE" =~ \|.*\[([^]]+)\] ]]; then
+            TAG="${BASH_REMATCH[1]}"
+            echo "Extracted tag: $TAG"
+            echo "version=$TAG" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No valid tag format found in PR title"
+            echo "Expected format: 'some text | [tag]'"
+            echo "Examples: 'platform release | [v3.16-beta.1]' or 'hotfix | [v3.16.18-lts]'"
+            exit 1
+          fi
+
+      - name: Checkout Repository
+        if: steps.extract-version.outputs.version != ''
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "adish.madhu@gmail.com"
+
+      - name: Create Version Bump Branch
+        id: create-branch
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          # Create branch name using tag without special characters
+          CLEAN_TAG=$(echo "$TAG" | sed 's/[^a-zA-Z0-9.-]//g')
+          BRANCH_NAME="version-bump-$CLEAN_TAG-$(date +%s)"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          git checkout -b "$BRANCH_NAME"
+
+      - name: Update Version Files
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          # Remove 'v' prefix for .version files if present
+          VERSION="${TAG#v}"
+          
+          # Update all three .version files
+          echo "$VERSION" > .version
+          echo "$VERSION" > server/.version
+          echo "$VERSION" > frontend/.version
+          
+          echo "Updated all .version files to: $VERSION (from tag: $TAG)"
+          echo "Files updated:"
+          echo "  - ./.version"
+          echo "  - ./server/.version"
+          echo "  - ./frontend/.version"
+
+
+      - name: Update Submodules to Latest
+        run: |
+          echo "Updating submodules to latest commits..."
+          
+          # Determine which branch to use for submodules
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          # For main branch, use main in submodules
+          # For lts-3.16 branch, use lts-3.16 in submodules (when enabled)
+          if [ "$BASE_BRANCH" = "lts-3.16" ]; then
+            SUBMODULE_BRANCH="lts-3.16"
+          else
+            SUBMODULE_BRANCH="main"
+          fi
+          
+          echo "Base branch: $BASE_BRANCH"
+          echo "Using submodule branch: $SUBMODULE_BRANCH"
+          
+          # Get latest commit SHAs from submodule repositories
+          echo "Fetching latest commit from ToolJet/ee-frontend:$SUBMODULE_BRANCH"
+          FRONTEND_SHA=$(gh api repos/ToolJet/ee-frontend/branches/$SUBMODULE_BRANCH --jq '.commit.sha' || gh api repos/ToolJet/ee-frontend/branches/main --jq '.commit.sha')
+          echo "Frontend SHA: $FRONTEND_SHA"
+          
+          echo "Fetching latest commit from ToolJet/ee-server:$SUBMODULE_BRANCH"
+          SERVER_SHA=$(gh api repos/ToolJet/ee-server/branches/$SUBMODULE_BRANCH --jq '.commit.sha' || gh api repos/ToolJet/ee-server/branches/main --jq '.commit.sha')
+          echo "Server SHA: $SERVER_SHA"
+          
+          # Update submodule pointers to specific commit SHAs
+          cd frontend/ee
+          git fetch origin
+          git checkout "$FRONTEND_SHA"
+          cd ../..
+          
+          cd server/ee
+          git fetch origin
+          git checkout "$SERVER_SHA"
+          cd ../..
+          
+          # Check if there are any changes
+          if ! git diff --quiet .version server/.version frontend/.version frontend/ee server/ee; then
+            echo "Changes detected in version files and/or submodules"
+          else
+            echo "No changes detected"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Changes
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          VERSION="${TAG#v}"  # Remove 'v' prefix for display
+          git add .version server/.version frontend/.version frontend/ee server/ee
+          
+          # Only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "Version bump to $TAG
+          
+          - Update .version files to $VERSION
+          - Update submodules to latest commit SHA
+
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Create Version Bump PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.create-branch.outputs.branch_name }}
+          title: "Version bump to ${{ steps.extract-version.outputs.version }}"
+          body: |
+            ## Version Bump to ${{ steps.extract-version.outputs.version }}
+            
+            This PR updates the version files and submodules for the release version ${{ steps.extract-version.outputs.version }}.
+            
+            ### Changes:
+            - ✅ Updated `.version` files (root, server, frontend) to `${{ steps.extract-version.outputs.version }}`
+            - ✅ Updated submodules to latest commits
+            
+            ### Auto-generated
+            This PR was automatically created by the release automation workflow.
+            
+          base: ${{ github.event.pull_request.base.ref }}
+          # When lts-3.16 is enabled, this will use the correct base branch
+
+      - name: Auto-merge Version Bump PR
+        if: steps.create-pr.outputs.pull-request-number != ''
+        run: |
+          PR_NUMBER="${{ steps.create-pr.outputs.pull-request-number }}"
+          echo "Auto-merging version bump PR #$PR_NUMBER"
+          
+          # Wait a moment for PR to be fully created
+          sleep 10
+          
+          # Merge the PR
+          gh pr merge "$PR_NUMBER" --squash --admin
+          
+          # Wait for merge to complete
+          sleep 10
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Updated Base Branch
+        run: |
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "$BASE_BRANCH"
+          git checkout "$BASE_BRANCH"
+          git pull origin "$BASE_BRANCH"
+
+      - name: Create Git Tag
+        id: create-tag
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          # Determine correct branch for tag creation based on tag type
+          if [[ "$TAG" == *"lts"* ]]; then
+            TARGET_BRANCH="lts-3.16"
+            echo "LTS tag detected - creating tag from lts-3.16 branch"
+          elif [[ "$TAG" == *"beta"* ]]; then
+            TARGET_BRANCH="main"
+            echo "Beta tag detected - creating tag from main branch"
+          else
+            # Default to the base branch of the PR
+            TARGET_BRANCH="$BASE_BRANCH"
+            echo "Using PR base branch: $TARGET_BRANCH"
+          fi
+          
+          echo "Creating tag: $TAG from branch: $TARGET_BRANCH in base repo and submodules"
+          
+          # Ensure we're on the correct branch and it's up to date
+          git fetch origin "$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH"
+          
+          # Create and push the tag in the base repository
+          echo "Creating tag in base repository..."
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          
+          # Create tags in submodules
+          echo "Creating tag in ee-frontend submodule..."
+          cd frontend/ee
+          git fetch origin
+          if [[ "$TAG" == *"lts"* ]]; then
+            git checkout lts-3.16 2>/dev/null || git checkout main
+          else
+            git checkout main
+          fi
+          git pull origin HEAD
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          cd ../..
+          
+          echo "Creating tag in ee-server submodule..."
+          cd server/ee
+          git fetch origin
+          if [[ "$TAG" == *"lts"* ]]; then
+            git checkout lts-3.16 2>/dev/null || git checkout main
+          else
+            git checkout main
+          fi
+          git pull origin HEAD
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          cd ../..
+          
+          echo "Tags created successfully in all repositories"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate Release Notes
+        id: generate-notes
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          
+          echo "Current tag: $TAG"
+          echo "Previous tag: $PREVIOUS_TAG"
+          
+          # Generate release notes using GitHub's auto-generation
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            NOTES=$(gh api --method POST /repos/ToolJet/ToolJet/releases/generate-notes \
+              -f tag_name="$TAG" \
+              -f previous_tag_name="$PREVIOUS_TAG" \
+              -f target_commitish="$BASE_BRANCH" \
+              --jq '.body')
+          else
+            NOTES="Initial release version $TAG"
+          fi
+          
+          # Set multiline output
+          {
+            echo 'release_notes<<EOF'
+            echo "$NOTES"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Slack Notification
+        if: steps.generate-notes.outputs.release_notes != ''
+        run: |
+          TAG="${{ steps.extract-version.outputs.version }}"
+          REPO_URL="https://github.com/ToolJet/ToolJet/releases/tag/$TAG"
+          
+          # Create simplified Slack message
+          SLACK_MESSAGE="🚀 New Release: $TAG
+          
+          Tag: $TAG
+          
+          A new release has been created and is ready for testing.
+          
+          Release: $REPO_URL
+          
+          Please test thoroughly before promotion."
+          
+          # Send to Slack (using webhook URL from secrets)
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$SLACK_MESSAGE\"}" \
+              "${{ secrets.SLACK_WEBHOOK_URL }}"
+            echo "✅ Slack notification sent successfully"
+          else
+            echo "⚠️ SLACK_WEBHOOK_URL secret not configured - skipping notification"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.create-tag.outputs.tag != ''
+        run: |
+          TAG="${{ steps.create-tag.outputs.tag }}"
+          
+          # Determine if this is a pre-release based on tag content
+          if [[ "$TAG" == *"beta"* ]]; then
+            PRERELEASE_FLAG="--prerelease"
+            NOTES_PREFIX="Pre-release version $TAG for testing purposes."
+          elif [[ "$TAG" == *"lts"* ]]; then
+            PRERELEASE_FLAG=""
+            NOTES_PREFIX="LTS release version $TAG."
+          else
+            PRERELEASE_FLAG="--prerelease"
+            NOTES_PREFIX="Release version $TAG."
+          fi
+          
+          gh release create "$TAG" \
+            --title "Release $TAG" \
+            --generate-notes \
+            $PRERELEASE_FLAG \
+            --notes "$NOTES_PREFIX Please test thoroughly before promotion."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## 🎉 Release Automation Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Completed Tasks:" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Extracted version: \`${{ steps.extract-version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Updated .version file" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Updated submodules to latest commits" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Created and merged version bump PR" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Created git tag: \`${{ steps.create-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Generated release notes" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Sent Slack notification" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Created GitHub release" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Links:" >> $GITHUB_STEP_SUMMARY
+          echo "- [Tag](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.create-tag.outputs.tag }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Release](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.create-tag.outputs.tag }})" >> $GITHUB_STEP_SUMMARY

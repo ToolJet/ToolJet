@@ -16,6 +16,9 @@ jobs:
     name: packer-ee
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Checkout code to lts-3.16 branch
         if: contains(github.event.release.tag_name, '-lts')
         uses: actions/checkout@v2
@@ -61,7 +64,7 @@ jobs:
       # Dynamically update setup_machine.sh with PAT
       - name: Validate PAT
         run: |
-          sed -i "s|git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"|git config --global url."https://x-access-token:${ secrets.CUSTOM_GITHUB_TOKEN }@github.com/".insteadOf "https://github.com/"|g" ./deploy/ec2/ee/setup_machine.sh
+          sed -i "s|CUSTOM_GITHUB_TOKEN|${{ secrets.CUSTOM_GITHUB_TOKEN }}|g" ./deploy/ec2/ee/setup_machine.sh
 
       # build artifact
       - name: Build Artifact
@@ -78,9 +81,9 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu-jammy\`"
+            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
           else
-            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu-jammy\`"
+            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

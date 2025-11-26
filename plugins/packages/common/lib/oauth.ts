@@ -207,6 +207,7 @@ function fetchEnvVariables(pluginKind, keyAppend) {
   const dataSourcePrefix = {
     googlecalendar: 'GOOGLE',
     snowflake: 'SNOWFLAKE',
+    microsoft_graph: 'MICROSOFT',
   };
   const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
   return key;

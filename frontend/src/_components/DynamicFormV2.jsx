@@ -11,7 +11,7 @@ import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
+import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 
@@ -63,22 +63,7 @@ const DynamicFormV2 = ({
             constants.globals[constant.name] = constant.value;
           }
         });
-
         setCurrentOrgEnvironmentConstants(constants);
-      });
-
-      orgEnvironmentVariableService.getVariables().then((data) => {
-        const client_variables = {};
-        const server_variables = {};
-        data.variables.map((variable) => {
-          if (variable.variable_type === 'server') {
-            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
-          } else {
-            client_variables[variable.variable_name] = variable.value;
-          }
-        });
-
-        setWorkspaceVariables({ client: client_variables, server: server_variables });
       });
     }
 

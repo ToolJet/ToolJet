@@ -59,10 +59,14 @@ const ApiEndpointInput = (props) => {
   const [loadingSpec, setLoadingSpec] = useState(true);
   const [options, setOptions] = useState(props.options);
   const [specJson, setSpecJson] = useState(null);
+  const [operationParams, setOperationParams] = useState({});
 
   // Check if specUrl is an object (multiple specs) or string (single spec)
   const isMultiSpec = typeof props.specUrl === 'object' && !Array.isArray(props.specUrl);
-  const [selectedSpecType, setSelectedSpecType] = useState(isMultiSpec ? Object.keys(props.specUrl)[0] || '' : null);
+  // Initialize selectedSpecType from props.options.specType if available
+  const [selectedSpecType, setSelectedSpecType] = useState(
+    isMultiSpec ? props.options?.specType || Object.keys(props.specUrl)[0] || '' : null
+  );
 
   const fetchOpenApiSpec = (specUrlOrType) => {
     setLoadingSpec(true);
@@ -78,21 +82,25 @@ const ApiEndpointInput = (props) => {
           setSpecJson(data);
 
           if (isMultiSpec) {
-            // Clear all parameters when switching specs
-            const queryParams = {
+            // MODIFIED: Retain existing values instead of clearing them
+            const currentParams = options?.params || {
               path: {},
               query: {},
               request: {},
             };
 
-            let newOperation = null;
-            let newPath = null;
+            // Keep existing values if the operation/path still exists in the new spec
+            let newOperation = options?.operation;
+            let newPath = options?.path;
             let newSelectedOperation = null;
 
-            if (options?.path && options?.operation && data?.paths?.[options.path]?.[options.operation]) {
-              newOperation = options.operation;
-              newPath = options.path;
-              newSelectedOperation = data.paths[options.path][options.operation];
+            // Validate if the current operation/path exists in the new spec
+            if (newPath && newOperation && data?.paths?.[newPath]?.[newOperation]) {
+              newSelectedOperation = data.paths[newPath][newOperation];
+            } else {
+              // Only clear if the operation/path doesn't exist in the new spec
+              newOperation = null;
+              newPath = null;
             }
 
             const newOptions = {
@@ -100,7 +108,8 @@ const ApiEndpointInput = (props) => {
               operation: newOperation,
               path: newPath,
               selectedOperation: newSelectedOperation,
-              params: queryParams,
+              params: currentParams, // Retain existing params
+              specType: specUrlOrType,
             };
 
             setOptions(newOptions);
@@ -112,12 +121,24 @@ const ApiEndpointInput = (props) => {
       });
   };
 
+  const getOperationKey = (operation, path) => {
+    return `${operation}_${path}`;
+  };
+
   const changeOperation = (value) => {
     const operation = value.split('/', 2)[0];
     const path = value.substring(value.indexOf('/'));
 
-    // Clear all params when changing operation
-    const queryParams = {
+    if (options.operation && options.path) {
+      const currentOperationKey = getOperationKey(options.operation, options.path);
+      setOperationParams((prevState) => ({
+        ...prevState,
+        [currentOperationKey]: options.params,
+      }));
+    }
+
+    const newOperationKey = getOperationKey(operation, path);
+    const savedParams = operationParams[newOperationKey] || {
       path: {},
       query: {},
       request: {},
@@ -128,7 +149,7 @@ const ApiEndpointInput = (props) => {
       path,
       operation,
       selectedOperation: specJson.paths[path][operation],
-      params: queryParams,
+      params: savedParams,
     };
 
     setOptions(newOptions);
@@ -139,26 +160,17 @@ const ApiEndpointInput = (props) => {
     if (value === '') {
       removeParam(paramType, paramName);
     } else {
-      let parsedValue = value;
-
-      if (paramType === 'request') {
-        try {
-          parsedValue = JSON.parse(value);
-        } catch (e) {
-          console.error(`Invalid JSON for request param "${paramName}":`, e);
-          parsedValue = value;
-        }
-      }
-
+      // Store the value as-is for all param types
       const newOptions = {
         ...options,
         params: {
           ...options.params,
           [paramType]: {
             ...options.params[paramType],
-            [paramName]: parsedValue,
+            [paramName]: value,
           },
         },
+        ...(isMultiSpec && { specType: selectedSpecType }),
       };
       setOptions(newOptions);
       props.optionsChanged(newOptions);
@@ -167,7 +179,13 @@ const ApiEndpointInput = (props) => {
 
   const removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(options));
-    delete newOptions['params'][paramType][paramName];
+    const newParams = { ...newOptions.params };
+    const newParamType = { ...newParams[paramType] };
+
+    delete newParamType[paramName];
+
+    newParams[paramType] = newParamType;
+    newOptions.params = newParams;
     setOptions(newOptions);
     props.optionsChanged(newOptions);
   };
@@ -180,25 +198,24 @@ const ApiEndpointInput = (props) => {
 
     if (path && operation) {
       return (
-        <div className="d-flex align-items-start">
-          <div className="me-2" style={{ minWidth: '60px' }}>
-            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation.toUpperCase()}</span>
+        <div>
+          <div className="d-flex align-items-center">
+            <span className={`badge bg-${operationColorMapping[operation]} me-2`}>{operation.toUpperCase()}</span>
+            <span>{path}</span>
           </div>
-          <div className="flex-grow-1">
-            <div>{path}</div>
-            {summary && !isSelected && (
-              <small className="text-muted d-block" style={{ fontSize: '0.875em' }}>
+          {summary && !isSelected && (
+            <div>
+              <small className="d-block" style={{ fontSize: '0.875em', color: '#a4a8ab', marginTop: '1px' }}>
                 {summary}
               </small>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       );
     } else {
       return 'Select an operation';
     }
   };
-
   const categorizeOperations = (operation, path, acc, category) => {
     const operationData = specJson.paths[path][operation];
     const summary = operationData?.summary || '';
@@ -262,7 +279,14 @@ const ApiEndpointInput = (props) => {
       request: props.options?.params?.request ?? {},
     };
     setLoadingSpec(true);
-    setOptions({ ...props.options, params: queryParams });
+
+    // Initialize options with specType if multiSpec
+    const initialOptions = {
+      ...props.options,
+      params: queryParams,
+      ...(isMultiSpec && { specType: selectedSpecType }),
+    };
+    setOptions(initialOptions);
 
     if (!isMultiSpec) {
       fetchOpenApiSpec();
@@ -275,10 +299,30 @@ const ApiEndpointInput = (props) => {
     }
   }, [selectedSpecType]);
 
+  const handleSpecTypeChange = (val) => {
+    setSelectedSpecType(val);
+    // When spec type changes, immediately update options with new specType
+    const newOptions = {
+      ...options,
+      specType: val,
+      // Clear operation-specific data when changing spec type
+      operation: null,
+      path: null,
+      selectedOperation: null,
+      params: {
+        path: {},
+        query: {},
+        request: {},
+      },
+    };
+    setOptions(newOptions);
+    props.optionsChanged(newOptions);
+  };
+
   const specTypeOptions = isMultiSpec
     ? Object.keys(props.specUrl).map((key) => ({
         value: key,
-        label: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
       }))
     : [];
 
@@ -288,13 +332,16 @@ const ApiEndpointInput = (props) => {
       {isMultiSpec && (
         <div className="d-flex g-2 mb-3">
           <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Spec Type')}</label>
+            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
           </div>
           <div className="col flex-grow-1">
             <Select
               options={specTypeOptions}
-              value={{ value: selectedSpecType, label: selectedSpecType }}
-              onChange={(val) => setSelectedSpecType(val)}
+              value={{
+                value: selectedSpecType,
+                label: selectedSpecType.charAt(0).toUpperCase() + selectedSpecType.slice(1),
+              }}
+              onChange={(val) => handleSpecTypeChange(val)}
               width={'100%'}
               styles={queryManagerSelectComponentStyle(props.darkMode, '100%')}
             />

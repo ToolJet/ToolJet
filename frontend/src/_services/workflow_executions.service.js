@@ -23,7 +23,8 @@ function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }
 
-function create(appVersionId, testJson, environmentId) {
+function create(appVersionId, testJson, environmentId, extraProps = {}) {
+  const { injectedState = {}, startNodeId } = extraProps;
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     environmentId,
@@ -31,6 +32,8 @@ function create(appVersionId, testJson, environmentId) {
     userId: currentSession.current_user?.id,
     executeUsing: 'version',
     params: testJson,
+    injectedState,
+    startNodeId,
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions`, requestOptions).then(handleResponse);

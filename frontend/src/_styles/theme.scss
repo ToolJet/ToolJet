@@ -8939,7 +8939,7 @@ tbody {
       margin: 2rem 1rem;
     }
 
-    .footer-container {
+   .footer-container {
       position: absolute;
       width: 100%;
       bottom: 0px;
@@ -11885,6 +11885,11 @@ tbody {
 
 .selected-ds.row>img {
   padding: 0 !important;
+}
+
+.selected-ds.img-container>img {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
 }
 
 .tj-user-table-wrapper {
@@ -18762,7 +18767,7 @@ section.ai-message-prompt-input-wrapper {
 .scrollbar-container {
   scrollbar-width: 8px;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  
+
 
   &::-webkit-scrollbar {
     width: 16px;

@@ -3,6 +3,10 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
+  deleteWorkFlowOption: "[data-cy=delete-workflow-card-option]",
+  globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
+  createWorkFlowsButton: '[data-cy="+-create-workflow"]',
+  workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',

@@ -324,7 +324,7 @@ export const filepickerConfig = {
       // containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       // containerBorder: { value: 'var(--cc-default-border)' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
+      boxShadow: { value: '0px 1px 3px #0000001A' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

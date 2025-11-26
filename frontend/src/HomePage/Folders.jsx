@@ -319,7 +319,7 @@ export const Folders = function Folders({
             )}
             style={{ height: '32px' }}
             onClick={() => handleFolderChange({})}
-            data-cy="all-applications-link"
+            data-cy={`all-${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'applications'}-link`}
           >
             {appType === 'module'
               ? 'All modules'

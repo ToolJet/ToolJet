@@ -558,10 +558,7 @@ export const computeScrollDelta = ({ source }) => {
 export const computeScrollDeltaOnDrag = computeScrollDelta;
 
 export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const transformedCanvasParentId = canvasParentId?.substring(0, 36);
-  const targetCanvasWidth =
-    document.getElementById(`canvas-${transformedCanvasParentId}`)?.offsetWidth ||
-    document.getElementById('real-canvas')?.offsetWidth;
+  const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;
   const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
   const gridUnits = Math.round(widgetWidth / gridUnitWidth);
   const draggingWidgetWidth = gridUnits * gridUnitWidth;
