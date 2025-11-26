@@ -187,6 +187,8 @@ export const commonText = {
   enterAppName: "Enter app name",
   appNameInfoLabel: "App name must be unique and max 50 characters",
   renameApp: "Rename app",
+  enablePasswordLoginTitle: "Enable password login",
+  enablePasswordLoginModal: "Automatic login requires password login to be disabled. Enabling it will disable automatic login. Are you sure you want to continue?",
 };
 
 export const commonWidgetText = {
@@ -283,4 +285,17 @@ export const workspaceSettingsText = {
   customStylesListItem: "Custom styles",
   configureGitSyncListItem: "Configure git sync",
   themesListItem: "Themes",
+};
+
+export const whitelabelText = {
+  settingsPageTitle: "Settings",
+  breadcrumbTitle: "White labelling",
+  appLogoLabel: "App Logo",
+  pageTitleLabel: "Page Title",
+  faviconLabel: "Favicon",
+  appLogoHelp: "This will be used for branding across the app",
+  pageTitleHelp: "This will be used on the browser page title",
+  faviconHelp: "This will be displayed in the address bar of the browser",
+  saveButton: "Save changes",
+  cancelButton: "Cancel",
 };
