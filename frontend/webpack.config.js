@@ -10,6 +10,7 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 const edition = process.env.TOOLJET_EDITION;
@@ -80,6 +81,10 @@ if (process.env.APM_VENDOR === 'sentry') {
 
 if (isDevEnv) {
   plugins.push(new ReactRefreshWebpackPlugin({ overlay: false }));
+}
+
+if (process.env.ANALYZE === 'true') {
+  plugins.push(new BundleAnalyzerPlugin());
 }
 
 module.exports = {
