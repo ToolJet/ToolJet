@@ -53,12 +53,18 @@ export const licenseText = {
 
   accessTab: {
     openIDConnectLabel: "Open ID Connect",
-    apiKeyLabel: "Audit Logs",
     ldapLabel: "LDAP",
     samlLabel: "SAML",
-    customStylesLabel: "Custom styles",
+    apiKeyLabel: "Audit logs",
     multiEnvironmentLabel: "Multi-Environment",
     gitSyncLabel: "GitSync",
+    multiplayerEditingLabel: "Multiplayer editing",
+    workflowsLabel: "Workflows",
+    modulesLabel: "Modules",
+    themesLabel: "Themes",
+    customStylesLabel: "Custom styles",
+    dynamicAccessRulesLabel: "Dynamic access rules",
+    appNavigationGroupLabel: "App navigation group",
   },
 
   domainTab: {

@@ -192,7 +192,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
@@ -203,7 +203,7 @@ jobs:
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -217,7 +217,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
 
@@ -227,12 +227,12 @@ jobs:
         run: |
           # Wait for database to be ready
           echo "Testing database connection..."
-          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
 
       - name: Create delete_user procedure
         run: |
           echo "Creating delete_user stored procedure..."
-          docker exec Tooljet-postgres psql -U postgres -d tooljet_development -c "
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
           CREATE OR REPLACE PROCEDURE delete_user(p_email TEXT)
           LANGUAGE plpgsql
           AS \$\$
@@ -337,21 +337,12 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Run Cypress tests for CE
-        if: matrix.edition == 'ce'
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
-          config-file: cypress-platform.config.js
-
-      - name: Run Cypress tests for EE
-        if: matrix.edition == 'ee'
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000"
-          config-file: cypress-ee-platform.config.js
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -512,7 +503,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
@@ -522,7 +513,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -534,7 +525,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
@@ -716,7 +707,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Setup Nginx
         run: |
@@ -739,7 +730,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -751,7 +742,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
@@ -932,7 +923,7 @@ jobs:
         run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Setup Nginx
         run: |
@@ -955,7 +946,7 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Check for success message in logs
-            if sudo docker logs Tooljet-app 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
@@ -967,7 +958,7 @@ jobs:
           if [ "$SUCCESS_FOUND" = false ]; then
             echo "❌ Timeout reached without finding success logs"
             echo "📄 Showing current logs for troubleshooting..."
-            sudo docker logs Tooljet-app --tail=100
+            docker-compose logs --tail=100 tooljet
             exit 1
           fi
           echo "✅ Server is ready!"
