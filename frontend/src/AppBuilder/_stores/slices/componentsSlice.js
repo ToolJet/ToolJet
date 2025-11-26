@@ -1158,11 +1158,17 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       checkParentAndUpdateFormFields,
       getCurrentPageIndex,
+      performBatchComponentOperations,
+      updateContainerAutoHeight,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
-    updateParent && checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
+    // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
+    // so we can batch the form field changes with the layout changes into a single API call
+    const formFieldsDiff = updateParent
+      ? checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId, { skipSave: saveAfterAction })
+      : null;
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[currentPageIndex];
@@ -1274,8 +1280,43 @@ export const createComponentsSlice = (set, get) => ({
     }, {});
 
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components/layout', 'update', moduleId);
-      get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
+      // Check if we need to batch multiple operations together
+      if (updateParent) {
+        // Collect all component updates that need to be batched
+        let updatedDiff = formFieldsDiff || {};
+
+        // Update container auto-height for both old and new parents
+        // Get the diffs to include in the batch operation
+        const newParentHeightDiff = updateContainerAutoHeight(newParentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+        const oldParentHeightDiff = updateContainerAutoHeight(oldParentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+
+        if (newParentHeightDiff) {
+          updatedDiff = { ...updatedDiff, ...newParentHeightDiff };
+        }
+        if (oldParentHeightDiff) {
+          updatedDiff = { ...updatedDiff, ...oldParentHeightDiff };
+        }
+
+        // Use batch operations to combine layout changes and component updates in a single API call
+        // This creates only one history entry
+        performBatchComponentOperations(
+          {
+            updated: Object.keys(updatedDiff).length > 0 ? updatedDiff : undefined,
+            layout: diff,
+          },
+          moduleId
+        );
+      } else {
+        // Simple layout change (resize, move within same parent) - use the regular layout endpoint
+        saveComponentChanges(diff, 'components/layout', 'update', moduleId);
+        get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
+      }
     }
   },
 
@@ -2020,16 +2061,16 @@ export const createComponentsSlice = (set, get) => ({
   },
   checkIfComponentIsModule: (componentId, moduleId = 'canvas') =>
     get().getComponentDefinition(componentId, moduleId)?.component?.component === 'ModuleViewer',
-  updateContainerAutoHeight: (componentId) => {
+  updateContainerAutoHeight: (componentId, moduleId = 'canvas', { saveAfterAction = true, returnDiff = false } = {}) => {
     if (
       !componentId ||
       componentId === 'canvas' ||
       componentId.includes('-header') ||
       componentId.includes('-footer')
     ) {
-      return;
+      return returnDiff ? null : undefined;
     }
-    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const { currentLayout, getCurrentPageComponents, setComponentProperty, getCurrentPageIndex } = get();
     const allComponents = getCurrentPageComponents();
 
     const childComponents = getAllChildComponents(allComponents, componentId);
@@ -2046,10 +2087,29 @@ export const createComponentsSlice = (set, get) => ({
 
     const currentCanvasHeight = getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
     if (currentCanvasHeight === maxHeight) {
-      return;
+      return returnDiff ? null : undefined;
     }
 
-    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false, moduleId, {
+      saveAfterAction,
+    });
+
+    // Return the diff if requested (for batching with other operations)
+    if (returnDiff) {
+      const currentPageIndex = getCurrentPageIndex(moduleId);
+      const component = get().modules[moduleId].pages[currentPageIndex].components[componentId]?.component;
+      if (component) {
+        const { events, exposedVariables, ...filteredDefinition } = component.definition || {};
+        return {
+          [componentId]: {
+            component: {
+              ...component,
+              definition: filteredDefinition,
+            },
+          },
+        };
+      }
+    }
   },
 
   /**

@@ -410,11 +410,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
         return layouts;
       }, {});
+      // setComponentLayout now handles updateContainerAutoHeight internally when updateParent is true
       setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: true });
-
-      // const currentWidget = boxList.find((box) => box.id === id);
-      updateContainerAutoHeight(newParent);
-      updateContainerAutoHeight(oldParent);
 
       toggleCanvasUpdater();
     },

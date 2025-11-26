@@ -179,6 +179,12 @@ export class BatchDiffDto {
     diff: string[];
     is_component_cut?: boolean;
   };
+
+  @IsObject()
+  @IsOptional()
+  layout?: {
+    diff: Record<string, { layouts: LayoutData; component?: { parent: string } }>;
+  };
 }
 
 export class BatchComponentsDto {
