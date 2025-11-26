@@ -91,38 +91,38 @@ jobs:
           chmod 600 key.pem
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
           ENV_CHANGES="${{ github.event.inputs.env_changes }}"
-          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
           set -e
           TARGET_SYSTEM="$TARGET_SYSTEM"
           ENV_CHANGES="$ENV_CHANGES"
           cd ~
           echo "📁 Finding correct deployment directory"
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "Detected LTS system: $TARGET_SYSTEM"
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            echo "Detected LTS system: \$TARGET_SYSTEM"
             echo "🔍 Searching for LTS directories..."
-            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
                        ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
-            if [[ -z "$LTS_DIRS" ]]; then
+            if [[ -z "\$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
               echo "Available directories:"
               ls -la | grep "^d"
               exit 1
             fi
             echo "Available LTS directories:"
-            echo "$LTS_DIRS"
-            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            echo "📂 Selected LTS directory: $SELECTED_LTS_DIR"
-            cd "$SELECTED_LTS_DIR"
-            echo "✅ Now in directory: $(pwd)"
+            echo "\$LTS_DIRS"
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
+            cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
           else
-            echo "Detected pre-release system: $TARGET_SYSTEM"
-            echo "📂 Working in home directory: $(pwd)"
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Working in home directory: \$(pwd)"
           fi
           echo ""
           echo "🔧 PROCESSING ENVIRONMENT VARIABLE CHANGES"
-          BACKUP_FILE=".env.backup.$(date +%s)"
-          sudo cp .env "$BACKUP_FILE"
-          echo "✅ Backup created: $BACKUP_FILE"
+          BACKUP_FILE=".env.backup.\$(date +%s)"
+          sudo cp .env "\$BACKUP_FILE"
+          echo "✅ Backup created: \$BACKUP_FILE"
           PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
           ADD_SUCCESS=0
           ADD_FAIL=0
@@ -131,84 +131,84 @@ jobs:
           REMOVE_SUCCESS=0
           REMOVE_FAIL=0
           while IFS= read -r line; do
-            line=$(echo "$line" | xargs)
-            [[ -z "$line" || "$line" =~ ^# ]] && continue
-            if [[ "$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              VALUE="${BASH_REMATCH[2]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot add protected variable '$KEY'"
-                ADD_FAIL=$((ADD_FAIL + 1))
+            line=\$(echo "\$line" | xargs)
+            [[ -z "\$line" || "\$line" =~ ^# ]] && continue
+            if [[ "\$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              VALUE="\${BASH_REMATCH[2]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot add protected variable '\$KEY'"
+                ADD_FAIL=\$((ADD_FAIL + 1))
                 continue
               fi
-              if grep -q "^${KEY}=" .env; then
-                echo "⚠️  SKIPPED: Variable '$KEY' already exists (use EDIT)"
+              if grep -q "^\${KEY}=" .env; then
+                echo "⚠️  SKIPPED: Variable '\$KEY' already exists (use EDIT)"
                 continue
               else
-                if echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null; then
-                  echo "✅ SUCCESS: Added '$KEY'"
-                  ADD_SUCCESS=$((ADD_SUCCESS + 1))
+                if echo "\${KEY}=\${VALUE}" | sudo tee -a .env > /dev/null; then
+                  echo "✅ SUCCESS: Added '\$KEY'"
+                  ADD_SUCCESS=\$((ADD_SUCCESS + 1))
                 else
-                  echo "❌ FAILED: Could not add '$KEY'"
-                  ADD_FAIL=$((ADD_FAIL + 1))
+                  echo "❌ FAILED: Could not add '\$KEY'"
+                  ADD_FAIL=\$((ADD_FAIL + 1))
                 fi
               fi
-            elif [[ "$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              VALUE="${BASH_REMATCH[2]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot edit protected variable '$KEY'"
-                EDIT_FAIL=$((EDIT_FAIL + 1))
+            elif [[ "\$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              VALUE="\${BASH_REMATCH[2]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot edit protected variable '\$KEY'"
+                EDIT_FAIL=\$((EDIT_FAIL + 1))
                 continue
               fi
-              if grep -q "^${KEY}=" .env; then
-                if sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env; then
-                  echo "✅ SUCCESS: Edited '$KEY'"
-                  EDIT_SUCCESS=$((EDIT_SUCCESS + 1))
+              if grep -q "^\${KEY}=" .env; then
+                if sudo sed -i "s|^\${KEY}=.*|\${KEY}=\${VALUE}|" .env; then
+                  echo "✅ SUCCESS: Edited '\$KEY'"
+                  EDIT_SUCCESS=\$((EDIT_SUCCESS + 1))
                 else
-                  echo "❌ FAILED: Could not edit '$KEY'"
-                  EDIT_FAIL=$((EDIT_FAIL + 1))
-                fi
-              else
-                echo "⚠️  SKIPPED: Variable '$KEY' not found (use ADD)"
-                continue
-              fi
-            elif [[ "$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot remove protected variable '$KEY'"
-                REMOVE_FAIL=$((REMOVE_FAIL + 1))
-                continue
-              fi
-              if grep -q "^${KEY}=" .env; then
-                if sudo sed -i "/^${KEY}=/d" .env; then
-                  echo "✅ SUCCESS: Removed '$KEY'"
-                  REMOVE_SUCCESS=$((REMOVE_SUCCESS + 1))
-                else
-                  echo "❌ FAILED: Could not remove '$KEY'"
-                  REMOVE_FAIL=$((REMOVE_FAIL + 1))
+                  echo "❌ FAILED: Could not edit '\$KEY'"
+                  EDIT_FAIL=\$((EDIT_FAIL + 1))
                 fi
               else
-                echo "⚠️  SKIPPED: Variable '$KEY' not found"
+                echo "⚠️  SKIPPED: Variable '\$KEY' not found (use ADD)"
+                continue
+              fi
+            elif [[ "\$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot remove protected variable '\$KEY'"
+                REMOVE_FAIL=\$((REMOVE_FAIL + 1))
+                continue
+              fi
+              if grep -q "^\${KEY}=" .env; then
+                if sudo sed -i "/^\${KEY}=/d" .env; then
+                  echo "✅ SUCCESS: Removed '\$KEY'"
+                  REMOVE_SUCCESS=\$((REMOVE_SUCCESS + 1))
+                else
+                  echo "❌ FAILED: Could not remove '\$KEY'"
+                  REMOVE_FAIL=\$((REMOVE_FAIL + 1))
+                fi
+              else
+                echo "⚠️  SKIPPED: Variable '\$KEY' not found"
                 continue
               fi
             else
-              echo "⚠️  INVALID FORMAT: $line"
+              echo "⚠️  INVALID FORMAT: \$line"
             fi
-          done <<< "$ENV_CHANGES"
+          done <<< "\$ENV_CHANGES"
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📊 SUMMARY"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "ADD:    ✅ $ADD_SUCCESS succeeded | ❌ $ADD_FAIL failed"
-          echo "EDIT:   ✅ $EDIT_SUCCESS succeeded | ❌ $EDIT_FAIL failed"
-          echo "REMOVE: ✅ $REMOVE_SUCCESS succeeded | ❌ $REMOVE_FAIL failed"
+          echo "ADD:    ✅ \$ADD_SUCCESS succeeded | ❌ \$ADD_FAIL failed"
+          echo "EDIT:   ✅ \$EDIT_SUCCESS succeeded | ❌ \$EDIT_FAIL failed"
+          echo "REMOVE: ✅ \$REMOVE_SUCCESS succeeded | ❌ \$REMOVE_FAIL failed"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          TOTAL_SUCCESS=$((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS))
-          TOTAL_FAIL=$((ADD_FAIL + EDIT_FAIL + REMOVE_FAIL))
-          if [ $TOTAL_SUCCESS -eq 0 ]; then
+          TOTAL_SUCCESS=\$((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS))
+          TOTAL_FAIL=\$((ADD_FAIL + EDIT_FAIL + REMOVE_FAIL))
+          if [ \$TOTAL_SUCCESS -eq 0 ]; then
             echo "⚠️  No changes were applied"
-            sudo cp "$BACKUP_FILE" .env
+            sudo cp "\$BACKUP_FILE" .env
             exit 1
           fi
           echo ""
@@ -219,18 +219,18 @@ jobs:
           SUCCESS_FOUND=false
           TIMEOUT=120
           ELAPSED=0
-          while [ $ELAPSED -lt $TIMEOUT ]; do
+          while [ \$ELAPSED -lt \$TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               SUCCESS_FOUND=true
               break
             fi
             sleep 10
-            ELAPSED=$((ELAPSED + 10))
+            ELAPSED=\$((ELAPSED + 10))
           done
-          if [ "$SUCCESS_FOUND" = false ]; then
+          if [ "\$SUCCESS_FOUND" = false ]; then
             echo "❌ Container startup failed"
             echo "🔄 Rolling back..."
-            sudo cp "$BACKUP_FILE" .env
+            sudo cp "\$BACKUP_FILE" .env
             sudo docker-compose down
             sudo docker-compose up -d
             echo "✅ Rollback completed"
@@ -348,60 +348,60 @@ jobs:
           chmod 600 key.pem
           IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
           set -e
           IMAGE_TAG="$IMAGE_TAG"
           TARGET_SYSTEM="$TARGET_SYSTEM"
           cd ~
           echo "📁 Finding correct deployment directory"
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "Detected LTS system: $TARGET_SYSTEM"
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            echo "Detected LTS system: \$TARGET_SYSTEM"
             echo "🔍 Searching for LTS directories..."
-            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
                        ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
-            if [[ -z "$LTS_DIRS" ]]; then
+            if [[ -z "\$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
               echo "Available directories:"
               ls -la | grep "^d"
               exit 1
             fi
             echo "Available LTS directories:"
-            echo "$LTS_DIRS"
-            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            echo "📂 Selected LTS directory: $SELECTED_LTS_DIR"
-            cd "$SELECTED_LTS_DIR"
-            echo "✅ Now in directory: $(pwd)"
+            echo "\$LTS_DIRS"
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
+            cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
           else
-            echo "Detected pre-release system: $TARGET_SYSTEM"
-            echo "📂 Working in home directory: $(pwd)"
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Working in home directory: \$(pwd)"
           fi
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          CURRENT_IMAGE=$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
           sudo docker-compose down
-          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$IMAGE_TAG|" .env
-          sudo docker pull "$IMAGE_TAG"
+          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          sudo docker pull "\$IMAGE_TAG"
           sudo docker-compose up -d
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
-          while [ $ELAPSED -lt $TIMEOUT ]; do
+          while [ \$ELAPSED -lt \$TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               SUCCESS_FOUND=true
               break
             fi
             sleep 10
-            ELAPSED=$((ELAPSED + 10))
+            ELAPSED=\$((ELAPSED + 10))
           done
-          if [ "$SUCCESS_FOUND" = false ]; then
+          if [ "\$SUCCESS_FOUND" = false ]; then
             sudo docker-compose logs --tail=50
             sudo docker-compose down
-            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$CURRENT_IMAGE|" .env
+            sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
             sudo docker-compose up -d
             exit 1
           fi
           sudo sed -i "/^OLD_IMAGE=/d" .env
-          echo "OLD_IMAGE=$CURRENT_IMAGE" | sudo tee -a .env
+          echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
           sudo docker-compose logs --tail=50
           sudo docker image prune -a -f
           EOF
@@ -477,89 +477,89 @@ jobs:
           chmod 600 key.pem
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
           ENV_CHANGES="${{ github.event.inputs.env_changes }}"
-          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
           set -e
           TARGET_SYSTEM="$TARGET_SYSTEM"
           ENV_CHANGES="$ENV_CHANGES"
           cd ~
           echo "📁 Finding correct deployment directory"
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            echo "Detected LTS system: $TARGET_SYSTEM"
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            echo "Detected LTS system: \$TARGET_SYSTEM"
             echo "🔍 Searching for LTS directories..."
-            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
                        ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
-            if [[ -z "$LTS_DIRS" ]]; then
+            if [[ -z "\$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
               echo "Available directories:"
               ls -la | grep "^d"
               exit 1
             fi
             echo "Available LTS directories:"
-            echo "$LTS_DIRS"
-            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            echo "📂 Selected LTS directory: $SELECTED_LTS_DIR"
-            cd "$SELECTED_LTS_DIR"
-            echo "✅ Now in directory: $(pwd)"
+            echo "\$LTS_DIRS"
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
+            cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
           else
-            echo "Detected pre-release system: $TARGET_SYSTEM"
-            echo "📂 Working in home directory: $(pwd)"
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Working in home directory: \$(pwd)"
           fi
           echo ""
           echo "🔧 PROCESSING ENVIRONMENT CHANGES BEFORE DEPLOY"
-          BACKUP_FILE=".env.backup.$(date +%s)"
-          sudo cp .env "$BACKUP_FILE"
+          BACKUP_FILE=".env.backup.\$(date +%s)"
+          sudo cp .env "\$BACKUP_FILE"
           PROTECTED_VARS="TOOLJET_HOST|LOCKBOX_MASTER_KEY|SECRET_KEY_BASE|ORM_LOGGING|PG_DB|PG_USER|PG_HOST|PG_PASS|TOOLJET_DB|TOOLJET_DB_USER|TOOLJET_DB_HOST|TOOLJET_DB_PASS|PGRST_DB_URI|PGRST_HOST|PGRST_JWT_SECRET|PGRST_SERVER_PORT|REDIS_HOST|REDIS_PORT|REDIS_USER|REDIS_PASSWORD|OLD_IMAGE|TOOLJET_IMAGE"
           ADD_SUCCESS=0
           EDIT_SUCCESS=0
           REMOVE_SUCCESS=0
           TOTAL_FAIL=0
           while IFS= read -r line; do
-            line=$(echo "$line" | xargs)
-            [[ -z "$line" || "$line" =~ ^# ]] && continue
-            if [[ "$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              VALUE="${BASH_REMATCH[2]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot add '$KEY'"
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
-              elif grep -q "^${KEY}=" .env; then
-                echo "⚠️  SKIPPED: '$KEY' exists"
-              elif echo "${KEY}=${VALUE}" | sudo tee -a .env > /dev/null; then
-                echo "✅ SUCCESS: Added '$KEY'"
-                ADD_SUCCESS=$((ADD_SUCCESS + 1))
+            line=\$(echo "\$line" | xargs)
+            [[ -z "\$line" || "\$line" =~ ^# ]] && continue
+            if [[ "\$line" =~ ^ADD[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              VALUE="\${BASH_REMATCH[2]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot add '\$KEY'"
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
+              elif grep -q "^\${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '\$KEY' exists"
+              elif echo "\${KEY}=\${VALUE}" | sudo tee -a .env > /dev/null; then
+                echo "✅ SUCCESS: Added '\$KEY'"
+                ADD_SUCCESS=\$((ADD_SUCCESS + 1))
               else
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
               fi
-            elif [[ "$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              VALUE="${BASH_REMATCH[2]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot edit '$KEY'"
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
-              elif ! grep -q "^${KEY}=" .env; then
-                echo "⚠️  SKIPPED: '$KEY' not found"
-              elif sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" .env; then
-                echo "✅ SUCCESS: Edited '$KEY'"
-                EDIT_SUCCESS=$((EDIT_SUCCESS + 1))
+            elif [[ "\$line" =~ ^EDIT[[:space:]]+([^=]+)=(.*)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              VALUE="\${BASH_REMATCH[2]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot edit '\$KEY'"
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
+              elif ! grep -q "^\${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '\$KEY' not found"
+              elif sudo sed -i "s|^\${KEY}=.*|\${KEY}=\${VALUE}|" .env; then
+                echo "✅ SUCCESS: Edited '\$KEY'"
+                EDIT_SUCCESS=\$((EDIT_SUCCESS + 1))
               else
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
               fi
-            elif [[ "$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
-              KEY="${BASH_REMATCH[1]}"
-              if echo "$KEY" | grep -qE "$PROTECTED_VARS"; then
-                echo "❌ FAILED: Cannot remove '$KEY'"
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
-              elif ! grep -q "^${KEY}=" .env; then
-                echo "⚠️  SKIPPED: '$KEY' not found"
-              elif sudo sed -i "/^${KEY}=/d" .env; then
-                echo "✅ SUCCESS: Removed '$KEY'"
-                REMOVE_SUCCESS=$((REMOVE_SUCCESS + 1))
+            elif [[ "\$line" =~ ^REMOVE[[:space:]]+([^=[:space:]]+)$ ]]; then
+              KEY="\${BASH_REMATCH[1]}"
+              if echo "\$KEY" | grep -qE "\$PROTECTED_VARS"; then
+                echo "❌ FAILED: Cannot remove '\$KEY'"
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
+              elif ! grep -q "^\${KEY}=" .env; then
+                echo "⚠️  SKIPPED: '\$KEY' not found"
+              elif sudo sed -i "/^\${KEY}=/d" .env; then
+                echo "✅ SUCCESS: Removed '\$KEY'"
+                REMOVE_SUCCESS=\$((REMOVE_SUCCESS + 1))
               else
-                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+                TOTAL_FAIL=\$((TOTAL_FAIL + 1))
               fi
             fi
-          done <<< "$ENV_CHANGES"
-          echo "📊 ENV CHANGES: ✅ $((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS)) | ❌ $TOTAL_FAIL"
+          done <<< "\$ENV_CHANGES"
+          echo "📊 ENV CHANGES: ✅ \$((ADD_SUCCESS + EDIT_SUCCESS + REMOVE_SUCCESS)) | ❌ \$TOTAL_FAIL"
           sudo docker-compose down
           sudo docker-compose up -d
           sleep 30
@@ -607,48 +607,48 @@ jobs:
           chmod 600 key.pem
           IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
-          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
           set -e
           IMAGE_TAG="$IMAGE_TAG"
           TARGET_SYSTEM="$TARGET_SYSTEM"
           cd ~
-          if [[ "$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            LTS_DIRS=$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
-            SELECTED_LTS_DIR=$(echo "$LTS_DIRS" | head -n 1)
-            cd "$SELECTED_LTS_DIR"
+          if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
+            SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            cd "\$SELECTED_LTS_DIR"
           fi
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          CURRENT_IMAGE=$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
           sudo docker-compose down
-          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$IMAGE_TAG|" .env
-          sudo docker pull "$IMAGE_TAG"
+          sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          sudo docker pull "\$IMAGE_TAG"
           sudo docker-compose up -d
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
-          while [ $ELAPSED -lt $TIMEOUT ]; do
+          while [ \$ELAPSED -lt \$TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               SUCCESS_FOUND=true
               break
             fi
             sleep 10
-            ELAPSED=$((ELAPSED + 10))
+            ELAPSED=\$((ELAPSED + 10))
           done
-          if [ "$SUCCESS_FOUND" = false ]; then
+          if [ "\$SUCCESS_FOUND" = false ]; then
             sudo docker-compose logs --tail=50
-            LATEST_BACKUP=$(ls -t .env.backup.* 2>/dev/null | head -n 1)
-            if [[ -n "$LATEST_BACKUP" ]]; then
-              sudo cp "$LATEST_BACKUP" .env
+            LATEST_BACKUP=\$(ls -t .env.backup.* 2>/dev/null | head -n 1)
+            if [[ -n "\$LATEST_BACKUP" ]]; then
+              sudo cp "\$LATEST_BACKUP" .env
             else
-              sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=$CURRENT_IMAGE|" .env
+              sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
             fi
             sudo docker-compose down
             sudo docker-compose up -d
             exit 1
           fi
           sudo sed -i "/^OLD_IMAGE=/d" .env
-          echo "OLD_IMAGE=$CURRENT_IMAGE" | sudo tee -a .env
+          echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
           sudo docker image prune -a -f
           ls -t .env.backup.* 2>/dev/null | tail -n +2 | xargs -r sudo rm -f
           EOF
