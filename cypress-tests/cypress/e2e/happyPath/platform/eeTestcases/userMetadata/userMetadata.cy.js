@@ -75,8 +75,10 @@ describe("user invite flow cases", () => {
 
       confirmInviteElements(data.email);
 
+      cy.waitForElement(onboardingSelectors.loginPasswordInput);
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-      cy.get(commonSelectors.continueButton).click();
+      cy.waitForElement(commonSelectors.signUpButton);
+      cy.get(commonSelectors.signUpButton).click();
       cy.get(commonSelectors.acceptInviteButton).click();
 
       cy.get(commonSelectors.workspaceName).verifyVisibleElement(

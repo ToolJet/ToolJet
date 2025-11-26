@@ -5,7 +5,11 @@ import {
   importSelectors,
 } from "Selectors/exportImport";
 import { verifyModal } from "Support/utils/common";
-import { appVersionText, exportAppModalText, importText } from "Texts/exportImport";
+import {
+  appVersionText,
+  exportAppModalText,
+  importText,
+} from "Texts/exportImport";
 
 export const verifyElementsOfExportModal = (
   currentVersionName,
@@ -33,13 +37,15 @@ export const verifyElementsOfExportModal = (
         "Other Versions"
       );
       otherVersionName.forEach((elements) => {
-        cy.get(exportAppModalSelectors.versionText(elements))
-          .verifyVisibleElement("have.text", elements);
+        cy.get(
+          exportAppModalSelectors.versionText(elements)
+        ).verifyVisibleElement("have.text", elements);
         cy.get(
           exportAppModalSelectors.versionRadioButton(elements)
         ).verifyVisibleElement("not.be.checked");
-        cy.get(exportAppModalSelectors.versionCreatedTime(elements)).should("be.visible");
-
+        cy.get(exportAppModalSelectors.versionCreatedTime(elements)).should(
+          "be.visible"
+        );
       });
     }
   });
@@ -76,6 +82,7 @@ export const createNewVersion = (newVersion = [], version) => {
     commonSelectors.toastMessage,
     appVersionText.createdToastMessage
   );
+  cy.waitForElement(appVersionSelectors.currentVersionField(newVersion[0]));
   cy.get(appVersionSelectors.currentVersionField(newVersion[0])).should(
     "be.visible"
   );
@@ -110,10 +117,12 @@ export const exportAllVersionsAndVerify = (
       );
     } else {
       otherVersionName.forEach((elements) => {
-        cy.get(exportAppModalSelectors.versionText(elements)).verifyVisibleElement("have.text", elements);
         cy.get(
-          exportAppModalSelectors.versionRadioButton(elements)
-        ).should("be.visible").and(isChecked ? "be.checked" : "not.be.checked");
+          exportAppModalSelectors.versionText(elements)
+        ).verifyVisibleElement("have.text", elements);
+        cy.get(exportAppModalSelectors.versionRadioButton(elements))
+          .should("be.visible")
+          .and(isChecked ? "be.checked" : "not.be.checked");
       });
     }
     clickOnExportButtonAndVerify(exportAppModalText.exportAll, appName);
@@ -137,8 +146,14 @@ export const importAndVerifyApp = (filePath, expectedToast) => {
 };
 
 export const verifyImportModalElements = (expectedAppName) => {
-  cy.get(importSelectors.importAppTitle).verifyVisibleElement("have.text", "Import app");
-  cy.get(commonSelectors.appNameLabel).verifyVisibleElement("have.text", "App name");
+  cy.get(importSelectors.importAppTitle).verifyVisibleElement(
+    "have.text",
+    "Import app"
+  );
+  cy.get(commonSelectors.appNameLabel).verifyVisibleElement(
+    "have.text",
+    "App name"
+  );
   cy.get(commonSelectors.appNameInput)
     .should("be.visible")
     .and("have.value", expectedAppName);
@@ -149,16 +164,24 @@ export const verifyImportModalElements = (expectedAppName) => {
   cy.get(commonSelectors.cancelButton)
     .should("be.visible")
     .and("have.text", "Cancel");
-  cy.get(commonSelectors.importAppButton).verifyVisibleElement("have.text", "Import app");
+  cy.get(commonSelectors.importAppButton).verifyVisibleElement(
+    "have.text",
+    "Import app"
+  );
 };
 
-export const setupDataSourceWithConstants = (dsEnv, password = Cypress.env("pg_password")) => {
+export const setupDataSourceWithConstants = (
+  dsEnv,
+  password = Cypress.env("pg_password")
+) => {
   cy.apiUpdateDataSource("postgresql", dsEnv, {
-    options: [{
-      key: "password",
-      value: password,
-      encrypted: true,
-    }],
+    options: [
+      {
+        key: "password",
+        value: password,
+        encrypted: true,
+      },
+    ],
   });
 };
 
@@ -254,4 +277,3 @@ export const validateExportedAppStructure = (
     expect(versionNames).to.include.members(expectedVersions);
   }
 };
-

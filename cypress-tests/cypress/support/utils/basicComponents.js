@@ -22,6 +22,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
 
       if (!isSearchVisible) {
         cy.get('[data-cy="right-sidebar-plus-button"]').click();
+        cy.wait(500);
       }
     })
     .then(() => {
@@ -32,6 +33,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
+  cy.waitForElement(commonWidgetSelector.draggableWidget(widgetName));
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
     .realHover();
@@ -50,6 +52,7 @@ export const deleteComponentAndVerify = (widgetName) => {
   //   `[class=go3958317564]`,
   //   "Component deleted! (Ctrl + Z to undo)"
   // );
+  cy.wait(1000);
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 

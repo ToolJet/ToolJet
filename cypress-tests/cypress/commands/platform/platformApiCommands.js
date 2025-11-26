@@ -529,7 +529,7 @@ Cypress.Commands.add(
         url: url,
         headers: headers,
         body: ssoConfig,
-        log: false
+        log: false,
       }).then((response) => {
         expect(response.status).to.equal(200);
         cy.log("SSO configuration updated successfully.");
@@ -615,7 +615,7 @@ Cypress.Commands.add(
               `https://${oktaDomain}/oauth2/v1/authorize` +
               `?client_id=${clientId}` +
               `&response_type=code` +
-              `&scope=openid email profile` +
+              `&scope=openid email profile groups` +
               `&redirect_uri=${encodeURIComponent(redirectUri)}` +
               `&state=teststate1` +
               `&nonce=randomvalue` +
@@ -723,7 +723,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding(email, password, orgToken) {
+    function performOnboarding (email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
@@ -803,7 +803,8 @@ Cypress.Commands.add(
         url: "https://www.googleapis.com/oauth2/v3/userinfo",
         headers: { Authorization: `Bearer ${access_token}` },
       }).then(({ body: userInfo }) => {
-        const tooljetBase = `http://localhost:8082/sso/google${defaultid}`;
+        const baseUrl = Cypress.config("baseUrl") || "http://localhost:3000";
+        const tooljetBase = `${baseUrl}/sso/google${defaultid}`;
         const hash = `id_token=${encodeURIComponent(id_token)}&state=${encodeURIComponent(state)}`;
         const fullUrl = `${tooljetBase}#${hash}`;
 
@@ -983,17 +984,15 @@ Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
 });
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   return cy.getAuthHeaders().then((headers) => {
-    cy
-      .request({
-        method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/smtp/status`,
-        headers: headers,
-        body: { smtpEnabled: smtpBody.smtpEnabled },
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-      })
+    cy.request({
+      method: "PATCH",
+      url: `${Cypress.env("server_host")}/api/smtp/status`,
+      headers: headers,
+      body: { smtpEnabled: smtpBody.smtpEnabled },
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
     return cy
       .request({
         method: "PATCH",
@@ -1012,7 +1011,6 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
       });
   });
 });
-
 
 Cypress.Commands.add(
   "apiGetWorkspaceIDs",
@@ -1038,3 +1036,47 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/white-labelling`,
+        headers: headers,
+        body: whiteLabelConfig,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        Cypress.log({
+          name: "apiUpdateWhiteLabeling",
+          displayName: "WHITE LABELING UPDATED",
+        });
+        return response.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
+  cy.apiGetWorkspaceIDs().then((ids) => {
+    ids.forEach((org) => {
+      cy.log(`Getting workspace: ${org.slug}`);
+      if (org.slug !== "my-workspace") {
+        cy.apiArchiveWorkspace(org.id);
+      } else {
+        Cypress.env("workspaceId", org.id);
+      }
+    });
+  });
+});
+
+Cypress.Commands.add("apiGetDefaultWorkspace", () => {
+  return cy.apiGetWorkspaceIDs().then(workspaces => {
+    const defaultWorkspace = workspaces.find(ws => ws.is_default);
+    if (!defaultWorkspace) {
+      throw new Error('No default workspace found');
+    }
+    return defaultWorkspace;
+  });
+});

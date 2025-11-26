@@ -31,9 +31,10 @@ module.exports = defineConfig({
   viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
+  projectId: "sk3oji",
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       config.baseUrl = environment.baseUrl;
 
       require("./cypress/config/tasks")(on);
@@ -50,16 +51,18 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/settings/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/**/*.cy.js",
       "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
       "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
     ],
 
     testIsolation: true,
     retries: {
-      runMode: 0,
+      runMode: 2,
       openMode: 0,
     },
     redirectionLimit: 10,

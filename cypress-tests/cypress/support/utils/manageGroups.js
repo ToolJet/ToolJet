@@ -9,6 +9,7 @@ import {
   fillUserInviteForm,
 } from "Support/utils/manageUsers";
 import { groupsText } from "Texts/manageGroups";
+import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
 export const apiCreateGroup = (groupName, cachedHeaders = false) => {
   return cy.getAuthHeaders(cachedHeaders).then((headers) => {
@@ -18,7 +19,7 @@ export const apiCreateGroup = (groupName, cachedHeaders = false) => {
         url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers: headers,
         body: { name: groupName },
-        log: false
+        log: false,
       })
       .then((response) => {
         expect(response.status).to.equal(201);
@@ -167,11 +168,7 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fetchAndVisitInviteLink(email);
   cy.wait(2000);
 
-  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
-  cy.wait(500);
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   cy.wait(500);
   cy.get(commonSelectors.dashboardIcon).click();
 };
