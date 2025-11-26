@@ -62,6 +62,7 @@ module.exports = defineConfig({
       "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/allWorkspace/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/smtp/**/*.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/whiteLabelling/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/firstUser/superAdminUserManagement.cy.js",
     ],
 
     testIsolation: true,
