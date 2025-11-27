@@ -17496,6 +17496,12 @@ section.ai-message-prompt-input-wrapper {
   .accordion-body {
     border-bottom: 1px solid rgba(101, 109, 119, 0.16);
   }
+
+  &:last-child {
+    .accordion-body {
+      border-bottom: none;
+    }
+  }
 }
 
 .workspace-constant-value {

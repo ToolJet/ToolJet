@@ -180,7 +180,7 @@ export const QueryPanel = ({ darkMode }) => {
               className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}</span>
+              <span>{isQueryPaneExpanded ? <PanelBottomClose size='14' color='var(--icon-strong)' /> : <PanelBottomOpen size='14' color='var(--icon-strong)' />}</span>
               <span>Queries</span>
             </button>
           </div>

@@ -62,6 +62,7 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       )}
       {showPreviewBtn && (
 
+
         <Link
           title="Preview"
           to={appPreviewLink}
