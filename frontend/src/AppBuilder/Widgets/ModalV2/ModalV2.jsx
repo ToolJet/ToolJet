@@ -92,8 +92,6 @@ export const ModalV2 = function Modal({
     setShowModal(true);
   }
 
-  // useEventListener('resize', onShowSideEffects, window);
-
   const onShowModal = () => {
     openModal();
     setSelectedComponentAsModal(id);
@@ -101,7 +99,6 @@ export const ModalV2 = function Modal({
 
   const onHideModal = () => {
     hideModal();
-    setSelectedComponentAsModal(null);
   };
 
   useEffect(() => {
