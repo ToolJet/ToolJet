@@ -73,9 +73,7 @@
     outline: none; // Rewriting it to replace outline coming from browser styles
 }
 
-// This is common scrollbar classused for all subcontainers
-// Show scrollbar only on hover in subcontainers
-
+//[Container-widget]Show scrollbar only on hover
 .real-canvas:not(.has-no-scroll) {
     overflow: hidden auto;
     scrollbar-width: none;
