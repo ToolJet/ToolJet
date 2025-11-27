@@ -67,7 +67,7 @@ export default class Click implements QueryService {
     
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { port, host, protocol, database, username, password, usePost, trimQuery, isUseGzip, debug, raw } = sourceOptions;
+    const { port, host, protocol, database, username, password } = sourceOptions;
     const url = `${protocol}://${host}:${port}`;
     const clickhouse=createClient({
       host: url,
