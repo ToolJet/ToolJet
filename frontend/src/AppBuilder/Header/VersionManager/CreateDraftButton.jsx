@@ -20,6 +20,7 @@ const CreateDraftButton = ({ onClick, disabled = false, darkMode = false }) => {
           disabled={disabled}
           onClick={onClick}
           className="tw-w-full"
+          data-cy="create-draft-version-button"
         >
           Create draft version
         </Button>

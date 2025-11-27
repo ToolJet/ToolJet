@@ -39,7 +39,7 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-      developmentVersions.find((v) => v.id === version.parentVersionId)
+    developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
@@ -99,6 +99,7 @@ const VersionDropdownItem = ({
             document.body.click(); // Close popover
           }}
           aria-disabled={!isDraft}
+          data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-edit-version-button`}
         >
           Edit details
         </div>
@@ -112,6 +113,7 @@ const VersionDropdownItem = ({
               onDelete?.(version);
               document.body.click(); // Close popover
             }}
+            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-delete-version-button`}
           >
             Delete version
           </div>
@@ -177,11 +179,11 @@ const VersionDropdownItem = ({
       style={{ padding: '6px 4px' }}
     >
       <div className="d-flex align-items-start" style={{ gap: '8px' }}>
-        <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
+        <div style={{ width: '16px', height: '16px', flexShrink: 0 }} data-cy="selected-version-icon">
           {isSelected && <SolidIcon name="tickv3" alt="selected" width="16" height="16" />}
         </div>
 
-        <div className="flex-grow-1" style={{ minWidth: '0px' }}>
+        <div className="flex-grow-1" style={{ minWidth: '0px' }} data-cy="version-name">
           <div className="d-flex align-items-center justify-content-between" style={{ gap: '8px' }}>
             <div className="d-flex align-items-center" style={{ gap: '8px', minWidth: 0 }}>
               <div
@@ -193,6 +195,7 @@ const VersionDropdownItem = ({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}
+                data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-name`}
               >
                 {version.name}
               </div>
@@ -210,6 +213,7 @@ const VersionDropdownItem = ({
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
+                  data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-draft-tag`}
                 >
                   Draft
                 </span>
@@ -228,6 +232,7 @@ const VersionDropdownItem = ({
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
+                  data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-released-tag`}
                 >
                   Released
                 </span>
@@ -253,6 +258,7 @@ const VersionDropdownItem = ({
                       e.stopPropagation();
                       onCreateVersion?.(version);
                     }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
                   >
                     Save version
                   </Button>
@@ -267,6 +273,7 @@ const VersionDropdownItem = ({
                     leadingIcon="morevertical01"
                     className={cx({ 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => e.stopPropagation()}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
                   />
                 </OverlayTrigger>
               </div>
@@ -289,6 +296,7 @@ const VersionDropdownItem = ({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
+              data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-creation-details`}
             >
               {createdFromVersionName && `created from ${createdFromVersionName}`}
               {createdFromVersionName && version.description && ' | '}

@@ -29,19 +29,24 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
         'theme-dark': darkMode,
       })}
       onClick={onClick}
+      data-cy="version-switcher-button"
     >
       <div className="button-content">
         {/* Status indicator dot */}
-        <div className={cx('status-dot', getDotClass())} />
+        <div className={cx('status-dot', getDotClass())} data-cy="version-status-dot" />
 
         {/* Version name */}
-        <span className="version-name">{version?.name}</span>
+        <span className="version-name" data-cy="version-name">
+          {version?.name}
+        </span>
 
         {/* Divider */}
         <div className="divider" />
 
         {/* Environment name */}
-        <span className="environment-name">{capitalizeFirstLetter(environment?.name)}</span>
+        <span className="environment-name" data-cy={`${environment?.name}-environment-name`}>
+          {capitalizeFirstLetter(environment?.name)}
+        </span>
       </div>
     </button>
   );
