@@ -124,7 +124,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         index++;
         newName = `URL ${index}`;
       }
-      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.ai' };
+      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.com' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
@@ -594,9 +594,8 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
-              darkMode && 'color-whitish-darkmode'
-            }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+              }`}
           />
         </div>
         <div className={`flex-grow-1`}>

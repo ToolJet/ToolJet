@@ -122,23 +122,23 @@ export class EventsService implements IEventsService {
     // Queue history capture after successful event creation
     setImmediate(async () => {
       try {
-        // Resolve component name for better history description
-        let componentName = 'Unknown Component';
+        // Resolve entity name based on event type (component, query, or page)
+        let entityName = 'Unknown Component';
 
-        if (eventHandler.attachedTo) {
+        if (eventHandler.attachedTo && eventHandler.eventType) {
           try {
-            const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(
-              eventHandler.attachedTo
+            entityName = await this.appHistoryUtilService.resolveEntityName(
+              eventHandler.attachedTo,
+              eventHandler.eventType
             );
-            componentName = componentWithPage.componentName;
           } catch (error) {
-            console.error('Failed to resolve component name for event creation:', error);
+            console.error('Failed to resolve entity name for event creation:', error);
           }
         }
 
         await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.EVENT_ADD, {
           eventName: eventHandler.event?.eventId || 'Unknown Event',
-          componentName,
+          componentName: entityName,
           componentId: eventHandler.attachedTo,
           operation: 'create',
           eventData: {
@@ -196,7 +196,7 @@ export class EventsService implements IEventsService {
         const actionType = updateType === 'reorder' ? ACTION_TYPE.EVENT_REORDER : ACTION_TYPE.EVENT_UPDATE;
 
         // For single event updates, try to resolve names
-        let componentName = 'Unknown Component';
+        let entityName = 'Unknown Component';
         let eventName = 'Unknown Event';
 
         if (events.length === 1 && events[0]) {
@@ -208,21 +208,21 @@ export class EventsService implements IEventsService {
             if (eventDetails) {
               eventName = eventDetails.name || 'Unknown Event';
 
-              if (eventDetails.sourceId) {
-                const componentWithPage = await this.appHistoryUtilService.resolveComponentWithPage(
-                  eventDetails.sourceId
+              if (eventDetails.sourceId && eventDetails.target) {
+                entityName = await this.appHistoryUtilService.resolveEntityName(
+                  eventDetails.sourceId,
+                  eventDetails.target
                 );
-                componentName = componentWithPage.componentName;
               }
             }
           } catch (error) {
-            console.error('Failed to resolve event/component names:', error);
+            console.error('Failed to resolve event/entity names:', error);
           }
         }
 
         await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
           eventName: events.length === 1 ? eventName : undefined,
-          componentName: events.length === 1 ? componentName : undefined,
+          componentName: events.length === 1 ? entityName : undefined,
           eventCount: events.length,
           operation: updateType,
           eventData: events.map((event) => ({

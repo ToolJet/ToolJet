@@ -158,6 +158,9 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const handleResizeStop = useCallback(
     (boxList) => {
+      // Batch all layout updates into a single object
+      const batchedLayouts = {};
+
       boxList.forEach(({ id, height, width, x, y, gw }) => {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
@@ -184,15 +187,20 @@ export default function Grid({ gridWidth, currentLayout }) {
             newWidth = 43 - posX;
           }
         }
-        setComponentLayout({
-          [id]: {
-            height: height ? height : GRID_HEIGHT,
-            width: newWidth ? newWidth : 1,
-            top: y,
-            left: Math.round(x / gw),
-          },
-        });
+
+        // Add to batched layouts instead of calling setComponentLayout immediately
+        batchedLayouts[id] = {
+          height: height ? height : GRID_HEIGHT,
+          width: newWidth ? newWidth : 1,
+          top: y,
+          left: Math.round(x / gw),
+        };
       });
+
+      // Call setComponentLayout once with all updates
+      if (Object.keys(batchedLayouts).length > 0) {
+        setComponentLayout(batchedLayouts);
+      }
     },
     [canvasWidth, gridWidth, setComponentLayout]
   );
@@ -231,10 +239,12 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
       >
-        <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
-        <Suspense fallback={null}>
-          <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
-        </Suspense>
+        <span id={id}>
+          <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
+          <Suspense fallback={null}>
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          </Suspense>
+        </span>
         {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <img
@@ -424,11 +434,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
         return layouts;
       }, {});
+      // setComponentLayout now handles updateContainerAutoHeight internally when updateParent is true
       setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: true });
-
-      // const currentWidget = boxList.find((box) => box.id === id);
-      updateContainerAutoHeight(newParent);
-      updateContainerAutoHeight(oldParent);
 
       toggleCanvasUpdater();
     },
@@ -624,8 +631,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
@@ -694,6 +699,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             return false;
           }
           handleActivateNonDraggingComponents();
+          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
         onResizeEnd={(e) => {
@@ -968,7 +974,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragEnd={(e) => {
           handleDeactivateTargets();
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -1055,8 +1060,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
         onDrag={(e) => {
-          updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-
           if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
@@ -1080,6 +1083,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             handleActivateNonDraggingComponents();
+            updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
             isDraggingRef.current = true;
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);

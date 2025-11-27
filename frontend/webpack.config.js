@@ -370,6 +370,10 @@ module.exports = {
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
       TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
+      WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup',
+      TJ_SELFHOST_CREDITS_APP:
+        process.env.TJ_SELFHOST_CREDITS_APP ||
+        'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
     }),
   },
 };

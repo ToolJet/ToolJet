@@ -26,7 +26,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) {}
+  ) { }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -131,8 +131,8 @@ export class DataQueriesService implements IDataQueriesService {
 
     try {
       const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { apps: true });
-      if (dataQuery?.apps?.[0]?.appVersions?.[0]?.id) {
-        appVersionId = dataQuery.apps[0].appVersions[0].id;
+      if (dataQuery?.appVersionId) {
+        appVersionId = dataQuery.appVersionId;
       }
     } catch (error) {
       console.error('Failed to get app version ID for history capture:', error);

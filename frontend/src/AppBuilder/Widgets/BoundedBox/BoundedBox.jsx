@@ -18,16 +18,16 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
     ? [
-        ...properties.labels.map((label) => {
-          return { name: getSafeRenderableValue(label), value: label };
-        }),
-      ]
+      ...properties.labels.map((label) => {
+        return { name: getSafeRenderableValue(label), value: label };
+      }),
+    ]
     : [];
   const annotateRef = useRef(null);
 
   useEffect(() => {
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`[widgetid="${id}"] .lmGPCf`);
+      const wrapperElement = document.querySelector(`[widgetid="${id}"] .jcdOkx`);
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
         // Use the width and height of bounding image for further calculations
@@ -36,7 +36,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       }
     };
 
-    const imageElement = document.querySelector(`[widgetid="${id}"] .gVmiLs`);
+    const imageElement = document.querySelector(`[widgetid="${id}"] .hIIYQM`);
     if (imageElement) {
       imageElement.addEventListener('load', handleImageLoad);
     }

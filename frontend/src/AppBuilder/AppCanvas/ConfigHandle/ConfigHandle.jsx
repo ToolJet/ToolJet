@@ -267,11 +267,12 @@ export const ConfigHandle = ({
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
-          deleteComponents();
+          !shouldFreeze && deleteComponents();
         }}
         message="Delete component"
         show={true}
         dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+        shouldHide={shouldFreeze}
       >
         <Trash size={12} color="var(--icon-inverse)" />
       </ConfigHandleButton>

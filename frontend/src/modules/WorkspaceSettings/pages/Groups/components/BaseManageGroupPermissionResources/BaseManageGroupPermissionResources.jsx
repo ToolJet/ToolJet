@@ -26,7 +26,7 @@ import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGroupPermissionResources extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -65,11 +65,11 @@ class BaseManageGroupPermissionResources extends React.Component {
     };
   }
 
-  componentDidMount () {
+  componentDidMount() {
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
       this.setState({
@@ -273,7 +273,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -426,7 +426,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     this.setState({ updateParam });
   };
 
-  render () {
+  render() {
     if (!this.props.groupPermissionId) return null;
 
     const {

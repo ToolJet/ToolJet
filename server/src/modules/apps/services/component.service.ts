@@ -309,11 +309,12 @@ export class ComponentsService implements IComponentsService {
       create?: { diff: object; pageId: string };
       update?: { diff: object };
       delete?: { diff: string[]; is_component_cut?: boolean };
+      layout?: { diff: Record<string, { layouts: LayoutData; component?: { parent: string } }> };
     },
     appVersionId: string
   ) {
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const results: { created?: number; updated?: number; deleted?: number } = {};
+      const results: { created?: number; updated?: number; deleted?: number; layout?: number } = {};
 
       // Handle create operation if present
       if (batchOperations.create) {
@@ -336,6 +337,13 @@ export class ComponentsService implements IComponentsService {
         results.deleted = componentIds.length;
       }
 
+      // Handle layout operation if present
+      if (batchOperations.layout) {
+        const { diff } = batchOperations.layout;
+        await this.updateComponentLayouts(diff, manager);
+        results.layout = Object.keys(diff).length;
+      }
+
       return results;
     }, appVersionId);
 
@@ -347,6 +355,7 @@ export class ComponentsService implements IComponentsService {
         ...(batchOperations.create ? Object.keys(batchOperations.create.diff) : []),
         ...(batchOperations.update ? Object.keys(batchOperations.update.diff) : []),
         ...(batchOperations.delete ? batchOperations.delete.diff : []),
+        ...(batchOperations.layout ? Object.keys(batchOperations.layout.diff) : []),
       ];
 
       await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.BATCH_UPDATE, {
@@ -493,5 +502,40 @@ export class ComponentsService implements IComponentsService {
     }
 
     await manager.delete(Component, { id: In(componentIds) });
+  }
+
+  private async updateComponentLayouts(
+    layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    manager: EntityManager
+  ) {
+    for (const componentId in layoutDiff) {
+      const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+
+      if (doesComponentExist[1] === 0) {
+        return {
+          error: {
+            message: `Component with id ${componentId} does not exist`,
+          },
+        };
+      }
+
+      const { layouts, component } = layoutDiff[componentId];
+
+      for (const type in layouts) {
+        const componentLayout = await manager.findOne(Layout, { where: { componentId, type } });
+
+        if (componentLayout) {
+          const layout = {
+            ...layouts[type],
+          } as Partial<Layout>;
+
+          await manager.update(Layout, { id: componentLayout.id }, layout);
+        }
+        // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
+        if (component) {
+          await manager.update(Component, { id: componentId }, { parent: component.parent });
+        }
+      }
+    }
   }
 }
