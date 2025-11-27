@@ -629,8 +629,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
+          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+        }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >

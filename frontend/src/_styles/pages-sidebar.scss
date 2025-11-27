@@ -24,6 +24,7 @@
             display: flex;
             align-items: center;
         }
+
         .col-9 {
             flex: 1;
             display: flex;
@@ -80,9 +81,10 @@
         svg {
             color: #6A727C;
             stroke: #6A727C;
-            
+
         }
     }
+
     &.dark-theme {
         .icon-selector {
             svg {
@@ -129,13 +131,16 @@
     }
 }
 
-#page-settings-tabpane-properties, #page-settings-tabpane-styles {
+#page-settings-tabpane-properties,
+#page-settings-tabpane-styles {
     border: 0px !important;
     padding: 0px !important;
+
     .app-name {
         width: 100% !important;
         margin: 0px !important;
     }
+
     .form-check-input[type=checkbox] {
         float: right;
     }
@@ -155,6 +160,7 @@
 
     input[type='text'] {
         border-radius: 6px;
+
         &:focus {
             border: 2px solid var(--border-accent-strong);
         }
@@ -170,10 +176,12 @@
             gap: 12px;
         }
 
-        .add-new-page, .more-page-opts {
+        .add-new-page,
+        .more-page-opts {
             padding: 7px 12px;
             margin-top: 12px;
             height: 32px;
+
             svg {
                 width: 16px;
                 height: 16px;
@@ -195,10 +203,12 @@
             }
         }
     }
+
     .page-name {
         font-size: 12px !important;
         color: var(--text-default) !important;
     }
+
     .accordion-body {
         gap: 4px;
         display: flex;
@@ -428,25 +438,29 @@
         .accordion-header{
             height: auto !important;
             position: relative;
-            .page-group{
+
+            .page-group {
                 height: 32px;
                 display: flex;
                 align-items: center;
-                svg{
+
+                svg {
                     height: 18px;
                     width: 18px;
                 }
             }
-            .tj-list-item{
-                border:none !important;
+
+            .tj-list-item {
+                border: none !important;
                 padding-left: 8px !important;
                 outline: none !important;
-                &:hover{
+
+                &:hover {
                     background: none !important;
                 }
             }
 
-            .active-page-group-highlight{
+            .active-page-group-highlight {
                 height: 32px;
                 width: 5px;
                 background: var(--primary-brand);
@@ -461,18 +475,18 @@
         }
 
         a.page-link {
-          border-radius: 0;
-          border: 0;
+            border-radius: 0;
+            border: 0;
         }
 
         a.page-link:hover {
-          color: white;
-          background-color: #4D72FA;
+            color: white;
+            background-color: #4D72FA;
         }
 
         a.page-link.active {
-          color: white;
-          background-color: #4D72FA;
+            color: white;
+            background-color: #4D72FA;
         }
 
         &.position-top {
@@ -595,6 +609,7 @@
                     top: 0px !important;
                     left: 0px !important;
                     margin-left: 0px !important;
+
                     &.position-top {
                         width: 100% !important;
                     }
@@ -630,7 +645,7 @@
             }
         }
     }
-   
+
 }
 
 
@@ -643,6 +658,7 @@
     width: 28px;
     height: 28px;
     cursor: pointer;
+
     &:hover {
         background-color: var(--interactive-hover);
     }
@@ -660,23 +676,26 @@
             display: flex !important;
         }
     }
-    
+
     .action-btn-wrapper {
         &.options-opened {
             display: flex !important;
         }
     }
+
     .action-btn-wrapper {
         display: none;
-        gap:2px;
+        gap: 2px;
+
         .icon-btn {
             box-shadow: var(--elevation-100-box-shadow);
             background-color: var(--button-secondary);
             border: 1px solid var(--borders-disabled-on-white);
-            padding:4px;
+            padding: 4px;
             width: 21px;
             height: 21px;
             border-radius: 4px;
+
             &:hover {
                 background-color: var(--button-outline-hover);
                 border-color: var(--border-weak);
@@ -685,21 +704,23 @@
             &:active {
                 background-color: var(--interactive-selected) !important;
                 border-color: var(--interactive-overlay-border-pressed) !important;
-              }
+            }
         }
     }
 }
 
 .delete-folder-backdrop.show {
     z-index: 9999;
-    & + .delete-folder-modal {
+
+    &+.delete-folder-modal {
         z-index: 9999;
     }
 }
 
 .delete-page-backdrop.show {
     z-index: 9999;
-    & + .delete-page-modal {
+
+    &+.delete-page-modal {
         z-index: 9999;
     }
 }
@@ -712,12 +733,12 @@
     position: relative;
     width: 100%;
     height: 100%;
-    
+
     &:hover {
         .navigation-area.navigation-hover-trigger {
-            box-shadow: 0 0 0 1px #3E63DD !important;
+            box-shadow: 0 0 0 1px #4af !important;
         }
-        
+
         // Only show hover tooltip if active tooltip is not present
         .navigation-tooltip-hover {
             display: flex !important;
@@ -732,6 +753,6 @@
 }
 
 // Hide hover tooltip when active tooltip is present (adjacent sibling)
-.navigation-tooltip + .navigation-tooltip-hover {
+.navigation-tooltip+.navigation-tooltip-hover {
     display: none !important;
 }
