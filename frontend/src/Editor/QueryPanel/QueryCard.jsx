@@ -22,8 +22,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
   const hasPermissions =
     selectedDataSource?.scope === 'global'
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
 
   const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
@@ -89,9 +89,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
           {renamingQuery ? (
             <input
               data-cy={`query-edit-input-field`}
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
-                darkMode && 'text-white'
-              }`}
+              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'
+                }`}
               type="text"
               defaultValue={decodeEntities(dataQuery.name)}
               autoFocus={true}
@@ -120,7 +119,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
                   <a
                     className="text-truncate"
                     data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.ai/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
                     target="_blank"
                     rel="noreferrer"
                   >

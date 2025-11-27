@@ -7,8 +7,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Slot } from '@radix-ui/react-slot';
 // eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
+// eslint-disable-next-line import/no-unresolved
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import './Button.scss';
-import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize } from './ButtonUtils.jsx';
+import {
+  getDefaultIconFillColor,
+  getLucideIconClassName,
+  defaultButtonFillColour,
+  getIconSize,
+  getLucideIconSize,
+} from './ButtonUtils.jsx';
 
 const buttonVariants = cva(
   'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors focus-visible:tw-outline-none tw-disabled:tw-pointer-events-none tw-disabled:tw-opacity-50',
@@ -58,10 +66,10 @@ const buttonVariants = cva(
           focus-visible:tw-ring-2 focus-visible:tw-ring-[var(--interactive-focus-outline)] focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background tw-shadow-[0px_1px_0px_0px_rgba(0,0,0,0.10)]`,
       },
       size: {
-        large: 'tw-h-[40px] tw-gap-[8px] tw-py-[10px] tw-rounded-[10px] tw-text-lg',
-        default: 'tw-h-[32px] tw-gap-[6px] tw-py-[7px] tw-rounded-[8px] tw-text-base',
+        large: 'tw-h-[40px] tw-gap-[8px] tw-py-[10px] tw-rounded-[8px] tw-text-lg',
+        default: 'tw-h-[32px] tw-gap-[6px] tw-py-[7px] tw-rounded-[6px] tw-text-base',
         medium: 'tw-h-[28px] tw-gap-[6px] tw-py-[5px] tw-rounded-[6px] tw-text-base',
-        small: 'tw-h-[20px] tw-gap-[4px] tw-py-[2px] tw-rounded-[4px] tw-text-sm',
+        small: 'tw-h-[20px] tw-gap-[4px] tw-py-[2px] tw-rounded-[6px] tw-text-sm',
       },
       iconOnly: {
         true: '',
@@ -132,26 +140,34 @@ const Button = forwardRef(
       fill = '',
       iconOnly = false, // as normal button and icon have diff styles make sure to pass it as truw when icon only button is used
       loaderText = null,
+      isLucid = false, // Use Lucide icons instead of SolidIcon
+      component = 'button',
       ...props
     },
     ref
   ) => {
-    const iconFillColor = !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant);
-    const Comp = asChild ? Slot : 'button';
+    const iconFillColor =
+      !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
+    const lucideIconClassName = getLucideIconClassName(variant, iconOnly);
+    const Comp = asChild ? Slot : component;
+    const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
+
     const leadingIconElement = leadingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={leadingIcon} fill={iconFillColor} />
+      <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
+        {isLucid ? (
+          <DynamicIcon name={leadingIcon} size={iconSize} className={lucideIconClassName} />
+        ) : (
+          <SolidIcon name={leadingIcon} fill={iconFillColor} />
+        )}
       </div>
     );
     const trailingIconElement = trailingIcon && (
-      <div
-        className="tw-flex tw-justify-center tw-items-center"
-        style={{ width: getIconSize(size), height: getIconSize(size) }}
-      >
-        <SolidIcon name={trailingIcon} fill={iconFillColor} />
+      <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
+        {isLucid ? (
+          <DynamicIcon name={trailingIcon} size={iconSize} className={lucideIconClassName} />
+        ) : (
+          <SolidIcon name={trailingIcon} fill={iconFillColor} />
+        )}
       </div>
     );
 
@@ -212,6 +228,7 @@ Button.propTypes = {
   fill: PropTypes.string,
   leadingIcon: PropTypes.string,
   trailingIcon: PropTypes.string,
+  isLucid: PropTypes.bool,
 };
 
 Button.defaultProps = {
@@ -225,6 +242,7 @@ Button.defaultProps = {
   fill: '',
   leadingIcon: '',
   trailingIcon: '',
+  isLucid: false,
 };
 
 export { Button, buttonVariants };

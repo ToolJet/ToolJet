@@ -18,6 +18,7 @@ export const commonSelectors = {
   workspaceConstantValueInput: '[data-cy="value-input-field"]',
   fileSelector: "[data-cy=uploaded-file-data]",
   searchField: "[data-cy='widget-search-box-search-bar']",
+  workspaceCount: '[data-cy="workspace-count"]',
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
@@ -138,7 +139,7 @@ export const commonSelectors = {
   passwordHelperText: '[data-cy="new-password-input-hint"]',
   continueButton: '[data-cy="continue-button"]',
   passwordHelperTextSignup: '[data-cy="password-input-hint"]',
-  continueButton: '[data-cy="sign-up-button"]',
+  signUpButton: '[data-cy="sign-up-button"]',
   OnbordingContinue: '[data-cy="onboarding-submit-button"]',
   userAccountNameAvatar: '[data-cy="user-account-name-avatar"]',
   workspaceNameInputLabel: '[data-cy="onboarding-workspace-name-label"]',
@@ -155,7 +156,6 @@ export const commonSelectors = {
   skipbutton: '[class="driver-close-btn"]',
   backLogo: '[data-cy="editor-page-logo"]',
   backtoapps: '[data-cy="back-to-app-option"]',
-  signUpButton: '[data-cy="sign-up-button"]',
   emailImage: '[data-cy="email-image"]',
   spamMessage: '[data-cy="info-message"]',
   resendEmailButton: '[data-cy="resend-verification-email-button"]',
@@ -178,7 +178,9 @@ export const commonSelectors = {
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
   // breadcrumbTitle: '[data-cy="app-header-label"]>>',
-  breadcrumbHeaderTitle: '[data-cy="breadcrumb-header-applications"]>>',
+  breadcrumbHeaderTitle: (headerTitle) => {
+    return `[data-cy="breadcrumb-header-${cyParamName(headerTitle)}"]>>`
+  },
   breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
@@ -194,6 +196,8 @@ export const commonSelectors = {
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
   editorAppNameInput: '[data-cy="editor-app-name-input"]',
+  enablePasswordLoginTitle: '[data-cy="enable-password-login-title"]',
+  enablePasswordLoginModal: '[data-cy="modal-message"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -255,6 +259,7 @@ export const commonSelectors = {
   releaseButton: '[data-cy="button-release"]',
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
+  modalCloseButton: '[data-cy="modal-close"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',
@@ -272,6 +277,7 @@ export const commonSelectors = {
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
+  previewSettings: '[data-cy="preview-settings"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
@@ -285,6 +291,8 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+  modalConfirmButton: '[data-cy="modal-confirm-button"]',
+  rightSidebarPlusButton: '[data-cy="right-sidebar-plus-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -296,6 +304,7 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
   pageLogo: '[data-cy="page-logo"]',
+  homePageIcon: '[data-cy="home-page-icon"]',
 };
 
 export const commonWidgetSelector = {
@@ -421,6 +430,7 @@ export const commonWidgetSelector = {
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+  enterpriseGradientSmIcon: '[data-cy="enterprise-gradient-sm-icon"]',
 };
 
 export const commonQuerySelectors = {
@@ -428,7 +438,7 @@ export const commonQuerySelectors = {
     return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
   },
   queryActionButton: (action) => {
-    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+    return `[data-cy="query-card-${cyParamName(action)}-button"]`;
   },
   queryEditInputField: '[data-cy="query-edit-input-field"]',
 };
@@ -449,4 +459,30 @@ export const inspectorSelectors = {
   inspectorNodeValue: (nodeName) => {
     return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
   },
+};
+
+export const whiteLabelSelectors = {
+  navWhiteLabellingListItem: '[data-cy="white-labelling-list-item"]',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
+  appLogoInput: '[data-cy="input-field-app-logo"]',
+  pageTitleInput: '[data-cy="input-field-page-title"]',
+  favIconInput: '[data-cy="input-field-fav-icon"]',
+  appLogoHelpText: '[data-cy="app-logo-help-text"]',
+  favIconHelpText: '[data-cy="fav-icon-help-text"]',
+  cancelButton: '[data-cy="cancel-button"]',
+  saveButton: '[data-cy="save-button"]',
+  tooljetHeaderImg: ".tooljet-header img",
+  faviconLink: 'link[rel="icon"]',
+  poweredByBanner: '[data-cy="powered-tj-banner"]',
+  homePageLogoImg: '[data-cy="home-page-logo"] img',
+  passwordInput: '[data-cy="password-input"]',
+  signUpButton: '[data-cy="sign-up-button"]',
+  signupInfo: '[data-cy="signup-info"]',
+  signupRedirectText: '[data-cy="signup-info"]',
+
+  smtpListItem: '[data-cy="email-protocol-(smtp)-list-item"]',
+  smtpHostInput: '[data-cy="input-field-host"]',
+  smtpPortInput: '[data-cy="input-field-port"]',
+  smtpUserInput: '[data-cy="input-field-user"]',
+  smtpPasswordInput: '[data-cy="input-field-password"]',
 };
