@@ -92,7 +92,7 @@ export const verifyInspectorKeyValue = (key, value) => {
     if (/^[a-z]+[A-Z]/.test(key)) {
       return key;
     }
-    return key.toLowerCase();
+    return key;
   };
 
   const selectorKey = normalizeKey(key);
