@@ -61,20 +61,28 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-        <ButtonComponent
-          isLucid
-          size="default"
-          variant="outline"
-          leadingIcon="play"
-          data-cy="preview-link-button"
-          component={Link}
+
+        <Link
+          title="Preview"
           to={appPreviewLink}
           target="_blank"
           rel="noreferrer"
-          className="hover:tw-no-underline hover:tw-text-text-default"
+          data-cy="preview-link-button"
+          className="text-decoration-none"
+          style={{ color: 'var(--text-default)' }}
         >
-          Preview
-        </ButtonComponent>
+          <ButtonComponent
+            size="default"
+            variant="outline"
+            leadingIcon="play01"
+            data-cy="preview-link-button"
+            style={{ padding: "7px 12px" }}
+
+          >
+
+            Preview
+          </ButtonComponent>
+        </Link>
       )}
 
       <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
