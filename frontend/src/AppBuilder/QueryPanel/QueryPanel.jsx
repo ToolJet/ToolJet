@@ -10,10 +10,9 @@ import { isEmpty, isEqual } from 'lodash';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import SectionCollapse from '@/_ui/Icon/solidIcons/SectionCollapse';
-import SectionExpand from '@/_ui/Icon/solidIcons/SectionExpand';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+import { diff } from 'deep-object-diff';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -58,7 +57,12 @@ export const QueryPanel = ({ darkMode }) => {
       const formattedPrevQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
       delete formattedPrevQuery.updated_at;
 
-      if (!isEqual(formattedQuery, formattedPrevQuery)) {
+      const diffResult = diff(formattedPrevQuery, formattedQuery);
+
+      // Skip saveData if only the name changed - renameQuery handles that separately
+      const isOnlyNameChange = Object.keys(diffResult).length === 1 && 'name' in diffResult;
+
+      if (!isEqual(formattedQuery, formattedPrevQuery) && !isOnlyNameChange) {
         useStore.getState().dataQuery.saveData(selectedQuery);
       }
     });
