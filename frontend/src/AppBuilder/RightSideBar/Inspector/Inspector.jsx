@@ -23,17 +23,8 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
-import Tabs from '@/ToolJetUI/Tabs/Tabs';
-import Tab from '@/ToolJetUI/Tabs/Tab';
 import Student from '@/_ui/Icon/solidIcons/Student';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
-import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
-import Edit from '@/_ui/Icon/bulkIcons/Edit';
-import Copy from '@/_ui/Icon/solidIcons/Copy';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
 import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
@@ -44,51 +35,12 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
-import { ToolTip } from '@/_components/ToolTip';
-import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
-import { appPermissionService } from '@/_services';
+import { InspectorHeader } from './InspectorHeader';
 import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
-import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { ModuleContainerInspector, ModuleViewerInspector } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
-import { Button } from '@/components/ui/Button/Button';
 import './styles.scss';
-
-const INSPECTOR_HEADER_OPTIONS = [
-  {
-    label: 'Inspect',
-    value: 'inspect',
-    icon: <Inspect width={16} />,
-  },
-  {
-    label: 'Rename',
-    value: 'rename',
-    icon: <Edit width={16} />,
-  },
-  {
-    label: 'Duplicate',
-    value: 'duplicate',
-    icon: <Copy width={16} />,
-  },
-  {
-    label: 'Component permission',
-    value: 'permission',
-    icon: (
-      <img
-        alt="permission-icon"
-        src="assets/images/icons/editor/left-sidebar/authorization.svg"
-        width="16"
-        height="16"
-      />
-    ),
-    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
-  },
-  {
-    label: 'Delete',
-    value: 'delete',
-    icon: <Trash width={16} fill={'#E54D2E'} />,
-  },
-];
 
 export const NEW_REVAMPED_COMPONENTS = [
   'Text',
@@ -522,153 +474,28 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
-  const renderAppNameInput = () => {
-    if (isModuleContainer) {
-      return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
-    }
-
-    return (
-      <div className="input-icon">
-        <input
-          onChange={(e) => setNewComponentName(e.target.value)}
-          type="text"
-          onBlur={() => handleComponentNameChange(newComponentName)}
-          className="w-100 inspector-edit-widget-name"
-          value={newComponentName}
-          ref={inputRef}
-          data-cy="edit-widget-name"
-        />
-      </div>
-    );
-  };
-
-  const closeIcon = () => {
-    return (
-      <Button
-        iconOnly
-        leadingIcon={'x'}
-        onClick={handleRightSidebarToggle}
-        variant="ghost"
-        fill="var(--icon-strong,#6A727C)"
-        size="medium"
-        data-cy="inspector-close-button"
-        isLucid={true}
-      />
-    );
-  };
-
-  const menuIcon = () => {
-    return (
-      <OverlayTrigger
-        trigger={'click'}
-        placement={'bottom-end'}
-        rootClose={false}
-        show={showHeaderActionsMenu}
-        overlay={
-          <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-            <Popover.Body bsPrefix="list-item-popover-body">
-              {INSPECTOR_HEADER_OPTIONS.map((option) => {
-                const optionBody = (
-                  <div
-                    data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                    className="list-item-popover-option"
-                    key={option?.value}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleInspectorHeaderActions(option.value);
-                    }}
-                  >
-                    <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                    <div
-                      className={classNames('list-item-option-menu-label', {
-                        'color-tomato9': option.value === 'delete',
-                        'color-disabled': option.value === 'permission' && !licenseValid,
-                      })}
-                    >
-                      {option?.label}
-                    </div>
-                    {option.value === 'permission' && !licenseValid && option.trailingIcon && option.trailingIcon}
-                  </div>
-                );
-
-                return option.value === 'permission' ? (
-                  <ToolTip
-                    key={option.value}
-                    message={'Component permissions are available only in paid plans'}
-                    placement="left"
-                    show={!licenseValid}
-                  >
-                    {optionBody}
-                  </ToolTip>
-                ) : (
-                  optionBody
-                );
-              })}
-            </Popover.Body>
-          </Popover>
-        }
-      >
-        <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-          <Button
-            iconOnly
-            leadingIcon={'more-vertical'}
-            variant="ghost"
-            fill="var(--icon-strong,#6A727C)"
-            size="medium"
-            data-cy="menu-icon"
-            isLucid={true}
-          />
-        </span>
-      </OverlayTrigger>
-    );
-  };
-
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
-      {/* NEW: Inspector Header */}
-      <div className="inspector-header">
-        {/* Row 1: Component Name + Menu + Close */}
-        <div className="header-title-row">
-          <div className="flex-grow-1">{renderAppNameInput()}</div>
-          <div className="header-actions">
-            {!isModuleContainer && (
-              <>
-                {menuIcon()}
-                <AppPermissionsModal
-                  modalType="component"
-                  resourceId={selectedComponentId}
-                  resourceName={allComponents[selectedComponentId]?.component?.name}
-                  showModal={showComponentPermissionModal}
-                  toggleModal={toggleComponentPermissionModal}
-                  darkMode={darkMode}
-                  fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
-                  deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
-                  onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
-                />
-              </>
-            )}
-            {closeIcon()}
-          </div>
-        </div>
-
-        {/* Row 2: Tabs */}
-        <Tabs
-          activeKey={activeTab}
-          onSelect={(key) => {
-            setActiveTab(key);
-          }}
-          id="inspector-tabs"
-          darkMode={darkMode}
-          hidden={isModuleContainer}
-        >
-          <Tab eventKey="properties" title="Properties" />
-          <Tab eventKey="styles" title="Styles" />
-        </Tabs>
-      </div>
+      <InspectorHeader
+        darkMode={darkMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        showHeaderActionsMenu={showHeaderActionsMenu}
+        setShowHeaderActionsMenu={setShowHeaderActionsMenu}
+        isModuleContainer={isModuleContainer}
+        selectedComponentId={selectedComponentId}
+        allComponents={allComponents}
+        licenseValid={licenseValid}
+        showComponentPermissionModal={showComponentPermissionModal}
+        toggleComponentPermissionModal={toggleComponentPermissionModal}
+        setComponentPermission={setComponentPermission}
+        onAction={handleInspectorHeaderActions}
+        onClose={handleRightSidebarToggle}
+        newComponentName={newComponentName}
+        setNewComponentName={setNewComponentName}
+        onNameChange={handleComponentNameChange}
+        inputRef={inputRef}
+      />
 
       {/* Content - conditionally rendered */}
       <div className="inspector-content">
